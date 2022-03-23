@@ -43,6 +43,7 @@ import {Scratch3SensingBlocks} from 'scratch-vm/src/blocks/scratch3_sensing';
 import {Scratch3SoundBlocks} from 'scratch-vm/src/blocks/scratch3_sound';
 import Cast from "scratch-vm/src/util/cast";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const twgl = require('twgl.js');
 
 export type ScratchBlocks =
@@ -140,6 +141,7 @@ export abstract class ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
+                // eslint-disable-next-line no-prototype-builtins
                 if (fields.hasOwnProperty("KEY_OPTION")) {
                     eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
                 } else {
@@ -158,7 +160,7 @@ export abstract class ScratchEventExtractor {
             case 'motion_goto': {
                 // GoTo MousePointer block
                 const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
-                if (goToMenu.fields.TO.value === '_mouse_') {
+                if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
                     eventList.push(new MouseMoveEvent());
                 }
                 break;
@@ -242,6 +244,8 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_coloristouchingcolor': {
+                console.log("XXX sensing_coloristouchingcolor");
+
                 const getColorFromBlock = (color) =>
                     target.blocks.getBlock(block.inputs[color].block).fields.COLOUR.value;
 
@@ -269,8 +273,7 @@ export abstract class ScratchEventExtractor {
                         if (targetColorQuery.colorFound) {
 
                             // The coordinates of the "target color"
-                            const targetX = targetColorQuery.coordinates.x;
-                            const targetY = targetColorQuery.coordinates.y;
+                            const {x: targetX, y: targetY} = targetColorQuery.coordinates;
 
                             // The coordinates of the center of the current sprite.
                             const centerX = target.x;
@@ -385,6 +388,7 @@ export abstract class ScratchEventExtractor {
         this.availableTextSnippets.push(...ScratchEventExtractor._fixedStrings);
 
         for (const target of vm.runtime.targets) {
+            // eslint-disable-next-line no-prototype-builtins
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     const snippet = this._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
@@ -483,6 +487,7 @@ export abstract class ScratchEventExtractor {
      */
     public hasMouseEvent(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
+            // eslint-disable-next-line no-prototype-builtins
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     if (ScratchEventExtractor._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
@@ -518,6 +523,7 @@ export abstract class ScratchEventExtractor {
      */
     public static hasEvents(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
+            // eslint-disable-next-line no-prototype-builtins
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
@@ -591,12 +597,14 @@ export abstract class ScratchEventExtractor {
             }
         }
 
-        const width = renderer._xRight - renderer._xLeft;
-        const height = renderer._yTop - renderer._yBottom;
-        const maxRadius = Math.hypot(width, height);
-        const offset = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
+        const stageBounds = {
+            right: renderer._xRight,
+            left: renderer._xLeft,
+            top: renderer._yTop,
+            bottom: renderer._yBottom
+        };
 
-        return this.fuzzyFindColor(sprite.x, sprite.y, offset, maxRadius, touchableObjects, rgbColor, renderer);
+        return this.fuzzyFindColor(sprite, touchableObjects, rgbColor, stageBounds, renderer);
     }
 
     /**
@@ -611,100 +619,100 @@ export abstract class ScratchEventExtractor {
         const renderer = sprite.runtime.renderer;
 
         const id = sprite.drawableID;
-        const searchRadius = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
-
         const drawable = renderer._allDrawables[id];
         drawable.updateCPURenderAttributes();
         const thisSprite = [{id, drawable}];
 
-        const centerX = sprite.x;
-        const centerY = sprite.y;
+        const bounds = sprite.getBounds();
 
-        return this.fuzzyFindColor(centerX, centerY, 0, searchRadius, thisSprite, color, renderer);
+        return this.fuzzyFindColor(sprite, thisSprite, color, bounds, renderer);
     }
 
-    /**
-     * Returns the radius of the minimum bounding circle for the given sprite.
-     *
-     * @param sprite the sprite for which to compute the radius of
-     * @param renderer the renderer of the sprite
-     * @return the radius
-     */
-    private static getRadiusOfMinimumBoundingCircle(sprite, renderer) {
-        const id = sprite.drawableID;
-        const [costumeSizeX, costumeSizeY] = renderer.getCurrentSkinSize(id);
-        const scalingFactor = sprite.size / 100;
-        return Math.max(costumeSizeX, costumeSizeY) * scalingFactor / 2;
-    }
-
-    /**
-     * Tries to locate a given color in a given search area. This area is defined by a circle. Its center point has the
-     * coordinates centerX and centerY. The radius is given by maxRadius. In addition, one can choose to exclude a
-     * smaller inner circle with radius "offset" from the search. Only the given list of touchable objects are
-     * considered when searching for the color. The returned object contains the coordinates of the pixel containing the
-     * desired color iff the search was successful.
-     *
-     * @param centerX x-coordinate of the search circle
-     * @param centerY y-coordinate of the search circle
-     * @param offset radius of the circle to exclude from the search
-     * @param maxRadius the radius of the search circle
-     * @param touchableObjects the objects within the search area to consider
-     * @param color3b the color to search for
-     * @param renderer
-     * @return the search result
-     */
-    private static fuzzyFindColor(
-        centerX: number,
-        centerY: number,
-        offset: number,
-        maxRadius: number,
-        touchableObjects: RenderedTarget[],
-        color3b: Uint8ClampedArray,
-        renderer
-    ): ColorQueryResult {
-        // Scan an ever increasing radius around the source sprite and check if we found an object carrying the
-        // sensed color. We stop if the radius is greater than maxRadius.
-        const point = twgl.v3.create();
-        const color = new Uint8ClampedArray(4);
-        let r = 1 + offset;
-        let rPrev = 1;
-        let rIncrease = 1;
-        while (r < maxRadius) {
-            const coordinates = [];
-            for (const x of [-r, r]) {
-                for (let y = -r; y <= r; y++) {
-                    coordinates.push([x, y]);
-                }
+    static fuzzyFindColor(start: Point, touchables, color, bounds: Bounds, renderer): ColorQueryResult {
+        const targetColor = Cast.toRgbColorList(color);
+        for (const {x, y} of ScratchEventExtractor.points(start, bounds)) {
+            const point = twgl.v3.create(x, y);
+            const currentColor = renderer.constructor.sampleColor3b(point, touchables);
+            if (ScratchEventExtractor.isColorMatching(targetColor, currentColor)) {
+                return {
+                    colorFound: true,
+                    coordinates: {x, y}
+                };
             }
-            for (const y of [-r, r]) {
-                for (let x = -r; x <= r; x++) {
-                    coordinates.push([x, y]);
-                }
-            }
-            for (const c of coordinates) {
-                const x = c[0];
-                const y = c[1];
-                point[0] = centerX + x;
-                point[1] = centerY + y;
-                renderer.constructor.sampleColor3b(point, touchableObjects, color);
-
-                // Check if we found an object carrying the correct color.
-                if (ScratchEventExtractor.isColorMatching(color, color3b)) {
-                    return {
-                        colorFound: true,
-                        coordinates: {x: point[0], y: point[1]}
-                    };
-                }
-            }
-            // Increase the scan radius in a recursive fashion.
-            rIncrease += rPrev;
-            rPrev = (rIncrease / 5);
-            r += (rIncrease / 2);
         }
-        // At this point we scanned the whole canvas but didn't find the color.
+
         return {
             colorFound: false
         };
+    }
+
+    static* points({x: startX, y: startY}: Point, bounds: Bounds, space = 10) {
+        const {left, right, top, bottom} = bounds;
+
+        /**
+         * Tells whether the given x-coordinate is within the bounds.
+         *
+         * @param {number} x the coordinate
+         * @return {boolean} true iff within bounds
+         */
+        function isWithinHorizontalBounds(x: number): boolean {
+            return left <= x && x <= right;
+        }
+
+        /**
+         * Tells whether the given y-coordinate is within the bounds.
+         *
+         * @param {number} y the coordinate
+         * @return {boolean} true iff within bounds
+         */
+        function isWithinVerticalBounds(y: number): boolean {
+            return bottom <= y && y <= top;
+        }
+
+        // Set of already visited points on the grid.
+        const visited = new PointQueueSet(bounds);
+
+        /**
+         * Returns all yet unvisited neighbors of the point with the given coordinates. The returned points are
+         * within the boundaries of the grid, and will also be marked as visited.
+         *
+         * @param {number} x the x-coordinate of the point
+         * @param {number} y the y-coordinate of the point
+         * @return {[number, number][]} unvisited neighbors of the point
+         */
+        function unvisitedNeighbors({x, y}: Point): Point[] {
+            const neighborsX = [x - space, x, x + space].filter(_x => isWithinHorizontalBounds(_x));
+            const neighborsY = [y - space, y, y + space].filter(_y => isWithinVerticalBounds(_y));
+            const neighbors = [];
+
+            for (const _x of neighborsX) {
+                for (const _y of neighborsY) {
+                    const neighbor = {x: _x, y: _y};
+                    if (!visited.has(neighbor)) {
+                        visited.push(neighbor);
+                        neighbors.push(neighbor);
+                    }
+                }
+            }
+
+            return neighbors;
+        }
+
+        // The queue of points yet to be visited.
+        const pending = new PointQueueSet(bounds);
+
+        // Initialize the queue with the start point. For the workings of the algorithm it is important to consider
+        // whole numbers only.
+        const startPoint = {x: Math.trunc(startX), y: Math.trunc(startY)};
+        pending.push(startPoint);
+        visited.push(startPoint);
+
+        // As long as there are still unvisited points, yield these points, mark them as visited and mark their
+        // unvisited neighbors as pending.
+        for (const next of pending) {
+            pending.push(...unvisitedNeighbors(next as unknown as Point));
+            yield next;
+        }
     }
 
     /**
@@ -723,11 +731,91 @@ type ColorQueryResult = ColorQuerySuccess | ColorQueryFailure
 
 interface ColorQuerySuccess {
     colorFound: true,
-    coordinates: { x: number, y: number }
+    coordinates: Point
 }
 
 interface ColorQueryFailure {
-    colorFound: false
+    colorFound: false;
 }
 
 type RgbColor = Uint8ClampedArray;
+
+type Point = Readonly<{ x: number, y: number }>;
+
+interface Bounds {
+    left,
+    right,
+    top,
+    bottom: number
+}
+
+/**
+ * Specialization of sets intended for managing coordinates of points (pairs of whole numbers) on a two-dimensional
+ * integer grid. Duplicate elimination is performed by checking structural equality rather than referential equality.
+ * This means, two pairs of numbers `p1 = [x1,y1]` and `p2 = [x2,y2]` are considered equal iff `x1 === x2` and
+ * `y1 === y2` rather than checking if the references point to the same object in memory (`p1 === p2`).
+ */
+class PointQueueSet {
+    private readonly _width: number;
+    private readonly _offsetX: number;
+    private readonly _offsetY: number;
+    private readonly _workingSet: Set<number>;
+
+    /**
+     * Constructs a new set. It manages points on an a two-dimensional integer grid with the given boundaries.
+     *
+     * @param {{left: number, right: number, top: number, bottom: number}} boundaries boundaries of the grid
+     */
+    constructor(boundaries: Bounds) {
+        const left = Math.trunc(boundaries.left);
+        const right = Math.trunc(boundaries.right);
+        this._width = right - left;
+        this._offsetX = left;
+        this._offsetY = Math.trunc(boundaries.bottom);
+        this._workingSet = new Set();
+    }
+
+    _serialize({x, y}: Point): number {
+        // JavaScript Sets use reference equality for objects, and value equality for primitive types. We want to manage
+        // pairs of whole numbers in terms of value equality, so we have to define a canonical enumeration for pairs of
+        // numbers, and identify a pair by its unique number in the enumeration.
+        return ((x - this._offsetX) * this._width) + (y - this._offsetY);
+    }
+
+    _deserialize(n: number): Point {
+        const x = Math.trunc(n / this._width) + this._offsetX;
+        const y = (n % this._width) + this._offsetY;
+        return {x, y};
+    }
+
+    /**
+     * Adds the given points to the end of the queue, unless a point is already present in the queue.
+     *
+     * @param {[number, number]} points the points to add
+     */
+    push(...points: Point[]): void {
+        for (const point of points) {
+            this._workingSet.add(this._serialize(point));
+        }
+    }
+
+    /**
+     * Tells whether the given point is contained in the set.
+     *
+     * @param {[number, number]} point the point to check
+     * @return {boolean} `true` iff the `point` is contained in the set
+     */
+    has(point: Point): boolean {
+        return this._workingSet.has(this._serialize(point));
+    }
+
+    [Symbol.iterator]() {
+        const iter = this._workingSet[Symbol.iterator]();
+        return {
+            next: () => {
+                const {done, value} = iter.next();
+                return done ? {done} : {done, value: this._deserialize(value)};
+            }
+        };
+    }
+}
