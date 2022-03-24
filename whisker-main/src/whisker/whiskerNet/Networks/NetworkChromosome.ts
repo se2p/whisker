@@ -180,10 +180,16 @@ export abstract class NetworkChromosome extends Chromosome {
     abstract clone();
 
     /**
+     * Determines how a novel connection is added to the network.
+     * @param connection the connection to add.
+     */
+    public abstract addConnection(connection: ConnectionGene): void;
+
+    /**
      * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
      * @param sprites a map which maps each sprite to its input feature vector.
      */
-    protected updateInputNodes(sprites: Map<string, Map<string, number>>): void {
+    private updateInputNodes(sprites: Map<string, Map<string, number>>): void {
         let updated = false;
         sprites.forEach((spriteFeatures, spriteKey) => {
 
@@ -197,7 +203,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     const iNode = new InputNode(id, spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
                     this.allNodes.push(iNode);
-                })
+                });
                 this.inputNodes.set(spriteKey, spriteNodes);
             } else {
                 // We haven't encountered a new Sprite, but we still have to check
@@ -235,6 +241,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                 const classificationNode = new ClassificationNode(id, event, ActivationFunction.SIGMOID);
                 this.allNodes.push(classificationNode);
+                this.connectNodeToInputNodes(classificationNode);
             }
             // Check if we also have to add regression nodes.
             if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
@@ -244,6 +251,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
                     this.allNodes.push(regressionNode);
+                    this.connectNodeToInputNodes(regressionNode);
                 }
             }
         }
@@ -253,6 +261,26 @@ export abstract class NetworkChromosome extends Chromosome {
         }
     }
 
+    /**
+     * Connects a given node to all input nodes, while randomly enabling the created connections.
+     * @param node the node to add
+     */
+    private connectNodeToInputNodes(node: NodeGene): void {
+        for (const sprite of this.inputNodes.keys()) {
+            for (const iNode of this.inputNodes.get(sprite).values()) {
+                const weight = this._random.nextDoubleMinMax(-1, 1);
+                const enabled = node instanceof RegressionNode ? true : this._random.randomBoolean();
+                const connection = new ConnectionGene(iNode, node, weight, enabled, 0, false);
+                this.addConnection(connection);
+            }
+        }
+    }
+
+    /**
+     * Fetches the ID of a functional Node, i.e. a non-Hidden node.
+     * @param featureID the featureID of the node whose id should be extracted.
+     * @returns the found ID.
+     */
     private static getNonHiddenNodeId(featureID: string): number {
         if (NeatPopulation.nodeToId.has(featureID)) {
             return NeatPopulation.nodeToId.get(featureID);
@@ -561,7 +589,7 @@ export abstract class NetworkChromosome extends Chromosome {
 
         const renderedEdges = edges.join('\n');
         const graphConfigs = "\trankdir = BT;\n\tranksep = 10;";
-        return `digraph ScratchProgram {\n${graphConfigs}\n${renderedEdges}\n${minRanks}\n${maxRanks}\n}`;
+        return `digraph Network {\n${graphConfigs}\n${renderedEdges}\n${minRanks}\n${maxRanks}\n}`;
     }
 
     /**

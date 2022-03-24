@@ -16,6 +16,7 @@ import {Container} from "../utils/Container";
 import {ParameterType} from "../testcase/events/ParameterType";
 import {ScoreFitness} from "./NetworkFitness/ScoreFitness";
 import cloneDeep from "lodash.clonedeep";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 
 export class NetworkExecutor {
 
@@ -96,6 +97,7 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout.
         const startTime = Date.now();
+        const statementTarget = network.targetFitness as StatementFitnessFunction;
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm)
@@ -129,9 +131,10 @@ export class NetworkExecutor {
                 }
 
                 // Choose the event with the highest probability according to the softmax values
-                const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-                const max = Math.max(...output);
-                eventIndex = output.indexOf(max);
+                const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+                const mostProbablePair = [...eventProbabilities.entries()].reduce(
+                    (pV, cV) => cV[1] > pV [1] ? cV : pV);
+                eventIndex = this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
             }
 
             // Select the event matching, set required parameters and execute it.
@@ -147,6 +150,14 @@ export class NetworkExecutor {
             this.recordActivationTrace(network, stepCount);
 
             stepCount++;
+
+            // Check if we have reached our selected target and stop if this is the case.
+            if(statementTarget !== undefined) {
+                const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
+                if(currentCoverage.has(statementTarget.getTargetNode().id)){
+                    break;
+                }
+            }
         }
 
         // Set score and play time.
@@ -286,7 +297,7 @@ export class NetworkExecutor {
         if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
             network.updateActivationTrace(stepCount);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            network.certainty.set(stepCount, probabilities.reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
+            network.certainty.set(stepCount, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
         }
     }
 

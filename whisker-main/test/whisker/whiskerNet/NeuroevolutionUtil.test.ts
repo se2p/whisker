@@ -69,7 +69,7 @@ describe("NeuroevolutionUtil Tests", () => {
             chromosome.activateNetwork(genInputs)
         }
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);
-        expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
+        expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toBe(1);
     });
 
     test("Test RELU activation functino", () =>{

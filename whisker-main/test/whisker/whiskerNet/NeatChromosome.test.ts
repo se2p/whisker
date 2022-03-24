@@ -14,7 +14,9 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
+import {
+    NeatChromosomeGeneratorSparse
+} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
@@ -241,16 +243,16 @@ describe('Test NetworkChromosome', () => {
             chromosome.activateNetwork(inputs)
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
-        const softmaxOutput: number[] = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
-        for (let i = 0; i < softmaxOutput.length; i++) {
-            softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
+        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
+        for (const key of softmaxOutput.keys()) {
+            softmaxOutput.set(key, Number(softmaxOutput.get(key).toFixed(3)));
         }
         expect(chromosome.outputNodes[0].nodeValue).toEqual(0.6);
         expect(chromosome.outputNodes[1].nodeValue).toEqual(0.2);
         expect(chromosome.outputNodes[2].nodeValue).toEqual(0.7)
         expect(chromosome.outputNodes[3].nodeValue).toEqual(2.8)
-        expect(softmaxOutput).toEqual([0.599, 0.401]);
-        expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
+        expect([...softmaxOutput.values()]).toEqual([0.599, 0.401]);
+        expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
 
     test('Network activation without hidden layer and novel inputs', () => {
@@ -360,9 +362,9 @@ describe('Test NetworkChromosome', () => {
             chromosome.activateNetwork(inputs)
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
-        const softmaxOutput: number[] = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
-        for (let i = 0; i < softmaxOutput.length; i++) {
-            softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
+        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
+        for (const key of softmaxOutput.keys()) {
+            softmaxOutput.set(key, Number(softmaxOutput.get(key).toFixed(3)));
         }
         expect(nodes[1].activatedFlag).toBeFalsy();
         expect(chromosome.outputNodes[0].nodeValue).toEqual(0.6);
@@ -370,8 +372,8 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.outputNodes[2].nodeValue).toEqual(0.7);
         expect(chromosome.outputNodes[3].nodeValue).toEqual(0.8);
         expect(nodes[0].activatedFlag).toBeTruthy();
-        expect(softmaxOutput).toEqual([0.45, 0.55]);
-        expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
+        expect([...softmaxOutput.values()]).toEqual([0.45, 0.55]);
+        expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
 
     test('Network activation with hidden layer', () => {
@@ -423,9 +425,9 @@ describe('Test NetworkChromosome', () => {
             chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
-        const softmaxOutput: number[] = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
-        for (let i = 0; i < softmaxOutput.length; i++) {
-            softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3));
+        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
+        for (const key of softmaxOutput.keys()) {
+            softmaxOutput.set(key, Number(softmaxOutput.get(key).toFixed(3)));
         }
         expect(hiddenNode.nodeValue).toEqual(1.4);
         expect(Number(hiddenNode.activationValue.toFixed(3))).toEqual(0.999);
@@ -433,8 +435,8 @@ describe('Test NetworkChromosome', () => {
         expect(Number(deepHiddenNode.activationValue.toFixed(3))).toEqual(0.980);
         expect(Number(nodes[7].nodeValue.toFixed(3))).toEqual(1.082);
         expect(nodes[6].nodeValue).toEqual(0.6);
-        expect(softmaxOutput).toEqual([0.382, 0.618]);
-        expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
+        expect([...softmaxOutput.values()]).toEqual([0.382, 0.618]);
+        expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
 
     test('Network activation with recurrent connections', () => {
@@ -494,8 +496,8 @@ describe('Test NetworkChromosome', () => {
         chromosome.activateNetwork(inputs);
         const secondOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
         chromosome.activateNetwork(inputs);
-        expect(Math.round(firstOutput.reduce((a, b) => a + b))).toEqual(1);
-        expect(Math.round(secondOutput.reduce((a, b) => a + b))).toEqual(1);
+        expect(Math.round([...firstOutput.values()].reduce((a, b) => a + b))).toEqual(1);
+        expect(Math.round([...secondOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
 
     test("Test the recurrent Network check", () => {
@@ -567,17 +569,39 @@ describe('Test NetworkChromosome', () => {
         const oldOutputNodesSize = chromosome.outputNodes.length;
         const oldRegressionNodesSize = chromosome.regressionNodes.size;
         const oldMapSize = NeatPopulation.nodeToId.size;
+        const oldConnectionSize = chromosome.connections.length;
         chromosome.updateOutputNodes([new MouseMoveEvent()]);
         chromosome2.updateOutputNodes([new MouseMoveEvent()]);
         chromosome3.updateOutputNodes([new KeyPressEvent('up arrow')])
         expect(chromosome.allNodes.length).toBeGreaterThan(oldNodeSize);
         expect(chromosome.outputNodes.length).toBeGreaterThan(oldOutputNodesSize);
         expect(chromosome.regressionNodes.size).toBeGreaterThan(oldRegressionNodesSize);
+        expect(chromosome.connections.length).toBeGreaterThan(oldConnectionSize);
         expect(NeatPopulation.nodeToId.size).toBe(oldMapSize + 5);
         expect(chromosome.outputNodes[chromosome.outputNodes.length - 1].uID).toEqual(
             chromosome2.outputNodes[chromosome2.outputNodes.length - 1].uID);
         expect(chromosome.outputNodes[chromosome.outputNodes.length - 1].uID).not.toEqual(
             chromosome3.outputNodes[chromosome3.outputNodes.length - 1].uID);
+    });
+
+    test("Test setUpInputs", () => {
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
+            [new WaitEvent()], 0.5);
+        chromosome = generator.get();
+        genInputs.set("New", new Map<string, number>());
+        genInputs.get("New").set("First", 1);
+        genInputs.get("New").set("Second", 2);
+        genInputs.get("Sprite2").set("NewFeature", 10);
+        const oldAllNodesSize = chromosome.allNodes.length;
+        const spriteFeatureSize = chromosome.inputNodes.size;
+        const oldSprite2FeatureSize = chromosome.inputNodes.get("Sprite2").size;
+        const oldConnections = chromosome.connections.length;
+        chromosome.setUpInputs(genInputs);
+        expect(oldAllNodesSize).toBeLessThan(chromosome.allNodes.length);
+        expect(spriteFeatureSize).toBeLessThan(chromosome.inputNodes.size);
+        expect(oldSprite2FeatureSize).toBeLessThan(chromosome.inputNodes.get("Sprite2").size);
+        expect(oldConnections).toEqual(chromosome.connections.length);
+
     });
 
     test("Test toString", () => {

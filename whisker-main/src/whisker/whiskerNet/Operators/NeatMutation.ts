@@ -212,27 +212,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             const posNeg = this._random.randomBoolean() ? +1 : -1;
             const weight = posNeg * this._random.nextDouble() * this._perturbationPower;
             const newConnection = new ConnectionGene(node1, node2, weight, true, 0, recurrentConnection);
-            const innovation = NeatPopulation.findInnovation(newConnection, 'newConnection');
-
-            // Check if this innovation has occurred before.
-            if (innovation) {
-                newConnection.innovation = innovation.firstInnovationNumber;
-            } else {
-                const innovationProperties: InnovationProperties = {
-                    type: 'newConnection',
-                    idSourceNode: newConnection.source.uID,
-                    idTargetNode: newConnection.target.uID,
-                    firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
-                    recurrent: newConnection.isRecurrent
-                };
-                const newInnovation = Innovation.createInnovation(innovationProperties);
-                NeatPopulation.innovations.push(newInnovation);
-                newConnection.innovation = newInnovation.firstInnovationNumber;
-            }
-            chromosome.connections.push(newConnection);
-            if (recurrentConnection) {
-                chromosome.isRecurrent = true;
-            }
+            chromosome.addConnection(newConnection);
         }
     }
 
