@@ -290,7 +290,7 @@ export class WhiskerSearchConfiguration {
             case 'events':
                 return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
             case 'evaluations':
-                return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
+                return new FitnessEvaluationStoppingCondition(stoppingCondition['maxEvaluations']);
             case "combined": {
                 const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
                 return new OneOfStoppingCondition(...conditions)

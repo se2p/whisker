@@ -161,6 +161,14 @@ export class ExplorativeNEAT extends NEAT {
             // or depleted the search budget.
             this.updateArchive(network);
 
+            // Check if we just covered the greenFlag event, and if so save the number of blocks that are covered
+            // by only clicking on the greenFlag. This is ensured since we stop the execution as soon as we covered
+            // the target statement and prioritise the greenFlag as target statement.
+            if(this._fitnessFunctionMap.get(this._targetKey).getTargetNode().block.opcode === 'event_whenflagclicked' &&
+               this._archive.has(this._targetKey)){
+                StatisticsCollector.getInstance().greenFlagCovered = this._archive.size;
+            }
+
             // Update the map of the most promising fitness targets
             this.updateMostPromisingMap(network);
 
