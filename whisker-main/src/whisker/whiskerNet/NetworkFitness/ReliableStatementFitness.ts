@@ -37,6 +37,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
         network.score = ScoreFitness.gatherPoints(Container.vm);
+        ReliableStatementFitness.updateUncoveredMap(network);
         const fitness = network.targetFitness.getFitness(network);
         executor.resetState();
 
@@ -78,15 +79,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             }
             executor.resetState();
 
-            // Increase the score by 1 if we covered the given statement in the executed scenario as well.
-            for (const [statement, coverCount] of network.openStatementTargets.entries()) {
-                if (statement.isCovered(network)) {
-                    network.openStatementTargets.set(statement, coverCount + 1);
-                    if (statement === network.targetFitness) {
-                        network.fitness++;
-                    }
-                }
-            }
+            ReliableStatementFitness.updateUncoveredMap(network);
             executor.resetState();
         }
         // Reset to the old Scratch seed and network attributes.
@@ -96,6 +89,23 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         network.coverage = coverage;
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
         Container.debugLog(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`)
+    }
+
+    /**
+     * Updates the map of uncovered targets by the amount of times the given network was able to cover a respective
+     * target.
+     * @param network the network chromosome that has finished its playthrough.
+     */
+    private static updateUncoveredMap(network: NetworkChromosome): void {
+        // Increase the score by 1 if we covered the given statement in the executed scenario as well.
+        for (const [statement, coverCount] of network.openStatementTargets.entries()) {
+            if (statement.isCovered(network)) {
+                network.openStatementTargets.set(statement, coverCount + 1);
+                if (statement === network.targetFitness) {
+                    network.fitness++;
+                }
+            }
+        }
     }
 
     public identifier(): string {
