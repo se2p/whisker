@@ -76,8 +76,8 @@ export class ExplorativeNEAT extends NEAT {
                     Container.debugLog(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
                     break;
                 }
-                this.reportOfCurrentIteration();
                 this._population.updatePopulationStatistics();
+                this.reportOfCurrentIteration();
                 this._population.evolve();
 
                 // Extract the remaining openStatements and set them for the new population of networks.
