@@ -10,21 +10,12 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * The seeds used to test if a given statement can be covered reliably.
-     */
-    private readonly repetitionSeeds: number[];
-
-    /**
      * Random number generator.
      */
     private random: Randomness
 
     constructor(private _stableCount: number) {
         this.random = Randomness.getInstance();
-        // Add another seed to ensure that we do not get stuck due to very rare occurring program states that originate
-        // from certain random seeds and in which a targeted statement is simply not reachable.
-        this.repetitionSeeds = Array(this.stableCount + 1).fill(0).map(
-            () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
     }
 
     /**
@@ -65,9 +56,11 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         const trace = network.trace.clone()
         const coverage = new Set(network.coverage);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
+        const repetitionSeeds = Array(this.stableCount).fill(0).map(
+                () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
 
         // Iterate over each seed and calculate the achieved fitness
-        for (const seed of this.repetitionSeeds) {
+        for (const seed of repetitionSeeds) {
             Randomness.setScratchSeed(seed, true);
             const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
             if (eventSelection === 'random') {

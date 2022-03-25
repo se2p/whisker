@@ -103,7 +103,7 @@ export class StaticSuite extends NetworkSuite {
                 variableParameter = [Number(parameter[1])];
                 event = new KeyPressEvent(parameter[0], Number(parameter[1]));
             } else if (statement.includes('mouseDown')) {
-                event = new MouseDownEvent(Boolean(parameter[0]));
+                event = new MouseDownEvent(Number(parameter[0]));
                 variableParameter = [];
             } else if (statement.includes('mouseMove')) {
                 event = new MouseMoveEvent(Number(parameter[0]), Number(parameter[1]));

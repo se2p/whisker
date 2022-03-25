@@ -148,7 +148,10 @@ export class NeuroevolutionScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_mousedown': {
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
-                eventList.push(new MouseDownEvent(!isMouseDown));
+                // Only add the event if the mouse is currently not pressed
+                if(!isMouseDown) {
+                    eventList.push(new MouseDownEvent());
+                }
                 break;
             }
             case 'sensing_askandwait':

@@ -138,7 +138,9 @@ export class NetworkExecutor {
                     eventIndex = this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
                 }
                 else{
-                    Container.debugLog("FALLBACK TO WAIT", network.toString());
+                    console.log(`Available Events: ${this.availableEvents.map(event => event.stringIdentifier())}`)
+                    console.log(`Outputs Off?: ${network.outputNodes.every(node => !node.activatedFlag)}`)
+                    console.log(`Working Network? ${workingNetwork}`)
                     eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
                 }
             }
@@ -371,5 +373,8 @@ export class NetworkExecutor {
             this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
             this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop']
         }
+
+        this._vmWrapper.inputs.resetMouse();
+        this._vmWrapper.inputs.resetKeyboard();
     }
 }
