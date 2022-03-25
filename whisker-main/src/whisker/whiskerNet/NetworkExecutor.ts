@@ -132,15 +132,14 @@ export class NetworkExecutor {
 
                 // Choose the event with the highest probability according to the softmax values
                 const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-                if(eventProbabilities.size > 0) {
+                if (eventProbabilities.size > 0) {
                     const mostProbablePair = [...eventProbabilities.entries()].reduce(
                         (pV, cV) => cV[1] > pV [1] ? cV : pV);
-                    eventIndex = this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
-                }
-                else{
-                    console.log(`Available Events: ${this.availableEvents.map(event => event.stringIdentifier())}`)
-                    console.log(`Outputs Off?: ${network.outputNodes.every(node => !node.activatedFlag)}`)
-                    console.log(`Working Network? ${workingNetwork}`)
+                    eventIndex = this.availableEvents.findIndex(
+                        event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
+                } else {
+                    // It can happen that all output nodes of corresponding available events do not have an active path
+                    // starting from the input nodes, i.e. they did not get activated. In that case we just wait.
                     eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
                 }
             }
@@ -160,9 +159,9 @@ export class NetworkExecutor {
             stepCount++;
 
             // Check if we have reached our selected target and stop if this is the case.
-            if(statementTarget !== undefined) {
+            if (statementTarget !== undefined) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
-                if(currentCoverage.has(statementTarget.getTargetNode().id)){
+                if (currentCoverage.has(statementTarget.getTargetNode().id)) {
                     break;
                 }
             }
@@ -305,11 +304,8 @@ export class NetworkExecutor {
         if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
             network.updateActivationTrace(stepCount);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            if(probabilities.size > 0) {
-                network.certainty.set(stepCount, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
-            }
-            else{
-                network.certainty.set(stepCount, 1);
+            if (probabilities.size > 0) {
+                network.uncertainty.set(stepCount, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
             }
         }
     }

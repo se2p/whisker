@@ -413,7 +413,7 @@ export class StatisticsCollector {
         this.networks.sort((a, b) => b.fitness - a.fitness);
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];
-            const certaintyValues = [...network.certainty.values()];
+            const certaintyValues = [...network.uncertainty.values()];
             const certainty = certaintyValues.reduce((pv, cv) => pv + cv, 0) / certaintyValues.length;
             const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
                 this._coveredFitnessFunctionsCount, network.score, network.playTime, network.surpriseAdequacyStep,
