@@ -132,9 +132,15 @@ export class NetworkExecutor {
 
                 // Choose the event with the highest probability according to the softmax values
                 const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-                const mostProbablePair = [...eventProbabilities.entries()].reduce(
-                    (pV, cV) => cV[1] > pV [1] ? cV : pV);
-                eventIndex = this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
+                if(eventProbabilities.size > 0) {
+                    const mostProbablePair = [...eventProbabilities.entries()].reduce(
+                        (pV, cV) => cV[1] > pV [1] ? cV : pV);
+                    eventIndex = this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
+                }
+                else{
+                    Container.debugLog("FALLBACK TO WAIT", network.toString());
+                    eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
+                }
             }
 
             // Select the event matching, set required parameters and execute it.
@@ -297,7 +303,12 @@ export class NetworkExecutor {
         if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
             network.updateActivationTrace(stepCount);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            network.certainty.set(stepCount, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
+            if(probabilities.size > 0) {
+                network.certainty.set(stepCount, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
+            }
+            else{
+                network.certainty.set(stepCount, 1);
+            }
         }
     }
 
