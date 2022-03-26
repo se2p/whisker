@@ -27,7 +27,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
-        network.score = ScoreFitness.gatherPoints(Container.vm);
+        console.log(network.score);
         ReliableStatementFitness.updateUncoveredMap(network);
         const fitness = network.targetFitness.getFitness(network);
         executor.resetState();
@@ -53,6 +53,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Save some values to recover them later
         const originalSeed = Randomness._scratchSeed;
         const originalPlayTime = network.playTime;
+        const originalScore = network.score;
         const trace = network.trace.clone()
         const coverage = new Set(network.coverage);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
@@ -78,6 +79,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Reset to the old Scratch seed and network attributes.
         Randomness.setScratchSeed(originalSeed, true);
         network.playTime = originalPlayTime;
+        network.score = originalScore;
         network.trace = trace;
         network.coverage = coverage;
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
