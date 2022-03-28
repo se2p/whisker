@@ -626,12 +626,11 @@ export abstract class ScratchEventExtractor {
         return this.fuzzyFindColor(sprite, thisSprite, color, bounds, renderer);
     }
 
-    static fuzzyFindColor(start: Point, touchables, color, bounds: Bounds, renderer): ColorQueryResult {
-        const targetColor = Cast.toRgbColorList(color);
+    static fuzzyFindColor(start: Point, touchables, color: RgbColor, bounds: Bounds, renderer): ColorQueryResult {
         for (const {x, y} of ScratchEventExtractor.points(start, bounds)) {
             const point = twgl.v3.create(x, y);
             const currentColor = renderer.constructor.sampleColor3b(point, touchables);
-            if (ScratchEventExtractor.isColorMatching(targetColor, currentColor)) {
+            if (ScratchEventExtractor.isColorMatching(color, currentColor)) {
                 return {
                     colorFound: true,
                     coordinates: {x, y}
