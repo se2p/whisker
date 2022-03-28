@@ -58,8 +58,6 @@ export type ScratchBlocks =
     | Scratch3SoundBlocks
 
 
-const MAX_SAMPLE_POINTS = 48 * 36; // based on the stage dimensions of 480 × 360
-
 export abstract class ScratchEventExtractor {
 
     protected availableTextSnippets: string[] = [];
@@ -634,9 +632,10 @@ export abstract class ScratchEventExtractor {
         return width * height;
     }
 
-    static fuzzyFindColor(start: Point, touchables: Touchable[], color: RgbColor, bounds: Bounds, renderer): ColorQueryResult {
+    private static fuzzyFindColor(start: Point, touchables: Touchable[], color: RgbColor, bounds: Bounds, renderer): ColorQueryResult {
         const area = ScratchEventExtractor.area(bounds);
-        const dynamicSpace = Math.trunc((area / MAX_SAMPLE_POINTS) / 2);
+        const maxSamples = 48 * 36; // Arbitrary, but based on the stage dimensions of 480 × 360
+        const dynamicSpace = Math.trunc((area / maxSamples) / 2);
         const space = Math.max(1, dynamicSpace);
 
         for (const {x, y} of ScratchEventExtractor.points(start, bounds, space)) {
@@ -655,7 +654,7 @@ export abstract class ScratchEventExtractor {
         };
     }
 
-    static* points({x: startX, y: startY}: Point, bounds: Bounds, space = 10): IterableIterator<Point> {
+    private static* points({x: startX, y: startY}: Point, bounds: Bounds, space = 10): IterableIterator<Point> {
         const {left, right, top, bottom} = bounds;
 
         /**
@@ -749,12 +748,15 @@ interface ColorQueryFailure {
 
 type RgbColor = Uint8ClampedArray;
 
-type Point = Readonly<{ x: number, y: number }>;
+interface Point {
+    x: number,
+    y: number
+}
 
 interface Bounds {
-    left,
-    right,
-    top,
+    left: number,
+    right: number,
+    top: number,
     bottom: number
 }
 
@@ -764,15 +766,21 @@ interface Touchable {
 }
 
 /**
- * Specialization of sets intended for managing coordinates of points (pairs of whole numbers) on a two-dimensional
- * integer grid. Duplicate elimination is performed by checking structural equality rather than referential equality.
- * This means, two pairs of numbers `p1 = [x1,y1]` and `p2 = [x2,y2]` are considered equal iff `x1 === x2` and
- * `y1 === y2` rather than checking if the references point to the same object in memory (`p1 === p2`).
+ * Specialization of sets intended for managing `Point`s on a two-dimensional integer grid. Duplicate elimination is
+ * performed by checking structural equality rather than referential equality. This means, two points `p1` and `p2`
+ * are considered equal iff `p1.x === p2.x` and `p1.y === p2.y` rather than checking if the references point to the same
+ * object in memory (`p1 === p2`).
  */
 class PointQueueSet {
+
+    // The width of the integer grid.
     private readonly _width: number;
+
+    // Offsets used for (de)serialization of `Point`s.
     private readonly _offsetX: number;
     private readonly _offsetY: number;
+
+    // Internal backing set that maintains a `Point` serialized as integer.
     private readonly _workingSet: Set<number>;
 
     /**
@@ -805,7 +813,7 @@ class PointQueueSet {
     /**
      * Adds the given points to the end of the queue, unless a point is already present in the queue.
      *
-     * @param {[number, number]} points the points to add
+     * @param {{x, y}[]} points the points to add
      */
     push(...points: Point[]): void {
         for (const point of points) {
@@ -816,7 +824,7 @@ class PointQueueSet {
     /**
      * Tells whether the given point is contained in the set.
      *
-     * @param {[number, number]} point the point to check
+     * @param {{x, y}} point the point to check
      * @return {boolean} `true` iff the `point` is contained in the set
      */
     has(point: Point): boolean {
