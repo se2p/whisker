@@ -27,7 +27,6 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
-        console.log(network.score);
         ReliableStatementFitness.updateUncoveredMap(network);
         const fitness = network.targetFitness.getFitness(network);
         executor.resetState();

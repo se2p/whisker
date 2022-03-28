@@ -12,49 +12,12 @@ import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
-import {TypeTextEvent} from "./events/TypeTextEvent";
-import {WaitEvent} from "./events/WaitEvent";
-import Arrays from "../utils/Arrays";
+import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
 
-export class NeuroevolutionScratchEventExtractor extends ScratchEventExtractor {
+export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
     constructor(vm: VirtualMachine) {
         super(vm);
-    }
-
-    /**
-     * DynamicScratchEvent extractor approach but without including DragSpriteEvents.
-     * @param vm the state of the Scratch-Project from which events will be extracted.
-     */
-    public extractEvents(vm: VirtualMachine): ScratchEvent[] {
-        let eventList: ScratchEvent[] = [];
-
-        for (const target of vm.runtime.targets) {
-            for (const scriptId of target.blocks.getScripts()) {
-                const activeScript = vm.runtime.threads.find(script => script.topBlock === scriptId);
-                const hat = target.blocks.getBlock(scriptId);
-
-                // If the script is currently active we skip the hat-block and traverse downwards in the search for an
-                // event handler.
-                if (activeScript !== undefined) {
-                    this.traverseBlocks(target, target.blocks.getBlock(hat.next), eventList);
-                }
-                // Otherwise, we add the hat block to the set of events.
-                else {
-                    eventList.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
-                }
-            }
-        }
-
-        if (eventList.some(event => event instanceof TypeTextEvent)) {
-            eventList = eventList.filter(event => event instanceof TypeTextEvent);
-        }
-
-        // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
-        // of -1.
-        eventList.push(new WaitEvent());
-        const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
-        return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 
     /**
