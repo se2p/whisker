@@ -93,11 +93,13 @@ export class NetworkExecutor {
         // Initialise required variables.
         network.codons = [];
         let stepCount = 0;
-        let workingNetwork = false;
+        let workingNetwork = true;
 
         // Play the game until we reach a GameOver state or the timeout.
         const startTime = Date.now();
         const statementTarget = network.targetFitness as StatementFitnessFunction;
+        const isGreenFlag = statementTarget !== undefined &&
+            statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm);
@@ -115,10 +117,11 @@ export class NetworkExecutor {
 
             // Select the next event...
             let eventIndex: number;
-            if (this._eventSelection === 'random') {
+            if (isGreenFlag) {
+                eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
+            } else if (this._eventSelection === 'random') {
                 // Choose a random event index.
                 eventIndex = this._random.nextInt(0, this.availableEvents.length);
-                workingNetwork = true   // Set to true since we did not activate the network...
             } else {
                 if (network.isRecurrent) {
                     workingNetwork = network.activateNetwork(spriteFeatures);
@@ -151,7 +154,7 @@ export class NetworkExecutor {
             if (nextEvent === undefined) {
                 nextEvent = this.availableEvents.find(event => event instanceof WaitEvent);
             }
-            await this.executeNextEvent(network, nextEvent, events);
+            await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
 
             // Record the activation trace.
             this.recordActivationTrace(network, stepCount);
@@ -245,12 +248,15 @@ export class NetworkExecutor {
      * @param network determines the next action to take.
      * @param nextEvent the event that should be executed next.
      * @param events saves a trace of executed events.
+     * @param greenFlag determines whether the next event is based on the greenFlag event as a targetStatement. If
+     * so we do not want to add any parameters and just wait for 1 Step.
      */
-    private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[]) {
+    private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[],
+                                   greenFlag = false): Promise<void> {
         const parameters = [];
         let setParameter: number[]
         const argType: ParameterType = this._eventSelection as ParameterType;
-        if (nextEvent.numSearchParameter() > 0) {
+        if (nextEvent.numSearchParameter() > 0 && !greenFlag) {
             parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
             setParameter = nextEvent.setParameter(parameters, argType);
         }
