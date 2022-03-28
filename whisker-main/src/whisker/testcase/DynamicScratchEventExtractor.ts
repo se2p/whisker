@@ -24,6 +24,7 @@ import {WaitEvent} from "./events/WaitEvent";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {TypeTextEvent} from "./events/TypeTextEvent";
 import Arrays from "../utils/Arrays";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
@@ -34,15 +35,17 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
 
     public extractEvents(vm: VirtualMachine): ScratchEvent[] {
         let eventList: ScratchEvent[] = [];
+        const lastStepCoveredBlocks: Set<string> = vm.runtime.traceInfo.tracer.lastStepCoverage;
 
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.blocks.getScripts()) {
-                const activeScript = vm.runtime.threads.find(script => script.topBlock === scriptId);
+                const activeScript = vm.runtime.threads.some(script => script.topBlock === scriptId) ||
+                    DynamicScratchEventExtractor.scriptHatExecuted(target, scriptId, lastStepCoveredBlocks);
                 const hat = target.blocks.getBlock(scriptId);
 
                 // If the script is currently active we skip the hat-block and traverse downwards in the search for an
                 // event handler.
-                if (activeScript !== undefined) {
+                if (activeScript) {
                     this.traverseBlocks(target, target.blocks.getBlock(hat.next), eventList);
                 }
                 // Otherwise, we add the hat block to the set of events.
@@ -59,7 +62,27 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
         // of -1.
         eventList.push(new WaitEvent());
-        const equalityFunction = (a: ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         return Arrays.distinctByComparator(eventList, equalityFunction);
+    }
+
+    /**
+     * Determines whether the hat block of a script has been executed in the previous step and should therefore be
+     * treated as an active script.
+     * @param target the hat blocks of all scripts in a given Scratch-Program.
+     * @param scriptId the script ID of the current block.
+     * @param lastCovered the set of blocks that have been covered in the previous step.
+     * @returns boolean indicating whether this script is active.
+     */
+    private static scriptHatExecuted(target: RenderedTarget, scriptId: string, lastCovered: Set<string>): boolean {
+        const threadHats: string[] = target.sprite.blocks._scripts;
+        for (const threadScript of threadHats) {
+            for (const covered of lastCovered) {
+                if (covered.includes(threadScript) && covered.includes(scriptId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
