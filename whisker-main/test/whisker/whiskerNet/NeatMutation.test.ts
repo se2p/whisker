@@ -125,7 +125,7 @@ describe("Test NeatMutation", () => {
         mutation.mutateAddConnection(neatChromosome2, 30);
         }
         // Equal if by chance an already established connection is chosen
-        expect(originalConnectionsSize).toBeLessThan(neatChromosome1.connections.length);
+        expect(originalConnectionsSize).toBeLessThanOrEqual(neatChromosome1.connections.length);
         expect(initialInnovations).toBeLessThan(NeatPopulation.innovations.length);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(neatChromosome1.connections.length);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(neatChromosome2.connections.length);
