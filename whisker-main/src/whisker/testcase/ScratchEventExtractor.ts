@@ -58,6 +58,8 @@ export type ScratchBlocks =
     | Scratch3SoundBlocks
 
 
+const MAX_SAMPLE_POINTS = 48 * 36; // based on the stage dimensions of 480 × 360
+
 export abstract class ScratchEventExtractor {
 
     protected availableTextSnippets: string[] = [];
@@ -626,8 +628,18 @@ export abstract class ScratchEventExtractor {
         return this.fuzzyFindColor(sprite, thisSprite, color, bounds, renderer);
     }
 
-    static fuzzyFindColor(start: Point, touchables, color: RgbColor, bounds: Bounds, renderer): ColorQueryResult {
-        for (const {x, y} of ScratchEventExtractor.points(start, bounds)) {
+    private static area({right, left, top, bottom}: Bounds): number {
+        const width = Math.ceil(right - left);
+        const height = Math.ceil(top - bottom);
+        return width * height;
+    }
+
+    static fuzzyFindColor(start: Point, touchables: Touchable[], color: RgbColor, bounds: Bounds, renderer): ColorQueryResult {
+        const area = ScratchEventExtractor.area(bounds);
+        const dynamicSpace = Math.trunc((area / MAX_SAMPLE_POINTS) / 2);
+        const space = Math.max(1, dynamicSpace);
+
+        for (const {x, y} of ScratchEventExtractor.points(start, bounds, space)) {
             const point = twgl.v3.create(x, y);
             const currentColor = renderer.constructor.sampleColor3b(point, touchables);
             if (ScratchEventExtractor.isColorMatching(color, currentColor)) {
@@ -643,7 +655,7 @@ export abstract class ScratchEventExtractor {
         };
     }
 
-    static* points({x: startX, y: startY}: Point, bounds: Bounds, space = 10) {
+    static* points({x: startX, y: startY}: Point, bounds: Bounds, space = 10): IterableIterator<Point> {
         const {left, right, top, bottom} = bounds;
 
         /**
@@ -707,7 +719,7 @@ export abstract class ScratchEventExtractor {
         // As long as there are still unvisited points, yield these points, mark them as visited and mark their
         // unvisited neighbors as pending.
         for (const next of pending) {
-            pending.push(...unvisitedNeighbors(next as unknown as Point));
+            pending.push(...unvisitedNeighbors(next));
             yield next;
         }
     }
@@ -744,6 +756,11 @@ interface Bounds {
     right,
     top,
     bottom: number
+}
+
+interface Touchable {
+    id: number,
+    drawable: unknown
 }
 
 /**
