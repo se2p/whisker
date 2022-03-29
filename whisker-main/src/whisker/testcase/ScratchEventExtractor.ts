@@ -133,9 +133,7 @@ export abstract class ScratchEventExtractor {
         return {str, arr};
     }
 
-    private _handleTouchingColor(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
-        const events = [];
-
+    private _handleTouchingColor(target: RenderedTarget, block: ScratchBlocks, events: ScratchEvent[]): void {
         const color = ScratchEventExtractor._getColorFromBlock(target, block, "COLOR");
         // Check if the sprite that will be dragged is not already touching the sensed color.
         if (!target.isTouchingColor(color.arr)) {
@@ -146,13 +144,9 @@ export abstract class ScratchEventExtractor {
                 events.push(new DragSpriteEvent(target, x, y));
             }
         }
-
-        return events;
     }
 
-    private _handleColorTouchingColor(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
-        const events = [];
-
+    private _handleColorTouchingColor(target: RenderedTarget, block: ScratchBlocks, events: ScratchEvent[]): void {
         /*
          * https://en.scratch-wiki.info/wiki/Color_()_is_Touching_()%3F_(block)
          * The block takes two colors. The first color ("own color") must be present in the current costume of
@@ -197,8 +191,6 @@ export abstract class ScratchEventExtractor {
                 // TODO: We could try to select/force a different costume. It might contain the target color.
             }
         }
-
-        return events;
     }
 
     protected _extractEventsFromBlock(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
@@ -217,8 +209,8 @@ export abstract class ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                // eslint-disable-next-line no-prototype-builtins
-                if (fields.hasOwnProperty("KEY_OPTION")) {
+
+                if ("KEY_OPTION" in fields) {
                     eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
                 } else {
                     // TODO: The key is dynamically computed
@@ -306,11 +298,11 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case "sensing_touchingcolor": {
-                eventList.push(...this._handleTouchingColor(target, block));
+                this._handleTouchingColor(target, block, eventList);
                 break;
             }
             case 'sensing_coloristouchingcolor': {
-                eventList.push(...this._handleColorTouchingColor(target, block));
+                this._handleColorTouchingColor(target, block, eventList);
                 break;
             }
             case 'sensing_distanceto': {
@@ -405,10 +397,9 @@ export abstract class ScratchEventExtractor {
         this.availableTextSnippets.push(...ScratchEventExtractor._fixedStrings);
 
         for (const target of vm.runtime.targets) {
-            // eslint-disable-next-line no-prototype-builtins
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
-                    const snippet = this._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
+                    const snippet = ScratchEventExtractor._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
                     if (snippet != '' && !this.availableTextSnippets.includes(snippet)) {
                         this.availableTextSnippets.push(snippet);
                     }
@@ -448,30 +439,7 @@ export abstract class ScratchEventExtractor {
         return answer;
     }
 
-    private static _extractWaitDurations(target: RenderedTarget, block: ScratchBlocks): number {
-        const inputs = target.blocks.getInputs(block);
-        if (target.blocks.getOpcode(block) == 'control_wait') {
-            const op = target.blocks.getBlock(inputs.DURATION.block);
-            const field = target.blocks.getFields(op).NUM;
-            if (!field) {
-                return -1;
-            }
-            return 1000 * parseFloat(field.value);
-        } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
-            target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
-            target.blocks.getOpcode(block) == 'motion_glideto' ||
-            target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
-            const op = target.blocks.getBlock(inputs.SECS.block);
-            const field = target.blocks.getFields(op).NUM;
-            if (!field) {
-                return -1;
-            }
-            return 1000 * parseFloat(field.value);
-        }
-        return -1;
-    }
-
-    private _extractAvailableTextSnippets(target: RenderedTarget, block: ScratchBlocks): string {
+    private static _extractAvailableTextSnippets(target: RenderedTarget, block: ScratchBlocks): string {
         let availableTextSnippet = '';
         if (target.blocks.getOpcode(block) == 'operator_equals') {
             const inputs = target.blocks.getInputs(block);
@@ -496,7 +464,6 @@ export abstract class ScratchEventExtractor {
         return typeTextEventList;
     }
 
-
     /**
      * Checks if the Scratch project has a mouseMove event
      * @param vm the Scratch-VM of the project
@@ -504,8 +471,7 @@ export abstract class ScratchEventExtractor {
      */
     public hasMouseEvent(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
-            // eslint-disable-next-line no-prototype-builtins
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     if (ScratchEventExtractor._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
                         return true;
@@ -540,8 +506,7 @@ export abstract class ScratchEventExtractor {
      */
     public static hasEvents(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
-            // eslint-disable-next-line no-prototype-builtins
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
                         return true;
@@ -783,11 +748,6 @@ type ColorArr = Uint8ClampedArray;
 interface Color {
     arr: ColorArr
     str: ColorStr
-}
-
-interface Location {
-    target: Drawable;
-    coordinates: Point,
 }
 
 interface Point {
