@@ -78,7 +78,6 @@ export abstract class ScratchEventExtractor {
      */
     public abstract extractEvents(vm: VirtualMachine): ScratchEvent[];
 
-
     /**
      * Traverse downwards the block hierarchy and collect all encountered events.
      * @param target the rendered target of the vm
@@ -170,12 +169,9 @@ export abstract class ScratchEventExtractor {
                 const targetColorQuery = this._findColorOnCanvas(target, targetColor);
                 if (targetColorQuery.colorFound) {
 
-                    // The coordinates of the "target color"
+                    // The coordinates of the "target color" and the center of the current sprite.
                     const {x: targetX, y: targetY} = targetColorQuery.coordinates;
-
-                    // The coordinates of the center of the current sprite.
-                    const centerX = target.x;
-                    const centerY = target.y;
+                    const {x: centerX, y: centerY} = target;
 
                     /*
                      * We want to move the sprite such that the coordinates of the pixel with "own color" equal
@@ -389,7 +385,6 @@ export abstract class ScratchEventExtractor {
         return eventList;
     }
 
-
     /**
      * Collects all available text snippets that can be used for generating answers.
      */
@@ -564,10 +559,10 @@ export abstract class ScratchEventExtractor {
      * was successful.
      *
      * @param sprite the source sprite (will be excluded from the search)
-     * @param rgbColor the color we are searching for in [r,g,b] representation
+     * @param color the color we are searching for
      * @return the color query result
      */
-    private _findColorOnCanvas(sprite: RenderedTarget, rgbColor: Color): ColorQueryResult {
+    private _findColorOnCanvas(sprite: RenderedTarget, color: Color): ColorQueryResult {
         // Collect all touchable objects which might carry the sensed color
         const renderer = sprite.runtime.renderer;
         const touchableObjects = [];
@@ -586,7 +581,7 @@ export abstract class ScratchEventExtractor {
             bottom: renderer._yBottom
         };
 
-        return this._fuzzyFindColor(sprite, touchableObjects, rgbColor, stageBounds, renderer);
+        return this._fuzzyFindColor(sprite, touchableObjects, color, stageBounds, renderer);
     }
 
     /**
@@ -610,7 +605,7 @@ export abstract class ScratchEventExtractor {
         return this._fuzzyFindColor(sprite, thisSprite, color, bounds, renderer);
     }
 
-    private _fuzzyFindColor(start: Point, touchables: Touchable[], {arr, str}: Color, bounds: Bounds, renderer): ColorQueryResult {
+    private _fuzzyFindColor(start: Point | RenderedTarget, touchables: Touchable[], {arr, str}: Color, bounds: Bounds, renderer): ColorQueryResult {
         function isColorMatching(other: ColorArr): boolean {
             return (arr[0] & 0b11111000) === (other[0] & 0b11111000) &&
                 (arr[1] & 0b11111000) === (other[1] & 0b11111000) &&
@@ -646,6 +641,7 @@ export abstract class ScratchEventExtractor {
         for (const {x, y} of ScratchEventExtractor._points(start, bounds, space)) {
             const point = twgl.v3.create(x, y);
             const currentColor = renderer.constructor.sampleColor3b(point, touchables);
+
             if (isColorMatching(currentColor)) {
                 this._knownColors.set(str, {x, y});
 
