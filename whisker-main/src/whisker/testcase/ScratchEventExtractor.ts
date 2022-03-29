@@ -60,6 +60,8 @@ export type ScratchBlocks =
 
 export abstract class ScratchEventExtractor {
 
+    private readonly _knownColors = new Map<RgbColorString, Location>();
+
     protected availableTextSnippets: string[] = [];
     protected proceduresMap = new Map<string, ScratchEvent[]>();
     protected static _fixedStrings = ["0", "10", "Hello", this._randomText(3)];
@@ -239,6 +241,7 @@ export abstract class ScratchEventExtractor {
                     if (result.colorFound) {
                         const {x, y} = result.coordinates;
                         eventList.push(new DragSpriteEvent(target, x, y));
+                        this._knownColors.set(sensedColor, {...result, target});
                     }
                 }
                 break;
@@ -253,7 +256,8 @@ export abstract class ScratchEventExtractor {
                  * this sprite. The second color ("target color") is the color to touch.
                  */
                 const ownColor = Cast.toRgbColorList(getColorFromBlock("COLOR"));
-                const targetColor = Cast.toRgbColorList(getColorFromBlock("COLOR2"));
+                const targetColorString = getColorFromBlock("COLOR2");
+                const targetColor = Cast.toRgbColorList(targetColorString);
 
                 // We check if the sprite still needs to be dragged towards the target color, and drag it if necessary.
                 if (!target.colorIsTouchingColor(ownColor, targetColor)) {
@@ -286,6 +290,7 @@ export abstract class ScratchEventExtractor {
                             const offsetX = centerX - ownColorX;
                             const offsetY = centerY - ownColorY;
                             eventList.push(new DragSpriteEvent(target, targetX + offsetX, targetY + offsetY));
+                            this._knownColors.set(targetColorString, {...targetColorQuery, target});
                         }
                     } else {
                         // TODO: We could try to select/force a different costume. It might contain the target color.
@@ -746,7 +751,13 @@ interface ColorQueryFailure {
     colorFound: false;
 }
 
+type RgbColorString = `#${string}`;
 type RgbColor = Uint8ClampedArray;
+
+interface Location {
+    target: Drawable;
+    coordinates: Point,
+}
 
 interface Point {
     x: number,
@@ -762,8 +773,10 @@ interface Bounds {
 
 interface Touchable {
     id: number,
-    drawable: unknown
+    drawable: Drawable
 }
+
+type Drawable = unknown;
 
 /**
  * Specialization of sets intended for managing `Point`s on a two-dimensional integer grid. Duplicate elimination is
