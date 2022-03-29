@@ -83,9 +83,7 @@ export class TestExecutor {
 
         const startTime = Date.now();
         while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(availableEvents))) {
-            const start = Date.now();
             availableEvents = this._eventExtractor.extractEvents(this._vm);
-            Container.debugLog("Time: ", Date.now() - start);
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
