@@ -62,6 +62,13 @@ export class ExplorativeNEAT extends NEAT {
             this._targetIterations = 0;
             while (!this._stoppingCondition.isFinished(this)) {
                 await this.evaluateNetworks();
+                this.updateBestIndividualAndStatistics();
+
+                // Stop if we managed to cover the current target statement.
+                if (this._archive.has(this._targetKey)) {
+                    Container.debugLog(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
+                    break;
+                }
 
                 // Switch target if other statements than the currently selected one are easier to cover.
                 if (this._switchTarget) {
@@ -70,17 +77,18 @@ export class ExplorativeNEAT extends NEAT {
                     break;
                 }
 
-                this.updateBestIndividualAndStatistics();
-                // Stop if we managed to cover the current target statement.
-                if (this._archive.has(this._targetKey)) {
-                    Container.debugLog(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
+                // Switch the target if we stop improving for a set number of times
+                if(this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount){
+                    Container.debugLog("Switching Target due to missing improvement.");
                     break;
                 }
+
+                // Update the population, report the current status to the user and evolve the population.
                 this._population.updatePopulationStatistics();
                 this.reportOfCurrentIteration();
                 this._population.evolve();
 
-                // Extract the remaining openStatements and set them for the new population of networks.
+                // Extract the remaining openStatements and set them for the evolved population of networks.
                 const openStatements = [];
                 for (const [key, fitness] of this._fitnessFunctions.entries()) {
                     if (!this._archive.has(key)) {
@@ -136,11 +144,18 @@ export class ExplorativeNEAT extends NEAT {
         nextTarget = [...potentialTargets.values()]
             .find(target => target.getTargetNode().block.opcode === 'event_whenflagclicked');
 
-        // If there are is greenFlagEvents left to cover, prioritise targets we have already reached in the past.
+        // If there are no greenFlagEvents left to cover, prioritise targets we have already reached in the past.
         if (nextTarget === undefined) {
             let mostPromisingTargets = [];
             let mostPromisingValue = 0;
             for (const potTarget of potentialTargets) {
+
+                // When switching targets without having covered the previous target, we want to make sure not to
+                // select the same target again.
+                if(this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id){
+                    continue;
+                }
+
                 const potentialValue = this._promisingTargets.get(this.mapStatementToKey(potTarget));
                 if (potentialValue > mostPromisingValue) {
                     mostPromisingValue = potentialValue;
@@ -288,7 +303,7 @@ export class ExplorativeNEAT extends NEAT {
     }
 
     /**
-     * Updates the List of the best networks found so far and the statistics used for reporting. Order is important!
+     * Updates the List of the best networks found so far and the statistics used for reporting.
      */
     protected updateBestIndividualAndStatistics(): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
