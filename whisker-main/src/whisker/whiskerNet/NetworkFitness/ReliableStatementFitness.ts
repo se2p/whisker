@@ -2,9 +2,11 @@ import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
-import {ScoreFitness} from "./ScoreFitness";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {FitnessFunction} from "../../search/FitnessFunction";
+import {Chromosome} from "../../search/Chromosome";
+import Arrays from "../../utils/Arrays";
 
 
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -12,10 +14,18 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     /**
      * Random number generator.
      */
-    private random: Randomness
+    private _random: Randomness
+
+    /**
+     * Maps fitnessFunctions to seeds based on which a given fitnessFunction was covered previously. We use this as
+     * a counter measure to avoid scenarios in which a fitnessFunction cannot be covered due to project specific
+     * mechanics.
+     */
+    private _seedMap: Map<FitnessFunction<Chromosome>, number[]>
 
     constructor(private _stableCount: number) {
-        this.random = Randomness.getInstance();
+        this._random = Randomness.getInstance();
+        this._seedMap = new Map<FitnessFunction<Chromosome>, number[]>();
     }
 
     /**
@@ -34,9 +44,12 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         if (fitness > 0) {
             network.fitness = 1 / fitness;
         } else {
-            // If we cover the statement, we want to ensure via different seeds that we would cover this statement
+            // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
             network.fitness = 1;
+            if (!this._seedMap.has(network.targetFitness)) {
+                this._seedMap.set(network.targetFitness, []);
+            }
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
         return network.fitness;
@@ -56,8 +69,18 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         const trace = network.trace.clone()
         const coverage = new Set(network.coverage);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
-        const repetitionSeeds = Array(this.stableCount).fill(0).map(
-                () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
+
+        // Select the random Seeds. If we have gathered enough seeds use previous ones to avoid game scenarios in
+        // which certain statements cannot be covered due to project specific mechanics.
+        let repetitionSeeds: number[];
+        const savedSeeds = this._seedMap.get(network.targetFitness);
+        if (savedSeeds.length > 100) {
+            Arrays.shuffle(savedSeeds);
+            repetitionSeeds = savedSeeds.slice(0, this.stableCount);
+        } else {
+            repetitionSeeds = Array(this.stableCount).fill(0).map(
+                () => this._random.nextInt(0, Number.MAX_SAFE_INTEGER));
+        }
 
         // Iterate over each seed and calculate the achieved fitness
         for (const seed of repetitionSeeds) {
@@ -71,6 +94,11 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 await executor.execute(network);
             }
             executor.resetState();
+
+            // Add the seed to the seed map if the network manages to cover a given statement.
+            if (network.targetFitness.isCovered(network) && !savedSeeds.includes(seed)) {
+                savedSeeds.push(seed);
+            }
 
             ReliableStatementFitness.updateUncoveredMap(network);
             executor.resetState();

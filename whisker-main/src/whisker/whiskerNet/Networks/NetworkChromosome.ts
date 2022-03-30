@@ -13,6 +13,7 @@ import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import {Container} from "../../utils/Container";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -361,6 +362,7 @@ export abstract class NetworkChromosome extends Chromosome {
         while (this.outputsOff() || activationCount < 0) {
             activationCount++;
             if (activationCount == 20) {
+                Container.debugLog(`Defect network: ${this.toString()}`)
                 return false;
             }
 
