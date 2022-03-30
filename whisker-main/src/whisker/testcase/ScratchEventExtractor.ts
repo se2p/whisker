@@ -635,7 +635,7 @@ export abstract class ScratchEventExtractor {
         const area = width * height;
 
         const maxSamples = 48 * 36; // Arbitrary, but based on the stage dimensions of 480 × 360
-        const dynamicSpace = Math.trunc((area / maxSamples) / 2);
+        const dynamicSpace = Math.trunc(Math.sqrt(area / maxSamples));
         const space = Math.max(1, dynamicSpace);
 
         for (const {x, y} of ScratchEventExtractor._points(start, bounds, space)) {
