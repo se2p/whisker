@@ -4,9 +4,7 @@ import {ScratchInterface} from "../scratch/ScratchInterface";
 import VMWrapper from "../../vm/vm-wrapper"
 import {Container} from "../utils/Container";
 import {Pair} from "../utils/Pair";
-
 import * as twgl from 'twgl.js';
-import Arrays from "../utils/Arrays";
 
 
 export class InputExtraction {
@@ -19,19 +17,15 @@ export class InputExtraction {
      * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
     static extractSpriteInfo(vmWrapper: VMWrapper): Map<string, Map<string, number>> {
-        // The position of a clone in the cloneMap determines its unique identifier.
-        const cloneMap = this.assignCloneIds(vmWrapper);
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
         for (const target of vmWrapper.vm.runtime.targets) {
             if ('blocks' in target && !target.isStage && target.visible) {
-                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vmWrapper);
+                const spriteFeatures = this._extractInfoFromSprite(target, vmWrapper);
                 if (target.isOriginal) {
                     spriteMap.set(target.sprite.name, spriteFeatures);
                 } else {
-                    const distanceID = this.distanceFromOrigin(target);
-                    const cloneID = Arrays.findElement(cloneMap.get(target.sprite.name), distanceID);
-                    spriteMap.set(target.sprite.name + "Clone" + cloneID, spriteFeatures);
+                    spriteMap.set(this.getCloneIdentifier(target), spriteFeatures);
                 }
             }
         }
@@ -39,41 +33,23 @@ export class InputExtraction {
     }
 
     /**
-     * Assign each clone an ID which is determined by its distance to the origin on the stage
-     * This sorting criterion is chosen arbitrarily but enables us to uniquely identify clones.
-     * @param vmWrapper the VM-Wrapper of the given Scratch-Project
-     * @return A map mapping each original sprite having clones to a list of its clone distances.
+     * Generates a unique ID for clones.
+     * @param target the target clone for which we need an identifier
+     * @returns unique id for the given target clone.
      */
-    private static assignCloneIds(vmWrapper: VMWrapper): Map<string, number[]> {
-        const cloneMap = new Map<string, number[]>();
-        for (const target of vmWrapper.vm.runtime.targets) {
-            // Get the original and traverse through the clones
-            if (target.isOriginal) {
-                const cloneDistances: number[] = [];
-                for (const clone of target.sprite.clones) {
-                    // Check again for clones since the original itself is also saved in the clones list
-                    if (!clone.isOriginal) {
-                        cloneDistances.push(this.distanceFromOrigin(clone));
-                    }
-                }
-                // Sort the found cloneDistances and save them in the cloneMap.
-                cloneDistances.sort((a, b) => a - b);
-                cloneMap.set(target.sprite.name, cloneDistances);
-            }
-        }
-        return cloneMap;
+    private static getCloneIdentifier(target: RenderedTarget): string {
+        return `${target.sprite.name}Clone${target.cloneID}`;
     }
 
     /**
      * Extracts the pieces of information of the given target and normalises in the range [-1, 1]
      * @param target the RenderTarget (-> Sprite) from which information is gathered
      * @param vmWrapper the Scratch VM-Wrapper of the given project
-     * @param cloneMap The position of a clone in the cloneMap determines its unique identifier.
      * generator we add features which might not be informative yet. This helps us to avoid over-speciation.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
     // TODO: Add more input features: size of sprite, effects, variables
-    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, number[]>, vmWrapper: VMWrapper): Map<string, number> {
+    private static _extractInfoFromSprite(target: RenderedTarget, vmWrapper: VMWrapper): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // Stage Bounds -> (width: 480, height: 360)
         const stageBounds = vmWrapper.getStageSize();
@@ -109,18 +85,16 @@ export class InputExtraction {
 
                 // Check if the target interacts with another target.
                 case "sensing_touchingobjectmenu":
-                    for (const sensingTarget of vmWrapper.vm.runtime.targets) {
-                        if (sensingTarget.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
-                            const distances = this.calculateDistancesSigned(target.x, sensingTarget.x, target.y, sensingTarget.y,
+                    for (const sensedTarget of vmWrapper.vm.runtime.targets) {
+                        if (sensedTarget.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
+                            const distances = this.calculateDistancesSigned(target.x, sensedTarget.x, target.y, sensedTarget.y,
                                 stageBounds.width, stageBounds.height);
-                            if (target.isOriginal) {
-                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "X", distances.dx);
-                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "Y", distances.dy);
+                            if (sensedTarget.isOriginal) {
+                                spriteFeatures.set("Dist" + sensedTarget.sprite.name + "X", distances.dx);
+                                spriteFeatures.set("Dist" + sensedTarget.sprite.name + "Y", distances.dy);
                             } else {
-                                const distanceId = this.distanceFromOrigin(sensingTarget);
-                                const cloneId = Arrays.findElement(cloneMap.get(sensingTarget.sprite.name), distanceId);
-                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "Clone" + cloneId + "X", distances.dx);
-                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "Clone" + cloneId + "Y", distances.dy);
+                                spriteFeatures.set("Dist" + this.getCloneIdentifier(sensedTarget), distances.dx);
+                                spriteFeatures.set("Dist" + this.getCloneIdentifier(sensedTarget), distances.dy);
                             }
                         }
                     }
@@ -252,7 +226,7 @@ export class InputExtraction {
             let scannedPixel = sensorLocation.clone();
             let currentScanRange = 0;
 
-            // As long as we are within the canvas boundaries; have not found the color and have not reach our
+            // As long as we are within the canvas boundaries; have not found the color and have not reached our
             // maximum scanning range, we keep searching
             while (ScratchInterface.isPointWithinCanvas(scannedPixel) && !found && currentScanRange < maxScanRange) {
                 // Get color of current point on the canvas
@@ -300,15 +274,6 @@ export class InputExtraction {
             default:
                 return "BadAngle";
         }
-    }
-
-    /**
-     * Calculate the distance of a sprite from the origin (0,0) of the Stage.
-     * @param sprite the sprite to calculate the distance from
-     * @return distance from stage origin
-     */
-    private static distanceFromOrigin(sprite: RenderedTarget): number {
-        return Math.sqrt(Math.pow(sprite.x, 2) + Math.pow(sprite.y, 2));
     }
 
     /**

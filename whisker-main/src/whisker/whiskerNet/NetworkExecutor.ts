@@ -16,6 +16,7 @@ import {Container} from "../utils/Container";
 import {ParameterType} from "../testcase/events/ParameterType";
 import {ScoreFitness} from "./NetworkFitness/ScoreFitness";
 import cloneDeep from "lodash.clonedeep";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 
 export class NetworkExecutor {
 
@@ -65,6 +66,11 @@ export class NetworkExecutor {
     private readonly _eventSelection: string
 
     /**
+     * The number of steps we are waiting before executing a new event. Set by WaitEvents.
+     */
+    private _waitDuration = 0;
+
+    /**
      * Constructs a new NetworkExecutor object.
      * @param vmWrapper the wrapper of the Scratch-VM.
      * @param timeout timeout after which each playthrough is halted.
@@ -92,10 +98,12 @@ export class NetworkExecutor {
         // Initialise required variables.
         network.codons = [];
         let stepCount = 0;
-        let workingNetwork = false;
 
         // Play the game until we reach a GameOver state or the timeout.
         const startTime = Date.now();
+        const statementTarget = network.targetFitness as StatementFitnessFunction;
+        const isGreenFlag = statementTarget !== undefined &&
+            statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm);
@@ -111,42 +119,36 @@ export class NetworkExecutor {
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
             network.updateOutputNodes(this.availableEvents);
 
-            // Select the next event...
-            let eventIndex: number;
-            if (this._eventSelection === 'random') {
-                // Choose a random event index.
-                eventIndex = this._random.nextInt(0, this.availableEvents.length);
-                workingNetwork = true   // Set to true since we did not activate the network...
-            } else {
-                if (network.isRecurrent) {
-                    workingNetwork = network.activateNetwork(spriteFeatures);
-                } else {
-                    // Flush the network and activate it until the output stabilizes.
-                    network.flushNodeValues();
-                    for (let i = 0; i < network.getMaxDepth(); i++) {
-                        workingNetwork = network.activateNetwork(spriteFeatures);
-                    }
+            // Select the next event and execute it if we did not decide to wait
+            if (this._waitDuration == 0) {
+                let eventIndex = this.selectNextEvent(network, spriteFeatures, isGreenFlag);
+                let nextEvent = this.availableEvents[eventIndex];
+
+                // If something goes wrong, e.g. we have a defect network, just insert a Wait.
+                if (nextEvent === undefined) {
+                    eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
+                    nextEvent = this.availableEvents[eventIndex];
                 }
-
-                // Choose the event with the highest probability according to the softmax values
-                const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-                const max = Math.max(...output);
-                eventIndex = output.indexOf(max);
+                network.codons.push(eventIndex);
+                await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
             }
 
-            // Select the event matching, set required parameters and execute it.
-            network.codons.push(eventIndex);
-            let nextEvent: ScratchEvent = this.availableEvents[eventIndex];
-            // If something goes wrong, e.g. we have a defect network, just insert a Wait.
-            if (nextEvent === undefined) {
-                nextEvent = this.availableEvents.find(event => event instanceof WaitEvent);
+            // Otherwise, we just Wait...
+            else {
+                this._waitDuration--;
             }
-            await this.executeNextEvent(network, nextEvent, events);
 
-            // Record the activation trace.
+            // Record the activation trace and increase the stepCount.
             this.recordActivationTrace(network, stepCount);
-
             stepCount++;
+
+            // Check if we have reached our selected target and stop if this is the case.
+            if (statementTarget !== undefined) {
+                const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
+                if (currentCoverage.has(statementTarget.getTargetNode().id)) {
+                    break;
+                }
+            }
         }
 
         // Set score and play time.
@@ -160,11 +162,6 @@ export class NetworkExecutor {
         // Stop VM and remove listeners.
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-
-        // Should not happen!
-        if (!workingNetwork) {
-            console.error(`Found defect Network ${network}`);
-        }
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
@@ -223,17 +220,66 @@ export class NetworkExecutor {
     }
 
     /**
+     * Selects the next event by 1) Waiting for 1 step if we are currently trying to cover the GreenFlag event
+     *                           2) Selecting a random event if the eventSelection variable is set appropriately
+     *                           3) Querying the network's classification head
+     * @param network the network that will be queried in case of 3)
+     * @param inputFeatures the inputFeatures with which the network will be fed in scenario 3)
+     * @param isGreenFlag boolean determining whether we are currently trying to cover the greenFlagEvent as in 1)
+     * @returns the index of the chosen event parameter based ont the available events set.
+     */
+    private selectNextEvent(network: NetworkChromosome, inputFeatures: Map<string, Map<string, number>>,
+                            isGreenFlag: boolean): number {
+        // 1) GreenFlag is current target Statement
+        if (isGreenFlag) {
+            return this.availableEvents.findIndex(event => event instanceof WaitEvent);
+        }
+
+        // 2) Random event selection
+        else if (this._eventSelection === 'random') {
+            return this._random.nextInt(0, this.availableEvents.length);
+        }
+
+        // 3) Query the network's classification head.
+        else {
+            if (network.isRecurrent) {
+                network.activateNetwork(inputFeatures);
+            } else {
+                // Flush the network and activate it until the output stabilizes.
+                network.flushNodeValues();
+                for (let i = 0; i < network.getMaxDepth(); i++) {
+                    network.activateNetwork(inputFeatures);
+                }
+            }
+
+            // Choose the event with the highest probability according to the softmax values
+            const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+            if (eventProbabilities.size > 0) {
+                const mostProbablePair = [...eventProbabilities.entries()].reduce(
+                    (pV, cV) => cV[1] > pV [1] ? cV : pV);
+                return this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
+            } else {
+                // It can happen that all output nodes of corresponding available events do not have an active path
+                // starting from the input nodes, i.e. they did not get activated. In that case we just wait.
+                return this.availableEvents.findIndex(event => event instanceof WaitEvent);
+            }
+        }
+    }
+
+    /**
      * Selects the next event and executes it.
      * @param network determines the next action to take.
      * @param nextEvent the event that should be executed next.
      * @param events saves a trace of executed events.
+     * @param greenFlag determines whether the next event is based on the greenFlag event as a targetStatement. If
+     * so we do not want to add any parameters and just wait for 1 Step.
      */
-    private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[]) {
-        const parameters = [];
+    private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[],
+                                   greenFlag = false): Promise<void> {
         let setParameter: number[]
         const argType: ParameterType = this._eventSelection as ParameterType;
-        if (nextEvent.numSearchParameter() > 0) {
-            parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
+        if (nextEvent.numSearchParameter() > 0 && !greenFlag) {
+            const parameters = NetworkExecutor.getArgs(nextEvent, network);
             setParameter = nextEvent.setParameter(parameters, argType);
         }
 
@@ -248,30 +294,35 @@ export class NetworkExecutor {
             const waitEvent = new WaitEvent(1);
             events.push(new EventAndParameters(waitEvent, [1]));
             await waitEvent.apply();
+        } else {
+            // Otherwise, set the wait duration
+            this._waitDuration = nextEvent.getParameters()[0];
         }
 
         StatisticsCollector.getInstance().incrementEventsCount();
     }
 
-    private isDoubleKeyPress(nextEvent: ScratchEvent) {
+    /**
+     * Checks for double key presses. We do not want to re-press an already pressed key since this only interrupts
+     * the key press signal sent to the VM.
+     * @param nextEvent the nextEvent which will be checked against a double keyPress.
+     * @returns true if we are about to double press an already pressed key.
+     */
+    private isDoubleKeyPress(nextEvent: ScratchEvent): boolean {
         const key = String(nextEvent.getParameters()[0]);
         return nextEvent instanceof KeyPressEvent && this._vmWrapper.inputs.isKeyDown(key);
     }
 
+    /**
+     * Extracts the arguments for parameters by querying the regression head of the neural network.
+     * @param event for which parameter will be extracted
+     * @param network that will be queried for parameter
+     * @returns the extracted parameter.
+     */
     private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
         const args = [];
-        try {
-            for (const node of network.regressionNodes.get(event.stringIdentifier())) {
-                args.push(node.activationValue);
-            }
-        } catch (e) {
-            // TODO: Something fails here time after time (about every 100th run). Remove after problem was fixed...
-            console.error("RegressionNode Error!")
-            console.log(`Event: ${event.stringIdentifier()}`)
-            console.log(`Keys: ${[...network.regressionNodes.keys()]}`)
-            console.log(`Values: ${network.regressionNodes.get(event.stringIdentifier())}`)
-            args.push(0);
-            args.push(0);
+        for (const node of network.regressionNodes.get(event.stringIdentifier())) {
+            args.push(node.activationValue);
         }
         return args;
     }
@@ -286,7 +337,9 @@ export class NetworkExecutor {
         if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
             network.updateActivationTrace(stepCount);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            network.certainty.set(stepCount, probabilities.reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
+            if (probabilities.size > 0) {
+                network.uncertainty.set(stepCount, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
+            }
         }
     }
 
@@ -349,5 +402,8 @@ export class NetworkExecutor {
             this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
             this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop']
         }
+
+        this._vmWrapper.inputs.resetMouse();
+        this._vmWrapper.inputs.resetKeyboard();
     }
 }

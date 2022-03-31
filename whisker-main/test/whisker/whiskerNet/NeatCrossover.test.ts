@@ -9,6 +9,7 @@ import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/Input
 import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
+import {Container} from "../../../src/whisker/utils/Container";
 
 describe("Test NeatCrossover", () => {
 
@@ -44,6 +45,8 @@ describe("Test NeatCrossover", () => {
             "mutateEnableConnection": 0.03
         };
         mutationOp = new NeatMutation(mutationConfig);
+
+        Container.debugLog = () => { /*No operation */ }
 
         // Create Nodes of first network
         nodes1 = [];

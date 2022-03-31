@@ -2,7 +2,6 @@ import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
-import {ScoreFitness} from "./ScoreFitness";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
@@ -10,21 +9,12 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * The seeds used to test if a given statement can be covered reliably.
-     */
-    private readonly repetitionSeeds: number[];
-
-    /**
      * Random number generator.
      */
-    private random: Randomness
+    private _random: Randomness
 
     constructor(private _stableCount: number) {
-        this.random = Randomness.getInstance();
-        // Add another seed to ensure that we do not get stuck due to very rare occurring program states that originate
-        // from certain random seeds and in which a targeted statement is simply not reachable.
-        this.repetitionSeeds = Array(this.stableCount + 1).fill(0).map(
-            () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
+        this._random = Randomness.getInstance();
     }
 
     /**
@@ -36,14 +26,14 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
-        network.score = ScoreFitness.gatherPoints(Container.vm);
+        ReliableStatementFitness.updateUncoveredMap(network);
         const fitness = network.targetFitness.getFitness(network);
         executor.resetState();
 
         if (fitness > 0) {
             network.fitness = 1 / fitness;
         } else {
-            // If we cover the statement, we want to ensure via different seeds that we would cover this statement
+            // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
             network.fitness = 1;
             await this.checkStableCoverage(network, timeout, eventSelection);
@@ -61,12 +51,15 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Save some values to recover them later
         const originalSeed = Randomness._scratchSeed;
         const originalPlayTime = network.playTime;
+        const originalScore = network.score;
         const trace = network.trace.clone()
         const coverage = new Set(network.coverage);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
+        const repetitionSeeds = Array(this.stableCount).fill(0).map(
+            () => this._random.nextInt(0, Number.MAX_SAFE_INTEGER));
 
         // Iterate over each seed and calculate the achieved fitness
-        for (const seed of this.repetitionSeeds) {
+        for (const seed of repetitionSeeds) {
             Randomness.setScratchSeed(seed, true);
             const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
             if (eventSelection === 'random') {
@@ -77,25 +70,34 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 await executor.execute(network);
             }
             executor.resetState();
-
-            // Increase the score by 1 if we covered the given statement in the executed scenario as well.
-            for (const [statement, coverCount] of network.openStatementTargets.entries()) {
-                if (statement.isCovered(network)) {
-                    network.openStatementTargets.set(statement, coverCount + 1);
-                    if (statement === network.targetFitness) {
-                        network.fitness++;
-                    }
-                }
-            }
+            ReliableStatementFitness.updateUncoveredMap(network);
             executor.resetState();
         }
         // Reset to the old Scratch seed and network attributes.
         Randomness.setScratchSeed(originalSeed, true);
         network.playTime = originalPlayTime;
+        network.score = originalScore;
         network.trace = trace;
         network.coverage = coverage;
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
         Container.debugLog(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`)
+    }
+
+    /**
+     * Updates the map of uncovered targets by the amount of times the given network was able to cover a respective
+     * target.
+     * @param network the network chromosome that has finished its playthrough.
+     */
+    private static updateUncoveredMap(network: NetworkChromosome): void {
+        // Increase the score by 1 if we covered the given statement in the executed scenario as well.
+        for (const [statement, coverCount] of network.openStatementTargets.entries()) {
+            if (statement.isCovered(network)) {
+                network.openStatementTargets.set(statement, coverCount + 1);
+                if (statement === network.targetFitness) {
+                    network.fitness++;
+                }
+            }
+        }
     }
 
     public identifier(): string {

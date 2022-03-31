@@ -111,8 +111,7 @@ export class InputEffect {
                     textEvent.apply();
                 }
             case InputEffectName.InputMouseDown:
-                let boolVal = arg[0] == "true";
-                let mouseDownEvent = new MouseDownEvent(boolVal);
+                let mouseDownEvent = new MouseDownEvent();
                 return () => {
                     mouseDownEvent.apply();
                 }

@@ -5,6 +5,8 @@ import {NetworkChromosome} from "./NetworkChromosome";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import {Innovation, InnovationProperties} from "../NetworkComponents/Innovation";
 
 export class NeatChromosome extends NetworkChromosome {
     /**
@@ -123,6 +125,35 @@ export class NeatChromosome extends NetworkChromosome {
         clone.expectedOffspring = this.expectedOffspring;
         clone.isRecurrent = this.isRecurrent;
         return clone;
+    }
+
+    /**
+     * Determines how a novel connection is added to the network. In NEAT-Chromosomes we have to keep track of the
+     * innovation history.
+     * @param connection the connection to add.
+     */
+    public addConnection(connection: ConnectionGene): void{
+        const innovation = NeatPopulation.findInnovation(connection, 'newConnection');
+
+        // Check if this innovation has occurred before.
+        if (innovation) {
+            connection.innovation = innovation.firstInnovationNumber;
+        } else {
+            const innovationProperties: InnovationProperties = {
+                type: 'newConnection',
+                idSourceNode: connection.source.uID,
+                idTargetNode: connection.target.uID,
+                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
+                recurrent: connection.isRecurrent
+            };
+            const newInnovation = Innovation.createInnovation(innovationProperties);
+            NeatPopulation.innovations.push(newInnovation);
+            connection.innovation = newInnovation.firstInnovationNumber;
+        }
+        this.connections.push(connection);
+        if (connection.isRecurrent) {
+            this.isRecurrent = true;
+        }
     }
 
     /**

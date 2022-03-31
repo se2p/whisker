@@ -493,6 +493,18 @@ class Inputs {
     }
 
     /**
+     * Presses the left mouse button for the given amount of steps.
+     * @param {number} steps The number of steps indicating how long the mouse button should be pressed.
+     */
+    mouseDownForSteps (steps = 1) {
+        this.inputImmediate({
+            device: 'mouse',
+            isDown: true,
+            steps: steps
+        });
+    }
+
+    /**
      * Moves the mouse to a specific position (x, y) for a number of steps.
      * @param {number} x The x coordinate of the end position.
      * @param {number} y The y coordinate of the end position.

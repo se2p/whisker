@@ -3,13 +3,14 @@
     "algorithm": "e-neat",
     "populationType": "explorative",
     "eventSelection": "activation",
-    "populationSize": 300,
+    "populationSize": 150,
     "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "repetitions": 100,
+    "switchTargetCount": 15,
     "extractor": "neuroevolution",
     "chromosome": {
         "type": "fullyConnectedNetwork"

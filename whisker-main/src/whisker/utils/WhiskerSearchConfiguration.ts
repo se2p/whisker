@@ -202,6 +202,8 @@ export class WhiskerSearchConfiguration {
         const eventSelection = this._config['eventSelection'] as string;
         const coverageStableCount = this._config['networkFitness']['stableCount'] !== undefined ?
             this._config['networkFitness']['stableCount'] : 0
+        const switchTargetCount = this._config['switchTargetCount'] !== undefined ?
+            this._config['switchTargetCount'] : 20;
         const repetitions = this._config['repetitions'] as number;
         const timeout = this._config['networkFitness']['timeout'];
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
@@ -243,6 +245,7 @@ export class WhiskerSearchConfiguration {
         properties.coverageStableCount = coverageStableCount;
         properties.timeout = timeout;
         properties.printPopulationRecord = doPrintPopulationRecord;
+        properties.switchTargetCount = switchTargetCount;
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
         properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']);
@@ -290,7 +293,7 @@ export class WhiskerSearchConfiguration {
             case 'events':
                 return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
             case 'evaluations':
-                return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
+                return new FitnessEvaluationStoppingCondition(stoppingCondition['maxEvaluations']);
             case "combined": {
                 const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
                 return new OneOfStoppingCondition(...conditions)

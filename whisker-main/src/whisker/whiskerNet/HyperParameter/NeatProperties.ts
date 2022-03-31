@@ -172,6 +172,11 @@ export class NeatProperties {
     private _networkFitness: NetworkFitnessFunction<NeatChromosome>;
 
     /**
+     * Switch the current target statement if no improvement has been seen for a set number of generations.
+     */
+    private _switchTargetCount = 20;
+
+    /**
      * Timeout for the execution of a scratch game during the evaluation of the network.
      */
     private _timeout = 30000;
@@ -437,6 +442,14 @@ export class NeatProperties {
 
     set networkFitness(value: NetworkFitnessFunction<NeatChromosome>) {
         this._networkFitness = value;
+    }
+
+    get switchTargetCount(): number {
+        return this._switchTargetCount;
+    }
+
+    set switchTargetCount(value: number) {
+        this._switchTargetCount = value;
     }
 
     get timeout(): number {

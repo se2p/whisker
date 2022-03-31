@@ -75,7 +75,7 @@ describe("Test NeatMutation", () => {
     test("Test apply mutation operator on a populationChampion", () => {
         neatChromosome1.isPopulationChampion = true;
         let mutant = neatChromosome1.mutate();
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 100; i++) {
             mutant = mutant.mutate();
         }
         expect(mutant.connections.length).not.toBe(neatChromosome1.connections.length);
@@ -84,7 +84,7 @@ describe("Test NeatMutation", () => {
 
     test("Test apply mutation operator on a non-populationChampion", () => {
         let mutant = neatChromosome1.mutate();
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 100; i++) {
             mutant = mutant.mutate();
         }
         const mutatedEnableStates = [];
@@ -125,7 +125,7 @@ describe("Test NeatMutation", () => {
         mutation.mutateAddConnection(neatChromosome2, 30);
         }
         // Equal if by chance an already established connection is chosen
-        expect(originalConnectionsSize).toBeLessThan(neatChromosome1.connections.length);
+        expect(originalConnectionsSize).toBeLessThanOrEqual(neatChromosome1.connections.length);
         expect(initialInnovations).toBeLessThan(NeatPopulation.innovations.length);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(neatChromosome1.connections.length);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(neatChromosome2.connections.length);

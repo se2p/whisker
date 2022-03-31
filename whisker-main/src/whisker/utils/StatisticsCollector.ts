@@ -36,6 +36,7 @@ export class StatisticsCollector {
     private _iterationCount: number;
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
     private _bestCoverage: number;
+    private _greenFlagCovered: number;
     private _eventsCount: number; //executed events
     private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
@@ -77,6 +78,7 @@ export class StatisticsCollector {
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
+        this._greenFlagCovered = 0;
         this._startTime = 0;
         this._executedTests = 0;
         this._averageTestExecutionTime = 0;
@@ -148,6 +150,14 @@ export class StatisticsCollector {
 
     set coveredFitnessFunctionsCount(value: number) {
         this._coveredFitnessFunctionsCount = value;
+    }
+
+    set greenFlagCovered(value: number) {
+        this._greenFlagCovered = value;
+    }
+
+    get greenFlagCovered(): number {
+        return this._greenFlagCovered;
     }
 
     /**
@@ -382,11 +392,13 @@ export class StatisticsCollector {
         const fitnessValues = values.join(",");
 
         // Default header and data arrays
-        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime'];
+        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
+            "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
+            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime'];
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
-            this._coveredFitnessFunctionsCount, this._bestCoverage, this._numberFitnessEvaluations,
-            this._timeToReachFullCoverage, this._highestNetworkFitness, this._highestScore, this._highestPlayTime];
+            this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
+            this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
+            this._highestScore, this._highestPlayTime];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
@@ -401,7 +413,7 @@ export class StatisticsCollector {
         this.networks.sort((a, b) => b.fitness - a.fitness);
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];
-            const certaintyValues = [...network.certainty.values()];
+            const certaintyValues = [...network.uncertainty.values()];
             const certainty = certaintyValues.reduce((pv, cv) => pv + cv, 0) / certaintyValues.length;
             const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
                 this._coveredFitnessFunctionsCount, network.score, network.playTime, network.surpriseAdequacyStep,

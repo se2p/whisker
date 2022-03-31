@@ -37,6 +37,11 @@ export class ExplorativeNEAT extends NEAT {
     private _targetIterations = 0;
 
     /**
+     * Determines whether we should switch the currently selected target with an easier to reach target.
+     */
+    private _switchTarget = false;
+
+    /**
      * Holds a record of promising targets, i.e. the maximum amount of how often a target has accidentally already been
      * covered by a network without it actually being the currently targeted statement.
      */
@@ -58,17 +63,43 @@ export class ExplorativeNEAT extends NEAT {
             while (!this._stoppingCondition.isFinished(this)) {
                 await this.evaluateNetworks();
                 this.updateBestIndividualAndStatistics();
+
+                // Stop if we managed to cover the current target statement.
                 if (this._archive.has(this._targetKey)) {
                     Container.debugLog(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
                     break;
                 }
+
+                // Switch target if other statements than the currently selected one are easier to cover.
+                if (this._switchTarget) {
+                    this._switchTarget = false;
+                    Container.debugLog("Switch to easier Target");
+                    break;
+                }
+
+                // Switch the target if we stop improving for a set number of times
+                if(this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount){
+                    Container.debugLog("Switching Target due to missing improvement.");
+                    break;
+                }
+
+                // Update the population, report the current status to the user and evolve the population.
                 this._population.updatePopulationStatistics();
                 this.reportOfCurrentIteration();
                 this._population.evolve();
+
+                // Extract the remaining openStatements and set them for the evolved population of networks.
+                const openStatements = [];
+                for (const [key, fitness] of this._fitnessFunctions.entries()) {
+                    if (!this._archive.has(key)) {
+                        openStatements.push(fitness);
+                    }
+                }
                 for (const network of this._population.networks) {
                     network.targetFitness = currentTarget;
-                    network.initialiseOpenStatements([...this._fitnessFunctions.values()]);
+                    network.initialiseOpenStatements(openStatements);
                 }
+
                 this._targetIterations++;
                 this._iterations++;
             }
@@ -108,22 +139,33 @@ export class ExplorativeNEAT extends NEAT {
         // Select the next target statement by querying the CDG.
         const potentialTargets = StatementFitnessFunction.getNextUncoveredNodePairs(allStatements, uncoveredStatements);
         let nextTarget: StatementFitnessFunction;
-        let currentHighestPotential = 0;
 
-        // Set the next target to be the one with the highest potential.
-        for (const potentialTarget of potentialTargets) {
+        // Prioritise greenFlag events
+        nextTarget = [...potentialTargets.values()]
+            .find(target => target.getTargetNode().block.opcode === 'event_whenflagclicked');
 
-            // ClickGreenFlag should always be prioritised.
-            if (potentialTarget.getTargetNode().block.opcode === 'event_whenflagclicked') {
-                nextTarget = potentialTarget;
-                break;
+        // If there are no greenFlagEvents left to cover, prioritise targets we have already reached in the past.
+        if (nextTarget === undefined) {
+            let mostPromisingTargets = [];
+            let mostPromisingValue = 0;
+            for (const potTarget of potentialTargets) {
+
+                // When switching targets without having covered the previous target, we want to make sure not to
+                // select the same target again.
+                if(this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id){
+                    continue;
+                }
+
+                const potentialValue = this._promisingTargets.get(this.mapStatementToKey(potTarget));
+                if (potentialValue > mostPromisingValue) {
+                    mostPromisingValue = potentialValue;
+                    mostPromisingTargets = [potTarget];
+                } else if (potentialValue > 0 && potentialValue === mostPromisingValue) {
+                    mostPromisingTargets.push(potTarget);
+                }
             }
-
-            // Otherwise, prioritise targets we have already reached in the past.
-            const potential = this._promisingTargets.get(this.mapStatementToKey(potentialTarget));
-            if (potential > currentHighestPotential) {
-                currentHighestPotential = potential;
-                nextTarget = potentialTarget;
+            if (mostPromisingTargets.length > 0) {
+                nextTarget = Randomness.getInstance().pick(mostPromisingTargets);
             }
         }
 
@@ -154,16 +196,30 @@ export class ExplorativeNEAT extends NEAT {
      */
     protected async evaluateNetworks(): Promise<void> {
         for (const network of this._population.networks) {
-            // Evaluate the networks by letting them play the game.
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout,
                 this._neuroevolutionProperties.eventSelection);
-            // Update the archive and stop in the middle of the evaluation if we covered the targeted statement,
-            // or depleted the search budget.
             this.updateArchive(network);
+
+            // Check if we just covered the greenFlag event, and if so save the number of blocks that are covered
+            // by only clicking on the greenFlag. This is ensured since we stop the execution as soon as we covered
+            // the target statement and prioritise the greenFlag as target statement.
+            if (this._fitnessFunctionMap.get(this._targetKey).getTargetNode().block.opcode === 'event_whenflagclicked' &&
+                this._archive.has(this._targetKey)) {
+                StatisticsCollector.getInstance().greenFlagCovered = this._archive.size;
+            }
 
             // Update the map of the most promising fitness targets
             this.updateMostPromisingMap(network);
 
+            // Determine whether we should switch the currently selected target. We do that if we have accidentally
+            // reached another statement without reaching the actual target statement at least once.
+            if (this._promisingTargets.get(this._targetKey) < 1 &&
+                Math.max(...[...this._promisingTargets.values()]) > 0) {
+                this._switchTarget = true;
+                return;
+            }
+
+            // Update the archive and stop if we covered the targeted statement or depleted the search budget.
             if (this._archive.has(this._targetKey) || this._stoppingCondition.isFinished(this)) {
                 return;
             }
@@ -247,7 +303,7 @@ export class ExplorativeNEAT extends NEAT {
     }
 
     /**
-     * Updates the List of the best networks found so far and the statistics used for reporting. Order is important!
+     * Updates the List of the best networks found so far and the statistics used for reporting.
      */
     protected updateBestIndividualAndStatistics(): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
