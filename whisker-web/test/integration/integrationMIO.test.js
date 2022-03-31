@@ -100,6 +100,14 @@ describe('Basic event handling', () => {
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
+    test('Test key press functionality with required check for executed blocks in the previous step', async () => {
+        await loadProject('test/integration/keyPressEvent/ExecutedHatsCheck.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
     test('Test mouse down functionality', async () => {
         await loadProject('test/integration/mouseDownEvent/MouseDownEventTest.sb3')
         await (await page.$('#run-search')).click();
