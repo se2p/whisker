@@ -23,7 +23,7 @@
 import {TestGenerator} from "./testgenerator/TestGenerator";
 import WhiskerUtil from "../test/whisker-util.js";
 import {WhiskerTest} from "./testgenerator/WhiskerTest";
-import VirtualMachine from "scratch-vm/src/virtual-machine"
+import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
 import {StatisticsCollector} from "./utils/StatisticsCollector";
@@ -71,7 +71,7 @@ export class Search {
     }
 
     private handleEmptyProject(): Array<string> {
-        console.log("Cannot find any suitable events for this project, not starting search.")
+        console.log("Cannot find any suitable events for this project, not starting search.");
         const stats = StatisticsCollector.getInstance();
 
         let hasBlocks = false;
@@ -84,7 +84,7 @@ export class Search {
             }
         }
         if (!hasBlocks) {
-            console.log("Project contains no code")
+            console.log("Project contains no code");
             stats.bestCoverage = 1.0;
         }
 

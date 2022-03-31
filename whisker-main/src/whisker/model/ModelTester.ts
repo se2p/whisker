@@ -7,7 +7,7 @@ import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
 import {ModelEdge, ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
 import {Container} from "../utils/Container";
-import {Callback} from "../../vm/callbacks"
+import {Callback} from "../../vm/callbacks";
 
 export class ModelTester extends EventEmitter {
 
@@ -78,15 +78,15 @@ export class ModelTester extends EventEmitter {
         this.programModels.forEach(model => {
             let shortened = model.simplifyForSave();
             models.push({usage: ModelLoader.PROGRAM_MODEL_ID, ...shortened});
-        })
+        });
         this.userModels.forEach(model => {
             let shortened = model.simplifyForSave();
             models.push({usage: ModelLoader.USER_MODEL_ID, ...shortened});
-        })
+        });
         this.onTestEndModels.forEach(model => {
             let shortened = model.simplifyForSave();
             models.push({usage: ModelLoader.ON_TEST_END_ID, ...shortened});
-        })
+        });
         return models;
     }
 
@@ -148,7 +148,7 @@ export class ModelTester extends EventEmitter {
             if (checkProgramModels.length == 0) {
                 this.modelStepCallback.disable();
             }
-        }
+        };
     }
 
     private checkForHaltAll() {
@@ -161,8 +161,8 @@ export class ModelTester extends EventEmitter {
                 if (model.haltAllModels()) {
                     this.startOnTestEnd();
                 }
-            })
-        }
+            });
+        };
     }
 
     private startOnTestEnd() {
@@ -173,10 +173,10 @@ export class ModelTester extends EventEmitter {
             this.onTestEndModels.forEach(model => {
                 model.setTransitionsStartTo(steps);
                 model.programEndStep = steps;
-            })
+            });
             this.userModels.forEach(model => {
                 model.stepNbrOfProgramEnd = steps;
-            })
+            });
             this.onTestEndCallback.enable();
         }
     }
@@ -195,7 +195,7 @@ export class ModelTester extends EventEmitter {
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
                 }
-            })
+            });
             let contradictingEffects = this.checkUtility.checkEffects();
             if (contradictingEffects && contradictingEffects.length != 0) {
                 this.printContradictingEffects(contradictingEffects);
@@ -210,7 +210,7 @@ export class ModelTester extends EventEmitter {
                     this.onTestEndCallback.disable();
                     return;
                 }
-            })
+            });
         };
     }
 
@@ -227,13 +227,13 @@ export class ModelTester extends EventEmitter {
                     if (!model.stopped()) {
                         notStoppedUserModels.push(model);
                     }
-                })
+                });
                 userModels = notStoppedUserModels;
                 if (userModels.length == 0) {
                     // console.log("Input generation per user models stopped.");
                     callback.disable();
                 }
-            }
+            };
             let callback = this.addModelCallback(userInputFun, false, "inputOfUserModel");
             return callback;
         }
@@ -267,7 +267,7 @@ export class ModelTester extends EventEmitter {
                     if (model.haltAllModels()) {
                         halt = true;
                     }
-                })
+                });
                 if (halt) {
                     this.checkUtility.checkEffects();
                     this.startOnTestEnd();
@@ -330,8 +330,8 @@ export class ModelTester extends EventEmitter {
                 let varOutput = sprite.name + "." + variable.name + " = " + variable.value;
                 this.result.state.push(varOutput);
                 log.push("--- " + varOutput);
-            })
-        })
+            });
+        });
         if (log.length > 1) {
             this.emit(ModelTester.MODEL_LOG, log.join("\n"));
         }
@@ -344,7 +344,7 @@ export class ModelTester extends EventEmitter {
             coverages.covered.push(currentCov.covered);
             coverages.total += currentCov.total;
             this.result.coverage[model.id] = currentCov;
-        })
+        });
 
         this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
         // console.log("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
@@ -373,7 +373,7 @@ export class ModelTester extends EventEmitter {
         let output = "Model had to check contradicting effects! Skipping these.";
         contradictingEffects.forEach(effect => {
             output += "\n -- " + effect.toString();
-        })
+        });
         console.error("EFFECTS CONTRADICTING", output);
         this.result.log.push("EFFECTS CONTRADICTING" + output);
         this.emit(ModelTester.MODEL_WARNING, output);

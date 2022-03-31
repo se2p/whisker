@@ -19,6 +19,7 @@ describe("Species Test", () => {
     let properties: NeatProperties;
 
     beforeEach(() => {
+        Container.debugLog = () => { /* suppress output */};
         const crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,
@@ -79,7 +80,7 @@ describe("Species Test", () => {
         }
         champion = random.pick(species.networks);
         champion.fitness = 10;
-    })
+    });
 
     test("Test Constructor", () => {
         const species = new Species(1, true, properties);
@@ -93,13 +94,13 @@ describe("Species Test", () => {
         expect(species.allTimeBestFitness).toBe(0);
         expect(species.hyperParameter).toBe(properties);
         expect(species.networks.length).toBe(0);
-    })
+    });
 
     test("Test Getter and Setter", () => {
         species.age = 10;
         species.averageSharedFitness = 3;
         species.expectedOffspring = 4;
-        species.isNovel = true
+        species.isNovel = true;
         species.ageOfLastImprovement = 7;
         species.currentBestFitness = 5;
         species.allTimeBestFitness = 6;
@@ -113,15 +114,15 @@ describe("Species Test", () => {
         expect(species.allTimeBestFitness).toBe(6);
         expect(species.hyperParameter).toBeInstanceOf(NeatProperties);
         expect(species.networks[0]).toBeInstanceOf(NeatChromosome);
-    })
+    });
 
     test("Test assignAdjustFitness()", () => {
         species.assignSharedFitness();
 
-        expect(champion.fitness).toBe(10)
+        expect(champion.fitness).toBe(10);
         expect(champion.sharedFitness).toBe(
             champion.fitness * properties.ageSignificance / species.networks.length);
-    })
+    });
 
     test("Test assignAdjustFitness() with negative fitness values", () => {
         champion.fitness = -1;
@@ -129,7 +130,7 @@ describe("Species Test", () => {
 
         expect(champion.sharedFitness).toBeGreaterThan(0);
         expect(champion.sharedFitness).toBeLessThan(1);
-    })
+    });
 
     test("Test assignAdjustFitness() with stagnant species", () => {
         species.age = 10;
@@ -137,10 +138,10 @@ describe("Species Test", () => {
         species.hyperParameter.penalizingAge = 5;
         species.assignSharedFitness();
 
-        expect(champion.fitness).toBe(10)
+        expect(champion.fitness).toBe(10);
         expect(champion.sharedFitness).toBe(
             champion.fitness * 0.01 * properties.ageSignificance / species.networks.length);
-    })
+    });
 
     test("Test markKillCandidates()", () => {
         species.markParents();
@@ -149,7 +150,7 @@ describe("Species Test", () => {
         expect(species.networks[0].isParent).toBe(true);
         expect(species.allTimeBestFitness).toBe(10);
         expect(species.ageOfLastImprovement).toBe(species.age);
-    })
+    });
 
     test("Calculate the number of Offspring with leftOver of 0 using NEAT", () => {
         species.assignSharedFitness();
@@ -163,7 +164,7 @@ describe("Species Test", () => {
         const leftOver = species.getNumberOfOffspringsNEAT(0);
         expect(Math.floor(totalOffsprings)).toBeLessThanOrEqual(species.expectedOffspring + 1);
         expect(leftOver).toBeLessThan(1);
-    })
+    });
 
     test("Calculate the number of Offspring with leftOver of 0.99 using NEAT", () => {
         species.assignSharedFitness();
@@ -177,21 +178,21 @@ describe("Species Test", () => {
         const leftOver = species.getNumberOfOffspringsNEAT(0.99);
         expect(Math.floor(totalOffsprings)).toBeLessThanOrEqual(species.expectedOffspring + 1);
         expect(leftOver).toBeGreaterThan(0.98);
-    })
+    });
 
     test("Calculate the number of Offspring with leftOver of 0 using avgSpeciesFitness", () => {
         species.assignSharedFitness();
         const leftOver = species.getNumberOffspringsAvg(0, 30, populationSize);
         expect(Math.floor(species.expectedOffspring)).toBeLessThan(50);
         expect(leftOver).toBeLessThan(1);
-    })
+    });
 
     test("Calculate the number of Offspring with leftOver of 0.99 using avgSpeciesFitness", () => {
         species.assignSharedFitness();
         const leftOver = species.getNumberOffspringsAvg(0.99, 30, populationSize);
         expect(Math.floor(species.expectedOffspring)).toBeLessThan(50);
         expect(leftOver).toBeGreaterThan(0.98);
-    })
+    });
 
     test("Test remove and add Chromosome", () => {
         const speciesSizeBefore = species.networks.length;
@@ -203,7 +204,7 @@ describe("Species Test", () => {
 
         expect(speciesSizeAdded).toBe(speciesSizeBefore + 1);
         expect(speciesSizeRemoved).toBe(speciesSizeBefore);
-    })
+    });
 
     test("Test breed new networks in Species", () => {
         properties.distanceThreshold = 20;
@@ -240,7 +241,7 @@ describe("Species Test", () => {
 
         // We did not eliminate the marked Chromosomes here therefore 2 times the size of the old population
         expect(popSpecie.networks.length).toBeLessThanOrEqual(2 * sizeBeforeBreed);
-    })
+    });
 
     test("Test breed new networks with an empty species", () => {
         properties.distanceThreshold = 20;
@@ -258,12 +259,12 @@ describe("Species Test", () => {
 
         // We did not eliminate the marked Chromosomes here therefore 2 times the size of the old population.
         expect(popSpecie.networks.length).toBe(0);
-    })
+    });
 
     test(" Test averageSpeciesFitness", () => {
         species.assignSharedFitness();
         const avgFitness = species.calculateAverageSharedFitness();
         expect(avgFitness).toBeLessThan(10);
         expect(avgFitness).toBeGreaterThan(0);
-    })
-})
+    });
+});

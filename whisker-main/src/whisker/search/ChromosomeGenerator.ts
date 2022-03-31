@@ -18,7 +18,7 @@
  *
  */
 
-import { Chromosome } from "./Chromosome"
+import { Chromosome } from "./Chromosome";
 import {Mutation} from "./Mutation";
 import {Crossover} from "./Crossover";
 

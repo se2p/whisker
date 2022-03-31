@@ -26,7 +26,7 @@ export class ScratchPosition {
      */
     public goInDirection(degree: number, distance: number): ScratchPosition {
         const radian = degree * (Math.PI / 180);
-        const x = this._x + distance * Math.cos(radian)
+        const x = this._x + distance * Math.cos(radian);
         const y = this._y + distance * Math.sin(radian);
         return new ScratchPosition(x, y);
     }
@@ -40,7 +40,7 @@ export class ScratchPosition {
      */
     public goInDirectionTilted(degree: number, distance: number): ScratchPosition {
         const radian = degree * (Math.PI / 180);
-        const x = this._x + distance * Math.sin(radian)
+        const x = this._x + distance * Math.sin(radian);
         const y = this._y + distance * Math.cos(radian);
         return new ScratchPosition(x, y);
     }

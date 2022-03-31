@@ -9,7 +9,7 @@ import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import Runtime from "scratch-vm/src/engine/runtime"
+import Runtime from "scratch-vm/src/engine/runtime";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {KeyPressEvent} from "../testcase/events/KeyPressEvent";
 import {Container} from "../utils/Container";
@@ -363,7 +363,7 @@ export class NetworkExecutor {
                 x: this._vm.runtime.targets[targetsKey]["x"],
                 y: this._vm.runtime.targets[targetsKey]["y"],
                 variables: cloneDeep(this._vm.runtime.targets[targetsKey]["variables"])
-            }
+            };
         }
     }
 
@@ -400,7 +400,7 @@ export class NetworkExecutor {
             const y = this._initialState[targetsKey]["y"];
             this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
             this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
-            this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop']
+            this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop'];
         }
 
         this._vmWrapper.inputs.resetMouse();

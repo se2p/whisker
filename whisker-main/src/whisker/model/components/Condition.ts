@@ -27,7 +27,7 @@ export class Condition extends Check {
         try {
             this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
         } catch (e) {
-            cu.addErrorOutput(this._edgeLabel, graphID, e)
+            cu.addErrorOutput(this._edgeLabel, graphID, e);
             this._condition = () => false;
         }
     }

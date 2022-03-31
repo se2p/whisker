@@ -27,6 +27,7 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import Arrays from "../../utils/Arrays";
+import {Container} from "../../utils/Container";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -96,7 +97,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
 
-        console.log(`Simple GA started at ${this._startTime}`);
+        Container.debugLog(`Simple GA started at ${this._startTime}`);
 
         // Initialise population
         let population = this.generateInitialPopulation();
@@ -108,7 +109,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            console.log(`Iteration ${this._iterations}, best fitness: ${this._bestFitness}`);
+            Container.debugLog(`Iteration ${this._iterations}, best fitness: ${this._bestFitness}`);
 
             const nextGeneration = this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
@@ -120,7 +121,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this.updateStatistics();
         }
 
-        console.log(`Simple GA completed at ${Date.now()}`);
+        Container.debugLog(`Simple GA completed at ${Date.now()}`);
 
         return this._archive;
     }
@@ -165,7 +166,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this._bestFitness = candidateFitness;
             Arrays.clear(this._bestIndividuals);
             this._bestIndividuals.push(bestIndividual);
-            console.log(`Found new best solution with fitness: ${this._bestFitness}`);
+            Container.debugLog(`Found new best solution with fitness: ${this._bestFitness}`);
         }
     }
 

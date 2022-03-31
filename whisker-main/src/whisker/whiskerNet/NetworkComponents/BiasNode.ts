@@ -34,7 +34,7 @@ export class BiasNode extends NodeGene {
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
-        return clone
+        return clone;
     }
 
     /**
@@ -64,7 +64,7 @@ export class BiasNode extends NodeGene {
     }
 
     public toJSON(): Record<string, (number | string)> {
-        const node = {}
+        const node = {};
         node[`id`] = this.uID;
         node[`t`] = "B";
         node[`aF`] = ActivationFunction[this.activationFunction];

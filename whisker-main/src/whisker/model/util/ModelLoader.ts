@@ -54,7 +54,7 @@ export class ModelLoader {
         try {
             graphs.forEach(graph => {
                 this.loadGraph(graph);
-            })
+            });
         } catch (e) {
             e.message = "Model Loader: " + e.message;
             throw e;
@@ -72,7 +72,7 @@ export class ModelLoader {
         if (graph.startNodeId == undefined) {
             throw new Error(graphID + ": Start node id of the graph is undefined");
         } else if (Array.isArray(graph.startNodeId)) {
-            throw new Error(graphID + ": Only one start node allowed.")
+            throw new Error(graphID + ": Only one start node allowed.");
         }
         this.startNodeId = graph.startNodeId;
 
@@ -139,7 +139,7 @@ export class ModelLoader {
                 break;
             case ModelLoader.ON_TEST_END_ID:
                 model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram, this.stopNodeIds,
-                    this.stopAllNodeIds)
+                    this.stopAllNodeIds);
                 this.onTestEndModels.push(model);
                 break;
             default:
@@ -157,7 +157,7 @@ export class ModelLoader {
             }
 
             (this.nodesMap)[node.id] = new ModelNode(node.id, node.label);
-        })
+        });
     }
 
     private loadNodesFromIds(nodeIds: string[]): void {
@@ -166,7 +166,7 @@ export class ModelLoader {
                 throw new Error("Node id '" + id + "' already defined.");
             }
             (this.nodesMap)[id] = new ModelNode(id, id);
-        })
+        });
         this.setupNodes();
     }
 
@@ -174,10 +174,10 @@ export class ModelLoader {
         this.nodesMap[this.startNodeId].isStartNode = true;
         this.stopNodeIds.forEach(id => {
             this.nodesMap[id].isStopNode = true;
-        })
+        });
         this.stopAllNodeIds.forEach(id => {
             this.nodesMap[id].isStopAllNode = true;
-        })
+        });
     }
 
     private loadEdge(usage: string, graphID: string, edge): void {
@@ -292,7 +292,7 @@ export class ModelLoader {
             }
 
             newEdge.addCondition(new Condition(id, newEdge.id, name, negated, args));
-        })
+        });
     }
 
     private loadEffects(newEdge: ProgramModelEdge, effects: any[]) {
@@ -322,7 +322,7 @@ export class ModelLoader {
             }
 
             newEdge.addEffect(new Effect(id, newEdge.id, name, negated, args));
-        })
+        });
     }
 
     private loadInputEffect(newEdge: UserModelEdge, effects: any[]) {
@@ -334,13 +334,13 @@ export class ModelLoader {
 
             if (name == InputEffectName.InputKey) {
                 if (args[0].toLowerCase() == "left") {
-                    args[0] = "left arrow"
+                    args[0] = "left arrow";
                 } else if (args[0].toLowerCase() == "right") {
-                    args[0] = "right arrow"
+                    args[0] = "right arrow";
                 } else if (args[0].toLowerCase() == "up") {
-                    args[0] = "up arrow"
+                    args[0] = "up arrow";
                 } else if (args[0].toLowerCase() == "down") {
-                    args[0] = "down arrow"
+                    args[0] = "down arrow";
                 }
             }
 
@@ -359,7 +359,7 @@ export class ModelLoader {
             }
 
             newEdge.addInputEffect(new InputEffect(id, name, args));
-        })
+        });
     }
 
 }

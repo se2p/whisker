@@ -46,7 +46,7 @@ export class InputNode extends NodeGene {
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
-        return clone
+        return clone;
     }
 
     /**
@@ -77,7 +77,7 @@ export class InputNode extends NodeGene {
      * @return Record containing most important attributes keys mapped to their values.
      */
     public toJSON(): Record<string, (number | string)> {
-        const node = {}
+        const node = {};
         node['id'] = this.uID;
         node['t'] = 'I';
         node['aF'] = ActivationFunction[this.activationFunction];

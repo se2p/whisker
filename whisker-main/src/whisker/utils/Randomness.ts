@@ -47,7 +47,7 @@ export class Randomness {
      * Seed for the Scratch-VM. Initial value set to 0 to ensure that tests, generated using Whisker's TestGenerator,
      * will produce the same results if no seed is set.
      */
-    public static _scratchSeed = 0;
+    private static _scratchSeed = 0;
 
     /**
      * Private constructor to prevent construction with new
@@ -89,7 +89,7 @@ export class Randomness {
      */
     public static setInitialRNGSeed(seed: (number | string)): void {
         const convertedSeed = this.convertSeed(seed);
-        console.log(`Seeding the RNG to ${convertedSeed}`)
+        console.log(`Seeding the RNG to ${convertedSeed}`);
         Randomness._initialRNGSeed = convertedSeed;
     }
 
@@ -100,7 +100,7 @@ export class Randomness {
     public static setScratchSeed(seed: (number | string), silence=false): void {
         const convertedSeed = this.convertSeed(seed);
         if(!silence) {
-            console.log(`Seeding the Scratch-VM to ${convertedSeed}`)
+            console.log(`Seeding the Scratch-VM to ${convertedSeed}`);
         }
         Randomness._scratchSeed = convertedSeed;
     }
@@ -119,7 +119,7 @@ export class Randomness {
             let parsedSeed = parseInt(seed, 10);
             // If the seed does not represent a number ( e.g "whisker") sum up the UTF-16 code units
             if (isNaN(parsedSeed)) {
-                parsedSeed = [...seed].map(char => char.charCodeAt(0)).reduce((current, previous) => previous + current)
+                parsedSeed = [...seed].map(char => char.charCodeAt(0)).reduce((current, previous) => previous + current);
             }
             return parsedSeed;
         } else {
@@ -214,7 +214,7 @@ export class Randomness {
      * @param std the std of the gaussian distribution
      */
     public nextGaussianInt(mean: number, std: number): number {
-        return Math.round(this.nextGaussian(mean, std))
+        return Math.round(this.nextGaussian(mean, std));
     }
 
     /**

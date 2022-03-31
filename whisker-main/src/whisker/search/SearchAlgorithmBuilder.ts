@@ -227,7 +227,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 searchAlgorithm = this._buildSimpleGA();
                 break;
             case "neat":
-                searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>
+                searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>;
                 break;
             case "e-neat":
                 searchAlgorithm = this._buildExplorativeNEAT();

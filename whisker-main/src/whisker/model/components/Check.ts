@@ -70,7 +70,7 @@ export class Check {
                     throw error;
                 }
             }
-        }
+        };
 
         switch (name) {
             case CheckName.BackgroundChange:
@@ -206,7 +206,7 @@ export class Check {
             name: this.name,
             args: this.args,
             negated: this.negated
-        }
+        };
     }
 
     equals(check: Check) {

@@ -105,7 +105,7 @@ export class NeatChromosomeGeneratorTemplateNetwork extends NeatChromosomeGenera
         if (network.uID > this._numberNetworks) {
             network.mutate();
         }
-        return network
+        return network;
     }
 
     /**

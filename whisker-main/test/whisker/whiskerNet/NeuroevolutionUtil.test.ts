@@ -59,21 +59,21 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
         events = [new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events,0.4);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
     });
 
-    test("Test Softmax calculation", () =>{
+    test("Test Softmax calculation", () => {
         const chromosome = generator.get();
         chromosome.activateNetwork(chromosome.generateDummyInputs());
         for (let i = 0; i < chromosome.getMaxDepth(); i++) {
-            chromosome.activateNetwork(genInputs)
+            chromosome.activateNetwork(genInputs);
         }
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);
         expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toBe(1);
     });
 
-    test("Test RELU activation functino", () =>{
+    test("Test RELU activation function", () => {
         expect(NeuroevolutionUtil.relu(Math.PI)).toEqual(Math.PI);
         expect(NeuroevolutionUtil.relu(-Math.PI)).toEqual(0);
     });
-})
+});

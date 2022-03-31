@@ -1,7 +1,7 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {ScratchInterface} from "../scratch/ScratchInterface";
-import VMWrapper from "../../vm/vm-wrapper"
+import VMWrapper from "../../vm/vm-wrapper";
 import {Container} from "../utils/Container";
 import {Pair} from "../utils/Pair";
 import * as twgl from 'twgl.js';
@@ -154,8 +154,8 @@ export class InputExtraction {
         dy = dy / stageHeight;
 
         // Clamp within the stage
-        dx = Math.max(-1, Math.min(dx, 1))
-        dy = Math.max(-1, Math.min(dy, 1))
+        dx = Math.max(-1, Math.min(dx, 1));
+        dy = Math.max(-1, Math.min(dy, 1));
 
         return {dx, dy};
     }
@@ -205,7 +205,7 @@ export class InputExtraction {
 
         // Gather required constants
         const targetPosition = ScratchInterface.getPositionOfTarget(target);
-        const rangeFinderAngles = [0, 90, 180, -90]
+        const rangeFinderAngles = [0, 90, 180, -90];
         const rangeFinderDistances = {};
         // Check for each rangeFinder if it can detect an angle. We have 6 sensors attached to our source Sprite:
         // Front (0), Left (-90), Right (90) and Back (180)
@@ -317,7 +317,7 @@ export class InputExtraction {
 
         // At this point we are way off the path, hence we do not include the waypoint as input.
         if (absoluteX > distanceThreshold || absoluteY > distanceThreshold) {
-            return undefined
+            return undefined;
         }
 
         const xSigned = playerPosition.x < wayPointToReach.x ? absoluteX : -absoluteX;

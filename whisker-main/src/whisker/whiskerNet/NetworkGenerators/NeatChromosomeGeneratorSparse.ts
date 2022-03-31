@@ -51,15 +51,14 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
             // For each input of the Sprite create a connection to each Output-Node
             for (const inputNode of sprite) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0,
-                        false)
+                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
                     this.assignInnovation(newConnection);
                     connections.push(newConnection);
                     outputNode.incomingConnections.push(newConnection);
                 }
             }
         }
-        while (this._random.nextDouble() < this._inputRate && availableSprites.length > 0)
+        while (this._random.nextDouble() < this._inputRate && availableSprites.length > 0);
         return connections;
     }
 }

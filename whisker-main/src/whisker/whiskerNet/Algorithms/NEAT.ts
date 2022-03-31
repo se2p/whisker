@@ -168,27 +168,27 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * @param population the population of networks
      */
     protected reportOfCurrentIteration(population: NeatPopulation): void {
-        console.log(`Iteration:  ${this._iterations}`);
-        console.log(`Best Network Fitness:  ${population.bestFitness}`);
-        console.log(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
-        console.log(`Average Network Fitness: ${population.averageFitness}`)
-        console.log(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
+        Container.debugLog(`Iteration:  ${this._iterations}`);
+        Container.debugLog(`Best Network Fitness:  ${population.bestFitness}`);
+        Container.debugLog(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
+        Container.debugLog(`Average Network Fitness: ${population.averageFitness}`)
+        Container.debugLog(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
         for (const species of population.species) {
-            console.log(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
+            Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
         }
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             if (!this._archive.has(fitnessFunctionKey)) {
-                console.log(`Not covered: ${this._fitnessFunctions.get(fitnessFunctionKey).toString()}`);
+                Container.debugLog(`Not covered: ${this._fitnessFunctions.get(fitnessFunctionKey).toString()}`);
             }
         }
-        console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        console.log(`Covered goals: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
+        Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
+        Container.debugLog(`Covered goals: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
         if (this._neuroevolutionProperties.printPopulationRecord) {
-            const currentPopulationRecord = {}
+            const currentPopulationRecord = {};
             currentPopulationRecord[`Generation ${this._iterations}`] = population;
-            console.log(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`)
+            Container.debugLog(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`);
         }
-        console.log("-----------------------------------------------------")
+        Container.debugLog("-----------------------------------------------------");
     }
 
     getStartTime(): number {
@@ -197,7 +197,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         this._neuroevolutionProperties = properties as unknown as NeatProperties;
-        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition
+        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
 

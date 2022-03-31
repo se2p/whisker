@@ -119,7 +119,7 @@ export abstract class ModelEdge {
 
     private getTimeLimitFailedOutput(condition: Condition, t: TestDriver) {
         if (this.forceTestAtSteps != -1 && this.forceTestAtSteps <= t.getTotalStepsExecuted()) {
-            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt)
+            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt);
         } else {
             return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter);
         }
@@ -152,7 +152,7 @@ export abstract class ModelEdge {
         }
         this.conditions.forEach(cond => {
             cond.registerComponents(checkListener, t, caseSensitive, this.graphID);
-        })
+        });
     }
 
     reset(): void {
@@ -163,10 +163,10 @@ export abstract class ModelEdge {
     }
 
     simplifyForSave() {
-        let conditions = []
+        let conditions = [];
         this.conditions.forEach(condition => {
             conditions.push(condition.simplifyForSave());
-        })
+        });
         return {
             id: this.id,
             label: this.label,
@@ -175,7 +175,7 @@ export abstract class ModelEdge {
             forceTestAfter: this.forceTestAfter,
             forceTestAt: this.forceTestAt,
             conditions: conditions
-        }
+        };
     }
 }
 
@@ -221,14 +221,14 @@ export class ProgramModelEdge extends ModelEdge {
         super.registerComponents(cu, testDriver, caseSensitive);
         this.effects.forEach(effect => {
             effect.registerComponents(testDriver, cu, caseSensitive, this.graphID);
-        })
+        });
     }
 
     simplifyForSave() {
-        let effects = []
+        let effects = [];
         this.effects.forEach(effect => {
             effects.push(effect.simplifyForSave());
-        })
+        });
         return {
             ...super.simplifyForSave(),
             effects: effects
@@ -329,7 +329,7 @@ export class UserModelEdge extends ModelEdge {
     inputImmediate(t: TestDriver) {
         this.inputEffects.forEach(inputEffect => {
             inputEffect.inputImmediate(t);
-        })
+        });
     }
 
     /**
@@ -339,14 +339,14 @@ export class UserModelEdge extends ModelEdge {
         super.registerComponents(checkListener, testDriver, caseSensitive);
         this.inputEffects.forEach(effect => {
             effect.registerComponents(testDriver, caseSensitive);
-        })
+        });
     }
 
     simplifyForSave() {
-        let inputEffects = []
+        let inputEffects = [];
         this.inputEffects.forEach(effect => {
             inputEffects.push(effect.simplifyForSave());
-        })
+        });
         return {
             ...super.simplifyForSave(),
             effects: inputEffects

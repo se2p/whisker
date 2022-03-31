@@ -39,5 +39,6 @@
         "clickDuration": 1,
         "pressDuration": 5,
         "soundDuration": 1
-    }
+    },
+    "debugLog": true
 }

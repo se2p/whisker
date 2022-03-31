@@ -32,9 +32,9 @@ describe('RankSelection', () => {
         const populationSize = 5;
         const selectionCount = new Map<Chromosome, number>();
         for (let i = 0; i < populationSize; i++) {
-            const chromosome = new BitstringChromosome([], new BitflipMutation(), new SinglePointCrossover())
+            const chromosome = new BitstringChromosome([], new BitflipMutation(), new SinglePointCrossover());
             population.push(chromosome);
-            selectionCount.set(chromosome, 0)
+            selectionCount.set(chromosome, 0);
         }
         for (let i = 0; i < 1000; i++) {
             const selected = await selection.apply(population);

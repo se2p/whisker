@@ -337,7 +337,7 @@ export class StatisticsCollector {
             const lengthDiff = Math.abs(numberOfCoverageValues - timestamps.length);
 
             const range: (until: number) => number[] = (until) => [...Array(until).keys()];
-            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * 1000)
+            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * 1000);
             const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
 
             header = [...header, ...headerPadding].slice(0, numberOfCoverageValues);
@@ -381,7 +381,7 @@ export class StatisticsCollector {
 
             const lengthDiff = Math.ceil(Math.abs(maxTimeStamp - timestamps[timestamps.length - 1]) / sampleDistance);
             const range: (until: number) => number[] = (until) => [...Array(until).keys()];
-            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance)
+            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance);
             const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
 
             header = [...header, ...headerPadding].slice(0, maxTimeStamp);

@@ -26,34 +26,34 @@ describe("Randomness", () => {
         const seed = 5;
         Randomness.setInitialSeeds(seed);
         expect(Randomness.getInitialRNGSeed()).toBe(seed);
-    })
+    });
 
     test("Set initial seed as string type", () =>{
         const seed = "5";
         Randomness.setInitialSeeds(seed);
         expect(Randomness.getInitialRNGSeed()).toBe(5);
         expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
-    })
+    });
 
     test("Set initial seed as string", () =>{
         const seed = "whisker";
         Randomness.setInitialSeeds(seed);
         expect(Randomness.getInitialRNGSeed()).toBeGreaterThan(0);
         expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
-    })
+    });
 
     test("Set initial seed as empty string", () =>{
         const seed = "";
         Randomness.setInitialSeeds(seed);
         expect(Date.now() - Randomness.getInitialRNGSeed()).toBeLessThan(1000);
         expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
-    })
+    });
 
     test("Same Seed same result", () =>{
         const seed = 5;
         Randomness.setInitialSeeds(seed);
         expect(Randomness.getInitialRNGSeed()).toBe(seed);
-    })
+    });
 
     test("Create an integer from a range", () => {
 
@@ -119,23 +119,23 @@ describe("Randomness", () => {
 
     test("Pick number from GaussianDistribution", () =>{
         const random = Randomness.getInstance();
-        const sampledValues = []
+        const sampledValues = [];
         for (let i = 0; i < 10000; i++) {
-            sampledValues.push(random.nextGaussian(100,2))
+            sampledValues.push(random.nextGaussian(100,2));
         }
         const average = sampledValues.reduce((a, b) => a + b) / sampledValues.length;
-        expect(average).toBeGreaterThan(99)
-        expect(average).toBeLessThan(101)
-    })
+        expect(average).toBeGreaterThan(99);
+        expect(average).toBeLessThan(101);
+    });
 
     test("Pick integer from GaussianDistribution", () =>{
         const random = Randomness.getInstance();
-        const sampledValues = []
+        const sampledValues = [];
         for (let i = 0; i < 10000; i++) {
-            sampledValues.push(random.nextGaussianInt(100,2))
+            sampledValues.push(random.nextGaussianInt(100,2));
         }
         const average = sampledValues.reduce((a, b) => a + b) / sampledValues.length;
-        expect(average).toBeGreaterThan(99)
-        expect(average).toBeLessThan(101)
-    })
+        expect(average).toBeGreaterThan(99);
+        expect(average).toBeLessThan(101);
+    });
 });

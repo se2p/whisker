@@ -14,9 +14,7 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {
-    NeatChromosomeGeneratorSparse
-} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
+import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
@@ -240,7 +238,7 @@ describe('Test NetworkChromosome', () => {
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
         for (let i = 0; i < chromosome.getMaxDepth(); i++) {
-            chromosome.activateNetwork(inputs)
+            chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
@@ -249,8 +247,8 @@ describe('Test NetworkChromosome', () => {
         }
         expect(chromosome.outputNodes[0].nodeValue).toEqual(0.6);
         expect(chromosome.outputNodes[1].nodeValue).toEqual(0.2);
-        expect(chromosome.outputNodes[2].nodeValue).toEqual(0.7)
-        expect(chromosome.outputNodes[3].nodeValue).toEqual(2.8)
+        expect(chromosome.outputNodes[2].nodeValue).toEqual(0.7);
+        expect(chromosome.outputNodes[3].nodeValue).toEqual(2.8);
         expect([...softmaxOutput.values()]).toEqual([0.599, 0.401]);
         expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
@@ -362,7 +360,7 @@ describe('Test NetworkChromosome', () => {
             chromosome.activateNetwork(inputs)
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
-        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
+        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
         for (const key of softmaxOutput.keys()) {
             softmaxOutput.set(key, Number(softmaxOutput.get(key).toFixed(3)));
         }
@@ -572,7 +570,7 @@ describe('Test NetworkChromosome', () => {
         const oldConnectionSize = chromosome.connections.length;
         chromosome.updateOutputNodes([new MouseMoveEvent()]);
         chromosome2.updateOutputNodes([new MouseMoveEvent()]);
-        chromosome3.updateOutputNodes([new KeyPressEvent('up arrow')])
+        chromosome3.updateOutputNodes([new KeyPressEvent('up arrow')]);
         expect(chromosome.allNodes.length).toBeGreaterThan(oldNodeSize);
         expect(chromosome.outputNodes.length).toBeGreaterThan(oldOutputNodesSize);
         expect(chromosome.regressionNodes.size).toBeGreaterThan(oldRegressionNodesSize);
@@ -601,12 +599,11 @@ describe('Test NetworkChromosome', () => {
         expect(spriteFeatureSize).toBeLessThan(chromosome.inputNodes.size);
         expect(oldSprite2FeatureSize).toBeLessThan(chromosome.inputNodes.get("Sprite2").size);
         expect(oldConnections).toEqual(chromosome.connections.length);
-
     });
 
     test("Test toString", () => {
-        const network = generator.get()
+        const network = generator.get();
         network.connections[0].isEnabled = false;
-        expect(network.toString().split('\n').length).toBeGreaterThan(network.connections.length)
+        expect(network.toString().split('\n').length).toBeGreaterThan(network.connections.length);
     });
 })

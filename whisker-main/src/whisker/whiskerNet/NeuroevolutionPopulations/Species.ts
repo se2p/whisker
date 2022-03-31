@@ -3,6 +3,7 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
+import {Container} from "../../utils/Container";
 
 export class Species<C extends NeatChromosome> {
 
@@ -108,9 +109,8 @@ export class Species<C extends NeatChromosome> {
 
             // Penalize fitness if it has not improved for a certain amount of ages
             if (ageDept >= 1) {
-                const penalizingFactor = 0.01;
-                network.sharedFitness = network.sharedFitness * penalizingFactor;
-                console.log(`Penalizing stagnant species ${this.uID}`)
+                network.sharedFitness = network.sharedFitness * 0.01;
+                Container.debugLog(`Penalizing stagnant species ${this.uID}`);
             }
 
             // Boost fitness for young generations to give them a chance to evolve for some generations.
@@ -175,7 +175,7 @@ export class Species<C extends NeatChromosome> {
 
         let intPart = 0;
         let fractionPart = 0.0;
-        let leftOverInt = 0.0
+        let leftOverInt = 0.0;
 
         for (const network of this.networks) {
             intPart = Math.floor(network.expectedOffspring);
@@ -247,7 +247,7 @@ export class Species<C extends NeatChromosome> {
                     champCloned++;
                     this.champion.numberOffspringPopulationChamp--;
                 } else {
-                    child = this.breedPopulationChampion()
+                    child = this.breedPopulationChampion();
                 }
             }
 
@@ -302,7 +302,7 @@ export class Species<C extends NeatChromosome> {
     private breedCrossover(population: NeatPopulation, populationSpecies: Species<C>[]): C {
         // Pick first parent
         const parent1 = this._randomness.pick(this.networks);
-        let parent2: C
+        let parent2: C;
 
         // Pick second parent either from within the species or from another species.
         if (this._randomness.nextDouble() < this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
@@ -338,7 +338,7 @@ export class Species<C extends NeatChromosome> {
      * Sorts the species' networks in decreasing order according to their fitness values.
      */
     public sortNetworks(): void {
-        this.networks.sort((a, b) => b.fitness - a.fitness)
+        this.networks.sort((a, b) => b.fitness - a.fitness);
     }
 
     /**
@@ -371,9 +371,9 @@ export class Species<C extends NeatChromosome> {
         clone.allTimeBestFitness = this.allTimeBestFitness;
         clone.expectedOffspring = this.expectedOffspring;
         clone.ageOfLastImprovement = this.ageOfLastImprovement;
-        clone.champion = this.networks[0].clone() as C
+        clone.champion = this.networks[0].clone() as C;
         for (const network of this.networks) {
-            clone.networks.push(network.clone() as C)
+            clone.networks.push(network.clone() as C);
         }
         return clone as Species<C>;
     }

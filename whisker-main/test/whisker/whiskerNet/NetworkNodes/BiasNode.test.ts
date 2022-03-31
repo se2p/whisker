@@ -6,11 +6,11 @@ import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/In
 
 
 describe("BiasNode Tests", () => {
-    let biasNode: NodeGene
+    let biasNode: NodeGene;
 
     beforeEach(() => {
         biasNode = new BiasNode(1);
-    })
+    });
 
     test("Constructor Test", () => {
 
@@ -21,54 +21,54 @@ describe("BiasNode Tests", () => {
         expect(biasNode.type).toEqual(NodeType.BIAS);
         expect(biasNode.nodeValue).toEqual(1);
         expect(biasNode.lastActivationValue).toEqual(1);
-        expect(biasNode.activationValue).toEqual(1)
-        expect(biasNode.activatedFlag).toBeTruthy()
+        expect(biasNode.activationValue).toEqual(1);
+        expect(biasNode.activatedFlag).toBeTruthy();
         expect(biasNode.activationCount).toEqual(1);
-        expect(biasNode.traversed).toBeFalsy()
+        expect(biasNode.traversed).toBeFalsy();
         expect(biasNode.incomingConnections.length).toEqual(0);
-    })
+    });
 
     test("Reset Node", () => {
         biasNode.reset();
-        expect(biasNode.activationCount).toEqual(1)
-        expect(biasNode.activationValue).toEqual(1)
-        expect(biasNode.nodeValue).toEqual(1)
-        expect(biasNode.lastActivationValue).toEqual(1)
-        expect(biasNode.activatedFlag).toBeTruthy()
-        expect(biasNode.traversed).toBeFalsy()
+        expect(biasNode.activationCount).toEqual(1);
+        expect(biasNode.activationValue).toEqual(1);
+        expect(biasNode.nodeValue).toEqual(1);
+        expect(biasNode.lastActivationValue).toEqual(1);
+        expect(biasNode.activatedFlag).toBeTruthy();
+        expect(biasNode.traversed).toBeFalsy();
 
-    })
+    });
 
     test("Equals Test", () => {
         const biasNode2 = new BiasNode(1);
-        expect(biasNode2.equals(biasNode)).toBeTruthy()
+        expect(biasNode2.equals(biasNode)).toBeTruthy();
 
         const biasNode3 = new BiasNode(2);
-        expect(biasNode3.equals(biasNode)).toBeFalsy()
+        expect(biasNode3.equals(biasNode)).toBeFalsy();
 
         const inputNode = new InputNode(1, "Sprite1", "X-Position");
-        expect(inputNode.equals(biasNode)).toBeFalsy()
-    })
+        expect(inputNode.equals(biasNode)).toBeFalsy();
+    });
 
     test("Clone Test", () => {
         const clone = biasNode.clone();
         expect(clone.uID).toEqual(biasNode.uID);
         expect(clone.equals(biasNode)).toBeTruthy();
         expect(clone === biasNode).toBeFalsy();
-    })
+    });
 
     test("getActivationValue Test", () => {
         expect(biasNode.activate()).toEqual(1);
-        expect(biasNode.activationValue).toEqual(1)
-        biasNode.reset()
+        expect(biasNode.activationValue).toEqual(1);
+        biasNode.reset();
         expect(biasNode.activate()).toEqual(1);
-        expect(biasNode.activationValue).toEqual(1)
-    })
+        expect(biasNode.activationValue).toEqual(1);
+    });
 
     test("toString Test", () => {
         const out = biasNode.toString();
         expect(out).toContain(`BiasNode{ID: 1\
 , Value: 1\
-, InputConnections: ${[]}`)
-    })
-})
+, InputConnections: ${[]}`);
+    });
+});

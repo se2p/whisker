@@ -61,7 +61,7 @@ export class ClickSpriteEvent extends ScratchEvent {
     }
 
     public toJSON(): Record<string, any> {
-        const event = {}
+        const event = {};
         event[`type`] = `ClickSpriteEvent`;
         if (this._target !== undefined) {
             event[`args`] = {"target": this._target.sprite.name, "steps": this._steps};
@@ -87,8 +87,8 @@ export class ClickSpriteEvent extends ScratchEvent {
         return 0;
     }
 
-    setParameter(): number[] {
-        return [];
+    setParameter(): void {
+        return;
     }
 
     getParameters(): (number | RenderedTarget)[] {

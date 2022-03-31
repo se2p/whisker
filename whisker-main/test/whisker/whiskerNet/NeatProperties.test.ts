@@ -56,5 +56,5 @@ describe("Test NeatProperties", () => {
         expect(properties.stoppingCondition).toBeInstanceOf(OptimalSolutionStoppingCondition);
         expect(properties.networkFitness).toBe(null);
         expect(properties.timeout).toBe(20000);
-    })
-})
+    });
+});

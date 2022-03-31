@@ -81,7 +81,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             }
         }
         // Now, let the reproduction start.
-        const offspring: NeatChromosome[] = []
+        const offspring: NeatChromosome[] = [];
         for (const specie of this.species) {
             offspring.push(...specie.evolve(this, this.species));
         }
@@ -220,7 +220,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // If there is a stagnation in fitness refocus the search
         if (this.highestFitnessLastChanged > this.hyperParameter.penalizingAge + 5) {
-            console.info("Refocusing the search on the two most promising species")
+            console.info("Refocusing the search on the two most promising species");
             this.highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize / 2;
 
@@ -301,7 +301,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             if (!foundSpecies) {
                 const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
                 this.speciesCount++;
-                this.species.push(newSpecies)
+                this.species.push(newSpecies);
                 newSpecies.networks.push(network);
                 network.species = newSpecies;
             }
@@ -318,7 +318,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // Safety check.
         if (network1 === undefined || network2 === undefined) {
-            console.error("Undefined network in compatDistance Calculation")
+            console.error("Undefined network in compatDistance Calculation");
             return Number.MAX_SAFE_INTEGER;
         }
 
@@ -348,7 +348,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             // If we exceeded the size of one of the two network, we have an excess gene.
             if (i1 >= size1) {
                 excess++;
-                i2++
+                i2++;
             } else if (i2 >= size2) {
                 excess++;
                 i1++;
@@ -421,14 +421,14 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Sorts the networks of the population according to their fitness values in decreasing order.
      */
     protected sortPopulation(): void {
-        this.networks.sort((a, b) => b.fitness - a.fitness)
+        this.networks.sort((a, b) => b.fitness - a.fitness);
     }
 
     /**
      * Sorts all currently existent species according to their number of expected offspring in decreasing order.
      */
     protected sortSpecies(): void {
-        this.species.sort((a, b) => b.expectedOffspring - a.expectedOffspring)
+        this.species.sort((a, b) => b.expectedOffspring - a.expectedOffspring);
     }
 
     /**

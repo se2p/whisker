@@ -8,20 +8,20 @@ describe('User model', () => {
         expect(() => {
             new UserModel("id", "start", {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).not.toThrow()
+        }).not.toThrow();
         expect(() => {
             new UserModel(undefined, "start", {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new UserModel("id", undefined, {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new UserModel("id", "n", {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("User model: coverage without run", () => {
         let edges = {};
@@ -36,7 +36,7 @@ describe('User model', () => {
         expect(() => {
             p.simplifyForSave();
         }).not.toThrow();
-    })
+    });
 
     test("User model: functions", () => {
         let p = new UserModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
@@ -50,5 +50,5 @@ describe('User model', () => {
         p.setTransitionsStartTo(3);
         expect(p.lastTransitionStep == 3);
         expect(p.secondLastTransitionStep == 3);
-    })
-})
+    });
+});

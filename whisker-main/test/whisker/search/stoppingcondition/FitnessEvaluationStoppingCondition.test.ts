@@ -6,14 +6,14 @@ describe('Test FitnessEvaluationStoppingCondition', () => {
     test('Stopping condition reached', async () => {
         const maxEvaluations = 100;
         StatisticsCollector.getInstance().numberFitnessEvaluations = 101;
-        const stoppingCondition = new FitnessEvaluationStoppingCondition(maxEvaluations)
+        const stoppingCondition = new FitnessEvaluationStoppingCondition(maxEvaluations);
         expect(await stoppingCondition.isFinished()).toBeTruthy();
     });
 
     test('Stopping condition not reached', async () => {
         const maxEvents = 200;
         StatisticsCollector.getInstance().numberFitnessEvaluations = 101;
-        const stoppingCondition = new FitnessEvaluationStoppingCondition(maxEvents)
+        const stoppingCondition = new FitnessEvaluationStoppingCondition(maxEvents);
         expect(await stoppingCondition.isFinished()).toBeFalsy();
     });
 
@@ -21,7 +21,7 @@ describe('Test FitnessEvaluationStoppingCondition', () => {
         const maxEvents = 200;
         StatisticsCollector.getInstance().numberFitnessEvaluations = 101;
         const progress = 101 / 200;
-        const stoppingCondition = new FitnessEvaluationStoppingCondition(maxEvents)
+        const stoppingCondition = new FitnessEvaluationStoppingCondition(maxEvents);
         expect(await stoppingCondition.getProgress()).toBe(progress);
     });
 });

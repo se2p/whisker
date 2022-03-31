@@ -46,14 +46,14 @@ export class KeyPressEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        const keyName = this._keyOption.replace(/'/g, "\\'")
+        const keyName = this._keyOption.replace(/'/g, "\\'");
         return `t.keyPress('${keyName}', ${this._steps});\n  ${new WaitEvent(this._steps).toJavaScript()}`;
     }
 
     public toJSON(): Record<string, any> {
-        const event = {}
+        const event = {};
         event[`type`] = `KeyPressEvent`;
-        event[`args`] = {"key": this._keyOption, "steps": this._steps}
+        event[`args`] = {"key": this._keyOption, "steps": this._steps};
         return event;
     }
 

@@ -147,7 +147,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
             if (this._stoppingCondition.isFinished(this)) {
                 const executedChromosomes = population.filter(chromosome => (chromosome as unknown as TestChromosome).trace);
                 Arrays.clear(population);
-                population.push(...executedChromosomes)
+                population.push(...executedChromosomes);
                 return;
             } else {
                 await chromosome.evaluate();

@@ -57,8 +57,8 @@ describe('OptimalSolutionStoppingCondition', () => {
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
-        algorithm.setFitnessFunction(fitnessFunction)
-        algorithm.setCurrentSolution(chromosome)
+        algorithm.setFitnessFunction(fitnessFunction);
+        algorithm.setCurrentSolution(chromosome);
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
@@ -69,7 +69,7 @@ describe('OptimalSolutionStoppingCondition', () => {
     test('Do not fail on empty list', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
-        algorithm.setFitnessFunction(fitnessFunction)
+        algorithm.setFitnessFunction(fitnessFunction);
         // No current solution is set:
         // algorithm.setCurrentSolution(chromosome)
 

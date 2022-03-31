@@ -1,9 +1,7 @@
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {
-    NeatChromosomeGeneratorFullyConnected
-} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {NeatChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {expect} from "@jest/globals";
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
@@ -57,7 +55,7 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, genInputs, events);
-    })
+    });
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
@@ -83,4 +81,4 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         expect(NeatPopulation.innovations.length).toBe(chromosome1.connections.length);
         expect(chromosome1.connections[5].innovation).toBe(chromosome2.connections[5].innovation);
     });
-})
+});

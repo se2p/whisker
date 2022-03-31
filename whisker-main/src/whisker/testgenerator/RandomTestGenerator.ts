@@ -99,11 +99,11 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         while (!(stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
             const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
-            const randomEventChromosome = new TestChromosome([], undefined, undefined)
+            const randomEventChromosome = new TestChromosome([], undefined, undefined);
             await randomTestExecutor.executeRandomEvents(randomEventChromosome, numberOfEvents);
             this.updateArchive(randomEventChromosome);
             this._iterations++;
-            this.updateStatistics()
+            this.updateStatistics();
         }
         const testSuite = this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);

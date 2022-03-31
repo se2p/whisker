@@ -58,6 +58,18 @@ describe('Fitness tests', () => {
         const longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;
         const shorterDistanceBranchDistance = log.uncoveredBlocks[1].BranchDistance;
         await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+
+        const stageDiameter = Math.hypot(360, 480);
+
+        // The smallest distance between the two sprites is 41 pixels, the biggest distance is 156 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(shorterDistanceBranchDistance).toBeGreaterThanOrEqual(41 / stageDiameter);
+        await expect(shorterDistanceBranchDistance).toBeLessThanOrEqual(156 / stageDiameter);
+
+        // The smallest distance between the two sprites is 120 pixels, the biggest distance is 411 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(longerDistanceBranchDistance).toBeGreaterThanOrEqual(120 / stageDiameter);
+        await expect(longerDistanceBranchDistance).toBeLessThanOrEqual(411 / stageDiameter);
     }, timeout);
 
     test('Test color touching color branch distance', async () => {
@@ -70,6 +82,18 @@ describe('Fitness tests', () => {
         const longerDistanceBranchDistance = uncoveredBlocks[0].BranchDistance;
         const shorterDistanceBranchDistance = uncoveredBlocks[1].BranchDistance;
         await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+
+        const stageDiameter = Math.hypot(360, 480);
+
+        // The smallest distance between the two sprites is 41 pixels, the biggest distance is 156 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(shorterDistanceBranchDistance).toBeGreaterThanOrEqual(41 / stageDiameter);
+        await expect(shorterDistanceBranchDistance).toBeLessThanOrEqual(156 / stageDiameter);
+
+        // The smallest distance between the two sprites is 120 pixels, the biggest distance is 411 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(longerDistanceBranchDistance).toBeGreaterThanOrEqual(120 / stageDiameter);
+        await expect(longerDistanceBranchDistance).toBeLessThanOrEqual(411 / stageDiameter);
 
         // The purple and yellow rectangle do touch, but the purple rectangle does not contain the color red. So this
         // block always returns false, and the true distance is always 1.

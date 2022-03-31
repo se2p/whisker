@@ -43,9 +43,9 @@ export class SoundEvent extends ScratchEvent {
     }
 
     public toJSON(): Record<string, any> {
-        const event = {}
+        const event = {};
         event[`type`] = `SoundEvent`;
-        event[`args`] = {"volume": this._volume}
+        event[`args`] = {"volume": this._volume};
         return event;
     }
 

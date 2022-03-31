@@ -90,7 +90,7 @@ export class UserModel {
         this.lastTransitionStep = 0;
         this.secondLastTransitionStep = 0;
         Object.values(this.nodes).forEach(node => {
-            node.reset()
+            node.reset();
         });
     }
 
@@ -100,7 +100,7 @@ export class UserModel {
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(checkListener, testDriver, caseSensitive);
-        })
+        });
     }
 
     setTransitionsStartTo(steps: number) {
@@ -124,6 +124,6 @@ export class UserModel {
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: nodes,
             edges: edges
-        }
+        };
     }
 }

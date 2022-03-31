@@ -145,9 +145,9 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             // Recurrent connection
             if (recurrentConnection) {
                 //Decide between loop and normal recurrency
-                let loopRecurrency = false
+                let loopRecurrency = false;
                 if (this._random.nextDouble() < 0.25) {
-                    loopRecurrency = true
+                    loopRecurrency = true;
                 }
                 // Loop: The node points to itself X -> X
                 if (loopRecurrency) {
@@ -193,7 +193,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             // We found a valid connection to add
             if (!skip) {
                 // Verify if we got a recurrent connection if we wanted a recurrent one and vice versa
-                const threshold = chromosome.allNodes.length * chromosome.allNodes.length
+                const threshold = chromosome.allNodes.length * chromosome.allNodes.length;
                 const isRecurrent = chromosome.isRecurrentPath(node1, node2, 0, threshold);
                 if (isRecurrent === recurrentConnection) {
                     rounds = tries;

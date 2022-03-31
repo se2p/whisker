@@ -8,20 +8,20 @@ describe('Program model', () => {
         expect(() => {
             new ProgramModel("id", "start", {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).not.toThrow()
+        }).not.toThrow();
         expect(() => {
             new ProgramModel(undefined, "start", {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new ProgramModel("id", undefined, {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new ProgramModel("id", "n", {start: new ModelNode("start", "label")}, {},
                 [], []);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("Program model: coverage without run", () => {
         let edges = {};
@@ -44,7 +44,7 @@ describe('Program model', () => {
         expect(() => {
             p.simplifyForSave();
         }).not.toThrow();
-    })
+    });
 
     test("Program model: functions", () => {
         let p = new ProgramModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
@@ -59,5 +59,5 @@ describe('Program model', () => {
         p.setTransitionsStartTo(3);
         expect(p.secondLastTransitionStep == 3);
         expect(p.lastTransitionStep == 3);
-    })
-})
+    });
+});

@@ -50,8 +50,8 @@ describe('OptimalSolutionStoppingCondition', () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
         const algorithm = new DummySearchAlgorithm();
-        algorithm.setFitnessFunction(fitnessFunction)
-        algorithm.setCurrentSolution(chromosome)
+        algorithm.setFitnessFunction(fitnessFunction);
+        algorithm.setCurrentSolution(chromosome);
         algorithm.setIterations(5);
 
         const stoppingCondition = new OneOfStoppingCondition(
@@ -90,8 +90,8 @@ describe('OptimalSolutionStoppingCondition', () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
         const algorithm = new DummySearchAlgorithm();
-        algorithm.setFitnessFunction(fitnessFunction)
-        algorithm.setCurrentSolution(chromosome)
+        algorithm.setFitnessFunction(fitnessFunction);
+        algorithm.setCurrentSolution(chromosome);
         algorithm.setIterations(5);
 
         const stoppingCondition = new OneOfStoppingCondition(
@@ -110,8 +110,8 @@ describe('OptimalSolutionStoppingCondition', () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
         const algorithm = new DummySearchAlgorithm();
-        algorithm.setFitnessFunction(fitnessFunction)
-        algorithm.setCurrentSolution(chromosome)
+        algorithm.setFitnessFunction(fitnessFunction);
+        algorithm.setCurrentSolution(chromosome);
         algorithm.setIterations(maxIterations);
 
         const stoppingCondition = new OneOfStoppingCondition(

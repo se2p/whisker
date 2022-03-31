@@ -8,182 +8,182 @@ describe('Condition', () => {
             expect(() => {
                 new Condition("id", "edgeID", CheckName[checkNameKey], true, []);
 
-            }).toThrow()
+            }).toThrow();
         }
-    })
+    });
 
     test("constructor, getters", () => {
         expect(() => {
-            new Condition(undefined, undefined, CheckName.BackgroundChange, true, ["test"])
+            new Condition(undefined, undefined, CheckName.BackgroundChange, true, ["test"]);
         }).toThrow();
         expect(() => {
-            new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"])
+            new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"]);
         }).not.toThrow();
         let c = new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"]);
         expect(c.id == "test");
         expect(c.negated == true);
         expect(c.name == CheckName.BackgroundChange);
-        expect(c.args[0] == "test")
+        expect(c.args[0] == "test");
 
         expect(() => {
             c.simplifyForSave();
         }).not.toThrow();
 
         expect(() => {
-            c.condition
+            c.condition;
         }).not.toThrow();
-    })
+    });
 
     test("not enough arguments: sprite color", () => {
         expect(() => {
-            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test"])
+            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test"]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0"])
+            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0"]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0", "1"])
+            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0", "1"]);
         }).toThrow();
 
         expect(() => {
-            new Condition("id", "edgeID", CheckName.SpriteColor, true, [undefined, undefined, "test", "0", "1"])
+            new Condition("id", "edgeID", CheckName.SpriteColor, true, [undefined, undefined, "test", "0", "1"]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", undefined, undefined, "0", "1"])
+            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", undefined, undefined, "0", "1"]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0", undefined, undefined, "1"])
+            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0", undefined, undefined, "1"]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0", "2", undefined])
+            new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test", "0", "2", undefined]);
         }).toThrow();
-    })
+    });
 
     test("not enough arguments: sprite touching", () => {
         expect(() => {
             new Condition("id", "edgeID", CheckName.SpriteTouching, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.SpriteTouching, true, ["test", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.SpriteTouching, true, [undefined, undefined, "test"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("not enough argument: nbrofclones", () => {
         expect(() => {
-            new Condition("id", "edgeID", CheckName.NbrOfClones, true, ["spritename"])
+            new Condition("id", "edgeID", CheckName.NbrOfClones, true, ["spritename"]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.NbrOfClones, true, ["spritename", "="])
+            new Condition("id", "edgeID", CheckName.NbrOfClones, true, ["spritename", "="]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename"])
+            new Condition("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename"]);
         }).toThrow();
         expect(() => {
-            new Condition("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename", "="])
+            new Condition("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename", "="]);
         }).toThrow();
-    })
+    });
 
     test("not enough arguments: output", () => {
         expect(() => {
-            new Condition("id", "edgeID", CheckName.Output, true, ["test"])
+            new Condition("id", "edgeID", CheckName.Output, true, ["test"]);
         }).toThrow();
 
         expect(() => {
-            new Condition("id", "edgeID", CheckName.Output, true, ["test", undefined])
+            new Condition("id", "edgeID", CheckName.Output, true, ["test", undefined]);
         }).toThrow();
 
         expect(() => {
-            new Condition("id", "edgeID", CheckName.Output, true, [undefined, "test"])
+            new Condition("id", "edgeID", CheckName.Output, true, [undefined, "test"]);
         }).toThrow();
-    })
+    });
 
     test("not enough arguments: variable comparison", () => {
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarComp, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarComp, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarComp, true, ["test", "test2", ">"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarComp, true, ["test", "test2", ">", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarComp, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarComp, true, ["test", undefined, undefined, "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarComp, true, [undefined, undefined, "test", "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("not enough arguments: attribute comparison", () => {
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrComp, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrComp, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrComp, true, ["test", "test2", ">"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrComp, true, ["test", "test2", ">", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrComp, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrComp, true, ["test", undefined, undefined, "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrComp, true, [undefined, undefined, "test", "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("not enough arguments: variable change", () => {
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarChange, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarChange, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
 
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarChange, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarChange, true, [undefined, undefined, "test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.VarChange, true, ["test", undefined, undefined, "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("not enough arguments: attribute change", () => {
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrChange, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrChange, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrChange, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrChange, true, ["test", undefined, undefined, "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Condition("id", "edgeID", CheckName.AttrChange, true, [undefined, undefined, "test", "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("conditions", () => {
         expect(() => {
@@ -231,5 +231,5 @@ describe('Condition', () => {
             let condition = new Condition("id", "edgeID", CheckName.AttrChange, false, ["test", "attr", "-"]);
             condition.check(1, 1);
         }).toThrow();
-    })
-})
+    });
+});

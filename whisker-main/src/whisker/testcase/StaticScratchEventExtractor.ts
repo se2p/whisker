@@ -61,7 +61,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             }
         }
 
-        eventList.push(new WaitEvent())
+        eventList.push(new WaitEvent());
 
         const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         return Arrays.distinctByComparator(eventList, equalityFunction);
@@ -117,7 +117,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
+                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
                 if (value == "_mouse_") {
@@ -138,7 +138,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                     } else {
                         // Snap to upper or lower edge and randomly select the x-coordinate
                         x = random.nextInt(-stageWidth, stageWidth);
-                        y = random.pick([-stageHeight, stageHeight])
+                        y = random.pick([-stageHeight, stageHeight]);
                     }
                     eventList.push(new DragSpriteEvent(target, x, y));
                 } else {
@@ -150,7 +150,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_touchingcolor' :
             case 'sensing_coloristouchingcolor': {
                 eventList.push(new DragSpriteEvent(target));
-                break
+                break;
             }
 
             case 'sensing_distanceto': {
@@ -206,7 +206,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 try {
                     const operatorBlock = target.blocks.getBlock(block.parent);
                     // Find out on which side of the operator the value which is compared against the volume is placed.
-                    let compareValueOperatorBlock: ScratchBlocks
+                    let compareValueOperatorBlock: ScratchBlocks;
                     let compareValueIsFirstOperand: boolean;
 
                     if (operatorBlock.inputs.OPERAND1.block !== block.id) {
@@ -219,7 +219,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
                     // Now that we know where to find the value which is compared against the current volume value, we
                     // can set the volume appropriately.
-                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value);
                     // Greater than
                     if (operatorBlock.opcode === 'operator_gt') {
                         compareValueIsFirstOperand ? volumeValue -= 1 : volumeValue += 1;
@@ -228,7 +228,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                     else if (operatorBlock.opcode === 'operator_lt') {
                         compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
                     }
-                    eventList.push(new SoundEvent(volumeValue))
+                    eventList.push(new SoundEvent(volumeValue));
                 }
                     // If we cannot infer the correct volume, simply set the volume to the highest possible value.
                 catch (e) {

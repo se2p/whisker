@@ -108,7 +108,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
                     }
                     this._archive.set(fitnessKey, candidate);
                 }
-            })
+            });
         }
     }
 }

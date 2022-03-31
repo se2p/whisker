@@ -53,11 +53,11 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
             const spriteList: NodeGene[] = [];
             value.forEach((value, featureKey) => {
                 const iNode = new InputNode(allNodes.length, spriteKey, featureKey);
-                spriteList.push(iNode)
+                spriteList.push(iNode);
                 allNodes.push(iNode);
-            })
-            inputList.push(spriteList)
-        })
+            });
+            inputList.push(spriteList);
+        });
 
         // Add the Bias
         const biasNode = new BiasNode(allNodes.length);
@@ -99,10 +99,9 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
         for (const inputNodeVector of inputNodes) {
             for (const inputNode of inputNodeVector) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0,
-                        false);
-                    this.assignInnovation(newConnection)
-                    connections.push(newConnection)
+                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
+                    this.assignInnovation(newConnection);
+                    connections.push(newConnection);
                     outputNode.incomingConnections.push(newConnection);
                 }
             }

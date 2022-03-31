@@ -34,13 +34,13 @@ export class ClickStageEvent extends ScratchEvent {
     }
 
     public toJSON(): Record<string, any> {
-        const event = {}
+        const event = {};
         event[`Type`] = `ClickStageEvent`;
         return event;
     }
 
     public toString(): string {
-        return "ClickStage"
+        return "ClickStage";
     }
 
     numSearchParameter(): number {

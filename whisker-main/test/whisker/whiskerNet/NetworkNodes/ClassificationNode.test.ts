@@ -9,11 +9,11 @@ import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStag
 
 
 describe("classificationNode Tests", () => {
-    let classificationNode: NodeGene
+    let classificationNode: NodeGene;
 
     beforeEach(() => {
         classificationNode = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
-    })
+    });
 
     test("Constructor Test", () => {
         const classificationNode = new ClassificationNode(10, new WaitEvent(), ActivationFunction.SIGMOID);
@@ -22,13 +22,13 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.type).toBe(NodeType.OUTPUT);
         expect(classificationNode.nodeValue).toBe(0);
         expect(classificationNode.lastActivationValue).toBe(0);
-        expect(classificationNode.activationValue).toBe(undefined)
+        expect(classificationNode.activationValue).toBe(undefined);
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.activationCount).toBe(0);
         expect(classificationNode.traversed).toBeFalsy();
         expect(classificationNode.incomingConnections.length).toBe(0);
         expect(classificationNode.event instanceof WaitEvent).toBeTruthy();
-    })
+    });
 
     test("Reset Node", () => {
         classificationNode.activationCount = 10;
@@ -38,14 +38,14 @@ describe("classificationNode Tests", () => {
         classificationNode.activatedFlag = true;
         classificationNode.traversed = true;
         classificationNode.reset();
-        expect(classificationNode.activationCount).toBe(0)
-        expect(classificationNode.activationValue).toBe(0)
-        expect(classificationNode.nodeValue).toBe(0)
-        expect(classificationNode.lastActivationValue).toBe(0)
+        expect(classificationNode.activationCount).toBe(0);
+        expect(classificationNode.activationValue).toBe(0);
+        expect(classificationNode.nodeValue).toBe(0);
+        expect(classificationNode.lastActivationValue).toBe(0);
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.traversed).toBeFalsy();
 
-    })
+    });
 
     test("Equals Test", () => {
         const classificationNode2 = new ClassificationNode(1, new WaitEvent, ActivationFunction.SIGMOID);
@@ -62,35 +62,35 @@ describe("classificationNode Tests", () => {
 
         const biasNode = new BiasNode(1);
         expect(biasNode.equals(classificationNode)).toBe(false);
-    })
+    });
 
     test("Clone Test", () => {
         const clone = classificationNode.clone();
         expect(clone.uID).toBe(classificationNode.uID);
         expect(clone.equals(classificationNode)).toBe(true);
         expect(clone === classificationNode).toBe(false);
-    })
+    });
 
     test("getActivationValue Test", () => {
         classificationNode.nodeValue = 10;
-        classificationNode.activatedFlag = true
+        classificationNode.activatedFlag = true;
         const sigmoidResult = NeuroevolutionUtil.sigmoid(10, -4.9);
         expect(classificationNode.activate()).toBe(sigmoidResult);
-        expect(classificationNode.activationValue).toBe(sigmoidResult)
-        classificationNode.reset()
+        expect(classificationNode.activationValue).toBe(sigmoidResult);
+        classificationNode.reset();
         expect(classificationNode.activate()).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
 
         const classificationNode2 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.NONE);
         classificationNode2.nodeValue = 5;
         classificationNode2.activationCount = 10;
-        classificationNode2.activatedFlag = true
+        classificationNode2.activatedFlag = true;
         expect(classificationNode2.activate()).toBe(5);
-        expect(classificationNode2.activationValue).toBe(5)
-        classificationNode2.reset()
+        expect(classificationNode2.activationValue).toBe(5);
+        classificationNode2.reset();
         expect(classificationNode2.activate()).toBe(0);
         expect(classificationNode2.activationValue).toBe(0);
-    })
+    });
 
     test("toString Test", () => {
         classificationNode.activationValue = 0;
@@ -98,6 +98,6 @@ describe("classificationNode Tests", () => {
         expect(out).toContain(
             `ClassificationNode{ID: 1\
 , Value: 0\
-, InputConnections: ${[]}`)
-    })
-})
+, InputConnections: ${[]}`);
+    });
+});

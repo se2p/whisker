@@ -35,7 +35,7 @@ describe('OnePlusOneEa', () => {
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
-        mock.init()
+        mock.init();
         // @ts-ignore
         Container.vmWrapper = mock;
 

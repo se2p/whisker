@@ -186,7 +186,7 @@ export class TestExecutor {
             }
             events.push(new EventAndParameters(event, event.getParameters()));
             await event.apply();
-            StatisticsCollector.getInstance().incrementEventsCount()
+            StatisticsCollector.getInstance().incrementEventsCount();
 
             // Send a WaitEvent to the VM
             const waitEvent = new WaitEvent(1);
@@ -229,7 +229,7 @@ export class TestExecutor {
         this.notify(nextEvent, parameters);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();
-        StatisticsCollector.getInstance().incrementEventsCount()
+        StatisticsCollector.getInstance().incrementEventsCount();
 
         // Send a WaitEvent to the VM
         const waitEvent = new WaitEvent(1);
@@ -337,7 +337,7 @@ export class TestExecutor {
                 x: this._vm.runtime.targets[targetsKey]["x"],
                 y: this._vm.runtime.targets[targetsKey]["y"],
                 variables: cloneDeep(this._vm.runtime.targets[targetsKey]["variables"])
-            }
+            };
         }
     }
 
@@ -360,7 +360,7 @@ export class TestExecutor {
     public static calculateUncoveredFitnessValues(chromosome: TestChromosome): number[] {
         // Flush fitnessCache to enforce a recalculation of the fitness values.
         chromosome.flushFitnessCache();
-        const fitnessValues: number[] = []
+        const fitnessValues: number[] = [];
         for (const fitnessFunction of Container.statementFitnessFunctions) {
             // Only look at fitnessValues originating from uncovered blocks.
             const fitness = chromosome.getFitness(fitnessFunction);

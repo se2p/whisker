@@ -94,7 +94,7 @@ export class ConnectionGene {
 , Weight: ${this.weight}\
 , Enabled: ${this.isEnabled}\
 , Recurrent: ${this.isRecurrent}\
-, InnovationNumber: ${this.innovation}}`
+, InnovationNumber: ${this.innovation}}`;
     }
 
     /**

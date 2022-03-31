@@ -362,7 +362,7 @@ export abstract class NetworkChromosome extends Chromosome {
         while (this.outputsOff() || activationCount < 0) {
             activationCount++;
             if (activationCount == 20) {
-                Container.debugLog(`Defect network: ${this.toString()}`)
+                Container.debugLog(`Defect network: ${this.toString()}`);
                 return false;
             }
 
@@ -412,6 +412,10 @@ export abstract class NetworkChromosome extends Chromosome {
         return true;
     }
 
+    /**
+     * Calculates the maximum depth of this network by traversing from each output node to the input nodes.
+     * @returns depth of network.
+     */
     public getMaxDepth(): number {
         let currentDepth: number;
         let maxDepth = 0;
@@ -516,18 +520,6 @@ export abstract class NetworkChromosome extends Chromosome {
         }
         node1.traversed = true;
         return false;
-    }
-
-    public generateDummyInputs(): Map<string, Map<string, number>> {
-        const inputs = new Map<string, Map<string, number>>();
-        this.inputNodes.forEach((sprite, k) => {
-            const spriteFeatures = new Map<string, number>();
-            sprite.forEach((featureNode, featureKey) => {
-                spriteFeatures.set(featureKey, 1);
-            })
-            inputs.set(k, spriteFeatures);
-        });
-        return inputs;
     }
 
     /**
