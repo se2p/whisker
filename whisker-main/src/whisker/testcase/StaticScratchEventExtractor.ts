@@ -90,7 +90,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                if (fields.hasOwnProperty("KEY_OPTION")) {
+                if ("KEY_OPTION" in fields) {
                     eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
                 } else {
                     // TODO: The key is dynamically computed
@@ -189,7 +189,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 if (block.fields.WHENGREATERTHANMENU.value == "loudness") {
                     // Sound
                     const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
-                    if (soundParameterBlock.fields.hasOwnProperty("NUM")) {
+                    if ('NUM' in soundParameterBlock.fields) {
                         const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
                         eventList.push(new SoundEvent(soundValue));
                     } else {

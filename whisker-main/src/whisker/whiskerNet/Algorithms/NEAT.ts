@@ -10,6 +10,7 @@ import Arrays from "../../utils/Arrays";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatTrainPopulation} from "../NeuroevolutionPopulations/NeatTrainPopulation";
+import {Container} from "../../utils/Container";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -171,7 +172,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         Container.debugLog(`Iteration:  ${this._iterations}`);
         Container.debugLog(`Best Network Fitness:  ${population.bestFitness}`);
         Container.debugLog(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
-        Container.debugLog(`Average Network Fitness: ${population.averageFitness}`)
+        Container.debugLog(`Average Network Fitness: ${population.averageFitness}`);
         Container.debugLog(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
         for (const species of population.species) {
             Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);

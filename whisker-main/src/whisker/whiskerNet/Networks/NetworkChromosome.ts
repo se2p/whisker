@@ -523,6 +523,22 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
+     * Generates dummy inputs that match the input nodes.
+     * @returns dummy inputs to test a network.
+     */
+    public generateDummyInputs(): Map<string, Map<string, number>> {
+        const inputs = new Map<string, Map<string, number>>();
+        this.inputNodes.forEach((sprite, k) => {
+            const spriteFeatures = new Map<string, number>();
+            sprite.forEach((featureNode, featureKey) => {
+                spriteFeatures.set(featureKey, 1);
+            });
+            inputs.set(k, spriteFeatures);
+        });
+        return inputs;
+    }
+
+    /**
      * Sorts the nodes of this network according to their types and uIDs in increasing order.
      */
     private sortNodes(): void {

@@ -96,10 +96,11 @@ export class Randomness {
     /**
      * Set the seed for the Scratch-VM.
      * @param seed the Scratch-VM seed
+     * @param silence determines whether we want to log the modified seed.
      */
-    public static setScratchSeed(seed: (number | string), silence=false): void {
+    public static setScratchSeed(seed: (number | string), silence = false): void {
         const convertedSeed = this.convertSeed(seed);
-        if(!silence) {
+        if (!silence) {
             console.log(`Seeding the Scratch-VM to ${convertedSeed}`);
         }
         Randomness._scratchSeed = convertedSeed;
@@ -224,4 +225,7 @@ export class Randomness {
         seed(Randomness._scratchSeed, {global: true});
     }
 
+    static get scratchSeed(): number {
+        return this._scratchSeed;
+    }
 }

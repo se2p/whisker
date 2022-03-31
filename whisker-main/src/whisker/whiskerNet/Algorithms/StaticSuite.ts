@@ -42,7 +42,7 @@ export class StaticSuite extends NetworkSuite {
      * Executes the static test suite of Scratch input sequences loaded within networks.
      */
     protected async executeTestCases(): Promise<void> {
-        const tests = this.loadTestCases()
+        const tests = this.loadTestCases();
         for (const test of tests) {
             test.recordActivationTrace = true;
             await this.executor.executeSavedTrace(test);
@@ -115,7 +115,7 @@ export class StaticSuite extends NetworkSuite {
                 event = new SoundEvent(Number(parameter[0]), Number(parameter[1]));
                 variableParameter = [Number(parameter[0]), Number(parameter[1])];
             } else if (statement.includes('typeText')) {
-                event = new TypeTextEvent(parameter[0])
+                event = new TypeTextEvent(parameter[0]);
                 variableParameter = [];
             } else if (statement.includes('runForSteps')) {
                 event = new WaitEvent(Number(parameter[0]));

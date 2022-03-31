@@ -1,4 +1,4 @@
-import {ScratchBlocks, ScratchEventExtractor} from "./ScratchEventExtractor";
+import {ScratchBlocks} from "./ScratchEventExtractor";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "./events/ScratchEvent";
 import {DragSpriteEvent} from "./events/DragSpriteEvent";
@@ -80,7 +80,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
+                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
                 if (value == "_mouse_") {
@@ -147,7 +147,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 try {
                     const operatorBlock = target.blocks.getBlock(block.parent);
                     // Find out on which side of the operator the value which is compared against the volume is placed.
-                    let compareValueOperatorBlock: ScratchBlocks
+                    let compareValueOperatorBlock: ScratchBlocks;
                     let compareValueIsFirstOperand: boolean;
 
                     if (operatorBlock.inputs.OPERAND1.block !== block.id) {
@@ -160,7 +160,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
 
                     // Now that we know where to find the value which is compared against the current volume value, we
                     // can set the volume appropriately.
-                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value);
                     // Greater than
                     if (operatorBlock.opcode === 'operator_gt') {
                         compareValueIsFirstOperand ? volumeValue -= 1 : volumeValue += 1;
@@ -169,7 +169,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                     else if (operatorBlock.opcode === 'operator_lt') {
                         compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
                     }
-                    eventList.push(new SoundEvent(volumeValue))
+                    eventList.push(new SoundEvent(volumeValue));
                 }
                     // If we cannot infer the correct volume, simply set the volume to the highest possible value.
                 catch (e) {

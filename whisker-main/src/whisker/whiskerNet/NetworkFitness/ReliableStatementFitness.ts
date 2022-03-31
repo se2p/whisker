@@ -49,10 +49,10 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      */
     private async checkStableCoverage(network: NetworkChromosome, timeout, eventSelection): Promise<void> {
         // Save some values to recover them later
-        const originalSeed = Randomness._scratchSeed;
+        const originalSeed = Randomness.scratchSeed;
         const originalPlayTime = network.playTime;
         const originalScore = network.score;
-        const trace = network.trace.clone()
+        const trace = network.trace.clone();
         const coverage = new Set(network.coverage);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
         const repetitionSeeds = Array(this.stableCount).fill(0).map(
@@ -80,7 +80,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         network.trace = trace;
         network.coverage = coverage;
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
-        Container.debugLog(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`)
+        Container.debugLog(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`);
     }
 
     /**
