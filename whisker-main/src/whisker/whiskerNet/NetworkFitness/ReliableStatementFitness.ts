@@ -55,7 +55,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         const trace = network.trace.clone();
         const coverage = new Set(network.coverage);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
-        const repetitionSeeds = Array(this.stableCount).fill(0).map(
+        const repetitionSeeds = Array(this.stableCount - 1).fill(0).map(
             () => this._random.nextInt(0, Number.MAX_SAFE_INTEGER));
 
         // Iterate over each seed and calculate the achieved fitness
@@ -72,6 +72,11 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             executor.resetState();
             ReliableStatementFitness.updateUncoveredMap(network);
             executor.resetState();
+
+            // Stop if we failed to cover our target statement.
+            if(!network.targetFitness.isCovered(network)){
+                break;
+            }
         }
         // Reset to the old Scratch seed and network attributes.
         Randomness.setScratchSeed(originalSeed, true);
