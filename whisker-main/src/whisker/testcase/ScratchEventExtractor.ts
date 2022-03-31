@@ -43,6 +43,7 @@ import {Scratch3SensingBlocks} from 'scratch-vm/src/blocks/scratch3_sensing';
 import {Scratch3SoundBlocks} from 'scratch-vm/src/blocks/scratch3_sound';
 import Cast from "scratch-vm/src/util/cast";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const twgl = require('twgl.js');
 
 export type ScratchBlocks =
@@ -59,6 +60,8 @@ export type ScratchBlocks =
 
 export abstract class ScratchEventExtractor {
 
+    private readonly _knownColors = new Map<ColorStr, Point>();
+
     protected availableTextSnippets: string[] = [];
     protected proceduresMap = new Map<string, ScratchEvent[]>();
     protected static _fixedStrings = ["0", "10", "Hello", this._randomText(3)];
@@ -74,7 +77,6 @@ export abstract class ScratchEventExtractor {
      * @return a list of applicable events
      */
     public abstract extractEvents(vm: VirtualMachine): ScratchEvent[];
-
 
     /**
      * Traverse downwards the block hierarchy and collect all encountered events.
@@ -124,6 +126,69 @@ export abstract class ScratchEventExtractor {
         }
     }
 
+    private static _getColorFromBlock(target: RenderedTarget, block: ScratchBlocks, key: "COLOR" | "COLOR2"): Color {
+        const str = target.blocks.getBlock(block.inputs[key].block).fields.COLOUR.value;
+        const arr = Cast.toRgbColorList(str);
+        return {str, arr};
+    }
+
+    private _handleTouchingColor(target: RenderedTarget, block: ScratchBlocks, events: ScratchEvent[]): void {
+        const color = ScratchEventExtractor._getColorFromBlock(target, block, "COLOR");
+        // Check if the sprite that will be dragged is not already touching the sensed color.
+        if (!target.isTouchingColor(color.arr)) {
+            const result = this._findColorOnCanvas(target, color);
+            // Only push the event if we actually found the color on the canvas.
+            if (result.colorFound) {
+                const {x, y} = result.coordinates;
+                events.push(new DragSpriteEvent(target, x, y));
+            }
+        }
+    }
+
+    private _handleColorTouchingColor(target: RenderedTarget, block: ScratchBlocks, events: ScratchEvent[]): void {
+        /*
+         * https://en.scratch-wiki.info/wiki/Color_()_is_Touching_()%3F_(block)
+         * The block takes two colors. The first color ("own color") must be present in the current costume of
+         * this sprite. The second color ("target color") is the color to touch.
+         */
+        const ownColor = ScratchEventExtractor._getColorFromBlock(target, block, "COLOR");
+        const targetColor = ScratchEventExtractor._getColorFromBlock(target, block, "COLOR2");
+
+        // We check if the sprite still needs to be dragged towards the target color, and drag it if necessary.
+        if (!target.colorIsTouchingColor(ownColor.arr, targetColor.arr)) {
+
+            // Next, we check if the costume even contains the own color. If it does, we will drag the sprite.
+            const ownColorQuery = this._findColorOnSprite(target, ownColor);
+            if (ownColorQuery.colorFound) {
+
+                // The coordinates of the pixel containing "own color".
+                const {x: ownColorX, y: ownColorY} = ownColorQuery.coordinates;
+
+                // We try to find a pixel located somewhere else that has the "target color" so that we can
+                // drag the sprite there.
+                const targetColorQuery = this._findColorOnCanvas(target, targetColor);
+                if (targetColorQuery.colorFound) {
+
+                    // The coordinates of the "target color" and the center of the current sprite.
+                    const {x: targetX, y: targetY} = targetColorQuery.coordinates;
+                    const {x: centerX, y: centerY} = target;
+
+                    /*
+                     * We want to move the sprite such that the coordinates of the pixel with "own color" equal
+                     * the coordinates of the pixel with "target color". However, moving a sprite is done with
+                     * respect to its center. So we have to compute the vector from the pixel with "own color"
+                     * to the center of the sprite, and add this vector as an offset to the dragging motion.
+                     */
+                    const offsetX = centerX - ownColorX;
+                    const offsetY = centerY - ownColorY;
+                    events.push(new DragSpriteEvent(target, targetX + offsetX, targetY + offsetY));
+                }
+            } else {
+                // TODO: We could try to select/force a different costume. It might contain the target color.
+            }
+        }
+    }
+
     protected _extractEventsFromBlock(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
         const eventList: ScratchEvent[] = [];
         if (typeof block.opcode === 'undefined') {
@@ -140,7 +205,8 @@ export abstract class ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                if (fields.hasOwnProperty("KEY_OPTION")) {
+
+                if ("KEY_OPTION" in fields) {
                     eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
                 } else {
                     // TODO: The key is dynamically computed
@@ -158,7 +224,7 @@ export abstract class ScratchEventExtractor {
             case 'motion_goto': {
                 // GoTo MousePointer block
                 const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
-                if (goToMenu.fields.TO.value === '_mouse_') {
+                if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
                     eventList.push(new MouseMoveEvent());
                 }
                 break;
@@ -228,69 +294,11 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case "sensing_touchingcolor": {
-                const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                const rgbColor = Cast.toRgbColorList(sensedColor);
-                // Check if the sprite that will be dragged is not already touching the sensed color.
-                if (!target.isTouchingColor(rgbColor)) {
-                    const result = ScratchEventExtractor.findColorOnCanvas(target, rgbColor);
-                    // Only push the event if we actually found the color on the canvas.
-                    if (result.colorFound) {
-                        const {x, y} = result.coordinates;
-                        eventList.push(new DragSpriteEvent(target, x, y));
-                    }
-                }
+                this._handleTouchingColor(target, block, eventList);
                 break;
             }
             case 'sensing_coloristouchingcolor': {
-                const getColorFromBlock = (color) =>
-                    target.blocks.getBlock(block.inputs[color].block).fields.COLOUR.value;
-
-                /*
-                 * https://en.scratch-wiki.info/wiki/Color_()_is_Touching_()%3F_(block)
-                 * The block takes two colors. The first color ("own color") must be present in the current costume of
-                 * this sprite. The second color ("target color") is the color to touch.
-                 */
-                const ownColor = Cast.toRgbColorList(getColorFromBlock("COLOR"));
-                const targetColor = Cast.toRgbColorList(getColorFromBlock("COLOR2"));
-
-                // We check if the sprite still needs to be dragged towards the target color, and drag it if necessary.
-                if (!target.colorIsTouchingColor(ownColor, targetColor)) {
-
-                    // Next, we check if the costume even contains the own color. If it does, we will drag the sprite.
-                    const ownColorQuery = ScratchEventExtractor.findColorOnSprite(target, ownColor);
-                    if (ownColorQuery.colorFound) {
-
-                        // The coordinates of the pixel containing "own color".
-                        const {x: ownColorX, y: ownColorY} = ownColorQuery.coordinates;
-
-                        // We try to find a pixel located somewhere else that has the "target color" so that we can
-                        // drag the sprite there.
-                        const targetColorQuery = ScratchEventExtractor.findColorOnCanvas(target, targetColor);
-                        if (targetColorQuery.colorFound) {
-
-                            // The coordinates of the "target color"
-                            const targetX = targetColorQuery.coordinates.x;
-                            const targetY = targetColorQuery.coordinates.y;
-
-                            // The coordinates of the center of the current sprite.
-                            const centerX = target.x;
-                            const centerY = target.y;
-
-                            /*
-                             * We want to move the sprite such that the coordinates of the pixel with "own color" equal
-                             * the coordinates of the pixel with "target color". However, moving a sprite is done with
-                             * respect to its center. So we have to compute the vector from the pixel with "own color"
-                             * to the center of the sprite, and add this vector as an offset to the dragging motion.
-                             */
-                            const offsetX = centerX - ownColorX;
-                            const offsetY = centerY - ownColorY;
-                            eventList.push(new DragSpriteEvent(target, targetX + offsetX, targetY + offsetY));
-                        }
-                    } else {
-                        // TODO: We could try to select/force a different costume. It might contain the target color.
-                    }
-                }
-
+                this._handleColorTouchingColor(target, block, eventList);
                 break;
             }
             case 'sensing_distanceto': {
@@ -377,7 +385,6 @@ export abstract class ScratchEventExtractor {
         return eventList;
     }
 
-
     /**
      * Collects all available text snippets that can be used for generating answers.
      */
@@ -385,9 +392,9 @@ export abstract class ScratchEventExtractor {
         this.availableTextSnippets.push(...ScratchEventExtractor._fixedStrings);
 
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
-                    const snippet = this._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
+                    const snippet = ScratchEventExtractor._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
                     if (snippet != '' && !this.availableTextSnippets.includes(snippet)) {
                         this.availableTextSnippets.push(snippet);
                     }
@@ -427,30 +434,7 @@ export abstract class ScratchEventExtractor {
         return answer;
     }
 
-    private static _extractWaitDurations(target: RenderedTarget, block: ScratchBlocks): number {
-        const inputs = target.blocks.getInputs(block);
-        if (target.blocks.getOpcode(block) == 'control_wait') {
-            const op = target.blocks.getBlock(inputs.DURATION.block);
-            const field = target.blocks.getFields(op).NUM;
-            if (!field) {
-                return -1;
-            }
-            return 1000 * parseFloat(field.value);
-        } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
-            target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
-            target.blocks.getOpcode(block) == 'motion_glideto' ||
-            target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
-            const op = target.blocks.getBlock(inputs.SECS.block);
-            const field = target.blocks.getFields(op).NUM;
-            if (!field) {
-                return -1;
-            }
-            return 1000 * parseFloat(field.value);
-        }
-        return -1;
-    }
-
-    private _extractAvailableTextSnippets(target: RenderedTarget, block: ScratchBlocks): string {
+    private static _extractAvailableTextSnippets(target: RenderedTarget, block: ScratchBlocks): string {
         let availableTextSnippet = '';
         if (target.blocks.getOpcode(block) == 'operator_equals') {
             const inputs = target.blocks.getInputs(block);
@@ -475,7 +459,6 @@ export abstract class ScratchEventExtractor {
         return typeTextEventList;
     }
 
-
     /**
      * Checks if the Scratch project has a mouseMove event
      * @param vm the Scratch-VM of the project
@@ -483,7 +466,7 @@ export abstract class ScratchEventExtractor {
      */
     public hasMouseEvent(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     if (ScratchEventExtractor._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
                         return true;
@@ -518,7 +501,7 @@ export abstract class ScratchEventExtractor {
      */
     public static hasEvents(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
                         return true;
@@ -576,10 +559,10 @@ export abstract class ScratchEventExtractor {
      * was successful.
      *
      * @param sprite the source sprite (will be excluded from the search)
-     * @param rgbColor the color we are searching for in [r,g,b] representation
+     * @param color the color we are searching for
      * @return the color query result
      */
-    private static findColorOnCanvas(sprite: RenderedTarget, rgbColor: RgbColor): ColorQueryResult {
+    private _findColorOnCanvas(sprite: RenderedTarget, color: Color): ColorQueryResult {
         // Collect all touchable objects which might carry the sensed color
         const renderer = sprite.runtime.renderer;
         const touchableObjects = [];
@@ -591,12 +574,14 @@ export abstract class ScratchEventExtractor {
             }
         }
 
-        const width = renderer._xRight - renderer._xLeft;
-        const height = renderer._yTop - renderer._yBottom;
-        const maxRadius = Math.hypot(width, height);
-        const offset = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
+        const stageBounds = {
+            right: renderer._xRight,
+            left: renderer._xLeft,
+            top: renderer._yTop,
+            bottom: renderer._yBottom
+        };
 
-        return this.fuzzyFindColor(sprite.x, sprite.y, offset, maxRadius, touchableObjects, rgbColor, renderer);
+        return this._fuzzyFindColor(sprite, touchableObjects, color, stageBounds, renderer);
     }
 
     /**
@@ -607,115 +592,138 @@ export abstract class ScratchEventExtractor {
      * @param color the color to look for
      * @return the color query result
      */
-    private static findColorOnSprite(sprite: RenderedTarget, color: RgbColor): ColorQueryResult {
+    private _findColorOnSprite(sprite: RenderedTarget, color: Color): ColorQueryResult {
         const renderer = sprite.runtime.renderer;
 
         const id = sprite.drawableID;
-        const searchRadius = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
-
         const drawable = renderer._allDrawables[id];
         drawable.updateCPURenderAttributes();
         const thisSprite = [{id, drawable}];
 
-        const centerX = sprite.x;
-        const centerY = sprite.y;
+        const bounds = sprite.getBounds();
 
-        return this.fuzzyFindColor(centerX, centerY, 0, searchRadius, thisSprite, color, renderer);
+        return this._fuzzyFindColor(sprite, thisSprite, color, bounds, renderer);
     }
 
-    /**
-     * Returns the radius of the minimum bounding circle for the given sprite.
-     *
-     * @param sprite the sprite for which to compute the radius of
-     * @param renderer the renderer of the sprite
-     * @return the radius
-     */
-    private static getRadiusOfMinimumBoundingCircle(sprite, renderer) {
-        const id = sprite.drawableID;
-        const [costumeSizeX, costumeSizeY] = renderer.getCurrentSkinSize(id);
-        const scalingFactor = sprite.size / 100;
-        return Math.max(costumeSizeX, costumeSizeY) * scalingFactor / 2;
-    }
-
-    /**
-     * Tries to locate a given color in a given search area. This area is defined by a circle. Its center point has the
-     * coordinates centerX and centerY. The radius is given by maxRadius. In addition, one can choose to exclude a
-     * smaller inner circle with radius "offset" from the search. Only the given list of touchable objects are
-     * considered when searching for the color. The returned object contains the coordinates of the pixel containing the
-     * desired color iff the search was successful.
-     *
-     * @param centerX x-coordinate of the search circle
-     * @param centerY y-coordinate of the search circle
-     * @param offset radius of the circle to exclude from the search
-     * @param maxRadius the radius of the search circle
-     * @param touchableObjects the objects within the search area to consider
-     * @param color3b the color to search for
-     * @param renderer
-     * @return the search result
-     */
-    private static fuzzyFindColor(
-        centerX: number,
-        centerY: number,
-        offset: number,
-        maxRadius: number,
-        touchableObjects: RenderedTarget[],
-        color3b: Uint8ClampedArray,
-        renderer
-    ): ColorQueryResult {
-        // Scan an ever increasing radius around the source sprite and check if we found an object carrying the
-        // sensed color. We stop if the radius is greater than maxRadius.
-        const point = twgl.v3.create();
-        const color = new Uint8ClampedArray(4);
-        let r = 1 + offset;
-        let rPrev = 1;
-        let rIncrease = 1;
-        while (r < maxRadius) {
-            const coordinates = [];
-            for (const x of [-r, r]) {
-                for (let y = -r; y <= r; y++) {
-                    coordinates.push([x, y]);
-                }
-            }
-            for (const y of [-r, r]) {
-                for (let x = -r; x <= r; x++) {
-                    coordinates.push([x, y]);
-                }
-            }
-            for (const c of coordinates) {
-                const x = c[0];
-                const y = c[1];
-                point[0] = centerX + x;
-                point[1] = centerY + y;
-                renderer.constructor.sampleColor3b(point, touchableObjects, color);
-
-                // Check if we found an object carrying the correct color.
-                if (ScratchEventExtractor.isColorMatching(color, color3b)) {
-                    return {
-                        colorFound: true,
-                        coordinates: {x: point[0], y: point[1]}
-                    };
-                }
-            }
-            // Increase the scan radius in a recursive fashion.
-            rIncrease += rPrev;
-            rPrev = (rIncrease / 5);
-            r += (rIncrease / 2);
+    private _fuzzyFindColor(start: Point | RenderedTarget, touchables: Touchable[], {arr, str}: Color, bounds: Bounds, renderer): ColorQueryResult {
+        function isColorMatching(other: ColorArr): boolean {
+            return (arr[0] & 0b11111000) === (other[0] & 0b11111000) &&
+                (arr[1] & 0b11111000) === (other[1] & 0b11111000) &&
+                (arr[2] & 0b11110000) === (other[2] & 0b11110000);
         }
-        // At this point we scanned the whole canvas but didn't find the color.
+
+        // Check if we have seen this color before, and directly inspect the corresponding pixel if we can.
+        if (this._knownColors.has(str)) {
+            const {x, y} = this._knownColors.get(str);
+            const point = twgl.v3.create(x, y);
+            const currentColor = renderer.constructor.sampleColor3b(point, touchables);
+
+            if (isColorMatching(currentColor)) {
+                return {
+                    colorFound: true,
+                    coordinates: {x, y}
+                };
+            }
+
+            // It seems the color is no longer there (maybe the sprite moved, or the backdrop changed).
+            this._knownColors.delete(str);
+        }
+
+        const {right, left, top, bottom} = bounds;
+        const width = Math.ceil(right - left);
+        const height = Math.ceil(top - bottom);
+        const area = width * height;
+
+        const maxSamples = 48 * 36; // Arbitrary, but based on the stage dimensions of 480 × 360
+        const dynamicSpace = Math.trunc(Math.sqrt(area / maxSamples));
+        const space = Math.max(1, dynamicSpace);
+
+        for (const {x, y} of ScratchEventExtractor._points(start, bounds, space)) {
+            const point = twgl.v3.create(x, y);
+            const currentColor = renderer.constructor.sampleColor3b(point, touchables);
+
+            if (isColorMatching(currentColor)) {
+                this._knownColors.set(str, {x, y});
+
+                return {
+                    colorFound: true,
+                    coordinates: {x, y}
+                };
+            }
+        }
+
         return {
             colorFound: false
         };
     }
 
-    /**
-     * Check if color1 matches color2.
-     * @param color1 the first color
-     * @param color2 the second color
-     */
-    private static isColorMatching(color1: RgbColor, color2: RgbColor): boolean {
-        return (color1[0] & 0b11111000) === (color2[0] & 0b11111000) &&
-            (color1[1] & 0b11111000) === (color2[1] & 0b11111000) &&
-            (color1[2] & 0b11110000) === (color2[2] & 0b11110000);
+    private static* _points({x: startX, y: startY}: Point, bounds: Bounds, space = 10): IterableIterator<Point> {
+        const {left, right, top, bottom} = bounds;
+
+        /**
+         * Tells whether the given x-coordinate is within the bounds.
+         *
+         * @param {number} x the coordinate
+         * @return {boolean} true iff within bounds
+         */
+        function isWithinHorizontalBounds(x: number): boolean {
+            return left <= x && x <= right;
+        }
+
+        /**
+         * Tells whether the given y-coordinate is within the bounds.
+         *
+         * @param {number} y the coordinate
+         * @return {boolean} true iff within bounds
+         */
+        function isWithinVerticalBounds(y: number): boolean {
+            return bottom <= y && y <= top;
+        }
+
+        // Set of already visited points on the grid.
+        const visited = new PointQueueSet(bounds);
+
+        /**
+         * Returns all yet unvisited neighbors of the point with the given coordinates. The returned points are
+         * within the boundaries of the grid, and will also be marked as visited.
+         *
+         * @param {number} x the x-coordinate of the point
+         * @param {number} y the y-coordinate of the point
+         * @return {[number, number][]} unvisited neighbors of the point
+         */
+        function unvisitedNeighbors({x, y}: Point): Point[] {
+            const neighborsX = [x - space, x, x + space].filter(_x => isWithinHorizontalBounds(_x));
+            const neighborsY = [y - space, y, y + space].filter(_y => isWithinVerticalBounds(_y));
+            const neighbors = [];
+
+            for (const _x of neighborsX) {
+                for (const _y of neighborsY) {
+                    const neighbor = {x: _x, y: _y};
+                    if (!visited.has(neighbor)) {
+                        visited.push(neighbor);
+                        neighbors.push(neighbor);
+                    }
+                }
+            }
+
+            return neighbors;
+        }
+
+        // The queue of points yet to be visited.
+        const pending = new PointQueueSet(bounds);
+
+        // Initialize the queue with the start point. For the workings of the algorithm it is important to consider
+        // whole numbers only.
+        const startPoint = {x: Math.trunc(startX), y: Math.trunc(startY)};
+        pending.push(startPoint);
+        visited.push(startPoint);
+
+        // As long as there are still unvisited points, yield these points, mark them as visited and mark their
+        // unvisited neighbors as pending.
+        for (const next of pending) {
+            pending.push(...unvisitedNeighbors(next));
+            yield next;
+        }
     }
 }
 
@@ -723,11 +731,113 @@ type ColorQueryResult = ColorQuerySuccess | ColorQueryFailure
 
 interface ColorQuerySuccess {
     colorFound: true,
-    coordinates: { x: number, y: number }
+    coordinates: Point
 }
 
 interface ColorQueryFailure {
-    colorFound: false
+    colorFound: false;
 }
 
-type RgbColor = Uint8ClampedArray;
+type ColorStr = `#${string}`;
+type ColorArr = Uint8ClampedArray;
+
+interface Color {
+    arr: ColorArr
+    str: ColorStr
+}
+
+interface Point {
+    x: number,
+    y: number
+}
+
+interface Bounds {
+    left: number,
+    right: number,
+    top: number,
+    bottom: number
+}
+
+interface Touchable {
+    id: number,
+    drawable: Drawable
+}
+
+type Drawable = unknown;
+
+/**
+ * Specialization of sets intended for managing `Point`s on a two-dimensional integer grid. Duplicate elimination is
+ * performed by checking structural equality rather than referential equality. This means, two points `p1` and `p2`
+ * are considered equal iff `p1.x === p2.x` and `p1.y === p2.y` rather than checking if the references point to the same
+ * object in memory (`p1 === p2`).
+ */
+class PointQueueSet {
+
+    // The width of the integer grid.
+    private readonly _width: number;
+
+    // Offsets used for (de)serialization of `Point`s.
+    private readonly _offsetX: number;
+    private readonly _offsetY: number;
+
+    // Internal backing set that maintains a `Point` serialized as integer.
+    private readonly _workingSet: Set<number>;
+
+    /**
+     * Constructs a new set. It manages points on an a two-dimensional integer grid with the given boundaries.
+     *
+     * @param {{left: number, right: number, top: number, bottom: number}} boundaries boundaries of the grid
+     */
+    constructor(boundaries: Bounds) {
+        const left = Math.trunc(boundaries.left);
+        const right = Math.trunc(boundaries.right);
+        this._width = right - left;
+        this._offsetX = left;
+        this._offsetY = Math.trunc(boundaries.bottom);
+        this._workingSet = new Set();
+    }
+
+    _serialize({x, y}: Point): number {
+        // JavaScript Sets use reference equality for objects, and value equality for primitive types. We want to manage
+        // pairs of whole numbers in terms of value equality, so we have to define a canonical enumeration for pairs of
+        // numbers, and identify a pair by its unique number in the enumeration.
+        return ((x - this._offsetX) * this._width) + (y - this._offsetY);
+    }
+
+    _deserialize(n: number): Point {
+        const x = Math.trunc(n / this._width) + this._offsetX;
+        const y = (n % this._width) + this._offsetY;
+        return {x, y};
+    }
+
+    /**
+     * Adds the given points to the end of the queue, unless a point is already present in the queue.
+     *
+     * @param {{x, y}[]} points the points to add
+     */
+    push(...points: Point[]): void {
+        for (const point of points) {
+            this._workingSet.add(this._serialize(point));
+        }
+    }
+
+    /**
+     * Tells whether the given point is contained in the set.
+     *
+     * @param {{x, y}} point the point to check
+     * @return {boolean} `true` iff the `point` is contained in the set
+     */
+    has(point: Point): boolean {
+        return this._workingSet.has(this._serialize(point));
+    }
+
+    [Symbol.iterator]() {
+        const iter = this._workingSet[Symbol.iterator]();
+        return {
+            next: () => {
+                const {done, value} = iter.next();
+                return done ? {done} : {done, value: this._deserialize(value)};
+            }
+        };
+    }
+}
