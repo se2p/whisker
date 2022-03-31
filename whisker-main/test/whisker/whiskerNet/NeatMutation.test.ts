@@ -75,7 +75,7 @@ describe("Test NeatMutation", () => {
     test("Test apply mutation operator on a populationChampion", () => {
         neatChromosome1.isPopulationChampion = true;
         let mutant = neatChromosome1.mutate();
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 100; i++) {
             mutant = mutant.mutate();
         }
         expect(mutant.connections.length).not.toBe(neatChromosome1.connections.length);
@@ -84,7 +84,7 @@ describe("Test NeatMutation", () => {
 
     test("Test apply mutation operator on a non-populationChampion", () => {
         let mutant = neatChromosome1.mutate();
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 100; i++) {
             mutant = mutant.mutate();
         }
         const mutatedEnableStates = [];
