@@ -124,7 +124,9 @@ export class NeatChromosome extends NetworkChromosome {
         clone.isParent = this.isParent;
         clone.expectedOffspring = this.expectedOffspring;
         clone.isRecurrent = this.isRecurrent;
-        clone.savedActivationTrace = this.savedActivationTrace.clone();
+        if (this.savedActivationTrace !== undefined) {
+            clone.savedActivationTrace = this.savedActivationTrace.clone();
+        }
         return clone;
     }
 
@@ -133,7 +135,7 @@ export class NeatChromosome extends NetworkChromosome {
      * innovation history.
      * @param connection the connection to add.
      */
-    public addConnection(connection: ConnectionGene): void{
+    public addConnection(connection: ConnectionGene): void {
         const innovation = NeatPopulation.findInnovation(connection, 'newConnection');
 
         // Check if this innovation has occurred before.
@@ -182,10 +184,9 @@ export class NeatChromosome extends NetworkChromosome {
         network[`Cons`] = connections;
 
         // Save the activation trace if one was recorded.
-        if(this.currentActivationTrace !== undefined) {
+        if (this.currentActivationTrace !== undefined) {
             network['AT'] = this.currentActivationTrace.toJSON();
-        }
-        else{
+        } else {
             network['AT'] = undefined;
         }
 

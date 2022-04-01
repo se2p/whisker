@@ -221,7 +221,7 @@ export abstract class NetworkSuite {
         const mutants = [];
         for (const mutator of this.mutationOperators) {
             for (const generatedMutants of mutator.generateMutants()) {
-                mutants.push(generatedMutants)
+                mutants.push(generatedMutants);
             }
         }
         return mutants;
@@ -232,7 +232,7 @@ export abstract class NetworkSuite {
      * @param mutant a mutant of a Scratch project.
      */
     protected async loadMutant(mutant: Record<string, unknown>): Promise<void> {
-        const util = new WhiskerUtil(this.vm, mutant)
+        const util = new WhiskerUtil(this.vm, mutant);
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
         this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', false);

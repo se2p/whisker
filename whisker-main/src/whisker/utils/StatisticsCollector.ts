@@ -376,7 +376,7 @@ export class StatisticsCollector {
 
     public asCsvNeuroevolution(sampleDistance?: number, maxTimeStamp?: number): string {
         // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
-        const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance)
+        const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance);
         const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
         const timelineValues = timestamps.map((ts) => fitnessOverTimeMap.get(ts).join('|'));
 
