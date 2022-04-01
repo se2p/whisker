@@ -219,11 +219,15 @@ export class NetworkExecutor {
                             isGreenFlag: boolean): number {
         // 1) GreenFlag is current target Statement
         if (isGreenFlag) {
+            // Activate network in case we want to record the input trace.
+            network.activateNetwork(inputFeatures);
             return this.availableEvents.findIndex(event => event instanceof WaitEvent);
         }
 
         // 2) Random event selection
         else if (this._eventSelection === 'random') {
+            // Activate the network in case we want to record the input trace.
+            network.activateNetwork(inputFeatures);
             return this._random.nextInt(0, this.availableEvents.length);
         }
 
