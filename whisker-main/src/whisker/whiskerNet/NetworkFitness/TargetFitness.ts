@@ -56,13 +56,13 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      * @param eventSelection defines how the network should be executed (random | activation).
      * @returns Promise<number> the sparseness of the network's behaviour, which is a metric of novelty.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const playerRenderedTarget = Container.vmWrapper.getTargetBySpriteName(this.player);
         if (!playerRenderedTarget) {
             throw new Error("Player Sprite not found. Please check your config file.");
         }
         const initialPosition = new ScratchPosition(playerRenderedTarget.x, playerRenderedTarget.y);
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
 
 

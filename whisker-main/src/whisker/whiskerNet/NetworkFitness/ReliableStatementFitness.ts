@@ -22,9 +22,10 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the network should be executed (random | activation).
+     * @returns Promise<number> the fitness of the given network based on reliable statement coverage.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
         await executor.execute(network);
         ReliableStatementFitness.updateUncoveredMap(network);
         const fitness = network.targetFitness.getFitness(network);
@@ -47,7 +48,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * @param timeout the timeout for one playthrough.
      * @param eventSelection the eventSelection method (activation | random).
      */
-    private async checkStableCoverage(network: NetworkChromosome, timeout, eventSelection): Promise<void> {
+    private async checkStableCoverage(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<void> {
         // Save some values to recover them later
         const originalSeed = Randomness._scratchSeed;
         const originalPlayTime = network.playTime;
@@ -61,7 +62,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Iterate over each seed and calculate the achieved fitness
         for (const seed of repetitionSeeds) {
             Randomness.setScratchSeed(seed, true);
-            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
             if (eventSelection === 'random') {
                 // Re-execute the saved sequence from the first run
                 await executor.executeSavedTrace(network);

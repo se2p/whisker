@@ -62,8 +62,9 @@ export class NoveltyReliableStatementFitness extends ReliableStatementFitness {
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the network should be executed (random | activation).
+     * @returns Promise<number> the combined fitness value of novelty and reliable statement coverage.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const statementFitness = await super.getFitness(network, timeout, eventSelection);
         const sparseNess = this.novelty(network);
         this.addToBehaviourArchive(network.trace.events.map(eventAndParameter => eventAndParameter.event), sparseNess);

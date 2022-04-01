@@ -33,24 +33,8 @@ export class StaticSuite extends NetworkSuite {
         const config = new WhiskerSearchConfiguration(sampleTest.configs);
         this.parameter = config.dynamicSuiteParameter;
         this.parameter.train = false;
-        this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation');
+        this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
         Container.config = config;
-    }
-
-    /**
-     * Executes the static test suite of Scratch input sequences loaded within networks.
-     */
-    protected async executeTestCases(): Promise<void> {
-        const tests = this.loadTestCases()
-        for (const test of tests) {
-            test.recordActivationTrace = true;
-            await this.executor.executeSavedTrace(test);
-            this.executor.resetState();
-            this.updateArchive(test);
-            if (test.savedActivationTrace) {
-                this.extractTestCaseResults(test);
-            }
-        }
     }
 
     /**
@@ -67,6 +51,49 @@ export class StaticSuite extends NetworkSuite {
             networks.push(network);
         }
         return networks;
+    }
+
+    /**
+     * Executes a single static test case and records corresponding statistics.
+     * @param test the static test case to execute.
+     * @param projectName the name of the project on which the given test will be executed.
+     * @param testName the name of the static test case that is about to be executed.
+     */
+    protected async executeTestCase(test: NeatChromosome, projectName: string, testName: string): Promise<void> {
+        test.recordActivationTrace = true;
+        await this.executor.executeSavedTrace(test);
+        this.executor.resetState();
+        this.updateArchive(test);
+        if (test.savedActivationTrace) {
+            this.extractTestCaseResults(test, projectName, testName);
+        }
+    }
+
+    /**
+     * Executes the static test suite consisting of Scratch input sequences.
+     */
+    protected async testSingleProject(): Promise<void> {
+        const tests = this.loadTestCases()
+        for (const test of tests) {
+            await this.executeTestCase(test, this.projectName, this.testName);
+        }
+    }
+
+    /**
+     * Performs mutation analysis on a given test project based on the specified mutation operators.
+     */
+    protected async mutationAnalysis(): Promise<void> {
+        const networks = this.loadTestCases();
+        const mutants = this.getScratchMutations();
+        for (const mutant of mutants) {
+            const projectMutation = `${this.projectName}-${mutant['Mutation']}`;
+            for (const network of networks) {
+                // We clone the network since it might get changed due to specific mutations.
+                const networkClone = network.clone();
+                await this.loadMutant(mutant);
+                await this.executeTestCase(networkClone, projectMutation, this.testName);
+            }
+        }
     }
 
     /**

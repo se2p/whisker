@@ -7,7 +7,7 @@ export abstract class Mutator {
     /**
      * Maps blockIds to the corresponding blocks of a Scratch program.
      */
-    protected readonly blockMap: Map<string, any>;
+    protected readonly blockMap: Map<string, unknown>;
 
     /**
      * JSON representation of the original project.
@@ -27,18 +27,19 @@ export abstract class Mutator {
     /**
      * Generates a list of generated mutants based on the extracted mutation candidates and the original VM.
      */
-    public abstract generateMutants(): any[]
+    public abstract generateMutants(): Record<string, unknown>[];
 
 
     /**
      * Extracts the block that will be mutation from a cloned mutant VM.
      * @param mutantVM the cloned mutant VM.
-     * @param mutantBlockId the block id of the block that should be mutated
+     * @param mutantBlockId the block id of the block that should be mutated.
+     * @param targetName the target whose block will be mutated.
      */
-    protected getMutationBlock(mutantVM: VirtualMachine, mutantBlockId: string, targetName: string): any {
+    protected getMutationBlock(mutantVM: VirtualMachine, mutantBlockId: string, targetName: string): unknown {
         const targetBlocks = mutantVM.targets.find(target => target.name === targetName).blocks;
-        for(const [id, block] of Object.entries(targetBlocks)){
-            if(mutantBlockId.startsWith(id)){
+        for (const [id, block] of Object.entries(targetBlocks)) {
+            if (mutantBlockId.startsWith(id)) {
                 return block;
             }
         }

@@ -12,13 +12,14 @@ import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Mutator} from "../../scratch/ScratchMutation/Mutator";
 import {KeyOptionMutator} from "../../scratch/ScratchMutation/KeyOptionMutator";
+import {Chromosome} from "../../search/Chromosome";
 
 export abstract class NetworkSuite {
 
     /**
      * Maps a number as fitness function key to a fitness function.
      */
-    protected statementMap = new Map<number, FitnessFunction<NeatChromosome>>();
+    protected statementMap = new Map<number, FitnessFunction<Chromosome>>();
 
     /**
      * Saves for each covered fitness function key, a network capable of covering the respective fitness function.
@@ -40,8 +41,20 @@ export abstract class NetworkSuite {
      */
     protected mutationOperators: Mutator[]
 
+    /**
+     * The name of the tested project.
+     */
+    protected projectName: string
+
+    /**
+     * The name of the executed test.
+     */
+    protected testName: string
+
     protected constructor(protected project: ArrayBuffer, protected vm: VirtualMachine,
                           protected properties: Record<string, number | string | string[]>) {
+        this.projectName = this.properties.projectName as string;
+        this.testName = this.properties.testName as string;
     }
 
     /**
@@ -55,20 +68,37 @@ export abstract class NetworkSuite {
     protected abstract loadTestCases(): NeatChromosome[];
 
     /**
-     * Executes the loaded test cases.
+     * Executes a single test case and records corresponding statistics.
+     * @param test the test case to execute.
+     * @param projectName the name of the project on which the given test will be executed.
+     * @param testName the name of the test case that is about to be executed.
      */
-    protected abstract executeTestCases(): Promise<void>;
+    protected abstract executeTestCase(test: NeatChromosome, projectName: string, testName: string): Promise<void>;
+
+    /**
+     * Tests a single project by executing the given test suite.
+     */
+    protected abstract testSingleProject(): Promise<void>;
+
+    /**
+     * Performs mutation analysis on a given test project based on the specified mutation operators.
+     */
+    protected abstract mutationAnalysis(): Promise<void>;
 
     /**
      * Executes the given network suite by fist initialising required fields and then executing the respective test
-     * cases.
+     * cases on the original project or the created mutants.
      */
     protected async execute(): Promise<string> {
         this.setScratchSeed();
         await this.initialiseCommonVariables();
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets();
-        await this.executeTestCases();
+        if (this.mutationOperators.length == 0) {
+            await this.testSingleProject();
+        } else {
+            await this.mutationAnalysis();
+        }
         return StatisticsCollector.getInstance().asCsvNetworkSuite();
     }
 
@@ -90,13 +120,9 @@ export abstract class NetworkSuite {
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
 
-        // Set values for the resulting csv file.
-        StatisticsCollector.getInstance().projectName = this.properties.projectName as string;
-        StatisticsCollector.getInstance().testName = this.properties.testName as string;
-
         this.mutationOperators = [];
         const specifiedMutators = this.properties.mutators as string[];
-        for(const mutator of specifiedMutators) {
+        for (const mutator of specifiedMutators) {
             switch (mutator) {
                 case 'Key':
                     this.mutationOperators.push(new KeyOptionMutator(this.vm));
@@ -149,9 +175,12 @@ export abstract class NetworkSuite {
 
     /**
      * Extracts the results of an executed test case and saves them within the StatisticsCollector.
+     * @param projectName the name of the executed test project
+     * @param testName the name of the executed test
      * @param testCase the testCase whose results should be extracted.
      */
-    protected extractTestCaseResults(testCase: NeatChromosome): void {
+    protected extractTestCaseResults(testCase: NeatChromosome, projectName: string, testName: string): void {
+        testCase.determineCoveredObjectives([...this.statementMap.values()]);
         testCase.surpriseAdequacyStep = SurpriseAdequacy.LSA(testCase.savedActivationTrace, testCase.currentActivationTrace);
         const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.savedActivationTrace, testCase.currentActivationTrace);
         testCase.surpriseAdequacyNodes = nodeSA[0];
@@ -164,7 +193,7 @@ export abstract class NetworkSuite {
         }
         const z = SurpriseAdequacy.zScore(testCase.savedActivationTrace, testCase.currentActivationTrace);
         testCase.zScore = z[0];
-        StatisticsCollector.getInstance().networks.push(testCase);
+        StatisticsCollector.getInstance().addNetworkSuiteResult(projectName, testName, testCase);
     }
 
     /**
@@ -184,20 +213,28 @@ export abstract class NetworkSuite {
         return surpriseCounter;
     }
 
-    protected getScratchMutations(): any[]{
+    /**
+     * Generates Scratch mutants based on the specified mutation operators.
+     * @returns an array of the created mutants.
+     */
+    protected getScratchMutations(): Record<string, unknown>[] {
         const mutants = [];
-        for(const mutator of this.mutationOperators){
-            for(const generatedMutants of mutator.generateMutants()){
-            mutants.push(generatedMutants)
+        for (const mutator of this.mutationOperators) {
+            for (const generatedMutants of mutator.generateMutants()) {
+                mutants.push(generatedMutants)
             }
         }
         return mutants;
     }
 
-    protected async initialiseMutant(mutant:any):Promise<void>{
+    /**
+     * Loads a given Scratch mutant by initialising the VmWrapper and the NetworkExecutor with the mutant.
+     * @param mutant a mutant of a Scratch project.
+     */
+    protected async loadMutant(mutant: Record<string, unknown>): Promise<void> {
         const util = new WhiskerUtil(this.vm, mutant)
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
-        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation');
+        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', false);
     }
 }

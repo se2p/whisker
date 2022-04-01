@@ -16,24 +16,30 @@ export class KeyOptionMutator extends Mutator {
     protected getMutationCandidates(): string[] {
         const keyBlocks: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
-            if (block.fields.KEY_OPTION) {
+            if (block['fields']['KEY_OPTION']) {
                 keyBlocks.push(id);
             }
         }
         return keyBlocks;
     }
 
-    public generateMutants(): any[] {
+    public generateMutants(): Record<string, unknown>[] {
         const mutants: VirtualMachine[] = [];
         const mutationCandidates = this.getMutationCandidates();
-        for(const mutationBlockId of mutationCandidates){
+        for (const mutationBlockId of mutationCandidates) {
             const mutantVM = JSON.parse(this.originalProjectJSON);
             const originalBlock = this.blockMap.get(mutationBlockId);
-            const mutationBlock = this.getMutationBlock(mutantVM, mutationBlockId, originalBlock.target);
-            if(mutationBlock !== undefined) {
-                mutationBlock.fields.KEY_OPTION[0] = Randomness.getInstance().pick(KeyOptionMutator.KEY_OPTIONS);
+            const mutationBlock = this.getMutationBlock(mutantVM, mutationBlockId, originalBlock['target']);
+            if (mutationBlock !== undefined) {
+                const originalKeyPress = mutationBlock['fields']['KEY_OPTION'][0];
+                let mutantKeyPress = Randomness.getInstance().pick(KeyOptionMutator.KEY_OPTIONS);
+                while (originalKeyPress === mutantKeyPress) {
+                    mutantKeyPress = Randomness.getInstance().pick(KeyOptionMutator.KEY_OPTIONS);
+                }
+                mutationBlock['fields']['KEY_OPTION'][0] = mutantKeyPress;
+                mutantVM['Mutation'] = `KeyOption:${originalKeyPress}-To-${mutantKeyPress}`
+                mutants.push(mutantVM);
             }
-            mutants.push(mutantVM);
         }
         return mutants;
     }
