@@ -13,7 +13,7 @@ export interface NetworkFitnessFunction<T extends NetworkChromosome> {
      * events | eventsExtended).
      * @returns Promise<number> the fitness value of the specified network.
      */
-    getFitness(network: T, timeout: number, eventSelection?: string): Promise<number>;
+    getFitness(network: T, timeout: number, eventSelection: string): Promise<number>;
 
     /**
      * An identifier used for dynamic test suites to identify the correct fitness function when loaded from a saved

@@ -37,8 +37,8 @@ export abstract class NoveltyFitness implements NetworkFitnessFunction<NetworkCh
      * @param eventSelection defines how the network should be executed (random | activation).
      * @returns Promise<number> the sparseness of the network's behaviour, which is a metric of novelty.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
         const sparseness = this.sparseNess(network);
         this.addToBehaviourArchive(network, sparseness);

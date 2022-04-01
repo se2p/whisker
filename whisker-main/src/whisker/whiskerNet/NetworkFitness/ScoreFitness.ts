@@ -15,7 +15,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * @returns Promise<number> the achieved score.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
         let score = ScoreFitness.gatherPoints(Container.vm);
         if (score < 0) {

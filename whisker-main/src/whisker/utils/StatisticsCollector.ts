@@ -58,9 +58,9 @@ export class StatisticsCollector {
 
     // Dynamic Suite
     private _testName: string;
-    private readonly _networks: NetworkChromosome[];
     private _surpriseAdequacy: number;
     private _surpriseNodeAdequacy: number;
+    private readonly _networkSuiteResults: NetworkTestSuiteResults[];
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -90,9 +90,9 @@ export class StatisticsCollector {
         // Values are [coverage, fitness, score, survive]
         this._fitnessOverTime = new Map<number, [number, number, number, number]>();
         this.coveredFitnessFunctions = [];
+        this._networkSuiteResults = [];
         this._highestScore = 0;
         this._highestPlayTime = 0;
-        this._networks = [];
         this._surpriseAdequacy = 0;
         this._surpriseNodeAdequacy = 0;
     }
@@ -279,10 +279,6 @@ export class StatisticsCollector {
         this._testName = value;
     }
 
-    get networks(): NetworkChromosome[] {
-        return this._networks;
-    }
-
     get surpriseAdequacy(): number {
         return this._surpriseAdequacy;
     }
@@ -305,6 +301,24 @@ export class StatisticsCollector {
 
     get highestPlayTime(): number {
         return this._highestPlayTime;
+    }
+
+    public addNetworkSuiteResult(projectName: string, testName: string, network: NetworkChromosome): void {
+        const uncertaintyValues = [...network.uncertainty.values()];
+        const uncertainty = uncertaintyValues.reduce((pv, cv) => pv + cv, 0) / uncertaintyValues.length;
+        const testResults: NetworkTestSuiteResults = {
+            projectName: projectName,
+            testName: testName,
+            coveredStatements: network.coveredStatements,
+            score: network.score,
+            playTime: network.playTime,
+            surpriseStepAdequacy: network.surpriseAdequacyStep,
+            surpriseNodeAdequacy: network.surpriseAdequacyNodes,
+            surpriseCount: network.surpriseCounterNormalised,
+            zScore: network.zScore,
+            uncertainty: uncertainty
+        };
+        this._networkSuiteResults.push(testResults);
     }
 
     /**
@@ -407,17 +421,14 @@ export class StatisticsCollector {
     }
 
     public asCsvNetworkSuite(): string {
-        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,score," +
-            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,certainty\n";
+        let csv = "projectName,testName,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
+            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,uncertainty\n";
 
-        this.networks.sort((a, b) => b.fitness - a.fitness);
-        for (let i = 0; i < this.networks.length; i++) {
-            const network = this.networks[i];
-            const certaintyValues = [...network.uncertainty.values()];
-            const certainty = certaintyValues.reduce((pv, cv) => pv + cv, 0) / certaintyValues.length;
-            const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
-                this._coveredFitnessFunctionsCount, network.score, network.playTime, network.surpriseAdequacyStep,
-                network.surpriseAdequacyNodes, network.surpriseCounterNormalised, network.zScore, certainty];
+        for (const testResult of this._networkSuiteResults){
+            const data = [testResult.projectName, testResult.testName, this._fitnessFunctionCount,
+                testResult.coveredStatements, this._coveredFitnessFunctionsCount, testResult.score, testResult.playTime,
+                testResult.surpriseStepAdequacy, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
+                testResult.zScore, testResult.uncertainty];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -482,4 +493,17 @@ export class StatisticsCollector {
         this._projectName = this._unknownProject;
         this._configName = this._unknownConfig;
     }
+}
+
+interface NetworkTestSuiteResults {
+    projectName: string,
+    testName: string,
+    coveredStatements: number,
+    score: number,
+    playTime: number,
+    surpriseStepAdequacy: number
+    surpriseNodeAdequacy: number,
+    surpriseCount: number,
+    zScore: number,
+    uncertainty: number
 }

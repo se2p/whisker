@@ -19,9 +19,9 @@ const production = process.env.NODE_ENV === "production";
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, errorWitnessPath,
-    addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, seed
+    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, mutators,
+    errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs,
+    isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -295,6 +295,7 @@ async function runDynamicTestSuite (browser, scratchPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
         await showHiddenFunctionality(page);

@@ -1,6 +1,5 @@
 import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
-import {ScratchProject} from "../../scratch/ScratchProject";
 import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {NeatChromosome} from "../Networks/NeatChromosome";
@@ -19,29 +18,10 @@ export class DynamicSuite extends NetworkSuite {
      */
     private readonly _testSuiteJSON;
 
-    constructor(project: ScratchProject, vm: VirtualMachine, properties: Record<string, number | string>,
+    constructor(project: ArrayBuffer, vm: VirtualMachine, properties: Record<string, number | string | string[]>,
                 testFile: string) {
         super(project, vm, properties);
         this._testSuiteJSON = JSON.parse(testFile);
-    }
-
-    /**
-     * Executes the dynamic test suite of networks.
-     */
-    protected async executeTestCases(): Promise<void> {
-        let networks = this.loadTestCases();
-        if (this.parameter.train) {
-            networks = await this.trainNetworks(networks);
-        }
-        for (const network of networks) {
-            network.recordActivationTrace = true;
-            await this.executor.execute(network);
-            this.executor.resetState();
-            this.updateArchive(network);
-            if (network.savedActivationTrace) {
-                this.extractTestCaseResults(network);
-            }
-        }
     }
 
     /**
@@ -50,14 +30,13 @@ export class DynamicSuite extends NetworkSuite {
     protected initialiseExecutionParameter(): void {
         const config = new WhiskerSearchConfiguration(this._testSuiteJSON['Configs']);
         this.parameter = config.dynamicSuiteParameter;
-        //this.parameter.train = this.properties['train'] == 1;
         this.parameter.train = false;
-        this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation');
+        this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
         Container.config = config;
     }
 
     /**
-     * Loads the dynamic test cases.
+     * Loads the dynamic test cases by initialising the saved networks.
      */
     protected loadTestCases(): NeatChromosome[] {
         const fitnessTargets = [...this.statementMap.values()] as unknown as StatementFitnessFunction[];
@@ -65,6 +44,56 @@ export class DynamicSuite extends NetworkSuite {
         const networkLoader = new NetworkLoader(this._testSuiteJSON['Networks'],
             eventExtractor.extractStaticEvents(this.vm), fitnessTargets);
         return networkLoader.loadNetworks();
+    }
+
+    /**
+     * Executes a single dynamic test case and records corresponding statistics.
+     * @param test the dynamic test case to execute.
+     * @param projectName the name of the project on which the given test will be executed.
+     * @param testName the name of the dynamic test case that is about to be executed.
+     */
+    protected async executeTestCase(test: NeatChromosome, projectName: string, testName: string): Promise<void> {
+        test.recordActivationTrace = true;
+        await this.executor.execute(test);
+        this.updateArchive(test);
+        this.executor.resetState();
+        if (test.savedActivationTrace) {
+            this.extractTestCaseResults(test, projectName, testName);
+        }
+    }
+
+    /**
+     * Executes the dynamic test suite consisting of networks on a single test project.
+     */
+    protected async testSingleProject(): Promise<void> {
+        let networks = this.loadTestCases();
+
+        // Since we are using dynamic suites we have the option to re-train them.
+        if (this.parameter.train) {
+            networks = await this.trainNetworks(networks);
+        }
+
+        // Execute all networks on the single project.
+        for (const network of networks) {
+            await this.executeTestCase(network, this.projectName, this.testName);
+        }
+    }
+
+    /**
+     * Performs mutation analysis on a given test project based on the specified mutation operators.
+     */
+    protected async mutationAnalysis(): Promise<void> {
+        const networks = this.loadTestCases();
+        const mutants = this.getScratchMutations();
+        for (const mutant of mutants) {
+            const projectMutation = `${this.projectName}-${mutant['Mutation']}`;
+            for (const network of networks) {
+                // We clone the network since it might get changed due to specific mutations.
+                const networkClone = network.clone();
+                await this.loadMutant(mutant);
+                await this.executeTestCase(networkClone, projectMutation, this.testName);
+            }
+        }
     }
 
     /**

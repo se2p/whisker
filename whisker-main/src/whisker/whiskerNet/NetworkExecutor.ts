@@ -26,11 +26,6 @@ export class NetworkExecutor {
     private readonly _vm: VirtualMachine;
 
     /**
-     * The wrapper of the Scratch-VM
-     */
-    private readonly _vmWrapper: VMWrapper
-
-    /**
      * Collects the available events at the current state of the Scratch-VM
      */
     private availableEvents: ScratchEvent[] = [];
@@ -46,11 +41,6 @@ export class NetworkExecutor {
     private _projectRunning: boolean
 
     /**
-     * Timeout after which each playthrough is halted
-     */
-    private readonly _timeout: number;
-
-    /**
      * Random generator
      */
     private _random = Randomness.getInstance();
@@ -61,27 +51,23 @@ export class NetworkExecutor {
     private _eventExtractor: ScratchEventExtractor;
 
     /**
-     * Defines how a network will select events during its playthrough
-     */
-    private readonly _eventSelection: string
-
-    /**
      * The number of steps we are waiting before executing a new event. Set by WaitEvents.
      */
     private _waitDuration = 0;
 
     /**
      * Constructs a new NetworkExecutor object.
-     * @param vmWrapper the wrapper of the Scratch-VM.
-     * @param timeout timeout after which each playthrough is halted.
-     * @param eventSelection defines how a network will select events during its playthrough.
+     * @param _vmWrapper the wrapper of the Scratch-VM.
+     * @param _timeout timeout after which each playthrough is halted.
+     * @param _eventSelection defines how a network will select events during its playthrough.
+     * @param _stopEarly determines whether we want to stop the execution as soon was we have covered the network's
+     * fitness objective.
      */
-    constructor(vmWrapper: VMWrapper, timeout: number, eventSelection?: string) {
-        this._vmWrapper = vmWrapper;
-        this._vm = vmWrapper.vm;
-        this._timeout = timeout;
+    constructor(private readonly _vmWrapper: VMWrapper, private readonly _timeout: number,
+                private readonly _eventSelection: string,
+                private readonly _stopEarly: boolean) {
+        this._vm = this._vmWrapper.vm;
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
-        this._eventSelection = eventSelection;
         this.recordInitialState();
     }
 
@@ -143,7 +129,7 @@ export class NetworkExecutor {
             stepCount++;
 
             // Check if we have reached our selected target and stop if this is the case.
-            if (statementTarget !== undefined) {
+            if (this._stopEarly && statementTarget !== undefined) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
                 if (currentCoverage.has(statementTarget.getTargetNode().id)) {
                     break;
