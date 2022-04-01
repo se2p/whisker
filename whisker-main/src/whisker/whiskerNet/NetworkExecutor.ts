@@ -88,7 +88,8 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout.
         const startTime = Date.now();
         const statementTarget = network.targetFitness as StatementFitnessFunction;
-        const isGreenFlag = statementTarget !== undefined &&
+        const isGreenFlag = this._stopEarly &&
+            statementTarget !== undefined &&
             statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
@@ -262,7 +263,7 @@ export class NetworkExecutor {
      */
     private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[],
                                    greenFlag = false): Promise<void> {
-        let setParameter: number[]
+        let setParameter: number[];
         const argType: ParameterType = this._eventSelection as ParameterType;
         if (nextEvent.numSearchParameter() > 0 && !greenFlag) {
             const parameters = NetworkExecutor.getArgs(nextEvent, network);
