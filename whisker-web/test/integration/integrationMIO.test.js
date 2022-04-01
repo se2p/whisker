@@ -132,6 +132,14 @@ describe('Basic event handling', () => {
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
+    test('Test mouse move functionality with trigger block being hidden inside another block', async () => {
+        await loadProject('test/integration/mouseMoveEvent/MouseMoveAsBlockInput.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
     test('Test stage clicking functionality', async () => {
         await loadProject('test/integration/stageClickEvent/StageClickedTest.sb3')
         await (await page.$('#run-search')).click();
