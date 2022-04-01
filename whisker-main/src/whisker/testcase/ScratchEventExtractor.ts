@@ -116,6 +116,13 @@ export abstract class ScratchEventExtractor {
                 }
             }
 
+            // Other blocks that take blocks as input such as "set x to mouse x".
+            else if(block.inputs){
+                for(const input of Object.values(block.inputs)){
+                    this.traverseBlocks(target, target.blocks.getBlock(input['block']), foundEvents);
+                }
+            }
+
             // handle procedure calls by mapping the call to its corresponding procedure_definition
             if (target.blocks.getOpcode(block) === 'procedures_call') {
                 if (this.proceduresMap.has(block.mutation.proccode)) {
