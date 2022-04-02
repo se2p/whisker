@@ -95,8 +95,10 @@ export abstract class NetworkSuite {
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets();
         if (this.mutationOperators.length == 0) {
+            console.log("Testing Single Project");
             await this.testSingleProject();
         } else {
+            console.log("Performing Mutation Analysis");
             await this.mutationAnalysis();
         }
         return StatisticsCollector.getInstance().asCsvNetworkSuite();

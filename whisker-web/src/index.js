@@ -294,11 +294,13 @@ const runAllTests = async function () {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
+            const mutators = document.querySelector('#container').mutators.split(', ');
             const properties = {};
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
+            properties.mutators = mutators;
             const staticSuite = new StaticSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
                 Whisker.tests);
             const csv = await staticSuite.execute();

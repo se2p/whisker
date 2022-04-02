@@ -45,7 +45,7 @@ export class SurpriseAdequacy {
                 trace => trace.length == testStepTrace[0].length);
 
             if (trainingStepTraces.length < 5) {
-                return surpriseAdequacy / stepCount;
+                return stepCount > 0 ? surpriseAdequacy / stepCount : undefined;
             }
 
             // Calculate Surprise Adequacy.

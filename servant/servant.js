@@ -385,6 +385,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(path);
@@ -422,7 +423,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         while (true) {
             // eslint-disable-next-line no-constant-condition
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-            if (currentLog.includes('projectName,testName,network,fitnessFunctionCount')) {
+            if (currentLog.includes('projectName,testName')) {
                 return currentLog.toString();
             }
 
