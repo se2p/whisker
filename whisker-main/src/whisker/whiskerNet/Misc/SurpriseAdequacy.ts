@@ -72,7 +72,7 @@ export class SurpriseAdequacy {
         const surpriseMap = new Map<number, Map<string, boolean>>();
         let sa = 0;
         let stepCount = 0;
-        if (!test || test.trace.size < (training.trace.size / 10)) {
+        if (!test) {
             for (const [step, stepTrace] of training.trace.entries()) {
                 surpriseMap.set(step, new Map<string, boolean>());
                 for (const nodeId of stepTrace.keys()) {
@@ -92,21 +92,16 @@ export class SurpriseAdequacy {
             for (const [nodeId, nodeTrace] of test.trace.get(step).entries()) {
                 const testValue = nodeTrace[0];
                 const trainingStepTrace = training.trace.get(step);
-
                 // With too few training samples we cannot reliably detect suspicious behaviour.
                 if(!trainingStepTrace){
                     return [sa / stepCount, surpriseMap];
                 }
 
                 const trainingNodeTrace = trainingStepTrace.get(nodeId);
-                // New node that did not occur in the test generation process.
-                if(!trainingNodeTrace){
-                    continue;
-                }
 
-                // Too few samples to continue...
-                if(trainingNodeTrace.length < 20){
-                    return [sa / stepCount, surpriseMap];
+                // New node that did not occur in the test generation process, or we observed too few samples.
+                if(!trainingNodeTrace || trainingNodeTrace.length < 10){
+                    continue;
                 }
 
                 const LSA = this.calculateLSANodeBased(trainingNodeTrace, testValue);

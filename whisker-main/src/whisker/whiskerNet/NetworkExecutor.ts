@@ -126,7 +126,7 @@ export class NetworkExecutor {
             }
 
             // Record the activation trace and increase the stepCount.
-            this.recordActivationTrace(network, stepCount);
+            this.recordActivationTrace(network, stepCount, spriteFeatures);
             stepCount++;
 
             // Check if we have reached our selected target and stop if this is the case.
@@ -190,7 +190,7 @@ export class NetworkExecutor {
             await event.apply();
 
             // Record Activation trace.
-            this.recordActivationTrace(network, i);
+            this.recordActivationTrace(network, i, spriteFeatures);
         }
 
         // Set score and play time.
@@ -219,19 +219,11 @@ export class NetworkExecutor {
                             isGreenFlag: boolean): number {
         // 1) GreenFlag is current target Statement
         if (isGreenFlag) {
-            // Activate network in case we want to record the input trace.
-            if(network.recordActivationTrace) {
-                network.activateNetwork(inputFeatures);
-            }
             return this.availableEvents.findIndex(event => event instanceof WaitEvent);
         }
 
         // 2) Random event selection
         else if (this._eventSelection === 'random') {
-            // Activate the network in case we want to record the input trace.
-            if(network.recordActivationTrace) {
-                network.activateNetwork(inputFeatures);
-            }
             return this._random.nextInt(0, this.availableEvents.length);
         }
 
@@ -326,14 +318,16 @@ export class NetworkExecutor {
      * Records the ActivationTrace. We skip step 0 as this simply reflects how the project was loaded. However,
      * we are interested in step 1 as this one reflects initialisation values.
      * @param network the network whose activation trace should be updated.
-     * @param stepCount determines whether we want to record the trace at the current step.
+     * @param step determines whether we want to record the trace at the current step.
+     * @param inputs the inputs from which an activationTrace will be recorded within the input nodes.
      */
-    private recordActivationTrace(network: NetworkChromosome, stepCount: number) {
-        if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
-            network.updateActivationTrace(stepCount);
+    private recordActivationTrace(network: NetworkChromosome, step: number, inputs: Map<string, Map<string, number>>) {
+        if (network.recordActivationTrace && step > 0 && (step % 5 == 0 || step == 1)) {
+            network.setUpInputs(inputs);
+            network.updateActivationTrace(step);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
             if (probabilities.size > 0) {
-                network.uncertainty.set(stepCount, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
+                network.uncertainty.set(step, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
             }
         }
     }
