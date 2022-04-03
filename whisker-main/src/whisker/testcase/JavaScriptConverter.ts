@@ -56,7 +56,7 @@ export class JavaScriptConverter {
             configs['seed'] = Container.config.getRandomSeed();
             configs['repetitions'] = Container.config.neuroevolutionProperties.repetitions;
 
-            const durationConfigs = {}
+            const durationConfigs = {};
             durationConfigs['waitStepUpperBound'] = Container.config.getWaitStepUpperBound();
             durationConfigs['pressDurationUpperBound'] = Container.config.getPressDurationUpperBound();
             durationConfigs['soundDuration'] = Container.config.getSoundDuration();
@@ -68,7 +68,7 @@ export class JavaScriptConverter {
         let text = "";
         let i = 0;
         let footer = "";
-        const type = Container.isNeuroevolution ? 'neuroevolution' : 'standard'
+        const type = Container.isNeuroevolution ? 'neuroevolution' : 'standard';
         for (const test of tests) {
             text += "const test" + i + " = async function (t) {\n";
             for (const {event} of test.chromosome.trace.events) {
@@ -107,9 +107,9 @@ export class JavaScriptConverter {
         text += "]\n";
 
         if (Container.isNeuroevolution) {
-            const testSuites = {}
-            const networkJSON = {}
-            networkJSON['Configs'] = configs
+            const testSuites = {};
+            const networkJSON = {};
+            networkJSON['Configs'] = configs;
 
             // Save the networks.
             const networkTestSuite = {};
@@ -119,7 +119,7 @@ export class JavaScriptConverter {
             networkJSON['Networks'] = networkTestSuite;
             testSuites['Static'] = text;
             testSuites['Dynamic'] = networkJSON;
-            return JSON.stringify(testSuites);
+            return `{"Static":${JSON.stringify(testSuites['Static'])},"Dynamic":${JSON.stringify(testSuites['Dynamic'])}}`;
         }
 
         return text;
