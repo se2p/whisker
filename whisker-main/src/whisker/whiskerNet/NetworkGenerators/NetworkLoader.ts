@@ -113,7 +113,10 @@ export class NetworkLoader {
                 }
             }
 
-            NetworkLoader.loadActivationTrace(network, savedNetwork['AT']);
+            // Load the saved AT if there is one.
+            if(savedNetwork['AT'] !== undefined) {
+                NetworkLoader.loadActivationTrace(network, savedNetwork['AT']);
+            }
             networks.push(network);
         }
         return networks;

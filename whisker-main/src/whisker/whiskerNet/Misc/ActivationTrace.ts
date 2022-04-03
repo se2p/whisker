@@ -77,7 +77,7 @@ export class ActivationTrace {
             }
             activationTrace[step] = stepTrace;
         }
-        return activationTrace
+        return activationTrace;
     }
 
     get trace(): Map<number, Map<string, number[]>> {
