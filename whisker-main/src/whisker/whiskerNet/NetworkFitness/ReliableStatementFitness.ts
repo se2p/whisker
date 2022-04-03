@@ -76,6 +76,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
             // Stop if we failed to cover our target statement.
             if(!network.targetFitness.isCovered(network)){
+                network.fitness += (1 / network.targetFitness.getFitness(network));
                 break;
             }
         }

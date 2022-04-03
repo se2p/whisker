@@ -49,7 +49,7 @@
     },
     "networkFitness": {
         "type": "reliableStatement",
-        "timeout": 15000,
+        "timeout": 10000,
         "stableCount": 10
     },
     "stoppingCondition": {
