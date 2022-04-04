@@ -86,36 +86,48 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * @param parent the chromosome to mutate
      */
     apply(parent: NeatChromosome): NeatChromosome {
+        let mutated = false;
         const mutant = parent.cloneStructure(true);
-        // Special treatment for population Champions => either add a Connection or change the weights
-        if (parent.isPopulationChampion) {
-            if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
-                this.mutateAddConnection(mutant, this._addConnectionTries);
-            } else {
-                this.mutateWeight(mutant, this._perturbationPower);
-            }
-        }
-
-        // If we don't have a population Champion apply either structural mutation or non-structural mutation but
-        // not both!
-        else {
-            // Structural mutation
-            if (this._random.nextDouble() < this._mutationAddNode) {
-                this.mutateAddNode(mutant);
-            } else if (this._random.nextDouble() < this._mutationAddConnection) {
-                this.mutateAddConnection(mutant, this._addConnectionTries);
-            }
-
-            // Non structural mutation
-            else {
-                if (this._random.nextDouble() < this._mutateWeights)
+        do {
+            // Special treatment for population Champions => either add a Connection or change the weights
+            if (parent.isPopulationChampion) {
+                mutated = true;
+                if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
+                    this.mutateAddConnection(mutant, this._addConnectionTries);
+                } else {
                     this.mutateWeight(mutant, this._perturbationPower);
-                if (this._random.nextDouble() < this._mutateToggleEnableConnection)
-                    this.mutateToggleEnableConnection(mutant, this._toggleEnableConnectionTimes);
-                if (this._random.nextDouble() < this._mutateEnableConnection)
-                    this.mutateConnectionReenable(mutant);
+                }
             }
-        }
+
+            // If we don't have a population Champion apply either structural mutation or non-structural mutation but
+            // not both!
+            else {
+                // Structural mutation
+                if (this._random.nextDouble() < this._mutationAddNode) {
+                    mutated = true;
+                    this.mutateAddNode(mutant);
+                } else if (this._random.nextDouble() < this._mutationAddConnection) {
+                    mutated = true;
+                    this.mutateAddConnection(mutant, this._addConnectionTries);
+                }
+
+                // Non structural mutation
+                else {
+                    if (this._random.nextDouble() < this._mutateWeights) {
+                        mutated = true;
+                        this.mutateWeight(mutant, this._perturbationPower);
+                    }
+                    if (this._random.nextDouble() < this._mutateToggleEnableConnection) {
+                        mutated = true;
+                        this.mutateToggleEnableConnection(mutant, this._toggleEnableConnectionTimes);
+                    }
+                    if (this._random.nextDouble() < this._mutateEnableConnection) {
+                        mutated = true;
+                        this.mutateConnectionReenable(mutant);
+                    }
+                }
+            }
+        } while (!mutated);
         return mutant;
     }
 
