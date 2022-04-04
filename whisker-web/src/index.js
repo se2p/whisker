@@ -269,12 +269,10 @@ const runAllTests = async function () {
                 Whisker.tests);
             const [csv, mutantPrograms] = await dynamicSuite.execute();
 
-            // Save the generated mutants if we applied mutation analysis.
-            for (const mutant of mutantPrograms){
-                await Whisker.scratch.vm.loadProject(mutant);
-                const projectBlob = await Whisker.scratch.vm.saveProjectSb3();
-                Whisker.outputLog.println();
-                FileSaver.saveAs(projectBlob, `${mutant.name}.sb3`);
+            // Set the mutants in the output log from where we can download it later.
+            if (mutantPrograms.length > 0){
+                Whisker.outputRun.setScratch(Whisker.scratch);
+                Whisker.outputRun.setMutants(mutantPrograms);
             }
 
             coverage = CoverageGenerator.getCoverage();
@@ -313,7 +311,14 @@ const runAllTests = async function () {
             properties.mutators = mutators;
             const staticSuite = new StaticSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
                 Whisker.tests);
-            const csv = await staticSuite.execute();
+            const [csv, mutantPrograms] = await staticSuite.execute();
+
+            // Set the mutants in the output log from where we can download it later.
+            if (mutantPrograms.length > 0){
+                Whisker.outputRun.setScratch(Whisker.scratch);
+                Whisker.outputRun.mutants = mutantPrograms;
+            }
+
             coverage = CoverageGenerator.getCoverage();
             CoverageGenerator.restoreClasses({Thread});
             Whisker.outputLog.println(csv);

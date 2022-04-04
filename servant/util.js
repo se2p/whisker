@@ -51,6 +51,7 @@ const cli = {
             .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run in seconds', "30")
             .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
             .option('-mu, --mutators <String>', 'Defines the mutation operators in case mutation testing should be applied', '')
+            .option('-md, --mutantsDownloadPath <Path>', 'Defines where and if the generated mutants should be saved', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
@@ -76,6 +77,7 @@ const cli = {
             modelDuration,
             modelCaseSensitive,
             mutators,
+            mutantsDownloadPath,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -103,6 +105,7 @@ const cli = {
             modelCaseSensitive,
             errorWitnessPath,
             mutators,
+            mutantsDownloadPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
             accelerationFactor,

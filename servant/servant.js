@@ -20,8 +20,9 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, mutators,
-    errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs,
-    isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, seed
+    mutantsDownloadPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless,
+    numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly,
+    seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -315,8 +316,27 @@ async function runDynamicTestSuite (browser, scratchPath) {
             }
             await page.waitForTimeout(1000);
         }
-        // Get CSV-Output
+
+        // Download mutants
+        if(mutantsDownloadPath){
+            await downloadMutants(mutantsDownloadPath);
+        }
+
+        // Return the csv output
         return await (await logOutput.getProperty('innerHTML')).jsonValue();
+    }
+
+    /**
+     * Downloads the generated Scratch mutants
+     * @param downloadPath the path the mutants should be saved to
+     */
+    async function downloadMutants (downloadPath) {
+        await page._client.send('Page.setDownloadBehavior', {
+            behavior: 'allow',
+            downloadPath: downloadPath
+        });
+        await (await page.$('.output-save')).click();
+        await page.waitForTimeout(5000);
     }
 
     /**
@@ -424,6 +444,13 @@ async function runTests (path, browser, index, targetProject, modelPath) {
             // eslint-disable-next-line no-constant-condition
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName,testName')) {
+
+                // Download mutants
+                if(mutantsDownloadPath){
+                    await downloadMutants(mutantsDownloadPath);
+                }
+
+                // Return CSV file
                 return currentLog.toString();
             }
 
@@ -457,6 +484,19 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
         csvRow['duration'] = `${(Date.now() - startProject) / 1000}`;
         return csvRow;
+    }
+
+    /**
+     * Downloads the generated Scratch mutants
+     * @param downloadPath the path the mutants should be saved to
+     */
+    async function downloadMutants (downloadPath) {
+        await page._client.send('Page.setDownloadBehavior', {
+            behavior: 'allow',
+            downloadPath: downloadPath
+        });
+        await (await page.$('.output-save')).click();
+        await page.waitForTimeout(5000);
     }
 
     /**
