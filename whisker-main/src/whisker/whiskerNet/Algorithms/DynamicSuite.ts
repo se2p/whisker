@@ -10,6 +10,7 @@ import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessF
 import {NetworkExecutor} from "../NetworkExecutor";
 import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import {ScratchProgram} from "../../scratch/ScratchInterface";
 
 export class DynamicSuite extends NetworkSuite {
 
@@ -82,11 +83,11 @@ export class DynamicSuite extends NetworkSuite {
     /**
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
-    protected async mutationAnalysis(): Promise<void> {
+    protected async mutationAnalysis(): Promise<ScratchProgram[]> {
         const networks = this.loadTestCases();
-        const mutants = this.getScratchMutations();
-        for (const mutant of mutants) {
-            const projectMutation = `${this.projectName}-${mutant['Mutation']}`;
+        const mutantPrograms = this.getScratchMutations();
+        for (const mutant of mutantPrograms) {
+            const projectMutation = `${this.projectName}-${mutant.name}`;
             for (const network of networks) {
                 // We clone the network since it might get changed due to specific mutations.
                 const networkClone = network.clone();
@@ -94,6 +95,7 @@ export class DynamicSuite extends NetworkSuite {
                 await this.executeTestCase(networkClone, projectMutation, this.testName);
             }
         }
+        return mutantPrograms;
     }
 
     /**

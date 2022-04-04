@@ -1,5 +1,6 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {getBlockMap} from 'scratch-analysis/src/control-flow-graph'
+import {getBlockMap} from 'scratch-analysis/src/control-flow-graph';
+import {ScratchProgram} from "../ScratchInterface";
 
 
 export abstract class Mutator {
@@ -27,7 +28,7 @@ export abstract class Mutator {
     /**
      * Generates a list of generated mutants based on the extracted mutation candidates and the original VM.
      */
-    public abstract generateMutants(): Record<string, unknown>[];
+    public abstract generateMutants(): ScratchProgram[];
 
 
     /**

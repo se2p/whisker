@@ -16,6 +16,7 @@ import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import {ScratchProgram} from "../../scratch/ScratchInterface";
 
 
 export class StaticSuite extends NetworkSuite {
@@ -73,7 +74,7 @@ export class StaticSuite extends NetworkSuite {
      * Executes the static test suite consisting of Scratch input sequences.
      */
     protected async testSingleProject(): Promise<void> {
-        const tests = this.loadTestCases()
+        const tests = this.loadTestCases();
         for (const test of tests) {
             await this.executeTestCase(test, this.projectName, this.testName);
         }
@@ -82,11 +83,11 @@ export class StaticSuite extends NetworkSuite {
     /**
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
-    protected async mutationAnalysis(): Promise<void> {
+    protected async mutationAnalysis(): Promise<ScratchProgram[]> {
         const networks = this.loadTestCases();
-        const mutants = this.getScratchMutations();
-        for (const mutant of mutants) {
-            const projectMutation = `${this.projectName}-${mutant['Mutation']}`;
+        const mutantPrograms = this.getScratchMutations();
+        for (const mutant of mutantPrograms) {
+            const projectMutation = `${this.projectName}-${mutant.name}`;
             for (const network of networks) {
                 // We clone the network since it might get changed due to specific mutations.
                 const networkClone = network.clone();
@@ -94,6 +95,7 @@ export class StaticSuite extends NetworkSuite {
                 await this.executeTestCase(networkClone, projectMutation, this.testName);
             }
         }
+        return mutantPrograms;
     }
 
     /**

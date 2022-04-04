@@ -107,7 +107,7 @@ async function init () {
     }
     // Standard TestSuite / Standard TestSuite executed with Networks / Model-based testing /
     else {
-        if (csvFile != false && fs.existsSync(csvFile)) {
+        if (csvFile !== false && fs.existsSync(csvFile)) {
             console.error(`CSV file already exists, aborting`);
             await browser.close();
             return;

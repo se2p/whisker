@@ -11,8 +11,9 @@ import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Mutator} from "../../scratch/ScratchMutation/Mutator";
-import {KeyOptionMutator} from "../../scratch/ScratchMutation/KeyOptionMutator";
+import {KeyReplacementOperator} from "../../scratch/ScratchMutation/KeyReplacementOperator";
 import {Chromosome} from "../../search/Chromosome";
+import {ScratchProgram} from "../../scratch/ScratchInterface";
 
 export abstract class NetworkSuite {
 
@@ -83,13 +84,13 @@ export abstract class NetworkSuite {
     /**
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
-    protected abstract mutationAnalysis(): Promise<void>;
+    protected abstract mutationAnalysis(): Promise<ScratchProgram[]>;
 
     /**
      * Executes the given network suite by fist initialising required fields and then executing the respective test
      * cases on the original project or the created mutants.
      */
-    protected async execute(): Promise<string> {
+    protected async execute(): Promise<[string, ScratchProgram[]]> {
         this.setScratchSeed();
         await this.initialiseCommonVariables();
         this.initialiseExecutionParameter();
@@ -97,11 +98,12 @@ export abstract class NetworkSuite {
         if (this.mutationOperators.length == 0) {
             console.log("Testing Single Project");
             await this.testSingleProject();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         } else {
             console.log("Performing Mutation Analysis");
-            await this.mutationAnalysis();
+            const mutantPrograms = await this.mutationAnalysis();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutantPrograms];
         }
-        return StatisticsCollector.getInstance().asCsvNetworkSuite();
     }
 
     /**
@@ -127,7 +129,7 @@ export abstract class NetworkSuite {
         for (const mutator of specifiedMutators) {
             switch (mutator) {
                 case 'Key':
-                    this.mutationOperators.push(new KeyOptionMutator(this.vm));
+                    this.mutationOperators.push(new KeyReplacementOperator(this.vm));
                     break;
             }
         }
@@ -219,21 +221,19 @@ export abstract class NetworkSuite {
      * Generates Scratch mutants based on the specified mutation operators.
      * @returns an array of the created mutants.
      */
-    protected getScratchMutations(): Record<string, unknown>[] {
-        const mutants = [];
+    protected getScratchMutations(): ScratchProgram[] {
+        const mutantPrograms: ScratchProgram[] = [];
         for (const mutator of this.mutationOperators) {
-            for (const generatedMutants of mutator.generateMutants()) {
-                mutants.push(generatedMutants);
-            }
+            mutantPrograms.push(...mutator.generateMutants());
         }
-        return mutants;
+        return mutantPrograms;
     }
 
     /**
      * Loads a given Scratch mutant by initialising the VmWrapper and the NetworkExecutor with the mutant.
      * @param mutant a mutant of a Scratch project.
      */
-    protected async loadMutant(mutant: Record<string, unknown>): Promise<void> {
+    protected async loadMutant(mutant: ScratchProgram): Promise<void> {
         const util = new WhiskerUtil(this.vm, mutant);
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();

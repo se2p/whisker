@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicSuite';
 import {StaticSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/StaticSuite';
+import {FileSaver} from "./web-libs";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -266,7 +267,16 @@ const runAllTests = async function () {
 
             const dynamicSuite = new DynamicSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
                 Whisker.tests);
-            const csv = await dynamicSuite.execute();
+            const [csv, mutantPrograms] = await dynamicSuite.execute();
+
+            // Save the generated mutants if we applied mutation analysis.
+            for (const mutant of mutantPrograms){
+                await Whisker.scratch.vm.loadProject(mutant);
+                const projectBlob = await Whisker.scratch.vm.saveProjectSb3();
+                Whisker.outputLog.println();
+                FileSaver.saveAs(projectBlob, `${mutant.name}.sb3`);
+            }
+
             coverage = CoverageGenerator.getCoverage();
             CoverageGenerator.restoreClasses({Thread});
             Whisker.outputLog.println(csv);

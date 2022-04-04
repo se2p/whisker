@@ -107,3 +107,15 @@ export class ScratchInterface {
         return Math.abs(point.x) < stageWidth / 2 && Math.abs(point.y) < stageHeight / 2;
     }
 }
+
+/**
+ * A ScratchProgram is an object that holds all the necessary data required to initialise a Scratch VM which can then
+ * be executed.
+ */
+export interface ScratchProgram {
+    name?: string,
+    extensions: [],
+    meta: Record<string, unknown>,
+    monitors: [],
+    targets: RenderedTarget
+}
