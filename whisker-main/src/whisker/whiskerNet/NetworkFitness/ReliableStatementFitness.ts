@@ -27,7 +27,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
         await executor.execute(network);
-        ReliableStatementFitness.updateUncoveredMap(network);
+        network.initialiseOpenStatements([...network.openStatementTargets.keys()]);
         const fitness = network.targetFitness.getFitness(network);
         executor.resetState();
 
@@ -36,7 +36,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         } else {
             // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
-            network.fitness = 1;
+            ReliableStatementFitness.updateUncoveredMap(network);
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
         return network.fitness;
