@@ -39,7 +39,12 @@ export class ExplorativeNEAT extends NEAT {
     /**
      * Determines whether we should switch the currently selected target with an easier to reach target.
      */
-    private _switchTarget = false;
+    private _switchToEasierTarget = false;
+
+    /**
+     * Saves target ids of objectives that have already been switched out in order to prioritise different ones.
+     */
+    private _switchedTargets: string[] = [];
 
     /**
      * Holds a record of promising targets, i.e. the maximum amount of how often a target has accidentally already been
@@ -71,14 +76,16 @@ export class ExplorativeNEAT extends NEAT {
                 }
 
                 // Switch target if other statements than the currently selected one are easier to cover.
-                if (this._switchTarget) {
-                    this._switchTarget = false;
+                if (this._switchToEasierTarget) {
+                    this._switchToEasierTarget = false;
                     Container.debugLog("Switch to easier Target");
                     break;
                 }
 
                 // Switch the target if we stop improving for a set number of times
-                if(this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount){
+                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount) {
+                    const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id;
+                    this._switchedTargets.push(currentTargetId);
                     Container.debugLog("Switching Target due to missing improvement.");
                     break;
                 }
@@ -137,7 +144,7 @@ export class ExplorativeNEAT extends NEAT {
         }
 
         // Select the next target statement by querying the CDG.
-        const potentialTargets = StatementFitnessFunction.getNextUncoveredNodePairs(allStatements, uncoveredStatements);
+        const potentialTargets = StatementFitnessFunction.getNearestUncoveredStatements(allStatements, uncoveredStatements);
         let nextTarget: StatementFitnessFunction;
 
         // Prioritise greenFlag events
@@ -152,7 +159,8 @@ export class ExplorativeNEAT extends NEAT {
 
                 // When switching targets without having covered the previous target, we want to make sure not to
                 // select the same target again.
-                if(this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id){
+                if (this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id ||
+                    this._switchedTargets.includes(potTarget.getTargetNode().id)) {
                     continue;
                 }
 
@@ -185,7 +193,7 @@ export class ExplorativeNEAT extends NEAT {
     private mapStatementToKey(statement: StatementFitnessFunction): number {
         for (const [key, st] of this._fitnessFunctionMap.entries()) {
             if (st.getTargetNode().id === statement.getTargetNode().id) {
-                return key
+                return key;
             }
         }
         return undefined;
@@ -215,7 +223,7 @@ export class ExplorativeNEAT extends NEAT {
             // reached another statement without reaching the actual target statement at least once.
             if (this._promisingTargets.get(this._targetKey) < 1 &&
                 Math.max(...[...this._promisingTargets.values()]) > 0) {
-                this._switchTarget = true;
+                this._switchToEasierTarget = true;
                 return;
             }
 
@@ -286,20 +294,20 @@ export class ExplorativeNEAT extends NEAT {
      * Reports the current state of the search.
      */
     protected reportOfCurrentIteration(): void {
-        Container.debugLog(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`)
+        Container.debugLog(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
-        Container.debugLog(`Covered Statements: ${this._archive.size}/${this._fitnessFunctions.size}`)
+        Container.debugLog(`Covered Statements: ${this._archive.size}/${this._fitnessFunctions.size}`);
         Container.debugLog(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
         Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
         Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
-        Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`)
+        Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`);
         Container.debugLog(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
         const sortedSpecies = this._population.species.sort((a, b) => b.averageFitness - a.averageFitness);
         for (const species of sortedSpecies) {
             Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
         }
         Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        Container.debugLog("-----------------------------------------------------")
+        Container.debugLog("-----------------------------------------------------");
     }
 
     /**

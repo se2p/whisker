@@ -65,7 +65,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             const currentLevel = level + 1;
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
 
-                if (n.hasOwnProperty("userEvent") || n.hasOwnProperty("event")) {
+                if ("userEvent" in n || "event" in n) {
                     this._eventMapping[node.id] = n.id;
                     const succs: [GraphNode] = cdg.successors(n.id);
                     for (const s of Array.from(succs.values())) {
@@ -129,7 +129,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const trace = chromosome.trace;
         let min = Number.MAX_SAFE_INTEGER;
 
-        for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
+        for (const blockTrace of Object.values(trace.blockTraces)) {
             const newMin = this._approachLevelByTrace(blockTrace, min);
             if (newMin <= min) {
                 min = newMin;
@@ -159,7 +159,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const trace = chromosome.trace;
         let minBranchApproachLevel: number = Number.MAX_SAFE_INTEGER;
         let branchDistance = Number.MAX_SAFE_INTEGER;
-        for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
+        for (const blockTrace of Object.values(trace.blockTraces)) {
             let traceMin;
             if (blockTrace.id === this._targetNode.block.id) {
                 // if we hit the block in the trace, it must have approach level zero and branch distance 0
@@ -469,7 +469,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                         return false;
                     }
                     const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg);
-                    if(childOfNode == undefined) {
+                    if (childOfNode == undefined) {
                         return false;
                     }
                     return ControlFilter.branch(childOfNode.block);
@@ -529,15 +529,21 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return statementMap;
     }
 
-    public static getNextUncoveredNodePairs(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Set<StatementFitnessFunction> {
+    /**
+     * Extracts statements from the CDG that are immediate children of already covered statements.
+     * @param allStatements of the Scratch program.
+     * @param uncoveredStatements uncovered subset of allStatements.
+     * @returns uncovered immediate children of already covered statements.
+     */
+    public static getNearestUncoveredStatements(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Set<StatementFitnessFunction> {
         const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
         const cdg = uncoveredStatements[0]._cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
-        Container.debugLog(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`)
+        Container.debugLog(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`);
         for (const statement of uncoveredStatements) {
             const parents = StatementFitnessFunction.getCDGParent(statement._targetNode, cdg);
             if (!parents) {
-                throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`)
+                throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`);
             }
             for (const parent of parents) {
                 const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
@@ -549,6 +555,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return nearestUncoveredStatements;
     }
 
+    /**
+     * Maps a node in the CDG to the corresponding Scratch Statement.
+     * @param node the CDG node.
+     * @param allStatements all Scratch statements.
+     * @returns Scratch Statement matching to the given CDG node.
+     */
     private static mapNodeToStatement(node: GraphNode, allStatements: StatementFitnessFunction[]): StatementFitnessFunction {
         for (const statement of allStatements) {
             if (statement.getTargetNode().id === node.id) {
@@ -572,6 +584,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         }
     }
 
+    /**
+     * Extracts the direct CDG parent of a given node.
+     * @param node the node whose parent should be found.
+     * @param cdg the control dependence graph based on which a direct ancestor should be found.
+     * @return Parent node of the given child node.
+     */
     private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode[] {
         const predecessors = Array.from(cdg.predecessors(node.id)) as GraphNode[];
         const flagClickedParent = predecessors.find(node => node.id === 'flagclicked');
@@ -579,7 +597,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         // If we have direct successors of the flagClicked event, use this as a CDG parent since this parent will
         // always be reached. (Should only evaluate to true when selecting the first statement).
         if (flagClickedParent !== undefined) {
-            return [flagClickedParent]
+            return [flagClickedParent];
         }
 
         // Parents could be EventNodes, for example when having a block that depends on clone being created.
