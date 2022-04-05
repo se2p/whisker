@@ -82,16 +82,21 @@ export class ExplorativeNEAT extends NEAT {
                     break;
                 }
 
-                // Switch the target if we stop improving for a set number of times
-                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount) {
+                // Update the population, report the current status to the user and evolve the population.
+                this._population.updatePopulationStatistics();
+
+                // Switch the target if we stop improving for a set number of times and have statements to which we
+                // can switch to left
+                const uncoveredStatementIds = this.getUncoveredStatements().map(statement => statement.getTargetNode().id);
+                const uncoveredUntouchedTargets = uncoveredStatementIds.filter(targetId => !this._switchedTargets.includes(targetId));
+                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount &&
+                    uncoveredUntouchedTargets.length > 0) {
                     const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id;
                     this._switchedTargets.push(currentTargetId);
                     Container.debugLog("Switching Target due to missing improvement.");
                     break;
                 }
 
-                // Update the population, report the current status to the user and evolve the population.
-                this._population.updatePopulationStatistics();
                 this.reportOfCurrentIteration();
                 this._population.evolve();
 
@@ -133,34 +138,30 @@ export class ExplorativeNEAT extends NEAT {
      * @returns the next target statement's fitness function.
      */
     private setNextGoal(): StatementFitnessFunction {
-        const uncoveredStatements: StatementFitnessFunction[] = [];
+        const uncoveredStatements = this.getUncoveredStatements();
         const allStatements = [...this._fitnessFunctionMap.values()];
 
-        // Collect yet uncovered statements.
-        for (const [key, statement] of this._fitnessFunctionMap.entries()) {
-            if (!this._archive.has(key)) {
-                uncoveredStatements.push(statement);
-            }
-        }
-
         // Select the next target statement by querying the CDG.
-        const potentialTargets = StatementFitnessFunction.getNearestUncoveredStatements(allStatements, uncoveredStatements);
+        let potentialTargets = StatementFitnessFunction.getNearestUncoveredStatements(allStatements, uncoveredStatements);
         let nextTarget: StatementFitnessFunction;
 
         // Prioritise greenFlag events
         nextTarget = [...potentialTargets.values()]
             .find(target => target.getTargetNode().block.opcode === 'event_whenflagclicked');
 
-        // If there are no greenFlagEvents left to cover, prioritise targets we have already reached in the past.
+        // If there are no greenFlagEvents left to cover, prioritise targets we have already reached in the past and
+        // were not selected as target yet.
         if (nextTarget === undefined) {
+            const uncoveredUntouchedTargets = new Set([...potentialTargets].filter(target =>
+                !this._switchedTargets.includes(target.getTargetNode().id)));
+            potentialTargets = uncoveredUntouchedTargets.size > 0 ? uncoveredUntouchedTargets : potentialTargets;
             let mostPromisingTargets = [];
             let mostPromisingValue = 0;
             for (const potTarget of potentialTargets) {
 
                 // When switching targets without having covered the previous target, we want to make sure not to
                 // select the same target again.
-                if (this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id ||
-                    this._switchedTargets.includes(potTarget.getTargetNode().id)) {
+                if (this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id) {
                     continue;
                 }
 
@@ -183,6 +184,22 @@ export class ExplorativeNEAT extends NEAT {
         }
         this._targetKey = this.mapStatementToKey(nextTarget);
         return nextTarget;
+    }
+
+    /**
+     * Extracts all yet uncovered statements.
+     * @returns array of yet uncovered statements.
+     */
+    private getUncoveredStatements(): StatementFitnessFunction[] {
+        const uncoveredStatements: StatementFitnessFunction[] = [];
+
+        // Collect yet uncovered statements.
+        for (const [key, statement] of this._fitnessFunctionMap.entries()) {
+            if (!this._archive.has(key)) {
+                uncoveredStatements.push(statement);
+            }
+        }
+        return uncoveredStatements;
     }
 
     /**
@@ -220,14 +237,19 @@ export class ExplorativeNEAT extends NEAT {
             this.updateMostPromisingMap(network);
 
             // Determine whether we should switch the currently selected target. We do that if we have accidentally
-            // reached another statement without reaching the actual target statement at least once.
-            if (this._promisingTargets.get(this._targetKey) < 1 &&
-                Math.max(...[...this._promisingTargets.values()]) > 0) {
-                this._switchToEasierTarget = true;
-                return;
+            // reached a previously not targeted statement without reaching the actual target statement at least once.
+            if (this._promisingTargets.get(this._targetKey) < 1) {
+                const uncoveredTargetIds = this.getUncoveredStatements().map(target => target.getTargetNode().id);
+                const untouchedUncovered = uncoveredTargetIds.filter(target => !this._switchedTargets.includes(target));
+                for (const [key, value] of this._promisingTargets) {
+                    if (value > 0 && untouchedUncovered.includes(this._fitnessFunctionMap.get(key).getTargetNode().id)) {
+                        this._switchToEasierTarget = true;
+                        return;
+                    }
+                }
             }
 
-            // Update the archive and stop if we covered the targeted statement or depleted the search budget.
+            // Stop if we covered the targeted statement or depleted the search budget.
             if (this._archive.has(this._targetKey) || this._stoppingCondition.isFinished(this)) {
                 return;
             }

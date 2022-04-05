@@ -6,6 +6,7 @@ import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
 import {Innovation, InnovationType} from "../NetworkComponents/Innovation";
+import {Container} from "../../utils/Container";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -121,8 +122,12 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         this.generation++;
 
         if (this.networks.length != this.hyperParameter.populationSize) {
-            throw (`The population size has changed from ${this.hyperParameter.populationSize} to
-            ${this.networks.length} members. This should NOT happen!`)
+            Container.debugLog(`The population size has changed from ${this.hyperParameter.populationSize} to
+            ${this.networks.length} members.`);
+            while (this.networks.length > this.hyperParameter.populationSize){
+                this.networks.pop();
+            }
+            Container.debugLog(`Reduced the population size down to ${this.networks.length}`);
         }
     }
 
@@ -220,7 +225,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // If there is a stagnation in fitness refocus the search
         if (this.highestFitnessLastChanged > this.hyperParameter.penalizingAge + 5) {
-            console.info("Refocusing the search on the two most promising species");
+            Container.debugLog("Refocusing the search on the two most promising species");
             this.highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize / 2;
 

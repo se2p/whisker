@@ -29,6 +29,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         await executor.execute(network);
         network.initialiseOpenStatements([...network.openStatementTargets.keys()]);
         const fitness = network.targetFitness.getFitness(network);
+        ReliableStatementFitness.updateUncoveredMap(network);
         executor.resetState();
 
         if (fitness > 0) {
@@ -36,7 +37,6 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         } else {
             // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
-            ReliableStatementFitness.updateUncoveredMap(network);
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
         return network.fitness;
