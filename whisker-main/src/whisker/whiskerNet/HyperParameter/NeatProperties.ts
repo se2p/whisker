@@ -174,7 +174,7 @@ export class NeatProperties {
     /**
      * Switch the current target statement if no improvement has been seen for a set number of generations.
      */
-    private _switchTargetCount = 20;
+    private _switchTargetCount = 5;
 
     /**
      * Timeout for the execution of a scratch game during the evaluation of the network.
@@ -186,12 +186,6 @@ export class NeatProperties {
      * statements as covered.
      */
     private _coverageStableCount = 0;
-
-    /**
-     * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
-     * ActivationTrace across many program states with diverging seeds.
-     */
-    private _repetitions = 100;
 
     /**
      * The template of a static/dynamic test
@@ -466,14 +460,6 @@ export class NeatProperties {
 
     set coverageStableCount(value: number) {
         this._coverageStableCount = value;
-    }
-
-    get repetitions(): number {
-        return this._repetitions;
-    }
-
-    set repetitions(value: number) {
-        this._repetitions = value;
     }
 
     get testTemplate(): string {

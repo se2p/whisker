@@ -120,7 +120,7 @@ describe("Test NeatMutation", () => {
         const initialInnovations = NeatPopulation.innovations.length;
         neatChromosome1.generateNetwork();
         neatChromosome2.generateNetwork();
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 50; i++) {
         mutation.mutateAddConnection(neatChromosome1, 30);
         mutation.mutateAddConnection(neatChromosome2, 30);
         }

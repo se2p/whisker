@@ -201,10 +201,9 @@ export class WhiskerSearchConfiguration {
 
         const eventSelection = this._config['eventSelection'] as string;
         const coverageStableCount = this._config['networkFitness']['stableCount'] !== undefined ?
-            this._config['networkFitness']['stableCount'] : 0
+            this._config['networkFitness']['stableCount'] : 0;
         const switchTargetCount = this._config['switchTargetCount'] !== undefined ?
             this._config['switchTargetCount'] : 20;
-        const repetitions = this._config['repetitions'] as number;
         const timeout = this._config['networkFitness']['timeout'];
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
 
@@ -241,7 +240,6 @@ export class WhiskerSearchConfiguration {
         properties.weightCoefficient = weightCoefficient;
 
         properties.eventSelection = eventSelection;
-        properties.repetitions = repetitions;
         properties.coverageStableCount = coverageStableCount;
         properties.timeout = timeout;
         properties.printPopulationRecord = doPrintPopulationRecord;
@@ -260,7 +258,6 @@ export class WhiskerSearchConfiguration {
         const parameter = new NetworkSuiteParameter();
         parameter.timeout = this._config['timeout'];
         parameter.networkFitness = new ReliableStatementFitness(1);
-        parameter.repetitions = this._config['repetitions'];
 
         // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli
         //  parameter. Maybe good default values which balance performance and time required for

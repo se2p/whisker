@@ -22,13 +22,6 @@ export class NetworkSuiteParameter {
      */
     private _eventSelection: string
 
-    /**
-     * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
-     * ActivationTrace across many program states with diverging seeds.
-     */
-    private _repetitions: number;
-
-
     // ---------------------------------- Train Parameter ---------------------------------------------
 
     /**
@@ -69,14 +62,6 @@ export class NetworkSuiteParameter {
 
     set eventSelection(value: string) {
         this._eventSelection = value;
-    }
-
-    get repetitions(): number {
-        return this._repetitions;
-    }
-
-    set repetitions(value: number) {
-        this._repetitions = value;
     }
 
     get train(): boolean {
