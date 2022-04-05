@@ -52,6 +52,11 @@ export abstract class NetworkSuite {
      */
     protected testName: string
 
+    /**
+     * Holds the loaded test cases.
+     */
+    protected testCases: NeatChromosome[];
+
     protected constructor(protected project: ArrayBuffer, protected vm: VirtualMachine,
                           protected properties: Record<string, number | string | string[]>) {
         this.projectName = this.properties.projectName as string;
@@ -73,8 +78,10 @@ export abstract class NetworkSuite {
      * @param test the test case to execute.
      * @param projectName the name of the project on which the given test will be executed.
      * @param testName the name of the test case that is about to be executed.
+     * @param recordExecution determines whether we want to record this execution by updating the archive and the
+     * test execution statistics
      */
-    protected abstract executeTestCase(test: NeatChromosome, projectName: string, testName: string): Promise<void>;
+    protected abstract executeTestCase(test: NeatChromosome, projectName: string, testName: string, recordExecution: boolean): Promise<void>;
 
     /**
      * Tests a single project by executing the given test suite.
@@ -91,10 +98,19 @@ export abstract class NetworkSuite {
      * cases on the original project or the created mutants.
      */
     protected async execute(): Promise<[string, ScratchProgram[]]> {
+
+        // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
         await this.initialiseCommonVariables();
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets();
+        this.testCases = this.loadTestCases();
+
+        // Record activation traces
+        if (this.properties.activationTraceRepetitions > 0) {
+            await this.collectActivationTrace();
+        }
+
         if (this.mutationOperators.length == 0) {
             console.log("Testing Single Project");
             await this.testSingleProject();
@@ -163,6 +179,27 @@ export abstract class NetworkSuite {
     }
 
     /**
+     * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
+     * can later be used to verify the correctness of a modified project.
+     */
+    private async collectActivationTrace(): Promise<void> {
+        const repetitions = parseInt(this.properties.activationTraceRepetitions as string);
+        const scratchSeeds = Array(repetitions).fill(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER)).map(
+            () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
+        for (const test of this.testCases) {
+            for (const seed of scratchSeeds) {
+                Randomness.setScratchSeed(seed);
+                await this.executeTestCase(test, '', '', false);
+            }
+
+            // Save the recorded AT as reference and reset the current AT for the actual test subjects.
+            test.referenceActivationTrace = test.currentActivationTrace.clone();
+            test.currentActivationTrace = undefined;
+        }
+        StatisticsCollector.getInstance().numberFitnessEvaluations = 0;
+    }
+
+    /**
      * Updates the archive of covered fitness functions.
      * @param network the network with which the archive should be updated.
      */
@@ -185,17 +222,17 @@ export abstract class NetworkSuite {
      */
     protected extractTestCaseResults(testCase: NeatChromosome, projectName: string, testName: string): void {
         testCase.determineCoveredObjectives([...this.statementMap.values()]);
-        testCase.surpriseAdequacyStep = SurpriseAdequacy.LSA(testCase.savedActivationTrace, testCase.currentActivationTrace);
-        const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.savedActivationTrace, testCase.currentActivationTrace);
+        testCase.surpriseAdequacyStep = SurpriseAdequacy.LSA(testCase.referenceActivationTrace, testCase.currentActivationTrace);
+        const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.referenceActivationTrace, testCase.currentActivationTrace);
         testCase.surpriseAdequacyNodes = nodeSA[0];
 
         // If the program could not be executed we set all nodes as being suspicious
         if (nodeSA[1] === undefined) {
-            testCase.surpriseCounterNormalised = testCase.savedActivationTrace.tracedNodes.length;
+            testCase.surpriseCounterNormalised = testCase.referenceActivationTrace.tracedNodes.length;
         } else {
             testCase.surpriseCounterNormalised = this.countSuspiciousActivations(nodeSA[1]) / nodeSA[1].size;
         }
-        const z = SurpriseAdequacy.zScore(testCase.savedActivationTrace, testCase.currentActivationTrace);
+        const z = SurpriseAdequacy.zScore(testCase.referenceActivationTrace, testCase.currentActivationTrace);
         testCase.zScore = z[0];
         StatisticsCollector.getInstance().addNetworkSuiteResult(projectName, testName, testCase);
     }

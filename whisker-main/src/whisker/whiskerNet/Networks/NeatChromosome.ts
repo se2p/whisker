@@ -124,8 +124,11 @@ export class NeatChromosome extends NetworkChromosome {
         clone.isParent = this.isParent;
         clone.expectedOffspring = this.expectedOffspring;
         clone.isRecurrent = this.isRecurrent;
-        if (this.savedActivationTrace !== undefined) {
-            clone.savedActivationTrace = this.savedActivationTrace.clone();
+        if (this.referenceActivationTrace !== undefined) {
+            clone.referenceActivationTrace = this.referenceActivationTrace.clone();
+        }
+        if (this.currentActivationTrace !== undefined) {
+            clone.currentActivationTrace = this.currentActivationTrace.clone();
         }
         return clone;
     }

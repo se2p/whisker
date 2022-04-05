@@ -83,14 +83,6 @@ export class JavaScriptConverter {
             footer += "      type: '" + type + "',\n";
             if (type === "neuroevolution") {
                 footer += "      configs: " + JSON.stringify(configs) + ",\n";
-                const networkChromosome = test.chromosome as unknown as NetworkChromosome;
-                if(networkChromosome.currentActivationTrace !== undefined) {
-                    footer += "      activationTrace: " + JSON.stringify(networkChromosome.currentActivationTrace.toJSON()) + "\n";
-                }
-                else{
-                    footer += "      activationTrace: \"undefined\"\n";
-                }
-
             }
             if (i < tests.length - 1) {
                 footer += "  },\n";

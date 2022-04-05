@@ -69,7 +69,7 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Used for loading an ActivationTrace from a previous run, to compare it with ActivationTraces of a current run.
      */
-    private _savedActivationTrace: ActivationTrace;
+    private _referenceActivationTrace: ActivationTrace;
 
     /**
      * Determines whether an ActivationTrace should be recorded during a playthrough.
@@ -248,7 +248,7 @@ export abstract class NetworkChromosome extends Chromosome {
             if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
                 updated = true;
                 for (const parameter of event.getSearchParameterNames()) {
-                    const featureID = `R:${event.stringIdentifier()}-${parameter}`
+                    const featureID = `R:${event.stringIdentifier()}-${parameter}`;
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
                     this.allNodes.push(regressionNode);
@@ -575,7 +575,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 .replace(/-/g, '')
                 .replace(/:/, '')
                 .replace(/ /g, '');
-        }
+        };
 
         for (const node of this.allNodes) {
             if (node.type === NodeType.INPUT || node.type === NodeType.BIAS) {
@@ -586,7 +586,7 @@ export abstract class NetworkChromosome extends Chromosome {
         }
 
         const minRanks = `\t{ rank = min; ${minNodes.toString()} }`.replace(/,/g, '; ');
-        const maxRanks = `\t{ rank = max; ${maxNodes.toString()} }`.replace(/,/g, '; ')
+        const maxRanks = `\t{ rank = max; ${maxNodes.toString()} }`.replace(/,/g, '; ');
 
         for (const connection of this.connections) {
             const source = convertIdentifier(connection.source.identifier());
@@ -594,7 +594,7 @@ export abstract class NetworkChromosome extends Chromosome {
             const lineStyle = connection.isEnabled ? 'solid' : 'dotted';
             const weight = connection.weight.toFixed(2);
             const color = Math.min(11, Math.max(1, Math.round(Number(weight) + 6)));
-            edges.push(`\t"${source}" -> "${target}" [label=${weight} style=${lineStyle} color="/rdylgn11/${color}" penwidth=3];`)
+            edges.push(`\t"${source}" -> "${target}" [label=${weight} style=${lineStyle} color="/rdylgn11/${color}" penwidth=3];`);
         }
 
         const renderedEdges = edges.join('\n');
@@ -708,12 +708,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._currentActivationTrace = value;
     }
 
-    get savedActivationTrace(): ActivationTrace {
-        return this._savedActivationTrace;
+    get referenceActivationTrace(): ActivationTrace {
+        return this._referenceActivationTrace;
     }
 
-    set savedActivationTrace(value: ActivationTrace) {
-        this._savedActivationTrace = value;
+    set referenceActivationTrace(value: ActivationTrace) {
+        this._referenceActivationTrace = value;
     }
 
     get recordActivationTrace(): boolean {

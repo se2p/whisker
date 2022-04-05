@@ -64,6 +64,7 @@ const cli = {
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
             .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
+            .option('-at --activationTraceRepetitions <Integer>', 'Sets the number of activation trace records that should be recorded on a sample solution')
             .option('-se, --seed <Integer>', 'Seeds the Scratch-VM using the specified integer');
 
         commander.parse(process.argv);
@@ -90,6 +91,7 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
+            activationTraceRepetitions,
             seed
         } = commander._optionValues;
 
@@ -117,6 +119,7 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
+            activationTraceRepetitions,
             seed
         };
     }

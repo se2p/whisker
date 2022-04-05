@@ -129,13 +129,13 @@ export class NetworkLoader {
      */
     public static loadActivationTrace(network: NeatChromosome,
                                       savedTrace: Record<string, Record<string, number[]>>): void {
-        network.savedActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
+        network.referenceActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
         for (const [step, nodeTraces] of Object.entries(savedTrace)) {
             const nodeStepTraces = new Map<string, number[]>();
             for (const [nodeId, activationValues] of Object.entries(nodeTraces)) {
                 nodeStepTraces.set(nodeId, activationValues);
             }
-            network.savedActivationTrace.trace.set(Number(step), nodeStepTraces);
+            network.referenceActivationTrace.trace.set(Number(step), nodeStepTraces);
         }
     }
 }

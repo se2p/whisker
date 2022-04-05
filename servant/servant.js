@@ -22,7 +22,7 @@ const {
     whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, mutators,
     mutantsDownloadPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless,
     numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly,
-    seed
+    activationTraceRepetitions, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -297,6 +297,7 @@ async function runDynamicTestSuite (browser, scratchPath) {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
+        await page.evaluate(r => document.querySelector('#container').activationTraceRepetitions = r, activationTraceRepetitions);
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
         await showHiddenFunctionality(page);
@@ -406,6 +407,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
+        await page.evaluate(r => document.querySelector('#container').activationTraceRepetitions = r, activationTraceRepetitions);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(path);

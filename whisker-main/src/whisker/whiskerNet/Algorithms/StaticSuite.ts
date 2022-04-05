@@ -59,24 +59,25 @@ export class StaticSuite extends NetworkSuite {
      * @param test the static test case to execute.
      * @param projectName the name of the project on which the given test will be executed.
      * @param testName the name of the static test case that is about to be executed.
+     * @param recordExecution determines whether we want to record this execution by updating the archive and the
+     * test execution statistics
      */
-    protected async executeTestCase(test: NeatChromosome, projectName: string, testName: string): Promise<void> {
+    protected async executeTestCase(test: NeatChromosome, projectName: string, testName: string, recordExecution: boolean): Promise<void> {
         test.recordActivationTrace = true;
         await this.executor.executeSavedTrace(test);
-        this.executor.resetState();
-        this.updateArchive(test);
-        if (test.savedActivationTrace) {
+        if (recordExecution) {
+            this.updateArchive(test);
             this.extractTestCaseResults(test, projectName, testName);
         }
+        this.executor.resetState();
     }
 
     /**
      * Executes the static test suite consisting of Scratch input sequences.
      */
     protected async testSingleProject(): Promise<void> {
-        const tests = this.loadTestCases();
-        for (const test of tests) {
-            await this.executeTestCase(test, this.projectName, this.testName);
+        for (const test of this.testCases) {
+            await this.executeTestCase(test, this.projectName, this.testName, true);
         }
     }
 
@@ -84,15 +85,14 @@ export class StaticSuite extends NetworkSuite {
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
-        const networks = this.loadTestCases();
         const mutantPrograms = this.getScratchMutations();
         for (const mutant of mutantPrograms) {
             const projectMutation = `${this.projectName}-${mutant.name}`;
-            for (const network of networks) {
+            for (const network of this.testCases) {
                 // We clone the network since it might get changed due to specific mutations.
                 const networkClone = network.clone();
                 await this.loadMutant(mutant);
-                await this.executeTestCase(networkClone, projectMutation, this.testName);
+                await this.executeTestCase(networkClone, projectMutation, this.testName, true);
             }
         }
         return mutantPrograms;
