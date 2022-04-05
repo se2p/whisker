@@ -117,5 +117,5 @@ export interface ScratchProgram {
     extensions: [],
     meta: Record<string, unknown>,
     monitors: [],
-    targets: RenderedTarget
+    targets: RenderedTarget[]
 }

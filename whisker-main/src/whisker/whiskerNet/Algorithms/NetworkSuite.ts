@@ -10,10 +10,11 @@ import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
 import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {Mutator} from "../../scratch/ScratchMutation/Mutator";
-import {KeyReplacementOperator} from "../../scratch/ScratchMutation/KeyReplacementOperator";
+import {ScratchMutation} from "../../scratch/ScratchMutation/ScratchMutation";
+import {KeyReplacementMutation} from "../../scratch/ScratchMutation/KeyReplacementMutation";
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";
+import {SingleBlockDeletionMutation} from "../../scratch/ScratchMutation/SingleBlockDeletionMutation";
 
 export abstract class NetworkSuite {
 
@@ -40,7 +41,7 @@ export abstract class NetworkSuite {
     /**
      * The Scratch mutation operators that should be applied.
      */
-    protected mutationOperators: Mutator[]
+    protected mutationOperators: ScratchMutation[]
 
     /**
      * The name of the tested project.
@@ -144,8 +145,11 @@ export abstract class NetworkSuite {
         const specifiedMutators = this.properties.mutators as string[];
         for (const mutator of specifiedMutators) {
             switch (mutator) {
-                case 'Key':
-                    this.mutationOperators.push(new KeyReplacementOperator(this.vm));
+                case 'KRP':
+                    this.mutationOperators.push(new KeyReplacementMutation(this.vm));
+                    break;
+                case 'SBD':
+                    this.mutationOperators.push(new SingleBlockDeletionMutation(this.vm));
                     break;
             }
         }
