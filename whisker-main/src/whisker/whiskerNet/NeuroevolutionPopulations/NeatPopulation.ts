@@ -43,6 +43,11 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public static highestNodeId = 0;
 
     /**
+     * The threshold determining at which point two networks are defined to belong to different species.
+     */
+    private compatibilityThreshold: number
+
+    /**
      * Maps input, classification and regression nodes to corresponding node ids via input features, events and
      * event parameter respectively.
      */
@@ -56,6 +61,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties) {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
+        this.compatibilityThreshold = hyperParameter.compatibilityDistanceThreshold;
     }
 
     /**
@@ -147,17 +153,17 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      */
     private updateCompatibilityThreshold(): void {
         const compatibilityModifier = 0.3;
-        if (this.generation > 1) {
+        if (this.generation > 0) {
             // If we have less species than desired, we have to reduce the threshold.
             if (this.species.length < this.numberOfSpeciesTargeted)
-                this.hyperParameter.distanceThreshold -= compatibilityModifier;
+                this.compatibilityThreshold -= compatibilityModifier;
             // If we have more species than desired, we have to increase the threshold.
             else if (this.species.length > this.numberOfSpeciesTargeted)
-                this.hyperParameter.distanceThreshold += compatibilityModifier;
+                this.compatibilityThreshold += compatibilityModifier;
 
             // Let it now fall below 1 though!
-            if (this.hyperParameter.distanceThreshold < 1) {
-                this.hyperParameter.distanceThreshold = 1;
+            if (this.compatibilityThreshold < 1) {
+                this.compatibilityThreshold = 1;
             }
         }
     }
@@ -294,7 +300,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
                 // If the representative and the given network are compatible enough add the network to the
                 // representative's species.
-                if (compatDistance < this.hyperParameter.distanceThreshold) {
+                if (compatDistance < this.compatibilityThreshold) {
                     specie.networks.push(network);
                     network.species = specie;
                     foundSpecies = true;
@@ -409,15 +415,15 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 return innovation.type === 'newConnection' &&
                     innovation.idSourceNode === connection.source.uID &&
                     innovation.idTargetNode === connection.target.uID &&
-                    innovation.recurrent === connection.isRecurrent
-            }
+                    innovation.recurrent === connection.isRecurrent;
+            };
         } else if (innovationType === 'newNode') {
             findMatchingInnovation = (innovation, connection) => {
                 return innovation.type === 'newNode' &&
                     innovation.idSourceNode === connection.source.uID &&
                     innovation.idTargetNode === connection.target.uID &&
                     innovation.splitInnovation === connection.innovation;
-            }
+            };
         }
         return this.innovations.find(innovation => findMatchingInnovation(innovation, connection));
     }

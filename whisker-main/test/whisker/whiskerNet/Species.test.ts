@@ -208,7 +208,7 @@ describe("Species Test", () => {
     });
 
     test("Test breed new networks in Species", () => {
-        properties.distanceThreshold = 20;
+        properties.compatibilityDistanceThreshold = 20;
         properties.weightCoefficient = 0.1;
         properties.disjointCoefficient = 0.1;
         properties.excessCoefficient = 0.1;
@@ -245,7 +245,7 @@ describe("Species Test", () => {
     });
 
     test("Test breed new networks with an empty species", () => {
-        properties.distanceThreshold = 20;
+        properties.compatibilityDistanceThreshold = 20;
         properties.weightCoefficient = 0.1;
         properties.disjointCoefficient = 0.1;
         properties.excessCoefficient = 0.1;

@@ -72,7 +72,7 @@ describe("Test NeatPopulation", () => {
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;
         properties.weightCoefficient = 0.3;
-        properties.distanceThreshold = 3;
+        properties.compatibilityDistanceThreshold = 3;
         properties.penalizingAge = 10;
         properties.ageSignificance = 1.0;
         properties.parentsPerSpecies = 0.2;
@@ -151,12 +151,14 @@ describe("Test NeatPopulation", () => {
         expect(population.species[0].networks.length).toBe(size);
     });
 
-    test("Test evolve with distance Threshold below 1", () => {
+    test("Test that the initial hyperparameter value remains untouched", () => {
         population.generation = 3;
-        population.hyperParameter.distanceThreshold = 0.1;
+        population.hyperParameter.compatibilityDistanceThreshold = 0.1;
+        for (let i = 0; i < 10; i++) {
         population.updatePopulationStatistics();
         population.evolve();
-        expect(population.hyperParameter.distanceThreshold).toBe(1);
+        }
+        expect(population.hyperParameter.compatibilityDistanceThreshold).toBe(0.1);
     });
 
     test("Test Speciation when a new Population gets created", () => {
@@ -166,7 +168,7 @@ describe("Test NeatPopulation", () => {
     });
 
     test("Test Speciation when a new Population gets created and a low speciation Threshold", () => {
-        properties.distanceThreshold = 0.01;
+        properties.compatibilityDistanceThreshold = 0.01;
         population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);
@@ -174,7 +176,7 @@ describe("Test NeatPopulation", () => {
     });
 
     test("Test Speciation when a new Population gets created and a high speciation Threshold", () => {
-        properties.distanceThreshold = 1000;
+        properties.compatibilityDistanceThreshold = 1000;
         population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);

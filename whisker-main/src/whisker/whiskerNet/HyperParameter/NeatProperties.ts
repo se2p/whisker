@@ -134,22 +134,22 @@ export class NeatProperties {
 
     // ----------------- Compatibility Distance -------------------
     /**
-     * Determines up to which distance threshold two organisms belong to the same species
+     * Determines up to which compatibility distance value two organisms belong to the same species.
      */
-    private _distanceThreshold = 3.0;
+    private _compatibilityDistanceThreshold = 3.0;
 
     /**
-     * Defines the importance of disjoint connections
+     * Defines the importance of disjoint connections.
      */
     private _disjointCoefficient = 1;
 
     /**
-     * Defines the importance of excess connections
+     * Defines the importance of excess connections.
      */
     private _excessCoefficient = 1;
 
     /**
-     * Defines the importance of the weights in case of matching connections
+     * Defines the importance of the weights in case of matching connections.
      */
     private _weightCoefficient = 0.5;
 
@@ -188,7 +188,7 @@ export class NeatProperties {
     private _coverageStableCount = 0;
 
     /**
-     * The template of a static/dynamic test
+     * The template of a static/dynamic test.
      */
     private _testTemplate: string;
 
@@ -382,12 +382,12 @@ export class NeatProperties {
         this._crossoverWeightAverageRate = value;
     }
 
-    get distanceThreshold(): number {
-        return this._distanceThreshold;
+    get compatibilityDistanceThreshold(): number {
+        return this._compatibilityDistanceThreshold;
     }
 
-    set distanceThreshold(value: number) {
-        this._distanceThreshold = value;
+    set compatibilityDistanceThreshold(value: number) {
+        this._compatibilityDistanceThreshold = value;
     }
 
     get disjointCoefficient(): number {

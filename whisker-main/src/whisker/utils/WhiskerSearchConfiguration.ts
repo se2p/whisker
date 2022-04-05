@@ -234,7 +234,7 @@ export class WhiskerSearchConfiguration {
         properties.toggleEnableConnectionTimes = toggleEnableConnectionTimes;
         properties.mutateEnableConnection = mutateEnableConnection;
 
-        properties.distanceThreshold = distanceThreshold;
+        properties.compatibilityDistanceThreshold = distanceThreshold;
         properties.disjointCoefficient = disjointCoefficient;
         properties.excessCoefficient = excessCoefficient;
         properties.weightCoefficient = weightCoefficient;

@@ -23,7 +23,7 @@ describe("Test NeatProperties", () => {
         properties.mutateEnableConnection = 0.01;
         properties.crossoverWithoutMutation = 0.4;
         properties.interspeciesMating = 0.01;
-        properties.distanceThreshold = 3;
+        properties.compatibilityDistanceThreshold = 3;
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;
         properties.weightCoefficient = 0.4;
@@ -49,7 +49,7 @@ describe("Test NeatProperties", () => {
         expect(properties.mutateEnableConnection).toBe(0.01);
         expect(properties.crossoverWithoutMutation).toBe(0.4);
         expect(properties.interspeciesMating).toBe(0.01);
-        expect(properties.distanceThreshold).toBe(3);
+        expect(properties.compatibilityDistanceThreshold).toBe(3);
         expect(properties.disjointCoefficient).toBe(1);
         expect(properties.excessCoefficient).toBe(1);
         expect(properties.weightCoefficient).toBe(0.4);
