@@ -20,12 +20,19 @@ export class InputExtraction {
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
         for (const target of vmWrapper.vm.runtime.targets) {
-            if ('blocks' in target && !target.isStage && target.visible) {
-                const spriteFeatures = this._extractInfoFromSprite(target, vmWrapper);
-                if (target.isOriginal) {
-                    spriteMap.set(target.sprite.name, spriteFeatures);
+            if ('blocks' in target && target.visible) {
+                if (target.isStage) {
+                    const stageFeatures = this._extractStageFeatures(target);
+                    if (stageFeatures.size > 0) {
+                        spriteMap.set("Stage", stageFeatures);
+                    }
                 } else {
-                    spriteMap.set(this.getCloneIdentifier(target), spriteFeatures);
+                    const spriteFeatures = this._extractSpriteFeatures(target, vmWrapper);
+                    if (target.isOriginal) {
+                        spriteMap.set(target.sprite.name, spriteFeatures);
+                    } else {
+                        spriteMap.set(this.getCloneIdentifier(target), spriteFeatures);
+                    }
                 }
             }
         }
@@ -42,30 +49,48 @@ export class InputExtraction {
     }
 
     /**
-     * Extracts the pieces of information of the given target and normalises in the range [-1, 1]
-     * @param target the RenderTarget (-> Sprite) from which information is gathered
-     * @param vmWrapper the Scratch VM-Wrapper of the given project
-     * generator we add features which might not be informative yet. This helps us to avoid over-speciation.
-     * @return 1-dim array with the columns representing the gathered pieces of information
+     * Extracts Stage and general features shared across the whole Scratch program and normalises them into the
+     * range[-1, 1].
+     * @param target the Scratch Stage.
+     * @returns Mapping of feature to normalised value.
      */
-    // TODO: Add more input features: size of sprite, effects, variables
-    private static _extractInfoFromSprite(target: RenderedTarget, vmWrapper: VMWrapper): Map<string, number> {
+    private static _extractStageFeatures(target: RenderedTarget): Map<string, number> {
+        const stageFeatures = new Map<string, number>();
+        for (const variable of Object.values(target.variables)) {
+            stageFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value']));
+        }
+        return stageFeatures;
+    }
+
+    /**
+     * Extracts sprite features and normalises them into the range [-1, 1].
+     * @param target the RenderTarget object from which information is gathered.
+     * @param vmWrapper of the given Scratch Project.
+     * @return Mapping of feature to normalised value.
+     */
+    // TODO: Add more input features: size of sprite, effects
+    private static _extractSpriteFeatures(target: RenderedTarget, vmWrapper: VMWrapper): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // Stage Bounds -> (width: 480, height: 360)
         const stageBounds = vmWrapper.getStageSize();
 
 
-        // Collect Coordinates and normalize
+        // Extract Coordinates and normalize
         const spritePosition = ScratchInterface.getPositionOfTarget(target);
         const x = this.mapValueIntoRange(spritePosition.x, -stageBounds.width / 2, stageBounds.width / 2);
         const y = this.mapValueIntoRange(spritePosition.y, -stageBounds.height / 2, stageBounds.height / 2);
         spriteFeatures.set("X", x);
         spriteFeatures.set("Y", y);
 
-        // Collect direction of Sprite
+        // Extract direction of Sprite
         if (target.rotationStyle === 'all around') {
             const direction = this.mapValueIntoRange(target.direction, -180, 180);
             spriteFeatures.set("Dir", direction);
+        }
+
+        // Extract variables
+        for (const variable of Object.values(target.variables)) {
+            spriteFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value']));
         }
 
         // If we have a path to a goal extract the signed x and y distance to the next wayPoint as input.
@@ -158,6 +183,19 @@ export class InputExtraction {
         dy = Math.max(-1, Math.min(dy, 1));
 
         return {dx, dy};
+    }
+
+    /**
+     * Normalises values that have unknown bounds into the range [-1, 1]
+     * @param value the value to normalise.
+     * @return the normalised value in the range [-1, 1]
+     */
+    private static _normaliseUnknownBounds(value: number): number {
+        let normalisationValue = Math.abs(value) / (Math.abs(value) + 1);
+        if (value < 0) {
+            normalisationValue *= -1;
+        }
+        return normalisationValue;
     }
 
     /**
