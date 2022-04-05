@@ -14,6 +14,7 @@ import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChrom
 import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {NeatChromosomeGeneratorFullyConnected} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {Container} from "../../../src/whisker/utils/Container";
 
 describe("Test NeatPopulation", () => {
 
@@ -28,6 +29,7 @@ describe("Test NeatPopulation", () => {
 
 
     beforeEach(() => {
+        Container.debugLog = () => { /* No operation */ };
         size = 10;
         numberOfSpecies = 5;
         NeatPopulation.innovations = [];
