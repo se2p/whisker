@@ -86,13 +86,21 @@ export class DynamicSuite extends NetworkSuite {
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
         const mutantPrograms = this.getScratchMutations();
+        console.log(`Produced mutants ${mutantPrograms.length}`);
         for (const mutant of mutantPrograms) {
             const projectMutation = `${this.projectName}-${mutant.name}`;
-            for (const network of this.testCases) {
-                // We clone the network since it might get changed due to specific mutations.
-                const networkClone = network.clone();
-                await this.loadMutant(mutant);
-                await this.executeTestCase(networkClone, projectMutation, this.testName, true);
+            console.log(`Analysing mutant ${projectMutation}`);
+            try {
+                for (const network of this.testCases) {
+                    // We clone the network since it might get changed due to specific mutations.
+                    const networkClone = network.clone();
+                    await this.loadMutant(mutant);
+                    await this.executeTestCase(networkClone, projectMutation, this.testName, true);
+                }
+            }
+            catch (e) {
+                console.error(e);
+                console.log(`Defect mutant: ${projectMutation}`);
             }
         }
         return mutantPrograms;

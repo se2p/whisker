@@ -226,18 +226,22 @@ export abstract class NetworkSuite {
      */
     protected extractTestCaseResults(testCase: NeatChromosome, projectName: string, testName: string): void {
         testCase.determineCoveredObjectives([...this.statementMap.values()]);
-        testCase.surpriseAdequacyStep = SurpriseAdequacy.LSA(testCase.referenceActivationTrace, testCase.currentActivationTrace);
-        const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.referenceActivationTrace, testCase.currentActivationTrace);
-        testCase.surpriseAdequacyNodes = nodeSA[0];
 
-        // If the program could not be executed we set all nodes as being suspicious
-        if (nodeSA[1] === undefined) {
-            testCase.surpriseCounterNormalised = testCase.referenceActivationTrace.tracedNodes.length;
-        } else {
-            testCase.surpriseCounterNormalised = this.countSuspiciousActivations(nodeSA[1]) / nodeSA[1].size;
+        // We can only apply node activation analysis if we have a reference trace
+        if(testCase.referenceActivationTrace) {
+            testCase.surpriseAdequacyStep = SurpriseAdequacy.LSA(testCase.referenceActivationTrace, testCase.currentActivationTrace);
+            const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.referenceActivationTrace, testCase.currentActivationTrace);
+            testCase.surpriseAdequacyNodes = nodeSA[0];
+
+            // If the program could not be executed we set all nodes as being suspicious
+            if (nodeSA[1] === undefined) {
+                testCase.surpriseCounterNormalised = testCase.referenceActivationTrace.tracedNodes.length;
+            } else {
+                testCase.surpriseCounterNormalised = this.countSuspiciousActivations(nodeSA[1]) / nodeSA[1].size;
+            }
+            const z = SurpriseAdequacy.zScore(testCase.referenceActivationTrace, testCase.currentActivationTrace);
+            testCase.zScore = z[0];
         }
-        const z = SurpriseAdequacy.zScore(testCase.referenceActivationTrace, testCase.currentActivationTrace);
-        testCase.zScore = z[0];
         StatisticsCollector.getInstance().addNetworkSuiteResult(projectName, testName, testCase);
     }
 
