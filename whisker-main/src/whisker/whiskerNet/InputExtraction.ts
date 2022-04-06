@@ -11,6 +11,8 @@ export class InputExtraction {
 
     private static whiteColorOffset = 0;
 
+    private static cloneThreshold = 5;
+
     /**
      * Extracts pieces of information from all Sprites of the given Scratch project.
      * @param vmWrapper the Scratch VM-Wrapper.
@@ -19,6 +21,7 @@ export class InputExtraction {
     static extractSpriteInfo(vmWrapper: VMWrapper): Map<string, Map<string, number>> {
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
+        const cloneRecording = new Map<string, number>();
         for (const target of vmWrapper.vm.runtime.targets) {
             if ('blocks' in target && target.visible) {
                 if (target.isStage) {
@@ -31,7 +34,16 @@ export class InputExtraction {
                     if (target.isOriginal) {
                         spriteMap.set(target.sprite.name, spriteFeatures);
                     } else {
-                        spriteMap.set(this.getCloneIdentifier(target), spriteFeatures);
+                        const cloneID = this.getCloneIdentifier(target);
+                        const parentSprite = target.sprite.name;
+                        // Only allow a limited number of clones per sprite to avoid input feature explosion.
+                        if (!cloneRecording.has(parentSprite) || cloneRecording.get(parentSprite) < this.cloneThreshold) {
+                            spriteMap.set(cloneID, spriteFeatures);
+                            if (!cloneRecording.has(parentSprite)) {
+                                cloneRecording.set(parentSprite, 0);
+                            }
+                            cloneRecording.set(parentSprite, cloneRecording.get(parentSprite) + 1);
+                        }
                     }
                 }
             }
@@ -57,7 +69,9 @@ export class InputExtraction {
     private static _extractStageFeatures(target: RenderedTarget): Map<string, number> {
         const stageFeatures = new Map<string, number>();
         for (const variable of Object.values(target.variables)) {
-            stageFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value']));
+            if (typeof variable['value'] === 'number') {
+                stageFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value'], 10));
+            }
         }
         return stageFeatures;
     }
@@ -68,12 +82,11 @@ export class InputExtraction {
      * @param vmWrapper of the given Scratch Project.
      * @return Mapping of feature to normalised value.
      */
-    // TODO: Add more input features: size of sprite, effects
+    // TODO: Add more input features: effects
     private static _extractSpriteFeatures(target: RenderedTarget, vmWrapper: VMWrapper): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // Stage Bounds -> (width: 480, height: 360)
         const stageBounds = vmWrapper.getStageSize();
-
 
         // Extract Coordinates and normalize
         const spritePosition = ScratchInterface.getPositionOfTarget(target);
@@ -88,9 +101,16 @@ export class InputExtraction {
             spriteFeatures.set("Dir", direction);
         }
 
+        // Extract the size of the Sprite
+        const [minBound, upperBound] = InputExtraction._getSizeBounds(target);
+        const normalisedSize = InputExtraction.mapValueIntoRange(target.size, minBound, upperBound);
+        spriteFeatures.set('Size', normalisedSize);
+
         // Extract variables
         for (const variable of Object.values(target.variables)) {
-            spriteFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value']));
+            if (typeof variable['value'] === 'number') {
+                spriteFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value'], 10));
+            }
         }
 
         // If we have a path to a goal extract the signed x and y distance to the next wayPoint as input.
@@ -153,6 +173,27 @@ export class InputExtraction {
     }
 
     /**
+     * Gets the upper and lower bound of a sprite's size. Attention this value might change when costumes are switched!
+     * @param target the target for which the bounds should be extracted.
+     * @return tuple [minSize, maxSize] representing the current sprite's size bounds.
+     */
+    private static _getSizeBounds(target: RenderedTarget): [number, number] {
+        const runtime = target.runtime;
+        const renderer = runtime.renderer;
+        const costumeSize = renderer.getCurrentSkinSize(target.drawableID);
+        const origW = costumeSize[0];
+        const origH = costumeSize[1];
+        const minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
+        const maxScale = Math.min(
+            (1.5 * runtime.constructor.STAGE_WIDTH) / origW,
+            (1.5 * runtime.constructor.STAGE_HEIGHT) / origH
+        );
+        const min = Math.round(minScale * 100);
+        const max = Math.round(maxScale * 100);
+        return [min, max];
+    }
+
+    /**
      * Calculates the distance in x and y direction of two positions on the stage and normalizes it in the range of
      * [-1, 1]. The sign is determined by the relative position of the coordinates;
      * the negative sign means x1 is left of x2 and y1 is below y2
@@ -188,10 +229,11 @@ export class InputExtraction {
     /**
      * Normalises values that have unknown bounds into the range [-1, 1]
      * @param value the value to normalise.
+     * @param constant used to stretch the value.
      * @return the normalised value in the range [-1, 1]
      */
-    private static _normaliseUnknownBounds(value: number): number {
-        let normalisationValue = Math.abs(value) / (Math.abs(value) + 1);
+    private static _normaliseUnknownBounds(value: number, constant = 1): number {
+        let normalisationValue = Math.abs(value) / (Math.abs(value) + constant);
         if (value < 0) {
             normalisationValue *= -1;
         }
