@@ -21,14 +21,26 @@
 import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingCondition";
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _conditions: StoppingCondition<T>[] = [];
+    private readonly _conditions: readonly StoppingCondition<T>[];
 
-    constructor(...stoppingCondition: StoppingCondition<T>[]) {
-        this._conditions.push(...stoppingCondition);
+    constructor(...stoppingConditions: readonly StoppingCondition<T>[]) {
+        // Immediately flatten nested OneOfStoppingConditions.
+        this._conditions = this._flatten(stoppingConditions);
+    }
+
+    private _flatten(stoppingConditions: readonly StoppingCondition<T>[]): readonly StoppingCondition<T>[] {
+        const flattened = [];
+        for (const stoppingCondition of stoppingConditions) {
+            if (stoppingCondition instanceof OneOfStoppingCondition) {
+                flattened.push(...this._flatten(stoppingCondition.conditions));
+            } else {
+                flattened.push(stoppingCondition);
+            }
+        }
+        return flattened;
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
@@ -36,14 +48,11 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        // Only include stopping conditions which mirror types of resource budgets.
-        const resourceConditions = this.conditions.filter(condition => !(condition instanceof OptimalSolutionStoppingCondition));
-        const progressCollection = resourceConditions.map(condition => condition.getProgress(algorithm));
-        progressCollection.sort((a, b) => b - a);       // Sorted in increasing order.
-        return progressCollection[0];
+        const progress = this.conditions.map(condition => condition.getProgress(algorithm));
+        return Math.max(...progress);
     }
 
-    get conditions(): StoppingCondition<T>[] {
+    get conditions(): readonly StoppingCondition<T>[] {
         return this._conditions;
     }
 }
