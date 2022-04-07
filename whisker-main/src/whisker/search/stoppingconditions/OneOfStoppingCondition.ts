@@ -21,6 +21,7 @@
 import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
+import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingCondition";
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
@@ -48,7 +49,17 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        const progress = this.conditions.map(condition => condition.getProgress(algorithm));
+        /*
+         * We distinguish between stopping conditions tracking (A) how close we are to fulfilling an objective, vs.
+         * (B) how much resources have been used. For measuring search progress, we are interested only in (B).
+         * This filtering step is important and can impact the behavior of search algorithms. In particular, MIO
+         * uses getProgress to decide if it should enter its "focused phase". The majority of Scratch programs are
+         * very simple and we reach very high coverage almost instantly, meaning that MIO would immediately enter
+         * its focused phase, unless we specifically filter out OptimalSolutionStoppingCondition here.
+         */
+        const resourceConditions = this.conditions.filter(condition =>
+            !(condition instanceof OptimalSolutionStoppingCondition));
+        const progress = resourceConditions.map(condition => condition.getProgress(algorithm));
         return Math.max(...progress);
     }
 
