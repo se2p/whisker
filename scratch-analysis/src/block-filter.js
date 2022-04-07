@@ -217,7 +217,19 @@ const OperatorFilter = {
         block.opcode === 'operator_add' ||
         block.opcode === 'operator_subtract' ||
         block.opcode === 'operator_multiply' ||
-        block.opcode === 'operator_divide'
+        block.opcode === 'operator_divide',
+
+    logicalArithmetic: block =>
+        block.opcode === 'operator_equals' ||
+        block.opcode === 'operator_lt' ||
+        block.opcode === 'operator_gt',
+
+    logicalBoolean: block =>
+        block.opcode === 'operator_and' ||
+        block.opcode === 'operator_or',
+
+    logical: block =>
+        OperatorFilter.logicalArithmetic(block) || OperatorFilter.logicalBoolean(block)
 }
 
 const ListFilter = {

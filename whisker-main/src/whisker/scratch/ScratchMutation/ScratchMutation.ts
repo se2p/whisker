@@ -29,8 +29,7 @@ export abstract class ScratchMutation {
      * Applies the instantiated mutation operator.
      * @param mutationBlock the block that will be mutated.
      * @param mutantProgram the mutant program in which the mutationBlock resides.
-     * @param originalBlock the corresponding block from the original Scratch Program, we need this one since it holds
-     * additional information such as the source sprite name.
+     * @param originalBlock the corresponding block from the original Scratch program.
      */
     public abstract applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram,
                                   originalBlock?: Readonly<unknown>): boolean;

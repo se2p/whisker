@@ -11,16 +11,14 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
 
     constructor(vm: VirtualMachine) {
         super(vm);
-        console.log(this.originalVM);
     }
 
     /**
      * The ArithmeticOperatorReplacementMutation replaces an arithmetic operation ( + , - , * , / ), with a different
      * randomly chosen one.
-     * @param mutationBlock the block that should be deleted from the mutant program
-     * @param mutantProgram the mutant program in which the mutationBlock will be deleted
-     * @param originalBlock the block from the original Scratch Program, we need this one since it holds additional
-     * information such as the source sprite name.
+     * @param mutationBlock the block whose arithmetic operation should be replaced
+     * @param mutantProgram the mutant program in which the arithmetic operation will be replaced
+     * @param originalBlock the block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
     applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
@@ -36,7 +34,7 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
     }
 
     /**
-     * Valid mutation candidates are arithmetic operator blocks.
+     * Valid mutation candidates are arithmetic operation blocks.
      * @returns an array of mutation candidate block ids.
      */
     protected getMutationCandidates(): string[] {

@@ -15,8 +15,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * @param mutationBlock the actual block that should be deleted from the mutant program
      * @param mutantProgram the mutant program from which the mutationBlock will be deleted
      * @returns true if the mutation was successful.
-     * @param originalBlock the block from the original Scratch Program, we need this one since it holds additional
-     * information such as the source sprite name.
+     * @param originalBlock the corresponding block from the original Scratch program.
      */
     public applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram,
                          originalBlock: Readonly<unknown>): boolean {
