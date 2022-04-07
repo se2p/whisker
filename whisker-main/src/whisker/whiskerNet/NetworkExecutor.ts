@@ -139,7 +139,7 @@ export class NetworkExecutor {
         }
 
         // Set score and play time.
-        network.score = ScoreFitness.gatherPoints(Container.vm);
+        network.score = ScoreFitness.gatherPoints(this._vm);
         network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
@@ -194,7 +194,7 @@ export class NetworkExecutor {
         }
 
         // Set score and play time.
-        network.score = ScoreFitness.gatherPoints(Container.vm);
+        network.score = ScoreFitness.gatherPoints(this._vm);
         network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
@@ -327,7 +327,8 @@ export class NetworkExecutor {
             network.updateActivationTrace(step);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
             if (probabilities.size > 0) {
-                network.uncertainty.set(step, [...probabilities.values()].reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
+                network.uncertainty.set(step, 1 - [...probabilities.values()].reduce(
+                    (pv, cv) => pv + Math.pow(cv, 2), 0));
             }
         }
     }

@@ -80,6 +80,19 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
+     * Clones the network during the test execution process.
+     */
+    public cloneAsTestCase(): NeatChromosome {
+        const clone = this.cloneStructure(false);
+        clone.uID = this.uID;
+        clone.isRecurrent = this.isRecurrent;
+        if (this.referenceActivationTrace !== undefined) {
+            clone.referenceActivationTrace = this.referenceActivationTrace.clone();
+        }
+        return clone;
+    }
+
+    /**
      * Deep clone of a NeatChromosome using a defined list of genes.
      * @param newGenes the ConnectionGenes the network should be initialised with.
      * @param incrementID determines whether the ID-Counter should be incremented during cloning.

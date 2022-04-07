@@ -5,7 +5,7 @@ import {Randomness} from "../../utils/Randomness";
 import WhiskerUtil from "../../../test/whisker-util";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../../utils/Container";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {NetworkTestSuiteResults, StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
 import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {NetworkExecutor} from "../NetworkExecutor";
@@ -21,7 +21,7 @@ export abstract class NetworkSuite {
     /**
      * Maps a number as fitness function key to a fitness function.
      */
-    protected statementMap = new Map<number, FitnessFunction<Chromosome>>();
+    protected statementMap: Map<number, FitnessFunction<Chromosome>>;
 
     /**
      * Saves for each covered fitness function key, a network capable of covering the respective fitness function.
@@ -77,12 +77,10 @@ export abstract class NetworkSuite {
     /**
      * Executes a single test case and records corresponding statistics.
      * @param test the test case to execute.
-     * @param projectName the name of the project on which the given test will be executed.
-     * @param testName the name of the test case that is about to be executed.
      * @param recordExecution determines whether we want to record this execution by updating the archive and the
      * test execution statistics
      */
-    protected abstract executeTestCase(test: NeatChromosome, projectName: string, testName: string, recordExecution: boolean): Promise<void>;
+    protected abstract executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<void>;
 
     /**
      * Tests a single project by executing the given test suite.
@@ -104,7 +102,7 @@ export abstract class NetworkSuite {
         this.setScratchSeed();
         await this.initialiseCommonVariables();
         this.initialiseExecutionParameter();
-        this.initialiseFitnessTargets();
+        this.initialiseFitnessTargets(this.vm);
         this.testCases = this.loadTestCases();
 
         // Record activation traces
@@ -173,9 +171,10 @@ export abstract class NetworkSuite {
     /**
      * Initialises the statement map.
      */
-    private initialiseFitnessTargets(): void {
+    private initialiseFitnessTargets(vm: VirtualMachine): void {
         const fitnessFactory = new StatementFitnessFunctionFactory();
-        const fitnessTargets = fitnessFactory.extractFitnessFunctions(Container.vm, []);
+        const fitnessTargets = fitnessFactory.extractFitnessFunctions(vm, []);
+        this.statementMap = new Map<number, FitnessFunction<Chromosome>>();
         for (let i = 0; i < fitnessTargets.length; i++) {
             this.statementMap.set(i, fitnessTargets[i] as unknown as FitnessFunction<NeatChromosome>);
         }
@@ -193,7 +192,7 @@ export abstract class NetworkSuite {
         for (const test of this.testCases) {
             for (const seed of scratchSeeds) {
                 Randomness.setScratchSeed(seed);
-                await this.executeTestCase(test, '', '', false);
+                await this.executeTestCase(test, false);
             }
 
             // Save the recorded AT as reference and reset the current AT for the actual test subjects.
@@ -220,15 +219,11 @@ export abstract class NetworkSuite {
 
     /**
      * Extracts the results of an executed test case and saves them within the StatisticsCollector.
-     * @param projectName the name of the executed test project
-     * @param testName the name of the executed test
      * @param testCase the testCase whose results should be extracted.
      */
-    protected extractTestCaseResults(testCase: NeatChromosome, projectName: string, testName: string): void {
-        testCase.determineCoveredObjectives([...this.statementMap.values()]);
-
+    protected extractNetworkStatistics(testCase: NeatChromosome): void {
         // We can only apply node activation analysis if we have a reference trace
-        if(testCase.referenceActivationTrace) {
+        if (testCase.referenceActivationTrace) {
             testCase.surpriseAdequacyStep = SurpriseAdequacy.LSA(testCase.referenceActivationTrace, testCase.currentActivationTrace);
             const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.referenceActivationTrace, testCase.currentActivationTrace);
             testCase.surpriseAdequacyNodes = nodeSA[0];
@@ -242,7 +237,37 @@ export abstract class NetworkSuite {
             const z = SurpriseAdequacy.zScore(testCase.referenceActivationTrace, testCase.currentActivationTrace);
             testCase.zScore = z[0];
         }
-        StatisticsCollector.getInstance().addNetworkSuiteResult(projectName, testName, testCase);
+    }
+
+    /**
+     * Saves the observed test execution statistics to later return them as a csv file.
+     * @param testCases the executed testCases holding the execution results.
+     * @param projectName the name of the executed project.
+     * @param testName the name of the executed test file.
+     */
+    protected updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
+                                   testName: Readonly<string>): void {
+        for (const test of testCases) {
+            test.determineCoveredObjectives([...this.statementMap.values()]);
+            const uncertaintyValues = [...test.uncertainty.values()];
+            const uncertainty = uncertaintyValues.reduce((pv, cv) => pv + cv, 0) / uncertaintyValues.length;
+            const testResult: NetworkTestSuiteResults = {
+                projectName: projectName,
+                testName: testName,
+                totalObjectives: [...this.statementMap.keys()].length,
+                coveredObjectivesByTest: test.coveredStatements,
+                coveredObjectivesBySuite: [...this.archive.keys()].length,
+                score: test.score,
+                playTime: test.playTime,
+                surpriseStepAdequacy: test.surpriseAdequacyStep,
+                surpriseNodeAdequacy: test.surpriseAdequacyNodes,
+                surpriseCount: test.surpriseCounterNormalised,
+                zScore: test.zScore,
+                uncertainty: uncertainty
+            };
+            StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
+        }
+
     }
 
     /**
@@ -282,6 +307,7 @@ export abstract class NetworkSuite {
         const util = new WhiskerUtil(this.vm, mutant);
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
+        this.initialiseFitnessTargets(vmWrapper.vm);
         this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', false);
     }
 }

@@ -50,17 +50,15 @@ export class DynamicSuite extends NetworkSuite {
     /**
      * Executes a single dynamic test case and records corresponding statistics.
      * @param test the dynamic test case to execute.
-     * @param projectName the name of the project on which the given test will be executed.
-     * @param testName the name of the dynamic test case that is about to be executed.
-     * @param recordExecution determines whether we want to record this execution by updating the archive and the
-     * test execution statistics
+     * @param recordExecution determines whether we want to record this execution by updating the archive and
+     * analysing network metrics.
      */
-    protected async executeTestCase(test: NeatChromosome, projectName: string, testName: string, recordExecution: boolean): Promise<void> {
+    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<void> {
         test.recordActivationTrace = true;
         await this.executor.execute(test);
         if (recordExecution) {
             this.updateArchive(test);
-            this.extractTestCaseResults(test, projectName, testName);
+            this.extractNetworkStatistics(test);
         }
         test.recordActivationTrace = false;
         this.executor.resetState();
@@ -77,8 +75,9 @@ export class DynamicSuite extends NetworkSuite {
 
         // Execute all networks on the single project.
         for (const network of this.testCases) {
-            await this.executeTestCase(network, this.projectName, this.testName, true);
+            await this.executeTestCase(network, true);
         }
+        this.updateTestStatistics(this.testCases, this.projectName, this.testName);
     }
 
     /**
@@ -88,17 +87,20 @@ export class DynamicSuite extends NetworkSuite {
         const mutantPrograms = this.getScratchMutations();
         console.log(`Produced mutants ${mutantPrograms.length}`);
         for (const mutant of mutantPrograms) {
+            this.archive.clear();
             const projectMutation = `${this.projectName}-${mutant.name}`;
             console.log(`Analysing mutant ${projectMutation}`);
             try {
-                for (const network of this.testCases) {
+                const executedTests: NeatChromosome[] = [];
+                for (const test of this.testCases) {
                     // We clone the network since it might get changed due to specific mutations.
-                    const networkClone = network.clone();
+                    const testClone = test.cloneAsTestCase();
                     await this.loadMutant(mutant);
-                    await this.executeTestCase(networkClone, projectMutation, this.testName, true);
+                    await this.executeTestCase(testClone, true);
+                    executedTests.push(testClone);
                 }
-            }
-            catch (e) {
+                this.updateTestStatistics(executedTests, projectMutation, this.testName);
+            } catch (e) {
                 console.error(e);
                 console.log(`Defect mutant: ${projectMutation}`);
             }

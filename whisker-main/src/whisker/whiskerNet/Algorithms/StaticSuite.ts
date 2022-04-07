@@ -57,17 +57,15 @@ export class StaticSuite extends NetworkSuite {
     /**
      * Executes a single static test case and records corresponding statistics.
      * @param test the static test case to execute.
-     * @param projectName the name of the project on which the given test will be executed.
-     * @param testName the name of the static test case that is about to be executed.
      * @param recordExecution determines whether we want to record this execution by updating the archive and the
      * test execution statistics
      */
-    protected async executeTestCase(test: NeatChromosome, projectName: string, testName: string, recordExecution: boolean): Promise<void> {
+    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<void> {
         test.recordActivationTrace = true;
         await this.executor.executeSavedTrace(test);
         if (recordExecution) {
             this.updateArchive(test);
-            this.extractTestCaseResults(test, projectName, testName);
+            this.extractNetworkStatistics(test);
         }
         this.executor.resetState();
     }
@@ -77,8 +75,9 @@ export class StaticSuite extends NetworkSuite {
      */
     protected async testSingleProject(): Promise<void> {
         for (const test of this.testCases) {
-            await this.executeTestCase(test, this.projectName, this.testName, true);
+            await this.executeTestCase(test, true);
         }
+        this.updateTestStatistics(this.testCases, this.projectName, this.testName);
     }
 
     /**
@@ -88,12 +87,15 @@ export class StaticSuite extends NetworkSuite {
         const mutantPrograms = this.getScratchMutations();
         for (const mutant of mutantPrograms) {
             const projectMutation = `${this.projectName}-${mutant.name}`;
-            for (const network of this.testCases) {
+            const executedTests: NeatChromosome[] = [];
+            for (const test of this.testCases) {
                 // We clone the network since it might get changed due to specific mutations.
-                const networkClone = network.clone();
+                const testClone = test.cloneAsTestCase();
                 await this.loadMutant(mutant);
-                await this.executeTestCase(networkClone, projectMutation, this.testName, true);
+                await this.executeTestCase(testClone, true);
+                executedTests.push(testClone);
             }
+            this.updateTestStatistics(executedTests, projectMutation, this.testName);
         }
         return mutantPrograms;
     }

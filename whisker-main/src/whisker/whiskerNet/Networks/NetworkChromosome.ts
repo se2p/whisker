@@ -168,6 +168,11 @@ export abstract class NetworkChromosome extends Chromosome {
     public abstract cloneStructure(incrementID: boolean);
 
     /**
+     * Clones the network during the test execution process.
+     */
+    public abstract cloneAsTestCase();
+
+    /**
      * Deep clone of a NetworkChromosome using a defined list of genes.
      * @param newGenes the ConnectionGenes the network should be initialised with.
      * @returns NetworkChromosome the cloned network.

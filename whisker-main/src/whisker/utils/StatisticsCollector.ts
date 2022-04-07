@@ -303,22 +303,8 @@ export class StatisticsCollector {
         return this._highestPlayTime;
     }
 
-    public addNetworkSuiteResult(projectName: string, testName: string, network: NetworkChromosome): void {
-        const uncertaintyValues = [...network.uncertainty.values()];
-        const uncertainty = uncertaintyValues.reduce((pv, cv) => pv + cv, 0) / uncertaintyValues.length;
-        const testResults: NetworkTestSuiteResults = {
-            projectName: projectName,
-            testName: testName,
-            coveredStatements: network.coveredStatements,
-            score: network.score,
-            playTime: network.playTime,
-            surpriseStepAdequacy: network.surpriseAdequacyStep,
-            surpriseNodeAdequacy: network.surpriseAdequacyNodes,
-            surpriseCount: network.surpriseCounterNormalised,
-            zScore: network.zScore,
-            uncertainty: uncertainty
-        };
-        this._networkSuiteResults.push(testResults);
+    public addNetworkSuiteResult(results:NetworkTestSuiteResults): void {
+        this._networkSuiteResults.push(results);
     }
 
     /**
@@ -425,10 +411,10 @@ export class StatisticsCollector {
             "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,uncertainty\n";
 
         for (const testResult of this._networkSuiteResults){
-            const data = [testResult.projectName, testResult.testName, this._fitnessFunctionCount,
-                testResult.coveredStatements, this._coveredFitnessFunctionsCount, testResult.score, testResult.playTime,
-                testResult.surpriseStepAdequacy, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.zScore, testResult.uncertainty];
+            const data = [testResult.projectName, testResult.testName, testResult.totalObjectives,
+                testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite, testResult.score,
+                testResult.playTime, testResult.surpriseStepAdequacy, testResult.surpriseNodeAdequacy,
+                testResult.surpriseCount, testResult.zScore, testResult.uncertainty];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -495,10 +481,12 @@ export class StatisticsCollector {
     }
 }
 
-interface NetworkTestSuiteResults {
+export interface NetworkTestSuiteResults {
     projectName: string,
     testName: string,
-    coveredStatements: number,
+    totalObjectives:number,
+    coveredObjectivesByTest: number,
+    coveredObjectivesBySuite:number
     score: number,
     playTime: number,
     surpriseStepAdequacy: number

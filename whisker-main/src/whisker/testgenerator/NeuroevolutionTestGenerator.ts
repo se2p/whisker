@@ -5,6 +5,7 @@ import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {WhiskerTest} from "./WhiskerTest";
 import Arrays from "../utils/Arrays";
+import {NeatChromosome} from "../whiskerNet/Networks/NeatChromosome";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -14,7 +15,8 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
     async generateTests(): Promise<WhiskerTestListWithSummary> {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
-        const testChromosomes = Arrays.distinct(archive.values());
+        const testChromosomes = Arrays.distinctByComparator([...archive.values()],
+            (a: NeatChromosome, b: NeatChromosome) => a.toString() === b.toString());
         const testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
         await this.collectStatistics(testSuite);
         const summary = this.summarizeSolution(archive);
