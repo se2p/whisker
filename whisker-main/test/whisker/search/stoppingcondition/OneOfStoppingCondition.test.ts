@@ -28,6 +28,7 @@ import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {StatisticsCollector} from "../../../../src/whisker/utils/StatisticsCollector";
 import Arrays from "../../../../src/whisker/utils/Arrays";
+import {expect} from "@jest/globals";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     setCurrentSolution(chromosome: BitstringChromosome) {
@@ -40,7 +41,7 @@ class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     }
 }
 
-describe('OptimalSolutionStoppingCondition', () => {
+describe('OneOfStoppingCondition', () => {
 
     test('Both conditions false', async () => {
         const bits = [true, false];
@@ -122,4 +123,11 @@ describe('OptimalSolutionStoppingCondition', () => {
         expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
+    test('Nested OneOfStoppingConditions must be flattened', () => {
+        const stoppingCondition = new OneOfStoppingCondition(
+            new FixedIterationsStoppingCondition(10),
+            new OptimalSolutionStoppingCondition());
+        const nested = new OneOfStoppingCondition(stoppingCondition, stoppingCondition, stoppingCondition);
+        expect(nested.conditions.some((c) => c instanceof OneOfStoppingCondition)).toBeFalsy();
+    });
 });

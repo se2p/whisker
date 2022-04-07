@@ -25,10 +25,23 @@ import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingConditi
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _conditions: StoppingCondition<T>[] = [];
+    private readonly _conditions: readonly StoppingCondition<T>[];
 
-    constructor(...stoppingCondition: StoppingCondition<T>[]) {
-        this._conditions.push(...stoppingCondition);
+    constructor(...stoppingConditions: readonly StoppingCondition<T>[]) {
+        // Immediately flatten nested OneOfStoppingConditions.
+        this._conditions = this._flatten(stoppingConditions);
+    }
+
+    private _flatten(stoppingConditions: readonly StoppingCondition<T>[]): readonly StoppingCondition<T>[] {
+        const flattened = [];
+        for (const stoppingCondition of stoppingConditions) {
+            if (stoppingCondition instanceof OneOfStoppingCondition) {
+                flattened.push(...this._flatten(stoppingCondition.conditions));
+            } else {
+                flattened.push(stoppingCondition);
+            }
+        }
+        return flattened;
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
@@ -36,14 +49,21 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        // Only include stopping conditions which mirror types of resource budgets.
-        const resourceConditions = this.conditions.filter(condition => !(condition instanceof OptimalSolutionStoppingCondition));
-        const progressCollection = resourceConditions.map(condition => condition.getProgress(algorithm));
-        progressCollection.sort((a, b) => b - a);       // Sorted in increasing order.
-        return progressCollection[0];
+        /*
+         * We distinguish between stopping conditions tracking (A) how close we are to fulfilling an objective, vs.
+         * (B) how much resources have been used. For measuring search progress, we are interested only in (B).
+         * This filtering step is important and can impact the behavior of search algorithms. In particular, MIO
+         * uses getProgress to decide if it should enter its "focused phase". The majority of Scratch programs are
+         * very simple and we reach very high coverage almost instantly, meaning that MIO would immediately enter
+         * its focused phase, unless we specifically filter out OptimalSolutionStoppingCondition here.
+         */
+        const resourceConditions = this.conditions.filter(condition =>
+            !(condition instanceof OptimalSolutionStoppingCondition));
+        const progress = resourceConditions.map(condition => condition.getProgress(algorithm));
+        return Math.max(...progress);
     }
 
-    get conditions(): StoppingCondition<T>[] {
+    get conditions(): readonly StoppingCondition<T>[] {
         return this._conditions;
     }
 }
