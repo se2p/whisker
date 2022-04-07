@@ -15,6 +15,9 @@ import {KeyReplacementMutation} from "../../scratch/ScratchMutation/KeyReplaceme
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {SingleBlockDeletionMutation} from "../../scratch/ScratchMutation/SingleBlockDeletionMutation";
+import {
+    ArithmeticOperatorReplacementMutation
+} from "../../scratch/ScratchMutation/ArithmeticOperatorReplacementMutation";
 
 export abstract class NetworkSuite {
 
@@ -148,6 +151,9 @@ export abstract class NetworkSuite {
                     break;
                 case 'SBD':
                     this.mutationOperators.push(new SingleBlockDeletionMutation(this.vm));
+                    break;
+                case 'AOR':
+                    this.mutationOperators.push(new ArithmeticOperatorReplacementMutation(this.vm));
                     break;
             }
         }

@@ -212,6 +212,14 @@ const VariableFilter = {
         block.opcode === 'data_hidevariable'
 };
 
+const OperatorFilter = {
+    arithmetic: block =>
+        block.opcode === 'operator_add' ||
+        block.opcode === 'operator_subtract' ||
+        block.opcode === 'operator_multiply' ||
+        block.opcode === 'operator_divide'
+}
+
 const ListFilter = {
     update: block =>
         block.opcode === 'data_addtolist' ||
@@ -283,6 +291,7 @@ export {
     SoundFilter,
     EventFilter,
     VariableFilter,
+    OperatorFilter,
     ListFilter,
     SensingFilter,
     StatementFilter,

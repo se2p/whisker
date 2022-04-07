@@ -26,10 +26,14 @@ export abstract class ScratchMutation {
     protected abstract getMutationCandidates(): string[];
 
     /**
-     * Applies the given mutation operator.
-     * @returns true if the mutation was successful.
+     * Applies the instantiated mutation operator.
+     * @param mutationBlock the block that will be mutated.
+     * @param mutantProgram the mutant program in which the mutationBlock resides.
+     * @param originalBlock the corresponding block from the original Scratch Program, we need this one since it holds
+     * additional information such as the source sprite name.
      */
-    public abstract applyMutation(originalBlock: Readonly<unknown>, mutationBlock: unknown, mutantProgram: ScratchProgram): boolean;
+    public abstract applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram,
+                                  originalBlock?: Readonly<unknown>): boolean;
 
     /**
      * Generates mutants based on the specified mutation operator.
@@ -42,7 +46,7 @@ export abstract class ScratchMutation {
             const originalBlock = this.blockMap.get(mutationBlockId);
             const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
             if (mutationBlock !== undefined) {
-                if (this.applyMutation(originalBlock, mutationBlock, mutantProgram)) {
+                if (this.applyMutation(mutationBlock, mutantProgram, originalBlock)) {
                     mutants.push(mutantProgram);
                 }
             }

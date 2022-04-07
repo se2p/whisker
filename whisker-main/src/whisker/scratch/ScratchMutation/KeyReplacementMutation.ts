@@ -16,9 +16,11 @@ export class KeyReplacementMutation extends ScratchMutation {
 
     /**
      * Applies the KeyReplacementMutation, which replaces a key that triggers an event with a randomly chosen new key.
+     * @param mutationBlock the block whose key option will be replaced.
+     * @param mutantProgram the mutant program in which the key will be replaced.
      * @returns an array of mutated programs.
      */
-    public applyMutation(originalBlock: Readonly<unknown>, mutationBlock: unknown, mutantProgram: ScratchProgram): boolean {
+    public applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram): boolean {
         const originalKeyPress = mutationBlock['fields']['KEY_OPTION'][0];
         let mutantKeyPress = Randomness.getInstance().pick(KeyReplacementMutation.KEY_OPTIONS);
         while (originalKeyPress === mutantKeyPress) {
