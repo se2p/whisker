@@ -21,6 +21,9 @@ import {
 import {LogicalOperatorReplacementMutation} from "../../scratch/ScratchMutation/LogicalOperatorReplacementMutation";
 import {NegateConditionalMutation} from "../../scratch/ScratchMutation/NegateConditionalMutation";
 import {ScriptDeletionMutation} from "../../scratch/ScratchMutation/ScriptDeletionMutation";
+import {
+    RelationalOperatorReplacementMutation
+} from "../../scratch/ScratchMutation/RelationalOperatorReplacementMutation";
 
 export abstract class NetworkSuite {
 
@@ -164,8 +167,21 @@ export abstract class NetworkSuite {
                 case 'LOR':
                     this.mutationOperators.push(new LogicalOperatorReplacementMutation(this.vm));
                     break;
+                case 'ROR':
+                    this.mutationOperators.push(new RelationalOperatorReplacementMutation(this.vm));
+                    break;
                 case 'NCM':
                     this.mutationOperators.push(new NegateConditionalMutation(this.vm));
+                    break;
+                case 'ALL':
+                    this.mutationOperators.push(
+                        new KeyReplacementMutation(this.vm),
+                        new SingleBlockDeletionMutation(this.vm),
+                        new ScriptDeletionMutation(this.vm),
+                        new ArithmeticOperatorReplacementMutation(this.vm),
+                        new LogicalOperatorReplacementMutation(this.vm),
+                        new RelationalOperatorReplacementMutation(this.vm),
+                        new NegateConditionalMutation(this.vm));
                     break;
             }
         }

@@ -219,17 +219,14 @@ const OperatorFilter = {
         block.opcode === 'operator_multiply' ||
         block.opcode === 'operator_divide',
 
-    logicalArithmetic: block =>
+    relational: block =>
         block.opcode === 'operator_equals' ||
         block.opcode === 'operator_lt' ||
         block.opcode === 'operator_gt',
 
-    logicalBoolean: block =>
+    logical: block =>
         block.opcode === 'operator_and' ||
         block.opcode === 'operator_or',
-
-    logical: block =>
-        OperatorFilter.logicalArithmetic(block) || OperatorFilter.logicalBoolean(block),
 
     negatable: block =>
         block.opcode === 'sensing_touchingobject' ||
@@ -239,7 +236,8 @@ const OperatorFilter = {
         block.opcode === 'sensing_mousedown' ||
         block.opcode === 'operator_contains' ||
         block.opcode === 'operator_not' ||
-        OperatorFilter.logical(block)
+        OperatorFilter.logical(block) ||
+        OperatorFilter.relational(block)
 }
 
 const ListFilter = {

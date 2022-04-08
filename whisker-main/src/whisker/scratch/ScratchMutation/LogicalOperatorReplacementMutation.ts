@@ -2,35 +2,23 @@ import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../ScratchInterface";
 import {OperatorFilter} from "scratch-analysis/src/block-filter";
-import {Randomness} from "../../utils/Randomness";
 
 export class LogicalOperatorReplacementMutation extends ScratchMutation {
 
-    private static readonly LOGICAL_ARITHMETIC_OPCODES = ['operator_equals', 'operator_lt', 'operator_gt']
-
-    private static readonly LOGICAL_BOOLEAN_OPCODES = ['operator_and', 'operator_or']
-
     constructor(vm: VirtualMachine) {
         super(vm);
-        console.log(this.originalVM);
     }
 
     /**
-     * The LogicalOperatorReplacementMutation replaces an arithmetic logic operation ( < , == , > ) or a boolean
-     * logic operation ( and, or) with a randomly chosen new operation from the same class.
-     * @param mutationBlock the block whose logic operation should be replaced.
-     * @param mutantProgram the mutant program in which the logic operation will be replaced.
-     * @param originalBlock the corresponding block from the original Scratch program.
+     * The LogicalOperatorReplacementMutation replaces a logical operation (and, or) with the opposing one.
+     * @param mutationBlock the block whose logical operation should be replaced.
+     * @param mutantProgram the mutant program in which the logical operation will be replaced.
+     * @param originalBlock the corresponding logical block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
+    applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock: unknown): boolean {
         const originalOpcode = mutationBlock['opcode'];
-        const opcodePool = OperatorFilter.logicalArithmetic(mutationBlock) ?
-            LogicalOperatorReplacementMutation.LOGICAL_ARITHMETIC_OPCODES : LogicalOperatorReplacementMutation.LOGICAL_BOOLEAN_OPCODES;
-        let mutantOpcode = Randomness.getInstance().pick(opcodePool);
-        while (originalOpcode === mutantOpcode) {
-            mutantOpcode = Randomness.getInstance().pick(opcodePool);
-        }
+        const mutantOpcode = originalOpcode === 'operator_and' ? 'operator_or' : 'operator_and';
         mutationBlock['opcode'] = mutantOpcode;
         const blockId = `${originalBlock['id'].slice(0, 4)}-${originalBlock['target']}`;
         mutantProgram.name = `LOR:${originalOpcode}-${mutantOpcode}-${blockId}`.replace(/,/g, '');
@@ -38,17 +26,17 @@ export class LogicalOperatorReplacementMutation extends ScratchMutation {
     }
 
     /**
-     * Valid mutation candidates are logic operation blocks.
+     * Valid mutation candidates are logical operation blocks.
      * @returns an array of mutation candidate block ids.
      */
     protected getMutationCandidates(): string[] {
-        const arithmeticOperatorBlocks: string[] = [];
+        const logicalOperationBlocks: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             if (OperatorFilter.logical(block)) {
-                arithmeticOperatorBlocks.push(id);
+                logicalOperationBlocks.push(id);
             }
         }
-        return arithmeticOperatorBlocks;
+        return logicalOperationBlocks;
     }
 
 
