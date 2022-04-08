@@ -78,7 +78,7 @@ class Output {
                 } else {
                     FileSaver.saveAs(blob, `populationRecord.json`);
                 }
-            } else if (this.mutants.length > 0) {
+            } else if (this.mutants && this.mutants.length > 0) {
                 for (const mutant of this.mutants) {
                     await this.scratch.vm.loadProject(JSON.parse(JSON.stringify(mutant)));
                     const projectBlob = await this.scratch.vm.saveProjectSb3();

@@ -24,6 +24,7 @@ import {ScriptDeletionMutation} from "../../scratch/ScratchMutation/ScriptDeleti
 import {
     RelationalOperatorReplacementMutation
 } from "../../scratch/ScratchMutation/RelationalOperatorReplacementMutation";
+import {VariableReplacementMutation} from "../../scratch/ScratchMutation/VariableReplacementMutation";
 
 export abstract class NetworkSuite {
 
@@ -172,6 +173,9 @@ export abstract class NetworkSuite {
                     break;
                 case 'NCM':
                     this.mutationOperators.push(new NegateConditionalMutation(this.vm));
+                    break;
+                case 'VRM':
+                    this.mutationOperators.push(new VariableReplacementMutation(this.vm));
                     break;
                 case 'ALL':
                     this.mutationOperators.push(

@@ -15,12 +15,13 @@ export class RelationalOperatorReplacementMutation extends ScratchMutation {
     /**
      * The RelationalOperatorReplacementMutation replaces a relational operation (<, ==, >) with a randomly
      * chosen different one.
-     * @param mutationBlock the block whose relational operation should be replaced.
+     * @param mutationBlockId the id of the block whose relational operation should be replaced.
      * @param mutantProgram the mutant program in which the relational operation will be replaced.
      * @param originalBlock the corresponding relational block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock: unknown): boolean {
+    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
         const originalOpcode = mutationBlock['opcode'];
         let mutantOpcode = Randomness.getInstance().pick(RelationalOperatorReplacementMutation.RELATIONAL_OPCODES);
         while (mutantOpcode === originalOpcode) {

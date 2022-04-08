@@ -12,12 +12,13 @@ export class ScriptDeletionMutation extends ScratchMutation {
     /**
      * The ScriptDeletionMutation disconnects a hat block from its childs, which basically leads to the deletion of
      * the script since it's no longer reachable.
-     * @param mutationBlock the hat block that will be disconnected.
+     * @param mutationBlockId the id of the hat block that will be disconnected.
      * @param mutantProgram the mutant program in which the hat block will be disconnected.
      * @param originalBlock the corresponding hat block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock?: Readonly<unknown>): boolean {
+    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
         const nextBlock = this.extractBlockFromProgram(mutantProgram, originalBlock['next'], originalBlock['target']);
         nextBlock['parent'] = null;
         mutationBlock['next'] = null;

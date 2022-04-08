@@ -11,12 +11,13 @@ export class LogicalOperatorReplacementMutation extends ScratchMutation {
 
     /**
      * The LogicalOperatorReplacementMutation replaces a logical operation (and, or) with the opposing one.
-     * @param mutationBlock the block whose logical operation should be replaced.
+     * @param mutationBlockId the id of the block whose logical operation should be replaced.
      * @param mutantProgram the mutant program in which the logical operation will be replaced.
      * @param originalBlock the corresponding logical block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock: unknown): boolean {
+    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock: unknown): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
         const originalOpcode = mutationBlock['opcode'];
         const mutantOpcode = originalOpcode === 'operator_and' ? 'operator_or' : 'operator_and';
         mutationBlock['opcode'] = mutantOpcode;

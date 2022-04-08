@@ -21,17 +21,17 @@ export abstract class ScratchMutation {
     }
 
     /**
-     * Returns a list of block id's indicating mutation candidates of a given mutator.
+     * Returns an array of block id's indicating mutation candidates of a given mutator.
      */
     protected abstract getMutationCandidates(): string[];
 
     /**
      * Applies the instantiated mutation operator.
-     * @param mutationBlock the block that will be mutated.
+     * @param mutationBlockId the id  of the block that will be mutated.
      * @param mutantProgram the mutant program in which the mutationBlock resides.
      * @param originalBlock the corresponding block from the original Scratch program.
      */
-    public abstract applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram,
+    public abstract applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram,
                                   originalBlock?: Readonly<unknown>): boolean;
 
     /**
@@ -43,11 +43,8 @@ export abstract class ScratchMutation {
         for (const mutationBlockId of mutationCandidates) {
             const mutantProgram: ScratchProgram = JSON.parse(this.originalProjectJSON);
             const originalBlock = this.blockMap.get(mutationBlockId);
-            const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
-            if (mutationBlock !== undefined) {
-                if (this.applyMutation(mutationBlock, mutantProgram, originalBlock)) {
-                    mutants.push(mutantProgram);
-                }
+            if (this.applyMutation(mutationBlockId, mutantProgram, originalBlock)) {
+                mutants.push(mutantProgram);
             }
         }
         return mutants;

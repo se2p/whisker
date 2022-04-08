@@ -12,13 +12,15 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
 
     /**
      * The SingleBlockDeletionMutation removes a single statement block that is neither a hat nor a branching block.
-     * @param mutationBlock the actual block that should be deleted from the mutant program
+     * @param mutationBlockId the id of the block that should be deleted from the mutant program
      * @param mutantProgram the mutant program from which the mutationBlock will be deleted
-     * @param originalBlock the corresponding block from the original Scratch program.
+     * @param originalBlock the corresponding deletion block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram,
-                         originalBlock: Readonly<unknown>): boolean {
+    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
+
+
         // Since we exclude hat blocks, every block that has no parent is a dead block and removing them is pointless.
         if (mutationBlock['parent'] === null) {
             return false;

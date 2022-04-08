@@ -12,12 +12,13 @@ export class NegateConditionalMutation extends ScratchMutation {
 
     /**
      * The NegateConditionalMutation negates a selected diamond shaped conditional block by inserting a not block.
-     * @param mutationBlock the block that will be negated.
+     * @param mutationBlockId the id of the block that will be negated.
      * @param mutantProgram the mutant program in which the conditional block will be negated
      * @param originalBlock the corresponding diamond shaped conditional block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock?: Readonly<unknown>): boolean {
+    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
         const not_block = NegateConditionalMutation.notBlockGenerator(originalBlock);
         const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], originalBlock['target']);
         mutationBlock['parent'] = not_block['id'];

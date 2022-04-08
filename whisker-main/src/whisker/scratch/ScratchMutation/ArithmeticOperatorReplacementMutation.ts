@@ -16,12 +16,13 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
     /**
      * The ArithmeticOperatorReplacementMutation replaces an arithmetic operation ( + , - , * , / ), with a different
      * randomly chosen one.
-     * @param mutationBlock the block whose arithmetic operation should be replaced
+     * @param mutationBlockId the id of the block whose arithmetic operation should be replaced
      * @param mutantProgram the mutant program in which the arithmetic operation will be replaced
      * @param originalBlock the block from the original Scratch program.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
+    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
         const originalOpcode = mutationBlock['opcode'];
         let mutantOpcode = Randomness.getInstance().pick(ArithmeticOperatorReplacementMutation.ARITHMETIC_OPCODES);
         while (originalOpcode === mutantOpcode) {
