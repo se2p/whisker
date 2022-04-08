@@ -19,6 +19,7 @@ import {
     ArithmeticOperatorReplacementMutation
 } from "../../scratch/ScratchMutation/ArithmeticOperatorReplacementMutation";
 import {LogicalOperatorReplacementMutation} from "../../scratch/ScratchMutation/LogicalOperatorReplacementMutation";
+import {NegateConditionalMutation} from "../../scratch/ScratchMutation/NegateConditionalMutation";
 
 export abstract class NetworkSuite {
 
@@ -158,6 +159,9 @@ export abstract class NetworkSuite {
                     break;
                 case 'LOR':
                     this.mutationOperators.push(new LogicalOperatorReplacementMutation(this.vm));
+                    break;
+                case 'NCM':
+                    this.mutationOperators.push(new NegateConditionalMutation(this.vm));
                     break;
             }
         }

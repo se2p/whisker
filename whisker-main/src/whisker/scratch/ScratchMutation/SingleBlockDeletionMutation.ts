@@ -14,8 +14,8 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * The SingleBlockDeletionMutation removes a single statement block that is neither a hat nor a branching block.
      * @param mutationBlock the actual block that should be deleted from the mutant program
      * @param mutantProgram the mutant program from which the mutationBlock will be deleted
-     * @returns true if the mutation was successful.
      * @param originalBlock the corresponding block from the original Scratch program.
+     * @returns true if the mutation was successful.
      */
     public applyMutation(mutationBlock: unknown, mutantProgram: ScratchProgram,
                          originalBlock: Readonly<unknown>): boolean {

@@ -229,7 +229,17 @@ const OperatorFilter = {
         block.opcode === 'operator_or',
 
     logical: block =>
-        OperatorFilter.logicalArithmetic(block) || OperatorFilter.logicalBoolean(block)
+        OperatorFilter.logicalArithmetic(block) || OperatorFilter.logicalBoolean(block),
+
+    negatable: block =>
+        block.opcode === 'sensing_touchingobject' ||
+        block.opcode === 'sensing_touchingcolor' ||
+        block.opcode === 'sensing_coloristouchingcolor' ||
+        block.opcode === 'sensing_keypressed' ||
+        block.opcode === 'sensing_mousedown' ||
+        block.opcode === 'operator_contains' ||
+        block.opcode === 'operator_not' ||
+        OperatorFilter.logical(block)
 }
 
 const ListFilter = {
