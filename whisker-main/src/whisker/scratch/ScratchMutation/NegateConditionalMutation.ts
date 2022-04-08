@@ -51,14 +51,14 @@ export class NegateConditionalMutation extends ScratchMutation {
      * @returns an array of mutation candidate block ids.
      */
     protected getMutationCandidates(): string[] {
-        const arithmeticOperatorBlocks: string[] = [];
+        const conditionalBlocks: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             // Negating a not block is pointless since we negate its argument anyway.
             if (OperatorFilter.negatable(block) && block['opcode'] !== 'operator_not') {
-                arithmeticOperatorBlocks.push(id);
+                conditionalBlocks.push(id);
             }
         }
-        return arithmeticOperatorBlocks;
+        return conditionalBlocks;
     }
 
     /**

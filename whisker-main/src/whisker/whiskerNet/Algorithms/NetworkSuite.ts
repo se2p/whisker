@@ -20,6 +20,7 @@ import {
 } from "../../scratch/ScratchMutation/ArithmeticOperatorReplacementMutation";
 import {LogicalOperatorReplacementMutation} from "../../scratch/ScratchMutation/LogicalOperatorReplacementMutation";
 import {NegateConditionalMutation} from "../../scratch/ScratchMutation/NegateConditionalMutation";
+import {ScriptDeletionMutation} from "../../scratch/ScratchMutation/ScriptDeletionMutation";
 
 export abstract class NetworkSuite {
 
@@ -153,6 +154,9 @@ export abstract class NetworkSuite {
                     break;
                 case 'SBD':
                     this.mutationOperators.push(new SingleBlockDeletionMutation(this.vm));
+                    break;
+                case 'SDM':
+                    this.mutationOperators.push(new ScriptDeletionMutation(this.vm));
                     break;
                 case 'AOR':
                     this.mutationOperators.push(new ArithmeticOperatorReplacementMutation(this.vm));
