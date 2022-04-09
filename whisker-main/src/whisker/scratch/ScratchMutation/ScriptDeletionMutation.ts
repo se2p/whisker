@@ -14,15 +14,15 @@ export class ScriptDeletionMutation extends ScratchMutation {
      * the script since it's no longer reachable.
      * @param mutationBlockId the id of the hat block that will be disconnected.
      * @param mutantProgram the mutant program in which the hat block will be disconnected.
-     * @param originalBlock the corresponding hat block from the original Scratch program.
+     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
-        const nextBlock = this.extractBlockFromProgram(mutantProgram, originalBlock['next'], originalBlock['target']);
+    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
+        const nextBlock = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], target);
         nextBlock['parent'] = null;
         mutationBlock['next'] = null;
-        const blockId = `${originalBlock['id'].slice(0, 4)}-${originalBlock['target']}`;
+        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
         mutantProgram.name = `SDM:${blockId}`.replace(/,/g, '');
         return true;
     }

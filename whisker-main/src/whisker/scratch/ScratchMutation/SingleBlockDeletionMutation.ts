@@ -14,23 +14,23 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * The SingleBlockDeletionMutation removes a single statement block that is neither a hat nor a branching block.
      * @param mutationBlockId the id of the block that should be deleted from the mutant program
      * @param mutantProgram the mutant program from which the mutationBlock will be deleted
-     * @param originalBlock the corresponding deletion block from the original Scratch program.
+     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
+    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
 
 
         // Since we exclude hat blocks, every block that has no parent is a dead block and removing them is pointless.
         if (mutationBlock['parent'] === null) {
             return false;
         }
-        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], originalBlock['target']);
+        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], target);
 
         // On the other hand, the next block can be null if we are about to delete the last block in a script.
         let next: unknown;
         if (mutationBlock['next'] !== null) {
-            next = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], originalBlock['target']);
+            next = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], target);
         } else {
             next = null;
         }
@@ -41,7 +41,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         }
         // If the deletion block is saved in the substack field, the parent does not point to the deletion block
         // within the parent's next field.
-        if (parent['next'] !== null && parent['next'].slice(0, 5) === originalBlock['id'].slice(0, 5)) {
+        if (parent['next'] !== null && parent['next'].slice(0, 5) === mutationBlockId.slice(0, 5)) {
             parent['next'] = next === null ? null : mutationBlock['next'];
         }
 
@@ -49,7 +49,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         // deletion block's next block.
         if ('SUBSTACK' in parent['inputs']) {
             const substackArray = parent['inputs']['SUBSTACK'];
-            if (originalBlock['id'].startsWith(substackArray[1] as string)) {
+            if (mutationBlockId.startsWith(substackArray[1] as string)) {
                 substackArray[1] = mutationBlock['next'];
             }
         }
@@ -57,7 +57,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         // Some blocks have two substack fields, e.g. if-else blocks.
         if ('SUBSTACK2' in parent['inputs']) {
             const substackArray = parent['inputs']['SUBSTACK2'];
-            if (originalBlock['id'].startsWith(substackArray[1] as string)) {
+            if (mutationBlockId.startsWith(substackArray[1] as string)) {
                 substackArray[1] = mutationBlock['next'];
             }
         }
@@ -65,7 +65,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         // Finally, delete the mutationBlock by removing its pointers to the next and parent block.
         mutationBlock['parent'] = null;
         mutationBlock['next'] = null;
-        mutantProgram.name = `SBD:${originalBlock['opcode']}-${originalBlock['id'].slice(0, 4)}-${originalBlock['target']}`.replace(/,/g, '');
+        mutantProgram.name = `SBD:${mutationBlock['opcode']}-${mutationBlockId.slice(0, 4)}-${target}`.replace(/,/g, '');
         return true;
     }
 

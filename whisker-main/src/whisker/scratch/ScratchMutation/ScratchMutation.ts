@@ -29,10 +29,10 @@ export abstract class ScratchMutation {
      * Applies the instantiated mutation operator.
      * @param mutationBlockId the id  of the block that will be mutated.
      * @param mutantProgram the mutant program in which the mutationBlock resides.
-     * @param originalBlock the corresponding block from the original Scratch program.
+     * @param target the name of the target in which the block to mutate resides.
      */
-    public abstract applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram,
-                                  originalBlock?: Readonly<unknown>): boolean;
+    public abstract applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram,
+                                  target:Readonly<string>): boolean
 
     /**
      * Generates mutants based on the specified mutation operator.
@@ -43,7 +43,7 @@ export abstract class ScratchMutation {
         for (const mutationBlockId of mutationCandidates) {
             const mutantProgram: ScratchProgram = JSON.parse(this.originalProjectJSON);
             const originalBlock = this.blockMap.get(mutationBlockId);
-            if (this.applyMutation(mutationBlockId, mutantProgram, originalBlock)) {
+            if (this.applyMutation(mutationBlockId, mutantProgram, originalBlock['target'])) {
                 mutants.push(mutantProgram);
             }
         }

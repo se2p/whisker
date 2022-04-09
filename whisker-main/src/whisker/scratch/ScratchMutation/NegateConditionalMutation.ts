@@ -14,13 +14,16 @@ export class NegateConditionalMutation extends ScratchMutation {
      * The NegateConditionalMutation negates a selected diamond shaped conditional block by inserting a not block.
      * @param mutationBlockId the id of the block that will be negated.
      * @param mutantProgram the mutant program in which the conditional block will be negated
-     * @param originalBlock the corresponding diamond shaped conditional block from the original Scratch program.
+     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
-        const not_block = NegateConditionalMutation.notBlockGenerator(originalBlock);
-        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], originalBlock['target']);
+    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
+        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
+        mutantProgram.name = `NCM:${blockId}`.replace(/,/g, '');
+
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
+        const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId.split(`-${target}`)[0], mutationBlock['parent']);
+        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], target);
         mutationBlock['parent'] = not_block['id'];
 
         // Modify the parent block to point to the wrapping not block instead of the negated conditional diamond block
@@ -34,16 +37,13 @@ export class NegateConditionalMutation extends ScratchMutation {
         }
 
         // Add the not block to the mutant program
-        const sourceTarget = mutantProgram.targets.find(target => target.name === originalBlock['target']);
+        const sourceTarget = mutantProgram.targets.find(sourceTarget => sourceTarget.name === target);
         if (sourceTarget !== undefined) {
             sourceTarget.blocks[not_block['id']] = not_block;
         } else {
-            console.log(`Unknown source target ${originalBlock['target']} for program ${mutantProgram.name}`);
+            console.log(`Unknown source target ${target} for program ${mutantProgram.name}`);
             return false;
         }
-
-        const blockId = `${originalBlock['id'].slice(0, 4)}-${originalBlock['target']}`;
-        mutantProgram.name = `NCM:${blockId}`.replace(/,/g, '');
         return true;
     }
 
@@ -64,19 +64,18 @@ export class NegateConditionalMutation extends ScratchMutation {
 
     /**
      * Generates a not block given the block that should be negated.
-     * @param blockToNegate the block that should be negated.
+     * @param blockToNegateId the id of the block that should be negated.
+     * @param parentId the id of the parent holding the block to negate
      * @returns not block with the block to negate as operand
      */
-    private static notBlockGenerator(blockToNegate: Readonly<unknown>): unknown {
-        const blockToNegateId = blockToNegate['id'].split(`-${blockToNegate['target']}`)[0];
-        const parentId = blockToNegate['parent'].split(`-${blockToNegate['target']}`)[0];
+    private static notBlockGenerator(blockToNegateId: Readonly<string>, parentId: Readonly<string>): unknown {
         return {
             fields: {},
             id: uid(),
             inputs: {
                 OPERAND: [
                     2,
-                    blockToNegateId,
+                    blockToNegateId
                 ]
             },
             opcode: "operator_not",

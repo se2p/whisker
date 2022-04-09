@@ -5,11 +5,14 @@ import {Randomness} from "../../utils/Randomness";
 
 export class VariableReplacementMutation extends ScratchMutation {
 
-    private readonly processedBlocks: string[] = []
+    /**
+     * Holds every processed block id so far. Multiply occurrences of the same id indicate that a block uses more
+     * than one variable.
+     */
+    private readonly processedBlocks: string[] = [];
 
     constructor(vm: VirtualMachine) {
         super(vm);
-        console.log(this.originalVM);
     }
 
     /**
@@ -17,11 +20,11 @@ export class VariableReplacementMutation extends ScratchMutation {
      * randomly chosen one.
      * @param mutationBlockId the id of the parent block holding the variable that will be replaced.
      * @param mutantProgram the mutant program in which the variable will be replaced.
-     * @param originalBlock the block from the original Scratch program.
+     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock: unknown): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
+    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
 
         // We may have the chance to replace multiple variables within one parent block. We therefore, count how
         // often a given parent has been mutated and always replace the next up to this point untouched variable.
@@ -72,7 +75,7 @@ export class VariableReplacementMutation extends ScratchMutation {
         placeHolderToMutate[1][1] = replaceVariableName;
         placeHolderToMutate[1][2] = replaceVariableID;
 
-        const blockId = `${originalBlock['id'].slice(0, 4)}-${originalBlock['target']}`;
+        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
         mutantProgram.name = `VRM:${originalVarName}-${replaceVariableName}-${blockId}`.replace(/,/g, '');
         this.processedBlocks.push(mutationBlockId);
         return true;

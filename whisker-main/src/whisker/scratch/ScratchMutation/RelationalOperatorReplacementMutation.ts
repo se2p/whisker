@@ -17,18 +17,18 @@ export class RelationalOperatorReplacementMutation extends ScratchMutation {
      * chosen different one.
      * @param mutationBlockId the id of the block whose relational operation should be replaced.
      * @param mutantProgram the mutant program in which the relational operation will be replaced.
-     * @param originalBlock the corresponding relational block from the original Scratch program.
+     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram, originalBlock:unknown): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, originalBlock['target']);
+    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
         const originalOpcode = mutationBlock['opcode'];
         let mutantOpcode = Randomness.getInstance().pick(RelationalOperatorReplacementMutation.RELATIONAL_OPCODES);
         while (mutantOpcode === originalOpcode) {
             mutantOpcode = Randomness.getInstance().pick(RelationalOperatorReplacementMutation.RELATIONAL_OPCODES);
         }
         mutationBlock['opcode'] = mutantOpcode;
-        const blockId = `${originalBlock['id'].slice(0, 4)}-${originalBlock['target']}`;
+        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
         mutantProgram.name = `ROR:${originalOpcode}-${mutantOpcode}-${blockId}`.replace(/,/g, '');
         return true;
     }

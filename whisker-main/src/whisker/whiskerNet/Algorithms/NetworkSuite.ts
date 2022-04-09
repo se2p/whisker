@@ -185,7 +185,8 @@ export abstract class NetworkSuite {
                         new ArithmeticOperatorReplacementMutation(this.vm),
                         new LogicalOperatorReplacementMutation(this.vm),
                         new RelationalOperatorReplacementMutation(this.vm),
-                        new NegateConditionalMutation(this.vm));
+                        new NegateConditionalMutation(this.vm),
+                        new VariableReplacementMutation(this.vm));
                     break;
             }
         }
