@@ -82,7 +82,7 @@ export class WaitEvent extends ScratchEvent {
             this._steps !== Container.config.searchAlgorithmProperties['integerRange'].max) {
             this._steps %= Container.config.getWaitStepUpperBound();
         }
-        return [this._steps]
+        return [this._steps];
     }
 
     stringIdentifier(): string {

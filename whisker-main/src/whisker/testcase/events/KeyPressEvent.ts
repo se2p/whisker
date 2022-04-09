@@ -82,7 +82,7 @@ export class KeyPressEvent extends ScratchEvent {
                 this._steps = args[0];
                 break;
             case "activation":
-                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
+                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getPressDurationUpperBound());
                 break;
         }
         if(!Container.isNeuroevolution) {
@@ -92,7 +92,7 @@ export class KeyPressEvent extends ScratchEvent {
         if(this._steps < 1){
             this._steps = 1;
         }
-        return [this._steps]
+        return [this._steps];
     }
 
     stringIdentifier(): string {
