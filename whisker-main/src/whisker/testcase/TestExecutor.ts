@@ -34,6 +34,7 @@ import VMWrapper = require("../../vm/vm-wrapper.js");
 import {Container} from "../utils/Container";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+import cloneDeep from "lodash.clonedeep";
 
 
 export class TestExecutor {
@@ -306,6 +307,7 @@ export class TestExecutor {
             this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
             this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
             this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
+            this._vm.runtime.targets[targetsKey]["drawableID"] = this._initialState[targetsKey]["drawableID"];
             this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
             this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
             this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
@@ -314,16 +316,22 @@ export class TestExecutor {
             const x = this._initialState[targetsKey]["x"];
             const y = this._initialState[targetsKey]["y"];
             this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
+            this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
         }
+
+        this._vmWrapper.inputs.resetMouse();
+        this._vmWrapper.inputs.resetKeyboard();
     }
 
     private recordInitialState() {
         for (const targetsKey in this._vm.runtime.targets) {
             this._initialState[targetsKey] = {
+                name: this._vm.runtime.targets[targetsKey].sprite['name'],
                 direction: this._vm.runtime.targets[targetsKey]["direction"],
                 currentCostume: this._vm.runtime.targets[targetsKey]["currentCostume"],
                 draggable: this._vm.runtime.targets[targetsKey]["draggable"],
                 dragging: this._vm.runtime.targets[targetsKey]["dragging"],
+                drawableID: this._vm.runtime.targets[targetsKey]['drawableID'],
                 effects: Object.assign({}, this._vm.runtime.targets[targetsKey]["effects"]),
                 videoState: this._vm.runtime.targets[targetsKey]["videoState"],
                 videoTransparency: this._vm.runtime.targets[targetsKey]["videoTransparency"],
@@ -331,6 +339,7 @@ export class TestExecutor {
                 volume: this._vm.runtime.targets[targetsKey]["volume"],
                 x: this._vm.runtime.targets[targetsKey]["x"],
                 y: this._vm.runtime.targets[targetsKey]["y"],
+                variables: cloneDeep(this._vm.runtime.targets[targetsKey]["variables"])
             };
         }
     }
