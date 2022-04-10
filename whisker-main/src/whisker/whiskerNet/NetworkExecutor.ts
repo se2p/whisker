@@ -111,7 +111,8 @@ export class NetworkExecutor {
                 let eventIndex = this.selectNextEvent(network, spriteFeatures, isGreenFlag);
                 let nextEvent = this.availableEvents[eventIndex];
 
-                // If something goes wrong, e.g. we have a defect network, just insert a Wait.
+                // If something goes wrong, e.g. we have a defect network due to all active input nodes being
+                // disconnected to every output node, just insert a Wait.
                 if (nextEvent === undefined) {
                     eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
                     nextEvent = this.availableEvents[eventIndex];

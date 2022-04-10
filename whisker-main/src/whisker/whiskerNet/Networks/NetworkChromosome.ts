@@ -366,8 +366,9 @@ export abstract class NetworkChromosome extends Chromosome {
         // Repeatedly send the input signals through the network until at least one output node gets activated.
         while (this.outputsOff() || activationCount < 0) {
             activationCount++;
+
+            // We may have a defect network if none of the activated input nodes has a valid path to an output node.
             if (activationCount == 20) {
-                Container.debugLog(`Defect network: ${this.toString()}`);
                 return false;
             }
 

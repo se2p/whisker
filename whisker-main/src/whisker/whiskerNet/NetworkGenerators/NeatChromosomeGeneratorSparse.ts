@@ -4,6 +4,7 @@ import {Randomness} from "../../utils/Randomness";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatChromosomeGeneratorFullyConnected} from "./NeatChromosomeGeneratorFullyConnected";
 import Arrays from "../../utils/Arrays";
+import {BiasNode} from "../NetworkComponents/BiasNode";
 
 export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyConnected {
 
@@ -41,7 +42,16 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
      */
     createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
         const connections: ConnectionGene[] = [];
-        const availableSprites: NodeGene[][] = [...inputNodes];
+        const availableSprites: NodeGene[][] = [...inputNodes].filter(nodeGroup => !(nodeGroup[0] instanceof BiasNode));
+
+        // Start by connected the bias Node to every output node. We do this to mitigate the number of defect networks
+        // since it may happen that the only connected sprite gets invisible, at which point the sparse network has
+        // no input signal.
+        const biasNode = inputNodes.find(nodeGroup => nodeGroup[0] instanceof BiasNode)[0];
+        for (const outputNode of outputNodes) {
+            const newConnection = this.generateConnection(biasNode, outputNode);
+            connections.push(newConnection);
+        }
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
             // Choose a random Sprite to add its input to the network;
@@ -51,10 +61,8 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
             // For each input of the Sprite create a connection to each Output-Node
             for (const inputNode of sprite) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
-                    this.assignInnovation(newConnection);
+                    const newConnection = this.generateConnection(inputNode, outputNode);
                     connections.push(newConnection);
-                    outputNode.incomingConnections.push(newConnection);
                 }
             }
         }

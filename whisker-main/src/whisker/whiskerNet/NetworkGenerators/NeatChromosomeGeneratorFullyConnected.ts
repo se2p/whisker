@@ -99,32 +99,47 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
         for (const inputNodeVector of inputNodes) {
             for (const inputNode of inputNodeVector) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
-                    this.assignInnovation(newConnection);
+                    const newConnection = this.generateConnection(inputNode, outputNode);
                     connections.push(newConnection);
-                    outputNode.incomingConnections.push(newConnection);
                 }
             }
         }
         return connections;
     }
 
-    protected assignInnovation(newConnection: ConnectionGene): void {
-        const innovation = NeatPopulation.findInnovation(newConnection, 'newConnection');
+    /**
+     * Generates a new connection between the source and target node.
+     * @param sourceNode the source node of the connection.
+     * @param targetNode the target node of the connection.
+     * @returns the newly generated connection between the source and target node.
+     */
+    protected generateConnection(sourceNode: NodeGene, targetNode: NodeGene): ConnectionGene {
+        const newConnection = new ConnectionGene(sourceNode, targetNode, 0, true, 0, false);
+        this.assignInnovation(newConnection);
+        targetNode.incomingConnections.push(newConnection);
+        return newConnection;
+    }
+
+    /**
+     * Assigns an innovation number to a given connection gene.
+     * @param connection the connection to which an innovation number should be assigned.
+     */
+    protected assignInnovation(connection: ConnectionGene): void {
+        const innovation = NeatPopulation.findInnovation(connection, 'newConnection');
         // Check if this innovation has occurred before.
         if (innovation) {
-            newConnection.innovation = innovation.firstInnovationNumber;
+            connection.innovation = innovation.firstInnovationNumber;
         } else {
             const innovationProperties: InnovationProperties = {
                 type: 'newConnection',
-                idSourceNode: newConnection.source.uID,
-                idTargetNode: newConnection.target.uID,
+                idSourceNode: connection.source.uID,
+                idTargetNode: connection.target.uID,
                 firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
-                recurrent: newConnection.isRecurrent
+                recurrent: connection.isRecurrent
             };
             const newInnovation = Innovation.createInnovation(innovationProperties);
             NeatPopulation.innovations.push(newInnovation);
-            newConnection.innovation = newInnovation.firstInnovationNumber;
+            connection.innovation = newInnovation.firstInnovationNumber;
         }
     }
 }

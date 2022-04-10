@@ -61,7 +61,7 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         neatChromosome.generateNetwork();
         expect(neatChromosome.allNodes.length).toBe(19); // +1 for Bias
         expect(neatChromosome.connections.length % 9).toBe(0);
-        expect(neatChromosome.connections.length).toBeGreaterThan(0);
+        expect(neatChromosome.connections.length).toBeGreaterThan(9);
         expect(NeatPopulation.innovations.length).toBe(neatChromosome.connections.length);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
@@ -79,4 +79,4 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         expect(NeatPopulation.innovations.length).toBeGreaterThanOrEqual(chromosomes[0].connections.length);
         expect(NeatPopulation.innovations.length).toBeLessThanOrEqual(90); // UpperBound === FullyConnected
     });
-})
+});
