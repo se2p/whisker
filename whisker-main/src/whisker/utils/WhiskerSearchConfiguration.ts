@@ -582,4 +582,12 @@ export class WhiskerSearchConfiguration {
             return undefined;
         }
     }
+
+    public isMinimizationActive(): boolean {
+        if ("minimize" in this._config) {
+            return this._config['minimize'];
+        } else {
+            return true; // default
+        }
+    }
 }

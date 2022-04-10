@@ -28,6 +28,9 @@ import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {TestChromosome} from "../testcase/TestChromosome";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import Arrays from "../utils/Arrays";
+import {TestMinimizer} from "./TestMinimizer";
+import {Randomness} from "../utils/Randomness";
+import {Container} from "../utils/Container";
 
 export abstract class TestGenerator {
 
@@ -82,7 +85,47 @@ export abstract class TestGenerator {
         }
     }
 
-    protected getTestSuite(tests: TestChromosome[]): WhiskerTest[] {
+    protected async getTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
+        if (this._config.isMinimizationActive()) {
+            return await this.getMinimizedTestSuite(tests);
+        } else {
+            return this.getCoveringTestSuite(tests);
+        }
+    }
+
+    protected async getMinimizedTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
+        const minimizedSuite: WhiskerTest[] = [];
+        const coveredObjectives = new Set<number>();
+
+        Container.debugLog("Pre-minimization: "+tests.length+" tests");
+
+        // TODO: Starting with more complex goals would reduce the number of tests
+        for (const objective of Array.from(this._fitnessFunctions.keys()).reverse()) {
+            if (coveredObjectives.has(objective)) {
+                Container.debugLog("Objective already covered");
+                continue;
+            }
+            const fitnessFunction = this._fitnessFunctions.get(objective);
+
+            const coveringTests: TestChromosome[] = [];
+            for (const test of tests) {
+                if (fitnessFunction.isCovered(test)) {
+                    coveringTests.push(test);
+                }
+            }
+            if (coveringTests.length > 0) {
+                const minimizer = new TestMinimizer(fitnessFunction, Container.config.searchAlgorithmProperties['reservedCodons']);
+                const test = await minimizer.minimize(Randomness.getInstance().pick(coveringTests));
+                minimizedSuite.push(new WhiskerTest(test));
+                this.updateCoveredObjectives(coveredObjectives, test);
+            }
+        }
+        Container.debugLog("Post-minimization: "+minimizedSuite.length+" tests");
+
+        return minimizedSuite;
+    }
+
+    protected getCoveringTestSuite(tests: TestChromosome[]): WhiskerTest[] {
         const testSuite: WhiskerTest[] = [];
         const coveringTestsPerObjective = this.getCoveringTestsPerObjective(tests);
         const coveredObjectives = new Set<number>();
