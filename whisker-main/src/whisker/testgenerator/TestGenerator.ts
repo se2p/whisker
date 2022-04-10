@@ -86,7 +86,6 @@ export abstract class TestGenerator {
     }
 
     protected async getTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
-        console.log("Functions: ", this._fitnessFunctions);
         if (this._config.isMinimizationActive()) {
             return await this.getMinimizedTestSuite(tests);
         } else {
