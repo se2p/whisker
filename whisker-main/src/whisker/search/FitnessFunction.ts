@@ -59,6 +59,11 @@ export interface FitnessFunction<C extends Chromosome> {
     getCFGDistance(chromosome: C, hasUnexecutedCdgPredecessor: boolean): number;
 
     /**
+     * @returns the nesting depth of the fitness function itself
+     */
+    getCDGDepth(): number;
+
+    /**
      * Comparator for two fitness values:
      *
      * We are sorting ascending, from bad fitness to better fitness

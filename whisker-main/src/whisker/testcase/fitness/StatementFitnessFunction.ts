@@ -35,7 +35,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     private readonly _approachLevels: Record<string, number>
     private readonly _eventMapping: Record<string, string>
 
-
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
         this._cdg = cdg;
@@ -122,6 +121,10 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     isCovered(chromosome: TestChromosome): boolean {
         return this.isOptimal(this.getFitness(chromosome));
+    }
+
+    getCDGDepth(): number {
+        return Math.max(...Object.values(this._approachLevels));
     }
 
     getApproachLevel(chromosome: TestChromosome): number {
