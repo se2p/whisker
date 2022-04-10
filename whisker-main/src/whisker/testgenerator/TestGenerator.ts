@@ -100,13 +100,16 @@ export abstract class TestGenerator {
 
         Container.debugLog("Pre-minimization: "+tests.length+" tests");
 
-        // TODO: Starting with more complex goals would reduce the number of tests
-        for (const objective of Array.from(this._fitnessFunctions.keys()).reverse()) {
+        const sortedFitnessFunctions = new Map<number, FitnessFunction<TestChromosome>>([...this._fitnessFunctions].sort((a, b) =>
+            b[1].getCDGDepth() - a[1].getCDGDepth()
+        ));
+
+        for (const [objective, fitnessFunction] of sortedFitnessFunctions.entries()) {
+            Container.debugLog("Current objective: "+objective+": "+fitnessFunction);
             if (coveredObjectives.has(objective)) {
                 Container.debugLog("Objective already covered");
                 continue;
             }
-            const fitnessFunction = this._fitnessFunctions.get(objective);
 
             const coveringTests: TestChromosome[] = [];
             for (const test of tests) {
@@ -119,6 +122,8 @@ export abstract class TestGenerator {
                 const test = await minimizer.minimize(Randomness.getInstance().pick(coveringTests));
                 minimizedSuite.push(new WhiskerTest(test));
                 this.updateCoveredObjectives(coveredObjectives, test);
+            } else {
+                Container.debugLog("There are no tests covering "+objective);
             }
         }
         Container.debugLog("Post-minimization: "+minimizedSuite.length+" tests");

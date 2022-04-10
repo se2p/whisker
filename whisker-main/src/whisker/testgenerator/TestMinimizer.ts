@@ -42,7 +42,7 @@ export class TestMinimizer {
         newTest.trace = test.trace;
         newTest.coverage = new Set<string>(test.coverage);
         newTest.lastImprovedCodon = test.lastImprovedCodon;
-        Container.debugLog("Minimizing test of length: "+test.getGenes().length);
+        Container.debugLog("Minimizing test of length: " + test.getLength());
 
         while (changed) {
             changed = false;
@@ -61,7 +61,7 @@ export class TestMinimizer {
                 }
             }
         }
-        Container.debugLog("Final length: "+newTest.getGenes().length);
+        Container.debugLog("Final length: " + newTest.getLength());
         return newTest;
     }
 }
