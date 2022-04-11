@@ -13,7 +13,7 @@ import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {Container} from "../../utils/Container";
+import {name} from "ntc";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -580,6 +580,8 @@ export abstract class NetworkChromosome extends Chromosome {
             return identifier
                 .replace(/-/g, '')
                 .replace(/:/, '')
+                // Rename colors in hex-format
+                .replace(/#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/g, substring => name(substring)[1])
                 .replace(/ /g, '');
         };
 
