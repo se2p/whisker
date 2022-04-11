@@ -61,5 +61,6 @@
         "pressDuration": 5,
         "soundDuration": 1
     },
-    "debugLogging": true
+    "debugLogging": true,
+    "minimize": true
 }

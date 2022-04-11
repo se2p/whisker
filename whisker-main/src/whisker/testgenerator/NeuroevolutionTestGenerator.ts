@@ -3,7 +3,6 @@ import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
-import {NEAT} from "../search/algorithms/NEAT";
 import {WhiskerTest} from "./WhiskerTest";
 import {Container} from "../utils/Container";
 import Arrays from "../utils/Arrays";
@@ -21,7 +20,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         if (Container.config.getTestSuiteType() === 'dynamic') {
             testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
         } else {
-            testSuite = this.getTestSuite(testChromosomes);
+            testSuite = await this.getTestSuite(testChromosomes);
         }
 
         await this.collectStatistics(testSuite);

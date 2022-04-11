@@ -53,5 +53,6 @@
         "clickDuration": 3,
         "pressDuration": 10,
         "soundDuration": 10
-    }
+    },
+    "minimize": false
 }
