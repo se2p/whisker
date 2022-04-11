@@ -42,6 +42,7 @@ import {Scratch3ProcedureBlocks} from 'scratch-vm/src/blocks/scratch3_procedures
 import {Scratch3SensingBlocks} from 'scratch-vm/src/blocks/scratch3_sensing';
 import {Scratch3SoundBlocks} from 'scratch-vm/src/blocks/scratch3_sound';
 import Cast from "scratch-vm/src/util/cast";
+import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const twgl = require('twgl.js');
@@ -63,10 +64,12 @@ export abstract class ScratchEventExtractor {
     private readonly _knownColors = new Map<ColorStr, Point>();
 
     protected availableTextSnippets: string[] = [];
+    protected potentiallyComparesNumbers: boolean;
     protected proceduresMap = new Map<string, ScratchEvent[]>();
     protected static _fixedStrings = ["0", "10", "Hello", this._randomText(3)];
 
     protected constructor(vm: VirtualMachine) {
+        this.potentiallyComparesNumbers = ScratchEventExtractor._comparesVariableOrAnswer(vm);
         this.extractAvailableTextSnippets(vm);
         this.extractProcedures(vm);
     }
@@ -332,6 +335,9 @@ export abstract class ScratchEventExtractor {
             case 'sensing_askandwait':
                 // Type text
                 if (Container.vmWrapper.isQuestionAsked()) {
+                    if (this.potentiallyComparesNumbers) {
+                        eventList.push(new TypeNumberEvent());
+                    }
                     eventList.push(...this._getTypeTextEvents());
                 }
                 break;
@@ -431,6 +437,66 @@ export abstract class ScratchEventExtractor {
         }
     }
 
+    protected static _comparesVariableOrAnswer(vm: VirtualMachine): boolean {
+        for (const target of vm.runtime.targets) {
+            if ('blocks' in target) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    const block = target.blocks.getBlock(blockId);
+                    const opCode = target.blocks.getOpcode(block);
+                    switch (opCode) {
+                        case 'operator_gt':
+                        case 'operator_lt':
+                        case 'operator_equals': {
+                            const inputs = target.blocks.getInputs(block);
+
+                            const op1 = target.blocks.getBlock(inputs.OPERAND1.block);
+                            const op2 = target.blocks.getBlock(inputs.OPERAND2.block);
+
+                            if (target.blocks.getOpcode(op1) === 'sensing_answer' ||
+                                target.blocks.getOpcode(op2) === 'sensing_answer' ||
+                                target.blocks.getOpcode(op1) === 'data_variable' ||
+                                target.blocks.getOpcode(op2) === 'data_variable') {
+                                return true;
+                            }
+                            break;
+                        }
+                        case 'operator_add':
+                        case 'operator_subtract':
+                        case 'operator_multiply':
+                        case 'operator_divide':
+                        case 'operator_mod':
+                        {
+                            const inputs = target.blocks.getInputs(block);
+
+                            const op1 = target.blocks.getBlock(inputs.NUM1.block);
+                            const op2 = target.blocks.getBlock(inputs.NUM2.block);
+
+                            if (target.blocks.getOpcode(op1) === 'sensing_answer' ||
+                                target.blocks.getOpcode(op2) === 'sensing_answer') {
+                                return true;
+                            }
+                            break;
+                        }
+
+                        case 'operator_round':
+                        case 'operator_mathop':
+                        {
+                            const inputs = target.blocks.getInputs(block);
+
+                            const op = target.blocks.getBlock(inputs.NUM.block);
+
+                            if (target.blocks.getOpcode(op) === 'sensing_answer') {
+                                return true;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     protected static _randomText(length: number): string {
         let answer = '';
         const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -448,9 +514,11 @@ export abstract class ScratchEventExtractor {
             const op1 = target.blocks.getBlock(inputs.OPERAND1.block);
             const op2 = target.blocks.getBlock(inputs.OPERAND2.block);
 
-            if (target.blocks.getOpcode(op2) === 'sensing_answer' && target.blocks.getOpcode(op1) === 'text') {
+            if ((target.blocks.getOpcode(op2) === 'sensing_answer' ||
+                 target.blocks.getOpcode(op2) === 'data_variable') && target.blocks.getOpcode(op1) === 'text') {
                 availableTextSnippet = target.blocks.getFields(op1).TEXT.value;
-            } else if (target.blocks.getOpcode(op1) === 'sensing_answer' && target.blocks.getOpcode(op2) === 'text') {
+            } else if ((target.blocks.getOpcode(op1) === 'sensing_answer' ||
+                target.blocks.getOpcode(op1) === 'data_variable') && target.blocks.getOpcode(op2) === 'text') {
                 availableTextSnippet = target.blocks.getFields(op2).TEXT.value;
             }
         }

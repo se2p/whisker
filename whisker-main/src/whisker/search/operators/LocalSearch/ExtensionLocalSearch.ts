@@ -33,6 +33,7 @@ import {EventSelector} from "../../../testcase/EventSelector";
 import VMWrapper = require("../../../../vm/vm-wrapper.js");
 import {TestExecutor} from "../../../testcase/TestExecutor";
 import {StatisticsCollector} from "../../../utils/StatisticsCollector";
+import {TypeNumberEvent} from "../../../testcase/events/TypeNumberEvent";
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
@@ -173,7 +174,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Check the eventLandscape, especially if we found a new event or a typeTextEvent.
             const previousEventIds = previousEvents.map(event => event.stringIdentifier());
             const newEvents = availableEvents.filter(event => !previousEventIds.includes(event.stringIdentifier()));
-            const typeTextEvents = availableEvents.filter(event => event instanceof TypeTextEvent);
+            const typeTextEvents = availableEvents.filter(event => (event instanceof TypeTextEvent || event instanceof TypeNumberEvent));
 
             // Check if we have a typeTextEvent; if yes apply it!
             if (typeTextEvents.length !== 0) {
