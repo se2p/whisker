@@ -318,6 +318,9 @@ export class TestExecutor {
             this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
             this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
         }
+
+        this._vmWrapper.inputs.resetMouse();
+        this._vmWrapper.inputs.resetKeyboard();
     }
 
     private recordInitialState() {

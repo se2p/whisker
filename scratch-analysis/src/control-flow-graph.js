@@ -532,11 +532,14 @@ export const generateCFG = vm => {
             }
         }
         if (LooksFilter.backdropChange(node.block)) {
+            let backdropTarget = undefined;
+            if(LooksFilter.backdropSet(node.block)){
+                backdropTarget =  Extract.backdropChangeTarget(blocks, node.block);
+            }
             // Special handling for nextBackdrop statements.
-            if (LooksFilter.nextBackdrop(node.block)) {
+            if (LooksFilter.nextBackdrop(node.block) || backdropTarget === 'next backdrop') {
                 nextBackDropNodes.push(node)
             } else if (LooksFilter.backdropBlock(blocks.get(node.block.inputs.BACKDROP.block))) {
-                const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
                     eventSend.put(`backdrop:${backdropTarget}`, node);
                 }

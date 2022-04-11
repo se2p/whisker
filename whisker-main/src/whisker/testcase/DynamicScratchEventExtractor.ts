@@ -40,7 +40,7 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.blocks.getScripts()) {
                 const activeScript = vm.runtime.threads.some(script => script.topBlock === scriptId) ||
-                    DynamicScratchEventExtractor.scriptHatExecuted(target, scriptId, lastStepCoveredBlocks);
+                    DynamicScratchEventExtractor.hatBlockTriggeredByScratchBlock(target, scriptId, lastStepCoveredBlocks);
                 const hat = target.blocks.getBlock(scriptId);
 
                 // If the script is currently active we skip the hat-block and traverse downwards in the search for an
@@ -67,15 +67,25 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
     }
 
     /**
-     * Determines whether the hat block of a script has been executed in the previous step and should therefore be
-     * treated as an active script.
-     * @param target the hat blocks of all scripts in a given Scratch-Program.
+     * Determines whether a hat block that may be triggered from another Scratch block (when broadcast receive | when
+     * backdrop switches to | when start as clone) has been triggered in the previous step. If this is the case we
+     * treat the corresponding script as active for the current step.
+     * @param target the target holding the questionable hat block.
      * @param scriptId the script ID of the current block.
      * @param lastCovered the set of blocks that have been covered in the previous step.
      * @returns boolean indicating whether this script is active.
      */
-    private static scriptHatExecuted(target: RenderedTarget, scriptId: string, lastCovered: Set<string>): boolean {
+    private static hatBlockTriggeredByScratchBlock(target: RenderedTarget, scriptId: string, lastCovered: Set<string>): boolean {
         const threadHats: string[] = target.sprite.blocks._scripts;
+        const hatBlock = target.blocks.getBlock(scriptId);
+
+        // We are only interested in hat blocks that may be triggered from other scratch blocks.
+        if (hatBlock['opcode'] !== 'event_whenbroadcastreceived' &&
+            hatBlock['opcode'] !== 'event_whenbackdropswitchesto' &&
+            hatBlock['opcode'] !== 'control_start_as_clone') {
+            return false;
+        }
+
         for (const threadScript of threadHats) {
             for (const covered of lastCovered) {
                 if (covered.includes(threadScript) && covered.includes(scriptId)) {

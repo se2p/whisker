@@ -391,7 +391,6 @@ export class NetworkExecutor {
             const y = this._initialState[targetsKey]["y"];
             this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
             this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
-            this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop'];
         }
 
         this._vmWrapper.inputs.resetMouse();

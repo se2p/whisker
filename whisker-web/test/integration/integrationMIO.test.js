@@ -100,14 +100,6 @@ describe('Basic event handling', () => {
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
-    test('Test key press functionality with required check for executed blocks in the previous step', async () => {
-        await loadProject('test/integration/keyPressEvent/ExecutedHatsCheck.sb3')
-        await (await page.$('#run-search')).click();
-        const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
-        await expect(log.uncoveredBlocks.length).toBe(0);
-    }, timeout);
-
     test('Test mouse down functionality', async () => {
         await loadProject('test/integration/mouseDownEvent/MouseDownEventTest.sb3')
         await (await page.$('#run-search')).click();
@@ -126,6 +118,14 @@ describe('Basic event handling', () => {
 
     test('Test mouse move functionality with goTo MousePointer-Block', async () => {
         await loadProject('test/integration/mouseMoveEvent/GoTo-MousePointer.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test mouse move functionality with trigger block being hidden inside another block', async () => {
+        await loadProject('test/integration/mouseMoveEvent/MouseMoveAsBlockInput.sb3')
         await (await page.$('#run-search')).click();
         const log = await getLogAfterSearch();
         await (await page.$('#run-all-tests')).click();
@@ -240,6 +240,30 @@ describe('Basic event handling', () => {
 
     test('Test SoundEvent triggered by hatBlock comparing against lower than', async () => {
         await loadProject('test/integration/soundEvent/SoundEventSensingLower.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test if a broadcast event has been sent in the previous step and therefore activated a thread with a matching hat', async () => {
+        await loadProject('test/integration/hatBlockSpecialHandling/ExecutedHatsCheckBroadcast.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test if a backdrop event has been sent in the previous step and therefore activated a thread with a matching hat', async () => {
+        await loadProject('test/integration/hatBlockSpecialHandling/ExecutedHatsCheckBackdrop.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test if a clone event has been sent in the previous step and therefore activated a thread with a matching hat', async () => {
+        await loadProject('test/integration/hatBlockSpecialHandling/ExecutedHatsCheckClone.sb3')
         await (await page.$('#run-search')).click();
         const log = await getLogAfterSearch();
         await (await page.$('#run-all-tests')).click();

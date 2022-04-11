@@ -116,7 +116,7 @@ export abstract class ScratchEventExtractor {
                 }
             }
 
-            // Other blocks that take blocks as input such as "set x to mouse x".
+            // Other block types that take blocks as input such as "set x to mouse x".
             else if(block.inputs){
                 for(const input of Object.values(block.inputs)){
                     this.traverseBlocks(target, target.blocks.getBlock(input['block']), foundEvents);
