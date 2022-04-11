@@ -104,9 +104,7 @@ export abstract class TestGenerator {
         ));
 
         for (const [objective, fitnessFunction] of sortedFitnessFunctions.entries()) {
-            Container.debugLog("Current objective: "+objective+": "+fitnessFunction);
             if (coveredObjectives.has(objective)) {
-                Container.debugLog("Objective already covered");
                 continue;
             }
 
@@ -121,8 +119,6 @@ export abstract class TestGenerator {
                 const test = await minimizer.minimize(Randomness.getInstance().pick(coveringTests));
                 minimizedSuite.push(new WhiskerTest(test));
                 this.updateCoveredObjectives(coveredObjectives, test);
-            } else {
-                Container.debugLog("There are no tests covering "+objective);
             }
         }
         Container.debugLog("Post-minimization: "+minimizedSuite.length+" tests");
