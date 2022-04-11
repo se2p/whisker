@@ -72,9 +72,9 @@ describe("classificationNode Tests", () => {
     });
 
     test("getActivationValue Test", () => {
-        classificationNode.nodeValue = 10;
+        classificationNode.nodeValue = 1;
         classificationNode.activatedFlag = true;
-        const sigmoidResult = NeuroevolutionUtil.sigmoid(10, -4.9);
+        const sigmoidResult = NeuroevolutionUtil.sigmoid(1, 1);
         expect(classificationNode.activate()).toBe(sigmoidResult);
         expect(classificationNode.activationValue).toBe(sigmoidResult);
         classificationNode.reset();

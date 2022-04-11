@@ -65,10 +65,10 @@ describe("hiddenNode Tests", () => {
     });
 
     test("getActivationValue Test", () => {
-        hiddenNode.nodeValue = 10;
+        hiddenNode.nodeValue = 1;
         hiddenNode.activationCount = 1;
         hiddenNode.activatedFlag = true;
-        const sigmoidResult = NeuroevolutionUtil.sigmoid(10, -4.9);
+        const sigmoidResult = NeuroevolutionUtil.sigmoid(1, 1);
         expect(hiddenNode.activate()).toBe(sigmoidResult);
         expect(hiddenNode.activationValue).toBe(sigmoidResult);
         hiddenNode.reset();

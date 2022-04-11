@@ -9,7 +9,7 @@ export class NeuroevolutionUtil {
      * @param gain the gain of the SIGMOID function (set to 1 for a standard SIGMOID function)
      */
     public static sigmoid(x: number, gain: number): number {
-        return (1 / (1 + Math.exp(gain * x)));
+        return (1 / (1 + Math.exp(gain * -x)));
     }
 
     /**

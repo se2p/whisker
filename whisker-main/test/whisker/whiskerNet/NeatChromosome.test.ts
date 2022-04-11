@@ -436,12 +436,12 @@ describe('Test NetworkChromosome', () => {
             softmaxOutput.set(key, Number(softmaxOutput.get(key).toFixed(3)));
         }
         expect(hiddenNode.nodeValue).toEqual(1.4);
-        expect(Number(hiddenNode.activationValue.toFixed(3))).toEqual(0.999);
-        expect(Number(deepHiddenNode.nodeValue.toFixed(3))).toEqual(0.799);
-        expect(Number(deepHiddenNode.activationValue.toFixed(3))).toEqual(0.980);
-        expect(Number(nodes[7].nodeValue.toFixed(3))).toEqual(1.082);
+        expect(Number(hiddenNode.activationValue.toFixed(3))).toEqual(0.802);
+        expect(Number(deepHiddenNode.nodeValue.toFixed(3))).toEqual(0.642);
+        expect(Number(deepHiddenNode.activationValue.toFixed(3))).toEqual(0.655);
+        expect(Number(nodes[7].nodeValue.toFixed(3))).toEqual(0.79);
         expect(nodes[6].nodeValue).toEqual(0.6);
-        expect([...softmaxOutput.values()]).toEqual([0.382, 0.618]);
+        expect([...softmaxOutput.values()]).toEqual([0.453, 0.547]);
         expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
 

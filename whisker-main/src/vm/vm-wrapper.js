@@ -391,9 +391,9 @@ class VMWrapper {
         this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
         this.vm.runtime.on('QUESTION', this._onQuestion);
         this.vm.runtime.on('ANSWER', this._onAnswer);
-        this.vm.runtime.on('SAY', this._onSayOrThink)
-        this.vm.runtime.on('DELETE_SAY_OR_THINK', this._onSayOrThink)
-        this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange)
+        this.vm.runtime.on('SAY', this._onSayOrThink);
+        this.vm.runtime.on('DELETE_SAY_OR_THINK', this._onSayOrThink);
+        this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange);
 
         this.vm.greenFlag();
         this.startTime = Date.now();
