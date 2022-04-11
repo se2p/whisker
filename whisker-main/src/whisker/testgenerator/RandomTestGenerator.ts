@@ -105,7 +105,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             this._iterations++;
             this.updateStatistics();
         }
-        const testSuite = this.getTestSuite(this._tests);
+        const testSuite = await this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);
         return new WhiskerTestListWithSummary(testSuite, this.summarizeSolution(this._archive));
     }
