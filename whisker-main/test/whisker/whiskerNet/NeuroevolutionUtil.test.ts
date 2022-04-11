@@ -1,8 +1,11 @@
 import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
+import {
+    NeatChromosomeGeneratorSparse
+} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
+import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 
 describe("NeuroevolutionUtil Tests", () => {
 
@@ -59,7 +62,8 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
         events = [new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, events, 0.4);
     });
 
     test("Test Softmax calculation", () => {

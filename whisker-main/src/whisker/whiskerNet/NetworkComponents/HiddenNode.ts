@@ -38,7 +38,10 @@ export class HiddenNode extends NodeGene {
         if (this.activatedFlag) {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:
-                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);
+                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
+                    break;
+                case ActivationFunction.TANH:
+                    this.activationValue = Math.tanh(this.nodeValue);
                     break;
                 default:
                     this.activationValue = this.nodeValue;
@@ -50,7 +53,7 @@ export class HiddenNode extends NodeGene {
     }
 
     public identifier(): string {
-        return `H:${this.uID}`
+        return `H:${this.uID}`;
     }
 
     toString(): string {

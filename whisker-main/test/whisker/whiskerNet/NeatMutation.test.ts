@@ -12,7 +12,9 @@ import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEv
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {NeatChromosomeGeneratorFullyConnected} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {
+    NeatChromosomeGeneratorFullyConnected
+} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 
 
 describe("Test NeatMutation", () => {
@@ -67,10 +69,11 @@ describe("Test NeatMutation", () => {
         genInputs.set("Sprite2", sprite2);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        const networkChromosomeGenerator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, genInputs, events);
+        const networkChromosomeGenerator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, events);
         neatChromosome1 = networkChromosomeGenerator.get();
         neatChromosome2 = networkChromosomeGenerator.get();
-    })
+    });
 
     test("Test apply mutation operator on a populationChampion", () => {
         neatChromosome1.isPopulationChampion = true;
@@ -80,7 +83,7 @@ describe("Test NeatMutation", () => {
         }
         expect(mutant.connections.length).not.toBe(neatChromosome1.connections.length);
         expect(mutant.connections[0].weight).not.toBe(neatChromosome1.connections[0].weight);
-    })
+    });
 
     test("Test apply mutation operator on a non-populationChampion", () => {
         let mutant = neatChromosome1.mutate();
@@ -94,25 +97,27 @@ describe("Test NeatMutation", () => {
 
         expect(neatChromosome1.connections.length).not.toBe(mutant.connections.length);
         expect(neatChromosome1.connections[0].weight).not.toBe(mutant.connections[0].weight);
-    })
+    });
 
     test("Test MutateWeights", () => {
         const originalWeights = [];
+        const innovationLengthBefore = NeatPopulation.innovations.length;
         for (const connection of neatChromosome1.connections)
             originalWeights.push(connection.weight);
 
         const mutatedWeights = [];
         mutation.mutateWeight(neatChromosome1, 1);
-        mutation.mutateWeight(neatChromosome1, 1)
+        mutation.mutateWeight(neatChromosome1, 1);
         for (const connection of neatChromosome1.connections) {
             mutatedWeights.push(connection.weight);
         }
         originalWeights.sort();
         mutatedWeights.sort();
         const originalSum = originalWeights.reduce((a, b) => a + b, 0);
-        const mutatedSum = mutatedWeights.reduce((a, b) => a + b, 0)
+        const mutatedSum = mutatedWeights.reduce((a, b) => a + b, 0);
         expect(originalSum).not.toEqual(mutatedSum);
         expect(mutatedWeights).toHaveLength(originalWeights.length);
+        expect(NeatPopulation.innovations.length).toEqual(innovationLengthBefore);
     });
 
     test("Test MutateAddConnection without hidden Layer", () => {
@@ -133,6 +138,7 @@ describe("Test NeatMutation", () => {
 
     test("Test MutateAddConnection with recurrent connection between output Nodes", () => {
         const allNodes: NodeGene[] = [];
+        const innovationLengthBefore = NeatPopulation.innovations.length;
         const iNode = new InputNode(0, "Sprite1", "X-Position");
         allNodes.push(iNode);
         const oNode1 = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
@@ -153,12 +159,14 @@ describe("Test NeatMutation", () => {
         mutation.mutateAddConnection(neatChromosome1, 30);
         // Equal if by chance an already established connection is chosen
         expect(originalConnectionsSize).toBeLessThanOrEqual(neatChromosome1.connections.length);
+        expect(NeatPopulation.innovations.length).toBeGreaterThan(innovationLengthBefore);
     });
 
 
     test("Test MutateAddConnection with hidden Layer", () => {
         const inputNodes = neatChromosome1.inputNodes;
         const outputNodes = neatChromosome1.outputNodes;
+        const innovationLengthBefore = NeatPopulation.innovations.length;
         const hiddenLayerNode = new HiddenNode(8, ActivationFunction.SIGMOID);
         neatChromosome1.allNodes.push(hiddenLayerNode);
         const hiddenLayerNode2 = new HiddenNode(9, ActivationFunction.SIGMOID);
@@ -188,13 +196,15 @@ describe("Test NeatMutation", () => {
         }
         neatChromosome1.generateNetwork();
         expect(originalConnections).not.toEqual(neatChromosome1.connections.length);
-    })
+        expect(NeatPopulation.innovations.length).toBeGreaterThan(innovationLengthBefore);
+    });
 
     test("Test mutateToggleEnableConnection", () => {
         const recConnection = new ConnectionGene(neatChromosome1.outputNodes[0],
             neatChromosome1.outputNodes[1], 1, true, 60, true);
         neatChromosome1.connections.push(recConnection);
         neatChromosome1.generateNetwork();
+        const innovationLengthBefore = NeatPopulation.innovations.length;
         const connectionStates = [];
         for (const connection of neatChromosome1.connections)
             connectionStates.push(connection.isEnabled);
@@ -207,6 +217,7 @@ describe("Test NeatMutation", () => {
             mutatedStates.push(connection.isEnabled);
         expect(connectionStates.length).toBe(mutatedStates.length);
         expect(connectionStates).not.toContainEqual(mutatedStates);
+        expect(NeatPopulation.innovations.length).toEqual(innovationLengthBefore);
     });
 
     test("Test mutateConnectionReenable", () => {
@@ -214,6 +225,7 @@ describe("Test NeatMutation", () => {
             neatChromosome1.outputNodes[1], 1, false, 60, true);
         neatChromosome1.connections.push(recConnection);
         neatChromosome1.generateNetwork();
+        const innovationLengthBefore = NeatPopulation.innovations.length;
         const connectionStates = [];
         for (const connection of neatChromosome1.connections)
             connectionStates.push(connection.isEnabled);
@@ -224,11 +236,13 @@ describe("Test NeatMutation", () => {
             mutatedStates.push(connection.isEnabled);
         expect(connectionStates.length).toBe(mutatedStates.length);
         expect(connectionStates).not.toContainEqual(mutatedStates);
+        expect(NeatPopulation.innovations.length).toEqual(innovationLengthBefore);
     });
 
     test("Test MutateAddNode", () => {
         const oldNodes = neatChromosome1.allNodes.length;
         const oldConnections = neatChromosome1.connections.length;
+        const innovationLengthBefore = NeatPopulation.innovations.length;
 
         for (let i = 0; i < 10; i++) {
         mutation.mutateAddNode(neatChromosome1);
@@ -237,8 +251,8 @@ describe("Test NeatMutation", () => {
 
         expect(oldNodes + 10).toBe(neatChromosome1.allNodes.length);
         expect(oldConnections + (2 * 10)).toBe(neatChromosome1.connections.length);
-        expect(NeatPopulation.innovations.length).toBeLessThanOrEqual(neatChromosome1.connections.length);
-        expect(NeatPopulation.innovations.length).toBeLessThanOrEqual(neatChromosome2.connections.length);
+        expect(innovationLengthBefore).toBeLessThanOrEqual(neatChromosome1.connections.length);
+        expect(innovationLengthBefore).toBeLessThanOrEqual(neatChromosome2.connections.length);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(oldConnections);
     });
 

@@ -48,7 +48,10 @@ export class ClassificationNode extends NodeGene {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:
                     // The specified gain value of -4.9 is based on the original NEAT publication.
-                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);
+                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
+                    break;
+                case ActivationFunction.TANH:
+                    this.activationValue = Math.tanh(this.nodeValue);
                     break;
                 default:
                     this.activationValue = this.nodeValue;
@@ -60,7 +63,7 @@ export class ClassificationNode extends NodeGene {
     }
 
     public identifier(): string {
-        return `C:${this.event.stringIdentifier()}`
+        return `C:${this.event.stringIdentifier()}`;
     }
 
     toString(): string {

@@ -1,14 +1,16 @@
-import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
+import {
+    NeatChromosomeGeneratorHiddenNodeFC
+} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorHiddenNodeFC";
+import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 
-describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
+describe('Test NetworkChromosomeGeneratorHiddenNodeFC', () => {
 
-    let generator: NeatChromosomeGeneratorFullyConnected;
+    let generator: NeatChromosomeGeneratorHiddenNodeFC;
     let genInputs: Map<string, Map<string, number>>;
 
     beforeEach(() => {
@@ -41,32 +43,28 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         sprite1.set("X-Position", 1);
         sprite1.set("Y-Position", 2);
         sprite1.set("Costume", 3);
-        sprite1.set("DistanceToSprite2-X", 4);
-        sprite1.set("DistanceToSprite2-y", 5);
         genInputs.set("Sprite1", sprite1);
 
         const sprite2 = new Map<string, number>();
         sprite2.set("X-Position", 6);
         sprite2.set("Y-Position", 7);
-        sprite2.set("DistanceToWhite-X", 8);
-        sprite2.set("DistanceToWhite-Y", 9);
         genInputs.set("Sprite2", sprite2);
 
-        const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
-            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+        const events = [new KeyPressEvent("left arrow", 1), new MouseMoveEvent()];
+        generator = new NeatChromosomeGeneratorHiddenNodeFC(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
             genInputs, events);
     });
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
-        expect(neatChromosome.allNodes.length).toBe(19);
-        expect(neatChromosome.connections.length).toBe(90);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
-        expect(neatChromosome.classificationNodes.size).toBe(4);
-        expect(neatChromosome.regressionNodes.size).toBe(4);
-        expect(neatChromosome.outputNodes.length).toBe(9);
+        expect(neatChromosome.allNodes.length).toBe(14);
+        expect(neatChromosome.connections.length).toBe(21);
+        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(3);
+        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(2);
+        expect(neatChromosome.classificationNodes.size).toBe(2);
+        expect(neatChromosome.regressionNodes.size).toBe(2);
+        expect(neatChromosome.outputNodes.length).toBe(5);
+        expect(neatChromosome.allNodes.filter(node => node instanceof HiddenNode).length).toBe(3);
     });
 
     test('Create two Chromosomes to test if every one of them gets the same innovation numbers', () => {

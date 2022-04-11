@@ -51,16 +51,21 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {
+    BiasedVariableLengthConstrainedChromosomeMutation
+} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {NeatProperties} from "../whiskerNet/HyperParameter/NeatProperties";
 import {NeatChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
-import {NeatChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
-import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorTemplateNetwork";
+import {
+    NeatChromosomeGeneratorFullyConnected
+} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {NetworkSuiteParameter} from "../whiskerNet/HyperParameter/NetworkSuiteParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
+import {NeatChromosomeGeneratorHiddenNodeFC} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorHiddenNodeFC";
+import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 
 
 class ConfigException implements Error {
@@ -175,6 +180,7 @@ export class WhiskerSearchConfiguration {
         const penalizingAge = this._config['penalizingAge'] as number;
         const ageSignificance = this._config['ageSignificance'] as number;
         const inputRate = this._config['inputRate'] as number;
+        const activationFunction = this.getActivationFunction();
 
         const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number;
         const interspeciesMating = this._config['crossover']['interspeciesRate'] as number;
@@ -215,6 +221,7 @@ export class WhiskerSearchConfiguration {
         properties.penalizingAge = penalizingAge;
         properties.ageSignificance = ageSignificance;
         properties.inputRate = inputRate;
+        properties.activationFunction = activationFunction;
 
         properties.crossoverWithoutMutation = crossoverWithoutMutation;
         properties.interspeciesMating = interspeciesMating;
@@ -473,19 +480,28 @@ export class WhiskerSearchConfiguration {
                     this._config['chromosome']['maxSampleLength']);
             case 'sparseNetwork': {
                 const eventExtractor = this.getEventExtractor();
-                return new NeatChromosomeGeneratorSparse(this._config['mutation'], this._config['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm),
+                return new NeatChromosomeGeneratorSparse(this._config['mutation'],
+                    this._config['crossover'],
+                    this.neuroevolutionProperties.activationFunction,
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper),
+                    eventExtractor.extractEvents(Container.vm),
                     this._config['inputRate']);
             }
             case 'fullyConnectedNetwork': {
                 const eventExtractor = this.getEventExtractor();
-                return new NeatChromosomeGeneratorFullyConnected(this._config['mutation'], this._config['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm));
+                return new NeatChromosomeGeneratorFullyConnected(this._config['mutation'],
+                    this._config['crossover'],
+                    this.neuroevolutionProperties.activationFunction,
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper),
+                    eventExtractor.extractEvents(Container.vm));
             }
-            case 'templateNetwork': {
-                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
-                return new NeatChromosomeGeneratorTemplateNetwork(this._config['mutation'], this._config['crossover'],
-                    Container.template, eventExtractor.extractStaticEvents(Container.vm));
+            case 'hiddenNodeFullyConnectedNetwork': {
+                const eventExtractor = this.getEventExtractor();
+                return new NeatChromosomeGeneratorHiddenNodeFC(this._config['mutation'],
+                    this._config['crossover'],
+                    this.neuroevolutionProperties.activationFunction,
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper),
+                    eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
                 return new TestChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
@@ -566,6 +582,22 @@ export class WhiskerSearchConfiguration {
         }
 
         throw new ConfigException("Unknown TestGenerator " + this._config["testGenerator"]);
+    }
+
+    public getActivationFunction(): ActivationFunction {
+        switch (this._config['chromosome']['activationFunction'].toUpperCase()) {
+            case 'SIGMOID':
+                return ActivationFunction.SIGMOID;
+            case 'SOFTMAX':
+                return ActivationFunction.SOFTMAX;
+            case 'RELU':
+                return ActivationFunction.RELU;
+            case 'TANH':
+                return ActivationFunction.TANH;
+            case 'NONE':
+                return ActivationFunction.NONE;
+        }
+        throw new ConfigException("Unknown Activation Function " + this._config['chromosome']['activationFunction']);
     }
 
     public getWaitStepUpperBound(): number {

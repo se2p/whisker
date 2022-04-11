@@ -65,7 +65,8 @@ export class NetworkLoader {
                         break;
                     }
                     case "H": {
-                        const hiddenNode = new HiddenNode(savedNode['id'], ActivationFunction.SIGMOID);
+                        const activationFunction = savedNode['af'] as string;
+                        const hiddenNode = new HiddenNode(savedNode['id'], ActivationFunction[activationFunction]);
                         allNodes.push(hiddenNode);
                         break;
                     }
@@ -73,7 +74,7 @@ export class NetworkLoader {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
                         if (event) {
                             const classificationNode = new ClassificationNode(savedNode['id'], event,
-                                ActivationFunction.SIGMOID);
+                                ActivationFunction.NONE);
                             allNodes.push(classificationNode);
                         }
                         break;
@@ -101,7 +102,9 @@ export class NetworkLoader {
             }
             const mutation = new NeatMutation({});
             const crossover = new NeatCrossover({});
-            const network = new NeatChromosome(allNodes, allConnections, mutation, crossover);
+            const activationFunction = savedNetwork['aF'] as string;
+            const network = new NeatChromosome(allNodes, allConnections, mutation, crossover,
+                ActivationFunction[activationFunction]);
 
             // If the generated networks are based on the StatementFitness function, we load their fitness targets.
             if (savedNetwork['tf']) {

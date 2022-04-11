@@ -7,6 +7,8 @@ import {NeatMutation} from "../Operators/NeatMutation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {Innovation, InnovationProperties} from "../NetworkComponents/Innovation";
+import {HiddenNode} from "../NetworkComponents/HiddenNode";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 
 export class NeatChromosome extends NetworkChromosome {
     /**
@@ -58,13 +60,15 @@ export class NeatChromosome extends NetworkChromosome {
      * Constructs a new NeatChromosome.
      * @param allNodes all nodes of a network.
      * @param connections the connections between the Nodes.
+     * @param activationFunction the activation function that will be used for hidden nodes.
      * @param mutationOp the mutation operator.
      * @param crossoverOp the crossover operator.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
-    constructor(allNodes: NodeGene[], connections: ConnectionGene[], mutationOp: NeatMutation,
-                crossoverOp: NeatCrossover, incrementID = true) {
-        super(allNodes, connections, incrementID);
+    constructor(allNodes: NodeGene[], connections: ConnectionGene[],
+                mutationOp: NeatMutation, crossoverOp: NeatCrossover,
+                activationFunction = ActivationFunction.TANH, incrementID = true) {
+        super(allNodes, connections, activationFunction, incrementID);
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
     }
@@ -115,7 +119,7 @@ export class NeatChromosome extends NetworkChromosome {
             connectionsClone.push(connectionClone);
         }
         return new NeatChromosome(nodesClone, connectionsClone, this.getMutationOperator(),
-            this.getCrossoverOperator(), incrementID);
+            this.getCrossoverOperator(), this.activationFunction, incrementID);
     }
 
     /**
@@ -176,12 +180,66 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
+     *
+     * @param splitConnection
+     */
+    public addNodeSplitConnection(splitConnection: ConnectionGene): void {
+        // Disable the old connection
+        splitConnection.isEnabled = false;
+
+        // Save the old weight and the nodes of the connection
+        const oldWeight = splitConnection.weight;
+        const sourceNode = splitConnection.source;
+        const targetNode = splitConnection.target;
+        // Create the new HiddenNode and the two new connections.
+        // Check if this innovation has already occurred previously.
+        const innovation = NeatPopulation.findInnovation(splitConnection, 'newNode');
+        let newNode: HiddenNode;
+        let connection1: ConnectionGene;
+        let connection2: ConnectionGene;
+        const activationFunction = this.activationFunction;
+        if (innovation) {
+            newNode = new HiddenNode(innovation.idNewNode, activationFunction);
+            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
+            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber, false);
+        } else {
+            const nextNodeId = NeatPopulation.highestNodeId + 1;
+            newNode = new HiddenNode(nextNodeId, activationFunction);
+
+            const innovationProperties: InnovationProperties = {
+                type: 'newNode',
+                idSourceNode: sourceNode.uID,
+                idTargetNode: targetNode.uID,
+                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
+                secondInnovationNumber: Innovation._currentHighestInnovationNumber + 2,
+                idNewNode: nextNodeId,
+                splitInnovation: splitConnection.innovation
+            };
+            const innovation = Innovation.createInnovation(innovationProperties);
+            NeatPopulation.innovations.push(innovation);
+            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
+            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber, splitConnection.isRecurrent);
+        }
+
+        // We do not use the addConnection method here since we have already assigned innovation numbers to the
+        // created connections.
+        this.connections.push(connection1);
+        this.connections.push(connection2);
+        this.allNodes.push(newNode);
+
+        const threshold = this.allNodes.length * this.allNodes.length;
+        this.isRecurrentPath(sourceNode, newNode, 0, threshold);
+        this.isRecurrentPath(newNode, targetNode, 0, threshold);
+    }
+
+    /**
      * Transforms this NeatChromosome into a JSON representation.
      * @return Record containing most important attribute keys mapped to their values.
      */
     public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
         const network = {};
         network[`id`] = this.uID;
+        network['aF'] = ActivationFunction[this.activationFunction];
 
         if (this.targetFitness instanceof StatementFitnessFunction) {
             network[`tf`] = this.targetFitness.getTargetNode().id;

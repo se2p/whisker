@@ -251,53 +251,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             return;
         }
 
-        // Disable the old connection
-        splitConnection.isEnabled = false;
-
-        // Save the old weight and the nodes of the connection
-        const oldWeight = splitConnection.weight;
-        const fromNode = splitConnection.source;
-        const toNode = splitConnection.target;
-
-        // Check if this innovation has already occurred previously.
-        const innovation = NeatPopulation.findInnovation(splitConnection, 'newNode');
-
-        // Create the new HiddenNode and the two new connections.
-        let newNode: HiddenNode;
-        let connection1: ConnectionGene;
-        let connection2: ConnectionGene;
-        if (innovation) {
-            newNode = new HiddenNode(innovation.idNewNode, ActivationFunction.SIGMOID);
-            connection1 = new ConnectionGene(fromNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
-            connection2 = new ConnectionGene(newNode, toNode, oldWeight, true, innovation.secondInnovationNumber, false);
-        } else {
-            const nextNodeId = NeatPopulation.highestNodeId + 1;
-            newNode = new HiddenNode(nextNodeId, ActivationFunction.SIGMOID);
-
-            const innovationProperties: InnovationProperties = {
-                type: 'newNode',
-                idSourceNode: fromNode.uID,
-                idTargetNode: toNode.uID,
-                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
-                secondInnovationNumber: Innovation._currentHighestInnovationNumber + 2,
-                idNewNode: nextNodeId,
-                splitInnovation: splitConnection.innovation
-            };
-            const innovation = Innovation.createInnovation(innovationProperties);
-            NeatPopulation.innovations.push(innovation);
-            connection1 = new ConnectionGene(fromNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
-            connection2 = new ConnectionGene(newNode, toNode, oldWeight, true, innovation.secondInnovationNumber, splitConnection.isRecurrent);
-        }
-
-        newNode.incomingConnections.push(connection1);
-        toNode.incomingConnections.push(connection2);
-        chromosome.connections.push(connection1);
-        chromosome.connections.push(connection2);
-        chromosome.allNodes.push(newNode);
-
-        const threshold = chromosome.allNodes.length * chromosome.allNodes.length;
-        chromosome.isRecurrentPath(fromNode, newNode, 0, threshold);
-        chromosome.isRecurrentPath(newNode, toNode, 0, threshold);
+        chromosome.addNodeSplitConnection(splitConnection);
     }
 
     /**

@@ -1,6 +1,7 @@
 import {StoppingCondition} from "../../search/StoppingCondition";
 import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.
@@ -45,6 +46,11 @@ export class NeatProperties {
      * The probability of adding a Sprite as Input to the network during the generation of the network population
      */
     private _inputRate = 0.3;
+
+    /**
+     * The activation function used within hidden and output nodes (for the latter in the case of recursion).
+     */
+    private _activationFunction: ActivationFunction
 
 
     // ----------------- Mutation -------------------
@@ -252,6 +258,14 @@ export class NeatProperties {
 
     set inputRate(value: number) {
         this._inputRate = value;
+    }
+
+    get activationFunction(): ActivationFunction {
+        return this._activationFunction;
+    }
+
+    set activationFunction(value: ActivationFunction) {
+        this._activationFunction = value;
     }
 
     get mutationWithoutCrossover(): number {

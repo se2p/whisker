@@ -21,7 +21,6 @@
 import {TestChromosome} from "./TestChromosome";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
 import {Container} from "../utils/Container";
-import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 
 export class JavaScriptConverter {
 

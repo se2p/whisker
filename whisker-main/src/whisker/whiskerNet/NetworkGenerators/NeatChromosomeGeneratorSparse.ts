@@ -5,6 +5,10 @@ import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatChromosomeGeneratorFullyConnected} from "./NeatChromosomeGeneratorFullyConnected";
 import Arrays from "../../utils/Arrays";
 import {BiasNode} from "../NetworkComponents/BiasNode";
+import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
+import {RegressionNode} from "../NetworkComponents/RegressionNode";
+import {NeatChromosome} from "../Networks/NeatChromosome";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 
 export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyConnected {
 
@@ -22,26 +26,29 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
      * Constructs a new NeatChromosomeGeneratorSparse that connects all input-nodes to each output node.
      * @param mutationConfig the configuration parameters for the mutation operator.
      * @param crossoverConfig the configuration parameters for the crossover operator.
+     * @param activationFunction the activation function used for the generated nodes.
      * @param inputs maps each sprite by its name to its feature map.
      * @param scratchEvents all ScratchEvents for which output nodes have to be generated.
      * @param inputRate the probability that multiple input features will be connected to the network.
      */
     constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
-                inputs: Map<string, Map<string, number>>, scratchEvents: ScratchEvent[],
-                inputRate: number) {
-        super(mutationConfig, crossoverConfig, inputs, scratchEvents);
+                activationFunction: ActivationFunction, inputs: Map<string, Map<string, number>>,
+                scratchEvents: ScratchEvent[], inputRate: number) {
+        super(mutationConfig, crossoverConfig, activationFunction, inputs, scratchEvents);
         this._inputRate = inputRate;
     }
 
     /**
      * Creates connections from a single sprite's input nodes to each output node. With a specified inputRate additional
      * sprite node groups are added to the network.
-     * @param inputNodes all inputNodes of the generated network mapped to the sprites they represent ([sprite][nodes]).
-     * @param outputNodes all outputNodes of the generated network.
-     * @returns ConnectionGene[] the generated network connections.
+     * @param chromosome the network for which connections should be generated.
+     * @param inputNodes all inputNodes of the generated network mapped to the sprite feature they represent
+     * ([sprite][feature]).
+     * @returns ConnectionGene[] the generated network's connections.
      */
-    createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
+    createConnections(chromosome:NeatChromosome, inputNodes: NodeGene[][]): ConnectionGene[] {
         const connections: ConnectionGene[] = [];
+        const outputNodes = chromosome.allNodes.filter(node => node instanceof ClassificationNode || node instanceof RegressionNode);
         const availableSprites: NodeGene[][] = [...inputNodes].filter(nodeGroup => !(nodeGroup[0] instanceof BiasNode));
 
         // Start by connected the bias Node to every output node. We do this to mitigate the number of defect networks
@@ -49,8 +56,8 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
         // no input signal.
         const biasNode = inputNodes.find(nodeGroup => nodeGroup[0] instanceof BiasNode)[0];
         for (const outputNode of outputNodes) {
-            const newConnection = this.generateConnection(biasNode, outputNode);
-            connections.push(newConnection);
+            const newConnection = new ConnectionGene(biasNode, outputNode, 0, true, 0, false);
+            chromosome.addConnection(newConnection);
         }
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
@@ -61,8 +68,8 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
             // For each input of the Sprite create a connection to each Output-Node
             for (const inputNode of sprite) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = this.generateConnection(inputNode, outputNode);
-                    connections.push(newConnection);
+                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
+                    chromosome.addConnection(newConnection);
                 }
             }
         }

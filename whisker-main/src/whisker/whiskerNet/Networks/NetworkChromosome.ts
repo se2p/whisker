@@ -26,10 +26,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Unique identifier.
      */
     private _uID: number;
-    /**
-     * Holds all nodes of a network.
-     */
-    private readonly _allNodes: NodeGene[];
 
     /**
      * Maps sprites and their respective features to the corresponding input node.
@@ -50,11 +46,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Maps events which take at least one parameter as input to the corresponding regression nodes.
      */
     protected readonly _regressionNodes = new Map<string, RegressionNode[]>();
-
-    /**
-     * Holds all connections of a network.
-     */
-    protected readonly _connections: ConnectionGene[];
 
     /**
      * True if this network implements at least one recurrent connection
@@ -144,15 +135,17 @@ export abstract class NetworkChromosome extends Chromosome {
 
     /**
      * Constructs a new NetworkChromosome.
-     * @param allNodes all nodes of a network.
-     * @param connections the connections between the Nodes.
+     * @param _allNodes all nodes of a network.
+     * @param _connections the connections between the Nodes.
+     * @param _activationFunction the activation function that will be used for hidden nodes.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
-    protected constructor(allNodes: NodeGene[], connections: ConnectionGene[], incrementID = true) {
+    protected constructor(protected readonly _allNodes: NodeGene[],
+                          protected readonly _connections: ConnectionGene[],
+                          protected readonly _activationFunction = ActivationFunction.TANH,
+                          incrementID = true) {
         super();
         this._uID = NetworkChromosome._uIDCounter;
-        this._allNodes = allNodes;
-        this._connections = connections;
         this.generateNetwork();
         if (incrementID) {
             NetworkChromosome._uIDCounter++;
@@ -208,7 +201,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const iNode = new InputNode(id, spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
-                    this.allNodes.push(iNode);
+                    this._allNodes.push(iNode);
                 });
                 this.inputNodes.set(spriteKey, spriteNodes);
             } else {
@@ -222,7 +215,7 @@ export abstract class NetworkChromosome extends Chromosome {
                         const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                         const iNode = new InputNode(id, spriteKey, featureKey);
                         savedSpriteMap.set(featureKey, iNode);
-                        this.allNodes.push(iNode);
+                        this._allNodes.push(iNode);
                     }
                 });
             }
@@ -245,8 +238,8 @@ export abstract class NetworkChromosome extends Chromosome {
                 updated = true;
                 const featureID = `C:${event.stringIdentifier()}`;
                 const id = NetworkChromosome.getNonHiddenNodeId(featureID);
-                const classificationNode = new ClassificationNode(id, event, ActivationFunction.SIGMOID);
-                this.allNodes.push(classificationNode);
+                const classificationNode = new ClassificationNode(id, event, ActivationFunction.NONE);
+                this._allNodes.push(classificationNode);
                 this.connectNodeToInputNodes(classificationNode);
             }
             // Check if we also have to add regression nodes.
@@ -256,7 +249,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     const featureID = `R:${event.stringIdentifier()}-${parameter}`;
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
-                    this.allNodes.push(regressionNode);
+                    this._allNodes.push(regressionNode);
                     this.connectNodeToInputNodes(regressionNode);
                 }
             }
@@ -305,7 +298,7 @@ export abstract class NetworkChromosome extends Chromosome {
         this.sortConnections();
         this.sortNodes();
         // Place the input, regression and output nodes into the corresponding Map/List.
-        for (const node of this.allNodes) {
+        for (const node of this._allNodes) {
 
             // Add input nodes to the InputNode-Map.
             if (node instanceof InputNode) {
@@ -341,7 +334,7 @@ export abstract class NetworkChromosome extends Chromosome {
         }
 
         // Go through each connection and set up the incoming connections of each node.
-        for (const connection of this.connections) {
+        for (const connection of this._connections) {
             const targetNode = connection.target;
             // Add the connection to the incoming connections of the target node if it is not present yet and enabled.
             if (!targetNode.incomingConnections.includes(connection) && connection.isEnabled) {
@@ -373,7 +366,7 @@ export abstract class NetworkChromosome extends Chromosome {
             }
 
             // For each node compute the sum of its incoming connections.
-            for (const node of this.allNodes) {
+            for (const node of this._allNodes) {
                 if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
 
                     // Reset the activation Flag and the activation value.
@@ -403,7 +396,7 @@ export abstract class NetworkChromosome extends Chromosome {
             }
 
             // Activate all the non-input nodes based on their incoming activations   .
-            for (const node of this.allNodes) {
+            for (const node of this._allNodes) {
                 if (node.type !== NodeType.INPUT) {
                     // Only activate if we received some input
                     if (node.activatedFlag) {
@@ -468,7 +461,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * Flushes all saved node and activation values from the nodes of the network.
      */
     flushNodeValues(): void {
-        for (const node of this.allNodes) {
+        for (const node of this._allNodes) {
             node.reset();
         }
     }
@@ -494,7 +487,7 @@ export abstract class NetworkChromosome extends Chromosome {
 
         if (level === 0) {
             // Reset the traverse flag
-            for (const node of this.allNodes)
+            for (const node of this._allNodes)
                 node.traversed = false;
         }
 
@@ -548,14 +541,14 @@ export abstract class NetworkChromosome extends Chromosome {
      * Sorts the nodes of this network according to their types and uIDs in increasing order.
      */
     private sortNodes(): void {
-        this.allNodes.sort((a, b) => a.type - b.type || a.uID - b.uID);
+        this._allNodes.sort((a, b) => a.type - b.type || a.uID - b.uID);
     }
 
     /**
      * Sorts the connections of this network according to their innovation numbers in increasing order.
      */
     private sortConnections(): void {
-        this.connections.sort((a, b) => a.innovation - b.innovation);
+        this._connections.sort((a, b) => a.innovation - b.innovation);
     }
 
     /**
@@ -585,7 +578,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 .replace(/ /g, '');
         };
 
-        for (const node of this.allNodes) {
+        for (const node of this._allNodes) {
             if (node.type === NodeType.INPUT || node.type === NodeType.BIAS) {
                 minNodes.push(convertIdentifier(node.identifier()));
             } else if (node.type === NodeType.OUTPUT) {
@@ -596,7 +589,7 @@ export abstract class NetworkChromosome extends Chromosome {
         const minRanks = `\t{ rank = min; ${minNodes.toString()} }`.replace(/,/g, '; ');
         const maxRanks = `\t{ rank = max; ${maxNodes.toString()} }`.replace(/,/g, '; ');
 
-        for (const connection of this.connections) {
+        for (const connection of this._connections) {
             const source = convertIdentifier(connection.source.identifier());
             const target = convertIdentifier(connection.target.identifier());
             const lineStyle = connection.isEnabled ? 'solid' : 'dotted';
@@ -655,13 +648,25 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     public updateActivationTrace(step: number): void {
         this.sortNodes();
-        const tracedNodes = this.allNodes.filter(node => node.type === NodeType.INPUT);
+        const tracedNodes = this._allNodes.filter(node => node.type === NodeType.INPUT);
 
         if (this.currentActivationTrace === undefined) {
             this.currentActivationTrace = new ActivationTrace(tracedNodes);
         }
 
         this.currentActivationTrace.update(step, tracedNodes);
+    }
+
+    get allNodes(): NodeGene[] {
+        return this._allNodes;
+    }
+
+    get connections(): ConnectionGene[] {
+        return this._connections;
+    }
+
+    get activationFunction(): ActivationFunction {
+        return this._activationFunction;
     }
 
     get inputNodes(): Map<string, Map<string, InputNode>> {
@@ -678,10 +683,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     get regressionNodes(): Map<string, RegressionNode[]> {
         return this._regressionNodes;
-    }
-
-    get allNodes(): NodeGene[] {
-        return this._allNodes;
     }
 
     get fitness(): number {
@@ -786,10 +787,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set coverage(value: Set<string>) {
         this._coverage = value;
-    }
-
-    get connections(): ConnectionGene[] {
-        return this._connections;
     }
 
     set codons(value: number[]) {

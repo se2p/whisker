@@ -13,7 +13,9 @@ import {ConnectionGene} from "../../../src/whisker/whiskerNet/NetworkComponents/
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {NeatChromosomeGeneratorFullyConnected} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {
+    NeatChromosomeGeneratorFullyConnected
+} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {Container} from "../../../src/whisker/utils/Container";
 
 describe("Test NeatPopulation", () => {
@@ -66,7 +68,8 @@ describe("Test NeatPopulation", () => {
         genInputs.set("Sprite1", sprite1);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        chromosomeGenerator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, genInputs, events);
+        chromosomeGenerator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, events);
         properties = new NeatProperties();
         properties.populationSize = size;
         properties.disjointCoefficient = 1;

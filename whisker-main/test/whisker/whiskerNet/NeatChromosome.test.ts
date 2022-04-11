@@ -29,6 +29,7 @@ describe('Test NetworkChromosome', () => {
     let generator: NeatChromosomeGeneratorSparse;
     let chromosome: NeatChromosome;
     let properties: NeatProperties;
+    const activationFunction =  ActivationFunction.SIGMOID;
 
     beforeEach(() => {
         crossoverConfig = {
@@ -74,13 +75,15 @@ describe('Test NetworkChromosome', () => {
         genInputs.set("Sprite2", sprite2);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, activationFunction, genInputs,
+            events, 0.4);
         chromosome = generator.get();
         properties = new NeatProperties();
         properties.populationSize = 10;
     });
 
     test('Constructor Test', () => {
+        expect(chromosome.activationFunction).toBe(activationFunction);
         expect(chromosome.allNodes.length).toEqual(19);
         expect(chromosome.outputNodes.length).toEqual(9);
         expect(chromosome.classificationNodes.size).toEqual(4);
@@ -144,6 +147,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
+        expect(clone.activationFunction).toEqual(chromosome.activationFunction);
     });
 
     test("Clone Test with given gene without hidden Layer", () => {
@@ -153,6 +157,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
+        expect(clone.activationFunction).toEqual(chromosome.activationFunction);
     });
 
     test("Clone Test with hidden Layer", () => {
@@ -163,6 +168,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
+        expect(clone.activationFunction).toEqual(chromosome.activationFunction);
     });
 
     test("Clone Test with given gene and hidden Layer", () => {
@@ -173,6 +179,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
+        expect(clone.activationFunction).toEqual(chromosome.activationFunction);
     });
 
     test('Test generateNetwork with hidden Layer', () => {
@@ -193,6 +200,7 @@ describe('Test NetworkChromosome', () => {
         expect(deepHiddenNode.incomingConnections.length).toEqual(1);
         expect(chromosome.regressionNodes.get(new WaitEvent().constructor.name).length).toEqual(1);
         expect(chromosome.regressionNodes.get(new MouseMoveEvent().constructor.name).length).toEqual(2);
+        expect(chromosome.activationFunction).toEqual(ActivationFunction.SIGMOID);
     });
 
     test('Network activation without hidden layer', () => {
@@ -241,7 +249,7 @@ describe('Test NetworkChromosome', () => {
             chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
-        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
+        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
         for (const key of softmaxOutput.keys()) {
             softmaxOutput.set(key, Number(softmaxOutput.get(key).toFixed(3)));
         }
@@ -357,7 +365,7 @@ describe('Test NetworkChromosome', () => {
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
         for (let i = 0; i < chromosome.getMaxDepth(); i++) {
-            chromosome.activateNetwork(inputs)
+            chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
@@ -549,8 +557,8 @@ describe('Test NetworkChromosome', () => {
     });
 
     test("Test getRegressionNodes", () => {
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
-            [new WaitEvent(), new MouseMoveEvent()], 0.5);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, [new WaitEvent(), new MouseMoveEvent()], 0.5);
         chromosome = generator.get();
         const regressionNodes = chromosome.regressionNodes;
         expect(regressionNodes.get("WaitEvent").length).toEqual(1);
@@ -558,8 +566,8 @@ describe('Test NetworkChromosome', () => {
     });
 
     test("Test updateOutputNodes", () => {
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
-            [new WaitEvent()], 0.5);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, [new WaitEvent()], 0.5);
         chromosome = generator.get();
         const chromosome2 = generator.get();
         const chromosome3 = generator.get();
@@ -583,8 +591,8 @@ describe('Test NetworkChromosome', () => {
     });
 
     test("Test setUpInputs", () => {
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
-            [new WaitEvent()], 0.5);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, [new WaitEvent()], 0.5);
         chromosome = generator.get();
         genInputs.set("New", new Map<string, number>());
         genInputs.get("New").set("First", 1);
@@ -606,4 +614,4 @@ describe('Test NetworkChromosome', () => {
         network.connections[0].isEnabled = false;
         expect(network.toString().split('\n').length).toBeGreaterThan(network.connections.length);
     });
-})
+});

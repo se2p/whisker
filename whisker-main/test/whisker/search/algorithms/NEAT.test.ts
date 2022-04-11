@@ -14,6 +14,7 @@ import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEve
 import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatProperties} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {Container} from "../../../../src/whisker/utils/Container";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 
 
 describe('Test NEAT', () => {
@@ -68,7 +69,8 @@ describe('Test NEAT', () => {
         genInputs.set("Sprite2", sprite2);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, events, 0.4);
 
         const builder = new SearchAlgorithmBuilder('neat');
         const iterations = 20;

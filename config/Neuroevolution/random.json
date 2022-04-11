@@ -12,7 +12,8 @@
     "switchTargetCount": 5,
     "extractor": "neuroevolution",
     "chromosome": {
-        "type": "fullyConnectedNetwork"
+        "type": "fullyConnectedNetwork",
+        "activationFunction": "TANH"
     },
     "crossover": {
         "operator": "neatCrossover",

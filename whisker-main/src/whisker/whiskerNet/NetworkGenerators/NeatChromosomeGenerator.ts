@@ -24,8 +24,10 @@ export abstract class NeatChromosomeGenerator implements ChromosomeGenerator<Nea
      * Constructs a new NeatChromosomeGenerator.
      * @param mutationConfig the configuration parameter for the mutation operator.
      * @param crossoverConfig the configuration parameter for the crossover operator.
+     * @param activationFunction the activation function used for the generated nodes.
      */
-    protected constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>) {
+    protected constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
+                          protected readonly activationFunction: ActivationFunction) {
         const mutationOperator = new NeatMutation(mutationConfig);
         const crossOverOperator = new NeatCrossover(crossoverConfig);
         this._mutationOp = mutationOperator;
@@ -40,11 +42,12 @@ export abstract class NeatChromosomeGenerator implements ChromosomeGenerator<Nea
 
     /**
      * Creates connections between input and output.
-     * @param inputNodes all inputNodes of the generated network mapped to the sprites they represent ([sprite][nodes]).
-     * @param outputNodes all outputNodes of the generated network.
-     * @returns ConnectionGene[] the generated network connections.
+     * @param chromosome the network for which connections should be generated.
+     * @param inputNodes all inputNodes of the generated network mapped to the sprite feature they represent
+     * ([sprite][feature]).
+     * @returns ConnectionGene[] the generated network's connections.
      */
-    abstract createConnections(inputNodes?: NodeGene[][], outputNodes?: NodeGene[]): ConnectionGene[];
+    abstract createConnections(chromosome:NeatChromosome, inputNodes:NodeGene[][]): ConnectionGene[];
 
     /**
      * Adds regression nodes to the network.

@@ -3,6 +3,9 @@ module.exports = {
         'ts-jest': {
             tsConfig: 'tsconfig.json',
         },
+        // Required for the ntc node package
+        'ndf2':null,
+        'ndf':null
     },
     moduleFileExtensions: ['ts', 'js'],
     transform: {
@@ -20,4 +23,4 @@ module.exports = {
     ],
     testEnvironment: 'node',
     collectCoverage: true
-}
+};

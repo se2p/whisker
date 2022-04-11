@@ -9,8 +9,6 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {NeatChromosomeGenerator} from "./NeatChromosomeGenerator";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {Innovation, InnovationProperties} from "../NetworkComponents/Innovation";
 
 export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerator {
 
@@ -28,12 +26,14 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
      * Constructs a new NeatChromosomeGeneratorFullyConnected that connects all input-nodes to each output node.
      * @param mutationConfig the configuration parameters for the mutation operator.
      * @param crossoverConfig the configuration parameters for the crossover operator.
+     * @param activationFunction the activation function used for the generated nodes.
      * @param inputs maps each sprite by its name to its feature map.
      * @param scratchEvents all ScratchEvents for which output nodes have to be generated.
      */
     constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
-                private readonly inputs: Map<string, Map<string, number>>, scratchEvents: ScratchEvent[]) {
-        super(mutationConfig, crossoverConfig);
+                activationFunction: ActivationFunction, private readonly inputs: Map<string, Map<string, number>>,
+                scratchEvents: ScratchEvent[]) {
+        super(mutationConfig, crossoverConfig, activationFunction);
         this._inputs = inputs;
         this._scratchEvents = scratchEvents;
     }
@@ -66,7 +66,7 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
 
         // Create the classification output nodes and add them to the nodes list
         for (const event of this._scratchEvents) {
-            const classificationNode = new ClassificationNode(allNodes.length, event, ActivationFunction.SIGMOID);
+            const classificationNode = new ClassificationNode(allNodes.length, event, ActivationFunction.NONE);
             allNodes.push(classificationNode);
         }
 
@@ -77,69 +77,35 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
         }
 
         // Create connections between input and output nodes
-        const outputNodes = allNodes.filter(node => node instanceof ClassificationNode || node instanceof RegressionNode);
-        const connections = this.createConnections(inputList, outputNodes);
-        const chromosome = new NeatChromosome(allNodes, connections, this._mutationOp, this._crossoverOp);
+        const chromosome = new NeatChromosome(allNodes, [], this._mutationOp, this._crossoverOp, this.activationFunction);
+        this.createConnections(chromosome, inputList);
 
         // Perturb the weights
         const mutationOp = chromosome.getMutationOperator() as NeatMutation;
         mutationOp.mutateWeight(chromosome, 1);
+        chromosome.generateNetwork();
         return chromosome;
     }
 
     /**
-     * Creates connections from each input node to every output.
-     * @param inputNodes all inputNodes of the generated network mapped to the sprites they represent ([sprite][nodes]).
-     * @param outputNodes all outputNodes of the generated network.
-     * @returns ConnectionGene[] the generated network connections.
+     * Creates connections from each input node to every output node.
+     * @param chromosome the network for which connections should be generated.
+     * @param inputNodes all inputNodes of the generated network mapped to the sprite feature they represent
+     * ([sprite][feature]).
+     * @returns ConnectionGene[] the generated network's connections.
      */
-    createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
+    createConnections(chromosome:NeatChromosome, inputNodes:NodeGene[][]): ConnectionGene[] {
         const connections: ConnectionGene[] = [];
+        const outputNodes = chromosome.allNodes.filter(node => node instanceof ClassificationNode || node instanceof RegressionNode);
         // For each inputNode create a connection to each outputNode.
         for (const inputNodeVector of inputNodes) {
             for (const inputNode of inputNodeVector) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = this.generateConnection(inputNode, outputNode);
-                    connections.push(newConnection);
+                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
+                    chromosome.addConnection(newConnection);
                 }
             }
         }
         return connections;
-    }
-
-    /**
-     * Generates a new connection between the source and target node.
-     * @param sourceNode the source node of the connection.
-     * @param targetNode the target node of the connection.
-     * @returns the newly generated connection between the source and target node.
-     */
-    protected generateConnection(sourceNode: NodeGene, targetNode: NodeGene): ConnectionGene {
-        const newConnection = new ConnectionGene(sourceNode, targetNode, 0, true, 0, false);
-        this.assignInnovation(newConnection);
-        targetNode.incomingConnections.push(newConnection);
-        return newConnection;
-    }
-
-    /**
-     * Assigns an innovation number to a given connection gene.
-     * @param connection the connection to which an innovation number should be assigned.
-     */
-    protected assignInnovation(connection: ConnectionGene): void {
-        const innovation = NeatPopulation.findInnovation(connection, 'newConnection');
-        // Check if this innovation has occurred before.
-        if (innovation) {
-            connection.innovation = innovation.firstInnovationNumber;
-        } else {
-            const innovationProperties: InnovationProperties = {
-                type: 'newConnection',
-                idSourceNode: connection.source.uID,
-                idTargetNode: connection.target.uID,
-                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
-                recurrent: connection.isRecurrent
-            };
-            const newInnovation = Innovation.createInnovation(innovationProperties);
-            NeatPopulation.innovations.push(newInnovation);
-            connection.innovation = newInnovation.firstInnovationNumber;
-        }
     }
 }

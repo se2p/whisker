@@ -4,6 +4,7 @@ import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveE
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 
 describe('Test NetworkChromosomeGeneratorSparse', () => {
 
@@ -53,7 +54,8 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
 
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.5);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
+            genInputs, events, 0.5);
     });
 
     test('Create initial random Chromosome', () => {
