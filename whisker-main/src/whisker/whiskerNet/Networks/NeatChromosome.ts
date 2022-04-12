@@ -6,7 +6,7 @@ import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {Innovation, InnovationProperties} from "../NetworkComponents/Innovation";
+import {AddConnectionInnovation, AddNodeSplitConnectionInnovation} from "../Innovation/Innovation";
 import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 
@@ -156,20 +156,19 @@ export class NeatChromosome extends NetworkChromosome {
      * @param connection the connection to add.
      */
     public addConnection(connection: ConnectionGene): void {
-        const innovation = NeatPopulation.findInnovation(connection, 'newConnection');
+        const innovation = NeatPopulation.findInnovation(connection, "addConnection");
 
         // Check if this innovation has occurred before.
         if (innovation) {
             connection.innovation = innovation.firstInnovationNumber;
         } else {
-            const innovationProperties: InnovationProperties = {
-                type: 'newConnection',
+            const newInnovation: AddConnectionInnovation = {
+                type: 'addConnection',
                 idSourceNode: connection.source.uID,
                 idTargetNode: connection.target.uID,
-                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
+                firstInnovationNumber: NeatPopulation.getAvailableInnovationNumber(),
                 recurrent: connection.isRecurrent
             };
-            const newInnovation = Innovation.createInnovation(innovationProperties);
             NeatPopulation.innovations.push(newInnovation);
             connection.innovation = newInnovation.firstInnovationNumber;
         }
@@ -180,8 +179,8 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
-     *
-     * @param splitConnection
+     * Adds a new node by splitting an existing connection and keeping track of the innovation history.
+     * @param splitConnection the connection to be split by the new node.
      */
     public addNodeSplitConnection(splitConnection: ConnectionGene): void {
         // Disable the old connection
@@ -193,12 +192,12 @@ export class NeatChromosome extends NetworkChromosome {
         const targetNode = splitConnection.target;
         // Create the new HiddenNode and the two new connections.
         // Check if this innovation has already occurred previously.
-        const innovation = NeatPopulation.findInnovation(splitConnection, 'newNode');
+        const innovation = NeatPopulation.findInnovation(splitConnection, 'addNodeSplitConnection');
         let newNode: HiddenNode;
         let connection1: ConnectionGene;
         let connection2: ConnectionGene;
         const activationFunction = this.activationFunction;
-        if (innovation) {
+        if (innovation && innovation.type === 'addNodeSplitConnection') {
             newNode = new HiddenNode(innovation.idNewNode, activationFunction);
             connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
             connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber, false);
@@ -206,19 +205,18 @@ export class NeatChromosome extends NetworkChromosome {
             const nextNodeId = NeatPopulation.highestNodeId + 1;
             newNode = new HiddenNode(nextNodeId, activationFunction);
 
-            const innovationProperties: InnovationProperties = {
-                type: 'newNode',
+            const newInnovation: AddNodeSplitConnectionInnovation = {
+                type: 'addNodeSplitConnection',
                 idSourceNode: sourceNode.uID,
                 idTargetNode: targetNode.uID,
-                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
-                secondInnovationNumber: Innovation._currentHighestInnovationNumber + 2,
+                firstInnovationNumber: NeatPopulation.getAvailableInnovationNumber(),
+                secondInnovationNumber: NeatPopulation.getAvailableInnovationNumber(),
                 idNewNode: nextNodeId,
                 splitInnovation: splitConnection.innovation
             };
-            const innovation = Innovation.createInnovation(innovationProperties);
-            NeatPopulation.innovations.push(innovation);
-            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
-            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber, splitConnection.isRecurrent);
+            NeatPopulation.innovations.push(newInnovation);
+            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, newInnovation.firstInnovationNumber, splitConnection.isRecurrent);
+            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, newInnovation.secondInnovationNumber, splitConnection.isRecurrent);
         }
 
         // We do not use the addConnection method here since we have already assigned innovation numbers to the

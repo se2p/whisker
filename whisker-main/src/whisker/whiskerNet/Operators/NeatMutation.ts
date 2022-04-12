@@ -2,12 +2,8 @@ import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {Randomness} from "../../utils/Randomness";
-import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
-import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {NetworkMutation} from "./NetworkMutation";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {Innovation, InnovationProperties} from "../NetworkComponents/Innovation";
 
 
 export class NeatMutation implements NetworkMutation<NeatChromosome> {

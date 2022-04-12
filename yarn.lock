@@ -7393,6 +7393,11 @@ npm-run-path@^4.0.1:
   dependencies:
     path-key "^3.0.0"
 
+ntc@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/ntc/-/ntc-0.0.1.tgz#e6548e3bc29edf42f0a87047ef239273478f752e"
+  integrity sha1-5lSOO8Ke30LwqHBH7yOSc0ePdS4=
+
 nth-check@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/nth-check/-/nth-check-1.0.2.tgz#b2bd295c37e3dd58a3bf0700376663ba4d9cf05c"
@@ -8995,9 +9000,9 @@ scratch-translate-extension-languages@0.0.20191118205314:
   resolved "https://registry.yarnpkg.com/scratch-translate-extension-languages/-/scratch-translate-extension-languages-0.0.20191118205314.tgz#9f781cc0c89785faba8ae86775a4915225676284"
   integrity sha512-r0lvpgQjPMjbhI2wROrgoXzBhCvWJdkbAqJMfl2CdNqrwBpUXqLvNNtI3VtNLPJAcp9VfxEylkU9lVZ0gvU46Q==
 
-"scratch-vm@https://github.com/se2p/scratch-vm.git#8141b456f322bfb7cc54c038de0e63fdeefe70bb":
+"scratch-vm@git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#develop":
   version "0.2.0"
-  resolved "https://github.com/se2p/scratch-vm.git#8141b456f322bfb7cc54c038de0e63fdeefe70bb"
+  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#fdd017a1d606ea6b7c78925fcfaef42bed65771b"
   dependencies:
     "@vernier/godirect" "1.5.0"
     arraybuffer-loader "^1.0.6"

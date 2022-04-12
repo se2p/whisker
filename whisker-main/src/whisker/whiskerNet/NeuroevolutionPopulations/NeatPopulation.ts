@@ -5,7 +5,7 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
-import {Innovation, InnovationType} from "../NetworkComponents/Innovation";
+import {Innovation, InnovationType} from "../Innovation/Innovation";
 import {Container} from "../../utils/Container";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
@@ -54,6 +54,11 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public static nodeToId = new Map<string, number>();
 
     /**
+     * Used for determining the next available innovation number.
+     */
+    private static innovationCounter = 0;
+
+    /**
      * Constructs a new NeatPopulation.
      * @param generator the ChromosomeGenerator used for creating the initial population.
      * @param hyperParameter the defined search parameters.
@@ -62,6 +67,10 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
         this.compatibilityThreshold = hyperParameter.compatibilityDistanceThreshold;
+    }
+
+    public static getAvailableInnovationNumber(): number {
+        return this.innovationCounter++;
     }
 
     /**
@@ -130,7 +139,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         if (this.networks.length != this.hyperParameter.populationSize) {
             Container.debugLog(`The population size has changed from ${this.hyperParameter.populationSize} to
             ${this.networks.length} members.`);
-            while (this.networks.length > this.hyperParameter.populationSize){
+            while (this.networks.length > this.hyperParameter.populationSize) {
                 this.networks.pop();
             }
             Container.debugLog(`Reduced the population size down to ${this.networks.length}`);
@@ -410,20 +419,23 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      */
     public static findInnovation(connection: ConnectionGene, innovationType: InnovationType): Innovation | undefined {
         let findMatchingInnovation: (innovation: Innovation, connection: ConnectionGene) => boolean;
-        if (innovationType === 'newConnection') {
-            findMatchingInnovation = (innovation, connection) => {
-                return innovation.type === 'newConnection' &&
-                    innovation.idSourceNode === connection.source.uID &&
-                    innovation.idTargetNode === connection.target.uID &&
-                    innovation.recurrent === connection.isRecurrent;
-            };
-        } else if (innovationType === 'newNode') {
-            findMatchingInnovation = (innovation, connection) => {
-                return innovation.type === 'newNode' &&
-                    innovation.idSourceNode === connection.source.uID &&
-                    innovation.idTargetNode === connection.target.uID &&
-                    innovation.splitInnovation === connection.innovation;
-            };
+        switch (innovationType) {
+            case 'addConnection':
+                findMatchingInnovation = (innovation, connection) => {
+                    return innovation.type === 'addConnection' &&
+                        innovation.idSourceNode === connection.source.uID &&
+                        innovation.idTargetNode === connection.target.uID &&
+                        innovation.recurrent === connection.isRecurrent;
+                };
+                break;
+            case "addNodeSplitConnection":
+                findMatchingInnovation = (innovation, connection) => {
+                    return innovation.type === 'addNodeSplitConnection' &&
+                        innovation.idSourceNode === connection.source.uID &&
+                        innovation.idTargetNode === connection.target.uID &&
+                        innovation.splitInnovation === connection.innovation;
+                };
+                break;
         }
         return this.innovations.find(innovation => findMatchingInnovation(innovation, connection));
     }
