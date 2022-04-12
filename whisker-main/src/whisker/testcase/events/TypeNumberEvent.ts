@@ -67,7 +67,7 @@ export class TypeNumberEvent extends ScratchEvent {
                 this._num = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
                 break;
             case "codon": {
-                const range = Container.config.searchAlgorithmProperties['integerRange']['max'] - Container.config.searchAlgorithmProperties['integerRange']['min'] / 2;
+                const range = Container.config.searchAlgorithmProperties['integerRange']['max'] - Container.config.searchAlgorithmProperties['integerRange']['min'];
                 this._num = args[0] - range/2;
                 Container.debugLog("Codon value "+args[0] +" scaled to "+this._num);
                 break;
