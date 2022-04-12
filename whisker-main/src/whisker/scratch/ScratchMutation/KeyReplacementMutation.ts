@@ -29,7 +29,7 @@ export class KeyReplacementMutation extends ScratchMutation {
             mutantKeyPress = Randomness.getInstance().pick(KeyReplacementMutation.KEY_OPTIONS);
         }
         mutationBlock['fields']['KEY_OPTION'][0] = mutantKeyPress;
-        mutantProgram.name = `KRP:${originalKeyPress}-To-${mutantKeyPress}`;
+        mutantProgram.name = `KRM:${originalKeyPress}-To-${mutantKeyPress}`;
         return true;
     }
 

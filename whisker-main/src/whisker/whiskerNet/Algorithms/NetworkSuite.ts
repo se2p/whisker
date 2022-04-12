@@ -126,6 +126,7 @@ export abstract class NetworkSuite {
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         } else {
             console.log("Performing Mutation Analysis");
+            await this.testSingleProject();     // Execute the original program to obtain reference data
             const mutantPrograms = await this.mutationAnalysis();
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutantPrograms];
         }
@@ -153,7 +154,7 @@ export abstract class NetworkSuite {
         const specifiedMutators = this.properties.mutators as string[];
         for (const mutator of specifiedMutators) {
             switch (mutator) {
-                case 'KRP':
+                case 'KRM':
                     this.mutationOperators.push(new KeyReplacementMutation(this.vm));
                     break;
                 case 'SBD':

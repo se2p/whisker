@@ -65,7 +65,7 @@ export class NetworkLoader {
                         break;
                     }
                     case "H": {
-                        const activationFunction = savedNode['af'] as string;
+                        const activationFunction = savedNode['aF'] as string;
                         const hiddenNode = new HiddenNode(savedNode['id'], ActivationFunction[activationFunction]);
                         allNodes.push(hiddenNode);
                         break;
