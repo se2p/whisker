@@ -123,8 +123,8 @@ export class Search {
                     }
                 }
             }
-            // Sample every 10 minutes
-            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(600000, upperBound);
+            // Sample every minute
+            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(60000, upperBound);
             console.log(csvOutput);
             return csvOutput;
         } else {

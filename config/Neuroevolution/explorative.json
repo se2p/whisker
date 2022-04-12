@@ -12,7 +12,7 @@
     "switchTargetCount": 5,
     "extractor": "neuroevolution",
     "chromosome": {
-        "type": "fullyConnectedNetwork",
+        "type": "hiddenNodeFullyConnectedNetwork",
         "activationFunction": "TANH"
     },
     "crossover": {
@@ -60,14 +60,14 @@
             },
             {
                 "type": "fixedTime",
-                "duration": 360000000
+                "duration": 828000000
             }
         ]
     },
     "durations": {
-        "waitStepUpperBound": 50,
+        "waitStepUpperBound": 10,
         "clickDuration": 1,
-        "pressDuration": 50
+        "pressDuration": 10
     },
     "debugLogging": true
 }
