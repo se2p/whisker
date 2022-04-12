@@ -3,7 +3,6 @@
     "algorithm": "onePlusOne",
     "extractor": "dynamic",
     "eventSelector": "clustering",
-    "startOfFocusedPhase": 1,
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
@@ -11,29 +10,13 @@
         "maxLength": 20
     },
     "mutation": {
-        "operator": "variableLengthConstrained",
-        "gaussianMutationPower": 5,
-        "maxMutationCountStart": 0,
-        "maxMutationCountFocusedPhase": 3
-    },
-    "localSearch": [
-        {
-            "type": "Extension",
-            "probability": 0.3,
-            "newEventProbability": 0.5
-        },
-        {
-            "type": "Reduction",
-            "probability": 0.3
-        }
-    ],
-    "selection": {
-        "operator": "rank",
-        "randomSelectionProbabilityStart": null,
-        "randomSelectionProbabilityFocusedPhase": null
+        "operator": "variableLength",
+        "probability": 1,
+        "gaussianMutationPower": 5
     },
     "fitnessFunction": {
-        "type": "statement"
+        "type": "statement",
+        "targets": []
     },
     "stoppingCondition": {
         "type": "combined",
@@ -47,11 +30,6 @@
             }
         ]
     },
-    "archive": {
-        "maxArchiveSizeStart": null,
-        "maxArchiveSizeFocusedPhase": null
-    },
-    "startOfFocusedPhase": null,
     "integerRange": {
         "min": 0,
         "max": 480
