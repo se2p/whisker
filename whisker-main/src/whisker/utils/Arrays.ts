@@ -243,7 +243,7 @@ export default class Arrays {
     static subtract(minuend:number[], subtrahend:number[]): number[]{
         // Make sure the subtrahend is at least as big as the minuend; pad with zeros if necessary.
         if(minuend.length > subtrahend.length){
-            subtrahend.push(...[minuend.length - subtrahend.length].fill(0))
+            subtrahend.push(...[minuend.length - subtrahend.length].fill(0));
         }
         return minuend.map(((value, index) => value - subtrahend[index]));
     }

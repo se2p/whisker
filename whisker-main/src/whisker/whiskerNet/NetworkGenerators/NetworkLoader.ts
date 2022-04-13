@@ -13,6 +13,7 @@ import {NeatCrossover} from "../Operators/NeatCrossover";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import {InputConnectionMethod} from "../Networks/NetworkChromosome";
 
 export class NetworkLoader {
 
@@ -103,7 +104,8 @@ export class NetworkLoader {
             const mutation = new NeatMutation({});
             const crossover = new NeatCrossover({});
             const activationFunction = savedNetwork['aF'] as string;
-            const network = new NeatChromosome(allNodes, allConnections, mutation, crossover,
+            const connectionMethod = savedNetwork['cM'] as InputConnectionMethod;
+            const network = new NeatChromosome(allNodes, allConnections, mutation, crossover, connectionMethod,
                 ActivationFunction[activationFunction]);
 
             // If the generated networks are based on the StatementFitness function, we load their fitness targets.

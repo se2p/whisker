@@ -8,12 +8,12 @@
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
-    "inputRate": 0.3,
     "switchTargetCount": 5,
     "extractor": "neuroevolution",
     "chromosome": {
-        "type": "hiddenNodeFullyConnectedNetwork",
-        "activationFunction": "TANH"
+        "type": "neatChromosome",
+        "activationFunction": "TANH",
+        "inputConnectionMethod": "fullyHidden"
     },
     "crossover": {
         "operator": "neatCrossover",
@@ -65,9 +65,9 @@
         ]
     },
     "durations": {
-        "waitStepUpperBound": 10,
-        "clickDuration": 1,
-        "pressDuration": 10
+        "waitStepUpperBound": 100,
+        "clickDuration": 30,
+        "pressDuration": 30
     },
     "debugLogging": true
 }

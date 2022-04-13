@@ -4,7 +4,7 @@ export interface AddConnectionInnovation {
     type: 'addConnection';
     idSourceNode: number;
     idTargetNode: number;
-    firstInnovationNumber: number;
+    innovationNumber: number;
     recurrent: boolean
 }
 

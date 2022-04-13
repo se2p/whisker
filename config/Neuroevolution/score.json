@@ -12,7 +12,9 @@
     "repetitions": 200,
     "extractor": "neuroevolution",
     "chromosome": {
-        "type": "sparseNetwork"
+        "type": "neatChromosome",
+        "activationFunction": "TANH",
+        "inputConnectionMethod": "fullyHidden"
     },
     "crossover": {
         "operator": "neatCrossover",
@@ -67,9 +69,9 @@
         ]
     },
     "durations": {
-        "waitStepUpperBound": 50,
-        "clickDuration": 1,
-        "pressDuration": 50
+        "waitStepUpperBound": 100,
+        "clickDuration": 30,
+        "pressDuration": 30
     },
     "debugLogging": true
 }

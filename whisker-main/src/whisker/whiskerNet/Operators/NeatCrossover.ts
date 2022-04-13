@@ -245,7 +245,8 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
         }
 
         // Finally, create the child with the selected Connections and Nodes
-        const child = new NeatChromosome(newNodes, newConnections, parent1.getMutationOperator(), parent1.getCrossoverOperator(), parent1.activationFunction);
+        const child = new NeatChromosome(newNodes, newConnections, parent1.getMutationOperator(),
+            parent1.getCrossoverOperator(), parent1.inputConnectionMethod, parent1.activationFunction);
         child.generateNetwork();
 
         // Check if everything went fine and enable some connections to fix a defect network if necessary

@@ -91,6 +91,7 @@ export class NetworkExecutor {
         const isGreenFlag = this._stopEarly &&
             statementTarget !== undefined &&
             statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
+        console.log("Network Execution Start");
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm);
@@ -108,7 +109,9 @@ export class NetworkExecutor {
 
             // Select the next event and execute it if we did not decide to wait
             if (this._waitDuration == 0) {
+                console.log("Select Next Event Start");
                 let eventIndex = this.selectNextEvent(network, spriteFeatures, isGreenFlag);
+                console.log("Select Next Event Stop");
                 let nextEvent = this.availableEvents[eventIndex];
 
                 // If something goes wrong, e.g. we have a defect network due to all active input nodes being
@@ -118,26 +121,34 @@ export class NetworkExecutor {
                     nextEvent = this.availableEvents[eventIndex];
                 }
                 network.codons.push(eventIndex);
+                console.log("Execute Next Event Start");
                 await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
+                console.log("Execute Next Event Stop");
             }
 
             // Otherwise, we just Wait...
             else {
+                console.log("Wait: ", this._waitDuration);
                 this._waitDuration--;
             }
 
             // Record the activation trace and increase the stepCount.
+            console.log("Record Activation Trace Start");
             this.recordActivationTrace(network, stepCount, spriteFeatures);
+            console.log("Record Activation Trace Stop");
             stepCount++;
 
             // Check if we have reached our selected target and stop if this is the case.
+            console.log("Stop Early Start");
             if (this._stopEarly && statementTarget !== undefined) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
                 if (currentCoverage.has(statementTarget.getTargetNode().id)) {
                     break;
                 }
             }
+            console.log("Finished step: ", stepCount);
         }
+        console.log("Network Execution End");
 
         // Set score and play time.
         network.score = ScoreFitness.gatherPoints(this._vm);
@@ -231,14 +242,17 @@ export class NetworkExecutor {
         // 3) Query the network's classification head.
         else {
             if (network.isRecurrent) {
+                console.log("Recurrent Activation");
                 network.activateNetwork(inputFeatures);
             } else {
                 // Flush the network and activate it until the output stabilizes.
                 network.flushNodeValues();
+                console.log("Normal Activation");
                 for (let i = 0; i < network.getMaxDepth(); i++) {
                     network.activateNetwork(inputFeatures);
                 }
             }
+            console.log("Activation Finished");
 
             // Choose the event with the highest probability according to the softmax values
             const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);

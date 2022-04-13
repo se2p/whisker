@@ -12,9 +12,8 @@ import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEv
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {
-    NeatChromosomeGeneratorFullyConnected
-} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {Randomness} from "../../../src/whisker/utils/Randomness";
 
 
 describe("Test NeatMutation", () => {
@@ -24,6 +23,7 @@ describe("Test NeatMutation", () => {
     let mutation: NeatMutation;
     let crossoverOp: NeatCrossover;
     let mutationConfig: Record<string, (string | number)>;
+    let networkGenerator: NeatChromosomeGenerator;
 
     beforeEach(() => {
         const crossoverConfig = {
@@ -69,10 +69,10 @@ describe("Test NeatMutation", () => {
         genInputs.set("Sprite2", sprite2);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        const networkChromosomeGenerator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
-            genInputs, events);
-        neatChromosome1 = networkChromosomeGenerator.get();
-        neatChromosome2 = networkChromosomeGenerator.get();
+        networkGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
+            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+        neatChromosome1 = networkGenerator.get();
+        neatChromosome2 = networkGenerator.get();
     });
 
     test("Test apply mutation operator on a populationChampion", () => {
@@ -125,6 +125,8 @@ describe("Test NeatMutation", () => {
         const initialInnovations = NeatPopulation.innovations.length;
         neatChromosome1.generateNetwork();
         neatChromosome2.generateNetwork();
+        neatChromosome1.addNodeSplitConnection(Randomness.getInstance().pick(neatChromosome1.connections));
+        neatChromosome2.addNodeSplitConnection(Randomness.getInstance().pick(neatChromosome2.connections));
         for (let i = 0; i < 50; i++) {
         mutation.mutateAddConnection(neatChromosome1, 30);
         mutation.mutateAddConnection(neatChromosome2, 30);
@@ -153,7 +155,7 @@ describe("Test NeatMutation", () => {
         connectionList.push(connection2);
         mutationConfig.recurrentConnection = 1;
         mutation = new NeatMutation(mutationConfig);
-        neatChromosome1 = new NeatChromosome(allNodes, connectionList, mutation, crossoverOp);
+        neatChromosome1 = new NeatChromosome(allNodes, connectionList, mutation, crossoverOp, 'fully');
         const originalConnectionsSize = neatChromosome1.connections.length;
 
         mutation.mutateAddConnection(neatChromosome1, 30);

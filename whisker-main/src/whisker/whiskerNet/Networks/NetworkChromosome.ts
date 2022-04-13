@@ -14,6 +14,7 @@ import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
+import {BiasNode} from "../NetworkComponents/BiasNode";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -142,11 +143,13 @@ export abstract class NetworkChromosome extends Chromosome {
      * Constructs a new NetworkChromosome.
      * @param _allNodes all nodes of a network.
      * @param _connections the connections between the Nodes.
+     * @param _inputConnectionMethod determines how novel nodes are being connected to the input layer.
      * @param _activationFunction the activation function that will be used for hidden nodes.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
     protected constructor(protected readonly _allNodes: NodeGene[],
                           protected readonly _connections: ConnectionGene[],
+                          protected readonly _inputConnectionMethod: InputConnectionMethod,
                           protected readonly _activationFunction = ActivationFunction.TANH,
                           incrementID = true) {
         super();
@@ -245,7 +248,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                 const classificationNode = new ClassificationNode(id, event, ActivationFunction.NONE);
                 this._allNodes.push(classificationNode);
-                this.connectNodeToInputNodes(classificationNode);
+                this.connectNodeToInputLayer([classificationNode], this.inputNodes, this._inputConnectionMethod);
             }
             // Check if we also have to add regression nodes.
             if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
@@ -255,7 +258,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
                     this._allNodes.push(regressionNode);
-                    this.connectNodeToInputNodes(regressionNode);
+                    this.connectNodeToInputLayer([regressionNode], this.inputNodes, this._inputConnectionMethod);
                 }
             }
         }
@@ -266,19 +269,14 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Connects a given node to all input nodes, while randomly enabling the created connections.
-     * @param node the node to add
+     * Connects nodes to the specified input nodes using defined mode to connect the nodes.
+     * @param nodesToConnect the nodes that should be connected to the input layer.
+     * @param inputNodes defines the input nodes that should be connected to the node.
+     * @param mode determines how the input layer should be connected to the given nodes.
      */
-    private connectNodeToInputNodes(node: NodeGene): void {
-        for (const sprite of this.inputNodes.keys()) {
-            for (const iNode of this.inputNodes.get(sprite).values()) {
-                const weight = this._random.nextDoubleMinMax(-1, 1);
-                const enabled = node instanceof RegressionNode ? true : this._random.randomBoolean();
-                const connection = new ConnectionGene(iNode, node, weight, enabled, 0, false);
-                this.addConnection(connection);
-            }
-        }
-    }
+    public abstract connectNodeToInputLayer(nodesToConnect: NodeGene[],
+                                               inputNodes: Readonly<Map<string, Map<string, InputNode | BiasNode>>>,
+                                               mode:InputConnectionMethod): void;
 
     /**
      * Fetches the ID of a functional Node, i.e. a non-Hidden node.
@@ -670,6 +668,10 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._connections;
     }
 
+    get inputConnectionMethod(): InputConnectionMethod {
+        return this._inputConnectionMethod;
+    }
+
     get activationFunction(): ActivationFunction {
         return this._activationFunction;
     }
@@ -826,3 +828,8 @@ export abstract class NetworkChromosome extends Chromosome {
         this._openStatementTargets = value;
     }
 }
+
+export type InputConnectionMethod =
+    | 'fully'
+    | 'fullyHidden'
+    | 'sparse'

@@ -35,7 +35,7 @@ export class TargetStatementPopulation extends NeatPopulation {
                 this.networks.push(network.cloneStructure(true));
             }
 
-            // We fill 10% of our population with entirely new networks
+            // We fill 10% of our population with entirely new networks.
             const newNetworksSize = Math.floor(0.1 * this.hyperParameter.populationSize);
             for (let i = 0; i < newNetworksSize; i++) {
                 const network = this.generator.get();

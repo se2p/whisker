@@ -46,7 +46,7 @@ describe("Test NeatCrossover", () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
 
-        Container.debugLog = () => { /*No operation */ }
+        Container.debugLog = () => { /*No operation */ };
 
         // Create Nodes of first network
         nodes1 = [];
@@ -101,9 +101,9 @@ describe("Test NeatCrossover", () => {
 
 
     test("CrossoverTest with first parent being fitter than second parent", () => {
-        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp);
+        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp);
+        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 0;
         const child1 = crossoverOp.apply(parent1, parent2)[0];
         const child2 = crossoverOp.applyFromPair([parent1, parent2])[0];
@@ -112,9 +112,9 @@ describe("Test NeatCrossover", () => {
     });
 
     test("CrossoverTest with second parent being fitter than first parent", () => {
-        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp);
+        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 0;
-        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp);
+        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2)[0];
         const child2 = crossoverOp.applyFromPair([parent1, parent2])[0];
@@ -123,9 +123,9 @@ describe("Test NeatCrossover", () => {
     });
 
     test("CrossoverTest with both parents being equivalently fit", () => {
-        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp);
+        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp);
+        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2)[0];
         expect(child1.connections.length).toBeGreaterThanOrEqual(5);
@@ -139,12 +139,12 @@ describe("Test NeatCrossover", () => {
 
         parent1Connections = [];
         parent1Connections.push(new ConnectionGene(inNode, outNode, 1, false, 0, false));
-        const parent1 = new NeatChromosome(nodes, parent1Connections, mutationOp, crossoverOp);
+        const parent1 = new NeatChromosome(nodes, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 1;
 
         parent2Connections = [];
         parent2Connections.push(new ConnectionGene(inNode, outNode, 2, false, 0, false));
-        const parent2 = new NeatChromosome(nodes, parent2Connections, mutationOp, crossoverOp);
+        const parent2 = new NeatChromosome(nodes, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 0.1;
 
         const child1 = crossoverOp.apply(parent1, parent2)[0];
@@ -187,9 +187,9 @@ describe("Test NeatCrossover", () => {
         parent2Connections = [];
 
 
-        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp);
+        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp);
+        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 0;
 
 

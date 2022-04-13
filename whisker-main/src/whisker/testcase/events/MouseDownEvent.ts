@@ -84,7 +84,7 @@ export class MouseDownEvent extends ScratchEvent {
         if (this._steps < 1) {
             this._steps = 1;
         }
-        return [this._steps]
+        return [this._steps];
     }
 
     stringIdentifier(): string {

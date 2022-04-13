@@ -46,7 +46,7 @@ export class StaticSuite extends NetworkSuite {
         for (const test of Object.values(this._testFile)) {
             const testSource = test.test.toString();
             const trace = StaticSuite.getTraceFromSource(testSource);
-            const network = new NeatChromosome([], [], undefined, undefined);
+            const network = new NeatChromosome([], [], undefined, undefined, undefined);
             network.trace = trace;
             NetworkLoader.loadActivationTrace(network, test.activationTrace);
             networks.push(network);

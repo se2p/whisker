@@ -1,18 +1,18 @@
 import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {
-    NeatChromosomeGeneratorSparse
-} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 
 describe("NeuroevolutionUtil Tests", () => {
 
     let populationSize: number;
     let genInputs: Map<string, Map<string, number>>;
     let events: ScratchEvent[];
-    let generator: NeatChromosomeGeneratorSparse;
+    let generator: NeatChromosomeGenerator;
     let properties: NeatProperties;
 
 
@@ -62,8 +62,8 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
         events = [new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
-            genInputs, events, 0.4);
+        generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
+            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
     });
 
     test("Test Softmax calculation", () => {

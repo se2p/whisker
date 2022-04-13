@@ -5,15 +5,17 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import Arrays from "../../../src/whisker/utils/Arrays";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {Container} from "../../../src/whisker/utils/Container";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 
 describe("Species Test", () => {
 
-    let generator: NeatChromosomeGeneratorSparse;
+    let generator: NeatChromosomeGenerator;
     let species: Species<NeatChromosome>;
     let populationSize: number;
     let random: Randomness;
@@ -44,6 +46,8 @@ describe("Species Test", () => {
             "toggleEnableConnectionTimes": 3,
             "mutateEnableConnection": 0.03
         };
+        const mutationOp = new NeatMutation(mutationConfig);
+        const crossoverOp = new NeatCrossover(crossoverConfig);
         const genInputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -61,8 +65,8 @@ describe("Species Test", () => {
         genInputs.set("Sprite2", sprite2);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
-            genInputs, events, 0.4);
+        generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
+            ActivationFunction.SIGMOID, mutationOp, crossoverOp);
         const population: NeatChromosome[] = [];
         populationSize = 50;
         properties = new NeatProperties();

@@ -11,16 +11,18 @@ import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctio
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatProperties} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 
 
 describe('Test NEAT', () => {
 
     let searchAlgorithm: SearchAlgorithm<Chromosome>;
-    let generator: NeatChromosomeGeneratorSparse;
+    let generator: NeatChromosomeGenerator;
     let properties: NeatProperties;
 
     const crossoverConfig = {
@@ -69,8 +71,8 @@ describe('Test NEAT', () => {
         genInputs.set("Sprite2", sprite2);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
-            genInputs, events, 0.4);
+        generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
+            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
 
         const builder = new SearchAlgorithmBuilder('neat');
         const iterations = 20;
@@ -85,12 +87,6 @@ describe('Test NEAT', () => {
             }
 
             getFitness(network: NetworkChromosome): Promise<number> {
-                const fitness = random.nextInt(1, 100);
-                network.fitness = fitness;
-                return Promise.resolve(fitness);
-            }
-
-            getRandomFitness(network: NetworkChromosome): Promise<number> {
                 const fitness = random.nextInt(1, 100);
                 network.fitness = fitness;
                 return Promise.resolve(fitness);

@@ -32,7 +32,7 @@ import {NeatCrossover} from "../whiskerNet/Operators/NeatCrossover";
 import {Container} from "./Container";
 import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
-import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
+import {InputConnectionMethod, NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
 import {InputExtraction} from "../whiskerNet/InputExtraction";
@@ -51,21 +51,15 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {
-    BiasedVariableLengthConstrainedChromosomeMutation
-} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {NeatProperties} from "../whiskerNet/HyperParameter/NeatProperties";
-import {NeatChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
-import {
-    NeatChromosomeGeneratorFullyConnected
-} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {NetworkSuiteParameter} from "../whiskerNet/HyperParameter/NetworkSuiteParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
-import {NeatChromosomeGeneratorHiddenNodeFC} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorHiddenNodeFC";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 
 
 class ConfigException implements Error {
@@ -478,30 +472,24 @@ export class WhiskerSearchConfiguration {
                     this._getCrossoverOperator(),
                     this._config['chromosome']['minSampleLength'],
                     this._config['chromosome']['maxSampleLength']);
-            case 'sparseNetwork': {
+            case 'neatChromosome': {
                 const eventExtractor = this.getEventExtractor();
-                return new NeatChromosomeGeneratorSparse(this._config['mutation'],
-                    this._config['crossover'],
-                    this.neuroevolutionProperties.activationFunction,
+                const mutationOperator = this._getMutationOperator();
+                if (!(mutationOperator instanceof NeatMutation)) {
+                    throw new ConfigException(`The neatChromosome generator requires a NeatMutation operator, but  ${typeof mutationOperator} was specified`);
+                }
+                const crossoverOperator = this._getCrossoverOperator();
+                if (!(crossoverOperator instanceof NeatCrossover)) {
+                    throw new ConfigException(`The neatChromosome generator requires a NeatCrossover operator, but  ${typeof crossoverOperator} was specified`);
+                }
+                return new NeatChromosomeGenerator(
                     InputExtraction.extractSpriteInfo(Container.vmWrapper),
                     eventExtractor.extractEvents(Container.vm),
-                    this._config['inputRate']);
-            }
-            case 'fullyConnectedNetwork': {
-                const eventExtractor = this.getEventExtractor();
-                return new NeatChromosomeGeneratorFullyConnected(this._config['mutation'],
-                    this._config['crossover'],
+                    this.getInputConnectionMethod(),
                     this.neuroevolutionProperties.activationFunction,
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper),
-                    eventExtractor.extractEvents(Container.vm));
-            }
-            case 'hiddenNodeFullyConnectedNetwork': {
-                const eventExtractor = this.getEventExtractor();
-                return new NeatChromosomeGeneratorHiddenNodeFC(this._config['mutation'],
-                    this._config['crossover'],
-                    this.neuroevolutionProperties.activationFunction,
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper),
-                    eventExtractor.extractEvents(Container.vm));
+                    mutationOperator,
+                    crossoverOperator,
+                    Number(this._config['inputRate']));
             }
             case 'test':
                 return new TestChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
@@ -598,6 +586,18 @@ export class WhiskerSearchConfiguration {
                 return ActivationFunction.NONE;
         }
         throw new ConfigException("Unknown Activation Function " + this._config['chromosome']['activationFunction']);
+    }
+
+    public getInputConnectionMethod(): InputConnectionMethod {
+        switch (this._config['chromosome']['inputConnectionMethod']) {
+            case'sparse':
+                return 'sparse';
+            case 'fullyHidden':
+                return 'fullyHidden';
+            case 'fully':
+                return 'fully';
+        }
+        throw new ConfigException("Unknown InputConnectionMethod " + this._config['chromosome']['inputConnectionMethod']);
     }
 
     public getWaitStepUpperBound(): number {

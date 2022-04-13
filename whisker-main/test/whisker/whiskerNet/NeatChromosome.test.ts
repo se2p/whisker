@@ -14,10 +14,10 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 
 describe('Test NetworkChromosome', () => {
 
@@ -26,7 +26,7 @@ describe('Test NetworkChromosome', () => {
     let crossoverConfig: Record<string, (string | number)>;
     let crossoverOp: NeatCrossover;
     let genInputs: Map<string, Map<string, number>>;
-    let generator: NeatChromosomeGeneratorSparse;
+    let generator: NeatChromosomeGenerator;
     let chromosome: NeatChromosome;
     let properties: NeatProperties;
     const activationFunction =  ActivationFunction.SIGMOID;
@@ -75,8 +75,8 @@ describe('Test NetworkChromosome', () => {
         genInputs.set("Sprite2", sprite2);
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, activationFunction, genInputs,
-            events, 0.4);
+        generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
+            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
         chromosome = generator.get();
         properties = new NeatProperties();
         properties.populationSize = 10;
@@ -238,7 +238,7 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, false, 1, false));
         connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
 
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -296,8 +296,8 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, false, 1, false));
         connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
 
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
-        const chromosome2 = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
+        const chromosome2 = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -358,7 +358,7 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, true, 1, false));
         connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
 
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -417,7 +417,7 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(hiddenNode, deepHiddenNode, 0.8, true, 1, false));
         connections.push(new ConnectionGene(deepHiddenNode, nodes[5], 0.9, true, 1, false));
 
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         const sprite2 = new Map<string, number>();
@@ -481,7 +481,7 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(deepHiddenNode, hiddenNode, 1, true, 1, true));
         connections.push(new ConnectionGene(deepHiddenNode, nodes[4], 0.9, true, 1, false));
 
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -545,7 +545,7 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(deepHiddenNode, deepHiddenNode, 1, true, 12, true));
         connections.push(new ConnectionGene(nodes[5], deepHiddenNode, 1, true, 13, true));
 
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
         const threshold = chromosome.allNodes.length * chromosome.allNodes.length;
         expect(chromosome.isRecurrentPath(deepHiddenNode, hiddenNode, 0, threshold)).toBeTruthy();
         expect(chromosome.isRecurrentPath(deepHiddenNode, deepHiddenNode, 0, threshold)).toBeTruthy();
@@ -557,8 +557,6 @@ describe('Test NetworkChromosome', () => {
     });
 
     test("Test getRegressionNodes", () => {
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
-            genInputs, [new WaitEvent(), new MouseMoveEvent()], 0.5);
         chromosome = generator.get();
         const regressionNodes = chromosome.regressionNodes;
         expect(regressionNodes.get("WaitEvent").length).toEqual(1);
@@ -566,16 +564,17 @@ describe('Test NetworkChromosome', () => {
     });
 
     test("Test updateOutputNodes", () => {
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
-            genInputs, [new WaitEvent()], 0.5);
-        chromosome = generator.get();
-        const chromosome2 = generator.get();
-        const chromosome3 = generator.get();
+        const hiddenNodeGenerator = new NeatChromosomeGenerator(genInputs, [new WaitEvent()], 'fullyHidden',
+            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+        chromosome = hiddenNodeGenerator.get();
+        const chromosome2 = hiddenNodeGenerator.get();
+        const chromosome3 = hiddenNodeGenerator.get();
         const oldNodeSize = chromosome.allNodes.length;
         const oldOutputNodesSize = chromosome.outputNodes.length;
         const oldRegressionNodesSize = chromosome.regressionNodes.size;
         const oldMapSize = NeatPopulation.nodeToId.size;
         const oldConnectionSize = chromosome.connections.length;
+        const nHiddenNodesBefore = chromosome.allNodes.filter(node => node instanceof HiddenNode).length;
         chromosome.updateOutputNodes([new MouseMoveEvent()]);
         chromosome2.updateOutputNodes([new MouseMoveEvent()]);
         chromosome3.updateOutputNodes([new KeyPressEvent('up arrow')]);
@@ -584,6 +583,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.regressionNodes.size).toBeGreaterThan(oldRegressionNodesSize);
         expect(chromosome.connections.length).toBeGreaterThan(oldConnectionSize);
         expect(NeatPopulation.nodeToId.size).toBe(oldMapSize + 5);
+        expect(nHiddenNodesBefore).toBeLessThan(chromosome.allNodes.filter(node => node instanceof HiddenNode).length);
         expect(chromosome.outputNodes[chromosome.outputNodes.length - 1].uID).toEqual(
             chromosome2.outputNodes[chromosome2.outputNodes.length - 1].uID);
         expect(chromosome.outputNodes[chromosome.outputNodes.length - 1].uID).not.toEqual(
@@ -591,8 +591,6 @@ describe('Test NetworkChromosome', () => {
     });
 
     test("Test setUpInputs", () => {
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, ActivationFunction.SIGMOID,
-            genInputs, [new WaitEvent()], 0.5);
         chromosome = generator.get();
         genInputs.set("New", new Map<string, number>());
         genInputs.get("New").set("First", 1);
