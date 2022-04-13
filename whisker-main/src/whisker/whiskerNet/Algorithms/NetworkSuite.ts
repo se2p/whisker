@@ -117,6 +117,7 @@ export abstract class NetworkSuite {
 
         // Record activation traces
         if (this.properties.activationTraceRepetitions > 0) {
+            console.log("Recording Activation Trace");
             await this.collectActivationTrace();
         }
 
@@ -227,6 +228,7 @@ export abstract class NetworkSuite {
      */
     private async collectActivationTrace(): Promise<void> {
         const repetitions = parseInt(this.properties.activationTraceRepetitions as string);
+        const originalSeed = Randomness.scratchSeed;
         const scratchSeeds = Array(repetitions).fill(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER)).map(
             () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
         for (const test of this.testCases) {
@@ -235,10 +237,13 @@ export abstract class NetworkSuite {
                 await this.executeTestCase(test, false);
             }
 
-            // Save the recorded AT as reference and reset the current AT for the actual test subjects.
+            // Save the recorded AT and uncertainty as reference and reset the current ones
             test.referenceActivationTrace = test.currentActivationTrace.clone();
             test.currentActivationTrace = undefined;
+            test.referenceUncertainty = new Map<number, number>(test.currentUncertainty);
+            test.currentUncertainty = new Map<number, number>();
         }
+        Randomness.setScratchSeed(originalSeed);
         StatisticsCollector.getInstance().numberFitnessEvaluations = 0;
     }
 
@@ -287,10 +292,25 @@ export abstract class NetworkSuite {
      */
     protected updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
                                    testName: Readonly<string>): void {
+        // TODO Move to a NetworkAnalysis class...
         for (const test of testCases) {
             test.determineCoveredObjectives([...this.statementMap.values()]);
-            const uncertaintyValues = [...test.uncertainty.values()];
-            const uncertainty = uncertaintyValues.reduce((pv, cv) => pv + cv, 0) / uncertaintyValues.length;
+            const currentUncertainty = [...test.currentUncertainty.values()];
+            const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
+            const maximumUncertainty = Math.max(...currentUncertainty);
+
+            const deltaUncertainty: number[] = [];
+            for(const [step, refUncertainty] of test.referenceUncertainty.entries()){
+                if(!test.currentUncertainty.has(step)){
+                    break;
+                }
+                const currUncertainty = test.currentUncertainty.get(step);
+                deltaUncertainty.push(Math.abs(currUncertainty - refUncertainty));
+            }
+
+            const avgDeltaUnc = deltaUncertainty.reduce((pv, cv) => pv + cv, 0) / deltaUncertainty.length;
+            const maxDeltaUnc = Math.max(...deltaUncertainty);
+
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
                 testName: testName,
@@ -303,7 +323,10 @@ export abstract class NetworkSuite {
                 surpriseNodeAdequacy: test.surpriseAdequacyNodes,
                 surpriseCount: test.surpriseCounterNormalised,
                 zScore: test.zScore,
-                uncertainty: uncertainty
+                avgUncertainty: averageUncertainty,
+                maxUncertainty: maximumUncertainty,
+                avgDeltaUncertainty: avgDeltaUnc,
+                maxDeltaUncertainty: maxDeltaUnc
             };
             StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
         }

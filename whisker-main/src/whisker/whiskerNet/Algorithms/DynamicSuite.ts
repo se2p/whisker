@@ -54,13 +54,13 @@ export class DynamicSuite extends NetworkSuite {
      * analysing network metrics.
      */
     protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<void> {
-        test.recordActivationTrace = true;
+        test.recordNetworkStatistics = true;
         await this.executor.execute(test);
         if (recordExecution) {
             this.updateArchive(test);
             this.extractNetworkStatistics(test);
         }
-        test.recordActivationTrace = false;
+        test.recordNetworkStatistics = false;
         this.executor.resetState();
     }
 

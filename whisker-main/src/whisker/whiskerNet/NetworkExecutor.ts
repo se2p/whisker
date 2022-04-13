@@ -323,12 +323,12 @@ export class NetworkExecutor {
      * @param inputs the inputs from which an activationTrace will be recorded within the input nodes.
      */
     private recordActivationTrace(network: NetworkChromosome, step: number, inputs: Map<string, Map<string, number>>) {
-        if (network.recordActivationTrace && step > 0 && (step % 5 == 0 || step == 1)) {
+        if (network.recordNetworkStatistics && step > 0 && (step % 5 == 0 || step == 1)) {
             network.setUpInputs(inputs);
             network.updateActivationTrace(step);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
             if (probabilities.size > 0) {
-                network.uncertainty.set(step, 1 - [...probabilities.values()].reduce(
+                network.currentUncertainty.set(step, 1 - [...probabilities.values()].reduce(
                     (pv, cv) => pv + Math.pow(cv, 2), 0));
             }
         }

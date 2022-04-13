@@ -61,7 +61,7 @@ export class StaticSuite extends NetworkSuite {
      * test execution statistics
      */
     protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<void> {
-        test.recordActivationTrace = true;
+        test.recordNetworkStatistics = true;
         await this.executor.executeSavedTrace(test);
         if (recordExecution) {
             this.updateArchive(test);

@@ -93,6 +93,7 @@ export class NeatChromosome extends NetworkChromosome {
         if (this.referenceActivationTrace !== undefined) {
             clone.referenceActivationTrace = this.referenceActivationTrace.clone();
         }
+        clone.referenceUncertainty = new Map<number, number>(this.referenceUncertainty);
         return clone;
     }
 
@@ -147,6 +148,8 @@ export class NeatChromosome extends NetworkChromosome {
         if (this.currentActivationTrace !== undefined) {
             clone.currentActivationTrace = this.currentActivationTrace.clone();
         }
+        clone.referenceUncertainty = new Map<number, number>(this.referenceUncertainty);
+        clone.currentUncertainty = new Map<number, number>(this.currentUncertainty);
         return clone;
     }
 

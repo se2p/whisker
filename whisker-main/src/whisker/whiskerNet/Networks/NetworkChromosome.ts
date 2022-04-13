@@ -65,7 +65,7 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Determines whether an ActivationTrace should be recorded during a playthrough.
      */
-    private _recordActivationTrace = false;
+    private _recordNetworkStatistics = false;
 
     /**
      * The average surprise value across all steps and nodes.
@@ -88,9 +88,14 @@ export abstract class NetworkChromosome extends Chromosome {
     private _zScore = 0;
 
     /**
-     * Saves the certainty of a softmax classification in at given step.
+     * Maps the previously observed uncertainty of the network classification to a certain step.
      */
-    private _uncertainty = new Map<number, number>();
+    private _referenceUncertainty = new Map<number, number>();
+
+    /**
+     * Maps currently observed uncertainty of the network classification to a certain step.
+     */
+    private _currentUncertainty = new Map<number, number>();
 
     /**
      * Maps each uncovered target statement to the number of times it has been covered using different seeds.
@@ -725,12 +730,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._referenceActivationTrace = value;
     }
 
-    get recordActivationTrace(): boolean {
-        return this._recordActivationTrace;
+    get recordNetworkStatistics(): boolean {
+        return this._recordNetworkStatistics;
     }
 
-    set recordActivationTrace(value: boolean) {
-        this._recordActivationTrace = value;
+    set recordNetworkStatistics(value: boolean) {
+        this._recordNetworkStatistics = value;
     }
 
     get surpriseAdequacyStep(): number {
@@ -765,12 +770,20 @@ export abstract class NetworkChromosome extends Chromosome {
         this._zScore = value;
     }
 
-    get uncertainty(): Map<number, number> {
-        return this._uncertainty;
+    get referenceUncertainty(): Map<number, number> {
+        return this._referenceUncertainty;
     }
 
-    set uncertainty(value: Map<number, number>) {
-        this._uncertainty = value;
+    set referenceUncertainty(value: Map<number, number>) {
+        this._referenceUncertainty = value;
+    }
+
+    get currentUncertainty(): Map<number, number> {
+        return this._currentUncertainty;
+    }
+
+    set currentUncertainty(value: Map<number, number>) {
+        this._currentUncertainty = value;
     }
 
     get trace(): ExecutionTrace {

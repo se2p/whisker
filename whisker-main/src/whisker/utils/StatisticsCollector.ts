@@ -303,7 +303,7 @@ export class StatisticsCollector {
         return this._highestPlayTime;
     }
 
-    public addNetworkSuiteResult(results:NetworkTestSuiteResults): void {
+    public addNetworkSuiteResult(results: NetworkTestSuiteResults): void {
         this._networkSuiteResults.push(results);
     }
 
@@ -408,13 +408,15 @@ export class StatisticsCollector {
 
     public asCsvNetworkSuite(): string {
         let csv = "projectName,testName,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
-            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,uncertainty\n";
+            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,avgUncertainty," +
+            "maxUncertainty,avgDeltaUncertainty,maxDeltaUncertainty\n";
 
-        for (const testResult of this._networkSuiteResults){
+        for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.totalObjectives,
                 testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite, testResult.score,
                 testResult.playTime, testResult.surpriseStepAdequacy, testResult.surpriseNodeAdequacy,
-                testResult.surpriseCount, testResult.zScore, testResult.uncertainty];
+                testResult.surpriseCount, testResult.zScore, testResult.avgUncertainty, testResult.maxUncertainty,
+                testResult.avgDeltaUncertainty, testResult.maxDeltaUncertainty];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -484,14 +486,17 @@ export class StatisticsCollector {
 export interface NetworkTestSuiteResults {
     projectName: string,
     testName: string,
-    totalObjectives:number,
+    totalObjectives: number,
     coveredObjectivesByTest: number,
-    coveredObjectivesBySuite:number
+    coveredObjectivesBySuite: number
     score: number,
     playTime: number,
     surpriseStepAdequacy: number
     surpriseNodeAdequacy: number,
     surpriseCount: number,
     zScore: number,
-    uncertainty: number
+    avgUncertainty: number,
+    maxUncertainty: number,
+    avgDeltaUncertainty: number,
+    maxDeltaUncertainty: number
 }
