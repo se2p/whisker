@@ -76,7 +76,7 @@ export class RegressionNode extends NodeGene {
     }
 
     public identifier(): string {
-        return `R:${this.event.stringIdentifier()}-${this.eventParameter}`
+        return `R:${this.event.stringIdentifier()}-${this.eventParameter}`;
     }
 
     toString(): string {

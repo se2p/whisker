@@ -15,6 +15,7 @@ import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import {BiasNode} from "../NetworkComponents/BiasNode";
+import {Container} from "../../utils/Container";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -365,6 +366,7 @@ export abstract class NetworkChromosome extends Chromosome {
 
             // We may have a defect network if none of the activated input nodes has a valid path to an output node.
             if (activationCount == 20) {
+                Container.debugLog("Defect network");
                 return false;
             }
 
@@ -372,7 +374,7 @@ export abstract class NetworkChromosome extends Chromosome {
             for (const node of this._allNodes) {
                 if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
 
-                    // Reset the activation Flag and the activation value.
+                    // Reset the activation Flag and the node value.
                     node.nodeValue = 0.0;
                     node.activatedFlag = false;
 
@@ -474,7 +476,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * @return true if not a single output node has been activated at least once.
      */
     private outputsOff(): boolean {
-        return this.outputNodes.every(node => !node.activatedFlag);
+        return this.outputNodes.every(node => !node.activatedFlag || node.nodeValue === 0);
     }
 
     /**

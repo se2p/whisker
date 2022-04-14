@@ -28,7 +28,7 @@ export abstract class NodeGene {
     /**
      * Activation value of a node.
      */
-    private _activationValue: number
+    private _activationValue = 0;
 
     /**
      * Activation value of the previous time step.
@@ -99,7 +99,7 @@ export abstract class NodeGene {
             return 10;
         }
 
-        let currentDepth: number
+        let currentDepth: number;
         let maxDepth = d;
         // Recursively traverse each incoming connection to find the maximum depth.
         for (const connection of this.incomingConnections) {
