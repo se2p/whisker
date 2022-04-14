@@ -17,7 +17,7 @@ describe("InputNode Tests", () => {
         expect(inputNode.type).toEqual(NodeType.INPUT);
         expect(inputNode.nodeValue).toEqual(0);
         expect(inputNode.lastActivationValue).toEqual(0);
-        expect(inputNode.activationValue).toEqual(undefined);
+        expect(inputNode.activationValue).toEqual(0);
         expect(inputNode.activatedFlag).toBeFalsy();
         expect(inputNode.activationCount).toEqual(0);
         expect(inputNode.traversed).toBeFalsy();

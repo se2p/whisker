@@ -25,7 +25,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNode.type).toBe(NodeType.OUTPUT);
         expect(regressionNode.nodeValue).toBe(0);
         expect(regressionNode.lastActivationValue).toBe(0);
-        expect(regressionNode.activationValue).toBe(undefined);
+        expect(regressionNode.activationValue).toBe(0);
         expect(regressionNode.activatedFlag).toBe(false);
         expect(regressionNode.activationCount).toBe(0);
         expect(regressionNode.traversed).toBe(false);

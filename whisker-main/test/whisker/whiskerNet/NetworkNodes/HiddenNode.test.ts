@@ -19,7 +19,7 @@ describe("hiddenNode Tests", () => {
         expect(hiddenNode.type).toBe(NodeType.HIDDEN);
         expect(hiddenNode.nodeValue).toBe(0);
         expect(hiddenNode.lastActivationValue).toBe(0);
-        expect(hiddenNode.activationValue).toBe(undefined);
+        expect(hiddenNode.activationValue).toBe(0);
         expect(hiddenNode.activatedFlag).toBe(false);
         expect(hiddenNode.activationCount).toBe(0);
         expect(hiddenNode.traversed).toBe(false);

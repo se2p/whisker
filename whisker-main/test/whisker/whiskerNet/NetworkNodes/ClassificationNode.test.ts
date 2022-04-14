@@ -22,7 +22,7 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.type).toBe(NodeType.OUTPUT);
         expect(classificationNode.nodeValue).toBe(0);
         expect(classificationNode.lastActivationValue).toBe(0);
-        expect(classificationNode.activationValue).toBe(undefined);
+        expect(classificationNode.activationValue).toBe(0);
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.activationCount).toBe(0);
         expect(classificationNode.traversed).toBeFalsy();
