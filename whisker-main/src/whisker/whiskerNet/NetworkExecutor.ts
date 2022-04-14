@@ -175,6 +175,7 @@ export class NetworkExecutor {
         this._vmWrapper.start();
 
         const eventTrace = network.trace.events;
+        const statementTarget = network.targetFitness as StatementFitnessFunction;
         const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {
 
@@ -192,6 +193,14 @@ export class NetworkExecutor {
 
             // Record Activation trace.
             this.recordActivationTrace(network, i, spriteFeatures);
+
+            // Check if we have reached our selected target and stop if this is the case.
+            if (this._stopEarly && statementTarget !== undefined) {
+                const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
+                if (currentCoverage.has(statementTarget.getTargetNode().id)) {
+                    break;
+                }
+            }
         }
 
         // Set score and play time.
