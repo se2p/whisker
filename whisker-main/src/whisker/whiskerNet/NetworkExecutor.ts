@@ -86,11 +86,11 @@ export class NetworkExecutor {
         let stepCount = 0;
 
         // Play the game until we reach a GameOver state or the timeout.
-        const startTime = Date.now();
         const statementTarget = network.targetFitness as StatementFitnessFunction;
         const isGreenFlag = this._stopEarly &&
             statementTarget !== undefined &&
             statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
+        const startTime = Date.now();
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm);
@@ -166,16 +166,16 @@ export class NetworkExecutor {
      * Executes an execution trace that is saved within the network.
      * @param network the network holding the execution trace.
      */
-    public async executeSavedTrace(network: NetworkChromosome): Promise<void> {
+    public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
-        const startTime = Date.now();
 
         const eventTrace = network.trace.events;
+        const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {
 
             // Stop if project is no longer running.
@@ -199,12 +199,14 @@ export class NetworkExecutor {
         network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
+        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, eventTrace);
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // Stop VM and remove listeners.
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
+        return network.trace;
     }
 
     /**
