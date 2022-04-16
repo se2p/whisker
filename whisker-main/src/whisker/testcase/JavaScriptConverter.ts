@@ -18,18 +18,30 @@
  *
  */
 
-import {TestChromosome} from "./TestChromosome";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
 import {Container} from "../utils/Container";
 
 export class JavaScriptConverter {
 
-    getText(test: TestChromosome): string {
-        let text = "const test = async function (t) {\n";
-        for (const {event} of test.trace.events) {
+    private getTestBody(test: WhiskerTest) {
+        let text = "";
+        let position = 0;
+
+        for (const {event} of test.chromosome.trace.events) {
             text += "  " + event.toJavaScript() + "\n";
+            for (const assertion of test.getAssertionsAt(position)) {
+                text += "  " + assertion.toJavaScript() + "\n";
+            }
+            position++;
         }
         text += "  t.end();\n";
+
+        return text;
+    }
+
+    getText(test: WhiskerTest): string {
+        let text = "const test = async function (t) {\n";
+        text += this.getTestBody(test);
         text += `}
 
         module.exports = [
@@ -60,9 +72,7 @@ export class JavaScriptConverter {
             let footer = "";
             for (const test of tests) {
                 text += "const test" + i + " = async function (t) {\n";
-                for (const {event} of test.chromosome.trace.events) {
-                    text += "  " + event.toJavaScript() + "\n";
-                }
+                text += this.getTestBody(test);
                 text += "}\n";
 
                 footer += "  {\n";

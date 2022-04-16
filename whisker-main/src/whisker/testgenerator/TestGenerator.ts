@@ -31,6 +31,7 @@ import Arrays from "../utils/Arrays";
 import {TestMinimizer} from "./TestMinimizer";
 import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
+import { AssertionGenerator } from './AssertionGenerator';
 
 export abstract class TestGenerator {
 
@@ -86,11 +87,20 @@ export abstract class TestGenerator {
     }
 
     protected async getTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
+        let whiskerTests = [];
+
         if (this._config.isMinimizationActive()) {
-            return await this.getMinimizedTestSuite(tests);
+            whiskerTests = await this.getMinimizedTestSuite(tests);
         } else {
-            return this.getCoveringTestSuite(tests);
+            whiskerTests = this.getCoveringTestSuite(tests);
         }
+
+        if (this._config.isAssertionGenerationActive()) {
+            const assertionGenerator = new AssertionGenerator();
+            await assertionGenerator.addAssertions(whiskerTests);
+        }
+
+        return whiskerTests;
     }
 
     protected async getMinimizedTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {

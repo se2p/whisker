@@ -590,4 +590,12 @@ export class WhiskerSearchConfiguration {
             return true; // default
         }
     }
+
+    public isAssertionGenerationActive(): boolean {
+        if ("assertions" in this._config) {
+            return this._config['assertions'];
+        } else {
+            return true; // default
+        }
+    }
 }

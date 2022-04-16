@@ -20,6 +20,8 @@
 
 import {TestChromosome} from '../testcase/TestChromosome';
 import {JavaScriptConverter} from "../testcase/JavaScriptConverter";
+import {WhiskerAssertion} from "./assertions/WhiskerAssertion";
+import assert from "assert";
 
 /**
  * Internal representation of a test case such that we
@@ -31,6 +33,7 @@ export class WhiskerTest {
 
     private readonly _chromosome: TestChromosome
 
+    private _assertions = new Map<number, WhiskerAssertion[]>();
 
     // TODO: Could also use a static factory to convert from TestChromosome?
     // eslint-disable-next-line no-unused-vars
@@ -42,16 +45,48 @@ export class WhiskerTest {
         return this._chromosome;
     }
 
+    get assertions(): Map<number, WhiskerAssertion[]> {
+        return this._assertions;
+    }
+
+    getAssertionsAt(position: number): WhiskerAssertion[] {
+        if (this._assertions.has(position)) {
+            return this._assertions.get(position);
+        } else {
+            return [];
+        }
+    }
+
+
+    addAssertion(position: number, assertion: WhiskerAssertion):void {
+        if (!this._assertions.has(position)) {
+            this._assertions.set(position, [assertion]);
+        } else {
+            this._assertions.get(position).push(assertion);
+        }
+    }
+
     /**
      * JavaScript code that can be executed with the regular Whisker UI
      */
     toJavaScriptCode(): string {
         const jsConverter = new JavaScriptConverter();
-        return jsConverter.getText(this._chromosome);
+        return jsConverter.getText(this);
     }
 
     public toString = () : string => {
-        return this._chromosome.toString();
+        assert(this._chromosome.trace != null);
+        let text = "";
+        let position = 0;
+        for (const {event} of this._chromosome.trace.events) {
+            text += event.toString() + "\n";
+            for (const assertion of this.getAssertionsAt(position)) {
+                text += assertion.toString() + "\n";
+            }
+            position++;
+        }
+
+        return text;
     }
 
     getEventsCount(): number {
