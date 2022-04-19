@@ -598,4 +598,13 @@ export class WhiskerSearchConfiguration {
             return true; // default
         }
     }
+
+    public isMinimizeAssertionsActive(): boolean {
+        if ("minimize_assertions" in this._config) {
+            return this._config['minimize_assertions'];
+        } else {
+            return true; // default
+        }
+    }
+
 }

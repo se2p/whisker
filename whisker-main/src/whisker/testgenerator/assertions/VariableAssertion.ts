@@ -6,16 +6,24 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 
 export class VariableAssertion extends WhiskerAssertion {
 
+    private readonly _variableID: string;
     private readonly _variableName: string;
     private readonly _variableValue: string;
 
-    constructor (target: RenderedTarget, variableName: string, variableValue: any) {
+    constructor (target: RenderedTarget, variableID: string, variableName: string, variableValue: any) {
         super(target);
+        this._variableID = variableID;
         this._variableName = variableName;
         this._variableValue = variableValue;
     }
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
+        for (const targetState of Object.values(state)) {
+            if (targetState.name === this._target.getName() && !targetState.clone) {
+                return targetState.variables[this._variableID].value == this._variableValue;
+            }
+        }
+
         return false;
     }
 
@@ -41,7 +49,7 @@ export class VariableAssertion extends WhiskerAssertion {
                     for (const [variableName, variableValue] of Object.entries(targetState.variables)) {
                         const variable = variableValue as Variable;
                         if (variable.type == Variable.SCALAR_TYPE) {
-                            assertions.push(new VariableAssertion(targetState.target, variable.name, variable.value));
+                            assertions.push(new VariableAssertion(targetState.target, variableName, variable.name, variable.value));
                         }
                     }
                 }

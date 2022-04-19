@@ -1,6 +1,7 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {Container} from "../../utils/Container";
 
 export class TouchingAssertion extends WhiskerAssertion {
 
@@ -9,11 +10,17 @@ export class TouchingAssertion extends WhiskerAssertion {
 
     constructor (target: RenderedTarget, otherTarget: string, touching: boolean, cloneIndex?: number) {
         super(target, cloneIndex);
-        this._otherTarget  = otherTarget;
-        this._touching     = touching;
+        this._otherTarget = otherTarget;
+        this._touching    = touching;
     }
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
+        for (const targetState of Object.values(state)) {
+            if (targetState.name === this._target.getName() && targetState.cloneIndex === this._cloneIndex) {
+                return targetState.touching[this._otherTarget] === this._touching;
+            }
+        }
+
         return false;
     }
 

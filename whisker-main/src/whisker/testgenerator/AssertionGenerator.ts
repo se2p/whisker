@@ -16,6 +16,7 @@ import {VariableAssertion} from "./assertions/VariableAssertion";
 import {VisibilityAssertion} from "./assertions/VisibilityAssertion";
 import {VolumeAssertion} from "./assertions/VolumeAssertion";
 import {CloneCountAssertion} from "./assertions/CloneCountAssertion";
+import assert from "assert";
 
 export class AssertionGenerator {
 
@@ -53,6 +54,7 @@ export class AssertionGenerator {
                 for (const assertionFactory of this.assertionFactories) {
                     const assertions = assertionFactory.createAssertions(trace[position/2]);
                     for (const assertion of assertions) {
+                        assert(assertion.evaluate(trace[position/2])); // Just while testing
                         test.addAssertion(position + 1, assertion);
                     }
                 }
@@ -60,6 +62,38 @@ export class AssertionGenerator {
             Container.debugLog("Resulting test: "+test);
         }
     }
+
+    public async addStateChangeAssertions(tests: WhiskerTest[]): Promise<void> {
+
+        Container.debugLog("Adding assertions");
+
+        // determine relevant attributes?
+        for (const test of tests) {
+            // produce execution trace
+            const trace = await this._executeWithObserver(test);
+
+            // trace should be same length as events in test
+            const numEvents = test.getEventsCount();
+            Container.debugLog("Adding assertions to test "+test+" of length "+numEvents);
+
+            Container.debugLog("Trace length: "+trace.length);
+            // for each event
+            for (let position = 2; position < numEvents; position+=2) {
+                const stateBefore = trace[(position/2) - 1];
+                const stateAfter  = trace[position/2];
+                for (const assertionFactory of this.assertionFactories) {
+                    const assertionsAfter = assertionFactory.createAssertions(stateAfter);
+                    for (const assertion of assertionsAfter) {
+                        if (!assertion.evaluate(stateBefore)) {
+                            test.addAssertion(position + 1, assertion);
+                        }
+                    }
+                }
+            }
+            Container.debugLog("Resulting test: "+test);
+        }
+    }
+
 
     private async _executeWithObserver(test: WhiskerTest)  {
         const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(),

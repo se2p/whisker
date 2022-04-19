@@ -12,6 +12,15 @@ export class DirectionAssertion extends WhiskerAssertion {
     }
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
+        for (const targetState of Object.values(state)) {
+            if (targetState.name === this._target.getName()) {
+                if (this._cloneIndex !== undefined && this._cloneIndex !== targetState.cloneIndex) {
+                    continue;
+                }
+                return targetState.direction == this._direction;
+            }
+        }
+
         return false;
     }
 

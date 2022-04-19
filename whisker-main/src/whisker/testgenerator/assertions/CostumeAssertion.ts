@@ -12,8 +12,16 @@ export class CostumeAssertion extends WhiskerAssertion {
     }
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
-        return false;
-    }
+        for (const targetState of Object.values(state)) {
+            if (targetState.name === this._target.getName()) {
+                if (this._cloneIndex !== undefined && this._cloneIndex !== targetState.cloneIndex) {
+                    continue;
+                }
+                return targetState.costume == this._costume;
+            }
+        }
+
+        return false;    }
 
     toString(): string {
         return `assert ${this.getTargetName()} has costume ${this._costume}`;

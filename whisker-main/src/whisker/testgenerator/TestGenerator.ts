@@ -97,7 +97,11 @@ export abstract class TestGenerator {
 
         if (this._config.isAssertionGenerationActive()) {
             const assertionGenerator = new AssertionGenerator();
-            await assertionGenerator.addAssertions(whiskerTests);
+            if (this._config.isMinimizeAssertionsActive()) {
+                await assertionGenerator.addStateChangeAssertions(whiskerTests);
+            } else {
+                await assertionGenerator.addAssertions(whiskerTests);
+            }
         }
 
         return whiskerTests;
