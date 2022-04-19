@@ -32,7 +32,7 @@ export class VariableAssertion extends WhiskerAssertion {
     }
     toJavaScript(): string {
         if (this._target.isStage) {
-            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}", false).value, ${this._variableValue}, "Expected ${this._variableName} to have length ${this._variableValue}");`;
+            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}", false).value, ${this._variableValue}, "Expected ${this._variableName} to have value ${this._variableValue}");`;
         } else {
             return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}").value, ${this._variableValue}, "Expected ${this._variableName} to have value ${this._variableValue} in ${this.getTargetName()}");`;
         }
