@@ -20,7 +20,7 @@ export class LayerAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has layer ${this._layer}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").layerOrder, ${this._layer});`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").layerOrder, ${this._layer}, "Expected ${this._targetName} to be at layer ${this._layer}");`;
     }
 
     static createFactory() : AssertionFactory<LayerAssertion>{

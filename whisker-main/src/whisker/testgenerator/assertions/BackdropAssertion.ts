@@ -18,7 +18,7 @@ export class BackdropAssertion extends WhiskerAssertion {
         return `assert stage has backdrop ${this._backdrop}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("Stage").costume, ${this._backdrop});`;
+        return `t.assert.equal(t.getStage().currentCostume, ${this._backdrop}, "Expected backdrop ${this._backdrop}");`;
     }
     static createFactory() : AssertionFactory<BackdropAssertion>{
         return new (class implements AssertionFactory<BackdropAssertion> {

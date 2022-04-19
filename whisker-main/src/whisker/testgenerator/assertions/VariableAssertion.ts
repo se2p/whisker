@@ -24,7 +24,11 @@ export class VariableAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} variable ${this._variableName} has value ${this._variableValue}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").getVariable("${this._variableName}"), ${this._variableValue});`;
+        if (this._targetName === "Stage") {
+            return `t.assert.equal(t.getStage().getVariable("${this._variableName}"), ${this._variableValue}, "Expected ${this._variableName} to have value ${this._variableValue}");`;
+        } else {
+            return `t.assert.equal(t.getSprite("${this._targetName}").getVariable("${this._variableName}"), ${this._variableValue}, "Expected ${this._variableName} of sprite ${this._targetName} to have value ${this._variableValue}");`;
+        }
     }
 
     static createFactory() : AssertionFactory<VariableAssertion>{

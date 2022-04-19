@@ -27,9 +27,9 @@ export class TouchingAssertion extends WhiskerAssertion {
     }
     toJavaScript(): string {
         if (this._touching) {
-            return `t.assert.ok(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"));`;
+            return `t.assert.ok(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"), "Expected ${this._targetName} to touch ${this._otherTarget}");`;
         } else {
-            return `t.assert.not(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"));`;
+            return `t.assert.not(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"), "Expected ${this._targetName} not to touch ${this._otherTarget}");`;
         }
     }
 

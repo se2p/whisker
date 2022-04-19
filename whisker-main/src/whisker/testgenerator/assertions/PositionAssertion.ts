@@ -22,7 +22,7 @@ export class PositionAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has position ${this._x}/${this._y}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").pos, {x: ${this._x}, y: ${this._y}});`;
+        return `t.assert.equalDictionaries(t.getSprite("${this._targetName}").pos, {x: ${this._x}, y: ${this._y}}, "Expected ${this._targetName} to have position ${this._x}, ${this._y}");`;
     }
 
     static createFactory() : AssertionFactory<PositionAssertion>{

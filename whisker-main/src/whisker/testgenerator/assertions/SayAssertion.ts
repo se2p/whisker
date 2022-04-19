@@ -24,7 +24,11 @@ export class SayAssertion extends WhiskerAssertion {
         }
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").sayText, ${this._text});`;
+        if (this._text) {
+            return `t.assert.equal(t.getSprite("${this._targetName}").sayText, ${this._text}, "Expected ${this._targetName} to say ${this._text}");`;
+        } else {
+            return `t.assert.not(t.getSprite("${this._targetName}").sayText, "Expected ${this._targetName} not to say anything");`;
+        }
     }
 
     static createFactory() : AssertionFactory<SayAssertion>{

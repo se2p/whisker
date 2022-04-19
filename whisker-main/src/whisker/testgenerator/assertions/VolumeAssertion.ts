@@ -20,7 +20,7 @@ export class VolumeAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has volume ${this._volume}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").volume, ${this._volume});`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").volume, ${this._volume}, "Expected ${this._targetName} to have volume ${this._volume}");`;
     }
 
     static createFactory() : AssertionFactory<VolumeAssertion>{

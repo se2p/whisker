@@ -20,7 +20,7 @@ export class CloneCountAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has clones: ${this._count}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").getCloneCount(), ${this._count});`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").getCloneCount(), ${this._count}, "Expected ${this._targetName} to have ${this._count} clones");`;
     }
 
     static createFactory() : AssertionFactory<CloneCountAssertion>{
@@ -29,6 +29,9 @@ export class CloneCountAssertion extends WhiskerAssertion {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
                     if (targetState.name === "Stage") {
+                        continue;
+                    }
+                    if (targetState.clone) {
                         continue;
                     }
                     assertions.push(new CloneCountAssertion(targetState.name, targetState.cloneCount));

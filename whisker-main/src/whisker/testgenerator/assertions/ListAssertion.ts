@@ -24,7 +24,11 @@ export class ListAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} list variable ${this._variableName} has length ${this._variableValue.length}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").getList("${this._variableName}").length, ${this._variableValue.length});`;
+        if (this._targetName === "Stage") {
+            return `t.assert.equal(t.getStage().getList("${this._variableName}").length, ${this._variableValue.length}, "Expected list ${this._variableName} to have length ${this._variableValue.length}");`;
+        } else {
+            return `t.assert.equal(t.getSprite("${this._targetName}").getList("${this._variableName}").length, ${this._variableValue.length}, "Expected list ${this._variableName} of sprite ${this._targetName} to have length ${this._variableValue.length}");`;
+        }
     }
 
     static createFactory() : AssertionFactory<ListAssertion>{
