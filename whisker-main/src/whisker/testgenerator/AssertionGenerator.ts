@@ -1,11 +1,38 @@
 import { WhiskerTest } from "./WhiskerTest";
-import {BooleanAssertion} from "./assertions/BooleanAssertion";
 import {Container} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {AssertionObserver} from "./assertions/AssertionObserver";
+import {BackdropAssertion} from "./assertions/BackdropAssertion";
+import {CostumeAssertion} from "./assertions/CostumeAssertion";
+import {DirectionAssertion} from "./assertions/DirectionAssertion";
+import {GraphicsEffectAssertion} from "./assertions/GraphicsEffectAssertion";
+import {LayerAssertion} from "./assertions/LayerAssertion";
+import {ListAssertion} from "./assertions/ListAssertion";
+import {PositionAssertion} from "./assertions/PositionAssertion";
+import {SayAssertion} from "./assertions/SayAssertion";
+import {SizeAssertion} from "./assertions/SizeAssertion";
+import {TouchingAssertion} from "./assertions/TouchingAssertion";
+import {VariableAssertion} from "./assertions/VariableAssertion";
+import {VisibilityAssertion} from "./assertions/VisibilityAssertion";
+import {VolumeAssertion} from "./assertions/VolumeAssertion";
+import {CloneCountAssertion} from "./assertions/CloneCountAssertion";
 
 export class AssertionGenerator {
 
+    private assertionFactories = [BackdropAssertion.createFactory(),
+        CostumeAssertion.createFactory(),
+        CloneCountAssertion.createFactory(),
+        DirectionAssertion.createFactory(),
+        GraphicsEffectAssertion.createFactory(),
+        LayerAssertion.createFactory(),
+        ListAssertion.createFactory(),
+        PositionAssertion.createFactory(),
+        SayAssertion.createFactory(),
+        SizeAssertion.createFactory(),
+        TouchingAssertion.createFactory(),
+        VariableAssertion.createFactory(),
+        VisibilityAssertion.createFactory(),
+        VolumeAssertion.createFactory()];
 
     public async addAssertions(tests: WhiskerTest[]): Promise<void> {
 
@@ -14,18 +41,21 @@ export class AssertionGenerator {
         // determine relevant attributes?
         for (const test of tests) {
             // produce execution trace
-            const trace = this._executeWithObserver(test);
+            const trace = await this._executeWithObserver(test);
 
             // trace should be same length as events in test
             const numEvents = test.getEventsCount();
             Container.debugLog("Adding assertions to test "+test+" of length "+numEvents);
 
+            Container.debugLog("Trace length: "+trace.length);
             // for each event
-            for (let position = 0; position < numEvents; position++) {
-                //   for each attribute
-                //     if attribute changed value:
-                //       add assertion to current event
-                test.addAssertion(position, new BooleanAssertion(true));
+            for (let position = 0; position < numEvents; position+=2) {
+                for (const assertionFactory of this.assertionFactories) {
+                    const assertions = assertionFactory.createAssertions(trace[position/2]);
+                    for (const assertion of assertions) {
+                        test.addAssertion(position, assertion);
+                    }
+                }
             }
             Container.debugLog("Resulting test: "+test);
         }

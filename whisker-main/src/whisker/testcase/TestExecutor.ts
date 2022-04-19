@@ -323,6 +323,7 @@ export class TestExecutor {
         this._vmWrapper.inputs.resetKeyboard();
     }
 
+    // TODO: Size?
     private recordInitialState() {
         for (const targetsKey in this._vm.runtime.targets) {
             this._initialState[targetsKey] = {
