@@ -87,6 +87,22 @@ assert.equal = function (actual, expected, ...message) {
  * @param {*} expected .
  * @param {...*} message .
  */
+assert.equalDictionaries = function (actual, expected, ...message) {
+    if (!(JSON.stringify(actual) === JSON.stringify(expected))) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: actual,
+            expected: expected,
+            operator: '=='
+        });
+    }
+};
+
+/**
+ * @param {*} actual .
+ * @param {*} expected .
+ * @param {...*} message .
+ */
 assert.strictEqual = function (actual, expected, ...message) {
     if (!(actual === expected)) {
         throw new AssertionError({
