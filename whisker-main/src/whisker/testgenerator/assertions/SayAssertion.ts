@@ -6,8 +6,8 @@ export class SayAssertion extends WhiskerAssertion {
 
     private readonly _text: string;
 
-    constructor (target: RenderedTarget, text: string) {
-        super(target);
+    constructor (target: RenderedTarget, text: string, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._text = text;
     }
 
@@ -17,7 +17,7 @@ export class SayAssertion extends WhiskerAssertion {
                 if (this._cloneIndex !== undefined && this._cloneIndex !== targetState.cloneIndex) {
                     continue;
                 }
-                return targetState.bubbleState == this._text;
+                return targetState.bubbleState === this._text;
             }
         }
 
@@ -47,11 +47,7 @@ export class SayAssertion extends WhiskerAssertion {
                     if (targetState.target.isStage) {
                         continue;
                     }
-                    if (!targetState.target.isOriginal) {
-                        // TODO: Can clones say something that original sprites don't also say?
-                        continue;
-                    }
-                    assertions.push(new SayAssertion(targetState.target, targetState.bubbleState));
+                    assertions.push(new SayAssertion(targetState.target, targetState.bubbleState, targetState.cloneIndex));
                 }
 
                 return assertions;
