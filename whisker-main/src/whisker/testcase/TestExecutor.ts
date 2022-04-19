@@ -235,6 +235,9 @@ export class TestExecutor {
         const waitEvent = new WaitEvent(1);
         events.push(new EventAndParameters(waitEvent, []));
         await waitEvent.apply();
+
+        this.notifyAfter(nextEvent, parameters);
+
         return numCodon;
     }
 
@@ -269,6 +272,12 @@ export class TestExecutor {
     private notify(event: ScratchEvent, args: number[]): void {
         for (const observer of this._eventObservers) {
             observer.update(event, args);
+        }
+    }
+
+    private notifyAfter(event: ScratchEvent, args: number[]): void {
+        for (const observer of this._eventObservers) {
+            observer.updateAfter(event, args);
         }
     }
 

@@ -53,7 +53,7 @@ export class AssertionGenerator {
                 for (const assertionFactory of this.assertionFactories) {
                     const assertions = assertionFactory.createAssertions(trace[position/2]);
                     for (const assertion of assertions) {
-                        test.addAssertion(position, assertion);
+                        test.addAssertion(position + 1, assertion);
                     }
                 }
             }
