@@ -8,7 +8,7 @@ export class SizeAssertion extends WhiskerAssertion {
 
     constructor (target: RenderedTarget, size: number, cloneIndex?: number) {
         super(target, cloneIndex);
-        this._size = size;
+        this._size = Math.trunc(size);
     }
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
