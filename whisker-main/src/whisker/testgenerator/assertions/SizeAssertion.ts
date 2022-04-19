@@ -17,7 +17,7 @@ export class SizeAssertion extends WhiskerAssertion {
                 if (this._cloneIndex !== undefined && this._cloneIndex !== targetState.cloneIndex) {
                     continue;
                 }
-                return targetState.size == this._size;
+                return Math.trunc(targetState.size) === this._size;
             }
         }
 
