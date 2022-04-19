@@ -1,14 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class SayAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _text: string;
 
-    constructor (targetName: string, text: string) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, text: string) {
+        super(target);
         this._text = text;
     }
 
@@ -18,16 +17,16 @@ export class SayAssertion extends WhiskerAssertion {
 
     toString(): string {
         if (this._text) {
-            return `assert ${this._targetName} is saying "${this._text}"`;
+            return `assert ${this.getTargetName()} is saying "${this._text}"`;
         } else {
-            return `assert ${this._targetName} is not saying anything`;
+            return `assert ${this.getTargetName()} is not saying anything`;
         }
     }
     toJavaScript(): string {
         if (this._text) {
-            return `t.assert.equal(t.getSprite("${this._targetName}").sayText, "${this._text}", "Expected ${this._targetName} to say ${this._text}");`;
+            return `t.assert.equal(${this.getTargetAccessor()}.sayText, "${this._text}", "Expected ${this.getTargetName()} to say ${this._text}");`;
         } else {
-            return `t.assert.not(t.getSprite("${this._targetName}").sayText, "Expected ${this._targetName} not to say anything");`;
+            return `t.assert.not(${this.getTargetAccessor()}.sayText, "Expected ${this.getTargetName()} not to say anything");`;
         }
     }
 
@@ -36,10 +35,14 @@ export class SayAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): SayAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
-                    assertions.push(new SayAssertion(targetState.name, targetState.bubbleState));
+                    if (!targetState.target.isOriginal) {
+                        // TODO: Can clones say something that original sprites don't also say?
+                        continue;
+                    }
+                    assertions.push(new SayAssertion(targetState.target, targetState.bubbleState));
                 }
 
                 return assertions;

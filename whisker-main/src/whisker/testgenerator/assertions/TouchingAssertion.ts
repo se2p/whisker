@@ -1,15 +1,14 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class TouchingAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _otherTarget: string;
     private readonly _touching: boolean;
 
-    constructor (targetName: string, otherTarget: string, touching: boolean) {
-        super();
-        this._targetName   = targetName;
+    constructor (target: RenderedTarget, otherTarget: string, touching: boolean, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._otherTarget  = otherTarget;
         this._touching     = touching;
     }
@@ -20,16 +19,16 @@ export class TouchingAssertion extends WhiskerAssertion {
 
     toString(): string {
         if (this._touching) {
-            return `assert ${this._targetName} is touching ${this._otherTarget}`;
+            return `assert ${this.getTargetName()} is touching ${this._otherTarget}`;
         } else {
-            return `assert ${this._targetName} is not touching ${this._otherTarget}`;
+            return `assert ${this.getTargetName()} is not touching ${this._otherTarget}`;
         }
     }
     toJavaScript(): string {
         if (this._touching) {
-            return `t.assert.ok(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"), "Expected ${this._targetName} to touch ${this._otherTarget}");`;
+            return `t.assert.ok(${this.getTargetAccessor()}.isTouchingSprite("${this._otherTarget}"), "Expected ${this.getTargetName()} to touch ${this._otherTarget}");`;
         } else {
-            return `t.assert.not(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"), "Expected ${this._targetName} not to touch ${this._otherTarget}");`;
+            return `t.assert.not(${this.getTargetAccessor()}.isTouchingSprite("${this._otherTarget}"), "Expected ${this.getTargetName()} not to touch ${this._otherTarget}");`;
         }
     }
 
@@ -42,7 +41,7 @@ export class TouchingAssertion extends WhiskerAssertion {
                         continue;
                     }
                     for (const [spriteName, value] of Object.entries(targetState.touching)) {
-                        assertions.push(new TouchingAssertion(targetState.name, spriteName, value as boolean));
+                        assertions.push(new TouchingAssertion(targetState.target, spriteName, value as boolean, targetState.cloneIndex));
                     }
                 }
 

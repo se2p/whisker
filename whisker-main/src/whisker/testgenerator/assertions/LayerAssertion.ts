@@ -1,14 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class LayerAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _layer: number;
 
-    constructor (targetName: string, layer: number) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, layer: number, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._layer = layer;
     }
 
@@ -17,10 +16,14 @@ export class LayerAssertion extends WhiskerAssertion {
     }
 
     toString(): string {
-        return `assert ${this._targetName} has layer ${this._layer}`;
+        return `assert ${this.getTargetName()} has layer ${this._layer}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").layerOrder, ${this._layer}, "Expected ${this._targetName} to be at layer ${this._layer}");`;
+        if (this._target.isOriginal) {
+            return `t.assert.equal(${this.getTargetAccessor()}.layerOrder, ${this._layer}, "Expected ${this.getTargetName()} to be at layer ${this._layer}");`;
+        } else {
+            return `t.assert.equal(${this.getTargetAccessor()}.getLayerOrder(), ${this._layer}, "Expected ${this.getTargetName()} to be at layer ${this._layer}");`;
+        }
     }
 
     static createFactory() : AssertionFactory<LayerAssertion>{
@@ -28,10 +31,10 @@ export class LayerAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): LayerAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
-                    assertions.push(new LayerAssertion(targetState.name, targetState.layer));
+                    assertions.push(new LayerAssertion(targetState.target, targetState.layer, targetState.cloneIndex));
                 }
 
                 return assertions;

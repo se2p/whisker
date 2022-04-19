@@ -1,12 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class BackdropAssertion extends WhiskerAssertion {
 
     private readonly _backdrop: string;
 
-    constructor (backdrop: string) {
-        super();
+    constructor (target: RenderedTarget, backdrop: string) {
+        super(target);
         this._backdrop = backdrop;
     }
 
@@ -25,10 +26,10 @@ export class BackdropAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): BackdropAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name !== "Stage") {
+                    if (!targetState.target.isStage) {
                         continue;
                     }
-                    assertions.push(new BackdropAssertion(targetState.costume));
+                    assertions.push(new BackdropAssertion(targetState.target, targetState.costume));
                 }
 
                 return assertions;

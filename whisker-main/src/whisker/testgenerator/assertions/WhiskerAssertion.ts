@@ -1,4 +1,15 @@
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+
 export abstract class WhiskerAssertion {
+
+    protected _target: RenderedTarget;
+
+    protected _cloneIndex: number;
+
+    protected constructor (target: RenderedTarget, cloneIndex?: number) {
+        this._target = target;
+        this._cloneIndex = cloneIndex;
+    }
 
     // evaluate a trace entry -> bool
     abstract evaluate(state): boolean;
@@ -8,4 +19,28 @@ export abstract class WhiskerAssertion {
 
     // JavaScript representation
     abstract toJavaScript(): string;
+
+    protected getTarget(): RenderedTarget {
+        return this._target;
+    }
+
+    protected getTargetName(): string {
+        if (this._target.isStage) {
+            return "Stage";
+        } else if (this._target.isOriginal) {
+            return `Sprite ${this._target.getName()}`;
+        } else {
+            return `Clone ${this._cloneIndex} of ${this._target.getName()}`;
+        }
+    }
+
+    protected getTargetAccessor(): string {
+        if (this._target.isStage) {
+            return "t.getStage()";
+        } else if (this._target.isOriginal) {
+            return `t.getSprite("${this._target.getName()}")`;
+        } else {
+            return `t.getSprite("${this._target.getName()}").getClone(${this._cloneIndex})`;
+        }
+    }
 }

@@ -1,14 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class SizeAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _size: number;
 
-    constructor (targetName: string, size: number) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, size: number, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._size = size;
     }
 
@@ -17,10 +16,10 @@ export class SizeAssertion extends WhiskerAssertion {
     }
 
     toString(): string {
-        return `assert ${this._targetName} has size ${this._size}`;
+        return `assert ${this.getTargetName()} has size ${this._size}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").size, ${this._size}, "Expected ${this._targetName} to have size ${this._size}");`;
+        return `t.assert.equal(${this.getTargetAccessor()}.size, ${this._size}, "Expected ${this.getTargetName()} to have size ${this._size}");`;
     }
 
     static createFactory() : AssertionFactory<SizeAssertion>{
@@ -28,10 +27,10 @@ export class SizeAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): SizeAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
-                    assertions.push(new SizeAssertion(targetState.name, targetState.size));
+                    assertions.push(new SizeAssertion(targetState.target, targetState.size, targetState.cloneIndex));
                 }
 
                 return assertions;

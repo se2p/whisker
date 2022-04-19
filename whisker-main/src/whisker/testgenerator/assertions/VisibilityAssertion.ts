@@ -1,15 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
-import {Container} from "../../utils/Container";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class VisibilityAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _visibility: boolean;
 
-    constructor (targetName: string, visibility: boolean) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, visibility: boolean, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._visibility = visibility;
     }
 
@@ -19,16 +17,16 @@ export class VisibilityAssertion extends WhiskerAssertion {
 
     toString(): string {
         if (this._visibility) {
-            return `assert ${this._targetName} is visible`;
+            return `assert ${this.getTargetName()} is visible`;
         } else {
-            return `assert ${this._targetName} is not visible`;
+            return `assert ${this.getTargetName()} is not visible`;
         }
     }
     toJavaScript(): string {
         if (this._visibility) {
-            return `t.assert.ok(t.getSprite("${this._targetName}").visible, "Expected ${this._targetName} to be visible");`;
+            return `t.assert.ok(${this.getTargetAccessor()}.visible, "Expected ${this.getTargetName()} to be visible");`;
         } else {
-            return `t.assert.not(t.getSprite("${this._targetName}").visible, "Expected ${this._targetName} not to be visible");`;
+            return `t.assert.not(${this.getTargetAccessor()}.visible, "Expected ${this.getTargetName()} not to be visible");`;
         }
     }
 
@@ -40,8 +38,7 @@ export class VisibilityAssertion extends WhiskerAssertion {
                     if (targetState.name === "Stage") {
                         continue;
                     }
-                    Container.debugLog("Values of "+targetState.name);
-                    assertions.push(new VisibilityAssertion(targetState.name, targetState.visible));
+                    assertions.push(new VisibilityAssertion(targetState.target, targetState.visible, targetState.cloneIndex));
                 }
 
                 return assertions;

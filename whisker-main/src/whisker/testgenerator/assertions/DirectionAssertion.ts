@@ -1,14 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class DirectionAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _direction: number;
 
-    constructor (targetName: string, direction: number) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, direction: number, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._direction = direction;
     }
 
@@ -17,10 +16,10 @@ export class DirectionAssertion extends WhiskerAssertion {
     }
 
     toString(): string {
-        return `assert ${this._targetName} has direction ${this._direction}`;
+        return `assert ${this.getTargetName()} has direction ${this._direction}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").direction, ${this._direction}, "Expected ${this._targetName} to face in direction ${this._direction}");`;
+        return `t.assert.equal(${this.getTargetAccessor()}.direction, ${this._direction}, "Expected ${this.getTargetName()} to face in direction ${this._direction}");`;
     }
 
     static createFactory() : AssertionFactory<DirectionAssertion>{
@@ -28,10 +27,10 @@ export class DirectionAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): DirectionAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
-                    assertions.push(new DirectionAssertion(targetState.name, targetState.direction));
+                    assertions.push(new DirectionAssertion(targetState.target, targetState.direction, targetState.cloneIndex));
                 }
 
                 return assertions;

@@ -1,14 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class CostumeAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _costume: string;
 
-    constructor (targetName: string, costume: string) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, costume: string, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._costume = costume;
     }
 
@@ -17,10 +16,10 @@ export class CostumeAssertion extends WhiskerAssertion {
     }
 
     toString(): string {
-        return `assert ${this._targetName} has costume ${this._costume}`;
+        return `assert ${this.getTargetName()} has costume ${this._costume}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").currentCostume, ${this._costume}, "Expected ${this._targetName} to have costume ${this._costume}");`;
+        return `t.assert.equal(${this.getTargetAccessor()}.currentCostume, ${this._costume}, "Expected ${this.getTargetName()} to have costume ${this._costume}");`;
     }
 
     static createFactory() : AssertionFactory<CostumeAssertion>{
@@ -28,10 +27,10 @@ export class CostumeAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): CostumeAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
-                    assertions.push(new CostumeAssertion(targetState.name, targetState.costume));
+                    assertions.push(new CostumeAssertion(targetState.target, targetState.costume, targetState.cloneIndex));
                 }
 
                 return assertions;

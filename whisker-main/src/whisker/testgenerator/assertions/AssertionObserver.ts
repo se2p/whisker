@@ -10,7 +10,9 @@ export class AssertionObserver implements EventObserver {
     private _executionStates = [];
 
     update(event: ScratchEvent, args: number[]): void {
-        Container.debugLog("Logging state");
+    }
+
+    updateAfter(event: ScratchEvent, args: number[]): void {
         this._executionStates.push(this._captureState());
     }
 
@@ -26,8 +28,10 @@ export class AssertionObserver implements EventObserver {
                 .filter(t => t.sprite).filter(t => !t.isStage && t.getName() !== target.getName()).map(t => t.getName());
 
             currentState[targetsKey] = {
+                target: target,
                 name: Container.vm.runtime.targets[targetsKey].sprite['name'],
                 clone: !target.isOriginal,
+                cloneIndex: target.sprite.clones.indexOf(target),
                 direction: Container.vm.runtime.targets[targetsKey]["direction"],
                 size: Container.vm.runtime.targets[targetsKey]["size"],
                 layer: Container.vm.runtime.targets[targetsKey].getLayerOrder(),

@@ -1,14 +1,13 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class CloneCountAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _count: number;
 
-    constructor (targetName: string, count: number) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, count: number) {
+        super(target);
         this._count = count;
     }
 
@@ -17,10 +16,10 @@ export class CloneCountAssertion extends WhiskerAssertion {
     }
 
     toString(): string {
-        return `assert ${this._targetName} has clones: ${this._count}`;
+        return `assert ${this.getTargetName()} has clones: ${this._count}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").getCloneCount(), ${this._count}, "Expected ${this._targetName} to have ${this._count} clones");`;
+        return `t.assert.equal(${this.getTargetAccessor()}.getCloneCount(), ${this._count}, "Expected ${this.getTargetName()} to have ${this._count} clones");`;
     }
 
     static createFactory() : AssertionFactory<CloneCountAssertion>{
@@ -28,13 +27,13 @@ export class CloneCountAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): CloneCountAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
                     if (targetState.clone) {
                         continue;
                     }
-                    assertions.push(new CloneCountAssertion(targetState.name, targetState.cloneCount));
+                    assertions.push(new CloneCountAssertion(targetState.target, targetState.cloneCount));
                 }
 
                 return assertions;

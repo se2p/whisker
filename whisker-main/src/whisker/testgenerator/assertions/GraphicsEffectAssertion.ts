@@ -1,16 +1,14 @@
 import {WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
-import {Container} from "../../utils/Container";
+import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
 export class GraphicsEffectAssertion extends WhiskerAssertion {
 
-    private readonly _targetName: string;
     private readonly _effectName: string;
     private readonly _status: boolean;
 
-    constructor (targetName: string, effectName, status: any) {
-        super();
-        this._targetName = targetName;
+    constructor (target: RenderedTarget, effectName, status: any, cloneIndex?: number) {
+        super(target, cloneIndex);
         this._effectName = effectName;
         this._status     = status;
     }
@@ -20,10 +18,10 @@ export class GraphicsEffectAssertion extends WhiskerAssertion {
     }
 
     toString(): string {
-        return `assert ${this._targetName} has graphics effect ${this._effectName} set to ${this._status}`;
+        return `assert ${this.getTargetName()} has graphics effect ${this._effectName} set to ${this._status}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").effects.${this._effectName}, ${this._status}, "Expected effect ${this._effectName} of ${this._targetName} to be ${this._status}");`;
+        return `t.assert.equal(${this.getTargetAccessor()}.effects.${this._effectName}, ${this._status}, "Expected effect ${this._effectName} of ${this.getTargetName()} to be ${this._status}");`;
     }
 
     static createFactory() : AssertionFactory<GraphicsEffectAssertion>{
@@ -31,11 +29,11 @@ export class GraphicsEffectAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): GraphicsEffectAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
                     for (const [effectName, value] of Object.entries(targetState.effects)) {
-                        assertions.push(new GraphicsEffectAssertion(targetState.name, effectName, value));
+                        assertions.push(new GraphicsEffectAssertion(targetState.target, effectName, value, targetState.cloneIndex));
                     }
                 }
 
