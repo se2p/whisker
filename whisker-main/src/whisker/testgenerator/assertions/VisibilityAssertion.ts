@@ -25,7 +25,11 @@ export class VisibilityAssertion extends WhiskerAssertion {
         }
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getSprite("${this._targetName}").visible, ${this._visibility});`;
+        if (this._visibility) {
+            return `t.assert.ok(t.getSprite("${this._targetName}").visible);`;
+        } else {
+            return `t.assert.not(t.getSprite("${this._targetName}").visible);`;
+        }
     }
 
     static createFactory() : AssertionFactory<VisibilityAssertion>{

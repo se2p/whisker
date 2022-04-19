@@ -20,7 +20,7 @@ export class CostumeAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has costume ${this._costume}`;
     }
     toJavaScript(): string {
-        return `// assert t.getSprite("${this._targetName}").costume == ${this._costume}`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").costume, ${this._costume});`;
     }
 
     static createFactory() : AssertionFactory<CostumeAssertion>{

@@ -20,7 +20,7 @@ export class CloneCountAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has clones: ${this._count}`;
     }
     toJavaScript(): string {
-        return `// assert t.getSprite("${this._targetName}").clone_count == ${this._count}`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").getCloneCount(), ${this._count});`;
     }
 
     static createFactory() : AssertionFactory<CloneCountAssertion>{

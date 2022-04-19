@@ -20,7 +20,7 @@ export class SizeAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has size ${this._size}`;
     }
     toJavaScript(): string {
-        return `// assert t.getSprite("${this._targetName}").size == ${this._size}`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").size, ${this._size});`;
     }
 
     static createFactory() : AssertionFactory<SizeAssertion>{

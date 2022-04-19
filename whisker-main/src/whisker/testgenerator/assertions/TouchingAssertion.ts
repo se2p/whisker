@@ -26,7 +26,11 @@ export class TouchingAssertion extends WhiskerAssertion {
         }
     }
     toJavaScript(): string {
-        return `// assert t.getSprite("${this._targetName}") touching ${this._otherTarget} == ${this._touching}`;
+        if (this._touching) {
+            return `t.assert.ok(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"));`;
+        } else {
+            return `t.assert.not(t.getSprite("${this._targetName}").isTouchingSprite("${this._otherTarget}"));`;
+        }
     }
 
     static createFactory() : AssertionFactory<TouchingAssertion>{

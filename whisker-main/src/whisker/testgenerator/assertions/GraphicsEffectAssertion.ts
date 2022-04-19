@@ -23,7 +23,7 @@ export class GraphicsEffectAssertion extends WhiskerAssertion {
         return `assert ${this._targetName} has graphics effect ${this._effectName} set to ${this._status}`;
     }
     toJavaScript(): string {
-        return `// assert t.getSprite("${this._targetName}") has graphics effect ${this._effectName} set to ${this._status}`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").effects[${this._effectName}], ${this._status});`;
     }
 
     static createFactory() : AssertionFactory<GraphicsEffectAssertion>{

@@ -24,7 +24,7 @@ export class SayAssertion extends WhiskerAssertion {
         }
     }
     toJavaScript(): string {
-        return `// assert t.getSprite("${this._targetName}").sayText == ${this._text}`;
+        return `t.assert.equal(t.getSprite("${this._targetName}").sayText, ${this._text});`;
     }
 
     static createFactory() : AssertionFactory<SayAssertion>{
