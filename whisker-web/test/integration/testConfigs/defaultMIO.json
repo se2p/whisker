@@ -50,5 +50,6 @@
         "pressDuration": 10,
         "soundDuration": 10
     },
-    "minimize": false
+    "minimize": false,
+    "assertions": false
 }
