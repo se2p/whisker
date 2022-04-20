@@ -33,10 +33,14 @@ export class SayAssertion extends WhiskerAssertion {
     }
     toJavaScript(): string {
         if (this._text) {
-            return `t.assert.equal(${this.getTargetAccessor()}.sayText, "${this._text}", "Expected ${this.getTargetName()} to say ${this._text}");`;
+            return `t.assert.equal(${this.getTargetAccessor()}.sayText, "${this.getValue()}", "Expected ${this.getTargetName()} to say ${this.getValue()}");`;
         } else {
             return `t.assert.not(${this.getTargetAccessor()}.sayText, "Expected ${this.getTargetName()} not to say anything");`;
         }
+    }
+
+    private getValue(): string {
+        return JSON.stringify(this._text).slice(1, -1);
     }
 
     static createFactory() : AssertionFactory<SayAssertion>{

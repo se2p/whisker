@@ -20,7 +20,7 @@ export class VariableAssertion extends WhiskerAssertion {
     evaluate(state: Map<string, Map<string, any>>): boolean {
         for (const targetState of Object.values(state)) {
             if (targetState.name === this._target.getName() && !targetState.clone) {
-                return targetState.variables[this._variableID].value == this._variableValue;
+                return `${targetState.variables[this._variableID].value}` == `${this._variableValue}`;
             }
         }
 
@@ -33,24 +33,14 @@ export class VariableAssertion extends WhiskerAssertion {
 
     toJavaScript(): string {
         if (this._target.isStage) {
-            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}", false).value, ${this.getValueString()}, "Expected ${this._variableName} to have value ${this._variableValue}");`;
+            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}", false).value, "${this.getValue()}", "Expected ${this._variableName} to have value ${this._variableValue}");`;
         } else {
-            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}").value, ${this.getValueString()}, "Expected ${this._variableName} to have value ${this._variableValue} in ${this.getTargetName()}");`;
+            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}").value, "${this.getValue()}", "Expected ${this._variableName} to have value ${this._variableValue} in ${this.getTargetName()}");`;
         }
     }
 
-    private getValueString(): string {
-        if (this.isNumber(this._variableValue)) {
-            return this._variableValue;
-        } else {
-            return `"${this._variableValue}"`
-        }
-    }
-
-    private isNumber(value: string | number): boolean {
-        return ((value != null) &&
-            (value !== '') &&
-            !isNaN(Number(value.toString())));
+    private getValue(): string {
+        return JSON.stringify(this._variableValue).slice(1, -1);
     }
 
     static createFactory() : AssertionFactory<VariableAssertion>{
