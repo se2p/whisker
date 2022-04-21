@@ -149,11 +149,16 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#record').prop('disabled', true);
 
         let summary;
+        let csvResults;
+        let mutantPrograms;
         let coverage;
         let coverageModels = {};
         accSlider.slider('disable');
+        const projectName = Whisker.projectFileSelect.getName();
         const accelerationFactor = $('#acceleration-value').text();
         const seed = document.getElementById('seed').value;
+        const mutators = document.querySelector('#container').mutators === '' ?
+            ['NONE'] : document.querySelector('#container').mutators.split(', ');
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -166,9 +171,17 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(vm);
 
-            summary = await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester,
-                {accelerationFactor, seed}, {duration, repetitions, caseSensitive});
+            [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators},
+                {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
+            Whisker.outputLog.println(csvResults);
+
+            // Set the mutants in the output log from where we can download them later.
+            if (mutantPrograms && mutantPrograms.length > 0){
+                Whisker.outputRun.setScratch(Whisker.scratch);
+                Whisker.outputRun.mutants = mutantPrograms;
+            }
 
             if (Whisker.modelTester.programModelsLoaded()) {
                 coverageModels = Whisker.modelTester.getTotalCoverage();

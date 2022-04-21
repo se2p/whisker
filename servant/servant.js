@@ -445,7 +445,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         while (true) {
             // eslint-disable-next-line no-constant-condition
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-            if (currentLog.includes('projectName,testName')) {
+            if (currentLog.includes('projectName')) {
 
                 // Download mutants
                 if(mutantsDownloadPath){

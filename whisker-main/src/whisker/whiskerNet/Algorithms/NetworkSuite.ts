@@ -10,21 +10,8 @@ import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
 import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchMutation} from "../../scratch/ScratchMutation/ScratchMutation";
-import {KeyReplacementMutation} from "../../scratch/ScratchMutation/KeyReplacementMutation";
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";
-import {SingleBlockDeletionMutation} from "../../scratch/ScratchMutation/SingleBlockDeletionMutation";
-import {
-    ArithmeticOperatorReplacementMutation
-} from "../../scratch/ScratchMutation/ArithmeticOperatorReplacementMutation";
-import {LogicalOperatorReplacementMutation} from "../../scratch/ScratchMutation/LogicalOperatorReplacementMutation";
-import {NegateConditionalMutation} from "../../scratch/ScratchMutation/NegateConditionalMutation";
-import {ScriptDeletionMutation} from "../../scratch/ScratchMutation/ScriptDeletionMutation";
-import {
-    RelationalOperatorReplacementMutation
-} from "../../scratch/ScratchMutation/RelationalOperatorReplacementMutation";
-import {VariableReplacementMutation} from "../../scratch/ScratchMutation/VariableReplacementMutation";
 
 export abstract class NetworkSuite {
 
@@ -47,11 +34,6 @@ export abstract class NetworkSuite {
      * The used instance of a network executor.
      */
     protected executor: NetworkExecutor;
-
-    /**
-     * The Scratch mutation operators that should be applied.
-     */
-    protected mutationOperators: ScratchMutation[]
 
     /**
      * The name of the tested project.
@@ -121,7 +103,8 @@ export abstract class NetworkSuite {
             await this.collectActivationTrace();
         }
 
-        if (this.mutationOperators.length == 0) {
+        if (this.properties.mutators !== undefined &&
+            (this.properties.mutators as string []).length == 0) {
             console.log("Testing Single Project");
             await this.testSingleProject();
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
@@ -150,48 +133,6 @@ export abstract class NetworkSuite {
         Container.vmWrapper = vmWrapper;
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
-
-        this.mutationOperators = [];
-        const specifiedMutators = this.properties.mutators as string[];
-        for (const mutator of specifiedMutators) {
-            switch (mutator) {
-                case 'KRM':
-                    this.mutationOperators.push(new KeyReplacementMutation(this.vm));
-                    break;
-                case 'SBD':
-                    this.mutationOperators.push(new SingleBlockDeletionMutation(this.vm));
-                    break;
-                case 'SDM':
-                    this.mutationOperators.push(new ScriptDeletionMutation(this.vm));
-                    break;
-                case 'AOR':
-                    this.mutationOperators.push(new ArithmeticOperatorReplacementMutation(this.vm));
-                    break;
-                case 'LOR':
-                    this.mutationOperators.push(new LogicalOperatorReplacementMutation(this.vm));
-                    break;
-                case 'ROR':
-                    this.mutationOperators.push(new RelationalOperatorReplacementMutation(this.vm));
-                    break;
-                case 'NCM':
-                    this.mutationOperators.push(new NegateConditionalMutation(this.vm));
-                    break;
-                case 'VRM':
-                    this.mutationOperators.push(new VariableReplacementMutation(this.vm));
-                    break;
-                case 'ALL':
-                    this.mutationOperators.push(
-                        new KeyReplacementMutation(this.vm),
-                        new SingleBlockDeletionMutation(this.vm),
-                        new ScriptDeletionMutation(this.vm),
-                        new ArithmeticOperatorReplacementMutation(this.vm),
-                        new LogicalOperatorReplacementMutation(this.vm),
-                        new RelationalOperatorReplacementMutation(this.vm),
-                        new NegateConditionalMutation(this.vm),
-                        new VariableReplacementMutation(this.vm));
-                    break;
-            }
-        }
     }
 
     /**
@@ -348,18 +289,6 @@ export abstract class NetworkSuite {
             }
         }
         return surpriseCounter;
-    }
-
-    /**
-     * Generates Scratch mutants based on the specified mutation operators.
-     * @returns an array of the created mutants.
-     */
-    protected getScratchMutations(): ScratchProgram[] {
-        const mutantPrograms: ScratchProgram[] = [];
-        for (const mutator of this.mutationOperators) {
-            mutantPrograms.push(...mutator.generateMutants());
-        }
-        return mutantPrograms;
     }
 
     /**

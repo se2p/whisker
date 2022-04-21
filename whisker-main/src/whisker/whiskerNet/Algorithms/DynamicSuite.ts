@@ -11,6 +11,7 @@ import {NetworkExecutor} from "../NetworkExecutor";
 import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../../scratch/ScratchInterface";
+import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 
 export class DynamicSuite extends NetworkSuite {
 
@@ -84,7 +85,8 @@ export class DynamicSuite extends NetworkSuite {
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
-        const mutantPrograms = this.getScratchMutations();
+        const mutantFactory = new MutationFactory(this.vm);
+        const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[]);
         console.log(`Produced mutants ${mutantPrograms.length}`);
         for (const mutant of mutantPrograms) {
             this.archive.clear();

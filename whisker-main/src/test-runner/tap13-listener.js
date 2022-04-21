@@ -28,6 +28,7 @@ class TAP13Listener {
         this._onTestDone = this.onTestDone.bind(this);
         this._onModelTestDone = this.onModelTestDone.bind(this);
         this._onRunCancel = this.onRunCancel.bind(this);
+        this._onMutationTesting = this.onMutationTesting.bind(this);
 
         testRunner.on(TestRunner.RUN_START, this._onRunStart);
         testRunner.on(TestRunner.RUN_CANCEL, this._onRunCancel);
@@ -36,6 +37,7 @@ class TAP13Listener {
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
         testRunner.on(TestRunner.TEST_ERROR, this._onTestDone);
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
+        testRunner.on(TestRunner.TEST_MUTATION, this._onMutationTesting);
 
         this._onModelLoadError = this.onModelLoadError.bind(this);
         this._onModelWarning = this.onModelWarning.bind(this);
@@ -52,6 +54,7 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
+        this.testRunner.off(TestRunner.TEST_MUTATION, this._onMutationTesting);
         this.modelTester.off(ModelTester.MODEL_LOAD_ERROR, this._onModelLoadError);
         this.modelTester.off(ModelTester.MODEL_WARNING, this._onModelWarning);
     }
@@ -170,6 +173,13 @@ class TAP13Listener {
      */
     onModelWarning(err) {
         this.print(TAP13Formatter.descriptionToYAML("MODEL WARNING: \n" + err));
+    }
+
+    /**
+     * @param {number} mutant
+     */
+    onMutationTesting(mutant){
+        this.print(`\nPerforming Mutation Analysis on ${mutant}\n`);
     }
 }
 

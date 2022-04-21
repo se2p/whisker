@@ -45,50 +45,54 @@ const TAP13Formatter = {
     },
 
     /**
-     * @param {TestResult[]} summary .
+     * @param {{string: TestResult[]}} summary .
      * @return {object} .
      */
-    formatSummary (summary) {
-        const tests = summary.length;
-        const pass = summary.filter(result => result.status === Test.PASS).length;
-        const fail = summary.filter(result => result.status === Test.FAIL).length;
-        const error = summary.filter(result => result.status === Test.ERROR).length;
-        const skip = summary.filter(result => result.status === Test.SKIP).length;
-        let allErrors = [];
-        let allFails = [];
-        summary.forEach(result => {
-            if (result.modelResult && result.modelResult.errors.length > 0) {
-                allErrors = [...allErrors, ...result.modelResult.errors];
-            }
-            if (result.modelResult && result.modelResult.fails.length > 0) {
-                allFails = [...allFails, ...result.modelResult.fails];
-            }
-        })
-        let uniqueErrors = [...new Set(allErrors)];
-        let uniqueFails = [...new Set(allFails)];
-        let sort = (a,b) => {
-            if (a < b) {
-                return -1;
-            } else if (b < a) {
-                return 1;
-            }
-            return 0;
-        };
+    formatSummary (summaryRecord) {
+        const formattedSummary = {};
+        for(const [projectName, summary] of Object.entries(summaryRecord)) {
+            const tests = summary.length;
+            const pass = summary.filter(result => result.status === Test.PASS).length;
+            const fail = summary.filter(result => result.status === Test.FAIL).length;
+            const error = summary.filter(result => result.status === Test.ERROR).length;
+            const skip = summary.filter(result => result.status === Test.SKIP).length;
+            let allErrors = [];
+            let allFails = [];
+            summary.forEach(result => {
+                if (result.modelResult && result.modelResult.errors.length > 0) {
+                    allErrors = [...allErrors, ...result.modelResult.errors];
+                }
+                if (result.modelResult && result.modelResult.fails.length > 0) {
+                    allFails = [...allFails, ...result.modelResult.fails];
+                }
+            });
+            let uniqueErrors = [...new Set(allErrors)];
+            let uniqueFails = [...new Set(allFails)];
+            let sort = (a, b) => {
+                if (a < b) {
+                    return -1;
+                } else if (b < a) {
+                    return 1;
+                }
+                return 0;
+            };
 
-        uniqueFails.sort(sort);
-        uniqueErrors.sort(sort);
+            uniqueFails.sort(sort);
+            uniqueErrors.sort(sort);
+            formattedSummary[projectName] = {
+                tests,
+                pass,
+                fail,
+                error,
+                skip,
+                errors_in_model: uniqueErrors.length,
+                errors_in_model_text: uniqueErrors,
+                fails_in_model: uniqueFails.length,
+                fails_in_model_text: uniqueFails
+            };
+        }
 
-        return {
-            tests,
-            pass,
-            fail,
-            error,
-            skip,
-            errors_in_model: uniqueErrors.length,
-            errors_in_model_text: uniqueErrors,
-            fails_in_model: uniqueFails.length,
-            fails_in_model_text: uniqueFails
-        };
+        return formattedSummary;
     },
 
     /**
@@ -159,7 +163,7 @@ const TAP13Formatter = {
 
         return {
             combined: this.formatCoverageRecord({covered, total})
-        }
+        };
     },
 
 
@@ -177,6 +181,6 @@ const TAP13Formatter = {
         }
         return `${percentage} (${covered}/${total})`;
     },
-}
+};
 
 module.exports = TAP13Formatter;

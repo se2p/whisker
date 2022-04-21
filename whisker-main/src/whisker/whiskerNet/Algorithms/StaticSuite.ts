@@ -17,6 +17,7 @@ import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../../scratch/ScratchInterface";
+import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 
 
 export class StaticSuite extends NetworkSuite {
@@ -84,8 +85,8 @@ export class StaticSuite extends NetworkSuite {
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
-        const mutantPrograms = this.getScratchMutations();
-        for (const mutant of mutantPrograms) {
+        const mutantFactory = new MutationFactory(this.vm);
+        const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[]);        for (const mutant of mutantPrograms) {
             const projectMutation = `${this.projectName}-${mutant.name}`;
             const executedTests: NeatChromosome[] = [];
             for (const test of this.testCases) {
