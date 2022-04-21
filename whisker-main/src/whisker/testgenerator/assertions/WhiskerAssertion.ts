@@ -24,13 +24,21 @@ export abstract class WhiskerAssertion {
         return this._target;
     }
 
+    protected escaped(value: string): string {
+        let jsonString = JSON.stringify(value);
+        if (jsonString.charAt(0) == '"') {
+            jsonString = jsonString.slice(1, -1);
+        }
+        return jsonString;
+    }
+
     protected getTargetName(): string {
         if (this._target.isStage) {
             return "Stage";
         } else if (this._target.isOriginal) {
-            return `Sprite ${this._target.getName()}`;
+            return `Sprite ${this.escaped(this._target.getName())}`;
         } else {
-            return `Clone ${this._cloneIndex} of ${this._target.getName()}`;
+            return `Clone ${this._cloneIndex} of ${this.escaped(this._target.getName())}`;
         }
     }
 
@@ -38,9 +46,9 @@ export abstract class WhiskerAssertion {
         if (this._target.isStage) {
             return "t.getStage()";
         } else if (this._target.isOriginal) {
-            return `t.getSprite("${this._target.getName()}")`;
+            return `t.getSprite("${this.escaped(this._target.getName())}")`;
         } else {
-            return `t.getSprite("${this._target.getName()}").getClone(${this._cloneIndex})`;
+            return `t.getSprite("${this.escaped(this._target.getName())}").getClone(${this._cloneIndex})`;
         }
     }
 }

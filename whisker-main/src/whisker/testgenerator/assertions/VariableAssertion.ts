@@ -40,11 +40,7 @@ export class VariableAssertion extends WhiskerAssertion {
     }
 
     private getValue(): string {
-        let jsonString = JSON.stringify(this._variableValue);
-        if (jsonString.charAt(0) == '"') {
-            jsonString = jsonString.slice(1, -1);
-        }
-        return jsonString;
+        return this.escaped(this._variableValue);
     }
 
     static createFactory() : AssertionFactory<VariableAssertion>{

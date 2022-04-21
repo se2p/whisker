@@ -37,11 +37,7 @@ export class SayAssertion extends WhiskerAssertion {
     }
 
     private getValue(): string {
-        let jsonString = JSON.stringify(this._text);
-        if (jsonString.charAt(0) == '"') {
-            jsonString = jsonString.slice(1, -1);
-        }
-        return jsonString;
+        return this.escaped(this._text);
     }
 
     static createFactory() : AssertionFactory<SayAssertion>{
