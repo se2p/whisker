@@ -17,6 +17,7 @@ import {VisibilityAssertion} from "./assertions/VisibilityAssertion";
 import {VolumeAssertion} from "./assertions/VolumeAssertion";
 import {CloneCountAssertion} from "./assertions/CloneCountAssertion";
 import assert from "assert";
+import {TouchingEdgeAssertion} from "./assertions/TouchingEdgeAssertion";
 
 export class AssertionGenerator {
 
@@ -31,6 +32,7 @@ export class AssertionGenerator {
         SayAssertion.createFactory(),
         SizeAssertion.createFactory(),
         TouchingAssertion.createFactory(),
+        TouchingEdgeAssertion.createFactory(),
         VariableAssertion.createFactory(),
         VisibilityAssertion.createFactory(),
         VolumeAssertion.createFactory()];
@@ -54,6 +56,7 @@ export class AssertionGenerator {
                 for (const assertionFactory of this.assertionFactories) {
                     const assertions = assertionFactory.createAssertions(trace[position/2]);
                     for (const assertion of assertions) {
+
                         assert(assertion.evaluate(trace[position/2])); // Just while testing
                         test.addAssertion(position + 1, assertion);
                     }

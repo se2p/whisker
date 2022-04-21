@@ -43,6 +43,7 @@ export class AssertionObserver implements EventObserver {
                 y: Container.vm.runtime.targets[targetsKey]["y"],
                 variables: cloneDeep(Container.vm.runtime.targets[targetsKey]["variables"]),
                 touching: Object.assign({}, ...((otherSpriteNames.map(x => ({[x] : target.isTouchingSprite(x) }))))),
+                touchingEdge: target.isTouchingEdge(),
                 cloneCount: (target.sprite.clones.filter(t => !t.isOriginal) as []).length, // wtf?
                 bubbleState: target.getCustomState(Scratch3LooksBlocks.STATE_KEY) !== undefined ?  target.getCustomState(Scratch3LooksBlocks.STATE_KEY).text : null
             };
