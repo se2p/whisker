@@ -13,7 +13,7 @@ export class BackdropAssertion extends WhiskerAssertion {
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
         for (const targetState of Object.values(state)) {
-            if (targetState.name === this._target.getName()) {
+            if (targetState.target === this._target) {
                 return targetState.costume == this._backdrop;
             }
         }

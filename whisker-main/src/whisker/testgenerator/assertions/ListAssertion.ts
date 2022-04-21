@@ -19,7 +19,7 @@ export class ListAssertion extends WhiskerAssertion {
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
         for (const targetState of Object.values(state)) {
-            if (targetState.name === this._target.getName() && !targetState.clone) {
+            if (targetState.target === this._target) {
                 return targetState.variables[this._variableID].value.length == this._variableValue.length;
             }
         }

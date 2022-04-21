@@ -13,10 +13,7 @@ export class SayAssertion extends WhiskerAssertion {
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
         for (const targetState of Object.values(state)) {
-            if (targetState.name === this._target.getName()) {
-                if (this._cloneIndex !== undefined && this._cloneIndex !== targetState.cloneIndex) {
-                    continue;
-                }
+            if (targetState.target === this._target) {
                 return targetState.bubbleState === this._text;
             }
         }
@@ -40,7 +37,11 @@ export class SayAssertion extends WhiskerAssertion {
     }
 
     private getValue(): string {
-        return JSON.stringify(this._text).slice(1, -1);
+        let jsonString = JSON.stringify(this._text);
+        if (jsonString.charAt(0) == '"') {
+            jsonString = jsonString.slice(1, -1);
+        }
+        return jsonString;
     }
 
     static createFactory() : AssertionFactory<SayAssertion>{

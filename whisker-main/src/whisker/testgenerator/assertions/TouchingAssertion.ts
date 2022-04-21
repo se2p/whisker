@@ -16,7 +16,7 @@ export class TouchingAssertion extends WhiskerAssertion {
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
         for (const targetState of Object.values(state)) {
-            if (targetState.name === this._target.getName() && targetState.cloneIndex === this._cloneIndex) {
+            if (targetState.target === this._target) {
                 return targetState.touching[this._otherTarget] === this._touching;
             }
         }
@@ -44,7 +44,7 @@ export class TouchingAssertion extends WhiskerAssertion {
             createAssertions(state: Map<string, Map<string, any>>): TouchingAssertion[] {
                 const assertions = [];
                 for (const targetState of Object.values(state)) {
-                    if (targetState.name === "Stage") {
+                    if (targetState.target.isStage) {
                         continue;
                     }
                     for (const [spriteName, value] of Object.entries(targetState.touching)) {

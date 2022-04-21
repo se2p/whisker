@@ -19,7 +19,7 @@ export class VariableAssertion extends WhiskerAssertion {
 
     evaluate(state: Map<string, Map<string, any>>): boolean {
         for (const targetState of Object.values(state)) {
-            if (targetState.name === this._target.getName() && !targetState.clone) {
+            if (targetState.target === this._target) {
                 return `${targetState.variables[this._variableID].value}` == `${this._variableValue}`;
             }
         }
@@ -40,7 +40,11 @@ export class VariableAssertion extends WhiskerAssertion {
     }
 
     private getValue(): string {
-        return JSON.stringify(this._variableValue).slice(1, -1);
+        let jsonString = JSON.stringify(this._variableValue);
+        if (jsonString.charAt(0) == '"') {
+            jsonString = jsonString.slice(1, -1);
+        }
+        return jsonString;
     }
 
     static createFactory() : AssertionFactory<VariableAssertion>{
