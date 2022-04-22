@@ -11,7 +11,6 @@ const {logger, cli} = require('./util');
 const rimraf = require("rimraf");
 const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
-const CSVConverter = require('./converter.js');
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
 const path = require('path');
 
@@ -354,7 +353,6 @@ async function showHiddenFunctionality(page) {
 
 async function runTests (path, browser, index, targetProject, modelPath) {
     const page = await browser.newPage({context: Date.now()});
-    const startProject = Date.now();
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
@@ -417,7 +415,6 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            // eslint-disable-next-line no-constant-condition
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName')) {
 
@@ -428,7 +425,6 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
                 // Return CSV file
                 const currentLogString = currentLog.toString();
-                console.log("CSV: ", currentLogString.slice(currentLogString.indexOf('projectName'), currentLogString.indexOf('\n\n')));
                 return currentLogString.slice(currentLogString.indexOf('projectName'));
             }
 
@@ -458,10 +454,6 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
             await page.waitForTimeout(1000);
         }
-
-        let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
-        csvRow['duration'] = `${(Date.now() - startProject) / 1000}`;
-        return csvRow;
     }
 
     /**

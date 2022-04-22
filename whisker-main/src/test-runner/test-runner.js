@@ -75,7 +75,7 @@ class TestRunner extends EventEmitter {
                 const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
                 const coverage = Math.round((covered / total) * 100) / 100;
                 const duration = (Date.now() - startTime) / 1000;
-                csv += this._generateCSVRow(projectName, testStatusResults, coverage, duration, resultRecords);
+                csv += this._generateCSVRow(projectMutation, testStatusResults, coverage, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
             }
