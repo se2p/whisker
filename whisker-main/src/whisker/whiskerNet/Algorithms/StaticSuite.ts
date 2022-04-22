@@ -13,7 +13,6 @@ import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {SoundEvent} from "../../testcase/events/SoundEvent";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
-import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../../scratch/ScratchInterface";
@@ -49,7 +48,6 @@ export class StaticSuite extends NetworkSuite {
             const trace = StaticSuite.getTraceFromSource(testSource);
             const network = new NeatChromosome([], [], undefined, undefined, undefined);
             network.trace = trace;
-            NetworkLoader.loadActivationTrace(network, test.activationTrace);
             networks.push(network);
         }
         return networks;
@@ -68,6 +66,7 @@ export class StaticSuite extends NetworkSuite {
             this.updateArchive(test);
             this.extractNetworkStatistics(test);
         }
+        test.recordNetworkStatistics = false;
         this.executor.resetState();
     }
 
@@ -86,12 +85,14 @@ export class StaticSuite extends NetworkSuite {
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
         const mutantFactory = new MutationFactory(this.vm);
-        const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[]);        for (const mutant of mutantPrograms) {
+        const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[]);
+        for (const mutant of mutantPrograms) {
             const projectMutation = `${this.projectName}-${mutant.name}`;
             const executedTests: NeatChromosome[] = [];
             for (const test of this.testCases) {
                 // We clone the network since it might get changed due to specific mutations.
                 const testClone = test.cloneAsTestCase();
+                testClone.trace = test.trace.clone();
                 await this.loadMutant(mutant);
                 await this.executeTestCase(testClone, true);
                 executedTests.push(testClone);
@@ -167,6 +168,14 @@ export class StaticSuite extends NetworkSuite {
         let paramArgs = statement.substring(statement.indexOf('(') + 1, statement.indexOf(')'));
         paramArgs = paramArgs.split("'").join('');
         return paramArgs.split(',');
+    }
+
+    /**
+     * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
+     * can later be used to verify the correctness of a modified project.
+     */
+    protected async collectActivationTrace(): Promise<void> {
+        Container.debugLog("Warning! You attempted to collect activation traces using a Static Network Suite.");
     }
 
 }

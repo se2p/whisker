@@ -12,6 +12,8 @@ import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
+import {Randomness} from "../../utils/Randomness";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class DynamicSuite extends NetworkSuite {
 
@@ -136,6 +138,31 @@ export class DynamicSuite extends NetworkSuite {
         neatParameter.networkFitness = parameter.networkFitness;
         neatParameter.stoppingCondition = parameter.trainStoppingCondition;
         return neatParameter;
+    }
+
+    /**
+     * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
+     * can later be used to verify the correctness of a modified project.
+     */
+    protected async collectActivationTrace(): Promise<void> {
+        const repetitions = parseInt(this.properties.activationTraceRepetitions as string);
+        const originalSeed = Randomness.scratchSeed;
+        const scratchSeeds = Array(repetitions).fill(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER)).map(
+            () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
+        for (const test of this.testCases) {
+            for (const seed of scratchSeeds) {
+                Randomness.setScratchSeed(seed);
+                await this.executeTestCase(test, false);
+            }
+
+            // Save the recorded AT and uncertainty as reference and reset the current ones
+            test.referenceActivationTrace = test.currentActivationTrace.clone();
+            test.currentActivationTrace = undefined;
+            test.referenceUncertainty = new Map<number, number>(test.currentUncertainty);
+            test.currentUncertainty = new Map<number, number>();
+        }
+        Randomness.setScratchSeed(originalSeed);
+        StatisticsCollector.getInstance().numberFitnessEvaluations = 0;
     }
 
 }

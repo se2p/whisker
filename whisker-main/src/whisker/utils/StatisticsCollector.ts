@@ -20,7 +20,6 @@
 
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Chromosome} from "../search/Chromosome";
-import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 
 /**
  * Singleton class to collect statistics from search runs

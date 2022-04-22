@@ -103,16 +103,15 @@ export abstract class NetworkSuite {
             await this.collectActivationTrace();
         }
 
-        if (this.properties.mutators !== undefined &&
-            (this.properties.mutators as string []).length == 0) {
-            console.log("Testing Single Project");
-            await this.testSingleProject();
-            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
-        } else {
+        if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
             console.log("Performing Mutation Analysis");
             await this.testSingleProject();     // Execute the original program to obtain reference data
             const mutantPrograms = await this.mutationAnalysis();
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutantPrograms];
+        } else {
+            console.log("Testing Single Project");
+            await this.testSingleProject();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         }
     }
 
@@ -167,26 +166,8 @@ export abstract class NetworkSuite {
      * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
      * can later be used to verify the correctness of a modified project.
      */
-    private async collectActivationTrace(): Promise<void> {
-        const repetitions = parseInt(this.properties.activationTraceRepetitions as string);
-        const originalSeed = Randomness.scratchSeed;
-        const scratchSeeds = Array(repetitions).fill(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER)).map(
-            () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
-        for (const test of this.testCases) {
-            for (const seed of scratchSeeds) {
-                Randomness.setScratchSeed(seed);
-                await this.executeTestCase(test, false);
-            }
+    protected abstract collectActivationTrace(): Promise<void>;
 
-            // Save the recorded AT and uncertainty as reference and reset the current ones
-            test.referenceActivationTrace = test.currentActivationTrace.clone();
-            test.currentActivationTrace = undefined;
-            test.referenceUncertainty = new Map<number, number>(test.currentUncertainty);
-            test.currentUncertainty = new Map<number, number>();
-        }
-        Randomness.setScratchSeed(originalSeed);
-        StatisticsCollector.getInstance().numberFitnessEvaluations = 0;
-    }
 
     /**
      * Updates the archive of covered fitness functions.
@@ -222,6 +203,11 @@ export abstract class NetworkSuite {
             }
             const z = SurpriseAdequacy.zScore(testCase.referenceActivationTrace, testCase.currentActivationTrace);
             testCase.zScore = z[0];
+        } else {
+            testCase.surpriseAdequacyStep = undefined;
+            testCase.surpriseAdequacyNodes = undefined;
+            testCase.surpriseCounterNormalised = undefined;
+            testCase.zScore = undefined;
         }
     }
 
@@ -237,20 +223,29 @@ export abstract class NetworkSuite {
         for (const test of testCases) {
             test.determineCoveredObjectives([...this.statementMap.values()]);
             const currentUncertainty = [...test.currentUncertainty.values()];
-            const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
-            const maximumUncertainty = Math.max(...currentUncertainty);
+            let averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
+            let maximumUncertainty = Math.max(...currentUncertainty);
 
             const deltaUncertainty: number[] = [];
-            for(const [step, refUncertainty] of test.referenceUncertainty.entries()){
-                if(!test.currentUncertainty.has(step)){
+            for (const [step, refUncertainty] of test.referenceUncertainty.entries()) {
+                if (!test.currentUncertainty.has(step)) {
                     break;
                 }
                 const currUncertainty = test.currentUncertainty.get(step);
                 deltaUncertainty.push(Math.abs(currUncertainty - refUncertainty));
             }
 
-            const avgDeltaUnc = deltaUncertainty.reduce((pv, cv) => pv + cv, 0) / deltaUncertainty.length;
-            const maxDeltaUnc = Math.max(...deltaUncertainty);
+            let avgDeltaUnc: number;
+            let maxDeltaUnc: number;
+            if (deltaUncertainty.length > 0) {
+                avgDeltaUnc = deltaUncertainty.reduce((pv, cv) => pv + cv, 0) / deltaUncertainty.length;
+                maxDeltaUnc = Math.max(...deltaUncertainty);
+            } else {
+                averageUncertainty = undefined;
+                maximumUncertainty = undefined;
+                avgDeltaUnc = undefined;
+                maxDeltaUnc = undefined;
+            }
 
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,

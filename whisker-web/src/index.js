@@ -270,7 +270,8 @@ const runAllTests = async function () {
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
-            const mutators = document.querySelector('#container').mutators.split(', ');
+            const mutators = document.querySelector('#container').mutators === '' ?
+                ['NONE'] : document.querySelector('#container').mutators.split(', ');
             properties.train = false;
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
@@ -318,7 +319,8 @@ const runAllTests = async function () {
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
-            const mutators = document.querySelector('#container').mutators.split(', ');
+            const mutators = document.querySelector('#container').mutators === '' ?
+                ['NONE'] : document.querySelector('#container').mutators.split(', ');
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
