@@ -20,6 +20,7 @@ class TestTable {
         this._onRunCancel = this.onRunCancel.bind(this);
 
         testRunner.on(TestRunner.RUN_START, this._onRunStart);
+        testRunner.on(TestRunner.RESET_TABLE, this._onRunStart);
         testRunner.on(TestRunner.RUN_CANCEL, this._onRunCancel);
         testRunner.on(TestRunner.TEST_PASS, this._onTestDone);
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
