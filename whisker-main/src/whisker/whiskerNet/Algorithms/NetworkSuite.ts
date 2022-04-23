@@ -13,6 +13,7 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";
 
+
 export abstract class NetworkSuite {
 
     /**
@@ -85,6 +86,12 @@ export abstract class NetworkSuite {
     protected abstract mutationAnalysis(): Promise<ScratchProgram[]>;
 
     /**
+     * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
+     * can later be used to verify the correctness of a modified project.
+     */
+    protected abstract collectActivationTrace(): Promise<void>;
+
+    /**
      * Executes the given network suite by fist initialising required fields and then executing the respective test
      * cases on the original project or the created mutants.
      */
@@ -96,6 +103,7 @@ export abstract class NetworkSuite {
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets(this.vm);
         this.testCases = this.loadTestCases();
+        await this.minimiseSuite();
 
         // Record activation traces
         if (this.properties.activationTraceRepetitions > 0) {
@@ -163,11 +171,32 @@ export abstract class NetworkSuite {
     }
 
     /**
-     * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
-     * can later be used to verify the correctness of a modified project.
+     * Minimises the test suite to only contain tests required for reaching the maximum amount of coverage.
      */
-    protected abstract collectActivationTrace(): Promise<void>;
-
+    protected async minimiseSuite(): Promise<void> {
+        console.log("Minimising Test Suite....");
+        for (const test of this.testCases) {
+            await this.executeTestCase(test, false);
+            test.determineCoveredObjectives([...this.statementMap.values()]);
+        }
+        this.testCases.sort((a, b) => b.coveredStatements - a.coveredStatements);
+        let coverage = 0;
+        const shortenedTestCases = [];
+        for (const test of this.testCases) {
+            await this.executeTestCase(test, false);
+            this.updateArchive(test);
+            if ([...this.archive.keys()].length > coverage) {
+                coverage = [...this.archive.keys()].length;
+                shortenedTestCases.push(test);
+            }
+            if ([...this.statementMap.keys()].length === [...this.archive.keys()].length) {
+                break;
+            }
+        }
+        console.log(`Minimised from ${this.testCases.length} tests to ${shortenedTestCases.length} tests`);
+        this.testCases = shortenedTestCases;
+        this.archive.clear();
+    }
 
     /**
      * Updates the archive of covered fitness functions.
@@ -220,7 +249,8 @@ export abstract class NetworkSuite {
     protected updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
                                    testName: Readonly<string>): void {
         // TODO Move to a NetworkAnalysis class...
-        for (const test of testCases) {
+        for (let i = 0; i < testCases.length; i++) {
+            const test = testCases[i];
             test.determineCoveredObjectives([...this.statementMap.values()]);
             const currentUncertainty = [...test.currentUncertainty.values()];
             let averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
@@ -250,6 +280,7 @@ export abstract class NetworkSuite {
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
                 testName: testName,
+                testID: i,
                 totalObjectives: [...this.statementMap.keys()].length,
                 coveredObjectivesByTest: test.coveredStatements,
                 coveredObjectivesBySuite: [...this.archive.keys()].length,

@@ -14,6 +14,7 @@ import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import Arrays from "../../utils/Arrays";
 
 export class DynamicSuite extends NetworkSuite {
 
