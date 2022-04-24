@@ -653,7 +653,7 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     public updateActivationTrace(step: number): void {
         this.sortNodes();
-        const tracedNodes = this._allNodes.filter(node => node.type === NodeType.INPUT);
+        const tracedNodes = this._allNodes.filter(node => node.type === NodeType.HIDDEN);
 
         if (this.currentActivationTrace === undefined) {
             this.currentActivationTrace = new ActivationTrace(tracedNodes);

@@ -194,7 +194,13 @@ export class NeatProperties {
     private _coverageStableCount = 0;
 
     /**
-     * The template of a static/dynamic test.
+     * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
+     * ActivationTrace across many program states with diverging seeds.
+     */
+    private _activationTraceRepetitions = 0;
+
+    /**
+     * The template of a static/dynamic test
      */
     private _testTemplate: string;
 
@@ -474,6 +480,14 @@ export class NeatProperties {
 
     set coverageStableCount(value: number) {
         this._coverageStableCount = value;
+    }
+
+    get activationTraceRepetitions(): number {
+        return this._activationTraceRepetitions;
+    }
+
+    set activationTraceRepetitions(value: number) {
+        this._activationTraceRepetitions = value;
     }
 
     get testTemplate(): string {

@@ -51,7 +51,9 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {
+    BiasedVariableLengthConstrainedChromosomeMutation
+} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {NeatProperties} from "../whiskerNet/HyperParameter/NeatProperties";
@@ -205,6 +207,8 @@ export class WhiskerSearchConfiguration {
         const switchTargetCount = this._config['switchTargetCount'] !== undefined ?
             this._config['switchTargetCount'] : 20;
         const timeout = this._config['networkFitness']['timeout'];
+        const activationTraceRepetitions = this._config['aTRepetitions'] !== undefined ?
+            this._config['aTRepetitions'] : 0;
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
 
         properties.populationSize = populationSize;
@@ -243,6 +247,7 @@ export class WhiskerSearchConfiguration {
         properties.eventSelection = eventSelection;
         properties.coverageStableCount = coverageStableCount;
         properties.timeout = timeout;
+        properties.activationTraceRepetitions = activationTraceRepetitions;
         properties.printPopulationRecord = doPrintPopulationRecord;
         properties.switchTargetCount = switchTargetCount;
 

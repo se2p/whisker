@@ -103,7 +103,9 @@ export abstract class NetworkSuite {
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets(this.vm);
         this.testCases = this.loadTestCases();
-        await this.minimiseSuite();
+        if(this.testCases.length > 1) {
+            await this.minimiseSuite();
+        }
 
         // Record activation traces
         if (this.properties.activationTraceRepetitions > 0) {
