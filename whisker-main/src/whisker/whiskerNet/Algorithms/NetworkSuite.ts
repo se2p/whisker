@@ -156,6 +156,7 @@ export abstract class NetworkSuite {
         // If not set a random seed.
         else {
             Randomness.setInitialSeeds(Date.now());
+            this.properties.seed = Randomness.scratchSeed;
         }
     }
 
@@ -283,6 +284,7 @@ export abstract class NetworkSuite {
                 projectName: projectName,
                 testName: testName,
                 testID: i,
+                seed: this.properties.seed.toString(),
                 totalObjectives: [...this.statementMap.keys()].length,
                 coveredObjectivesByTest: test.coveredStatements,
                 coveredObjectivesBySuite: [...this.archive.keys()].length,

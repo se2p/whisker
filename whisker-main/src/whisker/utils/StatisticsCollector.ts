@@ -406,14 +406,14 @@ export class StatisticsCollector {
     }
 
     public asCsvNetworkSuite(): string {
-        let csv = "projectName,testName,id,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
+        let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
             "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,avgUncertainty," +
             "maxUncertainty,avgDeltaUncertainty,maxDeltaUncertainty\n";
 
         for (const testResult of this._networkSuiteResults) {
-            const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.totalObjectives,
-                testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite, testResult.score,
-                testResult.playTime, testResult.surpriseStepAdequacy, testResult.surpriseNodeAdequacy,
+            const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
+                testResult.totalObjectives, testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite,
+                testResult.score, testResult.playTime, testResult.surpriseStepAdequacy, testResult.surpriseNodeAdequacy,
                 testResult.surpriseCount, testResult.zScore, testResult.avgUncertainty, testResult.maxUncertainty,
                 testResult.avgDeltaUncertainty, testResult.maxDeltaUncertainty];
             const dataRow = data.join(",").concat("\n");
@@ -486,6 +486,7 @@ export interface NetworkTestSuiteResults {
     projectName: string,
     testName: string,
     testID: number,
+    seed: string,
     totalObjectives: number,
     coveredObjectivesByTest: number,
     coveredObjectivesBySuite: number
