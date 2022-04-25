@@ -126,7 +126,7 @@ export class SurpriseAdequacy {
 
     private static getLSAThreshold(traceValues: number[]): number {
         if (traceValues.every(value => value == traceValues[0])) {
-            return 1;
+            return 5;
         }
 
         let lsa = 0;

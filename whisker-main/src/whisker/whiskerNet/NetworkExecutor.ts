@@ -355,7 +355,7 @@ export class NetworkExecutor {
                 volume: this._vm.runtime.targets[targetsKey]["volume"],
                 x: this._vm.runtime.targets[targetsKey]["x"],
                 y: this._vm.runtime.targets[targetsKey]["y"],
-                variables: cloneDeep(this._vm.runtime.targets[targetsKey]["variables"])
+                variables: JSON.parse(JSON.stringify(this._vm.runtime.targets[targetsKey]["variables"]))
             };
         }
     }
@@ -392,7 +392,7 @@ export class NetworkExecutor {
             const x = this._initialState[targetsKey]["x"];
             const y = this._initialState[targetsKey]["y"];
             this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
-            this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
+            this._vm.runtime.targets[targetsKey]["variables"] = JSON.parse(JSON.stringify(this._initialState[targetsKey]["variables"]));
         }
 
         this._vmWrapper.inputs.resetMouse();
