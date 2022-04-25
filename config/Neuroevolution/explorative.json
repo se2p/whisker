@@ -10,6 +10,7 @@
     "ageSignificance": 1.0,
     "switchTargetCount": 5,
     "extractor": "neuroevolution",
+    "aTRepetitions": 100,
     "chromosome": {
         "type": "neatChromosome",
         "activationFunction": "TANH",

@@ -80,9 +80,11 @@ export class NetworkExecutor {
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
+        this._waitDuration = 0;
 
         // Initialise required variables.
         network.codons = [];
+        network.flushNodeValues();
         let stepCount = 0;
 
         // Play the game until we reach a GameOver state or the timeout.
@@ -105,6 +107,7 @@ export class NetworkExecutor {
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
             network.updateOutputNodes(this.availableEvents);
+            network.activateNetwork(spriteFeatures);
 
             // Select the next event and execute it if we did not decide to wait
             if (this._waitDuration == 0) {
@@ -239,19 +242,17 @@ export class NetworkExecutor {
         }
         // 3) Query the network's classification head.
         else {
-            network.activateNetwork(inputFeatures);
-        }
-
-        // Choose the event with the highest probability according to the softmax values
-        const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-        if (eventProbabilities.size > 0) {
-            const mostProbablePair = [...eventProbabilities.entries()].reduce(
-                (pV, cV) => cV[1] > pV [1] ? cV : pV);
-            return this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
-        } else {
-            // It can happen that all output nodes of corresponding available events do not have an active path
-            // starting from the input nodes, i.e. they did not get activated. In that case we just wait.
-            return this.availableEvents.findIndex(event => event instanceof WaitEvent);
+            // Choose the event with the highest probability according to the softmax values
+            const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+            if (eventProbabilities.size > 0) {
+                const mostProbablePair = [...eventProbabilities.entries()].reduce(
+                    (pV, cV) => cV[1] > pV [1] ? cV : pV);
+                return this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
+            } else {
+                // It can happen that all output nodes of corresponding available events do not have an active path
+                // starting from the input nodes, i.e. they did not get activated. In that case we just wait.
+                return this.availableEvents.findIndex(event => event instanceof WaitEvent);
+            }
         }
     }
 

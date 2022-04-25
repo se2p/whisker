@@ -80,9 +80,9 @@ export abstract class NetworkChromosome extends Chromosome {
     private _surpriseAdequacyNodes = 0;
 
     /**
-     * Counts the number of surprises and normalises it with the number of performed steps.
+     * Counts the number of surprising node activations.
      */
-    private _surpriseCounterNormalised = 0;
+    private _surpriseCount = 0;
 
     /**
      * Average Z-Score used to evaluate the correctness of a Scratch program.
@@ -758,12 +758,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._surpriseAdequacyNodes = value;
     }
 
-    get surpriseCounterNormalised(): number {
-        return this._surpriseCounterNormalised;
+    get surpriseCount(): number {
+        return this._surpriseCount;
     }
 
-    set surpriseCounterNormalised(value: number) {
-        this._surpriseCounterNormalised = value;
+    set surpriseCount(value: number) {
+        this._surpriseCount = value;
     }
 
     get zScore(): number {

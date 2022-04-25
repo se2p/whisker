@@ -68,8 +68,9 @@ export class SurpriseAdequacy {
         return -Math.log(density);
     }
 
-    public static LSANodeBased(training: ActivationTrace, test: ActivationTrace): [number, Map<number, Map<string, boolean>>] {
+    public static LSANodeBased(training: ActivationTrace, test: ActivationTrace): [number,Map<number, Map<string, number>>, Map<number, Map<string, boolean>>] {
         const surpriseMap = new Map<number, Map<string, boolean>>();
+        const lsaMap = new Map<number, Map<string, number>>();
         let sa = 0;
         let stepCount = 0;
         if (!test) {
@@ -79,22 +80,23 @@ export class SurpriseAdequacy {
                     surpriseMap.get(step).set(nodeId, true);
                 }
             }
-            return [100, undefined];
+            return [100, undefined, undefined];
         }
         // For each step, compare the ATs during training and testing.
         for (const step of test.trace.keys()) {
             // If the test run performed more steps than the test run we stop since have no training AT to compare.
             if (!training.trace.has(step)) {
-                return [sa / stepCount, surpriseMap];
+                return [sa / stepCount, lsaMap, surpriseMap];
             }
             surpriseMap.set(step, new Map<string, boolean>());
+            lsaMap.set(step, new Map<string, number>());
 
             for (const [nodeId, nodeTrace] of test.trace.get(step).entries()) {
                 const testValue = nodeTrace[0];
                 const trainingStepTrace = training.trace.get(step);
                 // With too few training samples we cannot reliably detect suspicious behaviour.
                 if(!trainingStepTrace){
-                    return [sa / stepCount, surpriseMap];
+                    return [sa / stepCount, lsaMap, surpriseMap];
                 }
 
                 const trainingNodeTrace = trainingStepTrace.get(nodeId);
@@ -107,9 +109,11 @@ export class SurpriseAdequacy {
                 const LSA = this.calculateLSANodeBased(trainingNodeTrace, testValue);
                 const threshold = this.getLSAThreshold(trainingNodeTrace);
                 sa += Math.min(100, LSA);
+                lsaMap.get(step).set(nodeId, sa);
 
                 // Check if the test AT for the given step and node is surprising.
                 if (LSA > threshold) {
+                    console.log(`Suspicious at step ${step} with node ${nodeId} and a value of ${LSA} vs Threshold ${threshold}`);
                     surpriseMap.get(step).set(nodeId, true);
                 } else {
                     surpriseMap.get(step).set(nodeId, false);
@@ -117,7 +121,7 @@ export class SurpriseAdequacy {
             }
             stepCount++;
         }
-        return [sa /stepCount, surpriseMap];
+        return [sa /stepCount, lsaMap, surpriseMap];
     }
 
     private static getLSAThreshold(traceValues: number[]): number {
@@ -132,7 +136,7 @@ export class SurpriseAdequacy {
             const value = random.pick(traceValues);
             lsa += this.calculateLSANodeBased(traceValues, value);
         }
-        return Math.max(1, (lsa / repetitions) * 2);
+        return Math.max(10, (lsa / repetitions) * 2);
     }
 
     private static calculateLSANodeBased(trainingTrace: number[], testTrace: number) {

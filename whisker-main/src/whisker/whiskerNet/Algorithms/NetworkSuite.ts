@@ -12,6 +12,7 @@ import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";
+import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 
 
 export abstract class NetworkSuite {
@@ -103,7 +104,7 @@ export abstract class NetworkSuite {
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets(this.vm);
         this.testCases = this.loadTestCases();
-        if(this.testCases.length > 1) {
+        if (this.testCases.length > 1) {
             await this.minimiseSuite();
         }
 
@@ -187,6 +188,8 @@ export abstract class NetworkSuite {
         const shortenedTestCases = [];
         for (const test of this.testCases) {
             await this.executeTestCase(test, false);
+            test.currentActivationTrace = undefined;
+            test.currentUncertainty = new Map<number, number>();
             this.updateArchive(test);
             if ([...this.archive.keys()].length > coverage) {
                 coverage = [...this.archive.keys()].length;
@@ -229,16 +232,17 @@ export abstract class NetworkSuite {
 
             // If the program could not be executed we set all nodes as being suspicious
             if (nodeSA[1] === undefined) {
-                testCase.surpriseCounterNormalised = testCase.referenceActivationTrace.tracedNodes.length;
+                testCase.surpriseCount = testCase.referenceActivationTrace.tracedNodes.length;
             } else {
-                testCase.surpriseCounterNormalised = this.countSuspiciousActivations(nodeSA[1]) / nodeSA[1].size;
+                const surpriseActivations = this.countSuspiciousActivations(nodeSA[2]);
+                testCase.surpriseCount = surpriseActivations[0];
             }
             const z = SurpriseAdequacy.zScore(testCase.referenceActivationTrace, testCase.currentActivationTrace);
             testCase.zScore = z[0];
         } else {
             testCase.surpriseAdequacyStep = undefined;
             testCase.surpriseAdequacyNodes = undefined;
-            testCase.surpriseCounterNormalised = undefined;
+            testCase.surpriseCount = undefined;
             testCase.zScore = undefined;
         }
     }
@@ -248,9 +252,10 @@ export abstract class NetworkSuite {
      * @param testCases the executed testCases holding the execution results.
      * @param projectName the name of the executed project.
      * @param testName the name of the executed test file.
+     * @param mutantDetection determines whether we do mutation analysis.
      */
     protected updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
-                                   testName: Readonly<string>): void {
+                                   testName: Readonly<string>, mutantDetection = false): void {
         // TODO Move to a NetworkAnalysis class...
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
@@ -280,6 +285,8 @@ export abstract class NetworkSuite {
                 maxDeltaUnc = undefined;
             }
 
+            const isMutant = this.isMutant(test, this.testCases[i]);
+
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
                 testName: testName,
@@ -292,16 +299,45 @@ export abstract class NetworkSuite {
                 playTime: test.playTime,
                 surpriseStepAdequacy: test.surpriseAdequacyStep,
                 surpriseNodeAdequacy: test.surpriseAdequacyNodes,
-                surpriseCount: test.surpriseCounterNormalised,
+                surpriseCount: test.surpriseCount,
                 zScore: test.zScore,
                 avgUncertainty: averageUncertainty,
                 maxUncertainty: maximumUncertainty,
                 avgDeltaUncertainty: avgDeltaUnc,
-                maxDeltaUncertainty: maxDeltaUnc
+                maxDeltaUncertainty: maxDeltaUnc,
+                isMutant: isMutant
             };
             StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
         }
+    }
 
+    /**
+     * Determines whether the given test was executed on a mutant.
+     * @param executedTest the network that just got executed on a Scratch program.
+     * @param originalTest the original network from which the executed one got cloned off.
+     * @returns true if we suspect a mutant.
+     */
+    private isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>): boolean {
+        // If the network structure has changed within the output nodes, we have found new events suggesting that
+        // something has been mutated within the controls of the program.
+        const execClassNodes = executedTest.outputNodes.filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+        const execEvents = execClassNodes.map(node => node.event.stringIdentifier());
+        const originalClassNodes = originalTest.outputNodes.filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+        const originalEvents = originalClassNodes.map(node => node.event.stringIdentifier());
+        const newEvents = execEvents.filter(eventString => !originalEvents.includes(eventString));
+        if (newEvents.length > 0) {
+            for (const newEvent of newEvents) {
+                console.log(`New Event ${newEvent}`);
+            }
+            return true;
+        }
+
+        // If we encounter surprising node activations we suspect a mutant.
+        if (executedTest.surpriseCount > 0) {
+            console.log(`Surprising node activation count of ${executedTest.surpriseCount}`);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -309,16 +345,21 @@ export abstract class NetworkSuite {
      * @param surpriseMap maps executed Scratch-Steps to obtained LSA values of input nodes.
      * @returns number indicating how often a surprising activations was encountered.
      */
-    protected countSuspiciousActivations(surpriseMap: Map<number, Map<string, boolean>>): number {
+    protected countSuspiciousActivations(surpriseMap: Map<number, Map<string, boolean>>): [number, Map<string, number>] {
         let surpriseCounter = 0;
+        const nodeSurpriseMap = new Map<string, number>();
         for (const stepTrace of surpriseMap.values()) {
-            for (const surprise of stepTrace.values()) {
+            for (const [node, surprise] of stepTrace.entries()) {
+                if (!nodeSurpriseMap.has(node)) {
+                    nodeSurpriseMap.set(node, 0);
+                }
                 if (surprise) {
                     surpriseCounter++;
+                    nodeSurpriseMap.set(node, nodeSurpriseMap.get(node) + 1);
                 }
             }
         }
-        return surpriseCounter;
+        return [surpriseCounter, nodeSurpriseMap];
     }
 
     /**

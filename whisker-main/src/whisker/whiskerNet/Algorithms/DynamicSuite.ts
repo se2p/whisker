@@ -14,7 +14,6 @@ import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import Arrays from "../../utils/Arrays";
 
 export class DynamicSuite extends NetworkSuite {
 
@@ -78,8 +77,9 @@ export class DynamicSuite extends NetworkSuite {
         }
 
         // Execute all networks on the single project.
-        for (const network of this.testCases) {
-            await this.executeTestCase(network, true);
+        for (let i = 0; i < this.testCases.length; i++) {
+            console.log(`Executing test ${i}`);
+            await this.executeTestCase(this.testCases[i], true);
         }
         this.updateTestStatistics(this.testCases, this.projectName, this.testName);
     }
@@ -95,20 +95,17 @@ export class DynamicSuite extends NetworkSuite {
             this.archive.clear();
             const projectMutation = `${this.projectName}-${mutant.name}`;
             console.log(`Analysing mutant ${projectMutation}`);
-            try {
-                const executedTests: NeatChromosome[] = [];
-                for (const test of this.testCases) {
-                    // We clone the network since it might get changed due to specific mutations.
-                    const testClone = test.cloneAsTestCase();
-                    await this.loadMutant(mutant);
-                    await this.executeTestCase(testClone, true);
-                    executedTests.push(testClone);
-                }
-                this.updateTestStatistics(executedTests, projectMutation, this.testName);
-            } catch (e) {
-                console.error(e);
-                console.log(`Defect mutant: ${projectMutation}`);
+            const executedTests: NeatChromosome[] = [];
+            for (let i = 0; i < this.testCases.length; i++) {
+                console.log(`Executing test ${i}`);
+                const test = this.testCases[i];
+                // We clone the network since it might get changed due to specific mutations.
+                const testClone = test.cloneAsTestCase();
+                await this.loadMutant(mutant);
+                await this.executeTestCase(testClone, true);
+                executedTests.push(testClone);
             }
+            this.updateTestStatistics(executedTests, projectMutation, this.testName, true);
         }
         return mutantPrograms;
     }

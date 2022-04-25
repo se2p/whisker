@@ -407,15 +407,15 @@ export class StatisticsCollector {
 
     public asCsvNetworkSuite(): string {
         let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
-            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,avgUncertainty," +
-            "maxUncertainty,avgDeltaUncertainty,maxDeltaUncertainty\n";
+            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCount,zScore,avgUncertainty," +
+            "maxUncertainty,avgDeltaUncertainty,maxDeltaUncertainty,isMutant\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
                 testResult.totalObjectives, testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite,
                 testResult.score, testResult.playTime, testResult.surpriseStepAdequacy, testResult.surpriseNodeAdequacy,
                 testResult.surpriseCount, testResult.zScore, testResult.avgUncertainty, testResult.maxUncertainty,
-                testResult.avgDeltaUncertainty, testResult.maxDeltaUncertainty];
+                testResult.avgDeltaUncertainty, testResult.maxDeltaUncertainty, testResult.isMutant];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -500,4 +500,5 @@ export interface NetworkTestSuiteResults {
     maxUncertainty: number,
     avgDeltaUncertainty: number,
     maxDeltaUncertainty: number
+    isMutant?:boolean
 }
