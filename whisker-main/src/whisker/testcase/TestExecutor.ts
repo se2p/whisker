@@ -34,7 +34,6 @@ import VMWrapper = require("../../vm/vm-wrapper.js");
 import {Container} from "../utils/Container";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
-import cloneDeep from "lodash.clonedeep";
 
 
 export class TestExecutor {
@@ -325,7 +324,7 @@ export class TestExecutor {
             const x = this._initialState[targetsKey]["x"];
             const y = this._initialState[targetsKey]["y"];
             this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
-            this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
+            this._vm.runtime.targets[targetsKey]["variables"] = JSON.parse(JSON.stringify(this._initialState[targetsKey]["variables"]));
         }
 
         this._vmWrapper.inputs.resetMouse();
@@ -349,7 +348,7 @@ export class TestExecutor {
                 volume: this._vm.runtime.targets[targetsKey]["volume"],
                 x: this._vm.runtime.targets[targetsKey]["x"],
                 y: this._vm.runtime.targets[targetsKey]["y"],
-                variables: cloneDeep(this._vm.runtime.targets[targetsKey]["variables"])
+                variables: JSON.parse(JSON.stringify(this._vm.runtime.targets[targetsKey]["variables"]))
             };
         }
     }
