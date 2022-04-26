@@ -107,7 +107,7 @@ export class DynamicSuite extends NetworkSuite {
                     await this.loadMutant(mutant);
                     await this.executeTestCase(testClone, true);
                     executedTests.push(testClone);
-                    if (this.isMutant(testClone, test)) {
+                    if (this.isMutant(testClone, test, false)) {
                         console.log("Mutant detected; Stop testing for this mutant...");
                         break;
                     }

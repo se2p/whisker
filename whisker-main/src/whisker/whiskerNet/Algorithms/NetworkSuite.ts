@@ -257,7 +257,7 @@ export abstract class NetworkSuite {
             test.determineCoveredObjectives([...this.statementMap.values()]);
             const currentUncertainty = [...test.currentUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
-            const isMutant = this.isMutant(test, this.testCases[i]);
+            const isMutant = this.isMutant(test, this.testCases[i], true);
 
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
@@ -282,9 +282,10 @@ export abstract class NetworkSuite {
      * Determines whether the given test was executed on a mutant.
      * @param executedTest the network that just got executed on a Scratch program.
      * @param originalTest the original network from which the executed one got cloned off.
+     * @param printReason if true the reason for the mutant being flagged as mutant is printed to the console.
      * @returns true if we suspect a mutant.
      */
-    public isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>): boolean {
+    public isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>, printReason=true): boolean {
         // If the network structure has changed within the output nodes, we have found new events suggesting that
         // something has been mutated within the controls of the program.
         const execClassNodes = executedTest.outputNodes.filter(node => node instanceof ClassificationNode) as ClassificationNode[];
@@ -293,15 +294,19 @@ export abstract class NetworkSuite {
         const originalEvents = originalClassNodes.map(node => node.event.stringIdentifier());
         const newEvents = execEvents.filter(eventString => !originalEvents.includes(eventString));
         if (newEvents.length > 0) {
-            for (const newEvent of newEvents) {
-                console.log(`New Event ${newEvent}`);
+            if(printReason) {
+                for (const newEvent of newEvents) {
+                    console.log(`New Event ${newEvent}`);
+                }
             }
             return true;
         }
 
         // If we encounter surprising node activations we suspect a mutant.
         if (executedTest.surpriseCount > 0) {
-            console.log(`Surprising node activation count of ${executedTest.surpriseCount}`);
+            if(printReason) {
+                console.log(`Surprising node activation count of ${executedTest.surpriseCount}`);
+            }
             return true;
         }
         return false;
