@@ -3,6 +3,7 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../ScratchInterface";
 import {OperatorFilter} from "scratch-analysis/src/block-filter";
 import uid from "scratch-vm/src/util/uid";
+import {Randomness} from "../../utils/Randomness";
 
 export class NegateConditionalMutation extends ScratchMutation {
 
@@ -31,6 +32,14 @@ export class NegateConditionalMutation extends ScratchMutation {
             parent['inputs']['CONDITION'][1] = not_block['id'];
         } else if (parent['inputs']['OPERAND']) {
             parent['inputs']['OPERAND'][1] = not_block['id'];
+        } else if (parent['inputs']['TOUCHINGOBJECTMENU']) {
+            parent['inputs']['TOUCHINGOBJECTMENU'][1] = not_block['id'];
+        } else if (parent['inputs']['OPERAND1'] && parent['inputs']['OPERAND1']) {
+            if (Randomness.getInstance().randomBoolean()) {
+                parent['inputs']['OPERAND1'][1] = not_block['id'];
+            } else {
+                parent['inputs']['OPERAND2'][1] = not_block['id'];
+            }
         } else {
             console.log(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
             return false;
@@ -90,7 +99,7 @@ export class NegateConditionalMutation extends ScratchMutation {
      * String representation of a given mutator.
      * @returns string representation of the mutator.
      */
-    public toString():string{
+    public toString(): string {
         return 'NCM';
     }
 }
