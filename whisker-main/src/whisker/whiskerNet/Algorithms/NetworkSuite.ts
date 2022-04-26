@@ -117,8 +117,8 @@ export abstract class NetworkSuite {
         if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
             console.log("Performing Mutation Analysis");
             await this.testSingleProject();     // Execute the original program to obtain reference data
-            const mutantPrograms = await this.mutationAnalysis();
-            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutantPrograms];
+            await this.mutationAnalysis();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         } else {
             console.log("Testing Single Project");
             await this.testSingleProject();

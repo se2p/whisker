@@ -79,6 +79,7 @@ export class DynamicSuite extends NetworkSuite {
         // Execute all networks on the single project.
         for (let i = 0; i < this.testCases.length; i++) {
             console.log(`Executing test ${i}`);
+            console.log(this.testCases[i].toString());
             await this.executeTestCase(this.testCases[i], true);
         }
         this.updateTestStatistics(this.testCases, this.projectName, this.testName);
@@ -91,7 +92,8 @@ export class DynamicSuite extends NetworkSuite {
         const mutantFactory = new MutationFactory(this.vm);
         const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[]);
         console.log(`Produced mutants ${mutantPrograms.length}`);
-        for (const mutant of mutantPrograms) {
+        while (mutantPrograms.length > 0){
+            const mutant = mutantPrograms.pop();
             this.archive.clear();
             const projectMutation = `${this.projectName}-${mutant.name}`;
             console.log(`Analysing mutant ${projectMutation}`);
@@ -107,7 +109,7 @@ export class DynamicSuite extends NetworkSuite {
             }
             this.updateTestStatistics(executedTests, projectMutation, this.testName, true);
         }
-        return mutantPrograms;
+        return [];
     }
 
     /**

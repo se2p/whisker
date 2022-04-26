@@ -102,7 +102,7 @@ export class SurpriseAdequacy {
                 const trainingNodeTrace = trainingStepTrace.get(nodeId);
 
                 // New node that did not occur in the test generation process, or we observed too few samples.
-                if(!trainingNodeTrace || trainingNodeTrace.length < 10){
+                if(!trainingNodeTrace || trainingNodeTrace.length < 30){
                     continue;
                 }
 
@@ -126,7 +126,7 @@ export class SurpriseAdequacy {
 
     private static getLSAThreshold(traceValues: number[]): number {
         if (traceValues.every(value => value == traceValues[0])) {
-            return 5;
+            return 1;
         }
 
         let lsa = 0;
