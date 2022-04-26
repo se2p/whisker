@@ -84,7 +84,13 @@ export class NegateConditionalMutation extends ScratchMutation {
             shadow: false,
             topLevel: false
         };
-
     }
 
+    /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public toString():string{
+        return 'NCM';
+    }
 }

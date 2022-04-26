@@ -47,4 +47,12 @@ export class KeyReplacementMutation extends ScratchMutation {
         return keyBlocks;
     }
 
+    /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public toString():string{
+        return 'KRM';
+    }
+
 }

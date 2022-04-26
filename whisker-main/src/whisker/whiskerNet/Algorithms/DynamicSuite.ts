@@ -79,7 +79,6 @@ export class DynamicSuite extends NetworkSuite {
         // Execute all networks on the single project.
         for (let i = 0; i < this.testCases.length; i++) {
             console.log(`Executing test ${i}`);
-            console.log(this.testCases[i].toString());
             await this.executeTestCase(this.testCases[i], true);
         }
         this.updateTestStatistics(this.testCases, this.projectName, this.testName);
@@ -92,22 +91,29 @@ export class DynamicSuite extends NetworkSuite {
         const mutantFactory = new MutationFactory(this.vm);
         const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[]);
         console.log(`Produced mutants ${mutantPrograms.length}`);
+        let i = 0;
         while (mutantPrograms.length > 0){
             const mutant = mutantPrograms.pop();
             this.archive.clear();
             const projectMutation = `${this.projectName}-${mutant.name}`;
-            console.log(`Analysing mutant ${projectMutation}`);
+            console.log(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
             for (let i = 0; i < this.testCases.length; i++) {
                 console.log(`Executing test ${i}`);
                 const test = this.testCases[i];
                 // We clone the network since it might get changed due to specific mutations.
+                try{
                 const testClone = test.cloneAsTestCase();
                 await this.loadMutant(mutant);
                 await this.executeTestCase(testClone, true);
                 executedTests.push(testClone);
+                }
+                catch {
+                    console.log(`Defect mutant ${projectMutation}`);
+                }
             }
             this.updateTestStatistics(executedTests, projectMutation, this.testName, true);
+            i++;
         }
         return [];
     }
@@ -151,7 +157,7 @@ export class DynamicSuite extends NetworkSuite {
             () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
         for (const test of this.testCases) {
             for (const seed of scratchSeeds) {
-                Randomness.setScratchSeed(seed);
+                Randomness.setScratchSeed(seed, true);
                 await this.executeTestCase(test, false);
             }
 

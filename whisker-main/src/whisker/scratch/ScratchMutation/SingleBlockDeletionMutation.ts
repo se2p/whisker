@@ -86,5 +86,11 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         return deletionCandidates;
     }
 
-
+    /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public toString():string{
+        return 'SBD';
+    }
 }

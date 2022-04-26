@@ -94,4 +94,12 @@ export class VariableReplacementMutation extends ScratchMutation {
         }
         return variableIds;
     }
+
+    /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public toString():string{
+        return 'VRM';
+    }
 }
