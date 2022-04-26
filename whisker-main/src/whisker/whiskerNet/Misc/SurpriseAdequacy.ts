@@ -1,74 +1,10 @@
 import {ActivationTrace} from "./ActivationTrace";
 import Statistics from "../../utils/Statistics";
-import Arrays from "../../utils/Arrays";
-import {matrix} from "mathjs";
 import {Randomness} from "../../utils/Randomness";
 
 export class SurpriseAdequacy {
 
-    public static LSA(trainingTraces: ActivationTrace, testTraces: ActivationTrace): number {
-        // The game could not be started, so we penalize with a SA value of 100;
-        if (!testTraces) {
-            return 100;
-        }
-
-        const training = trainingTraces.clone();
-        const test = testTraces.clone();
-        let surpriseAdequacy = 0;
-        let stepCount = 0;
-        // Go through each step and calculate the LSA.
-        for (const step of test.trace.keys()) {
-
-            // If the test run performed more steps than the test run we stop since have no training AT to compare.
-            if (!training.trace.has(step)) {
-                return surpriseAdequacy / stepCount;
-            }
-
-            const trainingTrace = training.trace.get(step);
-            const testTrace = test.trace.get(step);
-
-            for (const nodeId of trainingTrace.keys()) {
-                if (!testTrace.has(nodeId)) {
-                    trainingTrace.delete(nodeId);
-                }
-            }
-
-            for (const nodeId of testTrace.keys()) {
-                if (!trainingTrace.has(nodeId)) {
-                    testTrace.delete(nodeId);
-                }
-            }
-
-            // Extract both traces for the given step and make sure both represent the same number of activations.
-            const testStepTrace = test.getStepTrace(step);
-            const trainingStepTraces = training.getStepTrace(step).filter(
-                trace => trace.length == testStepTrace[0].length);
-
-            if (trainingStepTraces.length < 5) {
-                return stepCount > 0 ? surpriseAdequacy / stepCount : undefined;
-            }
-
-            // Calculate Surprise Adequacy.
-            surpriseAdequacy += this.calculateLSA(trainingStepTraces, testStepTrace[0]);
-            stepCount++;
-        }
-        return surpriseAdequacy / stepCount;
-    }
-
-    private static calculateLSA(trainingTraces: number[][], testTrace: number[]) {
-        let kdeSum = 0;
-        const bandwidth = Statistics.multivariateBandwidthScott(matrix(trainingTraces));
-
-        for (const trainingTrace of trainingTraces) {
-            const traceDifference = Arrays.subtract(testTrace, trainingTrace);
-            kdeSum += Statistics.multivariateGaussianKernel(traceDifference, bandwidth);
-        }
-
-        const density = kdeSum / trainingTraces.length;
-        return -Math.log(density);
-    }
-
-    public static LSANodeBased(training: ActivationTrace, test: ActivationTrace): [number,Map<number, Map<string, number>>, Map<number, Map<string, boolean>>] {
+    public static LSANodeBased(training: ActivationTrace, test: ActivationTrace): [number, Map<number, Map<string, number>>, Map<number, Map<string, boolean>>] {
         const surpriseMap = new Map<number, Map<string, boolean>>();
         const lsaMap = new Map<number, Map<string, number>>();
         let sa = 0;
@@ -95,14 +31,14 @@ export class SurpriseAdequacy {
                 const testValue = nodeTrace[0];
                 const trainingStepTrace = training.trace.get(step);
                 // With too few training samples we cannot reliably detect suspicious behaviour.
-                if(!trainingStepTrace){
+                if (!trainingStepTrace) {
                     return [sa / stepCount, lsaMap, surpriseMap];
                 }
 
                 const trainingNodeTrace = trainingStepTrace.get(nodeId);
 
                 // New node that did not occur in the test generation process, or we observed too few samples.
-                if(!trainingNodeTrace || trainingNodeTrace.length < 30){
+                if (!trainingNodeTrace || trainingNodeTrace.length < 30) {
                     continue;
                 }
 
@@ -121,7 +57,7 @@ export class SurpriseAdequacy {
             }
             stepCount++;
         }
-        return [sa /stepCount, lsaMap, surpriseMap];
+        return [sa / stepCount, lsaMap, surpriseMap];
     }
 
     private static getLSAThreshold(traceValues: number[]): number {
@@ -162,7 +98,7 @@ export class SurpriseAdequacy {
     }
 
 
-    public static zScore(training: ActivationTrace, test:ActivationTrace): [number, Map<number, Map<string, boolean>>]{
+    public static zScore(training: ActivationTrace, test: ActivationTrace): [number, Map<number, Map<string, boolean>>] {
         const surpriseMap = new Map<number, Map<string, boolean>>();
         let zScore = 0;
         let stepCount = 0;
@@ -216,16 +152,14 @@ export class SurpriseAdequacy {
         return [zScore / stepCount, surpriseMap];
     }
 
-    private static calculateZScore(referenceTrace: number[], testValue: number): number{
+    private static calculateZScore(referenceTrace: number[], testValue: number): number {
         const mean = Statistics.mean(referenceTrace);
         const std = Statistics.std(referenceTrace);
-        if(std < 0.001 && mean != testValue){
+        if (std < 0.001 && mean != testValue) {
             return Math.abs(testValue - mean) * 4;
-        }
-        else if(std < 0.001 && mean == testValue){
+        } else if (std < 0.001 && mean == testValue) {
             return 0;
-        }
-        else{
+        } else {
             return Math.abs((testValue - mean) / std);
         }
     }
