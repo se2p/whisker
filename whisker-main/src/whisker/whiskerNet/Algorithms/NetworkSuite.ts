@@ -226,7 +226,6 @@ export abstract class NetworkSuite {
     protected extractNetworkStatistics(testCase: NeatChromosome): void {
         // We can only apply node activation analysis if we have a reference trace
         if (testCase.referenceActivationTrace) {
-            testCase.surpriseAdequacyStep = SurpriseAdequacy.LSA(testCase.referenceActivationTrace, testCase.currentActivationTrace);
             const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.referenceActivationTrace, testCase.currentActivationTrace);
             testCase.surpriseAdequacyNodes = nodeSA[0];
 
@@ -237,13 +236,9 @@ export abstract class NetworkSuite {
                 const surpriseActivations = this.countSuspiciousActivations(nodeSA[2]);
                 testCase.surpriseCount = surpriseActivations[0];
             }
-            const z = SurpriseAdequacy.zScore(testCase.referenceActivationTrace, testCase.currentActivationTrace);
-            testCase.zScore = z[0];
         } else {
-            testCase.surpriseAdequacyStep = undefined;
             testCase.surpriseAdequacyNodes = undefined;
             testCase.surpriseCount = undefined;
-            testCase.zScore = undefined;
         }
     }
 
@@ -261,30 +256,7 @@ export abstract class NetworkSuite {
             const test = testCases[i];
             test.determineCoveredObjectives([...this.statementMap.values()]);
             const currentUncertainty = [...test.currentUncertainty.values()];
-            let averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
-            let maximumUncertainty = Math.max(...currentUncertainty);
-
-            const deltaUncertainty: number[] = [];
-            for (const [step, refUncertainty] of test.referenceUncertainty.entries()) {
-                if (!test.currentUncertainty.has(step)) {
-                    break;
-                }
-                const currUncertainty = test.currentUncertainty.get(step);
-                deltaUncertainty.push(Math.abs(currUncertainty - refUncertainty));
-            }
-
-            let avgDeltaUnc: number;
-            let maxDeltaUnc: number;
-            if (deltaUncertainty.length > 0) {
-                avgDeltaUnc = deltaUncertainty.reduce((pv, cv) => pv + cv, 0) / deltaUncertainty.length;
-                maxDeltaUnc = Math.max(...deltaUncertainty);
-            } else {
-                averageUncertainty = undefined;
-                maximumUncertainty = undefined;
-                avgDeltaUnc = undefined;
-                maxDeltaUnc = undefined;
-            }
-
+            const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i]);
 
             const testResult: NetworkTestSuiteResults = {
@@ -297,14 +269,9 @@ export abstract class NetworkSuite {
                 coveredObjectivesBySuite: [...this.archive.keys()].length,
                 score: test.score,
                 playTime: test.playTime,
-                surpriseStepAdequacy: test.surpriseAdequacyStep,
                 surpriseNodeAdequacy: test.surpriseAdequacyNodes,
                 surpriseCount: test.surpriseCount,
-                zScore: test.zScore,
                 avgUncertainty: averageUncertainty,
-                maxUncertainty: maximumUncertainty,
-                avgDeltaUncertainty: avgDeltaUnc,
-                maxDeltaUncertainty: maxDeltaUnc,
                 isMutant: isMutant
             };
             StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
@@ -317,7 +284,7 @@ export abstract class NetworkSuite {
      * @param originalTest the original network from which the executed one got cloned off.
      * @returns true if we suspect a mutant.
      */
-    private isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>): boolean {
+    public isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>): boolean {
         // If the network structure has changed within the output nodes, we have found new events suggesting that
         // something has been mutated within the controls of the program.
         const execClassNodes = executedTest.outputNodes.filter(node => node instanceof ClassificationNode) as ClassificationNode[];
