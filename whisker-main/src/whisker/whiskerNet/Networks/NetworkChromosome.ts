@@ -55,29 +55,24 @@ export abstract class NetworkChromosome extends Chromosome {
     private _isRecurrent = false;
 
     /**
-     * Saves the ActivationTrace that holds all node activation values seen so far.
-     */
-    private _currentActivationTrace: ActivationTrace;
-
-    /**
-     * Used for loading an ActivationTrace from a previous run, to compare it with ActivationTraces of a current run.
+     * Reference activation trace serving as the ground truth.
      */
     private _referenceActivationTrace: ActivationTrace;
 
     /**
-     * Determines whether an ActivationTrace should be recorded during a playthrough.
+     * Test activation trace which will be compared to the reference to detect deviating program behaviour.
+     */
+    private _testActivationTrace: ActivationTrace;
+
+    /**
+     * Determines whether an ActivationTrace and uncertainty values should be recorded during a playthrough.
      */
     private _recordNetworkStatistics = false;
 
     /**
-     * The average surprise value across all steps and nodes.
+     * The average surprise value across all steps calculated between pairs of nodes.
      */
-    private _surpriseAdequacyStep = 0;
-
-    /**
-     * The average surprise value across all steps but split up by nodes.
-     */
-    private _surpriseAdequacyNodes = 0;
+    private _averageNodeBasedLSA = 0;
 
     /**
      * Counts the number of surprising node activations.
@@ -85,19 +80,14 @@ export abstract class NetworkChromosome extends Chromosome {
     private _surpriseCount = 0;
 
     /**
-     * Average Z-Score used to evaluate the correctness of a Scratch program.
-     */
-    private _zScore = 0;
-
-    /**
-     * Maps the previously observed uncertainty of the network classification to a certain step.
+     * Maps Scratch steps to the uncertainty values observed during the execution of a sample program.
      */
     private _referenceUncertainty = new Map<number, number>();
 
     /**
-     * Maps currently observed uncertainty of the network classification to a certain step.
-     */
-    private _currentUncertainty = new Map<number, number>();
+     * Maps Scratch steps to the uncertainty values observed during the test execution.
+     * */
+    private _testUncertainty = new Map<number, number>();
 
     /**
      * Maps each uncovered target statement to the number of times it has been covered using different seeds.
@@ -655,11 +645,11 @@ export abstract class NetworkChromosome extends Chromosome {
         this.sortNodes();
         const tracedNodes = this._allNodes.filter(node => node.type === NodeType.HIDDEN);
 
-        if (this.currentActivationTrace === undefined) {
-            this.currentActivationTrace = new ActivationTrace(tracedNodes);
+        if (this.testActivationTrace === undefined) {
+            this.testActivationTrace = new ActivationTrace(tracedNodes);
         }
 
-        this.currentActivationTrace.update(step, tracedNodes);
+        this.testActivationTrace.update(step, tracedNodes);
     }
 
     get allNodes(): NodeGene[] {
@@ -718,12 +708,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._playTime = value;
     }
 
-    get currentActivationTrace(): ActivationTrace {
-        return this._currentActivationTrace;
+    get testActivationTrace(): ActivationTrace {
+        return this._testActivationTrace;
     }
 
-    set currentActivationTrace(value: ActivationTrace) {
-        this._currentActivationTrace = value;
+    set testActivationTrace(value: ActivationTrace) {
+        this._testActivationTrace = value;
     }
 
     get referenceActivationTrace(): ActivationTrace {
@@ -742,20 +732,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._recordNetworkStatistics = value;
     }
 
-    get surpriseAdequacyStep(): number {
-        return this._surpriseAdequacyStep;
+    get averageNodeBasedLSA(): number {
+        return this._averageNodeBasedLSA;
     }
 
-    set surpriseAdequacyStep(value: number) {
-        this._surpriseAdequacyStep = value;
-    }
-
-    get surpriseAdequacyNodes(): number {
-        return this._surpriseAdequacyNodes;
-    }
-
-    set surpriseAdequacyNodes(value: number) {
-        this._surpriseAdequacyNodes = value;
+    set averageNodeBasedLSA(value: number) {
+        this._averageNodeBasedLSA = value;
     }
 
     get surpriseCount(): number {
@@ -766,14 +748,6 @@ export abstract class NetworkChromosome extends Chromosome {
         this._surpriseCount = value;
     }
 
-    get zScore(): number {
-        return this._zScore;
-    }
-
-    set zScore(value: number) {
-        this._zScore = value;
-    }
-
     get referenceUncertainty(): Map<number, number> {
         return this._referenceUncertainty;
     }
@@ -782,12 +756,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._referenceUncertainty = value;
     }
 
-    get currentUncertainty(): Map<number, number> {
-        return this._currentUncertainty;
+    get testUncertainty(): Map<number, number> {
+        return this._testUncertainty;
     }
 
-    set currentUncertainty(value: Map<number, number>) {
-        this._currentUncertainty = value;
+    set testUncertainty(value: Map<number, number>) {
+        this._testUncertainty = value;
     }
 
     get trace(): ExecutionTrace {

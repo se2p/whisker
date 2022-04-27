@@ -14,6 +14,7 @@ import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
 
 export class DynamicSuite extends NetworkSuite {
 
@@ -61,7 +62,7 @@ export class DynamicSuite extends NetworkSuite {
         await this.executor.execute(test);
         if (recordExecution) {
             this.updateArchive(test);
-            this.extractNetworkStatistics(test);
+            NetworkAnalysis.analyseNetwork(test);
         }
         test.recordNetworkStatistics = false;
         this.executor.resetState();
@@ -162,10 +163,10 @@ export class DynamicSuite extends NetworkSuite {
             }
 
             // Save the recorded AT and uncertainty as reference and reset the current ones
-            test.referenceActivationTrace = test.currentActivationTrace.clone();
-            test.currentActivationTrace = undefined;
-            test.referenceUncertainty = new Map<number, number>(test.currentUncertainty);
-            test.currentUncertainty = new Map<number, number>();
+            test.referenceActivationTrace = test.testActivationTrace.clone();
+            test.testActivationTrace = undefined;
+            test.referenceUncertainty = new Map<number, number>(test.testUncertainty);
+            test.testUncertainty = new Map<number, number>();
         }
         Randomness.setScratchSeed(originalSeed);
         StatisticsCollector.getInstance().numberFitnessEvaluations = 0;

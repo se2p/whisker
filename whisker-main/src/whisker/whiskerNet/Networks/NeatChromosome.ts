@@ -149,11 +149,11 @@ export class NeatChromosome extends NetworkChromosome {
         if (this.referenceActivationTrace !== undefined) {
             clone.referenceActivationTrace = this.referenceActivationTrace.clone();
         }
-        if (this.currentActivationTrace !== undefined) {
-            clone.currentActivationTrace = this.currentActivationTrace.clone();
+        if (this.testActivationTrace !== undefined) {
+            clone.testActivationTrace = this.testActivationTrace.clone();
         }
         clone.referenceUncertainty = new Map<number, number>(this.referenceUncertainty);
-        clone.currentUncertainty = new Map<number, number>(this.currentUncertainty);
+        clone.testUncertainty = new Map<number, number>(this.testUncertainty);
         return clone;
     }
 
@@ -379,8 +379,8 @@ export class NeatChromosome extends NetworkChromosome {
         network[`Cons`] = connections;
 
         // Save the activation trace if one was recorded.
-        if (this.currentActivationTrace !== undefined) {
-            network['AT'] = this.currentActivationTrace.toJSON();
+        if (this.testActivationTrace !== undefined) {
+            network['AT'] = this.testActivationTrace.toJSON();
         } else {
             network['AT'] = undefined;
         }

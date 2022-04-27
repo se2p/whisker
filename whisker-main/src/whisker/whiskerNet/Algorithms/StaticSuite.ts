@@ -17,6 +17,7 @@ import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
+import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
 
 
 export class StaticSuite extends NetworkSuite {
@@ -64,7 +65,7 @@ export class StaticSuite extends NetworkSuite {
         await this.executor.executeSavedTrace(test);
         if (recordExecution) {
             this.updateArchive(test);
-            this.extractNetworkStatistics(test);
+            NetworkAnalysis.analyseNetwork(test);
         }
         test.recordNetworkStatistics = false;
         this.executor.resetState();

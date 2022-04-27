@@ -330,7 +330,7 @@ export class NetworkExecutor {
             network.updateActivationTrace(step);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
             if (probabilities.size > 0) {
-                network.currentUncertainty.set(step, 1 - [...probabilities.values()].reduce(
+                network.testUncertainty.set(step, 1 - [...probabilities.values()].reduce(
                     (pv, cv) => pv + Math.pow(cv, 2), 0));
             }
         }

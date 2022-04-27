@@ -7,13 +7,11 @@ import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementF
 import {Container} from "../../utils/Container";
 import {NetworkTestSuiteResults, StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
-import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
-import cloneDeep from "lodash.clonedeep";
 
 
 
@@ -190,8 +188,8 @@ export abstract class NetworkSuite {
         const shortenedTestCases = [];
         for (const test of this.testCases) {
             await this.executeTestCase(test, false);
-            test.currentActivationTrace = undefined;
-            test.currentUncertainty = new Map<number, number>();
+            test.testActivationTrace = undefined;
+            test.testUncertainty = new Map<number, number>();
             this.updateArchive(test);
             if ([...this.archive.keys()].length > coverage) {
                 coverage = [...this.archive.keys()].length;
@@ -222,29 +220,6 @@ export abstract class NetworkSuite {
     }
 
     /**
-     * Extracts the results of an executed test case and saves them within the StatisticsCollector.
-     * @param testCase the testCase whose results should be extracted.
-     */
-    protected extractNetworkStatistics(testCase: NeatChromosome): void {
-        // We can only apply node activation analysis if we have a reference trace
-        if (testCase.referenceActivationTrace) {
-            const nodeSA = SurpriseAdequacy.LSANodeBased(testCase.referenceActivationTrace, testCase.currentActivationTrace);
-            testCase.surpriseAdequacyNodes = nodeSA[0];
-
-            // If the program could not be executed we set all nodes as being suspicious
-            if (nodeSA[1] === undefined) {
-                testCase.surpriseCount = testCase.referenceActivationTrace.tracedNodes.length;
-            } else {
-                const surpriseActivations = this.countSuspiciousActivations(nodeSA[2]);
-                testCase.surpriseCount = surpriseActivations[0];
-            }
-        } else {
-            testCase.surpriseAdequacyNodes = undefined;
-            testCase.surpriseCount = undefined;
-        }
-    }
-
-    /**
      * Saves the observed test execution statistics to later return them as a csv file.
      * @param testCases the executed testCases holding the execution results.
      * @param projectName the name of the executed project.
@@ -256,7 +231,7 @@ export abstract class NetworkSuite {
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
             test.determineCoveredObjectives([...this.statementMap.values()]);
-            const currentUncertainty = [...test.currentUncertainty.values()];
+            const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
 
@@ -270,7 +245,7 @@ export abstract class NetworkSuite {
                 coveredObjectivesBySuite: [...this.archive.keys()].length,
                 score: test.score,
                 playTime: test.playTime,
-                surpriseNodeAdequacy: test.surpriseAdequacyNodes,
+                surpriseNodeAdequacy: test.averageNodeBasedLSA,
                 surpriseCount: test.surpriseCount,
                 avgUncertainty: averageUncertainty,
                 isMutant: isMutant
@@ -311,28 +286,6 @@ export abstract class NetworkSuite {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Counts the number of suspicious node activations.
-     * @param surpriseMap maps executed Scratch-Steps to obtained LSA values of input nodes.
-     * @returns number indicating how often a surprising activations was encountered.
-     */
-    protected countSuspiciousActivations(surpriseMap: Map<number, Map<string, boolean>>): [number, Map<string, number>] {
-        let surpriseCounter = 0;
-        const nodeSurpriseMap = new Map<string, number>();
-        for (const stepTrace of surpriseMap.values()) {
-            for (const [node, surprise] of stepTrace.entries()) {
-                if (!nodeSurpriseMap.has(node)) {
-                    nodeSurpriseMap.set(node, 0);
-                }
-                if (surprise) {
-                    surpriseCounter++;
-                    nodeSurpriseMap.set(node, nodeSurpriseMap.get(node) + 1);
-                }
-            }
-        }
-        return [surpriseCounter, nodeSurpriseMap];
     }
 
     /**
