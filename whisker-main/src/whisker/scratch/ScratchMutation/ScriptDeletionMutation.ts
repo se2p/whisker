@@ -19,12 +19,17 @@ export class ScriptDeletionMutation extends ScratchMutation {
      */
     applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
-        const nextBlock = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], target);
-        nextBlock['parent'] = null;
-        mutationBlock['next'] = null;
-        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
-        mutantProgram.name = `SDM:${blockId}`.replace(/,/g, '');
-        return true;
+        if(mutationBlock['next'] !== null) {
+            const nextBlock = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], target);
+            nextBlock['parent'] = null;
+            mutationBlock['next'] = null;
+            const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
+            mutantProgram.name = `SDM:${blockId}`.replace(/,/g, '');
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     /**
@@ -41,4 +46,11 @@ export class ScriptDeletionMutation extends ScratchMutation {
         return hatBlocks;
     }
 
+    /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public toString():string{
+        return 'SDM';
+    }
 }

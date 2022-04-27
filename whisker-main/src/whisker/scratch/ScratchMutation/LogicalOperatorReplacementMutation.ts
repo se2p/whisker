@@ -40,5 +40,11 @@ export class LogicalOperatorReplacementMutation extends ScratchMutation {
         return logicalOperationBlocks;
     }
 
-
+    /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public toString():string{
+        return 'LOR';
+    }
 }

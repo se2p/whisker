@@ -35,6 +35,12 @@ export abstract class ScratchMutation {
                                   target:Readonly<string>): boolean
 
     /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public abstract toString():string
+
+    /**
      * Generates mutants based on the specified mutation operator.
      */
     public generateMutants(): ScratchProgram[] {

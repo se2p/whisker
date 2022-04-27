@@ -9,6 +9,8 @@ import {NegateConditionalMutation} from "./NegateConditionalMutation";
 import {VariableReplacementMutation} from "./VariableReplacementMutation";
 import {ScratchMutation} from "./ScratchMutation";
 import {ScratchProgram} from "../ScratchInterface";
+import Arrays from "../../utils/Arrays";
+import {Randomness} from "../../utils/Randomness";
 
 export class MutationFactory {
 
@@ -67,7 +69,15 @@ export class MutationFactory {
         const operators = this.fetchMutationOperators(specifiedMutators);
         const mutantPrograms: ScratchProgram[] = [];
         for (const mutator of operators) {
-            mutantPrograms.push(...mutator.generateMutants());
+            const mutants = mutator.generateMutants();
+            const previousLength = mutants.length;
+
+            // Only allow 50 mutants per mutation operator for now.
+            while (mutants.length > 50){
+                Arrays.remove(mutants, Randomness.getInstance().pick(mutants));
+            }
+            console.log(`Operator ${mutator} generated ${previousLength} mutants; Reduced down to ${mutants.length}`);
+            mutantPrograms.push(...mutants);
         }
         return mutantPrograms;
     }

@@ -88,10 +88,18 @@ export class VariableReplacementMutation extends ScratchMutation {
     protected getMutationCandidates(): string [] {
         const variableIds = [];
         for (const block of this.blockMap.values()) {
-            if (block['opcode'] === 'data_variable') {
+            if (block['opcode'] === 'data_variable' && block['parent'] !== null) {
                 variableIds.push(block['parent']);
             }
         }
         return variableIds;
+    }
+
+    /**
+     * String representation of a given mutator.
+     * @returns string representation of the mutator.
+     */
+    public toString():string{
+        return 'VRM';
     }
 }
