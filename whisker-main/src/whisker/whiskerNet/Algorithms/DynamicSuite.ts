@@ -153,7 +153,9 @@ export class DynamicSuite extends NetworkSuite {
         const originalSeed = Randomness.scratchSeed;
         const scratchSeeds = Array(repetitions).fill(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER)).map(
             () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
-        for (const test of this.testCases) {
+        for (let i = 0; i < this.testCases.length; i++) {
+            console.log(`Recording Trace for test ${i + 1} / ${this.testCases.length }`);
+            const test = this.testCases[i];
             for (const seed of scratchSeeds) {
                 Randomness.setScratchSeed(seed, true);
                 await this.executeTestCase(test, false);

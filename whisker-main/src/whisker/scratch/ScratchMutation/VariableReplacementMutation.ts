@@ -88,7 +88,7 @@ export class VariableReplacementMutation extends ScratchMutation {
     protected getMutationCandidates(): string [] {
         const variableIds = [];
         for (const block of this.blockMap.values()) {
-            if (block['opcode'] === 'data_variable') {
+            if (block['opcode'] === 'data_variable' && block['parent'] !== null) {
                 variableIds.push(block['parent']);
             }
         }
