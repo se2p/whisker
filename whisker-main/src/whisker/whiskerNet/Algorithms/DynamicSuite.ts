@@ -89,32 +89,29 @@ export class DynamicSuite extends NetworkSuite {
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
         const mutantFactory = new MutationFactory(this.vm);
-        for(const operator of this.properties.mutators as string[]) {
-            const mutantPrograms = mutantFactory.generateScratchMutations([operator]);
-            console.log(`Testing ${mutantPrograms.length} mutants for operator ${operator}`);
-            let i = 0;
-            while (mutantPrograms.length > 0) {
-                const mutant = mutantPrograms.pop();
-                this.archive.clear();
-                const projectMutation = `${this.projectName}-${mutant.name}`;
-                console.log(`Analysing mutant ${i}: ${projectMutation}`);
-                const executedTests: NeatChromosome[] = [];
-                for (let i = 0; i < this.testCases.length; i++) {
-                    console.log(`Executing test ${i}`);
-                    const test = this.testCases[i];
-                    // We clone the network since it might get changed due to specific mutations.
-                    const testClone = test.cloneAsTestCase();
-                    await this.loadMutant(mutant);
-                    await this.executeTestCase(testClone, true);
-                    executedTests.push(testClone);
-                    if (this.isMutant(testClone, test, false)) {
-                        console.log("Mutant detected; Stop testing for this mutant...");
-                        break;
-                    }
+        const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[]);
+        let i = 0;
+        while (mutantPrograms.length > 0) {
+            const mutant = mutantPrograms.pop();
+            this.archive.clear();
+            const projectMutation = `${this.projectName}-${mutant.name}`;
+            console.log(`Analysing mutant ${i}: ${projectMutation}`);
+            const executedTests: NeatChromosome[] = [];
+            for (let i = 0; i < this.testCases.length; i++) {
+                console.log(`Executing test ${i}`);
+                const test = this.testCases[i];
+                // We clone the network since it might get changed due to specific mutations.
+                const testClone = test.cloneAsTestCase();
+                await this.loadMutant(mutant);
+                await this.executeTestCase(testClone, true);
+                executedTests.push(testClone);
+                if (this.isMutant(testClone, test, false)) {
+                    console.log("Mutant detected; Stop testing for this mutant...");
+                    break;
                 }
-                this.updateTestStatistics(executedTests, projectMutation, this.testName, true);
-                i++;
             }
+            this.updateTestStatistics(executedTests, projectMutation, this.testName);
+            i++;
         }
         return [];
     }

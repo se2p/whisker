@@ -13,6 +13,8 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
+import cloneDeep from "lodash.clonedeep";
+
 
 
 export abstract class NetworkSuite {
@@ -247,10 +249,9 @@ export abstract class NetworkSuite {
      * @param testCases the executed testCases holding the execution results.
      * @param projectName the name of the executed project.
      * @param testName the name of the executed test file.
-     * @param mutantDetection determines whether we do mutation analysis.
      */
     protected updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
-                                   testName: Readonly<string>, mutantDetection = false): void {
+                                   testName: Readonly<string>): void {
         // TODO Move to a NetworkAnalysis class...
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
