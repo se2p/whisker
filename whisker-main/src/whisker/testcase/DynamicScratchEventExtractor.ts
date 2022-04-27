@@ -25,7 +25,6 @@ import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {TypeTextEvent} from "./events/TypeTextEvent";
 import Arrays from "../utils/Arrays";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
-import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
@@ -56,13 +55,13 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
             }
         }
 
-        if (eventList.some(event => (event instanceof TypeTextEvent || event instanceof TypeNumberEvent))) {
-            eventList = eventList.filter(event => (event instanceof TypeTextEvent || event instanceof TypeNumberEvent));
-        } else {
-            // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
-            // of -1.
-            eventList.push(new WaitEvent());
+        if (eventList.some(event => event instanceof TypeTextEvent)) {
+            eventList = eventList.filter(event => event instanceof TypeTextEvent);
         }
+
+        // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
+        // of -1.
+        eventList.push(new WaitEvent());
         const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         return Arrays.distinctByComparator(eventList, equalityFunction);
     }
