@@ -37,6 +37,7 @@ const assert = {};
 /**
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assert.isTrue` or `assert.isNotEmpty` instead
  */
 assert.ok = function (condition, ...message) {
     if (!condition) {
@@ -49,9 +50,25 @@ assert.ok = function (condition, ...message) {
     }
 };
 
+assert.isTrue = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (!condition) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isTrue'
+        });
+    }
+};
+
 /**
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assert.isFalse` or `assert.isEmpty`  instead
  */
 assert.not = function (condition, ...message) {
     if (condition) {
@@ -60,6 +77,21 @@ assert.not = function (condition, ...message) {
             actual: true,
             expected: false,
             operator: 'not'
+        });
+    }
+};
+
+assert.isFalse = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (condition) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: true,
+            expected: false,
+            operator: 'isFalse'
         });
     }
 };
@@ -230,11 +262,42 @@ assert.matches = function (actual, expected, ...message) {
     }
 };
 
+assert.isEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length !== 0) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isEmpty'
+        });
+    }
+};
+
+assert.isNotEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length === 0) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isNotEmpty'
+        });
+    }
+};
+
 // -----------------------------------------------------------------------------
 
 /**
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assume.isTrue` or `assume.isNotEmpty` instead
  */
 assume.ok = function (condition, ...message) {
     if (!condition) {
@@ -247,9 +310,25 @@ assume.ok = function (condition, ...message) {
     }
 };
 
+assume.isTrue = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (!condition) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isTrue'
+        });
+    }
+};
+
 /**
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assume.isFalse` or `assume.isEmpty` instead
  */
 assume.not = function (condition, ...message) {
     if (condition) {
@@ -262,6 +341,20 @@ assume.not = function (condition, ...message) {
     }
 };
 
+assume.isFalse = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (condition) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: true,
+            expected: false,
+            operator: 'isFalse'
+        });
+    }
+};
 
 /**
  * @param {...*} message .
@@ -424,6 +517,36 @@ assume.matches = function (actual, expected, ...message) {
             actual: actual,
             expected: expected,
             operator: 'match'
+        });
+    }
+};
+
+assume.isEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length !== 0) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isEmpty'
+        });
+    }
+};
+
+assume.isNotEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length === 0) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isNotEmpty'
         });
     }
 };
