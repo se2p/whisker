@@ -24,14 +24,14 @@ class TestRunner extends EventEmitter {
 
         if (typeof props === 'undefined' || props === null) {
             props = {extend: {}};
-        } else if (!props.hasOwnProperty('extend')) {
+        } else if (!('extend' in props)) {
             props.extend = {};
         }
 
         const projectName = props['projectName'];
         const testResults = [];
         const finalResults = {};
-        let csv = this._generateCSVHeader(tests);
+        let csv = this._generateCSVHeader(tests, modelProps);
         let mutantPrograms = undefined;
 
         this.emit(TestRunner.RUN_START, tests);
@@ -49,7 +49,7 @@ class TestRunner extends EventEmitter {
                 console.log(`Analysing mutant ${projectMutation}`);
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
                 this.emit(TestRunner.RESET_TABLE, tests);
-                const {startTime, resultStatus, resultRecords} = this._initialiseCSVRowVariables();
+                const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
                 for (const test of tests) {
                     let result;
 
@@ -60,7 +60,7 @@ class TestRunner extends EventEmitter {
 
                     } else {
                         result = await this._executeTest(vm, mutant, test, modelTester, props, modelProps);
-                        resultStatus.push(result.status);
+                        testStatusResults.push(result.status);
                         this._propagateTestResults(result, resultRecords);
                     }
 
@@ -73,9 +73,9 @@ class TestRunner extends EventEmitter {
 
                 // Record the results
                 const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
-                const coverage = (covered / total).toFixed(2);
+                const coverage = Math.round((covered / total) * 100) / 100;
                 const duration = (Date.now() - startTime) / 1000;
-                csv += this._generateCSVRow(projectMutation, resultStatus, resultRecords, coverage, duration);
+                csv += this._generateCSVRow(projectMutation, testStatusResults, coverage, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
             }
@@ -90,16 +90,24 @@ class TestRunner extends EventEmitter {
             }
 
             for (let i = 0; i < modelProps.repetitions; i++) {
+                const startTime = Date.now();
                 let result = await this._executeTest(vm, project, undefined, modelTester, props, modelProps);
                 result.modelResult.testNbr = i;
                 this.emit(TestRunner.TEST_MODEL, result);
                 testResults.push(result);
+
+                // Collect data for the CSV output.
+                const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
+                const coverage = Math.round((covered / total) * 100) / 100;
+                const duration = (Date.now() - startTime) / 1000;
+                const modelResults = this._extractModelCSVData(result.modelResult);
+                csv += this._generateCSVRow(projectName, [result.status],  coverage, duration, undefined, modelResults);
             }
             finalResults[projectName] = testResults;
         } else {
             // test by JS test suite, with models or without models. When a model is given it is restarted with every
             // test case as long as the test case runs or the model stops.
-            const {startTime, resultStatus, resultRecords} = this._initialiseCSVRowVariables();
+            const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
             for (const test of tests) {
                 let result;
 
@@ -110,7 +118,7 @@ class TestRunner extends EventEmitter {
 
                 } else {
                     result = await this._executeTest(vm, project, test, modelTester, props, modelProps);
-                    resultStatus.push(result.status);
+                    testStatusResults.push(result.status);
                     this._propagateTestResults(result, resultRecords);
                 }
 
@@ -121,10 +129,13 @@ class TestRunner extends EventEmitter {
                 }
             }
             const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
-            const coverage = (covered / total).toFixed(2);
-            csv += this._generateCSVRow(projectName, resultStatus, resultRecords, coverage, Date.now() - startTime);
+            const coverage = Math.round((covered / total) * 100) / 100;
+            const duration = (Date.now() - startTime) / 1000;
+            csv += this._generateCSVRow(projectName, testStatusResults, coverage, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
+
+        csv += "\n";    // We add another newline here to make it easier finding the csv output within the logs
 
         this.emit(TestRunner.RUN_END, finalResults);
         return [finalResults, csv, mutantPrograms];
@@ -140,7 +151,7 @@ class TestRunner extends EventEmitter {
 
     /**
      * Initialises variables required to generate a csv row incorporating the results of executing one JS-TestSuite.
-     * @return {{resultStatus: [], resultRecords: {}, startTime: number}}
+     * @return {{testStatusResults: *[], resultRecords: {}, startTime: number}}
      */
     _initialiseCSVRowVariables() {
         const resultRecords = {};
@@ -150,47 +161,58 @@ class TestRunner extends EventEmitter {
         resultRecords.skip = 0;
         return {
             startTime: Date.now(),
-            resultStatus: [],
+            testStatusResults: [],
             resultRecords
         };
     }
 
     /**
      * Generates the csv header
-     * @param tests the tests that are about to be executed.
-     * @return {string} the csv header.
+     * @param {Test[]} tests
+     * @param {{duration: number, repetitions: number}} modelProps
+     * @return {string}
      */
-    _generateCSVHeader(tests) {
-        let header = `projectName`;
-        for (const test of tests) {
-            header += `,${test.name}`;
+    _generateCSVHeader(tests, modelProps) {
+        let header = `\nprojectName`;
+        if(tests) {
+            for (const test of tests) {
+                header += `,${test.name}`;
+            }
+            header += `,passed,failed,error,skip,coverage,duration\n`;
         }
-        header += `,passed,failed,error,skip,coverage,duration\n`;
+        else if(modelProps.repetitions > 0){
+            header += `,modelRepetition,modelFails,modelErrors,testResult,projectCoverage,modelCoverage,duration\n`;
+        }
         return header;
     }
 
     /**
      * Generates a CSV row of the obtained test results.
-     * @param projectName the name of the project we are testing.
-     * @param testResults the obtained results for each executed test.
-     * @param resultRecords the total number of passed, failed, erroneous and skipped test executions.
-     * @param coverage the obtained test coverage.
-     * @param duration the test duration.
-     * @return {string} formatted csv string containing the respective information.
+     * @param {string} projectName
+     * @param {Array<string>} testStatusResults
+     * @param {number} coverage
+     * @param {number} duration
+     * @param {{}} resultRecords
+     * @param {{repetition: number, fails: number, errors:number, coverage:number}} modelResults
+     * @return {string}
      */
-    _generateCSVRow(projectName, testResults, resultRecords, coverage, duration) {
+    _generateCSVRow(projectName, testStatusResults, coverage, duration, resultRecords, modelResults = undefined) {
         let csvRow = `${projectName}`;
-        for (const testResult of testResults) {
-            csvRow += `,${testResult}`;
+        if (modelResults !== undefined) {
+            csvRow += `,${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${coverage},${modelResults.coverage},${duration}\n`;
+        } else if (resultRecords !== undefined) {
+            for (const testResult of testStatusResults) {
+                csvRow += `,${testResult}`;
+            }
+            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage},${duration}\n`;
         }
-        csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage},${duration}\n`;
         return csvRow;
     }
 
     /**
      * Propagates the test results to the test-table and counts the number of results types.
-     * @param result the obtained test result
-     * @param resultRecords the record of passed, failed, erroneous and skipped tests.
+     * @param {TestResult} result
+     * @param {{}} resultRecords
      */
     _propagateTestResults(result, resultRecords) {
         switch (result.status) {
@@ -211,6 +233,28 @@ class TestRunner extends EventEmitter {
                 resultRecords.skip = resultRecords['skip'] + 1;
                 break;
         }
+    }
+
+    /**
+     * Extracts csv data from observed obtained model results.
+     * @param {object} modelResults
+     * @return {{repetition: number, fails: number, errors:number, coverage:number}}
+     * @private
+     */
+    _extractModelCSVData(modelResults){
+        let achievedModelCoverage = 0;
+        let totalModelCoverage = 0;
+        for(const coverages of Object.values(modelResults.coverage)){
+            achievedModelCoverage += coverages.covered.length;
+            totalModelCoverage += coverages.total;
+        }
+        const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
+        return {
+            repetition: modelResults.testNbr,
+            fails: modelResults.fails.length,
+            errors: modelResults.errors.length,
+            coverage: coverageRate
+        };
     }
 
     /**

@@ -360,7 +360,7 @@ class VMWrapper {
         let original = this.vm.runtime._primitives[primitive];
 
         if (original.isInstrumented) {
-            original = original.primitive
+            original = original.primitive;
         }
 
         const instrumented = (args, util) => {
@@ -419,9 +419,9 @@ class VMWrapper {
         this.vm.runtime.removeListener('targetWasCreated', this._onTargetCreated);
         this.vm.runtime.removeListener('QUESTION', this._onQuestion);
         this.vm.runtime.removeListener('ANSWER', this._onAnswer);
-        this.vm.runtime.removeListener('SAY', this._onSayOrThink)
-        this.vm.runtime.removeListener('DELETE_SAY_OR_THINK', this._onSayOrThink)
-        this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange)
+        this.vm.runtime.removeListener('SAY', this._onSayOrThink);
+        this.vm.runtime.removeListener('DELETE_SAY_OR_THINK', this._onSayOrThink);
+        this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange);
     }
 
     /**

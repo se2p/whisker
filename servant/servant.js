@@ -11,7 +11,6 @@ const {logger, cli} = require('./util');
 const rimraf = require("rimraf");
 const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
-const CSVConverter = require('./converter.js');
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
 const path = require('path');
 
@@ -76,7 +75,7 @@ async function init () {
             .finally(() => rimraf.sync(tmpDir));
     }
     // Dynamic Test suite using Neuroevolution
-    else if(testPath.endsWith('.json')){
+    else if(typeof testPath === 'string' && testPath.endsWith('.json')){
         if (fs.lstatSync(scratchPath).isDirectory()) {
             const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
@@ -132,13 +131,7 @@ async function init () {
 
         if (csvFile !== false) {
             console.info(`Creating CSV summary in ${csvFile}`);
-            // In case of NE Static Suite we already have a csv file and do not need additional processing.
-            if(typeof csvs[0] === 'string'){
-                fs.writeFileSync(csvFile, csvs[0]);
-            }
-            else {
-                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
-            }
+            fs.writeFileSync(csvFile, csvs[0]);
         }
         await browser.close();
     }
@@ -275,6 +268,9 @@ async function runDynamicTestSuite (browser, scratchPath) {
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
+    }).on('pageerror', async (error) => {
+        await browser.close();
+        return Promise.reject(error);
     });
 
     function optionallyEnableConsoleForward () {
@@ -379,7 +375,6 @@ async function showHiddenFunctionality(page) {
 
 async function runTests (path, browser, index, targetProject, modelPath) {
     const page = await browser.newPage({context: Date.now()});
-    const startProject = Date.now();
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
@@ -443,7 +438,6 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            // eslint-disable-next-line no-constant-condition
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName')) {
 
@@ -453,7 +447,8 @@ async function runTests (path, browser, index, targetProject, modelPath) {
                 }
 
                 // Return CSV file
-                return currentLog.toString();
+                const currentLogString = currentLog.toString();
+                return currentLogString.slice(currentLogString.indexOf('projectName'));
             }
 
             if (isLiveLogEnabled) {
@@ -482,10 +477,6 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
             await page.waitForTimeout(1000);
         }
-
-        let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
-        csvRow['duration'] = `${(Date.now() - startProject) / 1000}`;
-        return csvRow;
     }
 
     /**

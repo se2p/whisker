@@ -72,8 +72,10 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      */
     applyUpTo(chromosome: T, maxPosition: number): T {
         const parentGenes = chromosome.getGenes();
-        const eventGroups = Arrays.chunk(parentGenes, this._reservedCodons);
+        let eventGroups = Arrays.chunk(parentGenes, this._reservedCodons);
         const maxGroupLength = Math.min(eventGroups.length, Math.floor(maxPosition / this._reservedCodons));
+        // If the execution stopped earlier, delete unused codons
+        eventGroups = eventGroups.slice(0, maxGroupLength + 1);
         let index = 0;
         while (index < maxGroupLength) {
             if (this._random.nextDouble() < this._getMutationProbability(index, maxGroupLength)) {
@@ -93,7 +95,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @return The modified index after the mutation.
      */
     private _mutateEventAndParameter(eventGroups: number[][], index: number) {
-        const mutation = this._random.nextInt(0, 3);
+        const mutation = this._random.nextInt(0, 4);
         switch (mutation) {
             case 0:
                 if (eventGroups.length * this._reservedCodons < this._length) {
@@ -109,12 +111,30 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
                     index = eventGroups.length - 1;
                 }
                 const mutantGroup = eventGroups[index];
+                let start = 0;
+                if (mutantGroup.length > 1) {
+                    // If this is a parameterised event, only mutate parameters
+                    start = 1;
+                }
+                for (let i = start; i < mutantGroup.length; i++) {
+                    mutantGroup[i] = this._getRandomCodonGaussian(mutantGroup[i]);
+                }
+                break;
+            }
+            case 2: {
+                // If we have a deletion operation at the last position and right after that a change mutation,
+                // we would try to access the already deleted eventGroup.
+                if(index >= eventGroups.length){
+                    index = eventGroups.length - 1;
+                }
+                // Always mutate all codons
+                const mutantGroup = eventGroups[index];
                 for (let i = 0; i < mutantGroup.length; i++) {
                     mutantGroup[i] = this._getRandomCodonGaussian(mutantGroup[i]);
                 }
                 break;
             }
-            case 2:
+            case 3:
                 if (eventGroups.length > 1) {
                     Arrays.removeAt(eventGroups, index);
                     index--;

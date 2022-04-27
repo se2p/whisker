@@ -245,6 +245,14 @@ describe('Basic event handling', () => {
         await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
+    
+    test('Test TypeNumberEvent required to provide answers', async () => {
+        await loadProject('test/integration/numberEvent/TypeNumberEvent.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
 
     test('Test if a broadcast event has been sent in the previous step and therefore activated a thread with a matching hat', async () => {
         await loadProject('test/integration/hatBlockSpecialHandling/ExecutedHatsCheckBroadcast.sb3')
