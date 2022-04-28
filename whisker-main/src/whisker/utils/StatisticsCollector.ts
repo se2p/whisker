@@ -407,13 +407,13 @@ export class StatisticsCollector {
 
     public asCsvNetworkSuite(): string {
         let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
-            "playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
+            "playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant,correctReason\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
                 testResult.totalObjectives, testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.avgUncertainty, testResult.isMutant];
+                testResult.avgUncertainty, testResult.isMutant, testResult.correctReason];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -493,5 +493,6 @@ export interface NetworkTestSuiteResults {
     surpriseNodeAdequacy: number,
     surpriseCount: number,
     avgUncertainty: number,
-    isMutant?:boolean
+    isMutant?:boolean,
+    correctReason?:boolean
 }

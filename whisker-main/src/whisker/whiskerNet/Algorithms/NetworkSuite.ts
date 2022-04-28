@@ -14,7 +14,6 @@ import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 
 
-
 export abstract class NetworkSuite {
 
     /**
@@ -227,13 +226,21 @@ export abstract class NetworkSuite {
      */
     protected updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
                                    testName: Readonly<string>): void {
-        // TODO Move to a NetworkAnalysis class...
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
             test.determineCoveredObjectives([...this.statementMap.values()]);
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
+
+            let reasonFound = false;
+            for(const reason of test.suspiciousMutantReasons) {
+                if(projectName.split("-").includes(reason) || (reason.includes("KRM") && test.suspiciousMutantReasons.has("KRM"))){
+                    console.log(`Found correct reason for ${projectName}: ${reason}`);
+                    reasonFound = true;
+                }
+            }
+
 
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
@@ -248,7 +255,8 @@ export abstract class NetworkSuite {
                 surpriseNodeAdequacy: test.averageNodeBasedLSA,
                 surpriseCount: test.surpriseCount,
                 avgUncertainty: averageUncertainty,
-                isMutant: isMutant
+                isMutant: isMutant,
+                correctReason: reasonFound
             };
             StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
         }
@@ -273,6 +281,7 @@ export abstract class NetworkSuite {
             if(printReason) {
                 for (const newEvent of newEvents) {
                     console.log(`New Event ${newEvent}`);
+                    executedTest.suspiciousMutantReasons.add("KRM");
                 }
             }
             return true;

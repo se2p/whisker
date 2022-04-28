@@ -1,6 +1,9 @@
 import {ActivationTrace} from "./ActivationTrace";
 import Statistics from "../../utils/Statistics";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {InputNode} from "../NetworkComponents/InputNode";
+import {HiddenNode} from "../NetworkComponents/HiddenNode";
+import {NodeGene} from "../NetworkComponents/NodeGene";
 
 export class NetworkAnalysis {
 
@@ -11,8 +14,11 @@ export class NetworkAnalysis {
     public static analyseNetwork(network: NeatChromosome): void {
         // We can only apply node activation analysis if we have a reference trace
         if (network.referenceActivationTrace) {
-            const lsa = NetworkAnalysis.LSANodeBased(network.referenceActivationTrace, network.testActivationTrace);
+            const lsa = NetworkAnalysis.LSA(network.referenceActivationTrace, network.testActivationTrace);
             network.averageNodeBasedLSA = lsa.averageLSA;
+            for (const susSprite of this.getSuspiciousSprites(network, lsa.suspiciousNodes, new Set<NodeGene>())) {
+                network.suspiciousMutantReasons.add(susSprite);
+            }
 
             // If the program could not be executed we set all nodes as being suspicious
             if (lsa.surpriseMap === undefined) {
@@ -25,17 +31,45 @@ export class NetworkAnalysis {
     }
 
     /**
+     * Traverses suspicious node and checks to which sprite(s) they are linked.
+     * @param network the network containing the suspicious nodes.
+     * @param susNodeIDs the suspicious node Ids.
+     * @param traversedNodes saves already traversed Nodes to avoid loops.
+     * @returns Set of suspicious sprite names.
+     */
+    public static getSuspiciousSprites(network: Readonly<NeatChromosome>, susNodeIDs: Set<string>,
+                                       traversedNodes: Set<NodeGene>): Set<string> {
+        const susSprites = new Set<string>();
+        for (const susNodeID of susNodeIDs) {
+            susNodeIDs.delete(susNodeID);
+            const susNode = network.allNodes.find(node => node.identifier() === susNodeID);
+            traversedNodes.add(susNode);
+            for (const connection of susNode.incomingConnections) {
+                const sourceNode = connection.source;
+                if (sourceNode instanceof InputNode) {
+                    susSprites.add(sourceNode.sprite);
+                } else if (sourceNode instanceof HiddenNode && !traversedNodes.has(sourceNode)) {
+                    susNodeIDs.add(sourceNode.identifier());
+                    this.getSuspiciousSprites(network, susNodeIDs, traversedNodes);
+                }
+            }
+        }
+        return susSprites;
+    }
+
+    /**
      * Calculates LSA metrics by comparing the activation traces of individual nodes.
      * @param reference the ground truth activation traces.
      * @param test a single trace with which we are comparing the reference trace with.
      * @returns [averageLSA, map of raw lsa values, map of surprising activations]; both mappings follow the structure
      * Map<step, Map<node, raw lsa value | boolean indicating surprising activations>
      */
-    private static LSANodeBased(reference: ActivationTrace, test: ActivationTrace): LSAResult {
+    private static LSA(reference: ActivationTrace, test: ActivationTrace): LSAResult {
         const surpriseMap = new Map<number, Map<string, boolean>>();
         const lsaMap = new Map<number, Map<string, number>>();
         let sa = 0;
         let stepCount = 0;
+        const susNodes = new Set<string>();
         if (!test) {
             for (const [step, stepTrace] of reference.trace.entries()) {
                 surpriseMap.set(step, new Map<string, boolean>());
@@ -44,9 +78,10 @@ export class NetworkAnalysis {
                 }
             }
             return {
-                "averageLSA": 100,
-                "LSAMap": undefined,
-                "surpriseMap": undefined,
+                averageLSA: 100,
+                LSAMap: undefined,
+                surpriseMap: undefined,
+                suspiciousNodes: susNodes
             };
         }
         // For each step, compare the ATs during training and testing.
@@ -54,9 +89,10 @@ export class NetworkAnalysis {
             // If the test run performed more steps than the test run we stop since have no training AT to compare.
             if (!reference.trace.has(step)) {
                 return {
-                    "averageLSA": sa / stepCount,
-                    "LSAMap": lsaMap,
-                    "surpriseMap": surpriseMap,
+                    averageLSA: sa / stepCount,
+                    LSAMap: lsaMap,
+                    surpriseMap: surpriseMap,
+                    suspiciousNodes: susNodes
                 };
             }
             surpriseMap.set(step, new Map<string, boolean>());
@@ -69,9 +105,10 @@ export class NetworkAnalysis {
                 // If we do not have a reference trace, we cannot make any LSA calculations.
                 if (!referenceStepTrace) {
                     return {
-                        "averageLSA": sa / stepCount,
-                        "LSAMap": lsaMap,
-                        "surpriseMap": surpriseMap,
+                        averageLSA: sa / stepCount,
+                        LSAMap: lsaMap,
+                        surpriseMap: surpriseMap,
+                        suspiciousNodes: susNodes
                     };
                 }
 
@@ -83,7 +120,7 @@ export class NetworkAnalysis {
                     continue;
                 }
 
-                const LSA = this.calculateLSANodeBased(referenceNodeTrace, testValue);
+                const LSA = this.calculateLSA(referenceNodeTrace, testValue);
                 const threshold = this.getLSAThreshold(referenceNodeTrace);
                 sa += Math.min(100, LSA);
                 lsaMap.get(step).set(nodeId, sa);
@@ -92,6 +129,7 @@ export class NetworkAnalysis {
                 if (LSA > threshold) {
                     console.log(`Suspicious at step ${step} with node ${nodeId} and a value of ${LSA} vs Threshold ${threshold}`);
                     surpriseMap.get(step).set(nodeId, true);
+                    susNodes.add(nodeId);
                 } else {
                     surpriseMap.get(step).set(nodeId, false);
                 }
@@ -99,9 +137,10 @@ export class NetworkAnalysis {
             stepCount++;
         }
         return {
-            "averageLSA": sa / stepCount,
-            "LSAMap": lsaMap,
-            "surpriseMap": surpriseMap,
+            averageLSA: sa / stepCount,
+            LSAMap: lsaMap,
+            surpriseMap: surpriseMap,
+            suspiciousNodes: susNodes
         };
     }
 
@@ -111,7 +150,7 @@ export class NetworkAnalysis {
      * @param testActivation the observed activation value of the test execution.
      * @returns LSA value of the observed node activation during the test execution.
      */
-    private static calculateLSANodeBased(referenceTrace: number[], testActivation: number): number {
+    private static calculateLSA(referenceTrace: number[], testActivation: number): number {
         let kdeSum = 0;
         const bandwidth = Statistics.bandwidthSilverman(referenceTrace);
 
@@ -128,8 +167,8 @@ export class NetworkAnalysis {
         }
 
         // Calculate the kernel sum
-        for (const trainingValue of referenceTrace) {
-            const traceDifference = testActivation - trainingValue;
+        for (const referenceValue of referenceTrace) {
+            const traceDifference = testActivation - referenceValue;
             kdeSum += Statistics.gaussianKernel(traceDifference / bandwidth);
         }
 
@@ -146,9 +185,9 @@ export class NetworkAnalysis {
      */
     private static getLSAThreshold(referenceTrace: number[]): number {
         if (referenceTrace.every(value => value == referenceTrace[0])) {
-            return 1;
+            return 0;
         } else
-            return 10;
+            return 30;
     }
 
     /**
@@ -178,4 +217,5 @@ export interface LSAResult {
     averageLSA: number,
     LSAMap: Map<number, Map<string, number>>
     surpriseMap: Map<number, Map<string, boolean>>
+    suspiciousNodes: Set<string>
 }

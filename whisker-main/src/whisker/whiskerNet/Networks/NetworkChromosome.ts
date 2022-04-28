@@ -80,6 +80,11 @@ export abstract class NetworkChromosome extends Chromosome {
     private _surpriseCount = 0;
 
     /**
+     * A set of suspicious sprites that caused the surprise count to rise.
+     */
+    private _suspiciousMutantReasons = new Set<string>()
+
+    /**
      * Maps Scratch steps to the uncertainty values observed during the execution of a sample program.
      */
     private _referenceUncertainty = new Map<number, number>();
@@ -746,6 +751,14 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set surpriseCount(value: number) {
         this._surpriseCount = value;
+    }
+
+    get suspiciousMutantReasons(): Set<string> {
+        return this._suspiciousMutantReasons;
+    }
+
+    set suspiciousMutantReasons(value: Set<string>) {
+        this._suspiciousMutantReasons = value;
     }
 
     get referenceUncertainty(): Map<number, number> {
