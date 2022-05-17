@@ -9,9 +9,9 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {expect} from "@jest/globals";
+import {Container} from "../../../../src/whisker/utils/Container";
 
-describe("Surprise Adequacy", () => {
+describe("Network Analysis", () => {
 
     const random = Randomness.getInstance();
     let referenceNodeTrace: NodeGene[][][];
@@ -19,6 +19,7 @@ describe("Surprise Adequacy", () => {
     let network: NeatChromosome;
 
     beforeEach(() => {
+        Container.debugLog = () => { /* Do Nothing */ };
         referenceNodeTrace = [];
         for (let step = 0; step < 10; step++) {
             const stepTrace: NodeGene[][] = [];
@@ -61,7 +62,7 @@ describe("Surprise Adequacy", () => {
         network = generator.get();
     });
 
-    test("Likelihood based Node Surprise Adequacy; same distribution as test AT; shorter test trace", () => {
+    test("LSA same distribution as test AT; shorter test trace", () => {
         const testNodeTrace: NodeGene[][] = [];
         for (let step = 0; step < 8; step++) {
             const stepTrace: NodeGene[] = [];
@@ -82,11 +83,11 @@ describe("Surprise Adequacy", () => {
         network.testActivationTrace = testTrace;
 
         NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBeLessThan(1);
+        expect(network.averageLSA).toBeLessThan(1);
         expect(network.surpriseCount).toEqual(0);
     });
 
-    test("Likelihood based Node Surprise Adequacy; different distribution as test AT; shorter training trace", () => {
+    test("LSA different distribution as test AT; shorter training trace", () => {
         const testNodeTrace: NodeGene[][] = [];
         for (let step = 0; step < 12; step++) {
             const stepTrace: NodeGene[] = [];
@@ -107,11 +108,11 @@ describe("Surprise Adequacy", () => {
         network.testActivationTrace = testTrace;
 
         NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBeGreaterThan(5);
+        expect(network.averageLSA).toBeGreaterThan(5);
         expect(network.surpriseCount).toBeGreaterThan(1);
     });
 
-    test("Likelihood based Node Surprise Adequacy; equal ATs", () => {
+    test("LSA equal ATs", () => {
         const testTrace = new ActivationTrace(referenceNodeTrace[0][0]);
         for (let step = 0; step < referenceNodeTrace.length; step++) {
             testTrace.update(step, referenceNodeTrace[step][0]);
@@ -121,11 +122,11 @@ describe("Surprise Adequacy", () => {
         network.testActivationTrace = testTrace;
 
         NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBeLessThan(1);
+        expect(network.averageLSA).toBeLessThan(1);
         expect(network.surpriseCount).toEqual(0);
     });
 
-    test("Likelihood based Node Surprise Adequacy; equal ATs; too few samples", () => {
+    test("LSA equal ATs; too few samples", () => {
         const testTrace = new ActivationTrace(referenceNodeTrace[0][0]);
         for (let step = 0; step < referenceNodeTrace.length; step++) {
             testTrace.update(step, referenceNodeTrace[step][0]);
@@ -140,11 +141,11 @@ describe("Surprise Adequacy", () => {
         network.testActivationTrace = testTrace;
 
         NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBeLessThan(1);
+        expect(network.averageLSA).toBeLessThan(1);
         expect(network.surpriseCount).toEqual(0);
     });
 
-    test("Likelihood based Node Surprise Adequacy; mismatching nodes", () => {
+    test("LSA mismatching nodes", () => {
         const steps = 3;
         const reps = 30;
         const nodes = 10;
@@ -186,22 +187,22 @@ describe("Surprise Adequacy", () => {
         network.testActivationTrace = testTrace;
 
         NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBeLessThan(1);
+        expect(network.averageLSA).toBeLessThan(1);
         expect(network.surpriseCount).toEqual(0);
         expect(trainingTrace.trace.get(0).size).toBe(nodes + 1);
         expect(testTrace.trace.get(0).size).toBe(nodes + 1);
     });
 
-    test("Likelihood based Node Surprise Adequacy; missing test trace", () => {
+    test("LSA missing test trace", () => {
         network.referenceActivationTrace = referenceTrace;
         network.testActivationTrace = null;
 
         NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBe(100);
+        expect(network.averageLSA).toBe(undefined);
         expect(network.surpriseCount).toBe(referenceTrace.tracedNodes.length);
     });
 
-    test("Likelihood based Node Surprise Adequacy; equal values in ATs", () => {
+    test("LSA equal values in ATs", () => {
         const testTrace = new ActivationTrace(referenceNodeTrace[0][0]);
         for (let step = 0; step < referenceNodeTrace.length; step++) {
             testTrace.update(step, referenceNodeTrace[step][0]);
@@ -209,7 +210,8 @@ describe("Surprise Adequacy", () => {
 
         const step = 5;
         const id = "I:0-0";
-        const values = Array.from({length: 30}).map(x => 0.3);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const values = Array.from({length: 30}).map(_ => 0.3);
 
         referenceTrace.trace.get(step).set(id, values);
         testTrace.trace.get(step).set(id, [values[0]]);
@@ -218,29 +220,7 @@ describe("Surprise Adequacy", () => {
         network.testActivationTrace = testTrace;
 
         NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBeLessThan(1);
-        expect(network.surpriseCount).toEqual(0);
-    });
-
-    test("Likelihood based Node Surprise Adequacy; low std in ATs", () => {
-        const testTrace = new ActivationTrace(referenceNodeTrace[0][0]);
-        for (let step = 0; step < referenceNodeTrace.length; step++) {
-            testTrace.update(step, referenceNodeTrace[step][0]);
-        }
-
-        const step = 5;
-        const id = "I:0-0";
-        const values = Array.from({length: 30}).map(x => 0.3);
-        values[0] = 0.299999;
-
-        referenceTrace.trace.get(step).set(id, values);
-        testTrace.trace.get(step).set(id, [values[1]]);
-
-        network.referenceActivationTrace = referenceTrace;
-        network.testActivationTrace = testTrace;
-
-        NetworkAnalysis.analyseNetwork(network);
-        expect(network.averageNodeBasedLSA).toBeLessThan(1);
+        expect(network.averageLSA).toBeLessThan(1);
         expect(network.surpriseCount).toEqual(0);
     });
 });

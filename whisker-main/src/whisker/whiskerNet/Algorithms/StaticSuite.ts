@@ -34,7 +34,6 @@ export class StaticSuite extends NetworkSuite {
         const sampleTest = Object.values(this._testFile)[0];
         const config = new WhiskerSearchConfiguration(sampleTest.configs);
         this.parameter = config.dynamicSuiteParameter;
-        this.parameter.train = false;
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
         Container.config = config;
     }

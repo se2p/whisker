@@ -6,7 +6,7 @@ import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEven
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import Arrays from "../../../src/whisker/utils/Arrays";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {Container} from "../../../src/whisker/utils/Container";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
@@ -20,7 +20,7 @@ describe("Species Test", () => {
     let populationSize: number;
     let random: Randomness;
     let champion: NeatChromosome;
-    let properties: NeatProperties;
+    let properties: NeuroevolutionTestGenerationParameter;
 
     beforeEach(() => {
         Container.debugLog = () => { /* suppress output */};
@@ -69,7 +69,7 @@ describe("Species Test", () => {
             ActivationFunction.SIGMOID, mutationOp, crossoverOp);
         const population: NeatChromosome[] = [];
         populationSize = 50;
-        properties = new NeatProperties();
+        properties = new NeuroevolutionTestGenerationParameter();
         properties.ageSignificance = 1.0;
         properties.parentsPerSpecies = 0.2;
         properties.mutationWithoutCrossover = 0.3;
@@ -119,7 +119,7 @@ describe("Species Test", () => {
         expect(species.ageOfLastImprovement).toBe(7);
         expect(species.currentBestFitness).toBe(5);
         expect(species.allTimeBestFitness).toBe(6);
-        expect(species.hyperParameter).toBeInstanceOf(NeatProperties);
+        expect(species.hyperParameter).toBeInstanceOf(NeuroevolutionTestGenerationParameter);
         expect(species.networks[0]).toBeInstanceOf(NeatChromosome);
     });
 

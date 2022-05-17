@@ -4,6 +4,7 @@ import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -21,10 +22,10 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * Fetches the targeted statement of a network and calculates its fitness.
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
-     * @param eventSelection defines how the network should be executed (random | activation).
+     * @param eventSelection defines how the networks select events.
      * @returns Promise<number> the fitness of the given network based on reliable statement coverage.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
         await executor.execute(network);
         network.initialiseOpenStatements([...network.openStatementTargets.keys()]);

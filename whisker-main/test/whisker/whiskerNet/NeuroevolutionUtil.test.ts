@@ -1,7 +1,7 @@
 import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
@@ -13,7 +13,7 @@ describe("NeuroevolutionUtil Tests", () => {
     let genInputs: Map<string, Map<string, number>>;
     let events: ScratchEvent[];
     let generator: NeatChromosomeGenerator;
-    let properties: NeatProperties;
+    let properties: NeuroevolutionTestGenerationParameter;
 
 
     beforeEach(() => {
@@ -56,7 +56,7 @@ describe("NeuroevolutionUtil Tests", () => {
         sprite2.set("DistanceToWhite-Y", 9);
         genInputs.set("Sprite2", sprite2);
         populationSize = 50;
-        properties = new NeatProperties();
+        properties = new NeuroevolutionTestGenerationParameter();
         properties.populationSize = populationSize;
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;

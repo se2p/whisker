@@ -3,9 +3,6 @@ import {NeuroevolutionScratchEventExtractor} from "../../testcase/Neuroevolution
 import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {NEAT} from "./NEAT";
-import {NeatProperties} from "../HyperParameter/NeatProperties";
-import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {NetworkSuite} from "./NetworkSuite";
@@ -35,7 +32,6 @@ export class DynamicSuite extends NetworkSuite {
     protected initialiseExecutionParameter(): void {
         const config = new WhiskerSearchConfiguration(this._testSuiteJSON['Configs']);
         this.parameter = config.dynamicSuiteParameter;
-        this.parameter.train = false;
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
         Container.config = config;
     }
@@ -72,14 +68,9 @@ export class DynamicSuite extends NetworkSuite {
      * Executes the dynamic test suite consisting of networks on a single test project.
      */
     protected async testSingleProject(): Promise<void> {
-        // Since we are using dynamic suites we have the option to re-train them.
-        if (this.parameter.train) {
-            this.testCases = await this.trainNetworks(this.testCases);
-        }
-
         // Execute all networks on the single project.
         for (let i = 0; i < this.testCases.length; i++) {
-            console.log(`Executing test ${i}`);
+            Container.debugLog(`Executing test ${i}`);
             await this.executeTestCase(this.testCases[i], true);
         }
         this.updateTestStatistics(this.testCases, this.projectName, this.testName);
@@ -96,10 +87,10 @@ export class DynamicSuite extends NetworkSuite {
             const mutant = mutantPrograms.pop();
             this.archive.clear();
             const projectMutation = `${this.projectName}-${mutant.name}`;
-            console.log(`Analysing mutant ${i}: ${projectMutation}`);
+            Container.debugLog(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
             for (let i = 0; i < this.testCases.length; i++) {
-                console.log(`Executing test ${i}`);
+                Container.debugLog(`Executing test ${i}`);
                 const test = this.testCases[i];
                 // We clone the network since it might get changed due to specific mutations.
                 const testClone = test.cloneAsTestCase();
@@ -107,7 +98,7 @@ export class DynamicSuite extends NetworkSuite {
                 await this.executeTestCase(testClone, true);
                 executedTests.push(testClone);
                 if (this.isMutant(testClone, test, false)) {
-                    console.log("Mutant detected; Stop testing for this mutant...");
+                    Container.debugLog("Mutant detected; Stop testing for this mutant...");
                     break;
                 }
             }
@@ -115,34 +106,6 @@ export class DynamicSuite extends NetworkSuite {
             i++;
         }
         return [];
-    }
-
-    /**
-     * Re-trains the saved networks in the test suite on the obtained project.
-     * @param networks saved networks in the dynamic test suite.
-     * @returns Promise<NeatChromosome[]> the list of retrained networks.
-     */
-    private async trainNetworks(networks: NeatChromosome[]): Promise<NeatChromosome[]> {
-        const neat = new NEAT();
-        const neatParameter = this.setTrainParameter(this.parameter, neat);
-        return await neat.train(networks, neatParameter);
-    }
-
-    /**
-     * Sets parameter which are required for re-training the networks in the dynamic test suite.
-     * @param parameter the saved hyperparameter
-     * @param neat instance of the NEAT algorithm, used for re-training the networks
-     * @returns NeatProperties hyperparameter used for re-training the networks.
-     */
-    private setTrainParameter(parameter: NetworkSuiteParameter, neat: NEAT): NeatProperties {
-        neat.setFitnessFunctions(this.statementMap);
-        const neatParameter = new NeatProperties();
-        neatParameter.populationType = 'train';
-        neatParameter.populationSize = parameter.trainPopulationSize;
-        neatParameter.timeout = parameter.timeout;
-        neatParameter.networkFitness = parameter.networkFitness;
-        neatParameter.stoppingCondition = parameter.trainStoppingCondition;
-        return neatParameter;
     }
 
     /**
@@ -155,7 +118,7 @@ export class DynamicSuite extends NetworkSuite {
         const scratchSeeds = Array(repetitions).fill(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER)).map(
             () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
         for (let i = 0; i < this.testCases.length; i++) {
-            console.log(`Recording Trace for test ${i + 1} / ${this.testCases.length }`);
+            Container.debugLog(`Recording Trace for test ${i + 1} / ${this.testCases.length}`);
             const test = this.testCases[i];
             for (const seed of scratchSeeds) {
                 Randomness.setScratchSeed(seed, true);

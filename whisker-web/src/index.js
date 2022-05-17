@@ -272,10 +272,10 @@ const runAllTests = async function () {
             const properties = {};
             const mutators = document.querySelector('#container').mutators === '' ?
                 ['NONE'] : document.querySelector('#container').mutators.split(', ');
-            properties.train = false;
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
+            properties.log = true;
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
@@ -324,6 +324,7 @@ const runAllTests = async function () {
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
+            properties.log = true;
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;

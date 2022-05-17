@@ -2,6 +2,7 @@ import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import Statistics from "../../utils/Statistics";
 import {ReliableStatementFitness} from "./ReliableStatementFitness";
+import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 export class NoveltyReliableStatementFitness extends ReliableStatementFitness {
 
@@ -61,10 +62,10 @@ export class NoveltyReliableStatementFitness extends ReliableStatementFitness {
      * Calculates the fitness of the network by combining the statementFitness value with the novelty value.
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
-     * @param eventSelection defines how the network should be executed (random | activation).
+     * @param eventSelection defines how the networks select events.
      * @returns Promise<number> the combined fitness value of novelty and reliable statement coverage.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
         const statementFitness = await super.getFitness(network, timeout, eventSelection);
         const sparseNess = this.novelty(network);
         this.addToBehaviourArchive(network.trace.events.map(eventAndParameter => eventAndParameter.event), sparseNess);

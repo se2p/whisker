@@ -1,5 +1,4 @@
 import Statistics from "../../../src/whisker/utils/Statistics";
-import {matrix, identity, Matrix, index} from "mathjs";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
@@ -13,7 +12,7 @@ describe("Distributions", () => {
     beforeEach(() => {
         equalValues = [10, 10, 10, 10];
         differentValues = [10, 0, 2, 3, 12, 5, 17];
-    })
+    });
 
     test("Mean with equal values", () => {
         expect(Statistics.mean(equalValues)).toBe(10);
@@ -53,30 +52,26 @@ describe("Distributions", () => {
         expect(Statistics.median(equalValues)).toBe(equalValues[0]);
     });
 
-    test("Interquartile range calculation", () => {
+    test("Inter-quartile range calculation", () => {
         const testValues = [1, 2, 3, 4, 5];
         expect(Statistics.iqr(testValues)).toBe(3);
     });
 
-    test("Interquartile range with equal values", () => {
+    test("Inter-quartile range with equal values", () => {
         expect(Statistics.iqr(equalValues)).toBe(0);
     });
 
-    test("Multivariate Gaussian Kernel with identity matrix", () => {
-        const testVector = [0.1, 0.2, 0.3];
-        const bandwidth = identity(testVector.length) as Matrix;
-        const gaussKernel = Statistics.multivariateGaussianKernel(testVector, bandwidth);
-        expect(Math.round(gaussKernel * 100) / 100).toBe(0.06);
+    test("Inter-quartile range with missing quartile", () => {
+        const testValues = [1, 1, 1, 1, 10];
+        expect(Statistics.iqr(testValues)).toBe(1);
     });
 
-    test("Scott bandwidth", () => {
-        const dataMatrix = matrix([[0, 1.6], [0.4, 2], [0.2, 1.8]]);
-        const scottBandwidth = Statistics.multivariateBandwidthScott(dataMatrix);
-        // We should only get values > 0 on the diagonal of the Matrix.
-        expect(scottBandwidth.subset(index(0, 0))).toBeGreaterThan(0);
-        expect(scottBandwidth.subset(index(1, 1))).toBeGreaterThan(0);
-        expect(scottBandwidth.subset(index(0, 1))).toBe(0);
-        expect(scottBandwidth.subset(index(1, 0))).toBe(0);
+    test("Gaussian Kernel function", () => {
+        expect(Statistics.gaussianKernel(0).toFixed(1)).toBe("0.4");
+    });
+
+    test("Silverman's rule of thumb", () => {
+        expect(Statistics.silvermanRuleOfThumb([0,1,2,3,4,5]).toFixed(1)).toBe("1.1");
     });
 
     test("Levenshtein Distance Trivial Case", () => {

@@ -1,23 +1,15 @@
 import {StoppingCondition} from "../../search/StoppingCondition";
-import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {BasicNeuroevolutionParameter} from "./BasicNeuroevolutionParameter";
 
-/**
- * This class stores all relevant properties for a Neuroevolution Algorithm.
- * All parameter values are set to default values but should be altered to reflect the given problem domain.
- */
-export class NeatProperties {
+
+export class NeuroevolutionTestGenerationParameter extends BasicNeuroevolutionParameter {
 
     // ----------------- Population Management -------------------
 
     /**
-     * Defines the type of NeuroevolutionPopulation.
-     */
-    private _populationType = 'neat';
-
-    /**
-     * The size of the population that will be initially generated.
+     * The size of the initial network population.
      */
     private _populationSize = 150;
 
@@ -27,120 +19,119 @@ export class NeatProperties {
     private _numberOfSpecies = 5;
 
     /**
-     * Specifies how many member of the species survive in each generation
+     * Specifies how many member per species survive in each generation.
      */
     private _parentsPerSpecies = 0.20;
 
     /**
-     * Specifies when Species start go get penalized due to their age
-     * This helps younger species to be able to develop themselves for some time.
+     * Specifies when Species start go get penalized if no improvement is being observed.
      */
     private _penalizingAge = 15;
 
     /**
-     * Specifies how much of a boost young generations should get (1.0 resembles no boost at all).
+     * Specifies how much of a boost young generations should get (1.0 for no boost at all).
      */
     private _ageSignificance = 1.0;
 
     /**
-     * The probability of adding a Sprite as Input to the network during the generation of the network population
+     * Probability of adding a Sprite as input to the network during the generation of the network population if
+     * a sparse generation technique is used.
      */
     private _inputRate = 0.3;
 
     /**
-     * The activation function used within hidden and output nodes (for the latter in the case of recursion).
+     * The activation function used within hidden nodes.
      */
     private _activationFunction: ActivationFunction
 
 
     // ----------------- Mutation -------------------
     /**
-     * The Probability of applying Mutation without Crossover
+     * Probability of applying Mutation without Crossover.
      */
     private _mutationWithoutCrossover = 0.25
 
     /**
-     * The probability for adding a new connection between nodes during mutation
+     * Probability of adding a new connection between nodes during mutation.
      */
     private _mutationAddConnection = 0.05
 
     /**
-     * The rate of adding a recurrent connection during the "addConnection" mutation
+     * Probability of adding a recurrent connection within the "addConnection" mutation.
      */
     private _recurrentConnection = 0.1;
 
     /**
-     * How often we try finding a new connection that fits our desires (recurrent/not recurrent) during the
-     * "addConnection" mutation
+     * Number of tries for finding a valid node pair to crate a nove connection within the addConnection mutation.
      */
     private _addConnectionTries = 50;
 
     /**
-     * Defines how many offspring are reserved for the population Champion.
+     * Number of offspring reserved for the population champion.
      */
     private _populationChampionNumberOffspring = 3;
 
     /**
-     * Defines how often we clone the population Champion.
+     * Number of population champion clones.
      */
     private _populationChampionNumberClones = 1;
 
     /**
-     * The Population Champion gets a unique probability of mutating the connections of his network
+     * Probability of mutating the connections of a population champion.
      */
     private _populationChampionConnectionMutation = 0.3;
 
     /**
-     * The probability for adding a new node to the network during mutation
+     * Probability of adding a new node to the network.
      */
     private _mutationAddNode = 0.03;
 
     /**
-     * The probability for mutating the weights of the connections between nodes
+     * Probability of mutating the weights of a network.
      */
     private _mutateWeights = 0.6;
 
     /**
-     * Defines how strong the weights are perturbed during weight mutation
+     * Defines how strong the weights are perturbed during weight mutation.
      */
     private _perturbationPower = 2.5;
 
     /**
-     * The probability for enabling/disabling a connection between nodes
+     * Probability of toggling the enable state of a network's connection gene.
      */
     private _mutateToggleEnableConnection = 0.1;
 
     /**
-     * Defines how many connections are toggled during a toggleEnableConnection mutation
+     * Number of toggled connections during a toggleEnableConnection mutation.
      */
     private _toggleEnableConnectionTimes = 3;
 
     /**
-     * The probability for enabling a previously disabled connection between nodes
+     * Probability of enabling a previously disabled connection gene.
      */
     private _mutateEnableConnection = 0.03;
 
 
     // ----------------- Crossover -------------------
     /**
-     * The Probability of applying Crossover without a Mutation following
+     * Probability of applying Crossover without a following Mutation.
      */
     private _crossoverWithoutMutation = 0.25;
 
     /**
-     * Defines how often organisms mate outside their species
+     * Probability of mating organisms outside their species.
      */
     private _interspeciesMating = 0.001;
 
     /**
-     * Defines how often we average the weights of two matching genes during crossover.
+     * Probability of averaging the weights of two matching genes during crossover.
      */
     private _crossoverWeightAverageRate = 0.4;
 
 
     // ----------------- Compatibility Distance -------------------
     /**
-     * Determines up to which compatibility distance value two organisms belong to the same species.
+     * Determines up to which compatibility distance two organisms belong to the same species.
      */
     private _compatibilityDistanceThreshold = 3.0;
 
@@ -163,60 +154,30 @@ export class NeatProperties {
     // ----------------- Miscellaneous -------------------
 
     /**
-     * Determines how networks choose the next event (random | activation).
-     */
-    private _eventSelection: string
-
-    /**
-     * The stopping condition for the corresponding search algorithm.
+     * Stopping condition for test generation.
      */
     private _stoppingCondition: StoppingCondition<NeatChromosome>;
 
     /**
-     * The fitness function with which the network fitness is measured
-     */
-    private _networkFitness: NetworkFitnessFunction<NeatChromosome>;
-
-    /**
-     * Switch the current target statement if no improvement has been seen for a set number of generations.
+     * Number of generations without improvement after which the explorative NEAT algorithm changes his currently
+     * selected target statement.
      */
     private _switchTargetCount = 5;
 
     /**
-     * Timeout for the execution of a scratch game during the evaluation of the network.
-     */
-    private _timeout = 30000;
-
-    /**
-     * The number of times a network has to repeatedly cover a Scratch statement with diverging seeds to count the
-     * statements as covered.
+     * Number of robustness checks after which a statement is treated as covered within the explorative NEAT algorithm.
      */
     private _coverageStableCount = 0;
 
     /**
-     * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
-     * ActivationTrace across many program states with diverging seeds.
+     * Size of reference trace to be used as test oracle.
      */
     private _activationTraceRepetitions = 0;
 
     /**
-     * The template of a static/dynamic test
-     */
-    private _testTemplate: string;
-
-    /**
-     * Defines whether after each generation a population record containing all chromosomes should be printed in
-     * JSON format.
+     * Defines whether after each generation a population record containing all chromosomes should be printed as JSON.
      */
     private _printPopulationRecord = false;
-
-    get populationType(): string {
-        return this._populationType;
-    }
-
-    set populationType(value: string) {
-        this._populationType = value;
-    }
 
     get populationSize(): number {
         return this._populationSize;
@@ -394,10 +355,6 @@ export class NeatProperties {
         this._interspeciesMating = value;
     }
 
-    get crossoverWeightAverageRate(): number {
-        return this._crossoverWeightAverageRate;
-    }
-
     set crossoverWeightAverageRate(value: number) {
         this._crossoverWeightAverageRate = value;
     }
@@ -434,14 +391,6 @@ export class NeatProperties {
         this._weightCoefficient = value;
     }
 
-    get eventSelection(): string {
-        return this._eventSelection;
-    }
-
-    set eventSelection(value: string) {
-        this._eventSelection = value;
-    }
-
     get stoppingCondition(): StoppingCondition<NeatChromosome> {
         return this._stoppingCondition;
     }
@@ -450,28 +399,12 @@ export class NeatProperties {
         this._stoppingCondition = value;
     }
 
-    get networkFitness(): NetworkFitnessFunction<NeatChromosome> {
-        return this._networkFitness;
-    }
-
-    set networkFitness(value: NetworkFitnessFunction<NeatChromosome>) {
-        this._networkFitness = value;
-    }
-
     get switchTargetCount(): number {
         return this._switchTargetCount;
     }
 
     set switchTargetCount(value: number) {
         this._switchTargetCount = value;
-    }
-
-    get timeout(): number {
-        return this._timeout;
-    }
-
-    set timeout(value: number) {
-        this._timeout = value;
     }
 
     get coverageStableCount(): number {
@@ -488,14 +421,6 @@ export class NeatProperties {
 
     set activationTraceRepetitions(value: number) {
         this._activationTraceRepetitions = value;
-    }
-
-    get testTemplate(): string {
-        return this._testTemplate;
-    }
-
-    set testTemplate(value: string) {
-        this._testTemplate = value;
     }
 
     get printPopulationRecord(): boolean {

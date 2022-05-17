@@ -72,17 +72,12 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * The average surprise value across all steps calculated between pairs of nodes.
      */
-    private _averageNodeBasedLSA = 0;
+    private _averageLSA = 0;
 
     /**
      * Counts the number of surprising node activations.
      */
     private _surpriseCount = 0;
-
-    /**
-     * A set of suspicious sprites that caused the surprise count to rise.
-     */
-    private _suspiciousMutantReasons = new Set<string>()
 
     /**
      * Maps Scratch steps to the uncertainty values observed during the execution of a sample program.
@@ -737,12 +732,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._recordNetworkStatistics = value;
     }
 
-    get averageNodeBasedLSA(): number {
-        return this._averageNodeBasedLSA;
+    get averageLSA(): number {
+        return this._averageLSA;
     }
 
-    set averageNodeBasedLSA(value: number) {
-        this._averageNodeBasedLSA = value;
+    set averageLSA(value: number) {
+        this._averageLSA = value;
     }
 
     get surpriseCount(): number {
@@ -751,14 +746,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set surpriseCount(value: number) {
         this._surpriseCount = value;
-    }
-
-    get suspiciousMutantReasons(): Set<string> {
-        return this._suspiciousMutantReasons;
-    }
-
-    set suspiciousMutantReasons(value: Set<string>) {
-        this._suspiciousMutantReasons = value;
     }
 
     get referenceUncertainty(): Map<number, number> {

@@ -311,7 +311,6 @@ export class StatisticsCollector {
      * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
      * truncate this timeline. The optional parameter `numberOfCoverageValues` can be used to specify how many entries
      * this timeline should consist of. If no value or `undefined` is given, all entries are included.
-     *
      * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
      */
     public asCsv(numberOfCoverageValues?: number): string {
@@ -407,13 +406,13 @@ export class StatisticsCollector {
 
     public asCsvNetworkSuite(): string {
         let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
-            "playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant,correctReason\n";
+            "playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
                 testResult.totalObjectives, testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.avgUncertainty, testResult.isMutant, testResult.correctReason];
+                testResult.avgUncertainty, testResult.isMutant];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -494,5 +493,4 @@ export interface NetworkTestSuiteResults {
     surpriseCount: number,
     avgUncertainty: number,
     isMutant?:boolean,
-    correctReason?:boolean
 }

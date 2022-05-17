@@ -1,28 +1,47 @@
-import {column, det, exp, inv, Matrix, multiply, pow, transpose, zeros, flatten, index} from "mathjs";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import Arrays from "./Arrays";
 
 /**
- * Provides useful utility methods for calculating all sorts of data distribution metrics.
+ * Utility methods for calculating all sorts of data distribution metrics.
  */
 export default class Statistics {
 
-    public static mean(x: number[]): number {
-        return x.reduce((a, acc) => acc + a) / x.length;
+    /**
+     * Calculates the mean of a given number array.
+     * @param array of numbers.
+     * @returns mean of provided numbers array.
+     */
+    public static mean(array: Readonly<number[]>): number {
+        return array.reduce((a, acc) => acc + a) / array.length;
     }
 
-    public static variance(x: number[]): number {
-        const mean = this.mean(x);
-        const meanDivs = x.map(x => Math.pow(x - mean, 2));
-        return meanDivs.reduce((meanDiv, acc) => acc + meanDiv) / x.length;
+    /**
+     * Calculates the variance of a given number array.
+     * @param array of numbers.
+     * @returns variance of provided numbers array.
+     */
+    public static variance(array: Readonly<number[]>): number {
+        const mean = this.mean(array);
+        const meanDivs = array.map(x => Math.pow(x - mean, 2));
+        return meanDivs.reduce((meanDiv, acc) => acc + meanDiv) / array.length;
     }
 
-    public static std(x: number[]): number {
-        return Math.sqrt(this.variance(x));
+    /**
+     * Calculates the standard deviation of a given number array.
+     * @param array of numbers.
+     * @returns standard deviation of provided numbers array.
+     */
+    public static std(array: Readonly<number>[]): number {
+        return Math.sqrt(this.variance(array));
     }
 
-    public static median(values: number[]): number {
-        const sorted = [...values].sort((a, b) => a - b);
+    /**
+     * Calculates the median of a given number array.
+     * @param array of numbers.
+     * @returns median of provided numbers array.
+     */
+    public static median(array: Readonly<number>[]): number {
+        const sorted = [...array].sort((a, b) => a - b);
         const middle = Math.floor(sorted.length / 2);
 
         if (sorted.length % 2 === 0) {
@@ -31,8 +50,13 @@ export default class Statistics {
         return sorted[middle];
     }
 
-    public static iqr(values: number[]): number {
-        const sorted = [...values].sort((a, b) => a - b);
+    /**
+     * Calculates the Inter-quartile range (IQR) of a given number array.
+     * @param array of numbers.
+     * @returns IQR of provided numbers array.
+     */
+    public static iqr(array: Readonly<number>[]): number {
+        const sorted = [...array].sort((a, b) => a - b);
 
         // Check if all values are equal.
         if (sorted.every((value, _, array) => value == array[0])) {
@@ -59,38 +83,46 @@ export default class Statistics {
         return q3 - q1;
     }
 
-    public static multivariateGaussianKernel(x: number[], bandwidth: Matrix): number {
-        const left = pow(2 * Math.PI, -0.5 * x.length);
-        const middle = pow(det(bandwidth), -0.5)
-
-        let right = multiply(-0.5, transpose(x));
-        right = multiply(right, inv(bandwidth));
-        right = multiply(right, x);
-        right = exp(right as Matrix);
-        return multiply(multiply(left, middle), right) as number;
-    }
-
-    public static gaussianKernel(x: number): number {
+    /**
+     * Gaussian Kernel function.
+     * @param x parameter for kernel function.
+     * @returns result of applying the kernel function to the parameter value x.
+     */
+    public static gaussianKernel(x: Readonly<number>): number {
         return (1 / (Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow(x, 2));
     }
 
-    public static bandwidthSilverman(values: number[]): number {
-        const std = this.std(values);
-        const iqr = this.iqr(values);
-        return 0.9 * Math.min(std, iqr / 1.34) * Math.pow(values.length, -0.2);
+    /**
+     * Calculates the bandwidth for the KDE using Silverman's rule of thumb. Should only be used for normal
+     * distributions!
+     * @param samples from which a bandwidth value should be derived.
+     * @returns bandwidth for the given samples assuming a normal distribution.
+     */
+    public static silvermanRuleOfThumb(samples: Readonly<number>[]): number {
+        const std = this.std(samples);
+        const iqr = this.iqr(samples);
+        return 0.9 * Math.min(std, iqr / 1.34) * Math.pow(samples.length, -0.2);
     }
 
-    public static multivariateBandwidthScott(values: Matrix): Matrix {
-        const populations = values.size()[1]
-        const observationsPerPopulation = values.size()[0];
-        const scottMatrix = zeros(populations, populations) as Matrix;
-        for (let i = 0; i < populations; i++) {
-            const samplePopulation = flatten(column(values, i)).toArray() as number[];
-            const standardDeviation = this.std(samplePopulation);
-            const scottValue = Math.max(Math.pow(observationsPerPopulation, (-1 / (populations + 4))) * standardDeviation, 0.0001);
-            scottMatrix.subset(index(i, i), Math.sqrt(scottValue));
+    /**
+     * Calculates the Levenshtein Distance between chunks of ScratchEvents.
+     * @param a source chunk
+     * @param b target chunk
+     * @param chunkSize size of chunks
+     * @returns Levenshtein Distance across all chunks.
+     */
+    public static levenshteinDistanceEventsChunks(a: ScratchEvent[], b: ScratchEvent[], chunkSize: number): number {
+        const sourceChunks = Arrays.chunk(a, chunkSize);
+        const targetChunks = Arrays.chunk(b, chunkSize);
+        let distances: number[];
+        if (sourceChunks.length > targetChunks.length) {
+            distances = sourceChunks.map((value, index) =>
+                this.levenshteinDistanceEvents(value, targetChunks[index]));
+        } else {
+            distances = targetChunks.map((value, index) =>
+                this.levenshteinDistanceEvents(value, sourceChunks[index]));
         }
-        return scottMatrix;
+        return distances.reduce((pV, cV) => pV + cV, 0);
     }
 
     /**
@@ -130,20 +162,6 @@ export default class Statistics {
         }
 
         return matrix[b.length][a.length];
-    }
-
-    public static levenshteinDistanceEventsChunks(a: ScratchEvent[], b: ScratchEvent[], chunkSize: number): number {
-        const sourceChunks = Arrays.chunk(a, chunkSize);
-        const targetChunks = Arrays.chunk(b, chunkSize);
-        let distances: number[];
-        if (sourceChunks.length > targetChunks.length) {
-            distances = sourceChunks.map((value, index) =>
-                this.levenshteinDistanceEvents(value, targetChunks[index]))
-        } else {
-            distances = targetChunks.map((value, index) =>
-                this.levenshteinDistanceEvents(value, sourceChunks[index]))
-        }
-        return distances.reduce((pV, cV) => pV + cV, 0);
     }
 }
 

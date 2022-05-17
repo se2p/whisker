@@ -51,13 +51,11 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {
-    BiasedVariableLengthConstrainedChromosomeMutation
-} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {NeatProperties} from "../whiskerNet/HyperParameter/NeatProperties";
-import {NetworkSuiteParameter} from "../whiskerNet/HyperParameter/NetworkSuiteParameter";
+import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {BasicNeuroevolutionParameter, NeuroevolutionEventSelection} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
@@ -73,12 +71,12 @@ class ConfigException implements Error {
 export class WhiskerSearchConfiguration {
 
     private readonly _config: Record<string, any>;
-    private readonly _properties: (SearchAlgorithmProperties<any> | NeatProperties | NetworkSuiteParameter);
+    private readonly _properties: (SearchAlgorithmProperties<any> | NeuroevolutionTestGenerationParameter | BasicNeuroevolutionParameter);
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
 
-        if (this.getTestSuiteType() == 'dynamic') {
+        if ('testSuiteType' in this._config && this._config['testSuiteType'] === 'dynamic') {
             this._properties = this.setDynamicSuiteParameter();
             Container.isNeuroevolution = true;
         } else if (this.getAlgorithm() === 'neat' ||
@@ -167,8 +165,8 @@ export class WhiskerSearchConfiguration {
         return this._properties as SearchAlgorithmProperties<any>;
     }
 
-    public setNeuroevolutionProperties(): NeatProperties {
-        const properties = new NeatProperties();
+    public setNeuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
+        const properties = new NeuroevolutionTestGenerationParameter();
 
         const populationSize = this._config['populationSize'] as number;
         const parentsPerSpecies = this._config['parentsPerSpecies'] as number;
@@ -201,7 +199,6 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
-        const eventSelection = this._config['eventSelection'] as string;
         const coverageStableCount = this._config['networkFitness']['stableCount'] !== undefined ?
             this._config['networkFitness']['stableCount'] : 0;
         const switchTargetCount = this._config['switchTargetCount'] !== undefined ?
@@ -212,8 +209,6 @@ export class WhiskerSearchConfiguration {
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
 
         properties.populationSize = populationSize;
-        properties.populationType = this._config['populationType'] as string;
-        properties.testTemplate = Container.template;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
@@ -244,7 +239,7 @@ export class WhiskerSearchConfiguration {
         properties.excessCoefficient = excessCoefficient;
         properties.weightCoefficient = weightCoefficient;
 
-        properties.eventSelection = eventSelection;
+        properties.eventSelection = this.getNeuroevolutionEventSelection();
         properties.coverageStableCount = coverageStableCount;
         properties.timeout = timeout;
         properties.activationTraceRepetitions = activationTraceRepetitions;
@@ -256,29 +251,19 @@ export class WhiskerSearchConfiguration {
         return properties;
     }
 
-    get neuroevolutionProperties(): NeatProperties {
-        return this._properties as NeatProperties;
+    get neuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
+        return this._properties as NeuroevolutionTestGenerationParameter;
     }
 
-    private setDynamicSuiteParameter(): NetworkSuiteParameter {
-        const parameter = new NetworkSuiteParameter();
+    private setDynamicSuiteParameter(): BasicNeuroevolutionParameter {
+        const parameter = new BasicNeuroevolutionParameter();
         parameter.timeout = this._config['timeout'];
         parameter.networkFitness = new ReliableStatementFitness(1);
-
-        // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli
-        //  parameter. Maybe good default values which balance performance and time required for
-        //  re-training are also fine...
-        parameter.trainPopulationSize = 50;
-        const iterationStoppingCondition = new FixedIterationsStoppingCondition(5);
-        const optimalSolutionStoppingCondition = new OptimalSolutionStoppingCondition();
-        parameter.trainStoppingCondition = new OneOfStoppingCondition(
-            iterationStoppingCondition, optimalSolutionStoppingCondition);
-
         return parameter;
     }
 
-    get dynamicSuiteParameter(): NetworkSuiteParameter {
-        if (this._properties instanceof NetworkSuiteParameter) {
+    get dynamicSuiteParameter(): BasicNeuroevolutionParameter {
+        if (this._properties instanceof BasicNeuroevolutionParameter) {
             return this._properties;
         }
         return undefined;
@@ -655,12 +640,16 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getTestSuiteType(): string {
-        if ("testSuiteType" in this._config) {
-            return this._config['testSuiteType'];
-        } else {
-            return undefined;
+    public getNeuroevolutionEventSelection(): NeuroevolutionEventSelection {
+        if ("eventSelection" in this._config){
+            switch (this._config['eventSelection']) {
+                case 'random': return 'random';
+                case 'activation':
+                default:
+                    return 'activation';
+            }
         }
+        return 'activation';
     }
 
     public isMinimizationActive(): boolean {

@@ -6,7 +6,7 @@ import WhiskerUtil from "../../../test/whisker-util";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../../utils/Container";
 import {NetworkTestSuiteResults, StatisticsCollector} from "../../utils/StatisticsCollector";
-import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
+import {BasicNeuroevolutionParameter} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
@@ -15,9 +15,8 @@ import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 
 
 export abstract class NetworkSuite {
-
     /**
-     * Maps a number as fitness function key to a fitness function.
+     * Maps fitness function keys to fitness functions.
      */
     protected statementMap: Map<number, FitnessFunction<Chromosome>>;
 
@@ -29,7 +28,7 @@ export abstract class NetworkSuite {
     /**
      * Saves the parameter of the test suite.
      */
-    protected parameter: NetworkSuiteParameter;
+    protected parameter: BasicNeuroevolutionParameter;
 
     /**
      * The used instance of a network executor.
@@ -52,7 +51,7 @@ export abstract class NetworkSuite {
     protected testCases: NeatChromosome[];
 
     protected constructor(protected project: ArrayBuffer, protected vm: VirtualMachine,
-                          protected properties: Record<string, number | string | string[]>) {
+                          protected properties: Record<string, number | string | string[] | boolean>) {
         this.projectName = this.properties.projectName as string;
         this.testName = this.properties.testName as string;
     }
@@ -109,17 +108,17 @@ export abstract class NetworkSuite {
 
         // Record activation traces
         if (this.properties.activationTraceRepetitions > 0) {
-            console.log("Recording Activation Trace");
+            Container.debugLog("Recording Activation Trace");
             await this.collectActivationTrace();
         }
 
         if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
-            console.log("Performing Mutation Analysis");
+            Container.debugLog("Performing Mutation Analysis");
             await this.testSingleProject();     // Execute the original program to obtain reference data
             await this.mutationAnalysis();
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         } else {
-            console.log("Testing Single Project");
+            Container.debugLog("Testing Single Project");
             await this.testSingleProject();
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         }
@@ -142,6 +141,11 @@ export abstract class NetworkSuite {
         Container.vmWrapper = vmWrapper;
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
+        if (this.properties['log'] === true) {
+            Container.debugLog = (...data) => console.log('DEBUG:', ...data);
+        } else {
+            Container.debugLog = () => { /* No operation */ };
+        }
     }
 
     /**
@@ -177,7 +181,7 @@ export abstract class NetworkSuite {
      * Minimises the test suite to only contain tests required for reaching the maximum amount of coverage.
      */
     protected async minimiseSuite(): Promise<void> {
-        console.log("Minimising Test Suite....");
+        Container.debugLog("Minimising Test Suite....");
         for (const test of this.testCases) {
             await this.executeTestCase(test, false);
             test.determineCoveredObjectives([...this.statementMap.values()]);
@@ -198,7 +202,7 @@ export abstract class NetworkSuite {
                 break;
             }
         }
-        console.log(`Minimised from ${this.testCases.length} tests to ${shortenedTestCases.length} tests`);
+        Container.debugLog(`Minimised from ${this.testCases.length} tests to ${shortenedTestCases.length} tests`);
         this.testCases = shortenedTestCases;
         this.archive.clear();
     }
@@ -233,15 +237,6 @@ export abstract class NetworkSuite {
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
 
-            let reasonFound = false;
-            for(const reason of test.suspiciousMutantReasons) {
-                if(projectName.split("-").includes(reason) || (reason.includes("KRM") && test.suspiciousMutantReasons.has("KRM"))){
-                    console.log(`Found correct reason for ${projectName}: ${reason}`);
-                    reasonFound = true;
-                }
-            }
-
-
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
                 testName: testName,
@@ -252,11 +247,10 @@ export abstract class NetworkSuite {
                 coveredObjectivesBySuite: [...this.archive.keys()].length,
                 score: test.score,
                 playTime: test.playTime,
-                surpriseNodeAdequacy: test.averageNodeBasedLSA,
+                surpriseNodeAdequacy: test.averageLSA,
                 surpriseCount: test.surpriseCount,
                 avgUncertainty: averageUncertainty,
                 isMutant: isMutant,
-                correctReason: reasonFound
             };
             StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
         }
@@ -269,7 +263,7 @@ export abstract class NetworkSuite {
      * @param printReason if true the reason for the mutant being flagged as mutant is printed to the console.
      * @returns true if we suspect a mutant.
      */
-    public isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>, printReason=true): boolean {
+    public isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>, printReason = true): boolean {
         // If the network structure has changed within the output nodes, we have found new events suggesting that
         // something has been mutated within the controls of the program.
         const execClassNodes = executedTest.outputNodes.filter(node => node instanceof ClassificationNode) as ClassificationNode[];
@@ -278,10 +272,9 @@ export abstract class NetworkSuite {
         const originalEvents = originalClassNodes.map(node => node.event.stringIdentifier());
         const newEvents = execEvents.filter(eventString => !originalEvents.includes(eventString));
         if (newEvents.length > 0) {
-            if(printReason) {
+            if (printReason) {
                 for (const newEvent of newEvents) {
-                    console.log(`New Event ${newEvent}`);
-                    executedTest.suspiciousMutantReasons.add("KRM");
+                    Container.debugLog(`New Event ${newEvent}`);
                 }
             }
             return true;
@@ -289,8 +282,8 @@ export abstract class NetworkSuite {
 
         // If we encounter surprising node activations we suspect a mutant.
         if (executedTest.surpriseCount > 0) {
-            if(printReason) {
-                console.log(`Surprising node activation count of ${executedTest.surpriseCount}`);
+            if (printReason) {
+                Container.debugLog(`Surprising node activation count of ${executedTest.surpriseCount}`);
             }
             return true;
         }

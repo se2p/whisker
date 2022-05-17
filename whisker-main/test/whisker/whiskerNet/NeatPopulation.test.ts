@@ -3,7 +3,7 @@ import {Randomness} from "../../../src/whisker/utils/Randomness";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../../src/whisker/utils/Arrays";
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
@@ -22,7 +22,7 @@ describe("Test NeatPopulation", () => {
     let numberOfSpecies: number;
     let population: NeatPopulation;
     let random: Randomness;
-    let properties: NeatProperties;
+    let properties: NeuroevolutionTestGenerationParameter;
     let chromosomeGenerator: NeatChromosomeGenerator;
     let mutation: NeatMutation;
     let crossover: NeatCrossover;
@@ -68,7 +68,7 @@ describe("Test NeatPopulation", () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         chromosomeGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
-        properties = new NeatProperties();
+        properties = new NeuroevolutionTestGenerationParameter();
         properties.populationSize = size;
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;
@@ -100,7 +100,7 @@ describe("Test NeatPopulation", () => {
         expect(population.generation).toBe(0);
         expect(population.species.length).toBeGreaterThan(0);
         expect(population.networks.length).toBe(size);
-        expect(population.hyperParameter).toBeInstanceOf(NeatProperties);
+        expect(population.hyperParameter).toBeInstanceOf(NeuroevolutionTestGenerationParameter);
         expect(population.averageFitness).toBe(0);
     });
 

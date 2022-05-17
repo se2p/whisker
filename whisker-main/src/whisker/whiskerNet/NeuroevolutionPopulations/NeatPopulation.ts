@@ -3,7 +3,7 @@ import {Species} from "./Species";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NeatProperties} from "../HyperParameter/NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
 import {Innovation, InnovationType} from "../Innovation/Innovation";
 import {Container} from "../../utils/Container";
@@ -63,7 +63,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * @param generator the ChromosomeGenerator used for creating the initial population.
      * @param hyperParameter the defined search parameters.
      */
-    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties) {
+    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeuroevolutionTestGenerationParameter) {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
         this.compatibilityThreshold = hyperParameter.compatibilityDistanceThreshold;

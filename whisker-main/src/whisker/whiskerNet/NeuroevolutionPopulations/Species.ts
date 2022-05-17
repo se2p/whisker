@@ -1,7 +1,7 @@
 import {Randomness} from "../../utils/Randomness";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
-import {NeatProperties} from "../HyperParameter/NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
 
@@ -10,7 +10,7 @@ export class Species<C extends NeatChromosome> {
     /**
      * The hyperParameters defined by the user.
      */
-    private readonly _hyperParameter: NeatProperties;
+    private readonly _hyperParameter: NeuroevolutionTestGenerationParameter;
 
     /**
      * Unique identifier for the species.
@@ -79,7 +79,7 @@ export class Species<C extends NeatChromosome> {
      * @param novel true if it's a new species
      * @param hyperParameter the search parameters
      */
-    constructor(uID: number, novel: boolean, hyperParameter: NeatProperties) {
+    constructor(uID: number, novel: boolean, hyperParameter: NeuroevolutionTestGenerationParameter) {
         this._uID = uID;
         this._isNovel = novel;
         this._hyperParameter = hyperParameter;
@@ -478,7 +478,7 @@ export class Species<C extends NeatChromosome> {
         this._champion = value;
     }
 
-    get hyperParameter(): NeatProperties {
+    get hyperParameter(): NeuroevolutionTestGenerationParameter {
         return this._hyperParameter;
     }
 }

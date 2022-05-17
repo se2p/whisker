@@ -5,11 +5,9 @@ import {FitnessFunction} from "../../search/FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
-import {RandomNeuroevolutionPopulation} from "../NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 import Arrays from "../../utils/Arrays";
-import {NeatProperties} from "../HyperParameter/NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {NeatTrainPopulation} from "../NeuroevolutionPopulations/NeatTrainPopulation";
 import {Container} from "../../utils/Container";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
@@ -17,7 +15,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     /**
      * The search parameters.
      */
-    protected _neuroevolutionProperties: NeatProperties;
+    protected _neuroevolutionProperties: NeuroevolutionTestGenerationParameter;
 
     /**
      * The fitnessFunction used to evaluate the networks of Neuroevolution Algorithm.
@@ -62,32 +60,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     /**
-     * Re-trains an existing set of networks on a (new) project.
-     * @param startingNetworks the networks that will serve as a starting point for the re-train process.
-     * @param parameter the parameters used during re-training.
-     * @returns List of re-trained networks.
-     */
-    public async train(startingNetworks: NeatChromosome[], parameter: NeatProperties): Promise<NeatChromosome[]> {
-        this._neuroevolutionProperties = parameter;
-        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
-        this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
-        const population = this.getPopulation(startingNetworks);
-        population.generatePopulation();
-        this._iterations = 0;
-        this._startTime = Date.now();
-
-        while (!(this._stoppingCondition.isFinished(this))) {
-            await this.evaluateNetworks(population.networks);
-            population.updatePopulationStatistics();
-            this.reportOfCurrentIteration(population);
-            this.updateBestIndividualAndStatistics(population);
-            population.evolve();
-            this._iterations++;
-        }
-        return Arrays.distinct([...this._archive.values()]);
-    }
-
-    /**
      * Updates the archive of covered block statements. Each chromosome is mapped to the block it covers.
      * Additionally, we save the best performing chromosome regarding the achieved network fitness.
      * @param candidateChromosome The candidate chromosome to update the archive with.
@@ -121,18 +93,9 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Generate the desired type of NeuroevolutionPopulation to be used by the NEAT algorithm.
      * @returns NeuroevolutionPopulation defined in the config files.
      */
-    protected getPopulation(startingNetworks?: NeatChromosome[]): NeatPopulation {
-        switch (this._neuroevolutionProperties.populationType) {
-            case 'random':
-                return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
-            case 'train':
-                return new NeatTrainPopulation(this._neuroevolutionProperties, startingNetworks);
-            case 'dynamic':
-            case 'neat':
-            default:
+    protected getPopulation(): NeatPopulation {
                 return new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
         }
-    }
 
     /**
      * Updates the List of the best networks found so far and the statistics used for reporting. Order is important!
@@ -197,7 +160,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
-        this._neuroevolutionProperties = properties as unknown as NeatProperties;
+        this._neuroevolutionProperties = properties as unknown as NeuroevolutionTestGenerationParameter;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
