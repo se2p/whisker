@@ -122,6 +122,12 @@ export class NetworkAnalysis {
             return 0;
         }
 
+        // If the reference trace is constant but the test activation has a different value we set the surprise
+        // value to be the difference between the constant values and the test value.
+        else if (referenceTrace.every(value => value == referenceTrace[0] && testActivation !== referenceTrace[0])) {
+            return Math.abs(referenceTrace[0] - testActivation);
+        }
+
         // Calculate the kernel sum
         let kdeSum = 0;
         const bandwidth = Statistics.silvermanRuleOfThumb(referenceTrace);

@@ -223,4 +223,26 @@ describe("Network Analysis", () => {
         expect(network.averageLSA).toBeLessThan(1);
         expect(network.surpriseCount).toEqual(0);
     });
+
+    test("LSA constant reference but slightly different test trace", () => {
+        const testTrace = new ActivationTrace(referenceNodeTrace[0][0]);
+        for (let step = 0; step < referenceNodeTrace.length; step++) {
+            testTrace.update(step, referenceNodeTrace[step][0]);
+        }
+
+        const step = 5;
+        const id = "I:0-0";
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const values = Array.from({length: 30}).map(_ => 0.3);
+
+        referenceTrace.trace.get(step).set(id, values);
+        testTrace.trace.get(step).set(id, [values[0] + 0.001]);
+
+        network.referenceActivationTrace = referenceTrace;
+        network.testActivationTrace = testTrace;
+
+        NetworkAnalysis.analyseNetwork(network);
+        expect(network.averageLSA).toBeLessThan(1);
+        expect(network.surpriseCount).toEqual(1);
+    });
 });

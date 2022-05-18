@@ -8,7 +8,7 @@ import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/Input
 import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
 import {RegressionNode} from "../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
-import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
+import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
 import {Species} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";

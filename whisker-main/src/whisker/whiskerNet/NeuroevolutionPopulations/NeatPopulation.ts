@@ -5,7 +5,7 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
-import {Innovation, InnovationType} from "../Innovation/Innovation";
+import {Innovation, InnovationType} from "../NetworkComponents/Innovation";
 import {Container} from "../../utils/Container";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {

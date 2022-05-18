@@ -1,7 +1,7 @@
 import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {NeuroevolutionUtil} from "../Misc/NeuroevolutionUtil";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 
 export class RegressionNode extends NodeGene {

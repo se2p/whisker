@@ -4,7 +4,7 @@ import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
-import {NetworkExecutor} from "../NetworkExecutor";
+import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import {NetworkSuite} from "./NetworkSuite";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../../scratch/ScratchInterface";

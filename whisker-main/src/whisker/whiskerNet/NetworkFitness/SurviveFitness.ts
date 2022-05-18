@@ -1,7 +1,7 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Container} from "../../utils/Container";
-import {NetworkExecutor} from "../NetworkExecutor";
+import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome> {

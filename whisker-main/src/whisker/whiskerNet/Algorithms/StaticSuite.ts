@@ -3,7 +3,7 @@ import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
 import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
-import {NetworkExecutor} from "../NetworkExecutor";
+import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";

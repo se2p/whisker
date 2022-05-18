@@ -7,7 +7,7 @@ import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementF
 import {Container} from "../../utils/Container";
 import {NetworkTestSuiteResults, StatisticsCollector} from "../../utils/StatisticsCollector";
 import {BasicNeuroevolutionParameter} from "../HyperParameter/BasicNeuroevolutionParameter";
-import {NetworkExecutor} from "../NetworkExecutor";
+import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
 import {ScratchProgram} from "../../scratch/ScratchInterface";

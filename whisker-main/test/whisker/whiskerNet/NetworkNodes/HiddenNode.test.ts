@@ -3,7 +3,7 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComp
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
-import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/NeuroevolutionUtil";
+import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
 
 
 describe("hiddenNode Tests", () => {

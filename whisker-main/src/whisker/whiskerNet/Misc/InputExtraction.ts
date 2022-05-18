@@ -1,9 +1,9 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
-import {ScratchInterface} from "../scratch/ScratchInterface";
-import VMWrapper from "../../vm/vm-wrapper";
-import {Container} from "../utils/Container";
-import {Pair} from "../utils/Pair";
+import {ScratchInterface} from "../../scratch/ScratchInterface";
+import VMWrapper from "../../../vm/vm-wrapper";
+import {Container} from "../../utils/Container";
+import {Pair} from "../../utils/Pair";
 import * as twgl from 'twgl.js';
 
 

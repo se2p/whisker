@@ -1,5 +1,5 @@
-import {NetworkChromosome} from "./Networks/NetworkChromosome";
-import {ScratchEvent} from "../testcase/events/ScratchEvent";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 
 export class NeuroevolutionUtil {
 

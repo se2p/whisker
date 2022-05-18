@@ -6,7 +6,7 @@ import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {AddConnectionInnovation, AddNodeSplitConnectionInnovation} from "../Innovation/Innovation";
+import {AddConnectionInnovation, AddNodeSplitConnectionInnovation} from "../NetworkComponents/Innovation";
 import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {BiasNode} from "../NetworkComponents/BiasNode";

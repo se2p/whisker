@@ -8,7 +8,7 @@ import Arrays from "../utils/Arrays";
 import {NeatChromosome} from "../whiskerNet/Networks/NeatChromosome";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {Randomness} from "../utils/Randomness";
-import {NetworkExecutor} from "../whiskerNet/NetworkExecutor";
+import {NetworkExecutor} from "../whiskerNet/Misc/NetworkExecutor";
 import {Container} from "../utils/Container";
 import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 

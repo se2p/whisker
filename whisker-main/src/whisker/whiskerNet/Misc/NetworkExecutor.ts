@@ -1,22 +1,22 @@
-import VMWrapper = require("../../vm/vm-wrapper.js");
+import VMWrapper = require("../../../vm/vm-wrapper.js");
 import VirtualMachine from "scratch-vm/src/virtual-machine";
-import {ScratchEvent} from "../testcase/events/ScratchEvent";
-import {EventAndParameters, ExecutionTrace} from "../testcase/ExecutionTrace";
-import {Randomness} from "../utils/Randomness";
-import {StatisticsCollector} from "../utils/StatisticsCollector";
-import {WaitEvent} from "../testcase/events/WaitEvent";
-import {NetworkChromosome} from "./Networks/NetworkChromosome";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
+import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
+import {Randomness} from "../../utils/Randomness";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {WaitEvent} from "../../testcase/events/WaitEvent";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
-import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {ScratchEventExtractor} from "../../testcase/ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
-import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
-import {KeyPressEvent} from "../testcase/events/KeyPressEvent";
-import {Container} from "../utils/Container";
-import {ParameterType} from "../testcase/events/ParameterType";
-import {ScoreFitness} from "./NetworkFitness/ScoreFitness";
+import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
+import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
+import {Container} from "../../utils/Container";
+import {ParameterType} from "../../testcase/events/ParameterType";
+import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import cloneDeep from "lodash.clonedeep";
-import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 export class NetworkExecutor {
 

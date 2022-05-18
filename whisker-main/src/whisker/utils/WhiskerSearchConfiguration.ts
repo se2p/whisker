@@ -35,7 +35,7 @@ import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnes
 import {InputConnectionMethod, NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
-import {InputExtraction} from "../whiskerNet/InputExtraction";
+import {InputExtraction} from "../whiskerNet/Misc/InputExtraction";
 import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
 import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/FitnessEvaluationStoppingCondition";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
