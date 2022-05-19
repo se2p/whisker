@@ -123,11 +123,6 @@ export class NeuroevolutionTestGenerationParameter extends BasicNeuroevolutionPa
      */
     private _interspeciesMating = 0.001;
 
-    /**
-     * Probability of averaging the weights of two matching genes during crossover.
-     */
-    private _crossoverWeightAverageRate = 0.4;
-
 
     // ----------------- Compatibility Distance -------------------
     /**
@@ -157,17 +152,6 @@ export class NeuroevolutionTestGenerationParameter extends BasicNeuroevolutionPa
      * Stopping condition for test generation.
      */
     private _stoppingCondition: StoppingCondition<NeatChromosome>;
-
-    /**
-     * Number of generations without improvement after which the explorative NEAT algorithm changes his currently
-     * selected target statement.
-     */
-    private _switchTargetCount = 5;
-
-    /**
-     * Number of robustness checks after which a statement is treated as covered within the explorative NEAT algorithm.
-     */
-    private _coverageStableCount = 0;
 
     /**
      * Size of reference trace to be used as test oracle.
@@ -355,10 +339,6 @@ export class NeuroevolutionTestGenerationParameter extends BasicNeuroevolutionPa
         this._interspeciesMating = value;
     }
 
-    set crossoverWeightAverageRate(value: number) {
-        this._crossoverWeightAverageRate = value;
-    }
-
     get compatibilityDistanceThreshold(): number {
         return this._compatibilityDistanceThreshold;
     }
@@ -397,22 +377,6 @@ export class NeuroevolutionTestGenerationParameter extends BasicNeuroevolutionPa
 
     set stoppingCondition(value: StoppingCondition<NeatChromosome>) {
         this._stoppingCondition = value;
-    }
-
-    get switchTargetCount(): number {
-        return this._switchTargetCount;
-    }
-
-    set switchTargetCount(value: number) {
-        this._switchTargetCount = value;
-    }
-
-    get coverageStableCount(): number {
-        return this._coverageStableCount;
-    }
-
-    set coverageStableCount(value: number) {
-        this._coverageStableCount = value;
     }
 
     get activationTraceRepetitions(): number {

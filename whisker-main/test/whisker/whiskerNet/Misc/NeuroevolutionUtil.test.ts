@@ -1,11 +1,11 @@
-import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
-import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
-import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
+import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
+import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 
 describe("NeuroevolutionUtil Tests", () => {
 
@@ -69,7 +69,7 @@ describe("NeuroevolutionUtil Tests", () => {
     test("Test Softmax calculation", () => {
         const chromosome = generator.get();
         chromosome.activateNetwork(chromosome.generateDummyInputs());
-        for (let i = 0; i < chromosome.getMaxDepth(); i++) {
+        for (let i = 0; i < 10; i++) {
             chromosome.activateNetwork(genInputs);
         }
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);

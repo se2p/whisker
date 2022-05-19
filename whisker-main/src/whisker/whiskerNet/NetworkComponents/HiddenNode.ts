@@ -14,9 +14,14 @@ export class HiddenNode extends NodeGene {
         super(uID, activationFunction, NodeType.HIDDEN);
     }
 
+    /**
+     * Two hidden nodes are equal if they have the same identifier. However, each hidden node inside a network
+     * should have its own identifier!
+     * @param other the node to compare this node to.
+     */
     equals(other: unknown): boolean {
         if (!(other instanceof HiddenNode)) return false;
-        return this.uID === other.uID && this.activationFunction === other.activationFunction;
+        return this.uID === other.uID;
     }
 
     clone(): HiddenNode {
@@ -52,6 +57,10 @@ export class HiddenNode extends NodeGene {
             return 0.0;
     }
 
+    /**
+     * Hidden nodes are identified by their type and the uID due to the absence of other crucial attributes.
+     * @returns identifier based on the node type and the uID.
+     */
     public identifier(): string {
         return `H:${this.uID}`;
     }
@@ -64,9 +73,9 @@ export class HiddenNode extends NodeGene {
 
     public toJSON(): Record<string, (number | string)> {
         const node = {};
-        node[`id`] = this.uID;
-        node[`t`] = "H";
-        node[`aF`] = ActivationFunction[this.activationFunction];
+        node['id'] = this.uID;
+        node['t'] = "H";
+        node['aF'] = ActivationFunction[this.activationFunction];
         return node;
     }
 

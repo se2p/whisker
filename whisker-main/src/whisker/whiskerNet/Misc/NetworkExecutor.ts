@@ -15,7 +15,6 @@ import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "../../testcase/events/ParameterType";
 import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
-import cloneDeep from "lodash.clonedeep";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 export class NetworkExecutor {

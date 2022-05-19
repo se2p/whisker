@@ -1,26 +1,30 @@
-import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {ConnectionGene} from "../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
-import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
-import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
-import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
-import {RegressionNode} from "../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
-import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
-import {Species} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
-import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
-import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
+import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
+import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
+import {Species} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
+import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStageEvent";
+import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
+import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
+import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {Container} from "../../../../src/whisker/utils/Container";
+import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
+import {Randomness} from "../../../../src/whisker/utils/Randomness";
+import {ActivationTrace} from "../../../../src/whisker/whiskerNet/Misc/ActivationTrace";
+import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 
 describe('Test NetworkChromosome', () => {
-
     let mutationOp: NeatMutation;
     let mutationConfig: Record<string, (string | number)>;
     let crossoverConfig: Record<string, (string | number)>;
@@ -29,9 +33,50 @@ describe('Test NetworkChromosome', () => {
     let generator: NeatChromosomeGenerator;
     let chromosome: NeatChromosome;
     let properties: NeuroevolutionTestGenerationParameter;
-    const activationFunction =  ActivationFunction.SIGMOID;
+    const activationFunction = ActivationFunction.SIGMOID;
+
+    // Helper function for generating a sample chromosome.
+    const getSampleNetwork = (): NetworkChromosome => {
+        // Create input Nodes
+        const nodes: NodeGene[] = [];
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
+        const iNode3 = new InputNode(2, "Sprite1", "Costume");
+        const bias = new BiasNode(3);
+        nodes.push(iNode1);
+        nodes.push(iNode2);
+        nodes.push(iNode3);
+        nodes.push(bias);
+
+        // Create classification and Regression Output Nodes
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
+        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
+        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
+        nodes.push(classificationNode1);
+        nodes.push(classificationNode2);
+        nodes.push(regressionNode1);
+        nodes.push(regressionNode2);
+
+        // Create Connections
+        const connections: ConnectionGene[] = [];
+        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.1, true, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[5], 0.2, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[4], 0.3, false, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[5], 0.4, false, 1, false));
+        connections.push(new ConnectionGene(nodes[3], nodes[4], 0.5, true, 1, false));
+        connections.push(new ConnectionGene(nodes[3], nodes[5], 0.6, false, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[6], 0.7, true, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[7], 0.8, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, false, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
+        return new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
+    };
 
     beforeEach(() => {
+        Container.debugLog = () => {/* No operation */
+        };
+
         crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,
@@ -110,7 +155,11 @@ describe('Test NetworkChromosome', () => {
 
     test("Test getter and setter", () => {
         const species = new Species(1, true, properties);
+        const sampleNode = new HiddenNode(101, ActivationFunction.TANH);
+        const refUncertainty = new Map<number, number>();
+        refUncertainty.set(10, 0.3);
 
+        chromosome.uID = 1234;
         chromosome.fitness = 4;
         chromosome.sharedFitness = 2;
         chromosome.species = species;
@@ -123,7 +172,18 @@ describe('Test NetworkChromosome', () => {
         chromosome.codons = [1, 2, 3];
         chromosome.isRecurrent = true;
         chromosome.coverage = new Set<string>("B");
+        chromosome.score = 10;
+        chromosome.playTime = 30;
+        chromosome.referenceActivationTrace = new ActivationTrace([sampleNode]);
+        chromosome.testActivationTrace = new ActivationTrace([]);
+        chromosome.recordNetworkStatistics = false;
+        chromosome.averageLSA = 0.1;
+        chromosome.surpriseCount = 3;
+        chromosome.referenceUncertainty = refUncertainty;
+        chromosome.testUncertainty = new Map<number, number>();
+        chromosome.openStatementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
 
+        expect(chromosome.uID).toBe(1234);
         expect(chromosome.fitness).toEqual(4);
         expect(chromosome.sharedFitness).toEqual(2);
         expect(chromosome.species).toEqual(species);
@@ -137,49 +197,77 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.getLength()).toEqual(3);
         expect(chromosome.isRecurrent).toBeTruthy();
         expect(chromosome.coverage).toContain("B");
+        expect(chromosome.score).toEqual(10);
+        expect(chromosome.playTime).toEqual(30);
+        expect(chromosome.referenceActivationTrace.tracedNodes.length).toEqual(1);
+        expect(chromosome.testActivationTrace.tracedNodes.length).toEqual(0);
+        expect(chromosome.recordNetworkStatistics).toBeFalsy();
+        expect(chromosome.averageLSA).toEqual(0.1);
+        expect(chromosome.surpriseCount).toEqual(3);
+        expect(chromosome.referenceUncertainty.size).toEqual(1);
+        expect(chromosome.testUncertainty.size).toEqual(0);
+        expect(chromosome.openStatementTargets).not.toBeUndefined();
     });
 
-    test("Clone Test without hidden Layer", () => {
-        chromosome.generateNetwork();
-        const clone = chromosome.cloneStructure(false);
+    test("Deep clone", () =>{
+        const refTrace = new ActivationTrace([new HiddenNode(0, ActivationFunction.TANH)]);
+        const testTrace = new ActivationTrace([]);
+        chromosome.referenceActivationTrace = refTrace;
+        chromosome.testActivationTrace = testTrace;
+        const clone = chromosome.clone();
+        expect(clone.uID).toEqual(chromosome.uID);
+        expect(clone.trace).toEqual(chromosome.trace);
+        expect(clone.coverage).toEqual(chromosome.coverage);
+        expect(clone.fitness).toEqual(chromosome.fitness);
+        expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
+        expect(clone.targetFitness).toEqual(chromosome.targetFitness);
+        expect(clone.openStatementTargets).toEqual(chromosome.openStatementTargets);
+        expect(clone.species).toEqual(chromosome.species);
+        expect(clone.isSpeciesChampion).toEqual(chromosome.isSpeciesChampion);
+        expect(clone.isPopulationChampion).toEqual(chromosome.isPopulationChampion);
+        expect(clone.isParent).toEqual(chromosome.isParent);
+        expect(clone.expectedOffspring).toEqual(chromosome.expectedOffspring);
+        expect(clone.isRecurrent).toEqual(chromosome.isRecurrent);
         expect(clone.connections.length).toEqual(chromosome.connections.length);
         expect(clone.allNodes.length).toEqual(chromosome.allNodes.length);
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
-        expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
         expect(clone.activationFunction).toEqual(chromosome.activationFunction);
+        expect(clone.referenceActivationTrace.tracedNodes.length).toEqual(chromosome.referenceActivationTrace.tracedNodes.length);
+        expect(clone.testActivationTrace.tracedNodes.length).toEqual(chromosome.testActivationTrace.tracedNodes.length);
+        expect(clone.referenceUncertainty.size).toBe(0);
+        expect(clone.testUncertainty.size).toBe(0);
     });
 
-    test("Clone Test with given gene without hidden Layer", () => {
+    test("Clone with given genes", () => {
         const clone = chromosome.cloneWith(chromosome.connections);
         expect(clone.connections.length).toEqual(chromosome.connections.length);
         expect(clone.allNodes.length).toEqual(chromosome.allNodes.length);
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
-        expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
         expect(clone.activationFunction).toEqual(chromosome.activationFunction);
     });
 
-    test("Clone Test with hidden Layer", () => {
+    test("Clone structure", () => {
         const clone = chromosome.cloneStructure(false);
         expect(clone.connections.length).toEqual(chromosome.connections.length);
-        expect(clone.connections[0]).not.toBe(chromosome.connections[0]);
         expect(clone.allNodes.length).toEqual(chromosome.allNodes.length);
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
-        expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
         expect(clone.activationFunction).toEqual(chromosome.activationFunction);
     });
 
-    test("Clone Test with given gene and hidden Layer", () => {
-        const clone = chromosome.cloneWith(chromosome.connections);
+    test("Clone as test case", () => {
+        chromosome.referenceActivationTrace = new ActivationTrace([new HiddenNode(0, ActivationFunction.TANH)]);
+        const clone = chromosome.cloneAsTestCase();
         expect(clone.connections.length).toEqual(chromosome.connections.length);
-        expect(clone.connections[0]).not.toBe(chromosome.connections[0]);
         expect(clone.allNodes.length).toEqual(chromosome.allNodes.length);
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
-        expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
         expect(clone.activationFunction).toEqual(chromosome.activationFunction);
+        expect(clone.uID).toEqual(chromosome.uID);
+        expect(clone.isRecurrent).toEqual(chromosome.isRecurrent);
+        expect(clone.referenceActivationTrace.tracedNodes.length).toEqual(chromosome.referenceActivationTrace.tracedNodes.length);
     });
 
     test('Test generateNetwork with hidden Layer', () => {
@@ -203,49 +291,33 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.activationFunction).toEqual(ActivationFunction.SIGMOID);
     });
 
-    test('Network activation without hidden layer', () => {
+    test('Network activation without path from input to output', () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
-        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
-        const iNode3 = new InputNode(2, "Sprite1", "Costume");
-        const bias = new BiasNode(3);
-        nodes.push(iNode1);
-        nodes.push(iNode2);
-        nodes.push(iNode3);
-        nodes.push(bias);
-
-        // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
-        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
-        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
-        nodes.push(classificationNode1);
-        nodes.push(classificationNode2);
-        nodes.push(regressionNode1);
-        nodes.push(regressionNode2);
-
-        // Create Connections
-        const connections: ConnectionGene[] = [];
-        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.1, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[5], 0.2, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[4], 0.3, false, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[5], 0.4, false, 1, false));
-        connections.push(new ConnectionGene(nodes[3], nodes[4], 0.5, true, 1, false));
-        connections.push(new ConnectionGene(nodes[3], nodes[5], 0.6, false, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[6], 0.7, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[7], 0.8, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, false, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
+        const iNode = new InputNode(0, "Sprite1", "X-Position");
+        const oNode = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        nodes.push(iNode);
+        nodes.push(oNode);
+        const connections = [new ConnectionGene(iNode, oNode, 1, false, 0, false)];
 
         chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
+        const inputs = new Map<string, Map<string, number>>();
+        const sprite1 = new Map<string, number>();
+        sprite1.set("X-Position", 1);
+        inputs.set("Sprite1", sprite1);
+        chromosome.activateNetwork(inputs);
+        expect(chromosome.activateNetwork(inputs)).toBeFalsy();
+    });
+
+    test('Network activation without hidden layer', () => {
+        const chromosome = getSampleNetwork();
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         sprite1.set("Y-Position", 2);
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
-        for (let i = 0; i < chromosome.getMaxDepth(); i++) {
+        for (let i = 0; i < 10; i++) {
             chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
@@ -262,42 +334,8 @@ describe('Test NetworkChromosome', () => {
     });
 
     test('Network activation without hidden layer and novel inputs', () => {
-        // Create input Nodes
-        const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
-        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
-        const iNode3 = new InputNode(2, "Sprite1", "Costume");
-        const bias = new BiasNode(3);
-        nodes.push(iNode1);
-        nodes.push(iNode2);
-        nodes.push(iNode3);
-        nodes.push(bias);
-
-        // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
-        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
-        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
-        nodes.push(classificationNode1);
-        nodes.push(classificationNode2);
-        nodes.push(regressionNode1);
-        nodes.push(regressionNode2);
-
-        // Create Connections
-        const connections: ConnectionGene[] = [];
-        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.1, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[5], 0.2, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[4], 0.3, false, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[5], 0.4, false, 1, false));
-        connections.push(new ConnectionGene(nodes[3], nodes[4], 0.5, true, 1, false));
-        connections.push(new ConnectionGene(nodes[3], nodes[5], 0.6, false, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[6], 0.7, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[7], 0.8, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, false, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
-
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
-        const chromosome2 = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
+        const chromosome = getSampleNetwork();
+        const chromosome2 = getSampleNetwork();
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -324,47 +362,13 @@ describe('Test NetworkChromosome', () => {
     });
 
     test('Network activation without hidden layer and deactivated input nodes', () => {
-        // Create input Nodes
-        const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
-        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
-        const iNode3 = new InputNode(2, "Sprite1", "Costume");
-        const bias = new BiasNode(3);
-        nodes.push(iNode1);
-        nodes.push(iNode2);
-        nodes.push(iNode3);
-        nodes.push(bias);
-
-        // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
-        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
-        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
-        nodes.push(classificationNode1);
-        nodes.push(classificationNode2);
-        nodes.push(regressionNode1);
-        nodes.push(regressionNode2);
-
-        // Create Connections
-        const connections: ConnectionGene[] = [];
-        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.1, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[5], 0.2, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[4], 0.3, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[5], 0.4, true, 1, false));
-        connections.push(new ConnectionGene(nodes[3], nodes[4], 0.5, true, 1, false));
-        connections.push(new ConnectionGene(nodes[3], nodes[5], 0.6, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[6], 0.7, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[7], 0.8, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, true, 1, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
-
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
+        const chromosome = getSampleNetwork();
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
-        for (let i = 0; i < chromosome.getMaxDepth(); i++) {
+        for (let i = 0; i < 10; i++) {
             chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
@@ -372,13 +376,13 @@ describe('Test NetworkChromosome', () => {
         for (const key of softmaxOutput.keys()) {
             softmaxOutput.set(key, Number(softmaxOutput.get(key).toFixed(3)));
         }
-        expect(nodes[1].activatedFlag).toBeFalsy();
+        expect(chromosome.allNodes[1].activatedFlag).toBeFalsy();
         expect(chromosome.outputNodes[0].nodeValue).toEqual(0.6);
-        expect(chromosome.outputNodes[1].nodeValue).toEqual(0.8);
+        expect(chromosome.outputNodes[1].nodeValue).toEqual(0.2);
         expect(chromosome.outputNodes[2].nodeValue).toEqual(0.7);
         expect(chromosome.outputNodes[3].nodeValue).toEqual(0.8);
-        expect(nodes[0].activatedFlag).toBeTruthy();
-        expect([...softmaxOutput.values()]).toEqual([0.45, 0.55]);
+        expect(chromosome.allNodes[0].activatedFlag).toBeTruthy();
+        expect([...softmaxOutput.values()]).toEqual([0.599, 0.401]);
         expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
 
@@ -425,9 +429,9 @@ describe('Test NetworkChromosome', () => {
         sprite2.set("X-Position", 2);
         inputs.set("Sprite1", sprite1);
         inputs.set("Sprite2", sprite2);
+        chromosome.generateNetwork();
         chromosome.flushNodeValues();
-        const depth = chromosome.getMaxDepth();
-        for (let i = 0; i < depth; i++) {
+        for (let i = 0; i < 10; i++) {
             chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
@@ -439,8 +443,8 @@ describe('Test NetworkChromosome', () => {
         expect(Number(hiddenNode.activationValue.toFixed(3))).toEqual(0.802);
         expect(Number(deepHiddenNode.nodeValue.toFixed(3))).toEqual(0.642);
         expect(Number(deepHiddenNode.activationValue.toFixed(3))).toEqual(0.655);
-        expect(Number(nodes[7].nodeValue.toFixed(3))).toEqual(0.79);
-        expect(nodes[6].nodeValue).toEqual(0.6);
+        expect(Number(chromosome.allNodes[7].nodeValue.toFixed(3))).toEqual(0.79);
+        expect(chromosome.allNodes[6].nodeValue).toEqual(0.6);
         expect([...softmaxOutput.values()]).toEqual([0.453, 0.547]);
         expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toEqual(1);
     });
@@ -488,8 +492,7 @@ describe('Test NetworkChromosome', () => {
         sprite1.set("Y-Position", 2);
         inputs.set("Sprite1", sprite1);
         chromosome.flushNodeValues();
-        const depth = chromosome.getMaxDepth();
-        for (let i = 0; i < depth; i++) {
+        for (let i = 0; i < 10; i++) {
             chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
@@ -554,6 +557,15 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.isRecurrentPath(nodes[0], nodes[4], 0, threshold)).toBeFalsy();
         expect(chromosome.isRecurrentPath(nodes[4], nodes[0], 0, threshold)).toBeTruthy();
         expect(chromosome.isRecurrentPath(nodes[0], nodes[1], 0, threshold)).toBeFalsy();
+        expect(chromosome.isRecurrentPath(nodes[4], nodes[0], 0, 1)).toBeFalsy();
+        expect(chromosome.isRecurrentPath(nodes[7], nodes[5], 0, 0)).toBeTruthy();
+    });
+
+    test("Generate Dummy Inputs", () => {
+        const chromosome = getSampleNetwork();
+        const dummyInputs = chromosome.generateDummyInputs();
+        expect(dummyInputs.size).toBe(1);
+        expect(dummyInputs.get("Sprite1").size).toBe(3);
     });
 
     test("Test getRegressionNodes", () => {
@@ -563,7 +575,7 @@ describe('Test NetworkChromosome', () => {
         expect(regressionNodes.get("MouseMoveEvent").length).toEqual(2);
     });
 
-    test("Test updateOutputNodes", () => {
+    test("Test updateOutputNodes fullyHidden", () => {
         const hiddenNodeGenerator = new NeatChromosomeGenerator(genInputs, [new WaitEvent()], 'fullyHidden',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
         chromosome = hiddenNodeGenerator.get();
@@ -590,6 +602,26 @@ describe('Test NetworkChromosome', () => {
             chromosome3.outputNodes[chromosome3.outputNodes.length - 1].uID);
     });
 
+    test("Test updateOutputNodes sparse", () => {
+        const sparseGenerator = new NeatChromosomeGenerator(genInputs, [new WaitEvent()], 'sparse',
+            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+        chromosome = sparseGenerator.get();
+        const chromosome2 = sparseGenerator.get();
+        const chromosome3 = sparseGenerator.get();
+        const oldNodeSize = chromosome.allNodes.length;
+        const oldOutputNodesSize = chromosome.outputNodes.length;
+        const oldRegressionNodesSize = chromosome.regressionNodes.size;
+        const oldConnectionSize = chromosome.connections.length;
+        chromosome.updateOutputNodes([new MouseMoveEvent()]);
+        chromosome2.updateOutputNodes([new MouseMoveEvent()]);
+        chromosome3.updateOutputNodes([new KeyPressEvent('up arrow')]);
+        expect(chromosome.allNodes.length).toBeGreaterThan(oldNodeSize);
+        expect(chromosome.outputNodes.length).toBeGreaterThan(oldOutputNodesSize);
+        expect(chromosome.regressionNodes.size).toBeGreaterThan(oldRegressionNodesSize);
+        expect(chromosome.connections.length).toBeGreaterThan(oldConnectionSize);
+        expect(chromosome.allNodes.filter(node => node instanceof HiddenNode).length).toEqual(0);
+    });
+
     test("Test setUpInputs", () => {
         chromosome = generator.get();
         genInputs.set("New", new Map<string, number>());
@@ -607,9 +639,76 @@ describe('Test NetworkChromosome', () => {
         expect(oldConnections).toEqual(chromosome.connections.length);
     });
 
-    test("Test toString", () => {
-        const network = generator.get();
-        network.connections[0].isEnabled = false;
-        expect(network.toString().split('\n').length).toBeGreaterThan(network.connections.length);
+    test("Add Connection", () => {
+        const iNode = chromosome.inputNodes.get("Sprite1").get("X-Position");
+        const oNode = chromosome.outputNodes[0];
+        const connection = new ConnectionGene(oNode, iNode, 0, true, 0, true);
+        const clone = chromosome.cloneStructure(true);
+        const connectionSizeBefore = chromosome.connections.length;
+        const nodeSizeBefore = chromosome.allNodes.length;
+        expect(NeatPopulation.findInnovation(connection, 'addConnection')).toBeUndefined();
+        chromosome.addConnection(connection);
+        expect(NeatPopulation.findInnovation(connection, 'addConnection')).not.toBeUndefined();
+        clone.addConnection(connection);
+
+        expect(chromosome.connections.length).toEqual(connectionSizeBefore + 1);
+        expect(clone.connections.length).toEqual(chromosome.connections.length);
+        expect(chromosome.allNodes.length).toEqual(nodeSizeBefore);
+        expect(clone.allNodes.length).toEqual(chromosome.allNodes.length);
     });
+
+    test("Add Node by splitting up a connection", () => {
+        const splitConnection = Randomness.getInstance().pick(chromosome.connections);
+        const clone = chromosome.cloneStructure(true);
+        const connectionSizeBefore = chromosome.connections.length;
+        const nodeSizeBefore = chromosome.allNodes.length;
+        expect(NeatPopulation.findInnovation(splitConnection, 'addNodeSplitConnection')).toBeUndefined();
+        chromosome.addNodeSplitConnection(splitConnection);
+        expect(NeatPopulation.findInnovation(splitConnection, 'addNodeSplitConnection')).not.toBeUndefined();
+        clone.addNodeSplitConnection(splitConnection);
+
+        expect(chromosome.connections.length).toEqual(connectionSizeBefore + 2);
+        expect(clone.connections.length).toEqual(chromosome.connections.length);
+        expect(chromosome.allNodes.length).toEqual(nodeSizeBefore + 1);
+        expect(clone.allNodes.length).toEqual(chromosome.allNodes.length);
+    });
+
+    test("Test toString", () => {
+        const iNode = new InputNode(10, "HexColor", "#ff0000");
+        chromosome.allNodes.push(iNode);
+        chromosome.connections[0].isEnabled = false;
+        const toStringOut = chromosome.toString();
+        expect(toStringOut).toContain("digraph Network"); // Check for .dot output
+        expect(toStringOut).toContain("Red"); // Check if color was translated from hex
+        expect(toStringOut).not.toContain(":"); // Problematic .dot character
+    });
+
+    test("Update Activation Trace", () => {
+        let numberHiddenNodes = 0;
+        for(const node of chromosome.allNodes){
+            if(node instanceof HiddenNode){
+                node.activationValue = Randomness.getInstance().nextInt(-1, 1);
+                numberHiddenNodes++;
+            }
+        }
+        const step = 2;
+        chromosome.updateActivationTrace(step);
+        expect(chromosome.testActivationTrace.tracedNodes.length).toEqual(numberHiddenNodes);
+    });
+
+    test("toJSON", () =>{
+        const json = chromosome.toJSON();
+        expect(json['id']).toEqual(chromosome.uID);
+        expect(json['aF']).toEqual(ActivationFunction[chromosome.activationFunction]);
+        expect(json['cM']).toEqual(chromosome.inputConnectionMethod);
+        expect('tf' in json).toBeFalsy();
+        expect(Object.keys(json['Nodes']).length).toEqual(chromosome.allNodes.length);
+        expect(Object.keys(json['Cons']).length).toEqual(chromosome.connections.length);
+        expect(json['AT']).toBeUndefined();
+        expect(Object.keys(json).length).toBe(6);
+
+        chromosome.testActivationTrace = new ActivationTrace([]);
+        expect(chromosome.toJSON()['AT']).not.toBeUndefined();
+    });
+
 });

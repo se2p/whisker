@@ -4,7 +4,6 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
-import assert from "assert";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {Randomness} from "../../utils/Randomness";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
@@ -157,25 +156,12 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param incrementID determines whether the ID counter should be incremented during the cloning process.
      * @returns NetworkChromosome the cloned Network with default attribute values.
      */
-    public abstract cloneStructure(incrementID: boolean);
+    public abstract cloneStructure(incrementID: boolean): NetworkChromosome;
 
     /**
      * Clones the network during the test execution process.
      */
-    public abstract cloneAsTestCase();
-
-    /**
-     * Deep clone of a NetworkChromosome using a defined list of genes.
-     * @param newGenes the ConnectionGenes the network should be initialised with.
-     * @returns NetworkChromosome the cloned network.
-     */
-    abstract cloneWith(newGenes: ConnectionGene[]);
-
-    /**
-     * Deep clone of a network including its structure and attributes.
-     * @returns NetworkChromosome the cloned network.
-     */
-    abstract clone();
+    public abstract cloneAsTestCase(): NetworkChromosome;
 
     /**
      * Determines how a novel connection is added to the network.
@@ -407,25 +393,6 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Calculates the maximum depth of this network by traversing from each output node to the input nodes.
-     * @returns depth of network.
-     */
-    public getMaxDepth(): number {
-        let currentDepth: number;
-        let maxDepth = 0;
-
-        // Start at each output node and determine its maximum depth.
-        for (const outNode of this.outputNodes) {
-            currentDepth = outNode.depth(0);
-            if (currentDepth > maxDepth) {
-                maxDepth = currentDepth;
-            }
-        }
-
-        return maxDepth;
-    }
-
-    /**
      * Load the given inputs into the input nodes of the network.
      * @param inputs a map which maps each sprite to its input feature vector.
      */
@@ -486,7 +453,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 node.traversed = false;
         }
 
-        // if the source node is in the output layer it has to be a recurrent connection!
+        // If the source node is in the output layer it has to be a recurrent connection!
         if (node1.type === NodeType.OUTPUT) {
             return true;
         }
@@ -547,12 +514,30 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Returns the number of events this network has executed.
-     * @returns number of executed events.
+     * Initialises the open target statements, setting each coverage count to zero; Used for Explorative-NEAT's
+     * robustness check.
+     * @param targets all block statements of the given Scratch program.
      */
-    public getNumEvents(): number {
-        assert(this._trace != null);
-        return this._trace.events.length;
+    public initialiseOpenStatements(targets: FitnessFunction<NetworkChromosome>[]): void {
+        this.openStatementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
+        for (const t of targets) {
+            this.openStatementTargets.set(t, 0);
+        }
+    }
+
+    /**
+     * Adds a single ActivationTrace to the network's current trace.
+     * @param step the previously performed step whose ActivationTrace should be recorded.
+     */
+    public updateActivationTrace(step: number): void {
+        this.sortNodes();
+        const tracedNodes = this._allNodes.filter(node => node.type === NodeType.HIDDEN);
+
+        if (this.testActivationTrace === undefined) {
+            this.testActivationTrace = new ActivationTrace(tracedNodes);
+        }
+
+        this.testActivationTrace.update(step, tracedNodes);
     }
 
     /**
@@ -569,7 +554,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 .replace(/-/g, '')
                 .replace(/:/, '')
                 // Rename colors in hex-format
-                .replace(/#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/g, substring => name(substring)[1])
+                .replace(/#([a-fA-F\d]{6}|[a-fA-F\d]{3})$/g, substring => name(substring)[1])
                 .replace(/ /g, '');
         };
 
@@ -608,14 +593,6 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons.length;
     }
 
-    get uID(): number {
-        return this._uID;
-    }
-
-    set uID(value: number) {
-        this._uID = value;
-    }
-
     getFitness(fitnessFunction: FitnessFunction<this>): number {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
@@ -626,30 +603,12 @@ export abstract class NetworkChromosome extends Chromosome {
         }
     }
 
-    /**
-     * Initialises the target statements, setting each coverage count to zero.
-     * @param targets all block statements of the given Scratch program.
-     */
-    public initialiseOpenStatements(targets: FitnessFunction<NetworkChromosome>[]): void {
-        this.openStatementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
-        for (const t of targets) {
-            this.openStatementTargets.set(t, 0);
-        }
+    get uID(): number {
+        return this._uID;
     }
 
-    /**
-     * Adds a single ActivationTrace after executing a Scratch-Step to the ActivationTrace map.
-     * @param step the previously performed step whose ActivationTrace should be recorded.
-     */
-    public updateActivationTrace(step: number): void {
-        this.sortNodes();
-        const tracedNodes = this._allNodes.filter(node => node.type === NodeType.HIDDEN);
-
-        if (this.testActivationTrace === undefined) {
-            this.testActivationTrace = new ActivationTrace(tracedNodes);
-        }
-
-        this.testActivationTrace.update(step, tracedNodes);
+    set uID(value: number) {
+        this._uID = value;
     }
 
     get allNodes(): NodeGene[] {

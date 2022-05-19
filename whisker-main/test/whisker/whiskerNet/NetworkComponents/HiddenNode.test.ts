@@ -50,9 +50,6 @@ describe("hiddenNode Tests", () => {
         const hiddenNode3 = new HiddenNode(2, ActivationFunction.SIGMOID);
         expect(hiddenNode3.equals(hiddenNode)).toBe(false);
 
-        const hiddenNode4 = new HiddenNode(1, ActivationFunction.NONE);
-        expect(hiddenNode4.equals(hiddenNode)).toBe(false);
-
         const biasNode = new BiasNode(1);
         expect(biasNode.equals(hiddenNode)).toBe(false);
     });
@@ -66,7 +63,6 @@ describe("hiddenNode Tests", () => {
 
     test("getActivationValue Test", () => {
         hiddenNode.nodeValue = 1;
-        hiddenNode.activationCount = 1;
         hiddenNode.activatedFlag = true;
         const sigmoidResult = NeuroevolutionUtil.sigmoid(1, 1);
         expect(hiddenNode.activate()).toBe(sigmoidResult);
@@ -77,13 +73,26 @@ describe("hiddenNode Tests", () => {
 
         const hiddenNode2 = new HiddenNode(2, ActivationFunction.NONE);
         hiddenNode2.nodeValue = 5;
-        hiddenNode2.activationCount = 10;
         hiddenNode2.activatedFlag = true;
         expect(hiddenNode2.activate()).toBe(5);
         expect(hiddenNode2.activationValue).toBe(5);
         hiddenNode2.reset();
         expect(hiddenNode2.activate()).toBe(0);
         expect(hiddenNode2.activationValue).toBe(0);
+
+        const hiddenNode3 = new HiddenNode(2, ActivationFunction.TANH);
+        hiddenNode3.nodeValue = -1;
+        hiddenNode3.activatedFlag = true;
+        const tanhResult = Math.tanh(-1);
+        expect(hiddenNode3.activate()).toBe(tanhResult);
+        expect(hiddenNode3.activationValue).toBe(tanhResult);
+        hiddenNode3.reset();
+        expect(hiddenNode3.activate()).toBe(0);
+        expect(hiddenNode3.activationValue).toBe(0);
+    });
+
+    test("Identifier", () =>{
+        expect(hiddenNode.identifier()).toBe(`H:${hiddenNode.uID}`);
     });
 
     test("toString Test", () => {
@@ -92,5 +101,13 @@ describe("hiddenNode Tests", () => {
         expect(out).toContain(`HiddenNode{ID: 1\
 , Value: 0\
 , InputConnections: ${[]}`);
+    });
+
+    test("toJSON", () => {
+        const json = hiddenNode.toJSON();
+        expect(json['t']).toBe(`H`);
+        expect(json['id']).toBe(hiddenNode.uID);
+        expect(json['aF']).toBe(ActivationFunction[hiddenNode.activationFunction]);
+        expect(Object.keys(json).length).toBe(3);
     });
 });

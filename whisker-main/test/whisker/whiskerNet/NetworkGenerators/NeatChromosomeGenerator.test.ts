@@ -10,7 +10,7 @@ import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCr
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
 
-describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
+describe('Test NeatChromosomeGenerator', () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;

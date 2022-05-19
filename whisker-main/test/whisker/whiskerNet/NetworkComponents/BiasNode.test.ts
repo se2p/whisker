@@ -13,7 +13,6 @@ describe("BiasNode Tests", () => {
     });
 
     test("Constructor Test", () => {
-
         const biasNode = new BiasNode(2);
 
         expect(biasNode.uID).toEqual(2);
@@ -65,10 +64,22 @@ describe("BiasNode Tests", () => {
         expect(biasNode.activationValue).toEqual(1);
     });
 
+    test("Identifier", () =>{
+       expect(biasNode.identifier()).toBe("B");
+    });
+
     test("toString Test", () => {
         const out = biasNode.toString();
         expect(out).toContain(`BiasNode{ID: 1\
 , Value: 1\
 , InputConnections: ${[]}`);
+    });
+
+    test("toJSON", () => {
+        const json = biasNode.toJSON();
+        expect(json['t']).toBe("B");
+        expect(json['id']).toBe(biasNode.uID);
+        expect(json['aF']).toBe(ActivationFunction[biasNode.activationFunction]);
+        expect(Object.keys(json).length).toBe(3);
     });
 });

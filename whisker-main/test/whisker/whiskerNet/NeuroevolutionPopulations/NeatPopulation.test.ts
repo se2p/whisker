@@ -1,20 +1,20 @@
-import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import Arrays from "../../../src/whisker/utils/Arrays";
-import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
-import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
-import {ConnectionGene} from "../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {Container} from "../../../src/whisker/utils/Container";
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {Randomness} from "../../../../src/whisker/utils/Randomness";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
+import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
+import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import Arrays from "../../../../src/whisker/utils/Arrays";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
+import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
+import {Container} from "../../../../src/whisker/utils/Container";
+import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 
 describe("Test NeatPopulation", () => {
 
@@ -27,9 +27,8 @@ describe("Test NeatPopulation", () => {
     let mutation: NeatMutation;
     let crossover: NeatCrossover;
 
-
     beforeEach(() => {
-        Container.debugLog = () => { /* No operation */ };
+        Container.debugLog = () => { /* No operation */};
         size = 10;
         numberOfSpecies = 5;
         NeatPopulation.innovations = [];
@@ -105,7 +104,6 @@ describe("Test NeatPopulation", () => {
     });
 
     test("Test Getter and Setter", () => {
-
         population.speciesCount = 3;
         population.bestFitness = 3;
         population.highestFitnessLastChanged = 3;
@@ -148,16 +146,32 @@ describe("Test NeatPopulation", () => {
         population.species.push(firstSpecie);
         population.updatePopulationStatistics();
         population.evolve();
-        expect(population.species.length).toBe(1);
-        expect(population.species[0].networks.length).toBe(size);
+        expect(population.species.length).toBeGreaterThan(0);
+    });
+
+    test("Test evolution stagnant population with more than two species", () => {
+        while (population.species.length < 3) {
+            for (const c of population.networks)
+                c.fitness = random.nextInt(1, 50);
+            population.updatePopulationStatistics();
+            population.evolve();
+        }
+        for (const network of population.networks) {
+            network.fitness = 1;
+        }
+        population.bestFitness = 60;
+        population.highestFitnessLastChanged = 100;
+        population.updatePopulationStatistics();
+        population.evolve();
+        expect(population.species.length).toBeGreaterThan(1);
     });
 
     test("Test that the initial hyperparameter value remains untouched", () => {
         population.generation = 3;
         population.hyperParameter.compatibilityDistanceThreshold = 0.1;
         for (let i = 0; i < 10; i++) {
-        population.updatePopulationStatistics();
-        population.evolve();
+            population.updatePopulationStatistics();
+            population.evolve();
         }
         expect(population.hyperParameter.compatibilityDistanceThreshold).toBe(0.1);
     });
@@ -286,8 +300,8 @@ describe("Test NeatPopulation", () => {
         const connections2: ConnectionGene[] = [];
         connections2.push(connection2);
 
-        const chromosome1 = new NeatChromosome(nodes, connections1, mutation, crossover,  'fully');
-        const chromosome2 = new NeatChromosome(nodes, connections2, mutation, crossover,  'fully');
+        const chromosome1 = new NeatChromosome(nodes, connections1, mutation, crossover, 'fully');
+        const chromosome2 = new NeatChromosome(nodes, connections2, mutation, crossover, 'fully');
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(0.3 * 0.5);
     });
@@ -299,4 +313,26 @@ describe("Test NeatPopulation", () => {
         expect(compatDistance).toBe(Number.MAX_SAFE_INTEGER);
     });
 
+    test("Clone population", () => {
+        population.populationChampion = population.networks[0];
+        const clone = population.clone();
+        expect(clone.speciesCount).toBe(population.speciesCount);
+        expect(clone.bestFitness).toBe(population.bestFitness);
+        expect(clone.highestFitnessLastChanged).toBe(population.highestFitnessLastChanged);
+        expect(clone.averageFitness).toBe(population.averageFitness);
+        expect(clone.generation).toBe(population.generation);
+        expect(clone.populationChampion.uID).toBe(population.populationChampion.uID);
+        expect(clone.networks.length).toBe(population.networks.length);
+        expect(clone.species.length).toBe(population.species.length);
+    });
+
+    test("toJSON", () => {
+        population.updatePopulationStatistics();
+        population.evolve();
+        const json = population.toJSON();
+        expect(json['aF']).toBe(Number(population.averageFitness.toFixed(4)));
+        expect(json['bF']).toBe(Number(population.bestFitness.toFixed(4)));
+        expect(json['PC']).toBe(population.populationChampion.uID);
+        expect(Object.keys(json).length).toBe(3 + population.species.length);
+    });
 });

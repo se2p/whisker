@@ -5,7 +5,6 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
-import {Innovation, InnovationType} from "../NetworkComponents/Innovation";
 import {Container} from "../../utils/Container";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
@@ -136,7 +135,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
         this.generation++;
 
-        if (this.networks.length != this.hyperParameter.populationSize) {
+        // If we have big differences in fitness values across species, we might get small over-populations that expand.
+        if (this.networks.length > this.hyperParameter.populationSize) {
             Container.debugLog(`The population size has changed from ${this.hyperParameter.populationSize} to
             ${this.networks.length} members.`);
             while (this.networks.length > this.hyperParameter.populationSize) {
@@ -265,11 +265,12 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                     // The other species are terminated.
                     else {
                         specie.expectedOffspring = 0;
+                        Arrays.clear(specie.networks);
                     }
                 }
             }
 
-            //TODO: Babies Stolen
+            // TODO: Babies Stolen
         }
     }
 
@@ -490,9 +491,9 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      */
     public toJSON(): Record<string, (number | Species<NeatChromosome>)> {
         const population = {};
-        population[`aF`] = Number(this.averageFitness.toFixed(4));
-        population[`bF`] = Number(this.bestFitness.toFixed(4));
-        population[`PC`] = this.populationChampion.uID;
+        population['aF'] = Number(this.averageFitness.toFixed(4));
+        population['bF'] = Number(this.bestFitness.toFixed(4));
+        population['PC'] = this.populationChampion.uID;
         for (let i = 0; i < this.species.length; i++) {
             population[`S ${i}`] = this.species[i].toJSON();
         }
@@ -524,3 +525,28 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         return this._numberOfSpeciesTargeted;
     }
 }
+
+export type Innovation  = AddConnectionInnovation | AddNodeSplitConnectionInnovation;
+
+export interface AddConnectionInnovation {
+    type: 'addConnection';
+    idSourceNode: number;
+    idTargetNode: number;
+    innovationNumber: number;
+    recurrent: boolean
+}
+
+export interface AddNodeSplitConnectionInnovation {
+    type: 'addNodeSplitConnection';
+    idSourceNode: number;
+    idTargetNode: number;
+    firstInnovationNumber: number;
+    secondInnovationNumber: number
+    idNewNode: number
+    splitInnovation: number
+}
+
+export type InnovationType =
+    | 'addConnection'
+    | 'addNodeSplitConnection'
+    ;

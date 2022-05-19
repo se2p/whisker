@@ -57,9 +57,6 @@ describe("classificationNode Tests", () => {
         const classificationNode4 = new ClassificationNode(1, new ClickStageEvent(), ActivationFunction.SIGMOID);
         expect(classificationNode4.equals(classificationNode)).toBeFalsy();
 
-        const classificationNode5 = new ClassificationNode(1, new WaitEvent, ActivationFunction.NONE);
-        expect(classificationNode5.equals(classificationNode)).toBeFalsy();
-
         const biasNode = new BiasNode(1);
         expect(biasNode.equals(classificationNode)).toBe(false);
     });
@@ -83,13 +80,26 @@ describe("classificationNode Tests", () => {
 
         const classificationNode2 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.NONE);
         classificationNode2.nodeValue = 5;
-        classificationNode2.activationCount = 10;
         classificationNode2.activatedFlag = true;
         expect(classificationNode2.activate()).toBe(5);
         expect(classificationNode2.activationValue).toBe(5);
         classificationNode2.reset();
         expect(classificationNode2.activate()).toBe(0);
         expect(classificationNode2.activationValue).toBe(0);
+
+        const classificationNode3 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.TANH);
+        classificationNode3.nodeValue = -1;
+        classificationNode3.activatedFlag = true;
+        const tanhResult = Math.tanh(-1);
+        expect(classificationNode3.activate()).toBe(tanhResult);
+        expect(classificationNode3.activationValue).toBe(tanhResult);
+        classificationNode3.reset();
+        expect(classificationNode3.activate()).toBe(0);
+        expect(classificationNode3.activationValue).toBe(0);
+    });
+
+    test("Identifier", () =>{
+        expect(classificationNode.identifier()).toBe("C:WaitEvent");
     });
 
     test("toString Test", () => {
@@ -99,5 +109,14 @@ describe("classificationNode Tests", () => {
             `ClassificationNode{ID: 1\
 , Value: 0\
 , InputConnections: ${[]}`);
+    });
+
+    test("toJSON", () => {
+        const json = classificationNode.toJSON();
+        expect(json['t']).toBe("C");
+        expect(json['id']).toBe(classificationNode.uID);
+        expect(json['aF']).toBe(ActivationFunction[classificationNode.activationFunction]);
+        expect(json['event']).toBe("WaitEvent");
+        expect(Object.keys(json).length).toBe(4);
     });
 });

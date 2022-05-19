@@ -27,15 +27,9 @@ export class InputNode extends NodeGene {
         this._feature = feature;
     }
 
-    depth(d: number): number {
-        return d;
-    }
-
     equals(other: unknown): boolean {
         if (!(other instanceof InputNode)) return false;
-        return this.activationFunction === other.activationFunction &&
-            this.sprite === other.sprite &&
-            this.feature === other.feature;
+        return this.sprite === other.sprite && this.feature === other.feature;
     }
 
     clone(): InputNode {
@@ -54,14 +48,16 @@ export class InputNode extends NodeGene {
      * @returns number activation value of the input node.
      */
     activate(): number {
-        {
-            this.activationValue = this.nodeValue;
-            return this.activationValue;
-        }
+        this.activationValue = this.nodeValue;
+        return this.activationValue;
     }
 
+    /**
+     * Input nodes are identified by their type and the represented input feature.
+     * @returns identifier based on the node type and represented input feature.
+     */
     public identifier(): string {
-        return `I:${this.sprite}-${this.feature}`
+        return `I:${this.sprite}-${this.feature}`;
     }
 
     toString(): string {

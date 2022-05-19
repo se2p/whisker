@@ -29,11 +29,14 @@ export class RegressionNode extends NodeGene {
         this._eventParameter = eventParameter;
     }
 
+    /**
+     * Two regression nodes are equal if they represent the same parameter of an output event.
+     * @param other the node to compare this node to.
+     */
     equals(other: unknown): boolean {
         if (!(other instanceof RegressionNode)) return false;
         return this.event.stringIdentifier() === other.event.stringIdentifier()
-            && this.eventParameter === other.eventParameter
-            && this.activationFunction === other.activationFunction;
+            && this.eventParameter === other.eventParameter;
     }
 
     clone(): RegressionNode {
@@ -75,6 +78,10 @@ export class RegressionNode extends NodeGene {
         return this._event;
     }
 
+    /**
+     * Regression nodes are identified by their type and represented event parameter.
+     * @returns identifier based on the node type and represented event parameter.
+     */
     public identifier(): string {
         return `R:${this.event.stringIdentifier()}-${this.eventParameter}`;
     }
@@ -94,10 +101,10 @@ export class RegressionNode extends NodeGene {
      */
     public toJSON(): Record<string, (number | string)> {
         const node = {};
-        node[`id`] = this.uID;
-        node[`t`] = "R";
-        node[`aF`] = ActivationFunction[this.activationFunction];
-        node[`event`] = this._event.stringIdentifier();
+        node['id'] = this.uID;
+        node['t'] = "R";
+        node['aF'] = ActivationFunction[this.activationFunction];
+        node['event'] = this._event.stringIdentifier();
         node['eventP'] = this._eventParameter;
         return node;
     }

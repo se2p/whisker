@@ -22,10 +22,13 @@ export class ClassificationNode extends NodeGene {
         this._event = event;
     }
 
+    /**
+     * Two classification nodes are equal if they represent the same output event.
+     * @param other the node to compare this node to.
+     */
     equals(other: unknown): boolean {
         if (!(other instanceof ClassificationNode)) return false;
-        return this.event.stringIdentifier() === other.event.stringIdentifier() &&
-            this.activationFunction === other.activationFunction;
+        return this.event.stringIdentifier() === other.event.stringIdentifier();
     }
 
     clone(): ClassificationNode {
@@ -62,6 +65,10 @@ export class ClassificationNode extends NodeGene {
             return 0.0;
     }
 
+    /**
+     * Classification nodes are identified by their type and represented event.
+     * @returns identifier based on the node type and represented event.
+     */
     public identifier(): string {
         return `C:${this.event.stringIdentifier()}`;
     }
@@ -78,10 +85,10 @@ export class ClassificationNode extends NodeGene {
      */
     public toJSON(): Record<string, (number | string)> {
         const node = {};
-        node[`id`] = this.uID;
-        node[`t`] = "C";
-        node[`aF`] = ActivationFunction[this.activationFunction];
-        node[`event`] = this.event.stringIdentifier();
+        node['id'] = this.uID;
+        node['t'] = "C";
+        node['aF'] = ActivationFunction[this.activationFunction];
+        node['event'] = this.event.stringIdentifier();
         return node;
     }
 

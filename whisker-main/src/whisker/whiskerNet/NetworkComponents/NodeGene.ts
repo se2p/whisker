@@ -82,7 +82,7 @@ export abstract class NodeGene {
     public abstract activate(): number
 
     /**
-     * Resets the node.
+     * Resets the node's attributes.
      */
     public reset(): void {
         this.activationCount = 0;
@@ -93,29 +93,27 @@ export abstract class NodeGene {
         this.traversed = false;
     }
 
-    public depth(d: number): number {
-        // Recurrency will end up in an endless loop, in this case we assume a depth of 10
-        if (d > 100) {
-            return 10;
-        }
-
-        let currentDepth: number;
-        let maxDepth = d;
-        // Recursively traverse each incoming connection to find the maximum depth.
-        for (const connection of this.incomingConnections) {
-            const inNode = connection.source;
-            currentDepth = inNode.depth(d + 1);
-            if (currentDepth > maxDepth) {
-                maxDepth = currentDepth;
-            }
-        }
-        return maxDepth;
-    }
-
+    /**
+     * Deep equality function. Generally two nodes are equal if they represent the same entity, e.g. for input nodes
+     * the same input feature.
+     * @param other the node to compare this node to.
+     * @returns true iff both nodes are equal.
+     */
     public abstract equals(other: unknown): boolean
 
+    /**
+     * Clones the given node
+     * @returns clone of this node.
+     */
     public abstract clone(): NodeGene
 
+    /**
+     * Assigns a string identifier to the node. This identifier is different from the uID in the sense that it
+     * includes the node type and other crucial attributes. Therefore, we can identify some node types with equal
+     * purposes across networks, regardless of their assigned uID which is primarily dependent on the time of
+     * occurrence.
+     * @returns identifier including the node type and its most important attributes.
+     */
     public abstract identifier(): string;
 
     public abstract toString(): string

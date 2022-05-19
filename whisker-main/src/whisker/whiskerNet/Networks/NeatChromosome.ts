@@ -5,8 +5,7 @@ import {InputConnectionMethod, NetworkChromosome} from "./NetworkChromosome";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
-import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {AddConnectionInnovation, AddNodeSplitConnectionInnovation} from "../NetworkComponents/Innovation";
+import {AddConnectionInnovation, AddNodeSplitConnectionInnovation, NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {BiasNode} from "../NetworkComponents/BiasNode";
@@ -78,26 +77,32 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
-     * Deep clone of a NeatChromosome's structure. Attributes that are not related to the network's structure
-     * are initialised with default values.
-     * @param incrementID determines whether the ID counter should be incremented during the cloning process.
-     * @returns NeatChromosome the cloned Network with default attribute values.
+     * Deep clone of a network including its structure and attributes. Does not increment the ID-Counter.
+     * @returns NeatChromosome the cloned chromosome.
      */
-    public cloneStructure(incrementID: boolean): NeatChromosome {
-        return this.cloneWith(this.connections, incrementID);
-    }
-
-    /**
-     * Clones the network during the test execution process.
-     */
-    public cloneAsTestCase(): NeatChromosome {
+    clone(): NeatChromosome {
         const clone = this.cloneStructure(false);
         clone.uID = this.uID;
+        clone.trace = this.trace;
+        clone.coverage = this.coverage;
+        clone.fitness = this.fitness;
+        clone.sharedFitness = this.sharedFitness;
+        clone.targetFitness = this.targetFitness;
+        clone.openStatementTargets = this.openStatementTargets;
+        clone.species = this.species;
+        clone.isSpeciesChampion = this.isSpeciesChampion;
+        clone.isPopulationChampion = this.isPopulationChampion;
+        clone.isParent = this.isParent;
+        clone.expectedOffspring = this.expectedOffspring;
         clone.isRecurrent = this.isRecurrent;
         if (this.referenceActivationTrace !== undefined) {
             clone.referenceActivationTrace = this.referenceActivationTrace.clone();
         }
+        if (this.testActivationTrace !== undefined) {
+            clone.testActivationTrace = this.testActivationTrace.clone();
+        }
         clone.referenceUncertainty = new Map<number, number>(this.referenceUncertainty);
+        clone.testUncertainty = new Map<number, number>(this.testUncertainty);
         return clone;
     }
 
@@ -128,32 +133,26 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
-     * Deep clone of a network including its structure and attributes. Does not increment the ID-Counter.
-     * @returns NeatChromosome the cloned chromosome.
+     * Deep clone of a NeatChromosome's structure. Attributes that are not related to the network's structure
+     * are initialised with default values.
+     * @param incrementID determines whether the ID counter should be incremented during the cloning process.
+     * @returns NeatChromosome the cloned Network with default attribute values.
      */
-    clone(): NeatChromosome {
+    public cloneStructure(incrementID: boolean): NeatChromosome {
+        return this.cloneWith(this.connections, incrementID);
+    }
+
+    /**
+     * Clones the network during the test execution process.
+     */
+    public cloneAsTestCase(): NeatChromosome {
         const clone = this.cloneStructure(false);
         clone.uID = this.uID;
-        clone.trace = this.trace;
-        clone.coverage = this.coverage;
-        clone.fitness = this.fitness;
-        clone.sharedFitness = this.sharedFitness;
-        clone.targetFitness = this.targetFitness;
-        clone.openStatementTargets = this.openStatementTargets;
-        clone.species = this.species;
-        clone.isSpeciesChampion = this.isSpeciesChampion;
-        clone.isPopulationChampion = this.isPopulationChampion;
-        clone.isParent = this.isParent;
-        clone.expectedOffspring = this.expectedOffspring;
         clone.isRecurrent = this.isRecurrent;
         if (this.referenceActivationTrace !== undefined) {
             clone.referenceActivationTrace = this.referenceActivationTrace.clone();
         }
-        if (this.testActivationTrace !== undefined) {
-            clone.testActivationTrace = this.testActivationTrace.clone();
-        }
         clone.referenceUncertainty = new Map<number, number>(this.referenceUncertainty);
-        clone.testUncertainty = new Map<number, number>(this.testUncertainty);
         return clone;
     }
 

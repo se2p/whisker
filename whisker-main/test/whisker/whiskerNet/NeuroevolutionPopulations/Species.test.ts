@@ -1,17 +1,17 @@
-import {Species} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
-import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import Arrays from "../../../src/whisker/utils/Arrays";
-import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {Container} from "../../../src/whisker/utils/Container";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
+import {Species} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
+import {Randomness} from "../../../../src/whisker/utils/Randomness";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
+import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
+import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
+import Arrays from "../../../../src/whisker/utils/Arrays";
+import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {Container} from "../../../../src/whisker/utils/Container";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 
 describe("Species Test", () => {
 

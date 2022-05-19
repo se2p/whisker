@@ -1,15 +1,15 @@
-import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {ConnectionGene} from "../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
-import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
-import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
-import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
-import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {Container} from "../../../src/whisker/utils/Container";
+import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
+import {Container} from "../../../../src/whisker/utils/Container";
 
 describe("Test NeatCrossover", () => {
 

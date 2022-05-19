@@ -51,15 +51,23 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {
+    BiasedVariableLengthConstrainedChromosomeMutation
+} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {BasicNeuroevolutionParameter, NeuroevolutionEventSelection} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
+import {
+    NeuroevolutionTestGenerationParameter
+} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {
+    BasicNeuroevolutionParameter,
+    NeuroevolutionEventSelection
+} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {ExplorativeNeatParameter} from "../whiskerNet/HyperParameter/ExplorativeNeatParameter";
 
 
 class ConfigException implements Error {
@@ -166,8 +174,12 @@ export class WhiskerSearchConfiguration {
     }
 
     public setNeuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
-        const properties = new NeuroevolutionTestGenerationParameter();
-
+        let properties: NeuroevolutionTestGenerationParameter | ExplorativeNeatParameter;
+        if (this.getAlgorithm() === 'neat') {
+            properties = new NeuroevolutionTestGenerationParameter();
+        } else {
+            properties = new ExplorativeNeatParameter();
+        }
         const populationSize = this._config['populationSize'] as number;
         const parentsPerSpecies = this._config['parentsPerSpecies'] as number;
         const numberOfSpecies = this._config['numberOfSpecies'] as number;
@@ -218,7 +230,6 @@ export class WhiskerSearchConfiguration {
 
         properties.crossoverWithoutMutation = crossoverWithoutMutation;
         properties.interspeciesMating = interspeciesMating;
-        properties.crossoverWeightAverageRate = crossoverWeightAverageRate;
 
         properties.mutationWithoutCrossover = mutationWithoutCrossover;
         properties.mutationAddConnection = mutationAddConnection;
@@ -240,11 +251,14 @@ export class WhiskerSearchConfiguration {
         properties.weightCoefficient = weightCoefficient;
 
         properties.eventSelection = this.getNeuroevolutionEventSelection();
-        properties.coverageStableCount = coverageStableCount;
         properties.timeout = timeout;
         properties.activationTraceRepetitions = activationTraceRepetitions;
         properties.printPopulationRecord = doPrintPopulationRecord;
-        properties.switchTargetCount = switchTargetCount;
+
+        if (properties instanceof ExplorativeNeatParameter) {
+            properties.coverageStableCount = coverageStableCount;
+            properties.switchTargetCount = switchTargetCount;
+        }
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
         properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']);
@@ -641,9 +655,10 @@ export class WhiskerSearchConfiguration {
     }
 
     public getNeuroevolutionEventSelection(): NeuroevolutionEventSelection {
-        if ("eventSelection" in this._config){
+        if ("eventSelection" in this._config) {
             switch (this._config['eventSelection']) {
-                case 'random': return 'random';
+                case 'random':
+                    return 'random';
                 case 'activation':
                 default:
                     return 'activation';

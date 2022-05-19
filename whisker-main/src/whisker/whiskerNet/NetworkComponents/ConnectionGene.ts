@@ -27,11 +27,6 @@ export class ConnectionGene {
     private _innovation: number;
 
     /**
-     * Marks time delayed connections.
-     */
-    private _timeDelay: boolean;
-
-    /**
      * Defines whether the connection is a recurrent connection.
      */
     private readonly _isRecurrent: boolean;
@@ -57,7 +52,6 @@ export class ConnectionGene {
         this._isEnabled = enabled;
         this._innovation = innovation;
         this._isRecurrent = recurrent;
-        this._timeDelay = false;
     }
 
     /**
@@ -103,12 +97,12 @@ export class ConnectionGene {
      */
     public toJSON(): Record<string, (number | boolean)> {
         const connection = {};
-        connection[`s`] = this.source.uID;
-        connection[`t`] = this.target.uID;
-        connection[`w`] = Number(this.weight.toFixed(5));
-        connection[`e`] = this.isEnabled;
-        connection[`i`] = this.innovation;
-        connection[`r`] = this.isRecurrent;
+        connection['s'] = this.source.uID;
+        connection['t'] = this.target.uID;
+        connection['w'] = Number(this.weight.toFixed(5));
+        connection['e'] = this.isEnabled;
+        connection['i'] = this.innovation;
+        connection['r'] = this.isRecurrent;
         return connection;
     }
 
@@ -142,14 +136,6 @@ export class ConnectionGene {
 
     set innovation(innovation: number) {
         this._innovation = innovation;
-    }
-
-    get timeDelay(): boolean {
-        return this._timeDelay;
-    }
-
-    set timeDelay(value: boolean) {
-        this._timeDelay = value;
     }
 
     get isRecurrent(): boolean {

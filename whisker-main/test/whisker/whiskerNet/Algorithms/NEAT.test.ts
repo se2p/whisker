@@ -17,6 +17,9 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComp
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
+import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
+import {StatementFitnessFunction} from "../../../../src/whisker/testcase/fitness/StatementFitnessFunction";
+import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 
 
 describe('Test NEAT', () => {
@@ -98,31 +101,6 @@ describe('Test NEAT', () => {
         };
 
         properties.stoppingCondition = new FixedIterationsStoppingCondition(iterations);
-        properties.timeout = 25000;
-        properties.numberOfSpecies = 5;
-        properties.parentsPerSpecies = 0.20;
-        properties.penalizingAge = 20;
-        properties.ageSignificance = 1.0;
-        properties.inputRate = 0.3;
-        properties.interspeciesMating = 0.001;
-        properties.crossoverWithoutMutation = 0.2;
-        properties.mutationWithoutCrossover = 0.25;
-        properties.mutationAddConnection = 0.05;
-        properties.recurrentConnection = 0.1;
-        properties.addConnectionTries = 50;
-        properties.populationChampionNumberOffspring = 3;
-        properties.populationChampionNumberClones = 1;
-        properties.populationChampionConnectionMutation = 0.3;
-        properties.mutationAddNode = 0.03;
-        properties.mutateWeights = 0.6;
-        properties.perturbationPower = 1;
-        properties.mutateToggleEnableConnection = 0.1;
-        properties.toggleEnableConnectionTimes = 3;
-        properties.mutateEnableConnection = 0.1;
-        properties.compatibilityDistanceThreshold = 3.0;
-        properties.disjointCoefficient = 1;
-        properties.excessCoefficient = 1;
-        properties.weightCoefficient = 0.4;
         searchAlgorithm = builder.addProperties(properties as unknown as SearchAlgorithmProperties<Chromosome>)
             .addChromosomeGenerator(generator).initializeFitnessFunction(FitnessFunctionType.STATEMENT, null, null)
             .buildSearchAlgorithm();

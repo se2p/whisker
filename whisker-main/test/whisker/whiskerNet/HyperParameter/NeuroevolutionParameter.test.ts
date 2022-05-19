@@ -1,10 +1,11 @@
-import {OptimalSolutionStoppingCondition} from "../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {NeuroevolutionTestGenerationParameter} from "../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {ExplorativeNeatParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/ExplorativeNeatParameter";
 
 describe("Test NeatProperties", () => {
 
     test("Test Getter and Setter", () => {
-        const properties = new NeuroevolutionTestGenerationParameter();
+        const properties = new ExplorativeNeatParameter();
         properties.populationSize = 50;
         properties.parentsPerSpecies = 0.3;
         properties.penalizingAge = 30;
@@ -30,6 +31,15 @@ describe("Test NeatProperties", () => {
         properties.stoppingCondition = new OptimalSolutionStoppingCondition();
         properties.networkFitness = null;
         properties.timeout = 20000;
+        properties.eventSelection = 'activation';
+        properties.numberOfSpecies = 10;
+        properties.activationFunction = ActivationFunction.TANH;
+        properties.populationChampionNumberOffspring = 3;
+        properties.populationChampionNumberClones = 1;
+        properties.activationTraceRepetitions = 100;
+        properties.switchTargetCount = 5;
+        properties.coverageStableCount = 10;
+        properties.printPopulationRecord = false;
 
         expect(properties.populationSize).toBe(50);
         expect(properties.parentsPerSpecies).toBe(0.3);
@@ -56,5 +66,14 @@ describe("Test NeatProperties", () => {
         expect(properties.stoppingCondition).toBeInstanceOf(OptimalSolutionStoppingCondition);
         expect(properties.networkFitness).toBe(null);
         expect(properties.timeout).toBe(20000);
+        expect(properties.eventSelection).toBe('activation');
+        expect(properties.numberOfSpecies).toBe(10);
+        expect(properties.activationFunction).toBe(ActivationFunction.TANH);
+        expect(properties.populationChampionNumberOffspring).toBe(3);
+        expect(properties.populationChampionNumberClones).toBe(1);
+        expect(properties.activationTraceRepetitions).toBe(100);
+        expect(properties.switchTargetCount).toBe(5);
+        expect(properties.coverageStableCount).toBe(10);
+        expect(properties.printPopulationRecord).toBeFalsy();
     });
 });

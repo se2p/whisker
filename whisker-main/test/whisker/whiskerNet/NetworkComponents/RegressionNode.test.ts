@@ -18,7 +18,6 @@ describe("regressionNode Tests", () => {
     });
 
     test("Constructor Test", () => {
-
         const regressionNode = new RegressionNode(10, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode.uID).toBe(10);
         expect(regressionNode.activationFunction).toBe(ActivationFunction.NONE);
@@ -61,9 +60,6 @@ describe("regressionNode Tests", () => {
 
         const regressionNode5 = new RegressionNode(2, new WaitEvent, "Steps", ActivationFunction.NONE);
         expect(regressionNode5.equals(regressionNodeNone)).toBeFalsy();
-
-        const regressionNode6 = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.RELU);
-        expect(regressionNode6.equals(regressionNodeNone)).toBeFalsy();
 
         const biasNode = new BiasNode(1);
         expect(regressionNodeNone.equals(biasNode)).toBeFalsy();
@@ -108,6 +104,10 @@ describe("regressionNode Tests", () => {
         expect(regressionNodeNone.event).toBeInstanceOf(WaitEvent);
     });
 
+    test("Identifier", () =>{
+        expect(regressionNodeRelu.identifier()).toBe("R:WaitEvent-Duration");
+    });
+
     test("toString Test", () => {
         const inputNode = new InputNode(2, "Sprite1", "Position-X");
         const connection = new ConnectionGene(inputNode, regressionNodeNone, 2, true, 1, false);
@@ -122,5 +122,15 @@ describe("regressionNode Tests", () => {
 , InputConnections: ${connection.toString()}\
 , Event: WaitEvent\
 , Parameter Duration}`);
+    });
+
+    test("toJSON", () => {
+        const json = regressionNodeNone.toJSON();
+        expect(json['t']).toBe("R");
+        expect(json['id']).toBe(regressionNodeNone.uID);
+        expect(json['aF']).toBe(ActivationFunction[regressionNodeNone.activationFunction]);
+        expect(json['event']).toBe("WaitEvent");
+        expect(json['eventP']).toBe("Duration");
+        expect(Object.keys(json).length).toBe(5);
     });
 });

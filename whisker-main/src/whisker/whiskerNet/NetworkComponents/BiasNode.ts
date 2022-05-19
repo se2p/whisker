@@ -17,10 +17,10 @@ export class BiasNode extends NodeGene {
         this.activationCount = 1;
     }
 
-    depth(d: number): number {
-        return d;
-    }
-
+    /**
+     * Bias nodes are compared based on their identifier. However, no network should contain more than one bias node.
+     * @param other the node to compare this node to.
+     */
     equals(other: unknown): boolean {
         if (!(other instanceof BiasNode)) return false;
         return this.uID === other.uID;
@@ -45,6 +45,9 @@ export class BiasNode extends NodeGene {
         return 1;
     }
 
+    /**
+     * The BiasNode node emits a constant value of 1.
+     */
     public reset(): void {
         this.nodeValue = 1;
         this.activationValue = 1;
@@ -53,6 +56,10 @@ export class BiasNode extends NodeGene {
         this.activatedFlag = true;
     }
 
+    /**
+     * Since we should only have one single bias node in each network, the node type is sufficient as identifier.
+     * @returns identifier based on the node type.
+     */
     public identifier(): string {
         return `B`;
     }
@@ -65,9 +72,9 @@ export class BiasNode extends NodeGene {
 
     public toJSON(): Record<string, (number | string)> {
         const node = {};
-        node[`id`] = this.uID;
-        node[`t`] = "B";
-        node[`aF`] = ActivationFunction[this.activationFunction];
+        node['id'] = this.uID;
+        node['t'] = "B";
+        node['aF'] = ActivationFunction[this.activationFunction];
         return node;
     }
 }

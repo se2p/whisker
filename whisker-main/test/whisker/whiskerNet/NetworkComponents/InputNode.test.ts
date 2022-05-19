@@ -75,6 +75,10 @@ describe("InputNode Tests", () => {
         expect(inputNode.activationValue).toEqual(10);
     });
 
+    test("Identifier", () =>{
+        expect(inputNode.identifier()).toBe("I:Sprite1-X-Position");
+    });
+
     test("toString Test", () => {
         inputNode.activationValue = 0;
         const out = inputNode.toString();
@@ -83,5 +87,15 @@ describe("InputNode Tests", () => {
 , InputConnections: ${[]}\
 , Sprite: Sprite1\
 , Feature: X-Position}`);
+    });
+
+    test("toJSON", () => {
+        const json = inputNode.toJSON();
+        expect(json['t']).toBe("I");
+        expect(json['id']).toBe(inputNode.uID);
+        expect(json['aF']).toBe(ActivationFunction[inputNode.activationFunction]);
+        expect(json['sprite']).toBe("Sprite1");
+        expect(json['feature']).toBe("X-Position");
+        expect(Object.keys(json).length).toBe(5);
     });
 });

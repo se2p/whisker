@@ -39,7 +39,7 @@ export class NetworkLoader {
      * @param scratchStatements the extracted statements of a Scratch project.
      */
     constructor(networkSuite: Record<string, (number | string | Record<string, (number | string)>)>,
-                scratchEvents: ScratchEvent[], scratchStatements?: StatementFitnessFunction[]) {
+                scratchEvents: ScratchEvent[], scratchStatements: StatementFitnessFunction[] = []) {
         this._networkSuite = networkSuite;
         this._scratchEvents = scratchEvents;
         this._scratchStatements = scratchStatements;
@@ -132,9 +132,9 @@ export class NetworkLoader {
      * @param network the network into which the trace will we loaded
      * @param savedTrace the trace that should be loaded into the network.
      */
-    public static loadActivationTrace(network: NeatChromosome,
+    private static loadActivationTrace(network: NeatChromosome,
                                       savedTrace: Record<string, Record<string, number[]>>): void {
-        network.referenceActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
+        network.referenceActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.HIDDEN));
         for (const [step, nodeTraces] of Object.entries(savedTrace)) {
             const nodeStepTraces = new Map<string, number[]>();
             for (const [nodeId, activationValues] of Object.entries(nodeTraces)) {

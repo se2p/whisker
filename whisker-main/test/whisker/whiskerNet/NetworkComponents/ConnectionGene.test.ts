@@ -1,9 +1,9 @@
-import {ConnectionGene} from "../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
-import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
-import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
-import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 
 describe("ConnectionGene Test", () => {
 
@@ -78,5 +78,16 @@ describe("ConnectionGene Test", () => {
 , Recurrent: false\
 , InnovationNumber: ${(ConnectionGene.getNextInnovationNumber() - 1)}}`;
         expect(connection.toString()).toContain(expected);
+    });
+
+    test("toJSON", () => {
+        const json = connection.toJSON();
+        connection['s'] = connection.source.uID;
+        connection['t'] = connection.target.uID;
+        connection['w'] = Number(connection.weight.toFixed(5));
+        connection['e'] = connection.isEnabled;
+        connection['i'] = connection.innovation;
+        connection['r'] = connection.isRecurrent;
+        expect(Object.keys(json).length).toBe(6);
     });
 });

@@ -2,7 +2,6 @@ import {NEAT} from "./NEAT";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {SearchAlgorithmProperties} from "../../search/SearchAlgorithmProperties";
-import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {TargetStatementPopulation} from "../NeuroevolutionPopulations/TargetStatementPopulation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
@@ -11,6 +10,7 @@ import {Randomness} from "../../utils/Randomness";
 import {OneOfStoppingCondition} from "../../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {Container} from "../../utils/Container";
+import {ExplorativeNeatParameter} from "../HyperParameter/ExplorativeNeatParameter";
 
 export class ExplorativeNEAT extends NEAT {
 
@@ -391,7 +391,7 @@ export class ExplorativeNEAT extends NEAT {
      * @param properties the user-defined hyperparameter.
      */
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
-        this._neuroevolutionProperties = properties as unknown as NeuroevolutionTestGenerationParameter;
+        this._neuroevolutionProperties = properties as unknown as ExplorativeNeatParameter;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         if (this._stoppingCondition instanceof OneOfStoppingCondition) {
             for (const condition of this._stoppingCondition.conditions) {
