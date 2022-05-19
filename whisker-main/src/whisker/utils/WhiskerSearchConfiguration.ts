@@ -51,23 +51,16 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {
-    BiasedVariableLengthConstrainedChromosomeMutation
-} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {
-    NeuroevolutionTestGenerationParameter
-} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {
-    BasicNeuroevolutionParameter,
-    NeuroevolutionEventSelection
-} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
+import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {BasicNeuroevolutionParameter, NeuroevolutionEventSelection} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {ExplorativeNeatParameter} from "../whiskerNet/HyperParameter/ExplorativeNeatParameter";
+import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
 
 
 class ConfigException implements Error {
@@ -88,7 +81,7 @@ export class WhiskerSearchConfiguration {
             this._properties = this.setDynamicSuiteParameter();
             Container.isNeuroevolution = true;
         } else if (this.getAlgorithm() === 'neat' ||
-            this.getAlgorithm() === 'e-neat') {
+            this.getAlgorithm() === 'neatest') {
             this._properties = this.setNeuroevolutionProperties();
             Container.isNeuroevolution = true;
         } else {
@@ -174,11 +167,11 @@ export class WhiskerSearchConfiguration {
     }
 
     public setNeuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
-        let properties: NeuroevolutionTestGenerationParameter | ExplorativeNeatParameter;
+        let properties: NeuroevolutionTestGenerationParameter | NeatestParameter;
         if (this.getAlgorithm() === 'neat') {
             properties = new NeuroevolutionTestGenerationParameter();
         } else {
-            properties = new ExplorativeNeatParameter();
+            properties = new NeatestParameter();
         }
         const populationSize = this._config['populationSize'] as number;
         const parentsPerSpecies = this._config['parentsPerSpecies'] as number;
@@ -190,7 +183,6 @@ export class WhiskerSearchConfiguration {
 
         const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number;
         const interspeciesMating = this._config['crossover']['interspeciesRate'] as number;
-        const crossoverWeightAverageRate = this._config['crossover']['weightAverageRate'] as number;
 
         const mutationWithoutCrossover = this._config['mutation']['mutationWithoutCrossover'] as number;
         const mutationAddConnection = this._config['mutation']['mutationAddConnection'] as number;
@@ -255,7 +247,7 @@ export class WhiskerSearchConfiguration {
         properties.activationTraceRepetitions = activationTraceRepetitions;
         properties.printPopulationRecord = doPrintPopulationRecord;
 
-        if (properties instanceof ExplorativeNeatParameter) {
+        if (properties instanceof NeatestParameter) {
             properties.coverageStableCount = coverageStableCount;
             properties.switchTargetCount = switchTargetCount;
         }

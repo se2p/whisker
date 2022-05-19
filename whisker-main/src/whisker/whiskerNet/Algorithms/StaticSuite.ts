@@ -126,7 +126,9 @@ export class StaticSuite extends NetworkSuite {
                 variableParameter = [];
             } else if (statement.includes('clickCloneByCoords')) {
                 const target = Container.vmWrapper.getTargetBySpriteCoords(Number(parameter[0]), Number(parameter[1]));
-                event = new ClickSpriteEvent(target, 1, Number(parameter[0]), Number(parameter[1]));
+                event = new ClickSpriteEvent(target);
+                (event as ClickSpriteEvent).x = Number(parameter[0]);
+                (event as ClickSpriteEvent).y = Number(parameter[1]);
                 variableParameter = [];
             } else if (statement.includes('clickStage')) {
                 event = new ClickStageEvent();

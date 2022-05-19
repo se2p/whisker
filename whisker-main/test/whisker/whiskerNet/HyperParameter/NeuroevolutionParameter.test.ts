@@ -1,11 +1,11 @@
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {ExplorativeNeatParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/ExplorativeNeatParameter";
+import {NeatestParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatestParameter";
 
 describe("Test NeatProperties", () => {
 
     test("Test Getter and Setter", () => {
-        const properties = new ExplorativeNeatParameter();
+        const properties = new NeatestParameter();
         properties.populationSize = 50;
         properties.parentsPerSpecies = 0.3;
         properties.penalizingAge = 30;

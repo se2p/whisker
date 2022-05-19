@@ -1,9 +1,7 @@
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {
-    NeuroevolutionTestGenerationParameter
-} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
@@ -16,13 +14,11 @@ import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgor
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
-import {
-    FixedIterationsStoppingCondition
-} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
+import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
-describe('Test E-NEAT', () => {
+describe('Test Neatest', () => {
 
     let searchAlgorithm: SearchAlgorithm<Chromosome>;
     let generator: NeatChromosomeGenerator;
@@ -77,7 +73,7 @@ describe('Test E-NEAT', () => {
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
 
-        const builder = new SearchAlgorithmBuilder('e-neat');
+        const builder = new SearchAlgorithmBuilder('neatest');
         const iterations = 20;
         const populationSize = 150;
         const random = Randomness.getInstance();

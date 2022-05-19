@@ -15,6 +15,7 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {Container} from "../../utils/Container";
+import assert from "assert";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -538,6 +539,15 @@ export abstract class NetworkChromosome extends Chromosome {
         }
 
         this.testActivationTrace.update(step, tracedNodes);
+    }
+
+    /**
+     * Returns the number of events this network has executed.
+     * @returns number of executed events.
+     */
+    public getNumEvents(): number {
+        assert(this._trace != null);
+        return this._trace.events.length;
     }
 
     /**

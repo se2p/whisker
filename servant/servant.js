@@ -216,7 +216,7 @@ async function runGeneticSearch (browser, downloadPath) {
         // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-            if (currentLog.includes('uncovered')) {
+            if (currentLog.includes('uncovered') || currentLog.includes('empty project')) {
                 break;
             }
             await page.waitForTimeout(1000);

@@ -1,6 +1,6 @@
 import {NeuroevolutionTestGenerationParameter} from "./NeuroevolutionTestGenerationParameter";
 
-export class ExplorativeNeatParameter extends NeuroevolutionTestGenerationParameter {
+export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     /**
      * Number of generations without improvement after which the explorative NEAT algorithm changes his currently
      * selected target statement.

@@ -16,6 +16,8 @@ import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
+    private static CLONE_THRESHOLD = 3;
+
     constructor(vm: VirtualMachine) {
         super(vm);
     }
@@ -112,7 +114,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
                 // Only add the event if the mouse is currently not pressed
-                if(!isMouseDown) {
+                if (!isMouseDown) {
                     eventList.push(new MouseDownEvent());
                 }
                 break;
@@ -125,8 +127,23 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                if (target.visible === true) {
+                if (target.visible && target.isOriginal) {
                     eventList.push(new ClickSpriteEvent(target));
+                }
+
+                // Do not allow too many clones to avoid an explosion of output nodes.
+                else if (target.visible) {
+                    const spriteName = target.sprite.name;
+                    if (!this.currentClickClones.has(spriteName) ||
+                        this.currentClickClones.get(spriteName) < NeuroevolutionScratchEventExtractor.CLONE_THRESHOLD) {
+                        if (!this.currentClickClones.has(spriteName)) {
+                            this.currentClickClones.set(spriteName, 0);
+                        }
+                        this.currentClickClones.set(spriteName, this.currentClickClones.get(spriteName) + 1);
+                        const steps = Container.config.getClickDuration();
+                        const cloneNumber = this.currentClickClones.get(spriteName);
+                        eventList.push(new ClickSpriteEvent(target, steps, cloneNumber));
+                    }
                 }
                 break;
             case 'event_whenstageclicked':

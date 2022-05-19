@@ -43,7 +43,7 @@ import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "../whiskerNet/Algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
-import {ExplorativeNEAT} from "../whiskerNet/Algorithms/ExplorativeNEAT";
+import {Neatest} from "../whiskerNet/Algorithms/Neatest";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -229,8 +229,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case "neat":
                 searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>;
                 break;
-            case "e-neat":
-                searchAlgorithm = this._buildExplorativeNEAT();
+            case "neatest":
+                searchAlgorithm = this._buildNeatest();
                 break;
             case "random":
             default:
@@ -322,8 +322,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * A helper method that builds the 'explorativeNEAT' Neuroevolution search algorithm with all necessary properties.
      */
-    private _buildExplorativeNEAT() {
-        const searchAlgorithm: SearchAlgorithm<C> = new ExplorativeNEAT() as unknown as SearchAlgorithm<C>;
+    private _buildNeatest() {
+        const searchAlgorithm: SearchAlgorithm<C> = new Neatest() as unknown as SearchAlgorithm<C>;
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         return searchAlgorithm;
     }

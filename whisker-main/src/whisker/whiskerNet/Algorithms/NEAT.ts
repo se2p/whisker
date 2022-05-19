@@ -8,14 +8,14 @@ import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {Container} from "../../utils/Container";
-import {ExplorativeNeatParameter} from "../HyperParameter/ExplorativeNeatParameter";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
     /**
      * The search parameters.
      */
-    protected _neuroevolutionProperties: ExplorativeNeatParameter;
+    protected _neuroevolutionProperties: NeuroevolutionTestGenerationParameter;
 
     /**
      * The fitnessFunction used to evaluate the networks of Neuroevolution Algorithm.
@@ -160,7 +160,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
-        this._neuroevolutionProperties = properties as unknown as ExplorativeNeatParameter;
+        this._neuroevolutionProperties = properties as unknown as NeuroevolutionTestGenerationParameter;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }

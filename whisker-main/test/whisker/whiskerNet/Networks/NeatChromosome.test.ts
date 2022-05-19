@@ -23,6 +23,7 @@ import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/Net
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {ActivationTrace} from "../../../../src/whisker/whiskerNet/Misc/ActivationTrace";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
+import {EventAndParameters, ExecutionTrace} from "../../../../src/whisker/testcase/ExecutionTrace";
 
 describe('Test NetworkChromosome', () => {
     let mutationOp: NeatMutation;
@@ -694,6 +695,16 @@ describe('Test NetworkChromosome', () => {
         const step = 2;
         chromosome.updateActivationTrace(step);
         expect(chromosome.testActivationTrace.tracedNodes.length).toEqual(numberHiddenNodes);
+    });
+
+    test("Get number of executed events", () => {
+        const eventAndParams = [
+            new EventAndParameters(new WaitEvent(), [1]),
+            new EventAndParameters(new KeyPressEvent("Right Arrow"), [])
+        ];
+        const executionTrace = new ExecutionTrace(undefined, eventAndParams);
+        chromosome.trace = executionTrace;
+        expect(chromosome.getNumEvents()).toEqual(2);
     });
 
     test("toJSON", () =>{

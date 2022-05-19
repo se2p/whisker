@@ -28,5 +28,5 @@ export type SearchAlgorithmType =
     | 'onePlusOne'
     | 'simpleGA'
     | 'neat'
-    | 'e-neat'
+    | 'neatest'
     ;

@@ -10,9 +10,14 @@ import {Randomness} from "../../utils/Randomness";
 import {OneOfStoppingCondition} from "../../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {Container} from "../../utils/Container";
-import {ExplorativeNeatParameter} from "../HyperParameter/ExplorativeNeatParameter";
+import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 
-export class ExplorativeNEAT extends NEAT {
+export class Neatest extends NEAT {
+
+    /**
+     * The search parameters.
+     */
+    protected _neuroevolutionProperties: NeatestParameter;
 
     /**
      * The population of networks for the current generation.
@@ -30,7 +35,7 @@ export class ExplorativeNEAT extends NEAT {
     private _fitnessFunctionMap: Map<number, StatementFitnessFunction>;
 
     /**
-     * Since iterations in explorative NEAT may stop in the middle of a generation due to covering a targeted
+     * Since iterations in Neatest may stop in the middle of a generation due to covering a targeted
      * statement, we use a second variable that counts the number of executed generations since having selected the
      * current target statement.
      */
@@ -161,7 +166,8 @@ export class ExplorativeNEAT extends NEAT {
 
                 // When switching targets without having covered the previous target, we want to make sure not to
                 // select the same target again.
-                if (this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id) {
+                if (this._targetKey !== undefined &&
+                    this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id) {
                     continue;
                 }
 
@@ -391,7 +397,7 @@ export class ExplorativeNEAT extends NEAT {
      * @param properties the user-defined hyperparameter.
      */
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
-        this._neuroevolutionProperties = properties as unknown as ExplorativeNeatParameter;
+        this._neuroevolutionProperties = properties as unknown as NeatestParameter;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         if (this._stoppingCondition instanceof OneOfStoppingCondition) {
             for (const condition of this._stoppingCondition.conditions) {

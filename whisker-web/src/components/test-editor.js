@@ -68,7 +68,8 @@ module.exports = [
     }
 
     save () {
-        if (this.getValue().includes('Network') && this.getValue().includes('Nodes')) {
+        if ((this.getValue().includes('"Static":') && this.getValue().includes('"Dynamic":')) ||
+            (this.getValue().includes('Network') && this.getValue().includes('Nodes'))) {
             const parsed = JSON.parse(this.getValue());
             const staticBlob = new Blob([parsed.Static], {type: 'application/javascript;charset=utf-8'});
             FileSaver.saveAs(staticBlob, 'static.js');

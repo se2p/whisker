@@ -73,8 +73,9 @@ const loadModelFromString = function (models) {
 };
 
 const loadTestsFromString = async function (string) {
-    // Check for dynamic test suites.
-    if ((`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes'))) {
+    // Check for Neuroevolution TestSuites.
+    if ((`${string}`.includes('"Static":') && `${string}`.includes('"Dynamic":')) ||
+        (`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes'))) {
         const tests = `${string}`;
         Whisker.tests = tests;
         Whisker.testEditor.setValue(string);
@@ -157,8 +158,8 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const projectName = Whisker.projectFileSelect.getName();
         const accelerationFactor = $('#acceleration-value').text();
         const seed = document.getElementById('seed').value;
-        const mutators = document.querySelector('#container').mutators === '' ?
-            ['NONE'] : document.querySelector('#container').mutators.split(', ');
+        const setMutators = document.querySelector('#container').mutators;
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -270,8 +271,8 @@ const runAllTests = async function () {
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
-            const mutators = document.querySelector('#container').mutators === '' ?
-                ['NONE'] : document.querySelector('#container').mutators.split(', ');
+            const setMutators = document.querySelector('#container').mutators;
+            const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();

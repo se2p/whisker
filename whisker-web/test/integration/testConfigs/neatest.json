@@ -1,15 +1,15 @@
 {
     "testGenerator": "neuroevolution",
-    "algorithm": "e-neat",
+    "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 300,
-    "numberOfSpecies": 10,
+    "populationSize": 50,
+    "numberOfSpecies": 2,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 15,
+    "penalizingAge": 3,
     "ageSignificance": 1.0,
-    "switchTargetCount": 5,
+    "switchTargetCount": 2,
     "extractor": "neuroevolution",
-    "aTRepetitions": 100,
+    "aTRepetitions": 0,
     "chromosome": {
         "type": "neatChromosome",
         "activationFunction": "TANH",
@@ -32,7 +32,7 @@
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
         "mutateWeights": 0.5,
-        "perturbationPower": 1,
+        "perturbationPower": 5,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
@@ -49,25 +49,26 @@
     },
     "networkFitness": {
         "type": "reliableStatement",
-        "timeout": 10000,
-        "stableCount": 10
+        "timeout": 1000,
+        "stableCount": 3
     },
     "stoppingCondition": {
         "type": "combined",
         "conditions": [
             {
-                "type": "optimal"
+                "type": "fixedTime",
+                "duration": 1000000
             },
             {
-                "type": "fixedTime",
-                "duration": 828000000
+                "type": "optimal"
             }
         ]
     },
     "durations": {
         "waitStepUpperBound": 100,
-        "clickDuration": 30,
-        "pressDuration": 30
+        "clickDuration": 3,
+        "pressDuration": 10,
+        "soundDuration": 10
     },
-    "debugLogging": true
+    "debugLogging": false
 }

@@ -29,11 +29,19 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
 
+    // TODO: Maybe also good for SB-Algorithms to avoid explosion of available Events.
+    /**
+     * Number of generated ClickSpriteEvents belonging due to clones mapped to their sprite name. Used for the
+     * NE-Extractor to avoid explosion of ClickClone output nodes.
+     */
+    protected currentClickClones: Map<string, number>;
+
     constructor(vm: VirtualMachine) {
         super(vm);
     }
 
     public extractEvents(vm: VirtualMachine): ScratchEvent[] {
+        this.currentClickClones = new Map<string, number>();
         let eventList: ScratchEvent[] = [];
         const lastStepCoveredBlocks: Set<string> = vm.runtime.traceInfo.tracer.lastStepCoverage;
 

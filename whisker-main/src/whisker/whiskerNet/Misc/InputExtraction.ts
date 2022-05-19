@@ -11,7 +11,7 @@ export class InputExtraction {
 
     private static whiteColorOffset = 0;
 
-    private static cloneThreshold = 5;
+    private static CLONE_THRESHOLD = 5;
 
     /**
      * Extracts pieces of information from all Sprites of the given Scratch project.
@@ -37,7 +37,7 @@ export class InputExtraction {
                         const cloneID = this.getCloneIdentifier(target);
                         const parentSprite = target.sprite.name;
                         // Only allow a limited number of clones per sprite to avoid input feature explosion.
-                        if (!cloneRecording.has(parentSprite) || cloneRecording.get(parentSprite) < this.cloneThreshold) {
+                        if (!cloneRecording.has(parentSprite) || cloneRecording.get(parentSprite) < this.CLONE_THRESHOLD) {
                             spriteMap.set(cloneID, spriteFeatures);
                             if (!cloneRecording.has(parentSprite)) {
                                 cloneRecording.set(parentSprite, 0);
@@ -56,7 +56,7 @@ export class InputExtraction {
      * @param target the target clone for which we need an identifier
      * @returns unique id for the given target clone.
      */
-    private static getCloneIdentifier(target: RenderedTarget): string {
+    public static getCloneIdentifier(target: RenderedTarget): string {
         return `${target.sprite.name}Clone${target.cloneID}`;
     }
 
