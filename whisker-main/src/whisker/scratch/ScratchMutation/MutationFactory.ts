@@ -71,6 +71,8 @@ export class MutationFactory {
         for (const mutator of operators) {
             const mutants = mutator.generateMutants();
             const previousLength = mutants.length;
+
+            // Only allow 50 mutants per mutation operator for now.
             while (mutants.length > 50){
                 Arrays.remove(mutants, Randomness.getInstance().pick(mutants));
             }
