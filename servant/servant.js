@@ -11,7 +11,6 @@ const {logger, cli} = require('./util');
 const rimraf = require("rimraf");
 const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
-const CSVConverter = require('./converter.js');
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
 const path = require('path');
 
@@ -19,9 +18,10 @@ const production = process.env.NODE_ENV === "production";
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, errorWitnessPath,
-    addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, isNeuroevolution, seed
+    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, mutators,
+    mutantsDownloadPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless,
+    numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly,
+    seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -75,7 +75,7 @@ async function init () {
             .finally(() => rimraf.sync(tmpDir));
     }
     // Dynamic Test suite using Neuroevolution
-    else if(isNeuroevolution){
+    else if(typeof testPath === 'string' && testPath.endsWith('.json')){
         if (fs.lstatSync(scratchPath).isDirectory()) {
             const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
@@ -107,7 +107,7 @@ async function init () {
     }
     // Standard TestSuite / Model-based testing
     else {
-        if (csvFile != false && fs.existsSync(csvFile)) {
+        if (csvFile !== false && fs.existsSync(csvFile)) {
             console.error(`CSV file already exists, aborting`);
             await browser.close();
             return;
@@ -129,9 +129,9 @@ async function init () {
             csvs.push(...await runTestsOnFile(browser, scratchPath, modelPath));
         }
 
-        if (csvFile != false) {
+        if (csvFile !== false) {
             console.info(`Creating CSV summary in ${csvFile}`);
-            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
+            fs.writeFileSync(csvFile, csvs[0]);
         }
         await browser.close();
     }
@@ -149,8 +149,10 @@ async function runTestsOnFile (browser, targetProject, modelPath) {
                 const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
                 csvs.push(...results.map(({csv}) => csv));
 
-                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-                    modelCoverage[0]);
+                if(summaries[0] !== undefined) {
+                    printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+                        modelCoverage[0]);
+                }
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
             })
             .catch(errors => logger.error('Error on executing tests: ', errors))
@@ -351,7 +353,6 @@ async function showHiddenFunctionality(page) {
 
 async function runTests (path, browser, index, targetProject, modelPath) {
     const page = await browser.newPage({context: Date.now()});
-    const startProject = Date.now();
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
@@ -378,6 +379,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(path);
@@ -413,10 +415,22 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('projectName')) {
+
+                // Download mutants
+                if(mutantsDownloadPath){
+                    await downloadMutants(mutantsDownloadPath);
+                }
+
+                // Return CSV file
+                const currentLogString = currentLog.toString();
+                return currentLogString.slice(currentLogString.indexOf('projectName'));
+            }
+
             if (isLiveLogEnabled) {
                 const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '')
-                    .trim();
+                const newInfoFromLog = currentLog.replace(log, '').trim();
 
                 if (newInfoFromLog.length) {
                     logger.log(newInfoFromLog);
@@ -426,8 +440,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
             }
 
             const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
-                .trim();
+            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '').trim();
             if (newInfoFromCoverage.length && isLiveOutputCoverage) {
                 logger.log(`Page ${index} | Coverage: `, newInfoFromCoverage);
             } else if (newInfoFromCoverage.includes('not ok ')) {
@@ -441,10 +454,19 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
             await page.waitForTimeout(1000);
         }
+    }
 
-        let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
-        csvRow['duration'] = `${(Date.now() - startProject) / 1000}`;
-        return {csvRow, coverageLog};
+    /**
+     * Downloads the generated Scratch mutants.
+     * @param downloadPath the path the mutants should be saved to.
+     */
+    async function downloadMutants (downloadPath) {
+        await page._client.send('Page.setDownloadBehavior', {
+            behavior: 'allow',
+            downloadPath: downloadPath
+        });
+        await (await page.$('.output-save')).click();
+        await page.waitForTimeout(5000);
     }
 
     /**
@@ -500,7 +522,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         const promise = onFinishedCallback();
         await executeTests();
 
-        const {csvRow, coverageLog} = await readTestOutput();
+        const csvRow = await readTestOutput();
         const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
         await page.close();
 
@@ -512,7 +534,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 }
 
 /**
- * Perpares the test source code, by evaling the tests and returning the source code of the tests without the
+ * Prepares the test source code, by evaluating the tests and returning the source code of the tests without the
  * `modules.export` statement at the end.
  *
  * @param {*} path        The path to the file where the original tests are defined in

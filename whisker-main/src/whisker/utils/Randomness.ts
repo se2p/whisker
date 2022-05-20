@@ -95,11 +95,14 @@ export class Randomness {
 
     /**
      * Set the seed for the Scratch-VM.
-     * @param seed the Scratch-VM seed
+     * @param seed the Scratch-VM seed.
+     * @param silence determines whether we want to log the modified seed.
      */
-    public static setScratchSeed(seed: (number | string)): void {
+    public static setScratchSeed(seed: (number | string), silence = false): void {
         const convertedSeed = this.convertSeed(seed);
-        console.log(`Seeding the Scratch-VM to ${convertedSeed}`);
+        if (!silence) {
+            console.log(`Seeding the Scratch-VM to ${convertedSeed}`);
+        }
         Randomness._scratchSeed = convertedSeed;
     }
 
@@ -198,8 +201,8 @@ export class Randomness {
     public nextGaussian(mean: number, std: number): number {
         let x, y, s;
         do {
-            x = Math.random() * 2 - 1;
-            y = Math.random() * 2 - 1;
+            x = this.nextDouble() * 2 - 1;
+            y = this.nextDouble() * 2 - 1;
             s = x * x + y * y;
         } while (s >= 1 || s == 0);
         s = Math.sqrt(-2.0 * Math.log(s) / s);
@@ -222,4 +225,7 @@ export class Randomness {
         seed(Randomness._scratchSeed, {global: true});
     }
 
+    static get scratchSeed(): number {
+        return this._scratchSeed;
+    }
 }

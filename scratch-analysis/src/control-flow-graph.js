@@ -360,6 +360,21 @@ export const genUid = function () {
     return id.join('');
 };
 
+export const getBlockMap = targets => {
+    let blocks = new Map()
+    for (const target of targets) {
+        for (const block of Object.values(target.blocks._blocks)) {
+            const blockKey = `${block.id}-${target.sprite.name}`;
+            // Create a deep clone for the CFG to not alter the block residing in the Scratch-VM.
+            const blockClone = JSON.parse(JSON.stringify(block))
+            blockClone['target'] = target.sprite.name;
+            changeBlockIds(blockClone, target)
+            blocks.set(blockKey, blockClone);
+        }
+    }
+    return blocks;
+}
+
 
 /**
  * Constructs an interprocedural control flow graph (CFG) for all blocks of a program.
@@ -375,22 +390,12 @@ export const genUid = function () {
  * @return {ControlFlowGraph} - a newly generated {@link ControlFlowGraph}.
  */
 export const generateCFG = vm => {
-    // So called "renderer targets" (the individual sprites and the stage) in the current project.
+    // So-called "renderer targets" (the individual sprites and the stage) in the current project.
     const targets = vm.runtime.targets;
 
     // To avoid duplicates in the CFG we save blocks using the key combination blockId-SpriteName, where SpriteName
     // corresponds to the name of the sprite the given block is contained in.
-    let blocks = new Map()
-    for (const target of targets) {
-        for (const block of Object.values(target.blocks._blocks)) {
-            const blockKey = `${block.id}-${target.sprite.name}`;
-            // Create a deep clone for the CFG to not alter the block residing in the Scratch-VM.
-            const blockClone = JSON.parse(JSON.stringify(block))
-            blockClone['target'] = target.sprite.name;
-            changeBlockIds(blockClone, target)
-            blocks.set(blockKey, blockClone);
-        }
-    }
+    let blocks = getBlockMap(targets);
 
     const backdropTargets = getBackdropTargets(blocks, vm);
     const broadcastTargets = getBroadcastTargets(blocks);
