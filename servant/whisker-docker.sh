@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
-# Make sure we're actually inside a Docker or Podman container before proceeding.
-if [ ! -f /.dockerenv ] && [ ! -f /run/.containerenv ]; then
-    echo "This script is only supposed to be run within a Docker or Podman container."
+# Make sure we're actually inside a Docker container before proceeding.
+if [ ! -f /.dockerenv ]; then
+    echo "This script is only supposed to be run within a Docker container."
     echo "You cannot run it as a standalone script."
     exit 1
 fi

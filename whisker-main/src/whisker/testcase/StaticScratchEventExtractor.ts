@@ -170,7 +170,8 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             }
             case 'sensing_mousedown': {
                 // Mouse down
-                eventList.push(new MouseDownEvent());
+                eventList.push(new MouseDownEvent(true));
+                eventList.push(new MouseDownEvent(false));
                 break;
             }
             case 'sensing_askandwait':

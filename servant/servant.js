@@ -105,7 +105,7 @@ async function init () {
         }
         await browser.close();
     }
-    // Standard TestSuite / Standard TestSuite executed with Networks / Model-based testing /
+    // Standard TestSuite / Standard TestSuite executed with Networks / Model-based testing
     else {
         if (csvFile !== false && fs.existsSync(csvFile)) {
             console.error(`CSV file already exists, aborting`);
@@ -284,10 +284,6 @@ async function runDynamicTestSuite (browser, scratchPath) {
         }
     }
 
-    /**
-     * Configure the Whisker instance, by setting the application file, test file and accelerationFactor, after the page
-     * was loaded.
-     */
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
@@ -297,6 +293,7 @@ async function runDynamicTestSuite (browser, scratchPath) {
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
         await showHiddenFunctionality(page);
+        console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
     /**

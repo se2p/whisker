@@ -95,7 +95,7 @@ export class DragSpriteEvent extends ScratchEvent {
             this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
 
-        return [this.angle]
+        return [this.angle];
     }
 
     numSearchParameter(): number {

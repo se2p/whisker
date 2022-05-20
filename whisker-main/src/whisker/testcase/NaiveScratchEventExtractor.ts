@@ -55,7 +55,8 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         eventList.push(new ClickStageEvent());
         eventList.push(new WaitEvent());
         eventList.push(new TypeTextEvent(ScratchEventExtractor._randomText(3)));
-        eventList.push(new MouseDownEvent());
+        eventList.push(new MouseDownEvent(true));
+        eventList.push(new MouseDownEvent(false));
         eventList.push(new MouseMoveEvent());
 
         // eventList.add(new SoundEvent()) not implemented yet

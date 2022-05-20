@@ -17,7 +17,6 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
     /**
      * Searches for tests for the given project by using a Neuroevolution Algorithm
      */
-    //TODO: TestCase minimisation
     async generateTests(): Promise<WhiskerTestListWithSummary> {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();

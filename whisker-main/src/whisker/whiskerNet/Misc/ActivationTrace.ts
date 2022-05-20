@@ -11,6 +11,11 @@ export class ActivationTrace {
     }
 
 
+    /**
+     * Updates the activation trace with novel node activations.
+     * @param step the Scratch step in which these activations have been recorded.
+     * @param nodes the nodes to record.
+     */
     public update(step: number, nodes: NodeGene[]): void {
         // Check if we encountered a new node.
         const activatedNodes = nodes.filter(node => node.activatedFlag);
@@ -36,28 +41,6 @@ export class ActivationTrace {
                 stepTrace.get(nodeId).push(activationValue);
             }
         }
-    }
-
-    public groupBySteps(): Map<number, number[][]> {
-        const stepActivationTraces = new Map<number, number[][]>();
-        for (const [step, nodeMap] of this._trace.entries()) {
-            const stepTraces: number[][] = [];
-            for (const activationValues of nodeMap.values()) {
-                for (let i = 0; i < activationValues.length; i++) {
-                    if (!stepTraces[i]) {
-                        stepTraces.push([activationValues[i]]);
-                    } else {
-                        stepTraces[i].push(activationValues[i]);
-                    }
-                }
-            }
-            stepActivationTraces.set(step, stepTraces);
-        }
-        return stepActivationTraces;
-    }
-
-    public getStepTrace(step: number): number[][] {
-        return this.groupBySteps().get(step);
     }
 
     public clone(): ActivationTrace {

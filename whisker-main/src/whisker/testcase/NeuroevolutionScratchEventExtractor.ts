@@ -7,12 +7,13 @@ import {KeyPressEvent} from "./events/KeyPressEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {Container} from "../utils/Container";
 import {MouseMoveToEvent} from "./events/MouseMoveToEvent";
-import {MouseDownEvent} from "./events/MouseDownEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
+import {MouseDownForStepsEvent} from "./events/MouseDownForStepsEvent";
+import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
@@ -34,8 +35,8 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
 
     /**
      * Extracts input events from Scratch-Blocks. Neuroevolution does not include DragSpriteEvents since these
-     * events do not reflect how a game is meant to be played. By not using DragSpriteEvents, we can omit costly
-     * colorDistance calculations.
+     * events violate the intended gameplay. By not using DragSpriteEvents, we can omit costly colorDistance
+     * calculations.
      * @param target the target whose block is analysed.
      * @param block the block which will be analysed for potential input events.
      * @returns a list of extracted scratch events.
@@ -115,13 +116,16 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 const isMouseDown = Container.testDriver.isMouseDown();
                 // Only add the event if the mouse is currently not pressed
                 if (!isMouseDown) {
-                    eventList.push(new MouseDownEvent());
+                    eventList.push(new MouseDownForStepsEvent());
                 }
                 break;
             }
             case 'sensing_askandwait':
                 // Type text
                 if (Container.vmWrapper.isQuestionAsked()) {
+                    if (this.potentiallyComparesNumbers) {
+                        eventList.push(new TypeNumberEvent());
+                    }
                     eventList.push(...this._getTypeTextEvents());
                 }
                 break;

@@ -148,7 +148,7 @@ describe("Arrays", () => {
 
     test("Distinct objects by custom defined comparator", () => {
         const comparator = (a:ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
-        const array = [new ClickStageEvent(), new MouseDownEvent(1), new MouseDownEvent(1),
+        const array = [new ClickStageEvent(), new MouseDownEvent(false), new MouseDownEvent(false),
             new MouseMoveEvent(2,1), new MouseMoveEvent(2, 1), new MouseMoveEvent(10, 10)];
         const distinct = Arrays.distinctByComparator(array, comparator);
         expect(distinct.length).toBe(3);

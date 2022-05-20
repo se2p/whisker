@@ -25,6 +25,7 @@ import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {TypeTextEvent} from "./events/TypeTextEvent";
 import Arrays from "../utils/Arrays";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
@@ -63,13 +64,13 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
             }
         }
 
-        if (eventList.some(event => event instanceof TypeTextEvent)) {
-            eventList = eventList.filter(event => event instanceof TypeTextEvent);
+        // If we encounter a state that is waiting for some text input from the user, we prioritise these events.
+        if (eventList.some(event => (event instanceof TypeTextEvent || event instanceof TypeNumberEvent))) {
+            eventList = eventList.filter(event => (event instanceof TypeTextEvent || event instanceof TypeNumberEvent));
+        } else {
+            // If we do not have such events, we need to make sure to add a WaitEvent for ExtensionLocalSearch.
+            eventList.push(new WaitEvent());
         }
-
-        // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
-        // of -1.
-        eventList.push(new WaitEvent());
         const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         return Arrays.distinctByComparator(eventList, equalityFunction);
     }

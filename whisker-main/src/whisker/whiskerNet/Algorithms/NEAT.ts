@@ -2,7 +2,7 @@ import {ChromosomeGenerator} from '../../search/ChromosomeGenerator';
 import {SearchAlgorithmProperties} from "../../search/SearchAlgorithmProperties";
 import {SearchAlgorithmDefault} from "../../search/algorithms/SearchAlgorithmDefault";
 import {FitnessFunction} from "../../search/FitnessFunction";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {NeuroevolutionFitnessOverTime, StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import Arrays from "../../utils/Arrays";
@@ -65,12 +65,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * @param candidateChromosome The candidate chromosome to update the archive with.
      */
     protected updateArchive(candidateChromosome: NeatChromosome): void {
-
-        // We save the first chromosome which managed to cover a block instead of the best performing network since
-        // otherwise the dynamic test suite later fails to cover the easiest blocks, e.g. simple GameOver state.
-        // For fairness, we do the same if a static test suite is targeted.
-        // Because we are nonetheless interested in the best performing network, we include the best performing
-        // network as an additional key to the archive in the case of a dynamic TestSuite.
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             const statementFitness = fitnessFunction.getFitness(candidateChromosome);
@@ -80,7 +74,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             }
         }
 
-        // Save the best performing chromosome
+        // Save the best performing chromosome according to the set network fitness function.
         const bestNetworkKey = this._fitnessFunctions.size + 1;
         if (!this._archive.has(bestNetworkKey) ||
             this._archive.get(bestNetworkKey).fitness < candidateChromosome.fitness) {
@@ -94,8 +88,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * @returns NeuroevolutionPopulation defined in the config files.
      */
     protected getPopulation(): NeatPopulation {
-                return new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
-        }
+        return new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
+    }
 
     /**
      * Updates the List of the best networks found so far and the statistics used for reporting. Order is important!
@@ -114,9 +108,12 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         StatisticsCollector.getInstance().updateHighestScore(highestScore);
         StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
 
-        // Update TimeLine
-        const timeLineValues: [number, number, number, number] = [this._archive.size, highestFitness, highestScore,
-            highestSurvive];
+        const timeLineValues: NeuroevolutionFitnessOverTime = {
+            coverage: this._archive.size,
+            fitness: highestFitness,
+            score: highestScore,
+            survive: highestSurvive
+        };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {

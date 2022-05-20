@@ -124,7 +124,7 @@ export class Species<C extends NeatChromosome> {
             }
 
             // Share fitness with the entire species.
-            network.sharedFitness /= this.networks.length
+            network.sharedFitness /= this.networks.length;
 
         }
         this.markParents();

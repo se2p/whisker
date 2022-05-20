@@ -20,71 +20,50 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {ParameterType} from "./ParameterType";
-import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 
 export class MouseDownEvent extends ScratchEvent {
 
-    private _steps: number;
+    private readonly _value: boolean;
 
-    constructor(value = 1) {
+    constructor(value: boolean) {
         super();
-        this._steps = value;
+        this._value = value;
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.mouseDownForSteps(this._steps);
+        Container.testDriver.mouseDown(this._value);
     }
 
     public toJavaScript(): string {
-        return `t.mouseDownForSteps(${this._steps});`;
+        return `t.mouseDown(${this._value});`;
     }
 
     public toJSON(): Record<string, any> {
         const event = {};
         event[`type`] = `MouseDownEvent`;
-        event[`args`] = {"value": this._steps};
+        event[`args`] = {"value": this._value};
         return event;
     }
 
-    public toString = (): string => {
-        return "MouseDown " + this._steps;
+    public toString = () : string => {
+        return "MouseDown " + this._value;
     }
 
     numSearchParameter(): number {
-        return 1;
+        return 0;
     }
 
     getParameters(): number[] {
         // 0 returns False in JS/TS
-        return [this._steps];
+        return [this._value ? 1 : 0];
     }
 
     getSearchParameterNames(): string[] {
-        return ["Steps"];
+        return [];
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): number[] {
-        switch (testExecutor) {
-            case "random":
-                this._steps = Randomness.getInstance().nextInt(1, Container.config.getClickDuration() + 1);
-                break;
-            case "codon":
-                this._steps = args[0];
-                break;
-            case "activation":
-                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getClickDuration());
-                break;
-        }
-        if (!Container.isNeuroevolution) {
-            this._steps %= Container.config.getClickDuration();
-        }
-        // If the event has been selected ensure that it is executed for at least one step.
-        if (this._steps < 1) {
-            this._steps = 1;
-        }
-        return [this._steps];
+    setParameter(): number[] {
+        return [];
     }
 
     stringIdentifier(): string {

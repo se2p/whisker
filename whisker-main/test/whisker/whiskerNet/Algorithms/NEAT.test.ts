@@ -17,9 +17,6 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComp
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
-import {StatementFitnessFunction} from "../../../../src/whisker/testcase/fitness/StatementFitnessFunction";
-import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 
 
 describe('Test NEAT', () => {

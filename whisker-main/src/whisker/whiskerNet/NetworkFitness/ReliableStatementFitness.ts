@@ -108,10 +108,6 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         }
     }
 
-    public identifier(): string {
-        return 'statement';
-    }
-
     get stableCount(): number {
         return this._stableCount;
     }

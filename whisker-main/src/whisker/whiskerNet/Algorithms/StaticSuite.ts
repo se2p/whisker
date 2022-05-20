@@ -6,7 +6,6 @@ import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
 import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
-import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
@@ -18,6 +17,8 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
+import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
+import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 
 
 export class StaticSuite extends NetworkSuite {
@@ -136,8 +137,11 @@ export class StaticSuite extends NetworkSuite {
             } else if (statement.includes('keyPress')) {
                 variableParameter = [Number(parameter[1])];
                 event = new KeyPressEvent(parameter[0], Number(parameter[1]));
+            } else if (statement.includes('mouseDownForSteps')) {
+                event = new MouseDownForStepsEvent(Number(parameter[0]));
+                variableParameter = [];
             } else if (statement.includes('mouseDown')) {
-                event = new MouseDownEvent(Number(parameter[0]));
+                event = new MouseDownEvent(Boolean[parameter[0]]);
                 variableParameter = [];
             } else if (statement.includes('mouseMove')) {
                 event = new MouseMoveEvent(Number(parameter[0]), Number(parameter[1]));

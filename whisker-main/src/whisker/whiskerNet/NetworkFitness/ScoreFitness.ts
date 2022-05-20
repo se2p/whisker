@@ -58,8 +58,4 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
         }
         return points;
     }
-
-    public identifier(): string {
-        return 'score';
-    }
 }

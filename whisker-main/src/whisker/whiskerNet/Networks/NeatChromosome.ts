@@ -357,12 +357,12 @@ export class NeatChromosome extends NetworkChromosome {
      */
     public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
         const network = {};
-        network[`id`] = this.uID;
+        network['id'] = this.uID;
         network['aF'] = ActivationFunction[this.activationFunction];
         network['cM'] = this.inputConnectionMethod;
 
         if (this.targetFitness instanceof StatementFitnessFunction) {
-            network[`tf`] = this.targetFitness.getTargetNode().id;
+            network['tf'] = this.targetFitness.getTargetNode().id;
         }
 
         const nodes = {};

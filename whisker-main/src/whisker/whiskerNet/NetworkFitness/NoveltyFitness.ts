@@ -61,8 +61,4 @@ export abstract class NoveltyFitness implements NetworkFitnessFunction<NetworkCh
      * @param sparseNess the metric defining the novelty of a given solution.
      */
     protected abstract addToBehaviourArchive(network: NetworkChromosome, sparseNess: number): void;
-
-    public identifier(): string {
-        return 'novelty;'
-    }
 }

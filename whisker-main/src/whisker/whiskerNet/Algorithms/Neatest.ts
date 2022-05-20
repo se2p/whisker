@@ -1,6 +1,6 @@
 import {NEAT} from "./NEAT";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {NeuroevolutionFitnessOverTime, StatisticsCollector} from "../../utils/StatisticsCollector";
 import {SearchAlgorithmProperties} from "../../search/SearchAlgorithmProperties";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {TargetStatementPopulation} from "../NeuroevolutionPopulations/TargetStatementPopulation";
@@ -355,8 +355,12 @@ export class Neatest extends NEAT {
         StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
 
         // Update TimeLine
-        const timeLineValues: [number, number, number, number] = [this._archive.size, highestFitness, highestScore,
-            highestSurvive];
+        const timeLineValues: NeuroevolutionFitnessOverTime = {
+            coverage: this._archive.size,
+            fitness: highestFitness,
+            score: highestScore,
+            survive: highestSurvive
+        };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {

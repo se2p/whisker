@@ -591,7 +591,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * Extracts the direct CDG parent of a given node.
      * @param node the node whose parent should be found.
      * @param cdg the control dependence graph based on which a direct ancestor should be found.
-     * @return Parent node of the given child node.
+     * @return parent node of the given child node.
      */
     private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode[] {
         const predecessors = Array.from(cdg.predecessors(node.id)) as GraphNode[];
@@ -603,7 +603,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             return [flagClickedParent];
         }
 
-        // Parents could be EventNodes, for example when having a block that depends on clone being created.
+        // Parents could be EventNodes, for example when having a block that depends on a clone being created.
         if (predecessors.some(pred => pred instanceof EventNode)) {
             const eventNodes = predecessors.filter(pred => pred instanceof EventNode && pred.id != node.id);
             const eventPredecessors = [];

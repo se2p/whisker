@@ -44,7 +44,6 @@ export class JavaScriptConverter {
     }
 
     getSuiteText(tests: WhiskerTest[]): string {
-
         // If we create a NE Suite, we have to set some configurations.
         const configs = {};
         if (Container.isNeuroevolution) {

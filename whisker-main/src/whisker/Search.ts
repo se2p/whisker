@@ -128,7 +128,7 @@ export class Search {
             console.log(csvOutput);
             return csvOutput;
         } else {
-            stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
+            stoppingCondition = config.searchAlgorithmProperties.stoppingCondition;
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.

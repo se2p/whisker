@@ -109,8 +109,4 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
             return 0.1;
         }
     }
-
-    public identifier(): string {
-        return 'target';
-    }
 }

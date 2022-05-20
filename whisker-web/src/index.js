@@ -2,7 +2,6 @@ import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicSuite';
 import {StaticSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/StaticSuite';
-import {FileSaver} from "./web-libs";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');

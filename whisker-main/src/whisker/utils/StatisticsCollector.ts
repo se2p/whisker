@@ -53,7 +53,7 @@ export class StatisticsCollector {
     private _highestNetworkFitness: number;
     private _highestScore: number;
     private _highestPlayTime: number;
-    private readonly _fitnessOverTime: Map<number, [number, number, number, number]>;
+    private readonly _fitnessOverTime: Map<number, NeuroevolutionFitnessOverTime>;
 
     // Dynamic Suite
     private _testName: string;
@@ -86,8 +86,7 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = 0;
         this._highestNetworkFitness = 0;
         this._covOverTime = new Map<number, number>();
-        // Values are [coverage, fitness, score, survive]
-        this._fitnessOverTime = new Map<number, [number, number, number, number]>();
+        this._fitnessOverTime = new Map<number, NeuroevolutionFitnessOverTime>();
         this.coveredFitnessFunctions = [];
         this._networkSuiteResults = [];
         this._highestScore = 0;
@@ -195,7 +194,7 @@ export class StatisticsCollector {
         }
     }
 
-    public updateFitnessOverTime(timeStamp: number, value: [number, number, number, number]): void {
+    public updateFitnessOverTime(timeStamp: number, value: NeuroevolutionFitnessOverTime): void {
         this._fitnessOverTime.set(timeStamp, value);
     }
 
@@ -362,7 +361,7 @@ export class StatisticsCollector {
         // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
         const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance);
         const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
-        const timelineValues = timestamps.map((ts) => fitnessOverTimeMap.get(ts).join('|'));
+        const timelineValues = timestamps.map((ts) => Object.values(fitnessOverTimeMap.get(ts)).join('|'));
 
         let header = timestamps;
         let values = timelineValues;
@@ -419,8 +418,8 @@ export class StatisticsCollector {
         return csv;
     }
 
-    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, [number, number, number, number]> {
-        const adjusted: Map<number, [number, number, number, number]> = new Map();
+    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, NeuroevolutionFitnessOverTime> {
+        const adjusted: Map<number, NeuroevolutionFitnessOverTime> = new Map();
         let maxTime = 0;
         for (const timeSample of this._fitnessOverTime.keys()) {
             const rounded = Math.round(timeSample / sampleDistance) * sampleDistance;
@@ -430,12 +429,17 @@ export class StatisticsCollector {
             }
 
         }
-        let maxCov: [number, number, number, number] = [0, 0, 0, 0];
+        let max: NeuroevolutionFitnessOverTime = {
+            coverage: 0,
+            fitness: 0,
+            score: 0,
+            survive: 0
+        };
         for (let i = 0; i <= maxTime; i = i + sampleDistance) {
             if (adjusted.has(i)) {
-                maxCov = adjusted.get(i);
+                max = adjusted.get(i);
             } else {
-                adjusted.set(i, maxCov);
+                adjusted.set(i, max);
             }
         }
 
@@ -492,5 +496,12 @@ export interface NetworkTestSuiteResults {
     surpriseNodeAdequacy: number,
     surpriseCount: number,
     avgUncertainty: number,
-    isMutant?:boolean,
+    isMutant?: boolean,
+}
+
+export interface NeuroevolutionFitnessOverTime {
+    coverage: number,
+    fitness: number,
+    score: number,
+    survive: number
 }
