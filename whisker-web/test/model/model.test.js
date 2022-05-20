@@ -6,7 +6,6 @@ const ACCELERATION = 10;
 async function loadProject(scratchPath, modelPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#fileselect-models')).uploadFile(modelPath);
-    await page.evaluate(m => document.querySelector('#container').mutators = m, '');
     const toggle = await page.$('#toggle-advanced');
     await toggle.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);

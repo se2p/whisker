@@ -72,10 +72,11 @@ class TestRunner extends EventEmitter {
                 }
 
                 // Record the results
+                CoverageGenerator.prepareVM(vm);
                 const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
                 const coverage = Math.round((covered / total) * 100) / 100;
                 const duration = (Date.now() - startTime) / 1000;
-                csv += this._generateCSVRow(projectMutation, testStatusResults, coverage, duration, resultRecords);
+                csv += this._generateCSVRow(projectMutation, testStatusResults, total, coverage, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
             }
@@ -101,7 +102,7 @@ class TestRunner extends EventEmitter {
                 const coverage = Math.round((covered / total) * 100) / 100;
                 const duration = (Date.now() - startTime) / 1000;
                 const modelResults = this._extractModelCSVData(result.modelResult);
-                csv += this._generateCSVRow(projectName, [result.status],  coverage, duration, undefined, modelResults);
+                csv += this._generateCSVRow(projectName, [result.status], total,  coverage, duration, undefined, modelResults);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -131,7 +132,7 @@ class TestRunner extends EventEmitter {
             const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
             const coverage = Math.round((covered / total) * 100) / 100;
             const duration = (Date.now() - startTime) / 1000;
-            csv += this._generateCSVRow(projectName, testStatusResults, coverage, duration, resultRecords);
+            csv += this._generateCSVRow(projectName, testStatusResults, total, coverage, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
 
@@ -178,10 +179,10 @@ class TestRunner extends EventEmitter {
             for (const test of tests) {
                 header += `,${test.name}`;
             }
-            header += `,passed,failed,error,skip,coverage,duration\n`;
+            header += `,passed,failed,error,skip,totalBlocks,coverage,duration\n`;
         }
         else if(modelProps.repetitions > 0){
-            header += `,modelRepetition,modelFails,modelErrors,testResult,projectCoverage,modelCoverage,duration\n`;
+            header += `,modelRepetition,modelFails,modelErrors,testResult,totalBlocks,projectCoverage,modelCoverage,duration\n`;
         }
         return header;
     }
@@ -190,21 +191,22 @@ class TestRunner extends EventEmitter {
      * Generates a CSV row of the obtained test results.
      * @param {string} projectName
      * @param {Array<string>} testStatusResults
+     * @param {number} total
      * @param {number} coverage
      * @param {number} duration
      * @param {{}} resultRecords
      * @param {{repetition: number, fails: number, errors:number, coverage:number}} modelResults
      * @return {string}
      */
-    _generateCSVRow(projectName, testStatusResults, coverage, duration, resultRecords, modelResults = undefined) {
+    _generateCSVRow(projectName, testStatusResults, total, coverage, duration, resultRecords, modelResults = undefined) {
         let csvRow = `${projectName}`;
         if (modelResults !== undefined) {
-            csvRow += `,${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${coverage},${modelResults.coverage},${duration}\n`;
+            csvRow += `,${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${total},${coverage},${modelResults.coverage},${duration}\n`;
         } else if (resultRecords !== undefined) {
             for (const testResult of testStatusResults) {
                 csvRow += `,${testResult}`;
             }
-            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage},${duration}\n`;
+            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${total},${coverage},${duration}\n`;
         }
         return csvRow;
     }

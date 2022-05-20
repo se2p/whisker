@@ -95,7 +95,7 @@ export class Randomness {
 
     /**
      * Set the seed for the Scratch-VM.
-     * @param seed the Scratch-VM seed
+     * @param seed the Scratch-VM seed.
      * @param silence determines whether we want to log the modified seed.
      */
     public static setScratchSeed(seed: (number | string), silence = false): void {
