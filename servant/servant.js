@@ -457,8 +457,8 @@ async function runTests (path, browser, index, targetProject, modelPath) {
     }
 
     /**
-     * Downloads the generated Scratch mutants
-     * @param downloadPath the path the mutants should be saved to
+     * Downloads the generated Scratch mutants.
+     * @param downloadPath the path the mutants should be saved to.
      */
     async function downloadMutants (downloadPath) {
         await page._client.send('Page.setDownloadBehavior', {
