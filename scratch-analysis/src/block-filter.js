@@ -212,6 +212,34 @@ const VariableFilter = {
         block.opcode === 'data_hidevariable'
 };
 
+const OperatorFilter = {
+    arithmetic: block =>
+        block.opcode === 'operator_add' ||
+        block.opcode === 'operator_subtract' ||
+        block.opcode === 'operator_multiply' ||
+        block.opcode === 'operator_divide',
+
+    relational: block =>
+        block.opcode === 'operator_equals' ||
+        block.opcode === 'operator_lt' ||
+        block.opcode === 'operator_gt',
+
+    logical: block =>
+        block.opcode === 'operator_and' ||
+        block.opcode === 'operator_or',
+
+    negatable: block =>
+        block.opcode === 'sensing_touchingobject' ||
+        block.opcode === 'sensing_touchingcolor' ||
+        block.opcode === 'sensing_coloristouchingcolor' ||
+        block.opcode === 'sensing_keypressed' ||
+        block.opcode === 'sensing_mousedown' ||
+        block.opcode === 'operator_contains' ||
+        block.opcode === 'operator_not' ||
+        OperatorFilter.logical(block) ||
+        OperatorFilter.relational(block)
+}
+
 const ListFilter = {
     update: block =>
         block.opcode === 'data_addtolist' ||
@@ -283,6 +311,7 @@ export {
     SoundFilter,
     EventFilter,
     VariableFilter,
+    OperatorFilter,
     ListFilter,
     SensingFilter,
     StatementFilter,
