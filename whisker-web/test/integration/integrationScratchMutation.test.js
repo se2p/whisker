@@ -15,10 +15,10 @@ async function getCSVResults() {
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('projectName')) {
-            const logArray = log.split('\n');
+            const logArray = log.trim().split('\n');
             const csvHeaderIndex = logArray.findIndex(logLine => logLine.includes('coverage'));
             const csvHeader = logArray[csvHeaderIndex];
-            const rowCSVArray = logArray[csvHeaderIndex + 1].split(',');
+            const rowCSVArray = logArray[logArray.length - 1].split(','); // The last row should be a mutant
             const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('coverage'));
             const totalBlocksIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('totalBlocks'));
             return [rowCSVArray[coverageIndex], rowCSVArray[totalBlocksIndex]];
