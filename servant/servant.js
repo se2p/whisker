@@ -425,7 +425,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
                 // Return CSV file
                 const currentLogString = currentLog.toString();
-                return currentLogString.slice(currentLogString.indexOf('projectName'));
+                return currentLogString.slice(currentLogString.indexOf('projectName')).trim();
             }
 
             if (isLiveLogEnabled) {

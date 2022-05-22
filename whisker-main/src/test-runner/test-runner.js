@@ -39,9 +39,14 @@ class TestRunner extends EventEmitter {
         if (props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
 
+            // Add the original as reference when applying mutation analysis
+            const original = JSON.parse((vm.toJSON()));
+            original.name = "Original";
+            mutantPrograms = [original];
+
             const mutantFactory = new MutationFactory(vm);
-            mutantPrograms = mutantFactory.generateScratchMutations(props['mutators']);
-            console.log(`Generated ${mutantPrograms.length} mutants`);
+            mutantPrograms.push(...mutantFactory.generateScratchMutations(props['mutators']));
+            console.log(`Generated ${mutantPrograms.length - 1} mutants`); // Subtract 1 for the included original
 
             // Execute the given tests on every mutant
             for (const mutant of mutantPrograms) {
