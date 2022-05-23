@@ -107,13 +107,7 @@ async function init () {
     }
     // Standard TestSuite / Model-based testing
     else {
-        if (csvFile !== false && fs.existsSync(csvFile)) {
-            console.error(`CSV file already exists, aborting`);
-            await browser.close();
-            return;
-        }
         const csvs = [];
-
         if (fs.lstatSync(scratchPath).isDirectory()) {
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {

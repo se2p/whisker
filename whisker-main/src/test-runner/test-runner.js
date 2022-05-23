@@ -6,7 +6,7 @@ const {assert, assume} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
-const CoverageGenerator = require("../coverage/coverage");
+const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 
 class TestRunner extends EventEmitter {
 
@@ -52,6 +52,8 @@ class TestRunner extends EventEmitter {
             for (const mutant of mutantPrograms) {
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
+                await this._loadProject(vm, mutant, props);
+                this._initialiseFitnessTargets(vm);
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
                 this.emit(TestRunner.RESET_TABLE, tests);
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
@@ -77,15 +79,16 @@ class TestRunner extends EventEmitter {
                 }
 
                 // Record the results
-                CoverageGenerator.prepareVM(vm);
-                const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
-                const coverage = Math.round((covered / total) * 100) / 100;
+                const total = this.statementMap.size;
+                const covered = [...this.statementMap.values()].filter(cov => cov).length;
                 const duration = (Date.now() - startTime) / 1000;
-                csv += this._generateCSVRow(projectMutation, testStatusResults, total, coverage, duration, resultRecords);
+                csv += this._generateCSVRow(projectMutation, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
+            await this._loadProject(vm, project, props);
+            this._initialiseFitnessTargets(vm);
             // test only by models
 
             if (!modelProps.repetitions) {
@@ -102,17 +105,19 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_MODEL, result);
                 testResults.push(result);
 
-                // Collect data for the CSV output.
-                const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
-                const coverage = Math.round((covered / total) * 100) / 100;
+                // Record the results
+                const total = this.statementMap.size;
+                const covered = [...this.statementMap.values()].filter(cov => cov).length;
                 const duration = (Date.now() - startTime) / 1000;
                 const modelResults = this._extractModelCSVData(result.modelResult);
-                csv += this._generateCSVRow(projectName, [result.status], total,  coverage, duration, undefined, modelResults);
+                csv += this._generateCSVRow(projectName, [result.status], total,  covered, duration, undefined, modelResults);
             }
             finalResults[projectName] = testResults;
         } else {
             // test by JS test suite, with models or without models. When a model is given it is restarted with every
             // test case as long as the test case runs or the model stops.
+            await this._loadProject(vm, project, props);
+            this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
             for (const test of tests) {
                 let result;
@@ -134,10 +139,11 @@ class TestRunner extends EventEmitter {
                     return null;
                 }
             }
-            const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
-            const coverage = Math.round((covered / total) * 100) / 100;
+            // Record the results
+            const total = this.statementMap.size;
+            const covered = [...this.statementMap.values()].filter(cov => cov).length;
             const duration = (Date.now() - startTime) / 1000;
-            csv += this._generateCSVRow(projectName, testStatusResults, total, coverage, duration, resultRecords);
+            csv += this._generateCSVRow(projectName, testStatusResults, total, covered, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
 
@@ -153,6 +159,34 @@ class TestRunner extends EventEmitter {
      */
     static convertTests (tests) {
         return tests.map(test => new Test(test));
+    }
+
+    /**
+     * Loads a given Scratch project by initialising the VmWrapper and the fitness targets.
+     * @param {VirtualMachine} vm
+     * @param {ScratchMutant | string} project.
+     * @param {{extend: object}=} props
+     * @param {WhiskerUtil}.
+     */
+    async _loadProject(vm, project, props) {
+        const util = new WhiskerUtil(vm, project);
+        await util.prepare(props.accelerationFactor || 1);
+        this.vmWrapper = util.getVMWrapper();
+        return util;
+    }
+
+    /**
+     * Initialises the statement map.
+     * @param {VirtualMachine} vm
+     * @returns {number} total statements.
+     */
+    _initialiseFitnessTargets(vm) {
+        const fitnessFactory = new StatementFitnessFunctionFactory();
+        const fitnessTargets = fitnessFactory.extractFitnessFunctions(vm, []);
+        this.statementMap = new Map();
+        for (const statement of fitnessTargets){
+            this.statementMap.set(statement, false);
+        }
     }
 
     /**
@@ -184,7 +218,7 @@ class TestRunner extends EventEmitter {
             for (const test of tests) {
                 header += `,${test.name}`;
             }
-            header += `,passed,failed,error,skip,totalBlocks,coverage,duration\n`;
+            header += `,passed,failed,error,skip,totalBlocks,coveredBlocks,coverage,duration\n`;
         }
         else if(modelProps.repetitions > 0){
             header += `,modelRepetition,modelFails,modelErrors,testResult,totalBlocks,projectCoverage,modelCoverage,duration\n`;
@@ -197,21 +231,22 @@ class TestRunner extends EventEmitter {
      * @param {string} projectName
      * @param {Array<string>} testStatusResults
      * @param {number} total
-     * @param {number} coverage
+     * @param {number} covered
      * @param {number} duration
      * @param {{}} resultRecords
      * @param {{repetition: number, fails: number, errors:number, coverage:number}} modelResults
      * @return {string}
      */
-    _generateCSVRow(projectName, testStatusResults, total, coverage, duration, resultRecords, modelResults = undefined) {
+    _generateCSVRow(projectName, testStatusResults, total, covered, duration, resultRecords, modelResults = undefined) {
+        const coverage = Math.round((covered / total) * 100) / 100;
         let csvRow = `${projectName}`;
         if (modelResults !== undefined) {
-            csvRow += `,${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${total},${coverage},${modelResults.coverage},${duration}\n`;
+            csvRow += `,${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${total},${covered},${coverage},${modelResults.coverage},${duration}\n`;
         } else if (resultRecords !== undefined) {
             for (const testResult of testStatusResults) {
                 csvRow += `,${testResult}`;
             }
-            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${total},${coverage},${duration}\n`;
+            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${total},${covered},${coverage},${duration}\n`;
         }
         return csvRow;
     }
@@ -277,10 +312,7 @@ class TestRunner extends EventEmitter {
      */
     async _executeTest(vm, project, test, modelTester, props, modelProps) {
         const result = new TestResult(test);
-
-        const util = new WhiskerUtil(vm, project);
-        await util.prepare(props.accelerationFactor);
-        this.vmWrapper = util.getVMWrapper();
+        const util = await this._loadProject(vm, project, props);
 
         const testDriver = util.getTestDriver(
             {
@@ -357,6 +389,12 @@ class TestRunner extends EventEmitter {
             }
         }
 
+        result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
+        for(const statement of this.statementMap.keys()){
+            if(result.covered.has(statement._targetNode.id)){
+                this.statementMap.set(statement, true);
+            }
+        }
         util.end();
         return result;
     }

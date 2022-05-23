@@ -28,6 +28,11 @@ class TestResult {
          * @type {ModelResult}
          */
         this.modelResult = null;
+
+        /**
+         * @type {Set<string>}
+         */
+        this.covered = new Set();
     }
 }
 

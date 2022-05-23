@@ -71,13 +71,13 @@ export class JavaScriptConverter {
             let i = 0;
             let footer = "";
             for (const test of tests) {
-                text += "const test" + i + " = async function (t) {\n";
+                text += `const test${i} = async function (t) {\n`;
                 text += this.getTestBody(test);
                 text += "}\n";
 
                 footer += "  {\n";
-                footer += "      test: test" + i + ",\n";
-                footer += "      name: 'Generated Test',\n";
+                footer += `      test: test${i},\n`;
+                footer += `      name: 'Generated Test ${i}',\n`;
                 footer += "      description: '',\n";
                 footer += "      categories: []\n";
                 if (i < tests.length - 1) {
