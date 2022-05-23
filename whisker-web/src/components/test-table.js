@@ -51,6 +51,16 @@ class TestTable {
             const test = row.data();
             runTests([test]);
         });
+        this.table.on('click', '.debug-test', () => {
+            const debuggerURL = 'https://scratch.fim.uni-passau.de/debugger';
+            const debuggerWindow = window.open(debuggerURL);
+            window.addEventListener('message', event => {
+                if (event.origin.startsWith(debuggerURL) && event.data === 'loaded') {
+                    const project = window.Whisker.scratch.vm.toJSON();
+                    debuggerWindow.postMessage({project}, '*');
+                }
+            });
+        });
     }
 
     /**
@@ -220,6 +230,14 @@ class TestTable {
                     defaultContent:
                         '<button class="btn btn-sm btn-xs btn-outline-secondary run-test vm-related">' +
                         '<i class="fas fa-play"></i></button>',
+                    width: '0.5em'
+                },
+                {
+                    orderable: false,
+                    data: null,
+                    defaultContent:
+                        '<button class="btn btn-sm btn-xs btn-outline-secondary debug-test vm-related">' +
+                        '<i class="fas fa-bug"></i></button>',
                     width: '0.5em'
                 }
             ],
