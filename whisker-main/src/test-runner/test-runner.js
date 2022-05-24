@@ -28,6 +28,12 @@ class TestRunner extends EventEmitter {
             props.extend = {};
         }
 
+        // Count number of assertions across all test cases.
+        let totalAssertions = 0;
+        for(const test of tests){
+            totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
+        }
+
         const projectName = props['projectName'];
         const testResults = [];
         const finalResults = {};
@@ -82,7 +88,7 @@ class TestRunner extends EventEmitter {
                 const total = this.statementMap.size;
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
                 const duration = (Date.now() - startTime) / 1000;
-                csv += this._generateCSVRow(projectMutation, testStatusResults, total, covered, duration, resultRecords);
+                csv += this._generateCSVRow(projectMutation, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
             }
@@ -110,7 +116,7 @@ class TestRunner extends EventEmitter {
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
                 const duration = (Date.now() - startTime) / 1000;
                 const modelResults = this._extractModelCSVData(result.modelResult);
-                csv += this._generateCSVRow(projectName, [result.status], total,  covered, duration, undefined, modelResults);
+                csv += this._generateCSVRow(projectName, props.seed, totalAssertions,[result.status], total,  covered, duration, undefined, modelResults);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -143,7 +149,7 @@ class TestRunner extends EventEmitter {
             const total = this.statementMap.size;
             const covered = [...this.statementMap.values()].filter(cov => cov).length;
             const duration = (Date.now() - startTime) / 1000;
-            csv += this._generateCSVRow(projectName, testStatusResults, total, covered, duration, resultRecords);
+            csv += this._generateCSVRow(projectName, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
 
@@ -213,7 +219,7 @@ class TestRunner extends EventEmitter {
      * @return {string}
      */
     _generateCSVHeader(tests, modelProps) {
-        let header = `\nprojectName`;
+        let header = `\nprojectName,seed,assertions`;
         if(tests) {
             for (const test of tests) {
                 header += `,${test.name}`;
@@ -229,6 +235,8 @@ class TestRunner extends EventEmitter {
     /**
      * Generates a CSV row of the obtained test results.
      * @param {string} projectName
+     * @param {number} seed
+     * @param {number} assertions
      * @param {Array<string>} testStatusResults
      * @param {number} total
      * @param {number} covered
@@ -237,9 +245,9 @@ class TestRunner extends EventEmitter {
      * @param {{repetition: number, fails: number, errors:number, coverage:number}} modelResults
      * @return {string}
      */
-    _generateCSVRow(projectName, testStatusResults, total, covered, duration, resultRecords, modelResults = undefined) {
+    _generateCSVRow(projectName, seed, assertions, testStatusResults, total, covered, duration, resultRecords, modelResults = undefined) {
         const coverage = Math.round((covered / total) * 100) / 100;
-        let csvRow = `${projectName}`;
+        let csvRow = `${projectName},${seed},${assertions}`;
         if (modelResults !== undefined) {
             csvRow += `,${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${total},${covered},${coverage},${modelResults.coverage},${duration}\n`;
         } else if (resultRecords !== undefined) {
