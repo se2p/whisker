@@ -57,7 +57,8 @@ class TestTable {
             const handleMessageEvent = event => {
                 if (event.origin === url && event.data === 'loaded') {
                     const project = window.Whisker.scratch.vm.toJSON();
-                    debuggerWindow.postMessage({project}, '*');
+                    const projectFileName = window.Whisker.projectFileSelect.getName();
+                    debuggerWindow.postMessage({project, projectFileName}, '*');
                     window.removeEventListener('message', handleMessageEvent);
                 }
             };
