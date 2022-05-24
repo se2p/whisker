@@ -52,14 +52,16 @@ class TestTable {
             runTests([test]);
         });
         this.table.on('click', '.debug-test', () => {
-            const debuggerURL = 'https://scratch.fim.uni-passau.de/debugger';
-            const debuggerWindow = window.open(debuggerURL);
-            window.addEventListener('message', event => {
-                if (event.origin.startsWith(debuggerURL) && event.data === 'loaded') {
+            const url = 'https://scratch.fim.uni-passau.de';
+            const debuggerWindow = window.open(`${url}/debugger`);
+            const handleMessageEvent = event => {
+                if (event.origin === url && event.data === 'loaded') {
                     const project = window.Whisker.scratch.vm.toJSON();
                     debuggerWindow.postMessage({project}, '*');
+                    window.removeEventListener('message', handleMessageEvent);
                 }
-            });
+            };
+            window.addEventListener('message', handleMessageEvent);
         });
     }
 
