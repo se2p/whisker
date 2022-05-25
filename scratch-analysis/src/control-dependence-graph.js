@@ -1,4 +1,4 @@
-import {Edge, Graph, GraphNode, reverseGraph, cloneGraph} from './graph-utils';
+import {cloneGraph, Edge, Graph, GraphNode, reverseGraph} from './graph-utils';
 import {computePostDominatedTree, PostDominatorTree} from './post-dominator-tree'; // eslint-disable-line no-unused-vars
 import {ControlFlowGraph} from './control-flow-graph';
 
@@ -156,8 +156,7 @@ const generateCDG = cfg => {
     cfg = cloneGraph(cfg);
     const postDominatedTree = computePostDominatedTree(cfg);
     const reversedPostDominatedTree = reverseGraph(postDominatedTree);
-    const cdg = _computeControlDependenceGraph(cfg, postDominatedTree, reversedPostDominatedTree);
-    return cdg;
+    return _computeControlDependenceGraph(cfg, postDominatedTree, reversedPostDominatedTree);
 };
 
 export {
