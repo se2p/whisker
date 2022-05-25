@@ -15,10 +15,10 @@ class WhiskerUtil {
         /**
          * @type {VMWrapper} A wrapper for the virtual machine.
          */
-        this.vmWrapper = new VMWrapper(vm);
+        this.vmWrapper = new VMWrapper(vm, project);
 
         /**
-         * @type {string} The name of the tested project.
+         * @type {string} The project json.
          */
         this.project = project;
     }

@@ -25,7 +25,7 @@ export class SizeAssertion extends WhiskerAssertion {
         return `assert ${this.getTargetName()} has size ${this._size}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(${this.getTargetAccessor()}.size, ${this._size}, "Expected ${this.getTargetName()} to have size ${this._size}");`;
+        return `t.assert.withinRange(${this.getTargetAccessor()}.size, ${this._size}, 1, "Expected ${this.getTargetName()} to have size ${this._size} +-1");`;
     }
 
     static createFactory() : AssertionFactory<SizeAssertion>{

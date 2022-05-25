@@ -27,6 +27,7 @@ class TestRunner extends EventEmitter {
         } else if (!('extend' in props)) {
             props.extend = {};
         }
+        this._setRNGSeeds(props.seed);
 
         // Count number of assertions across all test cases.
         let totalAssertions = 0;
@@ -157,6 +158,22 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_END, finalResults);
         return [finalResults, csv, mutantPrograms];
+    }
+
+    /**
+     * Sets the seeds for the RNG generator based on the supplied cli parameter.
+     * @param {string | undefined } seed the supplied seed form the cli.
+     */
+    _setRNGSeeds(seed) {
+        if (seed !== 'undefined' && seed !== "") {
+            Randomness.setInitialSeeds(seed);
+        }
+            // If no seed is specified via the CLI use Date.now() as RNG-Seed but only set it once to keep consistent if
+        // several test runs are executed at once
+        else if (Randomness.getInitialRNGSeed() === undefined) {
+            Randomness.setInitialRNGSeed(Date.now());
+        }
+        Randomness.seedScratch();
     }
 
     /**
@@ -343,15 +360,7 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.TEST_START, test);
         util.start();
-        if(props.seed !== 'undefined' && props.seed !== "") {
-            Randomness.setInitialSeeds(props.seed);
-        }
-        // If no seed is specified via the CLI use Date.now() as RNG-Seed but only set it once to keep consistent if
-        // several test runs are executed at once
-        else if (Randomness.getInitialRNGSeed() === undefined){
-            Randomness.setInitialRNGSeed(Date.now());
-        }
-        Randomness.seedScratch();
+        this._setRNGSeeds(props.seed);
 
         if (modelTester && modelTester.someModelLoaded()) {
             await modelTester.prepareModel(testDriver, modelProps.caseSensitive);

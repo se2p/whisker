@@ -179,6 +179,25 @@ assert.lessOrEqual = function (actual, expected, ...message) {
 };
 
 /**
+ * @param {number} actual .
+ * @param {number} expected .
+ * @param {number} range .
+ * @param {...*} message .
+ */
+assert.withinRange = function (actual, expected, range = 0, ...message) {
+    const lowerBound = expected - range;
+    const upperBound = expected + range;
+    if (!(actual >= lowerBound && actual <= upperBound)) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: actual,
+            expected: expected,
+            operator: `withinRange`
+        });
+    }
+};
+
+/**
  * @param {string} actual .
  * @param {regex} expected .
  * @param {...*} message .
@@ -332,6 +351,25 @@ assume.lessOrEqual = function (actual, expected, ...message) {
             actual: actual,
             expected: expected,
             operator: '<='
+        });
+    }
+};
+
+/**
+ * @param {number} actual .
+ * @param {number} expected .
+ * @param {number} range .
+ * @param {...*} message .
+ */
+assume.withinRange = function (actual, expected, range = 0, ...message) {
+    const lowerBound = expected - range;
+    const upperBound = expected + range;
+    if (!(actual >= lowerBound && actual <= upperBound)) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: actual,
+            expected: expected,
+            operator: `withinRange`
         });
     }
 };

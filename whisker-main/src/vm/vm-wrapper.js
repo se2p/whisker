@@ -11,12 +11,17 @@ const {Constraints} = require('./constraints');
  * Wraps the used virtual machine and extends existing functionality.
  */
 class VMWrapper {
-    constructor(vm) {
+    constructor(vm, project) {
 
         /**
          * @type {VirtualMachine} The used virtual machine.
          */
         this.vm = vm;
+
+        /**
+         * {object} The original project json, which is used to reload the original VM state.
+         */
+        this._originalProjectJSON = project;
 
         /**
          * @type {Stepper} The stepper that counts steps of the virtual machine.
@@ -422,6 +427,14 @@ class VMWrapper {
         this.vm.runtime.removeListener('SAY', this._onSayOrThink);
         this.vm.runtime.removeListener('DELETE_SAY_OR_THINK', this._onSayOrThink);
         this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange);
+    }
+
+    /**
+     * Resets the VM state to the state of the original .sb3 file.
+     * @returns {Promise<void>}
+     */
+    async resetVM() {
+        await this.vm.loadProject(this._originalProjectJSON);
     }
 
     /**

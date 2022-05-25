@@ -99,6 +99,7 @@ export class AssertionGenerator {
 
 
     private async _executeWithObserver(test: WhiskerTest)  {
+        await Container.vmWrapper.resetVM();
         const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(),
             Container.config.getEventSelector());
         const observer = new AssertionObserver();

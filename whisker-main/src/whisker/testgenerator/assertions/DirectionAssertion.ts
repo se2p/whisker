@@ -25,7 +25,7 @@ export class DirectionAssertion extends WhiskerAssertion {
         return `assert ${this.getTargetName()} has direction ${this._direction}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(${this.getTargetAccessor()}.direction, ${this._direction}, "Expected ${this.getTargetName()} to face in direction ${this._direction}");`;
+        return `t.assert.equal(${this.getTargetAccessor()}.direction, ${this._direction}, 1, "Expected ${this.getTargetName()} to face in direction ${this._direction} +-1");`;
     }
 
     static createFactory() : AssertionFactory<DirectionAssertion>{
