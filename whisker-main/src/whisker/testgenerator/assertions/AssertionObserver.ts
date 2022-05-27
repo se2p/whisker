@@ -22,26 +22,31 @@ export class AssertionObserver implements EventObserver {
 
     private _captureState() {
         const currentState = new Map<string, Map<string, any>>();
-        for (const targetsKey in Container.vm.runtime.targets) {
+        const targets = Object.values(Container.vm.runtime.targets).sort((a, b) =>
+            (a['sprite']['name'] + a['cloneID'])  - (b['sprite']['name'] + b['cloneID']));
+        console.log(targets);
+        console.log(targets[0]['sprite']['name'], targets[0]['cloneID']);
+        for (let i = 0; i < targets.length; i++) {
+            const targetsKey = i;
             const target : RenderedTarget = Container.vm.runtime.targets[targetsKey];
             const otherSpriteNames = Container.vm.runtime.targets
                 .filter(t => t.sprite).filter(t => !t.isStage && t.getName() !== target.getName()).map(t => t.getName());
 
             currentState[targetsKey] = {
                 target: target,
-                name: Container.vm.runtime.targets[targetsKey].sprite['name'],
+                name: target.sprite['name'],
                 clone: !target.isOriginal,
                 cloneIndex: target.sprite.clones.indexOf(target),
-                direction: Container.vm.runtime.targets[targetsKey]["direction"],
-                size: Container.vm.runtime.targets[targetsKey]["size"],
-                layer: Container.vm.runtime.targets[targetsKey].getLayerOrder(),
-                costume: Container.vm.runtime.targets[targetsKey]["currentCostume"],
-                effects: Object.assign({}, Container.vm.runtime.targets[targetsKey]["effects"]),
-                visible: Container.vm.runtime.targets[targetsKey]["visible"],
-                volume: Container.vm.runtime.targets[targetsKey]["volume"],
-                x: Container.vm.runtime.targets[targetsKey]["x"],
-                y: Container.vm.runtime.targets[targetsKey]["y"],
-                variables: cloneDeep(Container.vm.runtime.targets[targetsKey]["variables"]),
+                direction: target["direction"],
+                size: target["size"],
+                layer: target.getLayerOrder(),
+                costume: target["currentCostume"],
+                effects: Object.assign({}, target["effects"]),
+                visible: target["visible"],
+                volume: target["volume"],
+                x: target["x"],
+                y: target["y"],
+                variables: cloneDeep(target["variables"]),
                 touching: Object.assign({}, ...((otherSpriteNames.map(x => ({[x] : target.isTouchingSprite(x) }))))),
                 touchingEdge: target.isTouchingEdge(),
                 cloneCount: (target.sprite.clones.filter(t => !t.isOriginal) as []).length, // wtf?
