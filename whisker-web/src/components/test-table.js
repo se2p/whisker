@@ -51,19 +51,44 @@ class TestTable {
             const test = row.data();
             runTests([test]);
         });
-        this.table.on('click', '.debug-test', () => {
-            const url = 'https://scratch.fim.uni-passau.de';
-            const debuggerWindow = window.open(`${url}/debugger`);
-            const handleMessageEvent = event => {
-                if (event.origin === url && event.data === 'loaded') {
-                    const project = window.Whisker.scratch.vm.toJSON();
-                    const projectFileName = window.Whisker.projectFileSelect.getName();
-                    debuggerWindow.postMessage({project, projectFileName}, '*');
-                    window.removeEventListener('message', handleMessageEvent);
-                }
-            };
-            window.addEventListener('message', handleMessageEvent);
+        this.table.on('click', '.debug-test', event => {
+            const tr = $(event.target).closest('tr');
+            const row = this.dataTable.row(tr);
+            const test = row.data().toJSON();
+            test.props = this.getProps();
+            test.modelProps = this.getModelProps();
+            window.Whisker.scratch.reset().then(() => {
+                test.project = window.Whisker.scratch.vm.toJSON();
+                const url = 'https://scratch.fim.uni-passau.de';
+                const debuggerWindow = window.open(`${url}/debugger`);
+                const handleMessageEvent = e => {
+                    if (e.origin === url && e.data === 'loaded') {
+                        debuggerWindow.postMessage({test}, '*');
+                        window.removeEventListener('message', handleMessageEvent);
+                    }
+                };
+                window.addEventListener('message', handleMessageEvent);
+            });
         });
+    }
+
+    getProps () {
+        const projectName = window.Whisker.projectFileSelect.getName();
+        const accelerationFactor = 1;
+        const seed = document.getElementById('seed').value;
+        const setMutators = document.querySelector('#container').mutators;
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        return {accelerationFactor, seed, projectName, mutators};
+    }
+
+    getModelProps () {
+        let duration = Number(document.querySelector('#model-duration').value);
+        if (duration) {
+            duration = duration * 1000;
+        }
+        const repetitions = Number(document.querySelector('#model-repetitions').value);
+        const caseSensitive = $('#model-case-sensitive').is(':checked');
+        return {duration, repetitions, caseSensitive};
     }
 
     /**
