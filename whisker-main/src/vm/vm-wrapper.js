@@ -180,15 +180,18 @@ class VMWrapper {
         let constraintError = null;
 
         while (this.isRunning() && this.getRunStepsExecuted() < steps && !condition()) {
+            if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
+                constraintError = await this.stepper.step(this.step.bind(this));
 
-            constraintError = await this.stepper.step(this.step.bind(this));
-
-            this.stepsExecuted++;
-
-            if (constraintError &&
-                (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
-                    this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
-                break;
+                this.stepsExecuted++;
+    
+                if (constraintError &&
+                    (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
+                        this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
+                    break;
+                }
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
 
