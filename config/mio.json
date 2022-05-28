@@ -63,6 +63,6 @@
     },
     "debugLogging": true,
     "minimize": true,
-    "assertions": false,
-    "minimizeAssertions": false
+    "assertions": true,
+    "minimizeAssertions": true
 }

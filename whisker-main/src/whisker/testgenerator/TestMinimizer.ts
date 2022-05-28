@@ -21,6 +21,7 @@
 import {TestChromosome} from "../testcase/TestChromosome";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Container} from "../utils/Container";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 export class TestMinimizer {
 
@@ -42,7 +43,8 @@ export class TestMinimizer {
         newTest.trace = test.trace;
         newTest.coverage = new Set<string>(test.coverage);
         newTest.lastImprovedCodon = test.lastImprovedCodon;
-        Container.debugLog("Minimizing test of length: " + test.getLength());
+        const nEventsPreMinimization = test.getLength();
+        Container.debugLog("Minimizing test of length: " + nEventsPreMinimization);
 
         while (changed) {
             changed = false;
@@ -61,6 +63,7 @@ export class TestMinimizer {
                 }
             }
         }
+        StatisticsCollector.getInstance().addMinimizedEvents(nEventsPreMinimization - newTest.getLength());
         Container.debugLog("Final length: " + newTest.getLength());
         return newTest;
     }

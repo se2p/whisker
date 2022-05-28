@@ -110,8 +110,9 @@ export abstract class TestGenerator {
     protected async getMinimizedTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
         const minimizedSuite: WhiskerTest[] = [];
         const coveredObjectives = new Set<number>();
+        const nTestsPreMinimization = tests.length;
 
-        Container.debugLog("Pre-minimization: "+tests.length+" tests");
+        Container.debugLog("Pre-minimization: "+nTestsPreMinimization+" tests");
 
         const sortedFitnessFunctions = new Map<number, FitnessFunction<TestChromosome>>([...this._fitnessFunctions].sort((a, b) =>
             b[1].getCDGDepth() - a[1].getCDGDepth()
@@ -136,6 +137,7 @@ export abstract class TestGenerator {
             }
         }
         Container.debugLog("Post-minimization: "+minimizedSuite.length+" tests");
+        StatisticsCollector.getInstance().minimizedTests = nTestsPreMinimization - minimizedSuite.length;
 
         return minimizedSuite;
     }

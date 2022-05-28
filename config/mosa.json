@@ -61,5 +61,7 @@
         "soundDuration": 1
     },
     "debugLogging": true,
-    "minimize": true
+    "minimize": true,
+    "assertions": true,
+    "minimizeAssertions": true
 }
