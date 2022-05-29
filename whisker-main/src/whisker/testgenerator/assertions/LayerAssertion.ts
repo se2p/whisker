@@ -34,9 +34,9 @@ export class LayerAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<LayerAssertion>{
         return new (class implements AssertionFactory<LayerAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): LayerAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): LayerAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }

@@ -29,9 +29,9 @@ export class CostumeAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<CostumeAssertion>{
         return new (class implements AssertionFactory<CostumeAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): CostumeAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): CostumeAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }

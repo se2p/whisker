@@ -30,9 +30,9 @@ export class VolumeAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<VolumeAssertion>{
         return new (class implements AssertionFactory<VolumeAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): VolumeAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): VolumeAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     assertions.push(new VolumeAssertion(targetState.target, targetState.volume, targetState.cloneIndex));
                 }
 

@@ -30,9 +30,9 @@ export class CloneCountAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<CloneCountAssertion>{
         return new (class implements AssertionFactory<CloneCountAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): CloneCountAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): CloneCountAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }

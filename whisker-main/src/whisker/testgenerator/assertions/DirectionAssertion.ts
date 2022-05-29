@@ -30,9 +30,9 @@ export class DirectionAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<DirectionAssertion>{
         return new (class implements AssertionFactory<DirectionAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): DirectionAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): DirectionAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }

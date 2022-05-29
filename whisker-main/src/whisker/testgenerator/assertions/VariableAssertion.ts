@@ -45,9 +45,9 @@ export class VariableAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<VariableAssertion>{
         return new (class implements AssertionFactory<VariableAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): VariableAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): VariableAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.clone) {
                         continue;
                     }

@@ -38,9 +38,9 @@ export class VisibilityAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<VisibilityAssertion>{
         return new (class implements AssertionFactory<VisibilityAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): VisibilityAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): VisibilityAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }

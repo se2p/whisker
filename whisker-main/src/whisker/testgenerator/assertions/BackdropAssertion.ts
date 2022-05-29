@@ -29,9 +29,9 @@ export class BackdropAssertion extends WhiskerAssertion {
     }
     static createFactory() : AssertionFactory<BackdropAssertion>{
         return new (class implements AssertionFactory<BackdropAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): BackdropAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): BackdropAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (!targetState.target.isStage) {
                         continue;
                     }

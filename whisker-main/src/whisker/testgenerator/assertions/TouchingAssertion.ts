@@ -41,9 +41,9 @@ export class TouchingAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<TouchingAssertion>{
         return new (class implements AssertionFactory<TouchingAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): TouchingAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): TouchingAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }

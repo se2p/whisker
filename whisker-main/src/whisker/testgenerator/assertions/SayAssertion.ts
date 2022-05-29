@@ -42,9 +42,9 @@ export class SayAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<SayAssertion>{
         return new (class implements AssertionFactory<SayAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): SayAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): SayAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }

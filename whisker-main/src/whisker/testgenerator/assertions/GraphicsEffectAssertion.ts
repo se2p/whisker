@@ -32,9 +32,9 @@ export class GraphicsEffectAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<GraphicsEffectAssertion>{
         return new (class implements AssertionFactory<GraphicsEffectAssertion> {
-            createAssertions(state: Map<string, Map<string, any>>): GraphicsEffectAssertion[] {
+            createAssertions(state: Map<string, Record<string, any>>): GraphicsEffectAssertion[] {
                 const assertions = [];
-                for (const targetState of Object.values(state)) {
+                for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
                         continue;
                     }
