@@ -6,6 +6,7 @@ const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
+const {getBlockMap} = require("scratch-analysis/src/control-flow-graph");
 
 /**
  * Wraps the used virtual machine and extends existing functionality.
@@ -334,6 +335,13 @@ class VMWrapper {
 
         const returnValue = await this.vm.loadProject(project);
         await this._yield();
+
+        // Make sure all text-to-speech blocks have been translated before we continue.
+        let translationFinished = !this.vm.runtime.ongoingTranslation;
+        while (!translationFinished) {
+            await new Promise(_ => setTimeout(_, 1000));
+            translationFinished = !this.vm.runtime.ongoingTranslation;
+        }
         return returnValue;
     }
 
