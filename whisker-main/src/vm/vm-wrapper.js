@@ -6,7 +6,6 @@ const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
-const {getBlockMap} = require("scratch-analysis/src/control-flow-graph");
 
 /**
  * Wraps the used virtual machine and extends existing functionality.
@@ -411,6 +410,7 @@ class VMWrapper {
         this.vm.greenFlag();
         this.startTime = Date.now();
         this.vm.runtime.stepsExecuted = 0;
+        this.vm.runtime.stepTimer = 0;
         this.vm.runtime.virtualSound = -1;
 
         this.aborted = false;
