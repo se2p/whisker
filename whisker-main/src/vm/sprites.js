@@ -70,12 +70,14 @@ class Sprites {
      * @returns {Sprite} The wrapped target as a sprite.
      */
     wrapTarget(target) {
-        let wrapper = this.sprites[target.id];
-        if (wrapper) {
-            return wrapper;
+        if(!target.isStage) {
+            let wrapper = this.sprites[target.id];
+            if (wrapper) {
+                return wrapper;
+            }
         }
 
-        wrapper = new Sprite(target, this, this.vmWrapper.vm.runtime);
+        const wrapper = new Sprite(target, this, this.vmWrapper.vm.runtime);
         wrapper._update();
         this.sprites[target.id] = wrapper;
 
@@ -148,7 +150,7 @@ class Sprites {
      * @returns {Sprite} The used stage.
      */
     getStage() {
-        return this.wrapTarget(this.vmWrapper.vm.runtime.getTargetForStage());
+        return this.wrapTarget(this.vmWrapper.vm.runtime.targets.find(t => t.isStage && t.sprite.name === "Stage"));
     }
 
     /**

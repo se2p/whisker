@@ -24,7 +24,7 @@ export class CostumeAssertion extends WhiskerAssertion {
         return `assert ${this.getTargetName()} has costume ${this._costume}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(${this.getTargetAccessor()}.currentCostume, ${this._costume}, "Expected ${this.getTargetName()} to have costume ${this._costume}");`;
+        return `t.assert.equal(${this.getTargetAccessor()}.currentCostumeName, "${this._costume}", "Expected ${this.getTargetName()} to have costume ${this._costume}");`;
     }
 
     static createFactory() : AssertionFactory<CostumeAssertion>{
