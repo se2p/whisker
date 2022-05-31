@@ -31,7 +31,7 @@ export class AssertionGenerator {
         PositionAssertion.createFactory(),
         SayAssertion.createFactory(),
         SizeAssertion.createFactory(),
-        TouchingAssertion.createFactory(),
+        //TouchingAssertion.createFactory(), //FIXME: Buggy
         TouchingEdgeAssertion.createFactory(),
         VariableAssertion.createFactory(),
         VisibilityAssertion.createFactory(),
