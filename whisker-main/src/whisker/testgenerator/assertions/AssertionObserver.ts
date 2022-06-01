@@ -28,7 +28,7 @@ export class AssertionObserver implements EventObserver {
                 .filter(t => t.sprite).filter(t => !t.isStage && t.getName() !== target.getName()).map(t => t.getName());
 
             const properties = {
-                target: target,
+                target: cloneDeep(target),
                 name: target.sprite['name'],
                 clone: !target.isOriginal,
                 cloneIndex: target.sprite.clones.indexOf(target),

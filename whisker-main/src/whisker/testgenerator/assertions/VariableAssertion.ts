@@ -10,7 +10,7 @@ export class VariableAssertion extends WhiskerAssertion {
     private readonly _variableName: string;
     private readonly _variableValue: string;
 
-    constructor (target: RenderedTarget, variableID: string, variableName: string, variableValue: any) {
+    constructor(target: RenderedTarget, variableID: string, variableName: string, variableValue: any) {
         super(target);
         this._variableID = variableID;
         this._variableName = variableName;
@@ -43,7 +43,7 @@ export class VariableAssertion extends WhiskerAssertion {
         return this.escaped(this._variableValue);
     }
 
-    static createFactory() : AssertionFactory<VariableAssertion>{
+    static createFactory(): AssertionFactory<VariableAssertion> {
         return new (class implements AssertionFactory<VariableAssertion> {
             createAssertions(state: Map<string, Record<string, any>>): VariableAssertion[] {
                 const assertions = [];
@@ -51,10 +51,11 @@ export class VariableAssertion extends WhiskerAssertion {
                     if (targetState.clone) {
                         continue;
                     }
-                    for (const [variableName, variableValue] of Object.entries(targetState.variables)) {
+                    for (const [variableID, variableValue] of Object.entries(targetState.variables)) {
                         const variable = variableValue as Variable;
-                        if (variable.type == Variable.SCALAR_TYPE) {
-                            assertions.push(new VariableAssertion(targetState.target, variableName, variable.name, variable.value));
+                        if (variable.type == Variable.SCALAR_TYPE &&
+                            VariableAssertion._variableBelongsToTarget(variableID, targetState.target)) {
+                            assertions.push(new VariableAssertion(targetState.target, variableID, variable.name, variable.value));
                         }
                     }
                 }
@@ -62,5 +63,20 @@ export class VariableAssertion extends WhiskerAssertion {
                 return assertions;
             }
         })();
+    }
+
+    /**
+     * Name clashes are possible, we avoid them by checking if a respective sprite is interacting with a given variable.
+     * @param variableID of the variable we are evaluating.
+     * @param target the RenderedTarget which is tested to interact with the variable in question.
+     * @returns true if the RenderedTarget interacts with the variable.
+     */
+    private static _variableBelongsToTarget(variableID: string, target: RenderedTarget): boolean {
+        for (const block of Object.values(target.blocks._blocks)) {
+            if ("fields" in block && 'VARIABLE' in block['fields'] && block['fields']['VARIABLE']['id'] === variableID) {
+                return true;
+            }
+        }
+        return false;
     }
 }
