@@ -25,6 +25,9 @@ export abstract class WhiskerAssertion {
     }
 
     protected escaped(value: string): string {
+        if(value.toString() === "Infinity"){
+            return "Infinity";
+        }
         let jsonString = JSON.stringify(value);
         if (jsonString.charAt(0) == '"') {
             jsonString = jsonString.slice(1, -1);

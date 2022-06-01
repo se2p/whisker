@@ -67,13 +67,15 @@ export class VariableAssertion extends WhiskerAssertion {
 
     /**
      * Name clashes are possible, we avoid them by checking if a respective sprite is interacting with a given variable.
+     * Special handling for stage variables since these are global variables accessible from all sprites.
      * @param variableID of the variable we are evaluating.
      * @param target the RenderedTarget which is tested to interact with the variable in question.
      * @returns true if the RenderedTarget interacts with the variable.
      */
     private static _variableBelongsToTarget(variableID: string, target: RenderedTarget): boolean {
         for (const block of Object.values(target.blocks._blocks)) {
-            if ("fields" in block && 'VARIABLE' in block['fields'] && block['fields']['VARIABLE']['id'] === variableID) {
+            if (("fields" in block && 'VARIABLE' in block['fields'] && block['fields']['VARIABLE']['id'] === variableID) ||
+            target.isStage) {
                 return true;
             }
         }
