@@ -48,5 +48,8 @@
         "pressDuration": 10,
         "soundDuration": 10
     },
-    "minimize": false
+    "debugLogging": false,
+    "minimize": false,
+    "assertions": false,
+    "minimizeAssertions": false
 }

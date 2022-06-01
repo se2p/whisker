@@ -31,8 +31,10 @@ class TestRunner extends EventEmitter {
 
         // Count number of assertions across all test cases.
         let totalAssertions = 0;
-        for(const test of tests){
-            totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
+        if(tests) {
+            for (const test of tests) {
+                totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
+            }
         }
 
         const projectName = props['projectName'];

@@ -70,14 +70,16 @@ class Sprites {
      * @returns {Sprite} The wrapped target as a sprite.
      */
     wrapTarget(target) {
-        if(!target.isStage) {
-            let wrapper = this.sprites[target.id];
+        let wrapper;
+        const candidate = this.sprites[target.id];
+        if(candidate !== undefined && candidate.name === target.sprite.name) {
+            wrapper = candidate;
             if (wrapper) {
                 return wrapper;
             }
         }
 
-        const wrapper = new Sprite(target, this, this.vmWrapper.vm.runtime);
+        wrapper = new Sprite(target, this, this.vmWrapper.vm.runtime);
         wrapper._update();
         this.sprites[target.id] = wrapper;
 
