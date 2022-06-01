@@ -35,7 +35,7 @@ export class AssertionObserver implements EventObserver {
                 direction: target["direction"],
                 size: target["size"],
                 layer: target.getLayerOrder(),
-                costume: target.getCurrentCostume()['name'],
+                costume: target["currentCostume"],
                 effects: Object.assign({}, target["effects"]),
                 visible: target["visible"],
                 volume: target["volume"],

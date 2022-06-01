@@ -32,6 +32,7 @@ import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import Arrays from "../utils/Arrays";
 import {Container} from "../utils/Container";
+import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
@@ -177,6 +178,9 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_askandwait':
                 // Type text
                 eventList.push(...this._getTypeTextEvents());
+                if (this.potentiallyComparesNumbers) {
+                    eventList.push(new TypeNumberEvent());
+                }
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
