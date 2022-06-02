@@ -449,7 +449,7 @@ class Inputs {
             target = target.sprite.clones.find(target => target.cloneID === cloneID);
         }
         if (target != null) {
-            target.setXY(x, y, true);
+            target.setXY(x, y, true, true);
         }
     }
 

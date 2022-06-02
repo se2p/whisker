@@ -190,12 +190,12 @@ assert.lessOrEqual = function (actual, expected, ...message) {
 /**
  * @param {number} actual .
  * @param {number} expected .
- * @param {number} range .
+ * @param {number} delta .
  * @param {...*} message .
  */
-assert.withinRange = function (actual, expected, range = 0, ...message) {
-    const lowerBound = expected - range;
-    const upperBound = expected + range;
+assert.withinRange = function (actual, expected, delta = 0, ...message) {
+    const lowerBound = expected - delta;
+    const upperBound = expected + delta;
     if (!(actual >= lowerBound && actual <= upperBound)) {
         throw new AssertionError({
             message: getMessage(message),
@@ -375,12 +375,12 @@ assume.lessOrEqual = function (actual, expected, ...message) {
 /**
  * @param {number} actual .
  * @param {number} expected .
- * @param {number} range .
+ * @param {number} delta .
  * @param {...*} message .
  */
-assume.withinRange = function (actual, expected, range = 0, ...message) {
-    const lowerBound = expected - range;
-    const upperBound = expected + range;
+assume.withinRange = function (actual, expected, delta = 0, ...message) {
+    const lowerBound = expected - delta;
+    const upperBound = expected + delta;
     if (!(actual >= lowerBound && actual <= upperBound)) {
         throw new AssertionError({
             message: getMessage(message),
