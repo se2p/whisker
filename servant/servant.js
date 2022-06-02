@@ -173,6 +173,9 @@ async function runGeneticSearch (browser, downloadPath) {
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
+    }).on('pageerror', async (error) => {
+        await browser.close();
+        return Promise.reject(error);
     });
 
     function optionallyEnableConsoleForward () {
@@ -259,6 +262,9 @@ async function runDynamicTestSuite (browser, scratchPath) {
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
+    }).on('pageerror', async (error) => {
+        await browser.close();
+        return Promise.reject(error);
     });
 
     function optionallyEnableConsoleForward () {
