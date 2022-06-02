@@ -55,10 +55,12 @@ class TestRunner extends EventEmitter {
 
             const mutantFactory = new MutationFactory(vm);
             mutantPrograms.push(...mutantFactory.generateScratchMutations(props['mutators']));
+            mutantPrograms.reverse(); // Reverse so we start with the original
             console.log(`Generated ${mutantPrograms.length - 1} mutants`); // Subtract 1 for the included original
 
             // Execute the given tests on every mutant
-            for (const mutant of mutantPrograms) {
+            while(mutantPrograms.length > 0){
+                const mutant = mutantPrograms.pop();
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
                 await this._loadProject(vm, mutant, props);
@@ -75,7 +77,8 @@ class TestRunner extends EventEmitter {
                         this.emit(TestRunner.TEST_SKIP, result);
 
                     } else {
-                        result = await this._executeTest(vm, mutant, test, modelTester, props, modelProps);
+                        // Set timeout of 600000ms = 1min for every test
+                        result = await this._executeTest(vm, mutant, test, modelTester, props, modelProps, 600000);
                         testStatusResults.push(result.status);
                         this._propagateTestResults(result, resultRecords);
                     }
@@ -332,12 +335,13 @@ class TestRunner extends EventEmitter {
      * @param {Test} test .
      * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
+     * @param {number} timeout .
      *
      * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, project, test, modelTester, props, modelProps) {
+    async _executeTest(vm, project, test, modelTester, props, modelProps, timeout = 0) {
         const result = new TestResult(test);
         const util = await this._loadProject(vm, project, props);
 
@@ -370,13 +374,29 @@ class TestRunner extends EventEmitter {
 
         if (test) {
             try {
-                await test.test(testDriver);
+
+                // A timeout was set to stop the test after the timeout has been reached.
+                if (timeout > 0) {
+                    const timeoutError = new Error("Timeout");
+                    const testTimeout = (prom, time, exception) => {
+                        let timer;
+                        return Promise.race([
+                            prom,
+                            new Promise((_r, rej) => timer = setTimeout(rej, time, exception))
+                        ]).finally(() => clearTimeout(timer));
+                    };
+                    await testTimeout(test.test(testDriver), timeout, timeoutError);
+                } else {
+                    await test.test(testDriver);
+                }
                 result.status = Test.PASS;
 
             } catch (e) {
                 result.error = e;
 
-                if (isAssertionError(e)) {
+                if (e.message === "Timeout") {
+                    result.status = Test.FAIL;
+                } else if (isAssertionError(e)) {
                     result.status = Test.FAIL;
                 } else if (isAssumptionError(e)) {
                     result.status = Test.SKIP;
@@ -409,7 +429,7 @@ class TestRunner extends EventEmitter {
         }
 
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
-        for(const statement of this.statementMap.keys()){
+        for (const statement of this.statementMap.keys()){
             if(result.covered.has(statement._targetNode.id)){
                 this.statementMap.set(statement, true);
             }

@@ -123,7 +123,7 @@ async function init () {
             csvs.push(...await runTestsOnFile(browser, scratchPath, modelPath));
         }
 
-        if (csvFile !== false) {
+        if (csvFile !== false && csvFile !== undefined) {
             console.info(`Creating CSV summary in ${csvFile}`);
             fs.writeFileSync(csvFile, csvs[0]);
         }
@@ -173,9 +173,6 @@ async function runGeneticSearch (browser, downloadPath) {
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
-    }).on('pageerror', async (error) => {
-        await browser.close();
-        return Promise.reject(error);
     });
 
     function optionallyEnableConsoleForward () {
@@ -262,9 +259,6 @@ async function runDynamicTestSuite (browser, scratchPath) {
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
-    }).on('pageerror', async (error) => {
-        await browser.close();
-        return Promise.reject(error);
     });
 
     function optionallyEnableConsoleForward () {
