@@ -24,25 +24,31 @@ export class NegateConditionalMutation extends ScratchMutation {
 
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
         const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId.split(`-${target}`)[0], mutationBlock['parent']);
-        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], target);
-        mutationBlock['parent'] = not_block['id'];
 
-        // Modify the parent block to point to the wrapping not block instead of the negated conditional diamond block
-        if (parent['inputs']['CONDITION'] !== undefined) {
-            parent['inputs']['CONDITION'][1] = not_block['id'];
-        } else if (parent['inputs']['OPERAND']) {
-            parent['inputs']['OPERAND'][1] = not_block['id'];
-        } else if (parent['inputs']['TOUCHINGOBJECTMENU']) {
-            parent['inputs']['TOUCHINGOBJECTMENU'][1] = not_block['id'];
-        } else if (parent['inputs']['OPERAND1'] && parent['inputs']['OPERAND1']) {
-            if (Randomness.getInstance().randomBoolean()) {
-                parent['inputs']['OPERAND1'][1] = not_block['id'];
+        // The parent of the mutated block.
+        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], target);
+
+        // Only if the parent exists, modify the parent block to point to the wrapping not block instead of the negated
+        // conditional diamond block
+        if (parent) {
+            mutationBlock['parent'] = not_block['id'];
+
+            if (parent['inputs']['CONDITION'] !== undefined) {
+                parent['inputs']['CONDITION'][1] = not_block['id'];
+            } else if (parent['inputs']['OPERAND']) {
+                parent['inputs']['OPERAND'][1] = not_block['id'];
+            } else if (parent['inputs']['TOUCHINGOBJECTMENU']) {
+                parent['inputs']['TOUCHINGOBJECTMENU'][1] = not_block['id'];
+            } else if (parent['inputs']['OPERAND1'] && parent['inputs']['OPERAND1']) {
+                if (Randomness.getInstance().randomBoolean()) {
+                    parent['inputs']['OPERAND1'][1] = not_block['id'];
+                } else {
+                    parent['inputs']['OPERAND2'][1] = not_block['id'];
+                }
             } else {
-                parent['inputs']['OPERAND2'][1] = not_block['id'];
+                console.log(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
+                return false;
             }
-        } else {
-            console.log(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
-            return false;
         }
 
         // Add the not block to the mutant program
