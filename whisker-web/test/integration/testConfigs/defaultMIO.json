@@ -12,7 +12,7 @@
     },
     "mutation": {
         "operator": "variableLength",
-        "gaussianMutationPower": 5,
+        "gaussianMutationPower": 10,
         "maxMutationCountStart": 0,
         "maxMutationCountFocusedPhase": 10
     },

@@ -28,6 +28,9 @@ export abstract class WhiskerAssertion {
         if(value.toString() === "Infinity"){
             return "Infinity";
         }
+        else if (value.toString() === 'NaN'){
+            return "NaN";
+        }
         let jsonString = JSON.stringify(value);
         if (jsonString.charAt(0) == '"') {
             jsonString = jsonString.slice(1, -1);

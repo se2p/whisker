@@ -32,7 +32,7 @@ export class AssertionGenerator {
         SayAssertion.createFactory(),
         SizeAssertion.createFactory(),
         //TouchingAssertion.createFactory(), //FIXME: Buggy
-        TouchingEdgeAssertion.createFactory(),
+        //TouchingEdgeAssertion.createFactory(), // FIXME: Buggy
         VariableAssertion.createFactory(),
         VisibilityAssertion.createFactory(),
         VolumeAssertion.createFactory()];
