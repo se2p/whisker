@@ -18,22 +18,6 @@ class Test {
         });
     }
 
-    toJSON () {
-        const json = {};
-        for (const key of Object.keys(this)) {
-            json[key] = this[key];
-        }
-        json.test = `(${this.test})`;
-        return json;
-    }
-    
-    fromJSON (json) {
-        for (const key of Object.keys(json)) {
-            this[key] = json[key];
-        }
-        this.test = eval(json.test);
-    }
-
     /**
      * @returns {string} .
      */

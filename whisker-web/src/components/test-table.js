@@ -54,16 +54,17 @@ class TestTable {
         this.table.on('click', '.debug-test', event => {
             const tr = $(event.target).closest('tr');
             const row = this.dataTable.row(tr);
-            const test = row.data().toJSON();
-            test.props = this.getProps();
-            test.modelProps = this.getModelProps();
+            const testIndex = row.data().index - 1;
+            const tests = window.Whisker.testsString;
+            const props = this.getProps();
+            const modelProps = this.getModelProps();
             window.Whisker.scratch.reset().then(() => {
-                test.project = window.Whisker.scratch.vm.toJSON();
+                const project = window.Whisker.scratch.vm.toJSON();
                 const url = 'https://scratch.fim.uni-passau.de';
                 const debuggerWindow = window.open(`${url}/debugger`);
                 const handleMessageEvent = e => {
                     if (e.origin === url && e.data === 'loaded') {
-                        debuggerWindow.postMessage({test}, '*');
+                        debuggerWindow.postMessage({testIndex, tests, props, modelProps, project}, '*');
                         window.removeEventListener('message', handleMessageEvent);
                     }
                 };
