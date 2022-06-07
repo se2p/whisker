@@ -47,7 +47,7 @@ export class ClickStageEvent extends ScratchEvent {
         return 0;
     }
 
-    setParameter(): number[] {
+    setParameter(): [] {
         return [];
     }
 
@@ -55,7 +55,7 @@ export class ClickStageEvent extends ScratchEvent {
         return [];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [] {
         return [];
     }
 

@@ -91,11 +91,13 @@ describe("InputNode Tests", () => {
 
     test("toJSON", () => {
         const json = inputNode.toJSON();
-        expect(json['t']).toBe("I");
-        expect(json['id']).toBe(inputNode.uID);
-        expect(json['aF']).toBe(ActivationFunction[inputNode.activationFunction]);
-        expect(json['sprite']).toBe("Sprite1");
-        expect(json['feature']).toBe("X-Position");
-        expect(Object.keys(json).length).toBe(5);
+        const expected = {
+            't': "I",
+            'id' : inputNode.uID,
+            'aF' : "NONE",
+            'sprite': "Sprite1",
+            'feature': "X-Position"
+        };
+        expect(json).toEqual(expected);
     });
 });

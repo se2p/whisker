@@ -105,9 +105,11 @@ describe("hiddenNode Tests", () => {
 
     test("toJSON", () => {
         const json = hiddenNode.toJSON();
-        expect(json['t']).toBe(`H`);
-        expect(json['id']).toBe(hiddenNode.uID);
-        expect(json['aF']).toBe(ActivationFunction[hiddenNode.activationFunction]);
-        expect(Object.keys(json).length).toBe(3);
+        const expected = {
+            't': "H",
+            'id' : hiddenNode.uID,
+            'aF' : "SIGMOID",
+        };
+        expect(json).toEqual(expected);
     });
 });

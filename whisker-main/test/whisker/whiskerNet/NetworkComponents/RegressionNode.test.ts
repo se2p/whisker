@@ -126,11 +126,13 @@ describe("regressionNode Tests", () => {
 
     test("toJSON", () => {
         const json = regressionNodeNone.toJSON();
-        expect(json['t']).toBe("R");
-        expect(json['id']).toBe(regressionNodeNone.uID);
-        expect(json['aF']).toBe(ActivationFunction[regressionNodeNone.activationFunction]);
-        expect(json['event']).toBe("WaitEvent");
-        expect(json['eventP']).toBe("Duration");
-        expect(Object.keys(json).length).toBe(5);
+        const expected = {
+            't': "R",
+            'id' : regressionNodeNone.uID,
+            'aF' : "NONE",
+            'event': "WaitEvent",
+            'eventP': "Duration"
+        };
+        expect(json).toEqual(expected);
     });
 });

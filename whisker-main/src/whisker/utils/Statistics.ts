@@ -31,7 +31,7 @@ export default class Statistics {
      * @param array of numbers.
      * @returns standard deviation of provided numbers array.
      */
-    public static std(array: Readonly<number>[]): number {
+    public static std(array: Readonly<number[]>): number {
         return Math.sqrt(this.variance(array));
     }
 
@@ -40,7 +40,7 @@ export default class Statistics {
      * @param array of numbers.
      * @returns median of provided numbers array.
      */
-    public static median(array: Readonly<number>[]): number {
+    public static median(array: Readonly<number[]>): number {
         const sorted = [...array].sort((a, b) => a - b);
         const middle = Math.floor(sorted.length / 2);
 
@@ -55,7 +55,7 @@ export default class Statistics {
      * @param array of numbers.
      * @returns IQR of provided numbers array.
      */
-    public static iqr(array: Readonly<number>[]): number {
+    public static iqr(array: Readonly<number[]>): number {
         const sorted = [...array].sort((a, b) => a - b);
 
         // Check if all values are equal.
@@ -88,7 +88,7 @@ export default class Statistics {
      * @param x parameter for kernel function.
      * @returns result of applying the kernel function to the parameter value x.
      */
-    public static gaussianKernel(x: Readonly<number>): number {
+    public static gaussianKernel(x: number): number {
         return (1 / (Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow(x, 2));
     }
 
@@ -98,7 +98,7 @@ export default class Statistics {
      * @param samples from which a bandwidth value should be derived.
      * @returns bandwidth for the given samples assuming a normal distribution.
      */
-    public static silvermanRuleOfThumb(samples: Readonly<number>[]): number {
+    public static silvermanRuleOfThumb(samples: Readonly<number[]>): number {
         const std = this.std(samples);
         const iqr = this.iqr(samples);
         return 0.9 * Math.min(std, iqr / 1.34) * Math.pow(samples.length, -0.2);

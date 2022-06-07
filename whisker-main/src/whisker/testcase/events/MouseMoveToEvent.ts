@@ -56,15 +56,15 @@ export class MouseMoveToEvent extends ScratchEvent {
         return 0;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number, number] {
         return [this.x, this.y];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [] {
         return [];
     }
 
-    setParameter(): number[] {
+    setParameter(): [] {
         return [];
     }
 

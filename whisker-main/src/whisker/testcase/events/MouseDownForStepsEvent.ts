@@ -57,16 +57,16 @@ export class MouseDownForStepsEvent extends ScratchEvent {
         return 1;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number] {
         // 0 returns False in JS/TS
         return [this._steps];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string] {
         return ["Steps"];
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): number[] {
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
         switch (testExecutor) {
             case "random":
                 this._steps = Randomness.getInstance().nextInt(1, Container.config.getClickDuration() + 1);

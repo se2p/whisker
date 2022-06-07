@@ -49,11 +49,11 @@ export class TypeNumberEvent extends ScratchEvent {
         return `TypeNumber '${this._num}'`;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number] {
         return [this._num];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string] {
         return ["Number"];
     }
 
@@ -61,7 +61,7 @@ export class TypeNumberEvent extends ScratchEvent {
         return 1;
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): number[] {
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
         switch (testExecutor) {
             case "random":
                 this._num = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);

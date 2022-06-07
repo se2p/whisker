@@ -82,12 +82,14 @@ describe("ConnectionGene Test", () => {
 
     test("toJSON", () => {
         const json = connection.toJSON();
-        connection['s'] = connection.source.uID;
-        connection['t'] = connection.target.uID;
-        connection['w'] = Number(connection.weight.toFixed(5));
-        connection['e'] = connection.isEnabled;
-        connection['i'] = connection.innovation;
-        connection['r'] = connection.isRecurrent;
-        expect(Object.keys(json).length).toBe(6);
+        const expected = {
+            's': connection.source.uID,
+            't': connection.target.uID,
+            'w': Number(connection.weight.toFixed(5)),
+            'e': connection.isEnabled,
+            'i': connection.innovation,
+            'r': connection.isRecurrent
+        };
+        expect(json).toEqual(expected);
     });
 });

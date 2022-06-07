@@ -58,15 +58,15 @@ export class MouseMoveEvent extends ScratchEvent {
         return 2; // x and y?
     }
 
-    getParameters(): number[] {
+    getParameters(): [number, number] {
         return [this._x, this._y];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string, string] {
         return ["X", "Y"];
     }
 
-    setParameter(args: number[], argType: ParameterType): number[] {
+    setParameter(args: number[], argType: ParameterType): [number, number] {
         switch (argType) {
             case "random": {
                 const random = Randomness.getInstance();

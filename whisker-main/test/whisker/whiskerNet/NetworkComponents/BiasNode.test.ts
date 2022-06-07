@@ -77,9 +77,11 @@ describe("BiasNode Tests", () => {
 
     test("toJSON", () => {
         const json = biasNode.toJSON();
-        expect(json['t']).toBe("B");
-        expect(json['id']).toBe(biasNode.uID);
-        expect(json['aF']).toBe(ActivationFunction[biasNode.activationFunction]);
-        expect(Object.keys(json).length).toBe(3);
+        const expected = {
+            't': "B",
+            'id' : biasNode.uID,
+            'aF' : "NONE",
+        };
+        expect(json).toEqual(expected);
     });
 });

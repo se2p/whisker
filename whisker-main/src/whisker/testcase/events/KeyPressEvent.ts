@@ -65,15 +65,15 @@ export class KeyPressEvent extends ScratchEvent {
         return 1;
     }
 
-    getParameters(): (string | number)[] {
+    getParameters(): [string, number] {
         return [this._keyOption, this._steps];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string] {
         return ["Steps"];
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): number[] {
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
         switch (testExecutor){
             case "random":
                 this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);

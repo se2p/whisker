@@ -113,10 +113,12 @@ describe("classificationNode Tests", () => {
 
     test("toJSON", () => {
         const json = classificationNode.toJSON();
-        expect(json['t']).toBe("C");
-        expect(json['id']).toBe(classificationNode.uID);
-        expect(json['aF']).toBe(ActivationFunction[classificationNode.activationFunction]);
-        expect(json['event']).toBe("WaitEvent");
-        expect(Object.keys(json).length).toBe(4);
+        const expected = {
+            't': "C",
+            'id' : classificationNode.uID,
+            'aF' : "SIGMOID",
+            'event' : "WaitEvent"
+        };
+        expect(json).toEqual(expected);
     });
 });
