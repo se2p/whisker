@@ -148,11 +148,11 @@ assert.strictEqual = function (actual, expected, ...message) {
  */
 assert.greater = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
     if (isNotNumeric(expected)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual > expected)) {
@@ -172,11 +172,11 @@ assert.greater = function (actual, expected, ...message) {
  */
 assert.greaterOrEqual = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
     if (isNotNumeric(expected)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual >= expected)) {
@@ -196,12 +196,11 @@ assert.greaterOrEqual = function (actual, expected, ...message) {
  */
 assert.less = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected
-    )) {
-        throw new TypeError(`"${actual}" is not a number`);
+    if (isNotNumeric(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual < expected)) {
@@ -221,11 +220,11 @@ assert.less = function (actual, expected, ...message) {
  */
 assert.lessOrEqual = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
     if (isNotNumeric(expected)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual <= expected)) {
@@ -240,16 +239,16 @@ assert.lessOrEqual = function (actual, expected, ...message) {
 
 /**
  * @param {string} actual .
- * @param {regex} expected .
+ * @param {RegExp} expected .
  * @param {...*} message .
  */
 assert.matches = function (actual, expected, ...message) {
     if (typeof actual !== 'string') {
-        throw new TypeError(`"${actual}" is not a string`);
+        throw new TypeError(`Actual value "${actual}" is not a string`);
     }
 
     if (!(typeof expected === 'string' || expected instanceof RegExp)) {
-        throw new TypeError(`"${expected}" is not a string or regular expression`);
+        throw new TypeError(`Expected value "${expected}" is not a string or regular expression`);
     }
 
     if (!(actual.match(expected))) {
@@ -408,11 +407,11 @@ assume.strictEqual = function (actual, expected, ...message) {
  */
 assume.greater = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
     if (isNotNumeric(expected)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual > expected)) {
@@ -432,11 +431,11 @@ assume.greater = function (actual, expected, ...message) {
  */
 assume.greaterOrEqual = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
     if (isNotNumeric(expected)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual >= expected)) {
@@ -456,11 +455,11 @@ assume.greaterOrEqual = function (actual, expected, ...message) {
  */
 assume.less = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
     if (isNotNumeric(expected)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual < expected)) {
@@ -480,11 +479,11 @@ assume.less = function (actual, expected, ...message) {
  */
 assume.lessOrEqual = function (actual, expected, ...message) {
     if (isNotNumeric(actual)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
     if (isNotNumeric(expected)) {
-        throw new TypeError(`"${actual}" is not a number`);
+        throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
     if (!(actual <= expected)) {
@@ -504,11 +503,11 @@ assume.lessOrEqual = function (actual, expected, ...message) {
  */
 assume.matches = function (actual, expected, ...message) {
     if (typeof actual !== 'string') {
-        throw new TypeError(`"${actual}" is not a string`);
+        throw new TypeError(`Actual value "${actual}" is not a string`);
     }
 
     if (!(typeof expected === 'string' || expected instanceof RegExp)) {
-        throw new TypeError(`"${expected}" is not a string or regular expression`);
+        throw new TypeError(`Expected value "${expected}" is not a string or regular expression`);
     }
 
     if (!(actual.match(expected))) {
