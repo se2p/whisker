@@ -69,58 +69,11 @@ const cli = {
 
         commander.parse(process.argv);
 
-        const {
-            whiskerURL,
-            scratchPath,
-            testPath,
-            modelPath,
-            modelRepetition,
-            modelDuration,
-            modelCaseSensitive,
-            mutators,
-            mutantsDownloadPath,
-            errorWitnessPath,
-            isGenerateWitnessTestOnly,
-            addRandomInputs,
-            accelerationFactor,
-            csvFile,
-            configPath,
-            isHeadless,
-            numberOfTabs,
-            isConsoleForwarded,
-            isLiveOutputCoverage,
-            isLiveLogEnabled,
-            generateTests,
-            isNeuroevolution,
-            seed
-        } = commander._optionValues;
-
         validateCommandLineArguments(commander);
 
         return {
-            whiskerURL: `file://${path.resolve(whiskerURL)}`,
-            scratchPath,
-            testPath,
-            modelPath,
-            modelRepetition,
-            modelDuration,
-            modelCaseSensitive,
-            errorWitnessPath,
-            mutators,
-            mutantsDownloadPath,
-            isGenerateWitnessTestOnly,
-            addRandomInputs,
-            accelerationFactor,
-            csvFile,
-            configPath,
-            isHeadless,
-            numberOfTabs,
-            isConsoleForwarded,
-            isLiveOutputCoverage,
-            isLiveLogEnabled,
-            generateTests,
-            isNeuroevolution,
-            seed
+            ...commander._optionValues,
+            whiskerURL: `file://${path.resolve(commander._optionValues.whiskerURL)}`,
         };
     }
 };
