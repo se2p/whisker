@@ -124,6 +124,9 @@ class VMWrapper {
      * @returns {Promise<*>} Returns AssertionError, if constraint failed.
      */
     async step() {
+
+        await this.vm.runtime.translateText2Speech();
+
         this.callbacks.callCallbacks(false);
         await this._yield();
 
@@ -334,13 +337,6 @@ class VMWrapper {
 
         const returnValue = await this.vm.loadProject(project);
         await this._yield();
-
-        // Make sure all text-to-speech blocks have been translated before we continue.
-        let translationFinished = !this.vm.runtime.ongoingTranslation;
-        while (!translationFinished) {
-            await new Promise(_ => setTimeout(_, 1000));
-            translationFinished = !this.vm.runtime.ongoingTranslation;
-        }
         return returnValue;
     }
 
