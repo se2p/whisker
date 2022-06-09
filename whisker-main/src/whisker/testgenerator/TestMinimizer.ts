@@ -22,6 +22,7 @@ import {TestChromosome} from "../testcase/TestChromosome";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Container} from "../utils/Container";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {start} from "repl";
 
 export class TestMinimizer {
 
@@ -29,9 +30,14 @@ export class TestMinimizer {
 
     private readonly _reservedCodons: number;
 
-    constructor (fitnessFunction: FitnessFunction<TestChromosome>, reservedCodons: number) {
+    private readonly _timeBudget: number;
+
+    constructor (fitnessFunction: FitnessFunction<TestChromosome>, reservedCodons: number, timeBudget: number) {
         this._fitnessFunction = fitnessFunction;
         this._reservedCodons  = reservedCodons;
+
+        // time budget for minimization, 0 means unlimited budget.
+        this._timeBudget = timeBudget === 0 ? Number.POSITIVE_INFINITY : timeBudget;
     }
 
     public async minimize(test: TestChromosome): Promise<TestChromosome> {
@@ -46,7 +52,11 @@ export class TestMinimizer {
         const nEventsPreMinimization = test.getLength();
         Container.debugLog("Minimizing test of length: " + nEventsPreMinimization);
 
-        while (changed) {
+        const startTime = Date.now();
+
+        Container.debugLog(`Minimization start time: ${startTime}`);
+
+        while (changed && Date.now() - startTime < this._timeBudget) {
             changed = false;
 
             for (let i = newTest.getGenes().length - 1; i >= this._reservedCodons; i -= this._reservedCodons) {
@@ -63,6 +73,9 @@ export class TestMinimizer {
                 }
             }
         }
+
+        Container.debugLog(`Minimization duration: ${Date.now() - startTime} / ${this._timeBudget} ms`);
+
         StatisticsCollector.getInstance().addMinimizedEvents(nEventsPreMinimization - newTest.getLength());
         Container.debugLog("Final length: " + newTest.getLength());
         return newTest;

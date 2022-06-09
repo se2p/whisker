@@ -607,4 +607,13 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    // Time budget for test minimization in milliseconds.
+    public getMinimizationTimeBudget(): number {
+        if ("minimizationTimeBudget" in this._config) {
+            return this._config["minimizationTimeBudget"];
+        } else {
+            return 0; // default, 0 means unlimited budget
+        }
+    }
+
 }

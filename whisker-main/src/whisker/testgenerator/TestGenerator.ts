@@ -130,7 +130,8 @@ export abstract class TestGenerator {
                 }
             }
             if (coveringTests.length > 0) {
-                const minimizer = new TestMinimizer(fitnessFunction, Container.config.searchAlgorithmProperties['reservedCodons']);
+                const minimizer = new TestMinimizer(fitnessFunction, Container.config.searchAlgorithmProperties['reservedCodons'],
+                    Container.config.getMinimizationTimeBudget());
                 const test = await minimizer.minimize(Randomness.getInstance().pick(coveringTests));
                 minimizedSuite.push(new WhiskerTest(test));
                 this.updateCoveredObjectives(coveredObjectives, test);
