@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {escaped, js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 //import Variable from "../scratch-vm/@types/scratch-vm/engine/variable";
 import Variable from 'scratch-vm/src/engine/variable.js';
@@ -33,14 +33,14 @@ export class VariableAssertion extends WhiskerAssertion {
 
     toJavaScript(): string {
         if (this._target.isStage) {
-            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}", false).value, "${this.getValue()}", "Expected ${this._variableName} to have value ${this._variableValue}");`;
+            return js`t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}", false).value, "${this.getValue()}", "Expected ${this._variableName} to have value ${this._variableValue}");`;
         } else {
-            return `t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}").value, "${this.getValue()}", "Expected ${this._variableName} to have value ${this._variableValue} in ${this.getTargetName()}");`;
+            return js`t.assert.equal(${this.getTargetAccessor()}.getVariable("${this._variableName}").value, "${this.getValue()}", "Expected ${this._variableName} to have value ${this._variableValue} in ${this.getTargetName()}");`;
         }
     }
 
     private getValue(): string {
-        return this.escaped(this._variableValue);
+        return escaped(this._variableValue);
     }
 
     static createFactory(): AssertionFactory<VariableAssertion> {

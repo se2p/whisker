@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -27,7 +27,7 @@ export class GraphicsEffectAssertion extends WhiskerAssertion {
         return `assert ${this.getTargetName()} has graphics effect ${this._effectName} set to ${this._status}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(${this.getTargetAccessor()}.effects.${this._effectName}, ${this._status}, "Expected effect ${this._effectName} of ${this.getTargetName()} to be ${this._status}");`;
+        return js`t.assert.equal(${this.getTargetAccessor()}.effects.${this._effectName}, ${this._status}, "Expected effect ${this._effectName} of ${this.getTargetName()} to be ${this._status}");`;
     }
 
     static createFactory() : AssertionFactory<GraphicsEffectAssertion>{

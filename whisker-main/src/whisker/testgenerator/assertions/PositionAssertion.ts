@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -28,8 +28,8 @@ export class PositionAssertion extends WhiskerAssertion {
     }
 
     toJavaScript(): string {
-        return `t.assert.withinRange(${this.getTargetAccessor()}.x, ${this._x}, 5, "Expected ${this.getTargetName()} to have x-position ${this._x} +-5");\n` +
-            `  t.assert.withinRange(${this.getTargetAccessor()}.y, ${this._y}, 5, "Expected ${this.getTargetName()} to have y-position ${this._y} +-5");`;
+        return js`t.assert.withinRange(${this.getTargetAccessor()}.x, ${this._x}, 5, "Expected ${this.getTargetName()} to have x-position ${this._x} +-5");` + '\n' +
+            js`  t.assert.withinRange(${this.getTargetAccessor()}.y, ${this._y}, 5, "Expected ${this.getTargetName()} to have y-position ${this._y} +-5");`;
     }
 
     static createFactory(): AssertionFactory<PositionAssertion> {

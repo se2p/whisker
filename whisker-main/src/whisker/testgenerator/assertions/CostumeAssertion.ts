@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -24,7 +24,7 @@ export class CostumeAssertion extends WhiskerAssertion {
         return `assert ${this.getTargetName()} has costume ${this._costume}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(${this.getTargetAccessor()}.currentCostume, ${this._costume}, "Expected ${this.getTargetName()} to have costume ${this._costume}");`;
+        return js`t.assert.equal(${this.getTargetAccessor()}.currentCostume, ${this._costume}, "Expected ${this.getTargetName()} to have costume ${this._costume}");`;
     }
 
     static createFactory() : AssertionFactory<CostumeAssertion>{

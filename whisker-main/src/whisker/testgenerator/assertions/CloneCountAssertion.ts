@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -25,7 +25,7 @@ export class CloneCountAssertion extends WhiskerAssertion {
         return `assert ${this.getTargetName()} has clones: ${this._count}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(${this.getTargetAccessor()}.getCloneCount(), ${this._count}, "Expected ${this.getTargetName()} to have ${this._count} clones");`;
+        return js`t.assert.equal(${this.getTargetAccessor()}.getCloneCount(), ${this._count}, "Expected ${this.getTargetName()} to have ${this._count} clones");`;
     }
 
     static createFactory() : AssertionFactory<CloneCountAssertion>{

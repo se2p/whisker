@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 //import Variable from "../scratch-vm/@types/scratch-vm/engine/variable";
 import Variable from 'scratch-vm/src/engine/variable.js';
@@ -32,9 +32,9 @@ export class ListAssertion extends WhiskerAssertion {
     }
     toJavaScript(): string {
         if (this._target.isStage) {
-            return `t.assert.equal(${this.getTargetAccessor()}.getList("${this._variableName}", false).value.length, ${this._variableValue.length}, "Expected list ${this._variableName} to have length ${this._variableValue.length}");`;
+            return js`t.assert.equal(${this.getTargetAccessor()}.getList("${this._variableName}", false).value.length, ${this._variableValue.length}, "Expected list ${this._variableName} to have length ${this._variableValue.length}");`;
         } else {
-            return `t.assert.equal(${this.getTargetAccessor()}.getList("${this._variableName}").value.length, ${this._variableValue.length}, "Expected list ${this._variableName} of sprite ${this.getTargetName()} to have length ${this._variableValue.length}");`;
+            return js`t.assert.equal(${this.getTargetAccessor()}.getList("${this._variableName}").value.length, ${this._variableValue.length}, "Expected list ${this._variableName} of sprite ${this.getTargetName()} to have length ${this._variableValue.length}");`;
         }
     }
 

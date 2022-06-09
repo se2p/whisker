@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -30,9 +30,9 @@ export class VisibilityAssertion extends WhiskerAssertion {
     }
     toJavaScript(): string {
         if (this._visibility) {
-            return `t.assert.ok(${this.getTargetAccessor()}.visible, "Expected ${this.getTargetName()} to be visible");`;
+            return js`t.assert.ok(${this.getTargetAccessor()}.visible, "Expected ${this.getTargetName()} to be visible");`;
         } else {
-            return `t.assert.not(${this.getTargetAccessor()}.visible, "Expected ${this.getTargetName()} not to be visible");`;
+            return js`t.assert.not(${this.getTargetAccessor()}.visible, "Expected ${this.getTargetName()} not to be visible");`;
         }
     }
 

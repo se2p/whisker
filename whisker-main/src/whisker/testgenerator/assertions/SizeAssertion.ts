@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -25,7 +25,7 @@ export class SizeAssertion extends WhiskerAssertion {
         return `assert ${this.getTargetName()} has size ${this._size}`;
     }
     toJavaScript(): string {
-        return `t.assert.withinRange(${this.getTargetAccessor()}.size, ${this._size}, 1, "Expected ${this.getTargetName()} to have size ${this._size} +-1");`;
+        return js`t.assert.withinRange(${this.getTargetAccessor()}.size, ${this._size}, 1, "Expected ${this.getTargetName()} to have size ${this._size} +-1");`;
     }
 
     static createFactory() : AssertionFactory<SizeAssertion>{

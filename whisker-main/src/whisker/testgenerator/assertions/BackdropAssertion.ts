@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -25,7 +25,7 @@ export class BackdropAssertion extends WhiskerAssertion {
         return `assert stage has backdrop ${this._backdrop}`;
     }
     toJavaScript(): string {
-        return `t.assert.equal(t.getStage().currentCostume, ${this._backdrop}, "Expected backdrop ${this._backdrop}");`;
+        return js`t.assert.equal(t.getStage().currentCostume, ${this._backdrop}, "Expected backdrop ${this._backdrop}");`;
     }
     static createFactory() : AssertionFactory<BackdropAssertion>{
         return new (class implements AssertionFactory<BackdropAssertion> {

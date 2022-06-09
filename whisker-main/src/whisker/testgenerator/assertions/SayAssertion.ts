@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {escaped, js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 
@@ -30,14 +30,14 @@ export class SayAssertion extends WhiskerAssertion {
     }
     toJavaScript(): string {
         if (this._text) {
-            return `t.assert.equal(${this.getTargetAccessor()}.sayText, "${this.getValue()}", "Expected ${this.getTargetName()} to say ${this.getValue()}");`;
+            return js`t.assert.equal(${this.getTargetAccessor()}.sayText, "${this.getValue()}", "Expected ${this.getTargetName()} to say ${this.getValue()}");`;
         } else {
-            return `t.assert.not(${this.getTargetAccessor()}.sayText, "Expected ${this.getTargetName()} not to say anything");`;
+            return js`t.assert.not(${this.getTargetAccessor()}.sayText, "Expected ${this.getTargetName()} not to say anything");`;
         }
     }
 
     private getValue(): string {
-        return this.escaped(this._text);
+        return escaped(this._text);
     }
 
     static createFactory() : AssertionFactory<SayAssertion>{

@@ -1,4 +1,4 @@
-import {WhiskerAssertion} from "./WhiskerAssertion";
+import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {Container} from "../../utils/Container";
@@ -33,9 +33,9 @@ export class TouchingAssertion extends WhiskerAssertion {
     }
     toJavaScript(): string {
         if (this._touching) {
-            return `t.assert.ok(${this.getTargetAccessor()}.isTouchingSprite("${this.escaped(this._otherTarget)}"), "Expected ${this.getTargetName()} to touch ${this.escaped(this._otherTarget)}");`;
+            return js`t.assert.ok(${this.getTargetAccessor()}.isTouchingSprite("${this._otherTarget}"), "Expected ${this.getTargetName()} to touch ${this._otherTarget}");`;
         } else {
-            return `t.assert.not(${this.getTargetAccessor()}.isTouchingSprite("${this.escaped(this._otherTarget)}"), "Expected ${this.getTargetName()} not to touch ${this.escaped(this._otherTarget)}");`;
+            return js`t.assert.not(${this.getTargetAccessor()}.isTouchingSprite("${this._otherTarget}"), "Expected ${this.getTargetName()} not to touch ${this._otherTarget}");`;
         }
     }
 
