@@ -159,7 +159,7 @@ export abstract class TestGenerator {
         }
 
         StatisticsCollector.getInstance().minimizedTests = nTestsPreMinimization - minimizedSuite.length;
-        Container.debugLog(`Minimization finished with ${minimizedSuite.length - nTestsPreMinimization} tests and a duration of ${Math.round((Date.now() - startTime) * 100) / 100} s`);
+        Container.debugLog(`Minimization finished with ${minimizedSuite.length - nTestsPreMinimization} tests and a duration of ${Date.now() - startTime} ms`);
         return minimizedSuite;
     }
 

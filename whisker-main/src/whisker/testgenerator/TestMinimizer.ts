@@ -66,7 +66,7 @@ export class TestMinimizer {
         }
 
         StatisticsCollector.getInstance().addMinimizedEvents(nEventsPreMinimization - newTest.getLength());
-        Container.debugLog(`Test minimization finished with an event length of ${newTest.getLength()} and a duration of ${Math.round((Date.now() - startTime) * 100) / 100} s`);
+        Container.debugLog(`Test minimization finished with an event length of ${newTest.getLength()} and a duration of ${Date.now() - startTime} ms`);
         return newTest;
     }
 }
