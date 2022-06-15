@@ -100,7 +100,7 @@ export class NetworkExecutor {
         let workingNetwork = false;
         const codons: number[] = [];
 
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vm);
 
         // Activate the network <stabilizeCounter> times to stabilise it for classification
         network.flushNodeValues();
@@ -200,7 +200,7 @@ export class NetworkExecutor {
         const events: EventAndParameters[] = [];
         const codons: number[] = [];
 
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vm);
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this.projectStopped.bind(this);

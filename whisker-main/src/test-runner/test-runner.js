@@ -306,7 +306,7 @@ class TestRunner extends EventEmitter {
         else if (Randomness.getInitialRNGSeed() === undefined){
             Randomness.setInitialRNGSeed(Date.now());
         }
-        Randomness.seedScratch();
+        Randomness.seedScratch(vm);
 
         if (modelTester && modelTester.someModelLoaded()) {
             await modelTester.prepareModel(testDriver, modelProps.caseSensitive);

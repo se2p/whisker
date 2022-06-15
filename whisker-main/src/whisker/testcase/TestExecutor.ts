@@ -70,7 +70,7 @@ export class TestExecutor {
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
 
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -155,7 +155,7 @@ export class TestExecutor {
      * @param numberOfEvents the number of events that should be executed.
      */
     async executeRandomEvents(randomEventChromosome: TestChromosome, numberOfEvents: number): Promise<ExecutionTrace> {
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;

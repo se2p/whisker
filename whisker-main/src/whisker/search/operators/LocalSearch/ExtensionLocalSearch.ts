@@ -96,7 +96,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const newCodons: number[] = [];
         const events: EventAndParameters[] = [];
         newCodons.push(...chromosome.getGenes());
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vmWrapper.vm);
         this._vmWrapper.start();
 
         // Execute the original codons to obtain the state of the VM after executing the original chromosome.
