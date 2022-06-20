@@ -243,3 +243,5 @@ export default class Arrays {
         return array[array.length - 1];
     }
 }
+
+export const shuffle = Arrays.shuffle;

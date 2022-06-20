@@ -7,6 +7,7 @@ const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
+const {shuffle} = require("../whisker/utils/Arrays");
 
 class TestRunner extends EventEmitter {
 
@@ -52,11 +53,11 @@ class TestRunner extends EventEmitter {
             // Add the original as reference when applying mutation analysis
             const original = JSON.parse((vm.toJSON()));
             original.name = "Original";
-            mutantPrograms = [original];
 
             const mutantFactory = new MutationFactory(vm);
-            mutantPrograms.push(...mutantFactory.generateScratchMutations(props['mutators']));
-            mutantPrograms.reverse(); // Reverse so we start with the original
+            mutantPrograms = mutantFactory.generateScratchMutations(props['mutators']);
+            shuffle(mutantPrograms); // Shuffle so we do not favour mutation operators when a time limit is set
+            mutantPrograms.push(original);
             console.log(`Generated ${mutantPrograms.length - 1} mutants`); // Subtract 1 for the included original
 
             // Execute the given tests on every mutant
