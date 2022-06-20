@@ -47,6 +47,7 @@ class TestRunner extends EventEmitter {
 
         if (props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
+            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER;
 
             // Add the original as reference when applying mutation analysis
             const original = JSON.parse((vm.toJSON()));
@@ -59,7 +60,8 @@ class TestRunner extends EventEmitter {
             console.log(`Generated ${mutantPrograms.length - 1} mutants`); // Subtract 1 for the included original
 
             // Execute the given tests on every mutant
-            while(mutantPrograms.length > 0){
+            const startTime = Date.now();
+            while (mutantPrograms.length > 0 && Date.now() - startTime < mutationBudget) {
                 const mutant = mutantPrograms.pop();
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);

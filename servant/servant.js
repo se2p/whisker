@@ -19,9 +19,9 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, mutators,
-    mutantsDownloadPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless,
-    numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly,
-    seed
+    mutationBudget, mutantsDownloadPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests,
+    isGenerateWitnessTestOnly, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -374,6 +374,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
+        await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(path);

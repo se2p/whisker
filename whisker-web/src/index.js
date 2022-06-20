@@ -157,6 +157,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const seed = document.getElementById('seed').value;
         const setMutators = document.querySelector('#container').mutators;
         const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        const mutationBudget = document.querySelector('#container').mutationBudget | 0;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -170,7 +171,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
