@@ -45,51 +45,69 @@ const TAP13Formatter = {
     },
 
     /**
-     * @param {{string: TestResult[]}} summary .
+     * Generates an object that contains a summary of the test results.
+     * @param {{string: TestResult[]}} summaryRecord .
      * @return {object} .
      */
-    formatSummary (summaryRecord) {
+    formatSummary(summaryRecord) {
         const formattedSummary = {};
-        for(const [projectName, summary] of Object.entries(summaryRecord)) {
-            const tests = summary.length;
-            const pass = summary.filter(result => result.status === Test.PASS).length;
-            const fail = summary.filter(result => result.status === Test.FAIL).length;
-            const error = summary.filter(result => result.status === Test.ERROR).length;
-            const skip = summary.filter(result => result.status === Test.SKIP).length;
-            let allErrors = [];
-            let allFails = [];
+        for (const [projectName, summary] of Object.entries(summaryRecord)) {
+            formattedSummary[projectName] = {};
+            if(summary.length > 0 && summary[0].test !== undefined) {
+                const tests = summary.length;
+                const passedResults = summary.filter(result => result.status === Test.PASS);
+                const pass = passedResults.length;
+                const passedTests = passedResults.length > 0 ? passedResults.map(result => result.test.name) : "None";
+                const failedResults = summary.filter(result => result.status === Test.FAIL);
+                const fail = failedResults.length;
+                const failedTests = failedResults.length > 0 ? failedResults.map(result => result.test.name) : "None";
+                const errorResults = summary.filter(result => result.status === Test.ERROR);
+                const error = errorResults.length;
+                const errorTests = errorResults.length > 0 ? errorResults.map(result => result.test.name) : "None";
+                const skippedResults = summary.filter(result => result.status === Test.SKIP);
+                const skip = skippedResults.length;
+                const skippedTests = skippedResults.length > 0 ? skippedResults.map(result => result.test.name) : "None";
+
+                formattedSummary[projectName]["tests"] = tests;
+                formattedSummary[projectName]["pass"] = pass;
+                formattedSummary[projectName]["passedTests"] = passedTests;
+                formattedSummary[projectName]["fail"] = fail;
+                formattedSummary[projectName]["failedTests"] = failedTests;
+                formattedSummary[projectName]["error"] = error;
+                formattedSummary[projectName]["errorTests"] = errorTests;
+                formattedSummary[projectName]["skip"] = skip;
+                formattedSummary[projectName]["skippedTests"] = skippedTests;
+            }
+
+            // Check if we have model-based results and add them to the result object if necessary.
+            let modelResults = false;
+            const allErrors = [];
+            const allFails = [];
             summary.forEach(result => {
-                if (result.modelResult && result.modelResult.errors.length > 0) {
-                    allErrors = [...allErrors, ...result.modelResult.errors];
-                }
-                if (result.modelResult && result.modelResult.fails.length > 0) {
-                    allFails = [...allFails, ...result.modelResult.fails];
+                if (result.modelResult) {
+                    modelResults = true;
+                    if (result.modelResult.fails.length > 0) {
+                        allFails.push(result.modelResult.fails);
+                    }
+                    if (result.modelResult.errors.length > 0) {
+                        allErrors.push(result.modelResult.errors);
+                    }
                 }
             });
-            let uniqueErrors = [...new Set(allErrors)];
-            let uniqueFails = [...new Set(allFails)];
-            let sort = (a, b) => {
-                if (a < b) {
-                    return -1;
-                } else if (b < a) {
-                    return 1;
-                }
-                return 0;
-            };
 
-            uniqueFails.sort(sort);
-            uniqueErrors.sort(sort);
-            formattedSummary[projectName] = {
-                tests,
-                pass,
-                fail,
-                error,
-                skip,
-                errors_in_model: uniqueErrors.length,
-                errors_in_model_text: uniqueErrors,
-                fails_in_model: uniqueFails.length,
-                fails_in_model_text: uniqueFails
-            };
+            let uniqueFails = [...new Set(allFails)];
+            const nUniqueFails = uniqueFails.length;
+            let uniqueErrors = [...new Set(allErrors)];
+            const nUniqueErrors = uniqueErrors.length;
+
+            uniqueFails = nUniqueFails > 0 ? uniqueFails.sort((a, b) => a - b): "None";
+            uniqueErrors = nUniqueErrors > 0 ? uniqueErrors.sort((a, b) => a - b): "None";
+            if(modelResults){
+                formattedSummary[projectName]["fails_in_model"] = nUniqueFails;
+                formattedSummary[projectName]["fails_in_model_text"] = uniqueFails;
+                formattedSummary[projectName]["errors_in_model"] = nUniqueErrors;
+                formattedSummary[projectName]["errors_in_model_text"] = uniqueErrors;
+            }
         }
 
         return formattedSummary;
