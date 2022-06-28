@@ -65,7 +65,7 @@ whiskerCLI.command('run')
     .option(
         '-p, --number-of-tabs <Integer>',
         'number of tabs to execute the tests in',
-        (numberTabs) => options.processPositiveInt(numberTabs),
+        (numberTabs) => options.processNumberOfTabs(numberTabs),
         require('os').cpus().length
     )
     .action((ignored, cmd) => {
@@ -156,7 +156,7 @@ whiskerCLI.command('witness')
     .option(
         '-p, --number-of-tabs <Integer>',
         'number of tabs to execute the tests in',
-        (numberTabs) => options.processPositiveInt(numberTabs),
+        (numberTabs) => options.processNumberOfTabs(numberTabs),
         require('os').cpus().length
     )
     .option(
@@ -184,7 +184,7 @@ whiskerCLI.command('mutation')
     .option(
         '-p, --number-of-tabs <Integer>',
         'number of tabs to execute the tests in',
-        (numberTabs) => options.processPositiveInt(numberTabs),
+        (numberTabs) => options.processNumberOfTabs(numberTabs),
         require('os').cpus().length
     )
     .option('-e, --mutants-download-path <Path>',

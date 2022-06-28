@@ -102,6 +102,17 @@ function processMutationOperators(operators) {
     return operators;
 }
 
+function processNumberOfTabs(numberOfTabs) {
+    numberOfTabs = processPositiveInt(numberOfTabs);
+
+    const cpus = require('os').cpus().length;
+    if (numberOfTabs > cpus) {
+        throw new InvalidArgumentError(`Please do not use more than ${cpus}.`);
+    }
+
+    return numberOfTabs;
+}
+
 module.exports = {
     processFilePathExists,
     processDirPathExists,
@@ -109,4 +120,5 @@ module.exports = {
     processFilePathNotExists,
     processPositiveInt,
     processMutationOperators,
+    processNumberOfTabs,
 }
