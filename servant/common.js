@@ -33,11 +33,6 @@ async function runTestsOnFile(page, targetProject) {
 
     const csvs = [];
 
-    // FIXME: the if seems to be required for running existing tests only
-    //  the else-part is only required for model tests -> split this function
-    //  and move it to the appropriate modules
-    // FIXME: could also use the "mode" property of "./cli" to decide what to do...
-
     if (testPath) {
         const paths = prepareTestFiles();
         await Promise.all(paths.map((path, index) => runTests(path, page, index, targetProject)))
