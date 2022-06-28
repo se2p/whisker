@@ -104,7 +104,9 @@ export class AssertionGenerator {
             Container.config.getEventSelector());
         const observer = new AssertionObserver();
         executor.attach(observer);
+        const trace = test.chromosome.trace.clone();
         await executor.execute(test.chromosome);
+        test.chromosome.trace = trace;
         return observer.getExecutionTrace();
     }
 

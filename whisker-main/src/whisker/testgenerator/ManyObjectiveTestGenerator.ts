@@ -20,8 +20,6 @@
 
 import {TestGenerator} from './TestGenerator';
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
-import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
-import {Container} from "../utils/Container";
 import Arrays from "../utils/Arrays";
 
 /**
@@ -38,23 +36,9 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
         // TODO: Assuming there is at least one solution?
         const archive = await searchAlgorithm.findSolution();
         const testChromosomes = Arrays.distinct(archive.values());
-
-        // Check if we can remove unnecessary events in our final testSuite by applying ReductionLocalSearch.
-        const reductionOperator = new ReductionLocalSearch(Container.vmWrapper, Container.config.getEventExtractor(),
-            Container.config.getEventSelector(), 1);
-        for (const chromosome of testChromosomes) {
-            if (reductionOperator.isApplicable(chromosome)) {
-                const reducedChromosome = await reductionOperator.apply(chromosome);
-                if (reductionOperator.hasImproved(chromosome, reducedChromosome)) {
-                    Arrays.replace(testChromosomes, chromosome, reducedChromosome);
-                }
-            }
-        }
-
         const testSuite = await this.getTestSuite(testChromosomes);
 
         await this.collectStatistics(testSuite);
-
         const summary = this.summarizeSolution(archive);
 
         return new WhiskerTestListWithSummary(testSuite, summary);

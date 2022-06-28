@@ -51,7 +51,6 @@ export class TestExecutor {
         this._vm = vmWrapper.vm;
         this._eventExtractor = eventExtractor;
         this._eventSelector = eventSelector;
-        this.recordInitialState();
     }
 
     async executeTests(tests: TestChromosome[]): Promise<void> {
@@ -82,7 +81,7 @@ export class TestExecutor {
         let targetFitness = Number.MAX_SAFE_INTEGER;
 
         const startTime = Date.now();
-        while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+        while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(this._eventExtractor.extractEvents(this._vm)))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
@@ -139,7 +138,7 @@ export class TestExecutor {
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
-        this.resetState();
+        await this.resetState();
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
@@ -165,7 +164,7 @@ export class TestExecutor {
         const events: EventAndParameters[] = [];
 
         const startTime = Date.now();
-        while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+        while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(this._eventExtractor.extractEvents(this._vm)))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
@@ -199,7 +198,7 @@ export class TestExecutor {
         randomEventChromosome.trace = trace;
 
         this._vmWrapper.end();
-        this.resetState();
+        await this.resetState();
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
@@ -288,69 +287,22 @@ export class TestExecutor {
     }
 
     /**
-     * Checks if the given event list contains actionEvents, i.e events other than WaitEvents.
+     * Checks if the given event list contains actionEvents, i.e. events other than WaitEvents.
      * @param events the event list to check.
      */
     private hasActionEvents(events: ScratchEvent[]) {
         return events.filter(event => !(event instanceof WaitEvent)).length > 0;
     }
 
-    public resetState(): void {
-        // Delete clones
-        const clones = [];
-        for (const targetsKey in this._vm.runtime.targets) {
-            if (!this._vm.runtime.targets[targetsKey].isOriginal) {
-                clones.push(this._vm.runtime.targets[targetsKey]);
-            }
-        }
+    /**
+     * Resets the state of the VM by reloading the saved sb3 file and resetting the sent inputs.
+     */
+    public async resetState(): Promise<void> {
+        await this._vmWrapper.resetVM();
 
-        for (const target of clones) {
-            this._vm.runtime.stopForTarget(target);
-            this._vm.runtime.disposeTarget(target);
-        }
-
-        // Restore state of all others
-        for (const targetsKey in this._vm.runtime.targets) {
-            this._vm.runtime.targets[targetsKey]["direction"] = this._initialState[targetsKey]["direction"];
-            this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
-            this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
-            this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
-            this._vm.runtime.targets[targetsKey]["drawableID"] = this._initialState[targetsKey]["drawableID"];
-            this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
-            this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
-            this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
-            this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
-            this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
-            const x = this._initialState[targetsKey]["x"];
-            const y = this._initialState[targetsKey]["y"];
-            this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
-            this._vm.runtime.targets[targetsKey]["variables"] = JSON.parse(JSON.stringify(this._initialState[targetsKey]["variables"]));
-        }
-
+        this._vmWrapper.inputs.clearInputs();
         this._vmWrapper.inputs.resetMouse();
         this._vmWrapper.inputs.resetKeyboard();
-    }
-
-    // TODO: Size?
-    private recordInitialState() {
-        for (const targetsKey in this._vm.runtime.targets) {
-            this._initialState[targetsKey] = {
-                name: this._vm.runtime.targets[targetsKey].sprite['name'],
-                direction: this._vm.runtime.targets[targetsKey]["direction"],
-                currentCostume: this._vm.runtime.targets[targetsKey]["currentCostume"],
-                draggable: this._vm.runtime.targets[targetsKey]["draggable"],
-                dragging: this._vm.runtime.targets[targetsKey]["dragging"],
-                drawableID: this._vm.runtime.targets[targetsKey]['drawableID'],
-                effects: Object.assign({}, this._vm.runtime.targets[targetsKey]["effects"]),
-                videoState: this._vm.runtime.targets[targetsKey]["videoState"],
-                videoTransparency: this._vm.runtime.targets[targetsKey]["videoTransparency"],
-                visible: this._vm.runtime.targets[targetsKey]["visible"],
-                volume: this._vm.runtime.targets[targetsKey]["volume"],
-                x: this._vm.runtime.targets[targetsKey]["x"],
-                y: this._vm.runtime.targets[targetsKey]["y"],
-                variables: JSON.parse(JSON.stringify(this._vm.runtime.targets[targetsKey]["variables"]))
-            };
-        }
     }
 
     /**

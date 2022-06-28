@@ -600,8 +600,8 @@ export class WhiskerSearchConfiguration {
     }
 
     public isMinimizeAssertionsActive(): boolean {
-        if ("minimize_assertions" in this._config) {
-            return this._config['minimize_assertions'];
+        if ("minimizeAssertions" in this._config) {
+            return this._config['minimizeAssertions'];
         } else {
             return true; // default
         }

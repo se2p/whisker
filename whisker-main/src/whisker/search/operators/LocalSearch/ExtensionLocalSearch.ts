@@ -105,7 +105,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         // Now extend the codons of the original chromosome to increase coverage.
         const lastImprovedResults = await this._extendGenes(newCodons, events, chromosome);
         this._vmWrapper.end();
-        this._testExecutor.resetState();
+        await this._testExecutor.resetState();
 
         // Create the chromosome resulting from local search.
         const newChromosome = chromosome.cloneWith(newCodons);
