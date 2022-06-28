@@ -163,19 +163,40 @@ whiskerCLI.command('witness')
     )
     .option(
         '-z, --generate-witness-only',
-        'generate test file with error witness replay without executing it'
+        'generate error witness replay without executing it'
     )
     .action((ignored, cmd) => {
         mode = 'witness';
         opts = cmd.opts();
     });
 
-// FIXME: which subcommand shall this belong to? We don't have a separate command just for mutation testing...
-//  Maybe it just belongs to test generation because frankly I don't know
 whiskerCLI.command('mutation')
     .description('Run mutation tests')
-    .option('-mu, --mutators <String>', 'Defines the mutation operators in case mutation testing should be applied', '')
-    .option('-md, --mutants-download-path <Path>', 'Defines where and if the generated mutants should be saved', false)
+    .requiredOption(
+        '-m, --mutators <String...>',
+        'the mutation operators to apply',
+        (mutators) => options.processMutationOperators(mutators),
+        'ALL',
+    )
+    .requiredOption(
+        '-t, --test-path <Path>',
+        'path to Whisker tests to run (".js")',
+        (testPath) => options.processFilePathExists(testPath, '.js')
+    )
+    .option(
+        '-p, --number-of-tabs <Integer>',
+        'number of tabs to execute the tests in',
+        (numberTabs) => options.processPositiveInt(numberTabs),
+        require('os').cpus().length
+    )
+    .option('-e, --mutants-download-path <Path>',
+        'where generated mutants should be saved',
+        (downloadPath) => options.processDirPathExists(downloadPath),
+    )
+    .action((ignored, cmd) => {
+        mode = 'mutation';
+        opts = cmd.opts();
+    });
 
 
 whiskerCLI.parse(process.argv);

@@ -89,10 +89,24 @@ function processPositiveInt(value) {
     return value;
 }
 
+function processMutationOperators(operators) {
+    // FIXME: MutationFactory should export these instead of having them to hard-code here
+    const supportedOperators = ['KRM', 'SBD', 'SDM', 'AOR', 'LOR', 'ROR', 'NCM', 'VRM', 'ALL'];
+
+    for (const op of operators) {
+        if (!supportedOperators.includes(op)) {
+            throw new InvalidArgumentError(`Unknown mutation operator ${op}`);
+        }
+    }
+
+    return operators;
+}
+
 module.exports = {
     processFilePathExists,
     processDirPathExists,
     processFileOrDirPathExists,
     processFilePathNotExists,
     processPositiveInt,
+    processMutationOperators,
 }
