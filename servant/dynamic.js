@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const {logger} = require("./util");
+const logger = require("./logger");
 const {showHiddenFunctionality} = require("./common");
 const {
     scratchPath,

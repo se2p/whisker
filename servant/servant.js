@@ -1,5 +1,5 @@
 const puppeteer = require("puppeteer");
-const {logger} = require("./logger");
+const logger = require("./logger");
 const {mode, opts: {consoleForwarded, headless}} = require('./cli');
 
 async function openNewBrowser() {

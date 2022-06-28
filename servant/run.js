@@ -1,7 +1,7 @@
 const fs = require("fs");
-const {logger} = require("./util");
+const logger = require("./logger");
 const {resolve} = require("path");
-const {opts: {scratchPath, modelPath, csvFile}} = require("./cli");
+const {scratchPath, modelPath, csvFile} = require("./cli").opts;
 const {runTestsOnFile} = require("./common");
 
 // Standard TestSuite / Model-based testing

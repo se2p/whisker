@@ -1,5 +1,5 @@
 const {Command} = require('commander');
-const options = require('./options')
+const util = require('./util')
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../package.json');
 
@@ -11,13 +11,13 @@ const whiskerCLI = new class extends Command {
             .requiredOption(
                 '-s, --scratch-path <Path>',
                 'path to file ("*.sb3") or folder with scratch application(s)',
-                (scratchPath) => options.processFileOrDirPathExists(scratchPath, '.sb3'),
+                (scratchPath) => util.processFileOrDirPathExists(scratchPath, '.sb3'),
             )
             .requiredOption(
                 '-u, --whisker-url <Path>',
                 'file URL to Whisker Web (".html")',
                 (whiskerWeb) => {
-                    const filePath = options.processFilePathExists(whiskerWeb, '.html');
+                    const filePath = util.processFilePathExists(whiskerWeb, '.html');
                     return `file://${filePath}`;
                 },
                 '../whisker-web/dist/index.html',
@@ -25,18 +25,18 @@ const whiskerCLI = new class extends Command {
             .option(
                 '-a, --acceleration <Integer>',
                 'acceleration factor',
-                (factor) => options.processPositiveInt(factor),
+                (factor) => util.processPositiveInt(factor),
                 1,
             )
             .option(
                 '-v, --csv-file <Path>',
                 'create CSV file with results',
-                (csvPath) => options.processFilePathNotExists(csvPath),
+                (csvPath) => util.processFilePathNotExists(csvPath),
             )
             .option(
                 '-z, --seed <Integer>',
                 'seed Scratch-VM with given integer',
-                (seed) => options.processPositiveInt(seed),
+                (seed) => util.processPositiveInt(seed),
             )
             .option('-d, --headless', 'run headless ("d" like in "decapitated")')
             .option('-k, --console-forwarded', 'forward browser console output')
@@ -60,12 +60,12 @@ whiskerCLI.command('run')
     .requiredOption(
         '-t, --test-path <Path>',
         'path to Whisker tests to run (".js")',
-        (testPath) => options.processFilePathExists(testPath, '.js')
+        (testPath) => util.processFilePathExists(testPath, '.js')
     )
     .option(
         '-p, --number-of-tabs <Integer>',
         'number of tabs to execute the tests in',
-        (numberTabs) => options.processNumberOfTabs(numberTabs),
+        (numberTabs) => util.processNumberOfTabs(numberTabs),
         require('os').cpus().length
     )
     .action((ignored, cmd) => {
@@ -78,19 +78,19 @@ whiskerCLI.command('generate')
     .requiredOption(
         '-t, --test-download-dir <Path>',
         'path to directory for generated tests',
-        (testDir) => options.processDirPathExists(testDir),
+        (testDir) => util.processDirPathExists(testDir),
         __dirname,
     )
     .requiredOption(
         '-c, --config-path <Path>',
         'path to a configuration file (".json")',
-        (configPath) => options.processFilePathExists(configPath, '.json'),
+        (configPath) => util.processFilePathExists(configPath, '.json'),
         '../config/mio.json',
     )
     .option(
         '-r, --add-random-inputs <Integer>',
         'add random inputs to the test and wait the given number of seconds for its completion',
-        (seconds) => options.processPositiveInt(seconds),
+        (seconds) => util.processPositiveInt(seconds),
         10,
     )
     .action((ignored, cmd) => {
@@ -103,13 +103,13 @@ whiskerCLI.command('dynamic')
     .requiredOption(
         '-c, --config-path <Path>',
         'path to a configuration file (".json")',
-        (configPath) => options.processFilePathExists(configPath, '.json'),
+        (configPath) => util.processFilePathExists(configPath, '.json'),
         '../config/mio.json',
     )
     .requiredOption(
         '-t, --test-path <Path>',
         'path to dynamic Whisker tests (".json")',
-        (testPath) => options.processFilePathExists(testPath, '.json')
+        (testPath) => util.processFilePathExists(testPath, '.json')
     )
     .action((ignored, cmd) => {
         mode = 'dynamic';
@@ -121,18 +121,18 @@ whiskerCLI.command('model')
     .requiredOption(
         '-m, --model-path <Path>',
         'model to test with',
-        (modelPath) => options.processFilePathExists(modelPath)
+        (modelPath) => util.processFilePathExists(modelPath)
     )
     .requiredOption(
         '-r, --model-repetition <Integer>',
         'model test repetitions',
-        (reps) => options.processPositiveInt(reps),
+        (reps) => util.processPositiveInt(reps),
         1,
     )
     .requiredOption(
         '-t, --model-duration <Integer>',
         'maximal time of one model test run in seconds',
-        (duration) => options.processPositiveInt(duration),
+        (duration) => util.processPositiveInt(duration),
         30
     )
     .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive')
@@ -146,17 +146,17 @@ whiskerCLI.command('witness')
     .requiredOption(
         '-w, --error-witness-path <Path>',
         'error witness to replay ("*.json")',
-        (witnessPath) => options.processFilePathExists(witnessPath, '.json'),
+        (witnessPath) => util.processFilePathExists(witnessPath, '.json'),
     )
     .requiredOption(
         '-t, --test-path <Path>',
         'path to Whisker tests to run (".js")',
-        (testPath) => options.processFilePathExists(testPath, '.js')
+        (testPath) => util.processFilePathExists(testPath, '.js')
     )
     .option(
         '-p, --number-of-tabs <Integer>',
         'number of tabs to execute the tests in',
-        (numberTabs) => options.processNumberOfTabs(numberTabs),
+        (numberTabs) => util.processNumberOfTabs(numberTabs),
         require('os').cpus().length
     )
     .option(
@@ -173,23 +173,23 @@ whiskerCLI.command('mutation')
     .requiredOption(
         '-m, --mutators <String...>',
         'the mutation operators to apply',
-        (mutators) => options.processMutationOperators(mutators),
+        (mutators) => util.processMutationOperators(mutators),
         'ALL',
     )
     .requiredOption(
         '-t, --test-path <Path>',
         'path to Whisker tests to run (".js")',
-        (testPath) => options.processFilePathExists(testPath, '.js')
+        (testPath) => util.processFilePathExists(testPath, '.js')
     )
     .option(
         '-p, --number-of-tabs <Integer>',
         'number of tabs to execute the tests in',
-        (numberTabs) => options.processNumberOfTabs(numberTabs),
+        (numberTabs) => util.processNumberOfTabs(numberTabs),
         require('os').cpus().length
     )
     .option('-e, --mutants-download-path <Path>',
         'where generated mutants should be saved',
-        (downloadPath) => options.processDirPathExists(downloadPath),
+        (downloadPath) => util.processDirPathExists(downloadPath),
     )
     .action((ignored, cmd) => {
         mode = 'mutation';

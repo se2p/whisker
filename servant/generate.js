@@ -1,4 +1,4 @@
-const {logger} = require("./util");
+const logger = require("./logger");
 const fs = require("fs");
 const rimraf = require("rimraf");
 const {tmpDir, showHiddenFunctionality} = require("./common");
