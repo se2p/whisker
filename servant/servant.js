@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 const logger = require("./logger");
-const {mode, opts: {consoleForwarded, headless}} = require('./cli');
+const {subcommand, opts: {consoleForwarded, headless}} = require('./cli');
 
 async function openNewBrowser() {
     const args = [
@@ -58,13 +58,15 @@ void async function main() {
         return Promise.reject(e);
     }
 
-    const modulePath = require('path').resolve(`${mode}.js`);
-    const runWhisker = require(modulePath);
+    // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
+    // The module must only export a function accepting the "page" argument.
+    const modulePath = require('path').resolve(`${subcommand}.js`);
+    const runSubcommand = require(modulePath);
 
     try {
         const page = await openNewPage(browser);
         try {
-            return await runWhisker(page);
+            return await runSubcommand(page);
         } finally {
             await page.close();
         }

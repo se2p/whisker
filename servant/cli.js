@@ -8,7 +8,7 @@ const {version, description} = require('../package.json');
  *
  * @type {string}
  */
-let mode = '';
+let subcommand = '';
 
 /**
  * The command-line options given to servant.js, parsed as an object of key-value pairs.
@@ -126,7 +126,7 @@ class WhiskerSubCommand extends Command {
      */
     register() {
         this.action((ignored, cmd) => {
-            mode = this.name();
+            subcommand = this.name();
             opts = cmd.opts();
         });
     }
@@ -224,6 +224,6 @@ whiskerCLI.parse(process.argv);
 // The current Whisker mode (i.e., the name of the subcommand) and all given command line options are available in any
 // JavaScript module by requiring the "cli.js" module.
 module.exports = Object.freeze({
-    mode,
+    subcommand,
     opts,
 });
