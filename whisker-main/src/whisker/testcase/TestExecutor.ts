@@ -43,7 +43,6 @@ export class TestExecutor {
     private _eventExtractor: ScratchEventExtractor;
     private readonly _eventSelector: EventSelector;
     private _eventObservers: EventObserver[] = [];
-    private _initialState = {};
     private _projectRunning: boolean;
 
     constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector) {
@@ -138,6 +137,7 @@ export class TestExecutor {
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         await this.resetState();
 
         StatisticsCollector.getInstance().incrementExecutedTests();
@@ -198,6 +198,7 @@ export class TestExecutor {
         randomEventChromosome.trace = trace;
 
         this._vmWrapper.end();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         await this.resetState();
 
         StatisticsCollector.getInstance().incrementExecutedTests();

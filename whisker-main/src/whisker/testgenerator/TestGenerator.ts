@@ -89,6 +89,12 @@ export abstract class TestGenerator {
     protected async getTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
         let whiskerTests: WhiskerTest[];
 
+        // Save Search statistics to recover them later.
+        const executedTests = StatisticsCollector.getInstance().executedTests;
+        const numberFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
+        const testExecutionTime = StatisticsCollector.getInstance().averageTestExecutionTime;
+        const eventCount = StatisticsCollector.getInstance().eventsCount;
+
         if (this._config.isMinimizationActive()) {
             whiskerTests = await this.getMinimizedTestSuite(tests);
         } else {
@@ -103,6 +109,12 @@ export abstract class TestGenerator {
                 await assertionGenerator.addAssertions(whiskerTests);
             }
         }
+
+        // Reset Search statistics.
+        StatisticsCollector.getInstance().executedTests = executedTests;
+        StatisticsCollector.getInstance().numberFitnessEvaluations = numberFitnessEvaluations;
+        StatisticsCollector.getInstance().averageTestExecutionTime = testExecutionTime;
+        StatisticsCollector.getInstance().eventsCount = eventCount;
 
         return whiskerTests;
     }

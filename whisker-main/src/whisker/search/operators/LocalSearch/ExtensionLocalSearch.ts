@@ -104,8 +104,6 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
         // Now extend the codons of the original chromosome to increase coverage.
         const lastImprovedResults = await this._extendGenes(newCodons, events, chromosome);
-        this._vmWrapper.end();
-        await this._testExecutor.resetState();
 
         // Create the chromosome resulting from local search.
         const newChromosome = chromosome.cloneWith(newCodons);
@@ -113,6 +111,9 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
         newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
+
+        this._vmWrapper.end();
+        await this._testExecutor.resetState();
 
         // Reset the trace and coverage of the original chromosome
         chromosome.trace = trace;

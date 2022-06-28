@@ -165,8 +165,24 @@ export class StatisticsCollector {
             (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
     }
 
+    get averageTestExecutionTime(): number {
+        return this._averageTestExecutionTime;
+    }
+
+    set averageTestExecutionTime(value: number) {
+        this._averageTestExecutionTime = value;
+    }
+
     public incrementExecutedTests(): void {
         this._executedTests++;
+    }
+
+    get executedTests(): number {
+        return this._executedTests;
+    }
+
+    set executedTests(value: number) {
+        this._executedTests = value;
     }
 
     get bestCoverage(): number {
