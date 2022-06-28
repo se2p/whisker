@@ -218,7 +218,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             else {
                 if (extendWait) {
                     // Fetch the old waitDuration and add the upper bound to it.
-                    let newWaitDuration = codons[(codons.length - (reservedCodons - 1))] + Container.config.getWaitStepUpperBound();
+                    const extendValue = Container.config.getWaitStepUpperBound();
+                    let newWaitDuration = codons[(codons.length - (reservedCodons - 1))] + extendValue;
 
                     // Check if we have reached the maximum codon value. If so force the localSearch operator to
                     // crate a new WaitEvent.
@@ -232,7 +233,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     codons[codons.length - (reservedCodons - 1)] = newWaitDuration;
                     const waitEvent = new WaitEvent(newWaitDuration);
                     events[events.length - 1] = new EventAndParameters(waitEvent, [newWaitDuration]);
-                    await waitEvent.apply();
+                    await new WaitEvent(extendValue).apply();
                 } else {
                     // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
                     const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
@@ -284,6 +285,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
             fitnessValues = newFitnessValues;
         }
+        this._vmWrapper.vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         StatisticsCollector.getInstance().incrementExecutedTests();
         return {lastImprovedCodon, lastImprovedTrace};
     }

@@ -77,23 +77,25 @@ export class AssertionGenerator {
 
             // trace should be same length as events in test
             const numEvents = test.getEventsCount();
-            Container.debugLog("Adding assertions to test "+test+" of length "+numEvents);
+            Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
 
-            Container.debugLog("Trace length: "+trace.length);
+            Container.debugLog("Trace length: " + trace.length);
             // for each event
-            for (let position = 2; position < numEvents; position+=2) {
-                const stateBefore = trace[(position/2) - 1];
-                const stateAfter  = trace[position/2];
-                for (const assertionFactory of this.assertionFactories) {
-                    const assertionsAfter = assertionFactory.createAssertions(stateAfter);
-                    for (const assertion of assertionsAfter) {
-                        if (!assertion.evaluate(stateBefore)) {
-                            test.addAssertion(position + 1, assertion);
+            for (let position = 2; position < numEvents; position += 2) {
+                const stateBefore = trace[(position / 2) - 1];
+                const stateAfter = trace[position / 2];
+                if (stateAfter !== undefined) {
+                    for (const assertionFactory of this.assertionFactories) {
+                        const assertionsAfter = assertionFactory.createAssertions(stateAfter);
+                        for (const assertion of assertionsAfter) {
+                            if (!assertion.evaluate(stateBefore)) {
+                                test.addAssertion(position + 1, assertion);
+                            }
                         }
                     }
                 }
             }
-            Container.debugLog("Resulting test: "+test);
+            Container.debugLog("Resulting test: " + test);
         }
     }
 
