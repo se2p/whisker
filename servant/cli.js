@@ -143,13 +143,23 @@ whiskerCLI.command('model')
         opts = cmd.opts();
     });
 
-// FIXME: complete this command and create witness.js
 whiskerCLI.command('witness')
     .description('Generate and replay error witnesses')
-    .option(
+    .requiredOption(
         '-w, --error-witness-path <Path>',
         'error witness to replay ("*.json")',
         (witnessPath) => options.processFilePathExists(witnessPath, '.json'),
+    )
+    .requiredOption(
+        '-t, --test-path <Path>',
+        'path to Whisker tests to run (".js")',
+        (testPath) => options.processFilePathExists(testPath, '.js')
+    )
+    .option(
+        '-p, --number-of-tabs <Integer>',
+        'number of tabs to execute the tests in',
+        (numberTabs) => options.processPositiveInt(numberTabs),
+        require('os').cpus().length
     )
     .option(
         '-z, --generate-witness-only',

@@ -39,7 +39,7 @@ async function runTestsOnFile(page, targetProject) {
     // FIXME: could also use the "mode" property of "./cli" to decide what to do...
 
     if (testPath) {
-        const paths = prepareTestFiles(testPath);
+        const paths = prepareTestFiles();
         await Promise.all(paths.map((path, index) => runTests(path, page, index, targetProject)))
             .then(results => {
                 const summaries = results.map(({summary}) => summary);
@@ -260,7 +260,7 @@ async function runTests(path, page, index, targetProject) {
  * @param {*} whiskerTestPath  Path to the whisker test file
  * @returns {Array}            The paths of the temporary test files
  */
-function prepareTestFiles(whiskerTestPath) {
+function prepareTestFiles(whiskerTestPath = testPath) {
     if (addRandomInputs) {
         whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir, addRandomInputs);
     }
@@ -378,4 +378,5 @@ module.exports = {
     runTestsOnFile,
     showHiddenFunctionality,
     tmpDir,
+    prepareTestFiles,
 }
