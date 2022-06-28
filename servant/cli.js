@@ -56,7 +56,7 @@ let mode = null;
 let opts = null;
 
 whiskerCLI.command('run')
-    .description('Run Whisker tests')
+    .description('run Whisker tests')
     .requiredOption(
         '-t, --test-path <Path>',
         'path to Whisker tests to run (".js")',
@@ -74,7 +74,7 @@ whiskerCLI.command('run')
     });
 
 whiskerCLI.command('generate')
-    .description('Generate Whisker test suites')
+    .description('generate Whisker test suites')
     .requiredOption(
         '-t, --test-download-dir <Path>',
         'path to directory for generated tests',
@@ -99,7 +99,7 @@ whiskerCLI.command('generate')
     });
 
 whiskerCLI.command('dynamic')
-    .description('Dynamic test suites using Neuroevolution')
+    .description('dynamic test suites using Neuroevolution')
     .requiredOption(
         '-c, --config-path <Path>',
         'path to a configuration file (".json")',
@@ -117,7 +117,7 @@ whiskerCLI.command('dynamic')
     });
 
 whiskerCLI.command('model')
-    .description('Test with model')
+    .description('test with model')
     .requiredOption(
         '-m, --model-path <Path>',
         'model to test with',
@@ -142,7 +142,7 @@ whiskerCLI.command('model')
     });
 
 whiskerCLI.command('witness')
-    .description('Generate and replay error witnesses')
+    .description('generate and replay error witnesses')
     .requiredOption(
         '-w, --error-witness-path <Path>',
         'error witness to replay ("*.json")',
@@ -169,7 +169,7 @@ whiskerCLI.command('witness')
     });
 
 whiskerCLI.command('mutation')
-    .description('Run mutation tests')
+    .description('run mutation tests')
     .requiredOption(
         '-m, --mutators <String...>',
         'the mutation operators to apply',
