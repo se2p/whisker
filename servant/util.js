@@ -2,9 +2,17 @@ const fs = require('fs');
 const {InvalidArgumentError} = require('commander');
 const {isAbsolute, resolve, dirname} = require('path');
 
-function canonicalize(path) {
+/*
+ * Helper functions.
+ */
+
+function asAbsolutePath(path) {
     return isAbsolute(path) ? path : resolve(__dirname, path);
 }
+
+/*
+ * Assertion functions that throw an error when a requirement is violated.
+ */
 
 function mustBeFile(path, extension = "") {
     if (!fs.existsSync(path)) {
@@ -16,7 +24,7 @@ function mustBeFile(path, extension = "") {
     }
 
     if (!path.endsWith(extension)) {
-        throw new InvalidArgumentError(`Must be "*${extension}" file.`);
+        throw new InvalidArgumentError(`Must be "${extension}" file.`);
     }
 }
 
@@ -42,27 +50,33 @@ function mustBePositiveInt(value) {
     }
 }
 
+/*
+ * Functions to process command line arguments. Typically, these invoke the assertion functions defined above, and
+ * also canonicalize inputs, e.g., by converting relative paths to absolute ones, or parsing strings as numbers. It
+ * is important to return the processed input argument when done.
+ */
+
 function processFilePathExists(path, extension = '') {
-    path = canonicalize(path);
+    path = asAbsolutePath(path);
     mustBeFile(path, extension);
     return path;
 }
 
 function processFilePathNotExists(path) {
-    path = canonicalize(path);
+    path = asAbsolutePath(path);
     mustNotExist(path);
     mustBeDirectory(dirname(path));
     return path;
 }
 
 function processDirPathExists(path) {
-    path = canonicalize(path);
+    path = asAbsolutePath(path);
     mustBeDirectory(path);
     return path;
 }
 
 function processFileOrDirPathExists(path, extension = '') {
-    path = canonicalize(path);
+    path = asAbsolutePath(path);
     let isDirectory = undefined;
 
     try {
@@ -73,14 +87,14 @@ function processFileOrDirPathExists(path, extension = '') {
             mustBeDirectory(path);
             isDirectory = true;
         } catch {
-            throw new InvalidArgumentError(`Must be directory or "*${extension}" file.`);
+            throw new InvalidArgumentError(`Must be directory or "${extension}" file.`);
         }
     }
 
     return {
         path,
         isDirectory,
-    }
+    };
 }
 
 function processPositiveInt(value) {
@@ -107,7 +121,7 @@ function processNumberOfTabs(numberOfTabs) {
 
     const cpus = require('os').cpus().length;
     if (numberOfTabs > cpus) {
-        throw new InvalidArgumentError(`Please do not use more than ${cpus}.`);
+        throw new InvalidArgumentError(`Your system cannot handle more than ${cpus} tabs.`);
     }
 
     return numberOfTabs;
