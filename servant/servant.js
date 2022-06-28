@@ -25,15 +25,14 @@ async function openNewBrowser() {
 }
 
 async function openNewPage(browser) {
-    const page = await browser.newPage({context: Date.now()})
-        .on('error', error => {
-            logger.error(error);
-            return Promise.reject(error);
-        })
-        .on('pageerror', async (error) => {
-            logger.error(error);
-            return Promise.reject(error);
-        });
+    const page = await browser.newPage({context: Date.now()});
+    page.on('error', (error) => {
+        logger.error(error);
+        return Promise.reject(error);
+    }).on('pageerror', (error) => {
+        logger.error(error);
+        return Promise.reject(error);
+    });
 
     if (consoleForwarded) {
         // https://github.com/puppeteer/puppeteer/issues/1512#issuecomment-349784408
