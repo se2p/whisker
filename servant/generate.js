@@ -24,7 +24,7 @@ async function generateTests(page) {
             // Save results in CSV-file if specified
             if (csvFile) {
                 console.info(`Creating CSV summary in ${testDownloadDir}`);
-                fs.writeFileSync(require('path').resolve(testDownloadDir, 'output.csv'), csv);
+                fs.writeFileSync(require('path').resolve(testDownloadDir, csvFile), csv);
             }
         })
         .catch(errors => logger.error('Error on generating tests: ', errors))

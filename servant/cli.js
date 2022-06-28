@@ -40,8 +40,6 @@ const whiskerCLI = new class extends Command {
             )
             .option('-d, --headless', 'run headless ("d" like in "decapitated")')
             .option('-k, --console-forwarded', 'forward browser console output')
-            // TODO: These two might not need to be global options -> only required by everything that runs
-            //  runTestsOnFile
             .option('-l, --live-log', 'print new log output regularly')
             .option('-o, --live-output-coverage', 'print new coverage output regularly')
     }
@@ -197,7 +195,6 @@ whiskerCLI.command('mutation')
         mode = 'mutation';
         opts = cmd.opts();
     });
-
 
 whiskerCLI.parse(process.argv);
 

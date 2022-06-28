@@ -32,7 +32,7 @@ async function generateDynamicTests(page) {
         }
         const output = csvs.join('\n');
         if (csvFile) {
-            console.info("Creating CSV summary in " + csvFile); // FIXME: csvFile is a boolean
+            console.info("Creating CSV summary in " + csvFile);
             fs.writeFileSync(csvFile, output);
         }
     } else {
