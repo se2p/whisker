@@ -152,6 +152,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const upperLengthBound = Container.config.searchAlgorithmProperties['chromosomeLength'];
         const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
         const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
+        const eventSelector = Container.config.getEventSelector();
         let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
         let lastImprovedCodon = chromosome.lastImprovedCodon;
         let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
@@ -180,7 +181,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Check if we have a typeTextEvent; if yes apply it!
             if (typeTextEvents.length !== 0) {
                 const typeTextEvent = this._random.pick(typeTextEvents);
-                const typeEventCodon = Arrays.findElement(availableEvents, typeTextEvent);
+                const typeEventCodon = eventSelector.getIndexForEvent(typeTextEvent, availableEvents);
                 codons.push(typeEventCodon);
                 // Fill reservedCodons codons.
                 codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, reservedCodons - 1));
@@ -194,7 +195,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 && this._random.nextDouble() < this._newEventProbability) {
                 // Choose random event amongst the newly found ones and determine its codon value.
                 const chosenNewEvent = this._random.pick(newEvents);
-                const newEventCodon = Arrays.findElement(availableEvents, chosenNewEvent);
+                const newEventCodon = eventSelector.getIndexForEvent(chosenNewEvent, availableEvents);
                 codons.push(newEventCodon);
 
                 // Add missing reservedCodons.
@@ -242,7 +243,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     await new WaitEvent(extendValue).apply();
                 } else {
                     // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
-                    const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
+                    const waitEventCodon = eventSelector.getIndexForEvent(new WaitEvent(), availableEvents);
                     codons.push(waitEventCodon);
 
                     // Set the waitDuration to the specified upper bound.

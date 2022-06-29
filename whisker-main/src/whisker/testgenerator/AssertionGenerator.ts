@@ -68,7 +68,7 @@ export class AssertionGenerator {
 
     public async addStateChangeAssertions(tests: WhiskerTest[]): Promise<void> {
 
-        Container.debugLog("Adding assertions");
+        Container.debugLog("Adding State change Assertions");
 
         // determine relevant attributes?
         for (const test of tests) {

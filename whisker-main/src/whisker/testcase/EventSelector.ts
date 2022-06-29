@@ -10,11 +10,24 @@ export interface EventSelector {
      * @param availableEvents the list of available events
      */
     selectEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[]): ScratchEvent
+
+    /**
+     * Returns the codon index that is required to obtain the desired eventType.
+     * @param event the desired event.
+     * @param availableEvents the list of available events in the current state.
+     * returns the codon index for the desired event type.
+     */
+    getIndexForEvent(event: ScratchEvent, availableEvents: ScratchEvent[]): number
+
 }
 
 export class InterleavingEventSelector implements EventSelector {
     selectEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[]): ScratchEvent {
         return availableEvents[codons[numCodon] % availableEvents.length];
+    }
+
+    getIndexForEvent(event: ScratchEvent, availableEvents: ScratchEvent[]): number {
+        return availableEvents.findIndex(e => e.stringIdentifier() == event.stringIdentifier());
     }
 }
 
@@ -44,5 +57,11 @@ export class ClusteringEventSelector implements EventSelector {
         }
 
         return availableEvents[cluster];
+    }
+
+    getIndexForEvent(event: ScratchEvent, availableEvents: ScratchEvent[]): number {
+        const clusterSize = Math.ceil(this._valueRange / availableEvents.length);
+        const rawIndex = availableEvents.findIndex(e => e.stringIdentifier() === event.stringIdentifier());
+        return rawIndex * clusterSize;
     }
 }
