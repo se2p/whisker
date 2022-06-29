@@ -217,6 +217,13 @@ const subCommands = [
             (downloadPath) => util.processDirPathExists(downloadPath)),
 ];
 
+[whiskerCLI, ...subCommands].forEach((cmd) => {
+    cmd.configureHelp({
+        sortSubcommands: true,
+        sortOptions: true,
+    });
+});
+
 // Finally, register all subcommands and parse the command line. This sets "mode" and "opts".
 subCommands.forEach((cmd) => cmd.register());
 whiskerCLI.parse(process.argv);
