@@ -44,6 +44,7 @@ export class TestExecutor {
     private readonly _eventSelector: EventSelector;
     private _eventObservers: EventObserver[] = [];
     private _projectRunning: boolean;
+    private _onRunStop
 
     constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector) {
         this._vmWrapper = vmWrapper;
@@ -61,17 +62,24 @@ export class TestExecutor {
     }
 
     /**
+     * Setup VM and EventListener for TestExecution.
+     */
+    private setUpExecution():void{
+        Randomness.seedScratch();
+        this._onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
+    }
+
+    /**
      * Executes a chromosome by selecting events according to the chromosome's defined genes.
      * @param testChromosome the testChromosome that should be executed.
      */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
 
-        Randomness.seedScratch();
-        const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._projectRunning = true;
-        this._vmWrapper.start();
+        this.setUpExecution();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
 
         let numCodon = 0;
@@ -137,7 +145,7 @@ export class TestExecutor {
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         await this.resetState();
 
         StatisticsCollector.getInstance().incrementExecutedTests();
@@ -148,16 +156,41 @@ export class TestExecutor {
     }
 
     /**
+     * Executes a saved event trace.
+     * @param chromosome the chromosome hosting the event trace.
+     * @returns executed trace.
+     */
+    async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace>{
+        this.setUpExecution();
+        const eventAndParams = chromosome.trace.events;
+        for (let i = 0; i < eventAndParams.length; i+=2) {
+            const nextEvent = eventAndParams[i].event;
+            const parameters = eventAndParams[i].parameters;
+            const nextStepEvent = eventAndParams[i+1].event;
+            this.notify(nextEvent, parameters);
+            await nextEvent.apply();
+            await nextStepEvent.apply();
+            this.notifyAfter(nextEvent, parameters);
+        }
+
+        // Set attributes of the testChromosome after executing its genes.
+        chromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, chromosome.trace.events);
+        chromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
+        this._vmWrapper.end();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        await this.resetState();
+
+        return chromosome.trace;
+    }
+
+    /**
      * Randomly executes events selected from the available event Set.
      * @param randomEventChromosome the chromosome in which the executed trace will be saved in.
      * @param numberOfEvents the number of events that should be executed.
      */
     async executeRandomEvents(randomEventChromosome: TestChromosome, numberOfEvents: number): Promise<ExecutionTrace> {
-        Randomness.seedScratch();
-        const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._projectRunning = true;
-        this._vmWrapper.start();
+        this.setUpExecution();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();
@@ -198,7 +231,7 @@ export class TestExecutor {
         randomEventChromosome.trace = trace;
 
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         await this.resetState();
 
         StatisticsCollector.getInstance().incrementExecutedTests();

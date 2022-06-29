@@ -22,6 +22,8 @@ import {TestChromosome} from "../testcase/TestChromosome";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Container} from "../utils/Container";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {ExecutionTrace} from "../testcase/ExecutionTrace";
+import Arrays from "../utils/Arrays";
 
 export class TestMinimizer {
 
@@ -49,11 +51,16 @@ export class TestMinimizer {
 
         while (changed && Date.now() - startTime < timeBudget) {
             changed = false;
+            const eventJunks = Arrays.chunk(newTest.trace.events, 2);
+            const codonJunks = Arrays.chunk(newTest.getGenes(), this._reservedCodons);
 
-            for (let i = newTest.getGenes().length - 1; i >= this._reservedCodons; i -= this._reservedCodons) {
-                const newCodons = newTest.getGenes().slice(0, i - this._reservedCodons).concat(newTest.getGenes().slice(i + 1, newTest.getGenes().length));
+            for (let i = eventJunks.length - 1; i >= 1; i--) {
+                const newEvents = eventJunks.slice(0, i).concat(eventJunks.slice(i + 1)).flat();
+                const newCodons = codonJunks.slice(0, i).concat(codonJunks.slice(i + 1)).flat();
+
                 const newChromosome = newTest.cloneWith(newCodons);
-                await newChromosome.evaluate();
+                newChromosome.trace = new ExecutionTrace([], newEvents);
+                await newChromosome.evaluate(false);
 
                 const fitness = this._fitnessFunction.getFitness(newChromosome);
                 if (this._fitnessFunction.compare(fitness, oldFitness) >= 0) {
@@ -66,7 +73,7 @@ export class TestMinimizer {
         }
 
         StatisticsCollector.getInstance().addMinimizedEvents(nEventsPreMinimization - newTest.getLength());
-        Container.debugLog(`Test minimization finished with an event length of ${newTest.getLength()} and a duration of ${Date.now() - startTime} ms`);
+        Container.debugLog(`Test minimization finished with ${nEventsPreMinimization - newTest.getLength()} fewer events and a duration of ${Date.now() - startTime} ms`);
         return newTest;
     }
 }

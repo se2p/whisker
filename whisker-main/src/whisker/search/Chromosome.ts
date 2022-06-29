@@ -125,7 +125,12 @@ export abstract class Chromosome {
         this._fitnessCache.clear();
     }
 
-    async evaluate(): Promise<void> {
+    /**
+     * Determines whether codons or a saved execution trace should be exectued.
+     * @param executeCodons if true the saved codons will be exectued instead of the execution code originating from
+     * a previous test execution.
+     */
+    async evaluate(executeCodons: boolean): Promise<void> {
         // No-op
     }
 

@@ -62,7 +62,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         while (!(this._stoppingCondition.isFinished(this))) {
             const candidateChromosome = this._chromosomeGenerator.get();
-            await candidateChromosome.evaluate();
+            await candidateChromosome.evaluate(true);
             this.updateArchive(candidateChromosome);
 
             // Update the best performing chromosome if we have a single targeted fitness function.
