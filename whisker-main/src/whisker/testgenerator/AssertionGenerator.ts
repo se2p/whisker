@@ -84,13 +84,11 @@ export class AssertionGenerator {
             for (let position = 2; position < numEvents; position += 2) {
                 const stateBefore = trace[(position / 2) - 1];
                 const stateAfter = trace[position / 2];
-                if (stateAfter !== undefined) {
-                    for (const assertionFactory of this.assertionFactories) {
-                        const assertionsAfter = assertionFactory.createAssertions(stateAfter);
-                        for (const assertion of assertionsAfter) {
-                            if (!assertion.evaluate(stateBefore)) {
-                                test.addAssertion(position + 1, assertion);
-                            }
+                for (const assertionFactory of this.assertionFactories) {
+                    const assertionsAfter = assertionFactory.createAssertions(stateAfter);
+                    for (const assertion of assertionsAfter) {
+                        if (!assertion.evaluate(stateBefore)) {
+                            test.addAssertion(position + 1, assertion);
                         }
                     }
                 }
@@ -101,7 +99,6 @@ export class AssertionGenerator {
 
 
     private async _executeWithObserver(test: WhiskerTest)  {
-        await Container.vmWrapper.resetVM();
         const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(),
             Container.config.getEventSelector());
         const observer = new AssertionObserver();

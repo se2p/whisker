@@ -39,6 +39,10 @@ export class EventAndParameters {
         // invariant: this._event.numSearchParameter() === this._parameters.length
         return 1 + this._event.numSearchParameter();
     }
+
+    toString():string{
+        return `Event ${this._event} with parameter(s) ${this.parameters}`;
+    }
 }
 
 /**
