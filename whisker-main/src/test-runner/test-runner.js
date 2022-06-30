@@ -56,10 +56,9 @@ class TestRunner extends EventEmitter {
             original.name = "Original";
 
             const mutantFactory = new MutationFactory(vm);
-            mutantPrograms = mutantFactory.generateScratchMutations(props['mutators']);
+            mutantPrograms = mutantFactory.generateScratchMutations(props['mutators'], props['maxMutants']);
             shuffle(mutantPrograms); // Shuffle so we do not favour mutation operators when a time limit is set
             mutantPrograms.push(original);
-            console.log(`Generated ${mutantPrograms.length - 1} mutants`); // Subtract 1 for the included original
 
             // Execute the given tests on every mutant
             const startTime = Date.now();

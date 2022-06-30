@@ -10,14 +10,13 @@ import {VariableReplacementMutation} from "./VariableReplacementMutation";
 import {ScratchMutation} from "./ScratchMutation";
 import {ScratchProgram} from "../ScratchInterface";
 import Arrays from "../../utils/Arrays";
-import {Randomness} from "../../utils/Randomness";
 
 export class MutationFactory {
 
     constructor(private _vm: VirtualMachine) {
     }
 
-    private fetchMutationOperators(specifiedMutators:string[]): ScratchMutation[]{
+    private fetchMutationOperators(specifiedMutators: string[]): ScratchMutation[] {
         const mutationOperators: ScratchMutation[] = [];
         for (const mutator of specifiedMutators) {
             switch (mutator) {
@@ -63,22 +62,30 @@ export class MutationFactory {
 
     /**
      * Generates Scratch mutants based on the specified mutation operators.
+     * @param specifiedMutators the specified mutation operations.
+     * @param maxMutants the maximum number of mutants that should be returned.
      * @returns an array of the created mutants.
      */
-    public generateScratchMutations(specifiedMutators: string[]): ScratchProgram[] {
+    public generateScratchMutations(specifiedMutators: string[], maxMutants:number): ScratchProgram[] {
+        if (maxMutants === undefined) {
+            maxMutants = Number.MAX_SAFE_INTEGER;
+        }
         const operators = this.fetchMutationOperators(specifiedMutators);
         const mutantPrograms: ScratchProgram[] = [];
         for (const mutator of operators) {
             const mutants = mutator.generateMutants();
-            const previousLength = mutants.length;
-
-            // Only allow 50 mutants per mutation operator for now.
-            while (mutants.length > 50){
-                Arrays.remove(mutants, Randomness.getInstance().pick(mutants));
-            }
-            console.log(`Operator ${mutator} generated ${previousLength} mutants; Reduced down to ${mutants.length}`);
+            console.log(`Operator ${mutator} generated ${mutants.length} mutants`);
             mutantPrograms.push(...mutants);
         }
+
+        // If we have an upper bound of desired mutants; we choose randomly selected ones until we hit the bound.
+        if (mutantPrograms.length > maxMutants) {
+            Arrays.shuffle(mutantPrograms);
+            const reducedMutants = mutantPrograms.slice(0, maxMutants);
+            console.log(`Reduced Mutants from ${mutantPrograms.length} down to ${reducedMutants.length} mutants`);
+            return reducedMutants;
+        }
+        console.log(`Produced ${mutantPrograms.length} mutants`);
         return mutantPrograms;
     }
 }

@@ -52,6 +52,7 @@ const cli = {
             .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
             .option('-mu, --mutators <String>', 'Defines the mutation operators in case mutation testing should be applied', '')
             .option('-mb, --mutationBudget <Integer>', 'Defines a timeout for the mutation analysis', '')
+            .option('-mm, --maxMutants <Integer>', 'Defines an upper bound of analysed mutants during mutation analysis', Number.MAX_SAFE_INTEGER)
             .option('-md, --mutantsDownloadPath <Path>', 'Defines where and if the generated mutants should be saved', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
@@ -80,6 +81,7 @@ const cli = {
             modelCaseSensitive,
             mutators,
             mutationBudget,
+            maxMutants,
             mutantsDownloadPath,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
@@ -110,6 +112,7 @@ const cli = {
             errorWitnessPath,
             mutators,
             mutationBudget,
+            maxMutants,
             mutantsDownloadPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
