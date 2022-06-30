@@ -3,7 +3,7 @@
 const rimraf = require("rimraf");
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require("./witness-util");
 const fs = require("fs");
-const {basename} = require("path");
+const {basename, resolve} = require("path");
 const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
 const logger = require('./logger');
@@ -24,6 +24,7 @@ const {
     mutantsDownloadPath,
     errorWitnessPath,
     numberOfTabs,
+    scratchPath,
 } = require("./cli").opts;
 
 const tmpDir = './.tmpWorkingDir';
@@ -369,9 +370,23 @@ function prepareTestSource(path) {
     return {evaledTest, testSourceWithoutExportArray};
 }
 
+function getProjectsInScratchPath() {
+    const {path, isDirectory} = scratchPath;
+
+    if (!isDirectory) {
+        return [path];
+    }
+
+    return fs.readdirSync(path)
+        .filter((file) => file.endsWith(".sb3"))
+        .map((file) => resolve(path, file));
+}
+
+
 module.exports = {
     runTestsOnFile,
     showHiddenFunctionality,
     tmpDir,
     prepareTestFiles,
+    getProjectsInScratchPath,
 }

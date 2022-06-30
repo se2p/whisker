@@ -1,8 +1,7 @@
 const fs = require("fs");
 const logger = require("./logger");
-const {resolve} = require("path");
-const {scratchPath, modelPath, csvFile} = require("./cli").opts;
-const {runTestsOnFile} = require("./common");
+const {modelPath, csvFile} = require("./cli").opts;
+const {runTestsOnFile, getProjectsInScratchPath} = require("./common");
 
 // Standard TestSuite / Model-based testing
 async function run(page) {
@@ -17,18 +16,6 @@ async function run(page) {
         console.info(`Creating CSV summary in ${csvFile}`);
         fs.writeFileSync(csvFile, csvs[0]);
     }
-}
-
-function getProjectsInScratchPath() {
-    const {path, isDirectory} = scratchPath;
-
-    if (!isDirectory) {
-        return [path];
-    }
-
-    return fs.readdirSync(path)
-        .filter((file) => file.endsWith(".sb3"))
-        .map((file) => resolve(path, file));
 }
 
 module.exports = run;
