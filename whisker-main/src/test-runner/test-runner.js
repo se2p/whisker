@@ -28,7 +28,8 @@ class TestRunner extends EventEmitter {
         } else if (!('extend' in props)) {
             props.extend = {};
         }
-        this._setRNGSeeds(props.seed);
+
+        this._setRNGSeeds(props['seed']);
 
         // Count number of assertions across all test cases.
         let totalAssertions = 0;
@@ -73,6 +74,9 @@ class TestRunner extends EventEmitter {
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
                 for (const test of tests) {
                     let result;
+                    if("generationAlgorithm" in test){
+                        resultRecords.generationAlgorithm = test.generationAlgorithm;
+                    }
 
                     if (test.skip) {
                         result = new TestResult(test);
@@ -94,9 +98,9 @@ class TestRunner extends EventEmitter {
                 }
 
                 // Record the results
+                const duration = (Date.now() - startTime) / 1000;
                 const total = this.statementMap.size;
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
-                const duration = (Date.now() - startTime) / 1000;
                 csv += this._generateCSVRow(projectMutation, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
@@ -121,9 +125,9 @@ class TestRunner extends EventEmitter {
                 testResults.push(result);
 
                 // Record the results
+                const duration = (Date.now() - startTime) / 1000;
                 const total = this.statementMap.size;
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
-                const duration = (Date.now() - startTime) / 1000;
                 const modelResults = this._extractModelCSVData(result.modelResult);
                 csv += this._generateCSVRow(projectName, props.seed, totalAssertions,[result.status], total,  covered, duration, undefined, modelResults);
             }
@@ -136,6 +140,9 @@ class TestRunner extends EventEmitter {
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
             for (const test of tests) {
                 let result;
+                if("generationAlgorithm" in test){
+                    resultRecords.generationAlgorithm = test.generationAlgorithm;
+                }
 
                 if (test.skip) {
                     result = new TestResult(test);
@@ -155,9 +162,9 @@ class TestRunner extends EventEmitter {
                 }
             }
             // Record the results
+            const duration = (Date.now() - startTime) / 1000;
             const total = this.statementMap.size;
             const covered = [...this.statementMap.values()].filter(cov => cov).length;
-            const duration = (Date.now() - startTime) / 1000;
             csv += this._generateCSVRow(projectName, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
@@ -182,6 +189,16 @@ class TestRunner extends EventEmitter {
             Randomness.setInitialRNGSeed(Date.now());
         }
         Randomness.seedScratch();
+    }
+
+    /**
+     * Validates whether the test generation seed and the test execution seed are equivalent.
+     * @param {Test} test
+     */
+    _checkSeed(test){
+        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed){
+            console.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
+        }
     }
 
     /**
@@ -222,10 +239,11 @@ class TestRunner extends EventEmitter {
 
     /**
      * Initialises variables required to generate a csv row incorporating the results of executing one JS-TestSuite.
-     * @return {{testStatusResults: *[], resultRecords: {}, startTime: number}}
+     * @return {{testStatusResults: *[], generationAlgorithm: string, resultRecords: {}, startTime: number}}
      */
     _initialiseCSVRowVariables() {
         const resultRecords = {};
+        resultRecords.generationAlgorithm = "None";
         resultRecords.pass = 0;
         resultRecords.fail = 0;
         resultRecords.error = 0;
@@ -244,7 +262,7 @@ class TestRunner extends EventEmitter {
      * @return {string}
      */
     _generateCSVHeader(tests, modelProps) {
-        let header = `\nprojectName,seed,assertions`;
+        let header = `\nprojectName,seed,assertions,generationAlgorithm`;
         if(tests) {
             for (const test of tests) {
                 header += `,${test.name}`;
@@ -267,15 +285,16 @@ class TestRunner extends EventEmitter {
      * @param {number} covered
      * @param {number} duration
      * @param {{}} resultRecords
-     * @param {{repetition: number, fails: number, errors:number, coverage:number}} modelResults
+     * @param {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}} modelResults
      * @return {string}
      */
     _generateCSVRow(projectName, seed, assertions, testStatusResults, total, covered, duration, resultRecords, modelResults = undefined) {
         const coverage = Math.round((covered / total) * 100) / 100;
         let csvRow = `${projectName},${seed},${assertions}`;
         if (modelResults !== undefined) {
-            csvRow += `,${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${total},${covered},${coverage},${modelResults.coverage},${duration}\n`;
+            csvRow += `,${modelResults.generationAlgorithm},${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${total},${covered},${coverage},${modelResults.coverage},${duration}\n`;
         } else if (resultRecords !== undefined) {
+            csvRow += `,${resultRecords.generationAlgorithm}`;
             for (const testResult of testStatusResults) {
                 csvRow += `,${testResult}`;
             }
@@ -313,7 +332,7 @@ class TestRunner extends EventEmitter {
     /**
      * Extracts csv data from observed obtained model results.
      * @param {object} modelResults
-     * @return {{repetition: number, fails: number, errors:number, coverage:number}}
+     * @return {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}}
      * @private
      */
     _extractModelCSVData(modelResults){
@@ -328,7 +347,8 @@ class TestRunner extends EventEmitter {
             repetition: modelResults.testNbr,
             fails: modelResults.fails.length,
             errors: modelResults.errors.length,
-            coverage: coverageRate
+            coverage: coverageRate,
+            generationAlgorithm: "None"     // We do not generate models automatically yet.
         };
     }
 
@@ -370,6 +390,7 @@ class TestRunner extends EventEmitter {
         this.emit(TestRunner.TEST_START, test);
         util.start();
         this._setRNGSeeds(props.seed);
+        this._checkSeed(test);
 
         if (modelTester && modelTester.someModelLoaded()) {
             await modelTester.prepareModel(testDriver, modelProps.caseSensitive);

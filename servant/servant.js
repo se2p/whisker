@@ -420,7 +420,14 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
                 // Return CSV file
                 const currentLogString = currentLog.toString();
-                return currentLogString.slice(currentLogString.indexOf('projectName')).trim();
+                const startIndex = currentLogString.indexOf('projectName');
+                const endIndex = currentLogString.indexOf("\n\n\n");    // We may have additional output after 3 newlines
+                if(endIndex > 0) {
+                    return currentLogString.slice(startIndex, endIndex).trim();
+                }
+                else{
+                    return currentLogString.slice(startIndex);
+                }
             }
 
             if (isLiveLogEnabled) {
