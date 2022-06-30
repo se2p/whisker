@@ -54,7 +54,8 @@ class WhiskerSubCommand extends Command {
         this.requiredOption(
             '-u, --whisker-url <Path>',
             'file URL to Whisker Web (".html")',
-            (whiskerWeb) => {
+            (customValue, defaultValue) => {
+                const whiskerWeb = customValue || defaultValue;
                 const filePath = util.processFilePathExists(whiskerWeb, '.html');
                 return `file://${filePath}`;
             },
