@@ -87,7 +87,7 @@ function processFileOrDirPathExists(path, extension = '') {
             mustBeDirectory(path);
             isDirectory = true;
         } catch {
-            throw new InvalidArgumentError(`Must be directory or "${extension}" file.`);
+            throw new InvalidArgumentError(`Directory or "${extension}" file must exist.`);
         }
     }
 
