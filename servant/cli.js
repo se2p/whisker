@@ -73,7 +73,11 @@ class WhiskerSubCommand extends Command {
             '-z, --seed <Integer>',
             'seed Scratch-VM with given integer',
             (seed) => util.processPositiveInt(seed));
-        this.option('-d, --headless', 'run headless ("d" like in "decapitated")');
+        this.option(
+            '-d, --headless',
+            'run headless ("d" like in "decapitated")',
+            false // Has to be false, not undefined, as Puppeteer will not work properly otherwise.
+        );
         this.option('-k, --console-forwarded', 'forward browser console output')
         this.option('-l, --live-log', 'print new log output regularly')
         this.option('-o, --live-output-coverage', 'print new coverage output regularly');
