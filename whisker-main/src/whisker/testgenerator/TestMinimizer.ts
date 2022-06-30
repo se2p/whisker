@@ -51,12 +51,12 @@ export class TestMinimizer {
 
         while (changed && Date.now() - startTime < timeBudget) {
             changed = false;
-            const eventJunks = Arrays.chunk(newTest.trace.events, 2);
-            const codonJunks = Arrays.chunk(newTest.getGenes(), this._reservedCodons);
+            const eventChunks = Arrays.chunk(newTest.trace.events, 2);
+            const codonChunks = Arrays.chunk(newTest.getGenes(), this._reservedCodons);
 
-            for (let i = eventJunks.length - 1; i >= 1; i--) {
-                const newEvents = eventJunks.slice(0, i).concat(eventJunks.slice(i + 1)).flat();
-                const newCodons = codonJunks.slice(0, i).concat(codonJunks.slice(i + 1)).flat();
+            for (let i = eventChunks.length - 1; i >= 1; i--) {
+                const newEvents = eventChunks.slice(0, i).concat(eventChunks.slice(i + 1)).flat();
+                const newCodons = codonChunks.slice(0, i).concat(codonChunks.slice(i + 1)).flat();
 
                 const newChromosome = newTest.cloneWith(newCodons);
                 newChromosome.trace = new ExecutionTrace([], newEvents);

@@ -20,6 +20,7 @@
 
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
 import {Container} from "../utils/Container";
+import {Randomness} from "../utils/Randomness";
 
 export class JavaScriptConverter {
 
@@ -49,7 +50,9 @@ export class JavaScriptConverter {
                 test: test,
                 name: 'Generated Test',
                 description: '',
-                categories: []
+                categories: [],
+                generationAlgorithm: '${Container.config.getAlgorithm()}',
+                seed: '${Randomness.getInitialRNGSeed()}'
             }
         ];`;
         return text;
@@ -79,7 +82,10 @@ export class JavaScriptConverter {
                 footer += `      test: test${i},\n`;
                 footer += `      name: 'Generated Test ${i}',\n`;
                 footer += "      description: '',\n";
-                footer += "      categories: []\n";
+                footer += "      categories: [],\n";
+                footer += `      generationAlgorithm: '${Container.config.getAlgorithm()}',\n`;
+                footer += `      seed: '${Randomness.getInitialRNGSeed()}'\n`;
+
                 if (i < tests.length - 1) {
                     footer += "  },\n";
                 } else {
