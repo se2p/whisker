@@ -31,6 +31,10 @@ class TestRunner extends EventEmitter {
 
         this._setRNGSeeds(props['seed']);
 
+        // Load project and establish an initial save state
+        this.util = await this._loadProject(vm, project, props);
+        this.saveState = this.vmWrapper._recordInitialState();
+
         // Count number of assertions across all test cases.
         let totalAssertions = 0;
         if(tests) {
@@ -66,7 +70,7 @@ class TestRunner extends EventEmitter {
                 const mutant = mutantPrograms.pop();
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
-                await this._loadProject(vm, mutant, props);
+                this.util = await this._loadProject(vm, mutant, props);
                 this._initialiseFitnessTargets(vm);
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
                 this.emit(TestRunner.RESET_TABLE, tests);
@@ -105,7 +109,6 @@ class TestRunner extends EventEmitter {
                 testResults.length = 0;
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
-            await this._loadProject(vm, project, props);
             this._initialiseFitnessTargets(vm);
             // test only by models
 
@@ -117,6 +120,9 @@ class TestRunner extends EventEmitter {
             }
 
             for (let i = 0; i < modelProps.repetitions; i++) {
+                // TODO: It would be better here to use the loadSaveState function.
+                //  However there seem to be timing issues with the models.
+                this.util = await this._loadProject(vm, project, props);
                 const startTime = Date.now();
                 let result = await this._executeTest(vm, project, undefined, modelTester, props, modelProps);
                 result.modelResult.testNbr = i;
@@ -134,10 +140,10 @@ class TestRunner extends EventEmitter {
         } else {
             // test by JS test suite, with models or without models. When a model is given it is restarted with every
             // test case as long as the test case runs or the model stops.
-            await this._loadProject(vm, project, props);
             this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
             for (const test of tests) {
+                this.vmWrapper.loadSaveState(this.saveState);
                 let result;
                 if("generationAlgorithm" in test){
                     resultRecords.generationAlgorithm = test.generationAlgorithm;
@@ -213,6 +219,7 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
+     * @param {boolean} loadSaveState
      * @return {WhiskerUtil}.
      */
     async _loadProject(vm, project, props) {
@@ -365,9 +372,8 @@ class TestRunner extends EventEmitter {
      */
     async _executeTest(vm, project, test, modelTester, props, modelProps, timeout = 0) {
         const result = new TestResult(test);
-        const util = await this._loadProject(vm, project, props);
 
-        const testDriver = util.getTestDriver(
+        const testDriver = this.util.getTestDriver(
             {
                 extend: {
                     assert: assert,
@@ -387,7 +393,7 @@ class TestRunner extends EventEmitter {
 
 
         this.emit(TestRunner.TEST_START, test);
-        util.start();
+        this.vmWrapper.start();
         this._setRNGSeeds(props.seed);
         this._checkSeed(test);
 
@@ -457,7 +463,7 @@ class TestRunner extends EventEmitter {
                 this.statementMap.set(statement, true);
             }
         }
-        util.end();
+        this.vmWrapper.end();
         return result;
     }
 

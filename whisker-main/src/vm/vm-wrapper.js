@@ -410,10 +410,10 @@ class VMWrapper {
     }
 
     /**
-     * Resets the state of the VM based on the supplied saveState.
+     * Loads supplied saveState. Usually used for resetting the VM state to a previously saved initial state.
      * @param {object} saveState of a previous vm state, can be generated using the recordState() method.
      */
-    resetState(saveState) {
+    loadSaveState(saveState) {
         // Delete clones
         const clones = [];
         for (const targetsKey in this.vm.runtime.targets) {

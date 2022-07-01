@@ -141,7 +141,7 @@ export class TestExecutor {
 
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._vmWrapper.resetState(this._initialState);
+        this._vmWrapper.loadSaveState(this._initialState);
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
@@ -174,7 +174,7 @@ export class TestExecutor {
         chromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
-        this._vmWrapper.resetState(this._initialState);
+        this._vmWrapper.loadSaveState(this._initialState);
 
         return chromosome.trace;
     }
@@ -231,7 +231,7 @@ export class TestExecutor {
 
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._vmWrapper.resetState(this._initialState);
+        this._vmWrapper.loadSaveState(this._initialState);
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
