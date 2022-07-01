@@ -116,7 +116,7 @@ class RandomInputs {
         /**
          * @type {number} The last time an input data was given.
          */
-        this.lastInputSteps = 0;
+        this.lastInputTime = 0;
     }
 
     /**
@@ -127,9 +127,9 @@ class RandomInputs {
             return;
         }
 
-        const stepsElapsed = this.vmWrapper.getTotalStepsExecuted();
+        const timeElapsed = this.vmWrapper.getTotalTimeElapsed();
 
-        if (stepsElapsed < this.lastInputSteps + (this.frequency / this.vmWrapper.getCurrentStepTime())) {
+        if (timeElapsed < this.lastInputTime + this.frequency) {
             return;
         }
 
@@ -151,7 +151,7 @@ class RandomInputs {
         let randomWeight = Randomness.getInstance().nextDoubleMinMax(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
-                this.lastInputSteps = stepsElapsed;
+                this.lastInputTime = timeElapsed;
                 randomInput.register(this.vmWrapper.inputs);
                 return;
             }
