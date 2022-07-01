@@ -27,6 +27,8 @@ print_info() {
     node_ver=$(node --version)
     . /etc/os-release
     echo "INFO: Running Node.js ${node_ver} on ${PRETTY_NAME}"
+    # Just to double check how much memory is available to Whisker.
+    df -h /dev/shm
 }
 
 # We support redirection of stdout and stderr to files in a custom directory.
