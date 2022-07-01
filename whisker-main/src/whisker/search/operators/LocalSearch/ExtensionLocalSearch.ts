@@ -113,7 +113,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
 
         this._vmWrapper.end();
-        await this._testExecutor.resetState();
+        this._vmWrapper.resetState(this._testExecutor.initialState);
 
         // Reset the trace and coverage of the original chromosome
         chromosome.trace = trace;

@@ -77,7 +77,7 @@ export class Search {
 
         let hasBlocks = false;
         for (const target of this.vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 if (target.blocks._blocks) {
                     hasBlocks = true;
                     break;

@@ -213,7 +213,7 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
-     * @param {WhiskerUtil}.
+     * @return {WhiskerUtil}.
      */
     async _loadProject(vm, project, props) {
         const util = new WhiskerUtil(vm, project);

@@ -44,13 +44,15 @@ export class TestExecutor {
     private readonly _eventSelector: EventSelector;
     private _eventObservers: EventObserver[] = [];
     private _projectRunning: boolean;
-    private _onRunStop
+    private readonly _initialState = {};
+
 
     constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._eventExtractor = eventExtractor;
         this._eventSelector = eventSelector;
+        this._initialState = this._vmWrapper._recordInitialState();
     }
 
     async executeTests(tests: TestChromosome[]): Promise<void> {
@@ -62,24 +64,17 @@ export class TestExecutor {
     }
 
     /**
-     * Setup VM and EventListener for TestExecution.
-     */
-    private setUpExecution():void{
-        Randomness.seedScratch();
-        this._onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
-        this._projectRunning = true;
-        this._vmWrapper.start();
-    }
-
-    /**
      * Executes a chromosome by selecting events according to the chromosome's defined genes.
      * @param testChromosome the testChromosome that should be executed.
      */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
 
-        this.setUpExecution();
+        Randomness.seedScratch();
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
 
         let numCodon = 0;
@@ -145,8 +140,8 @@ export class TestExecutor {
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
-        await this.resetState();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vmWrapper.resetState(this._initialState);
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
@@ -161,7 +156,8 @@ export class TestExecutor {
      * @returns executed trace.
      */
     async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace>{
-        this.setUpExecution();
+        Randomness.seedScratch();
+        this._vmWrapper.start();
         const eventAndParams = chromosome.trace.events;
         for (let i = 0; i < eventAndParams.length; i+=2) {
             const nextEvent = eventAndParams[i].event;
@@ -178,8 +174,7 @@ export class TestExecutor {
         chromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
-        await this.resetState();
+        this._vmWrapper.resetState(this._initialState);
 
         return chromosome.trace;
     }
@@ -190,7 +185,11 @@ export class TestExecutor {
      * @param numberOfEvents the number of events that should be executed.
      */
     async executeRandomEvents(randomEventChromosome: TestChromosome, numberOfEvents: number): Promise<ExecutionTrace> {
-        this.setUpExecution();
+        Randomness.seedScratch();
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();
@@ -231,8 +230,8 @@ export class TestExecutor {
         randomEventChromosome.trace = trace;
 
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
-        await this.resetState();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vmWrapper.resetState(this._initialState);
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
@@ -329,17 +328,6 @@ export class TestExecutor {
     }
 
     /**
-     * Resets the state of the VM by reloading the saved sb3 file and resetting the sent inputs.
-     */
-    public async resetState(): Promise<void> {
-        await this._vmWrapper.resetVM();
-
-        this._vmWrapper.inputs.clearInputs();
-        this._vmWrapper.inputs.resetMouse();
-        this._vmWrapper.inputs.resetKeyboard();
-    }
-
-    /**
      * Determined whether we have to save the last improved codon.
      * @param chromosome the chromosome holding its mutation operator.
      * @returns boolean determining whether we have to determine the last improved codon.
@@ -378,5 +366,9 @@ export class TestExecutor {
     public static hasFitnessOfUncoveredStatementsImproved(oldFitnessValues: number[], newFitnessValues: number[]): boolean {
         return newFitnessValues.length < oldFitnessValues.length ||
             newFitnessValues.some((value, index) => value < oldFitnessValues[index]);
+    }
+
+    get initialState(): Record<string, unknown> {
+        return this._initialState;
     }
 }
