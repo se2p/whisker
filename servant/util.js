@@ -133,4 +133,5 @@ module.exports = {
     processPositiveInt,
     processMutationOperator,
     processNumberOfTabs,
+    asAbsolutePath,
 }

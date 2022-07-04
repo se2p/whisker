@@ -1,7 +1,8 @@
-const {Command, InvalidArgumentError} = require('commander');
+const {Command} = require('commander');
 const util = require('./util')
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../package.json');
+const {asAbsolutePath} = require("./util");
 
 /**
  * The name of the Whisker subcommand that was invoked.
@@ -30,7 +31,6 @@ const whiskerCLI = new class extends Command {
         this.name(invocation);
         this.version(version);
         this.description(description);
-        this.allowExcessArguments(false);
     }
 
     createCommand(name) {
@@ -54,11 +54,7 @@ class WhiskerSubCommand extends Command {
         this.requiredOption(
             '-u, --whisker-url <Path>',
             'file URL to Whisker Web (".html")',
-            (customValue, defaultValue) => {
-                const whiskerWeb = customValue || defaultValue;
-                const filePath = util.processFilePathExists(whiskerWeb, '.html');
-                return `file://${filePath}`;
-            },
+            (whiskerUrl) => util.processFilePathExists(whiskerUrl, '.html'),
             '../whisker-web/dist/index.html');
         this.option(
             '-a, --acceleration <Integer>',
@@ -81,6 +77,7 @@ class WhiskerSubCommand extends Command {
         this.option('-o, --live-output-coverage', 'print new coverage output regularly');
     }
 
+    // noinspection JSUnusedGlobalSymbols
     requireScratchPath() {
         return this.requiredOption(
             '-s, --scratch-path <Path>',
@@ -142,12 +139,7 @@ class WhiskerSubCommand extends Command {
     optionMutantsDownloadPath() {
         return this.option('-e, --mutants-download-path <Path>',
             'where generated mutants should be saved',
-            (downloadPath) => util.processDirPathExists(downloadPath))
-            .action((ignored, options) => {
-                if (!options.mutators) {
-                    throw new InvalidArgumentError("Must be called together with mutators option");
-                }
-            });
+            (downloadPath) => util.processDirPathExists(downloadPath));
     }
 
     /**
@@ -171,6 +163,7 @@ function newSubCommand(name) {
     return whiskerCLI.command(name);
 }
 
+// noinspection JSUnresolvedFunction
 const subCommands = [
     newSubCommand('run')
         .description('run Whisker tests')
@@ -245,11 +238,24 @@ const subCommands = [
         sortSubcommands: true,
         sortOptions: true,
     });
+    cmd.allowExcessArguments(false);
+    cmd.allowUnknownOption(false);
 });
 
-// Finally, register all subcommands and parse the command line. This sets "mode" and "opts".
+// Register all subcommands and parse the command line. This sets "mode" and "opts".
 subCommands.forEach((cmd) => cmd.register());
 whiskerCLI.parse(process.argv);
+
+/*
+ * Final validation and post-processing steps before exporting the options.
+ */
+
+opts = {
+    ...opts,
+    // Ugly: need to call asAbsolutePath a second time here because whiskerUrl might be the default one, in which case
+    // we still need to convert its relative path into an absolute one.
+    whiskerUrl: `file://${asAbsolutePath(opts.whiskerUrl)}`,
+};
 
 // The current Whisker mode (i.e., the name of the subcommand) and all given command line options are available in any
 // JavaScript module by requiring the "cli.js" module.
