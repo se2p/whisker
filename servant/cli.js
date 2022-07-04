@@ -124,8 +124,8 @@ class WhiskerSubCommand extends Command {
 
     optionNumberOfTabs() {
         return this.option(
-            '-p, --number-of-tabs <Integer>',
-            'number of tabs to execute the tests in',
+            '-j, --number-of-jobs <Integer>',
+            'number of jobs (tabs) for test execution',
             (numberTabs) => util.processNumberOfTabs(numberTabs),
             require('os').cpus().length
         );
