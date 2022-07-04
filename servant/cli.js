@@ -1,4 +1,4 @@
-const {Command} = require('commander');
+const {Command, InvalidArgumentError} = require('commander');
 const util = require('./util')
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../package.json');
@@ -39,6 +39,14 @@ const whiskerCLI = new class extends Command {
         return new WhiskerSubCommand(name);
     }
 };
+
+/**
+ * Functions invoked at the end, to perform custom checks and validation of the command line options, and enforce other
+ * constraints that cannot be easily modeled with Commander.
+ *
+ * @type {(() => void)[]}
+ */
+const customChecks = [];
 
 /**
  * Represents a Whisker subcommand. It automatically configures global options common to all Whisker subcommands, and
@@ -144,6 +152,13 @@ class WhiskerSubCommand extends Command {
     }
 
     optionMutantsDownloadPath() {
+        customChecks.push(function mutantsDownloadPathImpliesMutators() {
+            // Note: Option.implies(...) does not fit our use-case. So we have to implement a custom check here.
+            if ('mutantsDownloadPath' in opts && !('mutators' in opts)) {
+                throw new InvalidArgumentError('You gave a download path for mutants but did not enable mutators.');
+            }
+        });
+
         return this.option('-e, --mutants-download-path <Path>',
             'where generated mutants should be saved',
             (downloadPath) => util.processDirPathExists(downloadPath));
@@ -240,6 +255,7 @@ const subCommands = [
         .option('-z, --generate-witness-only', 'generate error witness replay without executing it'),
 ];
 
+// Common configuration
 [whiskerCLI, ...subCommands].forEach((cmd) => {
     cmd.configureHelp({
         sortSubcommands: true,
@@ -253,10 +269,13 @@ const subCommands = [
 subCommands.forEach((cmd) => cmd.register());
 whiskerCLI.parse(process.argv);
 
+customChecks.forEach((check) => check());
+
 opts = {
     ...opts,
     // Ugly: need to call asAbsolutePath a second time here because whiskerUrl might be the default one, in which case
-    // we still need to convert its relative path into an absolute one.
+    // we still need to convert its relative path into an absolute one. Commander does not invoke custom options
+    // processing functions for default arguments.
     whiskerUrl: `file://${asAbsolutePath(opts.whiskerUrl)}`,
 };
 
