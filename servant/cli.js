@@ -187,7 +187,7 @@ const subCommands = [
         .description('test with model')
         .requireScratchPath()
         .requiredOption(
-            '-m, --model-path <Path>',
+            '-p, --model-path <Path>',
             'model to test with',
             (modelPath) => util.processFilePathExists(modelPath))
         .requiredOption(
