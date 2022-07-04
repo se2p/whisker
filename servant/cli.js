@@ -130,25 +130,22 @@ class WhiskerSubCommand extends Command {
     optionNumberOfTabs() {
         return this.option(
             '-j, --number-of-jobs <Integer>',
-            'number of jobs (tabs) for test execution',
+            'number of jobs (Chromium tabs) for test execution',
             (numberTabs) => util.processNumberOfTabs(numberTabs),
             require('os').cpus().length
         );
     }
 
-    /*
-     * HELP: I tried to make this a variadic option via '-m, --mutators <String...>', but then the options parsing
-     * gets awkward and cumbersome... The custom fn is invoked for every argument, which means only the operator
-     * specified last is actually applied, and all others before it are lost. Is there really no way to get a hold of
-     * the entire array and validate it in one shot? As a workaround, we have to pass a comma-separated list of
-     * operators, which is a single string. Then, we split the string, validate each operator, and return an array.
-     * Alternative: use Option.choices(...)?
-     */
     optionMutators() {
         return this.option(
-            '-m, --mutators <String>',
-            'list of mutation operators to apply (separated by ","), or "ALL"',
-            (mutators) => util.processMutationOperators(mutators));
+            '-m, --mutators <String...>',
+            'mutation operators to apply',
+            (mutator, mutators = []) => {
+                if (!mutators.includes(mutator)) { // check if mutator already given to eliminate duplicates
+                    mutators.push(util.processMutationOperator(mutator));
+                }
+                return mutators;
+            });
     }
 
     optionMutantsDownloadPath() {
