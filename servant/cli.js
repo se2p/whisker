@@ -249,7 +249,7 @@ const subCommands = [
             '-w, --error-witness-path <Path>',
             'error witness to replay (".json")',
             (witnessPath) => util.processFilePathExists(witnessPath, '.json'))
-        .option('-z, --generate-witness-only', 'generate error witness replay without executing it'),
+        .option('-x, --generate-witness-only', 'generate error witness replay without executing it'),
 ];
 
 // Common configuration
