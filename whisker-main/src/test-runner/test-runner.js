@@ -226,6 +226,7 @@ class TestRunner extends EventEmitter {
         const util = new WhiskerUtil(vm, project);
         await util.prepare(props.accelerationFactor || 1);
         this.vmWrapper = util.getVMWrapper();
+        await this.vmWrapper.vm.runtime.translateText2Speech();
         return util;
     }
 

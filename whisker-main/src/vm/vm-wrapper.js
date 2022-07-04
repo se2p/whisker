@@ -392,6 +392,7 @@ class VMWrapper {
             initialState[targetsKey] = {
                 name: this.vm.runtime.targets[targetsKey].sprite['name'],
                 direction: this.vm.runtime.targets[targetsKey]["direction"],
+                size: this.vm.runtime.targets[targetsKey]['size'],
                 currentCostume: this.vm.runtime.targets[targetsKey]["currentCostume"],
                 draggable: this.vm.runtime.targets[targetsKey]["draggable"],
                 dragging: this.vm.runtime.targets[targetsKey]["dragging"],
@@ -430,6 +431,7 @@ class VMWrapper {
         // Restore state of all others
         for (const targetsKey in this.vm.runtime.targets) {
             this.vm.runtime.targets[targetsKey]["direction"] = saveState[targetsKey]["direction"];
+            this.vm.runtime.targets[targetsKey]["size"] = saveState[targetsKey]["size"];
             this.vm.runtime.targets[targetsKey]["currentCostume"] = saveState[targetsKey]["currentCostume"];
             this.vm.runtime.targets[targetsKey]["draggable"] = saveState[targetsKey]["draggable"];
             this.vm.runtime.targets[targetsKey]["dragging"] = saveState[targetsKey]["dragging"];

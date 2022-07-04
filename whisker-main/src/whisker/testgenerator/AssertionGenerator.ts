@@ -68,6 +68,7 @@ export class AssertionGenerator {
 
     public async addStateChangeAssertions(tests: WhiskerTest[]): Promise<void> {
 
+        await Container.vmWrapper.resetVM();
         Container.debugLog("Adding State change Assertions");
 
         // determine relevant attributes?
