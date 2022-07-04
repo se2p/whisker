@@ -105,6 +105,14 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionTestPath() {
+        return this.option(
+            '-t, --test-path <Path>',
+            'path to Whisker tests to run (".js")',
+            (testPath) => util.processFilePathExists(testPath, '.js'),
+        );
+    }
+
     requireConfigPath() {
         return this.requiredOption(
             '-c, --config-path <Path>',
@@ -188,10 +196,11 @@ const subCommands = [
             (reps) => util.processPositiveInt(reps),
             1)
         .requiredOption(
-            '-t, --model-duration <Integer>',
+            '-n, --model-duration <Integer>',
             'maximal time of one model test run in seconds',
             (duration) => util.processPositiveInt(duration),
             30)
+        .optionTestPath()
         .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive'),
 
     newSubCommand('witness')
