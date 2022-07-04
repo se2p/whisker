@@ -131,6 +131,21 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionMutators() {
+        return this.option(
+            '-m, --mutators <String...>',
+            'the mutation operators to apply',
+            (mutators) => util.processMutationOperators(mutators),
+            'ALL');
+    }
+
+    // FIXME: enforce: must be used in combination with optionMutators()
+    optionMutantsDownloadPath() {
+        return this.option('-e, --mutants-download-path <Path>',
+            'where generated mutants should be saved',
+            (downloadPath) => util.processDirPathExists(downloadPath));
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -157,7 +172,9 @@ const subCommands = [
         .description('run Whisker tests')
         .requireScratchPath()
         .requireTestPath()
-        .optionNumberOfTabs(),
+        .optionNumberOfTabs()
+        .optionMutators()
+        .optionMutantsDownloadPath(),
 
     newSubCommand('generate')
         .description('generate Whisker test suites')
@@ -181,7 +198,9 @@ const subCommands = [
         .requiredOption(
             '-t, --test-path <Path>',
             'path to dynamic Whisker tests (".json")',
-            (testPath) => util.processFilePathExists(testPath, '.json')),
+            (testPath) => util.processFilePathExists(testPath, '.json'))
+        .optionMutators()
+        .optionMutantsDownloadPath(),
 
     newSubCommand('model')
         .description('test with model')
@@ -201,7 +220,9 @@ const subCommands = [
             (duration) => util.processPositiveInt(duration),
             30)
         .optionTestPath()
-        .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive'),
+        .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive')
+        .optionMutators()
+        .optionMutantsDownloadPath(),
 
     newSubCommand('witness')
         .description('generate and replay error witnesses')
@@ -213,20 +234,6 @@ const subCommands = [
             'error witness to replay (".json")',
             (witnessPath) => util.processFilePathExists(witnessPath, '.json'))
         .option('-z, --generate-witness-only', 'generate error witness replay without executing it'),
-
-    newSubCommand('mutation')
-        .description('run mutation tests')
-        .requireScratchPath()
-        .requireTestPath()
-        .optionNumberOfTabs()
-        .requiredOption(
-            '-m, --mutators <String...>',
-            'the mutation operators to apply',
-            (mutators) => util.processMutationOperators(mutators),
-            'ALL')
-        .option('-e, --mutants-download-path <Path>',
-            'where generated mutants should be saved',
-            (downloadPath) => util.processDirPathExists(downloadPath)),
 ];
 
 [whiskerCLI, ...subCommands].forEach((cmd) => {
