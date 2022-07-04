@@ -90,7 +90,7 @@ class WhiskerSubCommand extends Command {
     }
 
     optionScratchPath() {
-        return this.requiredOption(
+        return this.option(
             '-s, --scratch-path <Path>',
             'path to file (".sb3") or folder with scratch application(s)',
             (scratchPath) => util.processFileOrDirPathExists(scratchPath, '.sb3'),
