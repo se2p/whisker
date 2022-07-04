@@ -136,7 +136,7 @@ class WhiskerSubCommand extends Command {
             '-m, --mutators <String...>',
             'the mutation operators to apply',
             (mutators) => util.processMutationOperators(mutators),
-            'ALL');
+            ['ALL']);
     }
 
     // FIXME: enforce: must be used in combination with optionMutators()
