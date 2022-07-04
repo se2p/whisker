@@ -109,7 +109,7 @@ function processMutationOperators(operators) {
 
     for (const op of operators) {
         if (!supportedOperators.includes(op)) {
-            throw new InvalidArgumentError(`Unknown mutation operator ${op}`);
+            throw new InvalidArgumentError(`Unknown mutation operator "${op}"`);
         }
     }
 

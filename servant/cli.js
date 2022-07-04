@@ -1,4 +1,4 @@
-const {Command} = require('commander');
+const {Command, InvalidArgumentError} = require('commander');
 const util = require('./util')
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../package.json');
@@ -139,11 +139,15 @@ class WhiskerSubCommand extends Command {
             ['ALL']);
     }
 
-    // FIXME: enforce: must be used in combination with optionMutators()
     optionMutantsDownloadPath() {
         return this.option('-e, --mutants-download-path <Path>',
             'where generated mutants should be saved',
-            (downloadPath) => util.processDirPathExists(downloadPath));
+            (downloadPath) => util.processDirPathExists(downloadPath))
+            .action((ignored, options) => {
+                if (!options.mutators) {
+                    throw new InvalidArgumentError("Must be called together with mutators option");
+                }
+            });
     }
 
     /**
