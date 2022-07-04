@@ -103,17 +103,15 @@ function processPositiveInt(value) {
     return value;
 }
 
-function processMutationOperators(operators) {
+function processMutationOperator(operator) {
     // FIXME: MutationFactory should export these instead of having them to hard-code here
     const supportedOperators = ['KRM', 'SBD', 'SDM', 'AOR', 'LOR', 'ROR', 'NCM', 'VRM', 'ALL'];
 
-    for (const op of operators) {
-        if (!supportedOperators.includes(op)) {
-            throw new InvalidArgumentError(`Unknown mutation operator "${op}"`);
-        }
+    if (!supportedOperators.includes(operator)) {
+        throw new InvalidArgumentError(`Unknown mutation operator "${operator}"`);
     }
 
-    return operators;
+    return operator;
 }
 
 function processNumberOfTabs(numberOfTabs) {
@@ -133,6 +131,6 @@ module.exports = {
     processFileOrDirPathExists,
     processFilePathNotExists,
     processPositiveInt,
-    processMutationOperators,
+    processMutationOperator,
     processNumberOfTabs,
 }

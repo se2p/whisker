@@ -135,8 +135,8 @@ class WhiskerSubCommand extends Command {
         return this.option(
             '-m, --mutators <String...>',
             'the mutation operators to apply',
-            (mutators) => util.processMutationOperators(mutators),
-            ['ALL']);
+            (mutator) => util.processMutationOperator(mutator),
+            'ALL');
     }
 
     optionMutantsDownloadPath() {
