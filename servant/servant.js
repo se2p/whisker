@@ -60,17 +60,12 @@ void async function main() {
     }
 
     // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
-    // The module must only export a function accepting the "page" argument.
+    // The module must only export a function accepting the "openNewPage" callback.
     const modulePath = require('path').resolve(`${subcommand}.js`);
     const runSubcommand = require(modulePath);
 
     try {
-        const page = await openNewPage(browser);
-        try {
-            return await runSubcommand(page);
-        } finally {
-            await page.close();
-        }
+        return await runSubcommand(openNewPage.bind(null, browser));
     } catch (e) {
         logger.error(e);
         return Promise.reject(e);

@@ -29,14 +29,14 @@ const {
 
 const tmpDir = './.tmpWorkingDir';
 
-async function runTestsOnFile(page, targetProject) {
+async function runTestsOnFile(openNewPage, targetProject) {
     const start = Date.now();
 
     const csvs = [];
 
     if (testPath) {
         const paths = prepareTestFiles();
-        await Promise.all(paths.map((path, index) => runTests(path, page, index, targetProject)))
+        await Promise.allSettled(paths.map((path, index) => runTests(path, openNewPage, index, targetProject)))
             .then(results => {
                 const summaries = results.map(({summary}) => summary);
                 const coverages = results.map(({coverage}) => coverage);
@@ -54,7 +54,7 @@ async function runTestsOnFile(page, targetProject) {
 
     } else {
         // model path given, test only by model
-        await runTests(undefined, page, 0, targetProject)
+        await runTests(undefined, openNewPage, 0, targetProject)
             .then(result => {
                 csvs.push(result.csv);
 
@@ -85,7 +85,8 @@ async function showHiddenFunctionality(page) {
     await toggleModelEditor.evaluate(t => t.click());
 }
 
-async function runTests(path, page, index, targetProject) {
+async function runTests(path, openNewPage, index, targetProject) {
+    const page = await openNewPage();
 
     /**
      * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
@@ -239,6 +240,8 @@ async function runTests(path, page, index, targetProject) {
 
         const csvRow = await readTestOutput();
         const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
+
+        await page.close();
 
         return Promise.resolve({
             summary, coverage: convertSerializedCoverageToCoverage(serializableCoverageObject),

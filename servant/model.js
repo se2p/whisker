@@ -1,3 +1,3 @@
-module.exports = async function (page) {
-    await require("./run")(page);
+module.exports = async function (openNewPage) {
+    await require("./run")(openNewPage);
 };

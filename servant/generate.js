@@ -6,6 +6,7 @@ const {
     whiskerUrl,
     csvFile,
     testDownloadDir,
+    testPath,
     scratchPath,
     configPath,
     acceleration,
@@ -13,13 +14,12 @@ const {
 } = require("./cli").opts;
 
 // Test generation
-async function generateTests(page) {
+async function generateTests(openNewPage) {
     const start = Date.now();
 
     // Todo use correct config
-    runGeneticSearch(page)
+    runGeneticSearch(openNewPage)
         .then((csv) => {
-            page.close();
             logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
             // Save results in CSV-file if specified
             if (csvFile) {
@@ -31,14 +31,16 @@ async function generateTests(page) {
         .finally(() => rimraf.sync(tmpDir));
 }
 
-async function runGeneticSearch(options, page) {
+async function runGeneticSearch(openNewPage) {
+    const page = await openNewPage();
+
     async function configureWhiskerWebInstance() {
         await page.goto(whiskerUrl, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
-        // if (testPath) {
-        //     await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        // }
+        if (testPath) {
+            await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        }
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
@@ -84,6 +86,7 @@ async function runGeneticSearch(options, page) {
         const output = await readTestOutput();
         logger.debug(`Downloading tests to ${testDownloadDir}`);
         await downloadTests();
+        page.close();
         return Promise.resolve(output);
     } catch (e) {
         return Promise.reject(e);

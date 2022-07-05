@@ -12,7 +12,7 @@ const {
 } = require('./cli').opts
 
 // Dynamic Test suite using Neuroevolution
-async function generateDynamicTests(page) {
+async function generateDynamicTests(openNewPage) {
     if (scratchPath.isDirectory) {
         const csvs = [];
         for (const file of fs.readdirSync(scratchPath)) {
@@ -23,7 +23,7 @@ async function generateDynamicTests(page) {
 
             logger.info("Testing project %s", file);
 
-            const csvOutput = await runDynamicTestSuite(page, path.resolve(scratchPath, file));
+            const csvOutput = await runDynamicTestSuite(openNewPage, path.resolve(scratchPath, file));
             const csvArray = csvOutput.split('\n');
             if (csvs.length === 0) {
                 csvs.push(csvArray[0]);
@@ -36,7 +36,7 @@ async function generateDynamicTests(page) {
             fs.writeFileSync(csvFile, output);
         }
     } else {
-        const output = await runDynamicTestSuite(page, scratchPath);
+        const output = await runDynamicTestSuite(openNewPage, scratchPath);
         if (csvFile) {
             console.info("Creating CSV summary in " + csvFile);
             fs.writeFileSync(csvFile, output);
@@ -44,10 +44,12 @@ async function generateDynamicTests(page) {
     }
 }
 
-async function runDynamicTestSuite(options, page) {
+async function runDynamicTestSuite(openNewPage, path) {
+    const page = await openNewPage();
+
     async function configureWhiskerWebInstance() {
         await page.goto(whiskerUrl, {waitUntil: 'networkidle0'});
-        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        await (await page.$('#fileselect-project')).uploadFile(path);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
         await showHiddenFunctionality(page);
@@ -87,6 +89,7 @@ async function runDynamicTestSuite(options, page) {
         logger.debug("Dynamic TestSuite");
         await executeSearch();
         const csvOutput = await readTestOutput();
+        page.close();
         return Promise.resolve(csvOutput);
     } catch (e) {
         return Promise.reject(e);

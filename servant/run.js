@@ -4,12 +4,12 @@ const {modelPath, csvFile} = require("./cli").opts;
 const {runTestsOnFile, getProjectsInScratchPath} = require("./common");
 
 // Standard TestSuite / Model-based testing
-async function run(page) {
+async function run(openNewPage) {
     const csvs = [];
 
     for (const project of getProjectsInScratchPath()) {
         logger.info(`Testing project ${project}`);
-        csvs.push(...await runTestsOnFile(page, project, modelPath));
+        csvs.push(...await runTestsOnFile(openNewPage, project, modelPath));
     }
 
     if (csvFile) {
