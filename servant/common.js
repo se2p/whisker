@@ -97,7 +97,7 @@ async function runTests(path, page, index, targetProject) {
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
-        if (testPath) {
+        if (path) {
             await (await page.$('#fileselect-tests')).uploadFile(path);
         }
         if (modelPath) {
