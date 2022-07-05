@@ -245,6 +245,7 @@ async function runTests(path, page, index, targetProject) {
             csv: csvRow, modelCoverage: convertSerializedModelCoverage(serializableModelCoverage)
         });
     } catch (e) {
+        logger.error(e);
         return Promise.reject(e);
     }
 }

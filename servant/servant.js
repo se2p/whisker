@@ -55,6 +55,7 @@ void async function main() {
     try {
         browser = await openNewBrowser();
     } catch (e) {
+        logger.error(e);
         return Promise.reject(e);
     }
 
@@ -71,6 +72,7 @@ void async function main() {
             await page.close();
         }
     } catch (e) {
+        logger.error(e);
         return Promise.reject(e);
     } finally {
         await browser.close()
