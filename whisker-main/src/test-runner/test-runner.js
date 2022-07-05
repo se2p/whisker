@@ -71,11 +71,13 @@ class TestRunner extends EventEmitter {
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
+                this.saveState = this.vmWrapper._recordInitialState(vm);
                 this._initialiseFitnessTargets(vm);
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
                 this.emit(TestRunner.RESET_TABLE, tests);
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
                 for (const test of tests) {
+                    this.vmWrapper.loadSaveState(this.saveState);
                     let result;
                     if("generationAlgorithm" in test){
                         resultRecords.generationAlgorithm = test.generationAlgorithm;
