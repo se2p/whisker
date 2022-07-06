@@ -24,6 +24,7 @@
         "lint:fix": "eslint . --fix"
     },
     "dependencies": {
+        "assert": "^2.0.0",
         "clean-yaml-object": "^0.1.0",
         "js-yaml": "^4.1.0",
         "lodash.defaults": "^4.2.0",

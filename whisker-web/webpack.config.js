@@ -112,7 +112,14 @@ module.exports = [
             ]
         },
         resolve: {
-            extensions: ['.ts', '.js']
+            extensions: ['.ts', '.js'],
+
+            // Polyfills for Node.JS core modules
+            // https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-nodejs-polyfills-removed
+            fallback: {
+                url: require.resolve("url/"),
+                stream: require.resolve("stream-browserify"),
+            }
         },
         devtool: 'source-map',
         stats: 'errors-warnings',

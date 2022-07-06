@@ -60,7 +60,13 @@ module.exports = [
             path: path.resolve('dist', 'node')
         },
         resolve: {
-            extensions: ['.tsx', '.ts', '.js']
+            extensions: ['.tsx', '.ts', '.js'],
+
+            // Polyfills for Node.JS core modules
+            // https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-nodejs-polyfills-removed
+            fallback: {
+                "assert": require.resolve("assert/")
+            }
         },
 
         module: {
