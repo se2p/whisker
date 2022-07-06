@@ -4,7 +4,7 @@
     "main": "index.js",
     "license": "GPL-3.0-only",
     "scripts": {
-        "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --colors --bail",
+        "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
         "test": "jest --forceExit --coverage --verbose",
         "test:coverage": "yarn test -- --coverage"
     },

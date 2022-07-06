@@ -11,8 +11,8 @@
     },
     "browser": "./index.html",
     "scripts": {
-        "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --colors --bail",
-        "build:prod": "if [ -d dist ]; then rm -rf dist; fi && NODE_ENV=production webpack --colors --bail",
+        "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
+        "build:prod": "if [ -d dist ]; then rm -rf dist; fi && NODE_ENV=production webpack --color --bail",
         "test": "jest --forceExit --verbose --runInBand",
         "lint": "eslint . && format-message lint src/**/*.js",
         "lint:fix": "eslint . --fix"
