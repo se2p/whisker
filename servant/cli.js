@@ -213,8 +213,8 @@ const subCommands = [
         .requireConfigPath()
         .requiredOption(
             '-t, --test-path <Path>',
-            'path to dynamic Whisker tests (".json")',
-            (testPath) => util.processFilePathExists(testPath, '.json'))
+            'directory path to store dynamic tests',
+            (testPath) => util.processDirPathExists(testPath))
         .optionMutators()
         .optionMutantsDownloadPath(),
 
