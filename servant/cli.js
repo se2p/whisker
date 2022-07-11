@@ -137,6 +137,10 @@ class WhiskerSubCommand extends Command {
     }
 
     optionMutators() {
+        // Option can be used by specifying multiple arguments separated by spaces:
+        //      -m ROR LOR AOR
+        // Or by specifying the -m flag multiple times:
+        //      -m ROR -m LOR -m AOR
         return this.option(
             '-m, --mutators <String...>',
             'mutation operators to apply',
@@ -252,7 +256,10 @@ const subCommands = [
         .option('-x, --generate-witness-only', 'generate error witness replay without executing it'),
 ];
 
-// Common configuration
+// Common configuration for Whisker and all subcommands:
+// (1) When showing help, sort subcommand and options alphabetically.
+// (2) Treat excess arguments as error.
+// (3) Do not allow unknown options.
 [whiskerCLI, ...subCommands].forEach((cmd) => {
     cmd.configureHelp({
         sortSubcommands: true,
