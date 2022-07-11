@@ -6,6 +6,7 @@ const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
+require('setimmediate'); // attaches setImmediate to the global scope as side effect
 
 /**
  * Wraps the used virtual machine and extends existing functionality.
