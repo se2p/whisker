@@ -6,7 +6,7 @@ const TAP13Formatter = {
      * @param {object} description .
      * @return {string} .
      */
-    descriptionToYAML (description) {
+    descriptionToYAML(description) {
         return [
             '  ---',
             yaml.dump(description)
@@ -20,7 +20,7 @@ const TAP13Formatter = {
      * @param {object} extra .
      * @return {string} .
      */
-    extraToYAML (extra) {
+    extraToYAML(extra) {
         return yaml.dump(extra)
             .trim()
             .replace(/^/mg, '# ');
@@ -30,7 +30,7 @@ const TAP13Formatter = {
      * @param {object} summaries .
      * @return {object} .
      */
-    mergeFormattedSummaries (summaries) {
+    mergeFormattedSummaries(summaries) {
         return summaries.reduce((mergedSummary, summary) => {
             Object.keys(summary).forEach(key => {
                 if (mergedSummary[key]) {
@@ -53,7 +53,7 @@ const TAP13Formatter = {
         const formattedSummary = {};
         for (const [projectName, summary] of Object.entries(summaryRecord)) {
             formattedSummary[projectName] = {};
-            if(summary.length > 0 && summary[0].test !== undefined) {
+            if (summary.length > 0 && summary[0].test !== undefined) {
                 const tests = summary.length;
                 const passedResults = summary.filter(result => result.status === Test.PASS);
                 const pass = passedResults.length;
@@ -68,15 +68,10 @@ const TAP13Formatter = {
                 const skip = skippedResults.length;
                 const skippedTests = skippedResults.length > 0 ? skippedResults.map(result => result.test.name) : "None";
 
-                formattedSummary[projectName]["tests"] = tests;
-                formattedSummary[projectName]["pass"] = pass;
-                formattedSummary[projectName]["passedTests"] = passedTests;
-                formattedSummary[projectName]["fail"] = fail;
-                formattedSummary[projectName]["failedTests"] = failedTests;
-                formattedSummary[projectName]["error"] = error;
-                formattedSummary[projectName]["errorTests"] = errorTests;
-                formattedSummary[projectName]["skip"] = skip;
-                formattedSummary[projectName]["skippedTests"] = skippedTests;
+                formattedSummary[projectName][`passed Tests (${pass})`] = passedTests;
+                formattedSummary[projectName][`failed Tests (${fail})`] = failedTests;
+                formattedSummary[projectName][`error Tests (${error})`] = errorTests;
+                formattedSummary[projectName][`skipped Tests (${skip})`] = skippedTests;
             }
 
             // Check if we have model-based results and add them to the result object if necessary.
@@ -100,13 +95,11 @@ const TAP13Formatter = {
             let uniqueErrors = [...new Set(allErrors)];
             const nUniqueErrors = uniqueErrors.length;
 
-            uniqueFails = nUniqueFails > 0 ? uniqueFails.sort((a, b) => a - b): "None";
-            uniqueErrors = nUniqueErrors > 0 ? uniqueErrors.sort((a, b) => a - b): "None";
-            if(modelResults){
-                formattedSummary[projectName]["fails_in_model"] = nUniqueFails;
-                formattedSummary[projectName]["fails_in_model_text"] = uniqueFails;
-                formattedSummary[projectName]["errors_in_model"] = nUniqueErrors;
-                formattedSummary[projectName]["errors_in_model_text"] = uniqueErrors;
+            uniqueFails = nUniqueFails > 0 ? uniqueFails.sort((a, b) => a - b) : "None";
+            uniqueErrors = nUniqueErrors > 0 ? uniqueErrors.sort((a, b) => a - b) : "None";
+            if (modelResults) {
+                formattedSummary[projectName][`modelFails (${nUniqueFails})`] = uniqueFails;
+                formattedSummary[projectName][`modelErrors (${nUniqueErrors})`] = uniqueErrors;
             }
         }
 
@@ -117,7 +110,7 @@ const TAP13Formatter = {
      * @param {object} coveragePerSprite .
      * @return {object} .
      */
-    formatCoverage (coveragePerSprite) {
+    formatCoverage(coveragePerSprite) {
         // const individualCoverage = coverage.getCoveragePerSprite();
         // const combinedCoverage = coverage.getCoverage();
 
@@ -189,7 +182,7 @@ const TAP13Formatter = {
      * @param {object} coverageRecord .
      * @return {string} .
      */
-    formatCoverageRecord (coverageRecord) {
+    formatCoverageRecord(coverageRecord) {
         const {covered, total} = coverageRecord;
         let percentage;
         if (total === 0) {
