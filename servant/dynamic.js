@@ -89,7 +89,7 @@ async function runDynamicTestSuite(openNewPage, path) {
         logger.debug("Dynamic TestSuite");
         await executeSearch();
         const csvOutput = await readTestOutput();
-        page.close();
+        await page.close();
         return Promise.resolve(csvOutput);
     } catch (e) {
         return Promise.reject(e);
