@@ -2,7 +2,7 @@ const {Command, InvalidArgumentError} = require('commander');
 const util = require('./util')
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../package.json');
-const {asAbsolutePath} = require("./util");
+const {asAbsolutePath, relativeToServantDir} = require("./util");
 
 /**
  * The name of the Whisker subcommand that was invoked.
@@ -63,7 +63,7 @@ class WhiskerSubCommand extends Command {
             '-u, --whisker-url <Path>',
             'file URL to Whisker Web (".html")',
             (whiskerUrl) => util.processFilePathExists(whiskerUrl, '.html'),
-            '../whisker-web/dist/index.html');
+            relativeToServantDir('../whisker-web/dist/index.html'));
         this.option(
             '-a, --acceleration <Integer>',
             'acceleration factor',
@@ -123,7 +123,7 @@ class WhiskerSubCommand extends Command {
             '-c, --config-path <Path>',
             'path to a configuration file (".json")',
             (configPath) => util.processFilePathExists(configPath, '.json'),
-            '../config/mio.json',
+            relativeToServantDir('../config/mio.json'),
         );
     }
 

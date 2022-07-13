@@ -7,7 +7,11 @@ const {isAbsolute, resolve, dirname} = require('path');
  */
 
 function asAbsolutePath(path) {
-    return isAbsolute(path) ? path : resolve(__dirname, path);
+    return isAbsolute(path) ? path : resolve(process.cwd(), path);
+}
+
+function relativeToServantDir(path) {
+    return resolve(__dirname, path);
 }
 
 /*
@@ -134,4 +138,5 @@ module.exports = {
     processMutationOperator,
     processNumberOfTabs,
     asAbsolutePath,
+    relativeToServantDir,
 }
