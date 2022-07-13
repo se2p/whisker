@@ -3,7 +3,6 @@ const fs = require("fs");
 const rimraf = require("rimraf");
 const {tmpDir, showHiddenFunctionality} = require("./common");
 const {
-    whiskerUrl,
     csvFile,
     testDownloadDir,
     testPath,
@@ -18,17 +17,19 @@ async function generateTests(openNewPage) {
     const start = Date.now();
 
     // Todo use correct config
-    runGeneticSearch(openNewPage)
-        .then((csv) => {
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-            // Save results in CSV-file if specified
-            if (csvFile) {
-                console.info(`Creating CSV summary in ${testDownloadDir}`);
-                fs.writeFileSync(require('path').resolve(testDownloadDir, csvFile), csv);
-            }
-        })
-        .catch(errors => logger.error('Error on generating tests: ', errors))
-        .finally(() => rimraf.sync(tmpDir));
+    try {
+        const csv = await runGeneticSearch(openNewPage);
+        logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+        // Save results in CSV-file if specified
+        if (csvFile) {
+            console.info(`Creating CSV summary in ${testDownloadDir}`);
+            fs.writeFileSync(require('path').resolve(testDownloadDir, csvFile), csv);
+        }
+    } catch (e) {
+        logger.error('Error on generating tests: ', e)
+    } finally {
+        rimraf.sync(tmpDir);
+    }
 }
 
 async function runGeneticSearch(openNewPage) {
