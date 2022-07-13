@@ -12,7 +12,6 @@ const {
     testPath,
     seed,
     acceleration,
-    whiskerUrl,
     modelPath,
     modelRepetition,
     modelDuration,
