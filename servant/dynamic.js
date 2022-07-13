@@ -5,7 +5,6 @@ const {showHiddenFunctionality} = require("./common");
 const {
     scratchPath,
     csvFile,
-    whiskerUrl,
     configPath,
     testPath,
     acceleration,
@@ -15,7 +14,7 @@ const {
 async function generateDynamicTests(openNewPage) {
     if (scratchPath.isDirectory) {
         const csvs = [];
-        for (const file of fs.readdirSync(scratchPath)) {
+        for (const file of fs.readdirSync(scratchPath.path)) {
             if (!file.endsWith(".sb3")) {
                 logger.info("Not a Scratch project: %s", file);
                 continue;
@@ -23,7 +22,7 @@ async function generateDynamicTests(openNewPage) {
 
             logger.info("Testing project %s", file);
 
-            const csvOutput = await runDynamicTestSuite(openNewPage, path.resolve(scratchPath, file));
+            const csvOutput = await runDynamicTestSuite(openNewPage, path.resolve(scratchPath.path, file));
             const csvArray = csvOutput.split('\n');
             if (csvs.length === 0) {
                 csvs.push(csvArray[0]);
@@ -36,7 +35,7 @@ async function generateDynamicTests(openNewPage) {
             fs.writeFileSync(csvFile, output);
         }
     } else {
-        const output = await runDynamicTestSuite(openNewPage, scratchPath);
+        const output = await runDynamicTestSuite(openNewPage, scratchPath.path);
         if (csvFile) {
             console.info("Creating CSV summary in " + csvFile);
             fs.writeFileSync(csvFile, output);
