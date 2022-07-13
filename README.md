@@ -90,7 +90,6 @@ Options:
   -p, --number-of-tabs <Integer>  number of tabs to execute the tests in (default: 8)
   -s, --scratch-path <Path>       path to file (".sb3") or folder with scratch application(s)
   -t, --test-path <Path>          path to Whisker tests to run (".js")
-  -u, --whisker-url <Path>        file URL to Whisker Web (".html") (default: "../whisker-web/dist/index.html")
   -v, --csv-file <Path>           create CSV file with results
   -z, --seed <Integer>            seed Scratch-VM with given integer
 ```

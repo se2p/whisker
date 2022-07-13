@@ -113,7 +113,6 @@ following command:
 
 ```
 node servant.js generate \
-    -u ../whisker-web/dist/index.html \
     -s FruitCatching.sb3 \
     -c ../config/Neuroevolution/scoreNeuroevolution.json
 ```

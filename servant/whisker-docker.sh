@@ -19,7 +19,6 @@ whisker() {
         -d \
         -k \
         -l \
-        -u ../whisker-web/dist/index.html \
         "$@"
 }
 

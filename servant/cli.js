@@ -2,7 +2,7 @@ const {Command, InvalidArgumentError} = require('commander');
 const util = require('./util')
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../package.json');
-const {asAbsolutePath, relativeToServantDir} = require("./util");
+const {relativeToServantDir} = require("./util");
 
 /**
  * The name of the Whisker subcommand that was invoked.
@@ -59,11 +59,6 @@ class WhiskerSubCommand extends Command {
     }
 
     _addCommonOptions() {
-        this.requiredOption(
-            '-u, --whisker-url <Path>',
-            'file URL to Whisker Web (".html")',
-            (whiskerUrl) => util.processFilePathExists(whiskerUrl, '.html'),
-            relativeToServantDir('../whisker-web/dist/index.html'));
         this.option(
             '-a, --acceleration <Integer>',
             'acceleration factor',
@@ -277,10 +272,7 @@ customChecks.forEach((check) => check());
 
 opts = {
     ...opts,
-    // Ugly: need to call asAbsolutePath a second time here because whiskerUrl might be the default one, in which case
-    // we still need to convert its relative path into an absolute one. Commander does not invoke custom options
-    // processing functions for default arguments.
-    whiskerUrl: `file://${asAbsolutePath(opts.whiskerUrl)}`,
+    whiskerUrl: `file://${relativeToServantDir('../whisker-web/dist/index.html')}`
 };
 
 // The current Whisker mode (i.e., the name of the subcommand) and all given command line options are available in any
