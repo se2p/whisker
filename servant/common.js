@@ -93,7 +93,6 @@ async function runTests(path, openNewPage, index, targetProject) {
      * was loaded.
      */
     async function configureWhiskerWebInstance() {
-        await page.goto(whiskerUrl, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);

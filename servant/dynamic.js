@@ -48,7 +48,6 @@ async function runDynamicTestSuite(openNewPage, path) {
     const page = await openNewPage();
 
     async function configureWhiskerWebInstance() {
-        await page.goto(whiskerUrl, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(path);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#fileselect-tests')).uploadFile(testPath);

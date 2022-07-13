@@ -35,7 +35,6 @@ async function runGeneticSearch(openNewPage) {
     const page = await openNewPage();
 
     async function configureWhiskerWebInstance() {
-        await page.goto(whiskerUrl, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         if (testPath) {
