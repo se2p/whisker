@@ -127,7 +127,7 @@ class WhiskerSubCommand extends Command {
             '-j, --number-of-jobs <Integer>',
             'number of jobs (Chromium tabs) for test execution',
             (numberTabs) => util.processNumberOfTabs(numberTabs),
-            require('os').cpus().length
+            1
         );
     }
 
