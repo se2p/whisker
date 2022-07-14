@@ -122,11 +122,11 @@ class WhiskerSubCommand extends Command {
         );
     }
 
-    optionNumberOfTabs() {
+    optionNumberOfJobs() {
         return this.option(
             '-j, --number-of-jobs <Integer>',
             'number of jobs (Chromium tabs) for test execution',
-            (numberTabs) => util.processNumberOfTabs(numberTabs),
+            (jobs) => util.processNumberOfJobs(jobs),
             1
         );
     }
@@ -187,7 +187,7 @@ const subCommands = [
         .description('run Whisker tests')
         .requireScratchPath()
         .requireTestPath()
-        .optionNumberOfTabs()
+        .optionNumberOfJobs()
         .optionMutators()
         .optionMutantsDownloadPath(),
 
@@ -243,7 +243,7 @@ const subCommands = [
         .description('generate and replay error witnesses')
         .requireTestPath()
         .optionScratchPath()
-        .optionNumberOfTabs()
+        .optionNumberOfJobs()
         .requiredOption(
             '-w, --error-witness-path <Path>',
             'error witness to replay (".json")',

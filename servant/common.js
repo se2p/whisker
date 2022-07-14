@@ -22,7 +22,7 @@ const {
     mutators,
     mutantsDownloadPath,
     errorWitnessPath,
-    numberOfTabs,
+    numberOfJobs,
     scratchPath,
 } = require("./cli").opts;
 
@@ -269,7 +269,7 @@ function prepareTestFiles(whiskerTestPath = testPath) {
 
     const {evaledTest, testSourceWithoutExportArray} = prepareTestSource(whiskerTestPath);
     const singleTestSources = splitTestsSourceCodeIntoSingleTestSources(evaledTest);
-    const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfTabs, singleTestSources);
+    const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfJobs, singleTestSources);
 
     if (fs.existsSync(tmpDir)) {
         fs.rmdirSync(tmpDir, {recursive: true});

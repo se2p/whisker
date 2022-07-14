@@ -118,15 +118,15 @@ function processMutationOperator(operator) {
     return operator;
 }
 
-function processNumberOfTabs(numberOfTabs) {
-    numberOfTabs = processPositiveInt(numberOfTabs);
+function processNumberOfJobs(numberOfJobs) {
+    numberOfJobs = processPositiveInt(numberOfJobs);
 
     const cpus = require('os').cpus().length;
-    if (numberOfTabs > cpus) {
+    if (numberOfJobs > cpus) {
         throw new InvalidArgumentError(`Your system cannot handle more than ${cpus} tabs.`);
     }
 
-    return numberOfTabs;
+    return numberOfJobs;
 }
 
 module.exports = {
@@ -136,7 +136,7 @@ module.exports = {
     processFilePathNotExists,
     processPositiveInt,
     processMutationOperator,
-    processNumberOfTabs,
+    processNumberOfJobs,
     asAbsolutePath,
     relativeToServantDir,
 }
