@@ -224,8 +224,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
         const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+        let modelCoverageString = '';
+
+        // Add model coverage if we have model-based results
+        if (Object.keys(coverageModels).length > 0) {
+            const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+            modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+        }
 
         Whisker.outputRun.println([
             summaryString,

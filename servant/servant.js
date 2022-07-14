@@ -638,24 +638,26 @@ function prepareTestFiles (whiskerTestPath) {
 }
 
 /**
- * Logs the coverage and results (number of fails, pass or skip) to the console in a more readable way.
- *
+ * Summarises and prints the test results such as passed/failed/skipped tests and the achieved coverage per Sprite.
  * @param {string} summaries The summaries from the whisker-web instance test run
  * @param {string} coverage  Combined coverage of from all pages
  * @param {Map} modelCoverage  Coverage of the models.
  */
-function printTestResultsFromCoverageGenerator (summaries, coverage ,modelCoverage) {
+function printTestResultsFromCoverageGenerator(summaries, coverage, modelCoverage) {
     const formattedSummary = TAP13Formatter.mergeFormattedSummaries(summaries.map(TAP13Formatter.formatSummary));
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
-    const formattedModelCoverage = TAP13Formatter.formatModelCoverage(modelCoverage);
-    const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
-
     logger.info(`\nSummary:\n ${summaryString}`);
     logger.info(`\nCoverage:\n ${coverageString}`);
-    logger.info(`\nModel coverage:\n ${modelCoverageString}`);
 
+    // Add model coverage if we have model-based results
+    if (Object.keys(modelCoverage).length > 0) {
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(modelCoverage);
+        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+        logger.info(`\nModel coverage:\n ${modelCoverageString}`);
+    }
 }
