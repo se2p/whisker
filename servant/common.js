@@ -25,6 +25,7 @@ const {
     numberOfJobs,
     scratchPath,
 } = require("./cli").opts;
+const {subcommand} = require("./cli");
 
 const tmpDir = './.tmpWorkingDir';
 
@@ -269,7 +270,8 @@ function prepareTestFiles(whiskerTestPath = testPath) {
 
     const {evaledTest, testSourceWithoutExportArray} = prepareTestSource(whiskerTestPath);
     const singleTestSources = splitTestsSourceCodeIntoSingleTestSources(evaledTest);
-    const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfJobs, singleTestSources);
+    const numberOfTabs = subcommand === "model" ? 1 : numberOfJobs;
+    const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfTabs, singleTestSources);
 
     if (fs.existsSync(tmpDir)) {
         fs.rmdirSync(tmpDir, {recursive: true});
