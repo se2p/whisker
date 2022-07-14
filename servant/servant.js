@@ -2,6 +2,7 @@ const logger = require("./logger");
 const {subcommand} = require('./cli');
 const {resolve} = require('path');
 const {openNewBrowser, openNewPage} = require("./whisker-web");
+const {relativeToServantDir} = require("./util");
 
 void async function main() {
     // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
@@ -9,7 +10,7 @@ void async function main() {
     let browser = null;
     try {
         browser = await openNewBrowser();
-        return await require(resolve(subcommand))(openNewPage.bind(null, browser));
+        return await require(resolve(relativeToServantDir(subcommand)))(openNewPage.bind(null, browser));
     } catch (e) {
         logger.error(e);
         return Promise.reject(e);
