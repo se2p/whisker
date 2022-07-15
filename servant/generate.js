@@ -71,7 +71,7 @@ async function runGeneticSearch(openNewPage) {
     }
 
     async function downloadTests() {
-        await page._client.send('Page.setDownloadBehavior', {
+        await page._client().send('Page.setDownloadBehavior', {
             behavior: 'allow',
             downloadPath: testDownloadDir,
         });

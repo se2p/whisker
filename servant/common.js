@@ -177,7 +177,7 @@ async function runTests(path, openNewPage, index, targetProject) {
      * @param downloadPath the path the mutants should be saved to.
      */
     async function downloadMutants(downloadPath) {
-        await page._client.send('Page.setDownloadBehavior', {
+        await page._client().send('Page.setDownloadBehavior', {
             behavior: 'allow',
             downloadPath: downloadPath
         });
