@@ -156,7 +156,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const accelerationFactor = $('#acceleration-value').text();
         const seed = document.getElementById('seed').value;
         const setMutators = document.querySelector('#container').mutators;
-        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;

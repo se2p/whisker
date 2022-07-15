@@ -236,7 +236,7 @@ const subCommands = [
             30)
         .optionTestPath()
         .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive')
-        .optionMutators()
+        // .optionMutators()    // TODO: Implement ModelTesting + MutationAnalysis
         .optionMutantsDownloadPath(),
 
     newSubCommand('witness')
