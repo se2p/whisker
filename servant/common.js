@@ -36,7 +36,7 @@ async function runTestsOnFile(openNewPage, targetProject) {
 
     if (testPath) {
         const paths = prepareTestFiles();
-        await Promise.allSettled(paths.map((path, index) => runTests(path, openNewPage, index, targetProject)))
+        await Promise.all(paths.map((path, index) => runTests(path, openNewPage, index, targetProject)))
             .then(results => {
                 const summaries = results.map(({summary}) => summary);
                 const coverages = results.map(({coverage}) => coverage);
