@@ -235,7 +235,7 @@ async function runGeneticSearch (browser, downloadPath) {
     }
 
     async function downloadTests () {
-        await page._client.send('Page.setDownloadBehavior', {
+        await page._client().send('Page.setDownloadBehavior', {
             behavior: 'allow',
             downloadPath: downloadPath
         });
@@ -461,7 +461,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
      * @param downloadPath the path the mutants should be saved to.
      */
     async function downloadMutants (downloadPath) {
-        await page._client.send('Page.setDownloadBehavior', {
+        await page._client().send('Page.setDownloadBehavior', {
             behavior: 'allow',
             downloadPath: downloadPath
         });
