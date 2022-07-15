@@ -49,14 +49,13 @@ The Servant is a wrapper around the web client, allowing to run tests automatica
 To use Whisker on the command line, you can use the Servant node frontend as follows:
 
 ```bash
-cd servant
-node servant.js run -s <Scratch project file> -t <test file>
+node servant run -s <Scratch project file> -t <test file>
 ```
 
-An overview of options is provided using `node servant.js help`:
+An overview of options is provided using `node servant help`:
 
 ```bash
-Usage: node servant.js [options] [command]
+Usage: node servant [options] [command]
 
 A Testing Utility for Scratch 3.0
 
@@ -69,39 +68,40 @@ Commands:
   generate [options]        generate Whisker test suites
   help [options] [command]  display help for command
   model [options]           test with model
-  mutation [options]        run mutation tests
   run [options]             run Whisker tests
   witness [options]         generate and replay error witnesses
 ```
 To show further help, additionally pass the name of the command you are interested in, e.g.,
-the `run` command: `node servant.js help run`.
+the `run` command: `node servant help run`.
 ```bash
-Usage: node servant.js run [options]
+Usage: node servant run [options]
 
 run Whisker tests
 
 Options:
-  -a, --acceleration <Integer>    acceleration factor (default: 1)
-  -d, --headless                  run headless ("d" like in "decapitated")
-  -h, --help                      display help for command
-  -k, --console-forwarded         forward browser console output
-  -l, --live-log                  print new log output regularly
-  -o, --live-output-coverage      print new coverage output regularly
-  -p, --number-of-tabs <Integer>  number of tabs to execute the tests in (default: 8)
-  -s, --scratch-path <Path>       path to file (".sb3") or folder with scratch application(s)
-  -t, --test-path <Path>          path to Whisker tests to run (".js")
-  -v, --csv-file <Path>           create CSV file with results
-  -z, --seed <Integer>            seed Scratch-VM with given integer
+  -a, --acceleration <Integer>        acceleration factor (default: 1)
+  -d, --headless                      run headless ("d" like in "decapitated") (default: false)
+  -e, --mutants-download-path <Path>  where generated mutants should be saved
+  -h, --help                          display help for command
+  -j, --number-of-jobs <Integer>      number of jobs (Chromium tabs) for test execution (default: 1)
+  -k, --console-forwarded             forward browser console output
+  -l, --live-log                      print new log output regularly
+  -m, --mutators <String...>          mutation operators to apply
+  -o, --live-output-coverage          print new coverage output regularly
+  -s, --scratch-path <Path>           path to file (".sb3") or folder with scratch application(s)
+  -t, --test-path <Path>              path to Whisker tests to run (".js")
+  -v, --csv-file <Path>               create CSV file with results
+  -z, --seed <String>                 custom seed for Scratch-VM
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
 acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
 
-For example, the following command runs tests with a 10 fold speedup and two parallel executions in a headless chrome
+For example, the following command runs tests with a 10-fold speedup and two parallel executions in a headless chrome
 instance:
 
 ```bash
-node servant.js run -s project.sb3 -t tests.js -a 10 -d -p 2
+node servant run -s project.sb3 -t tests.js -a 10 -d -j 2
 ```
 
 ## Using Docker (Headless Mode)
