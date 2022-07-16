@@ -1,81 +1,142 @@
-/* eslint-disable no-undef */
-const os = require('os');
-const chalk = require('chalk');
-const commander = require('commander');
-const path = require('path');
+const fs = require('fs');
+const {InvalidArgumentError} = require('commander');
+const {isAbsolute, resolve, dirname} = require('path');
 
-// Defines an interceptable and more "nice looking" logger based on elementary console calls
-const logger = {
-    info: (...args) => console.info(chalk.white.bgGreen.bold(' INFO: '), ...args),
-    error: (...args) => console.error(chalk.white.bgRed.bold('\n ERRORS: \n'), ...args, '\n'),
-    warn: (...args) => console.warn(chalk.white.bgYellow.bold('\n WARNING: \n'), ...args, '\n'),
-    log: (...args) => console.log(...args),
-    debug: (...args) => console.debug(chalk.white.bgBlue.bold(' DEBUG: '), ...args, '\n'),
-    clear: () => console.clear()
-};
+/*
+ * Helper functions.
+ */
 
-const validateCommandLineArguments = commander => {
-    const noOptionsGiven = commander.rawArgs.length < 3;
-    if (noOptionsGiven) {
-        commander.help();
-    }
-    const options = commander._optionValues
-    if (!options.scratchPath && !options.isGenerateWitnessTestOnly) {
-        logger.error('No path to a Scratch file was given, please use the -s option');
-        process.exit(1);
+function asAbsolutePath(path) {
+    return isAbsolute(path) ? path : resolve(process.cwd(), path);
+}
+
+function relativeToServantDir(path) {
+    return resolve(__dirname, path);
+}
+
+/*
+ * Assertion functions that throw an error when a requirement is violated.
+ */
+
+function mustBeFile(path, extension = "") {
+    if (!fs.existsSync(path)) {
+        throw new InvalidArgumentError('File must exist.');
     }
 
-    if (!options.testPath && !options.generateTests && !options.modelPath) {
-        logger.error('Missing testing mode argument. Please use the -t option for a test suite, -m option for ' +
-            'model tests, or -g option for test generation.');
-        process.exit(1);
+    if (!fs.lstatSync(path).isFile()) {
+        throw new InvalidArgumentError('Must be a file.')
     }
 
-    if (options.numberOfTabs > os.cpus().length) {
-        logger.error(`You selected to parallelize the tests in ${options.numberOfTabs} tabs, while only having ` +
-            `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
-            `otherwise tests might fail and will need longer to initialize.`);
-        process.exit(1);
+    if (!path.endsWith(extension)) {
+        throw new InvalidArgumentError(`Must be "${extension}" file.`);
     }
-};
+}
 
-// Defines the CLI of the runner, including checks and defaults.
-const cli = {
-    start: () => {
-        commander
-            .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../whisker-web/dist/index.html')
-            .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
-            .option('-t, --testPath <Path>', 'Tests to run', false)
-            .option('-m, --modelPath <Path>', 'Model to test with', false)
-            .option('-mr, --modelRepetition <Integer>', 'Model test repetitions. Ignored if a test suite is specified.', "1")
-            .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run in seconds', "30")
-            .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
-            .option('-mu, --mutators <String>', 'Defines the mutation operators in case mutation testing should be applied', '')
-            .option('-md, --mutantsDownloadPath <Path>', 'Defines where and if the generated mutants should be saved', false)
-            .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
-            .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
-            .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
-            .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
-            .option('-v, --csvFile <Path>', 'Name of CSV File to put output into (scratchPath must be a directory)', false)
-            .option('-c, --configPath <Path>', 'Path to a configuration file', '../config/mio.json')
-            .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
-            .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', "1")
-            .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
-            .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
-            .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
-            .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
-            .option('-n, --isNeuroevolution', 'If Whisker should use dynamic test suites', false)
-            .option('-se, --seed <Integer>', 'Seeds the Scratch-VM using the specified integer');
-
-        commander.parse(process.argv);
-
-        validateCommandLineArguments(commander);
-
-        return {
-            ...commander._optionValues,
-            whiskerURL: `file://${path.resolve(commander._optionValues.whiskerURL)}`,
-        };
+function mustBeDirectory(path) {
+    if (!fs.existsSync(path)) {
+        throw new InvalidArgumentError('Directory must exist.');
     }
-};
 
-module.exports = {logger, cli};
+    if (!fs.lstatSync(path).isDirectory()) {
+        throw new InvalidArgumentError('Must be a directory.')
+    }
+}
+
+function mustNotExist(path) {
+    if (fs.existsSync(path)) {
+        throw new InvalidArgumentError('Already exists.');
+    }
+}
+
+function mustBePositiveInt(value) {
+    if (isNaN(value) || value < 1) {
+        throw new InvalidArgumentError('Must be positive integer.');
+    }
+}
+
+/*
+ * Functions to process command line arguments. Typically, these invoke the assertion functions defined above, and
+ * also canonicalize inputs, e.g., by converting relative paths to absolute ones, or parsing strings as numbers. It
+ * is important to return the processed input argument when done.
+ */
+
+function processFilePathExists(path, extension = '') {
+    path = asAbsolutePath(path);
+    mustBeFile(path, extension);
+    return path;
+}
+
+function processFilePathNotExists(path) {
+    path = asAbsolutePath(path);
+    mustNotExist(path);
+    mustBeDirectory(dirname(path));
+    return path;
+}
+
+function processDirPathExists(path) {
+    path = asAbsolutePath(path);
+    mustBeDirectory(path);
+    return path;
+}
+
+function processFileOrDirPathExists(path, extension = '') {
+    path = asAbsolutePath(path);
+    let isDirectory = undefined;
+
+    try {
+        mustBeFile(path, extension);
+        isDirectory = false;
+    } catch {
+        try {
+            mustBeDirectory(path);
+            isDirectory = true;
+        } catch {
+            throw new InvalidArgumentError(`Directory or "${extension}" file must exist.`);
+        }
+    }
+
+    return {
+        path,
+        isDirectory,
+    };
+}
+
+function processPositiveInt(value) {
+    value = parseInt(value);
+    mustBePositiveInt(value);
+    return value;
+}
+
+function processMutationOperator(operator) {
+    // FIXME: MutationFactory should export these instead of having them to hard-code here
+    const supportedOperators = ['KRM', 'SBD', 'SDM', 'AOR', 'LOR', 'ROR', 'NCM', 'VRM', 'ALL'];
+
+    if (!supportedOperators.includes(operator)) {
+        throw new InvalidArgumentError(`Unknown mutation operator "${operator}"`);
+    }
+
+    return operator;
+}
+
+function processNumberOfJobs(numberOfJobs) {
+    numberOfJobs = processPositiveInt(numberOfJobs);
+
+    const cpus = require('os').cpus().length;
+    if (numberOfJobs > cpus) {
+        throw new InvalidArgumentError(`Your system cannot handle more than ${cpus} tabs.`);
+    }
+
+    return numberOfJobs;
+}
+
+module.exports = {
+    processFilePathExists,
+    processDirPathExists,
+    processFileOrDirPathExists,
+    processFilePathNotExists,
+    processPositiveInt,
+    processMutationOperator,
+    processNumberOfJobs,
+    asAbsolutePath,
+    relativeToServantDir,
+}

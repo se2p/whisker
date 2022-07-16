@@ -1,5 +1,8 @@
 const fileUrl = require('file-url');
 
+// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
+const URL = "dist/index.html";
+
 const timeout = process.env.SLOWMO ? 100000 : 90000;
 const ACCELERATION = 10;
 
@@ -52,7 +55,7 @@ describe('Scratch Mutations', () => {
         expect(Number(coverageOriginal)).toBe(1);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "KRM");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressSpaceTest.js");
         await loadProject('test/integration/mutation/KRM-Sensing.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -68,7 +71,7 @@ describe('Scratch Mutations', () => {
         expect(Number(coverageOriginal)).toBe(1);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "KRM");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressSpaceTest.js");
         await loadProject('test/integration/mutation/KRM-Hat.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -84,7 +87,7 @@ describe('Scratch Mutations', () => {
         expect(Number(totalOriginal)).toBe(4);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "SBD");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["SBD"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await loadProject('test/integration/mutation/SBD.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -100,7 +103,7 @@ describe('Scratch Mutations', () => {
         expect(Number(totalOriginal)).toBe(6);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "SDM");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["SDM"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await loadProject('test/integration/mutation/SDM.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -116,7 +119,7 @@ describe('Scratch Mutations', () => {
         expect(Number(coverageOriginal)).toBe(1);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "AOR");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["AOR"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await loadProject('test/integration/mutation/AOR.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -132,7 +135,7 @@ describe('Scratch Mutations', () => {
         expect(Number(coverageOriginal)).toBe(1);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "ROR");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["ROR"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await loadProject('test/integration/mutation/ROR.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -148,7 +151,7 @@ describe('Scratch Mutations', () => {
         expect(Number(coverageOriginal)).toBe(1);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "LOR");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["LOR"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await loadProject('test/integration/mutation/LOR.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -164,7 +167,7 @@ describe('Scratch Mutations', () => {
         expect(Number(coverageOriginal)).toBe(1);
 
         await setUp();
-        await page.evaluate(m => document.querySelector('#container').mutators = m, "VRM");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["VRM"]);
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
         await loadProject('test/integration/mutation/VRM.sb3')
         await (await page.$('#run-all-tests')).click();
