@@ -156,7 +156,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const accelerationFactor = $('#acceleration-value').text();
         const seed = document.getElementById('seed').value;
         const setMutators = document.querySelector('#container').mutators;
-        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -224,8 +224,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
         const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+        let modelCoverageString = '';
+
+        // Add model coverage if we have model-based results
+        if (Object.keys(coverageModels).length > 0) {
+            const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+            modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+        }
 
         Whisker.outputRun.println([
             summaryString,

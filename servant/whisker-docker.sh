@@ -15,11 +15,10 @@ whisker() {
     # Make sure to use `exec` here (instead of `eval`). This allows Whisker to receive any
     # Unix signals sent to this wrapper script. See:
     # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
-    exec node servant.js \
+    exec node servant.js generate \
         -d \
         -k \
         -l \
-        -u ../whisker-web/dist/index.html \
         "$@"
 }
 

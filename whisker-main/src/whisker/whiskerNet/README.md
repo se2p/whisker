@@ -112,11 +112,9 @@ the root directory **whisker-main**. For instance, to execute WhiskerNet to trai
 following command:
 
 ```
-node servant.js
--u whisker-web/dist/index.html
--s FruitCatching.sb3
--c config/Neuroevolution/scoreNeuroevolution.json
--g
+node servant.js generate \
+    -s FruitCatching.sb3 \
+    -c ../config/Neuroevolution/scoreNeuroevolution.json
 ```
 
 Within the configuration file, passed on to the servant using the `-c` option, you can define the hyperparameters of
