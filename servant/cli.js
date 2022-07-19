@@ -168,7 +168,7 @@ class WhiskerSubCommand extends Command {
         });
 
         return this.option(
-            '-b, --mutation-budget <Integer>',
+            '-bt, --mutation-budget <Integer>',
             'timeout for the mutation analysis',
             (budget) => util.processPositiveInt(budget));
     }
@@ -181,7 +181,7 @@ class WhiskerSubCommand extends Command {
         });
 
         return this.option(
-            '-mm, --max-mutants <Integer>',
+            '-bm, --max-mutants <Integer>',
             'upper bound of analysed mutants during mutation analysis',
             (maxMutants) => util.processPositiveInt(maxMutants));
     }
