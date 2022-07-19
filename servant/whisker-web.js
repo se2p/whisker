@@ -29,7 +29,7 @@ async function forwardJSHandleError(msg) {
     return await Promise.all(msg.args().map((arg) =>
         arg.executionContext().evaluate((arg) => {
             if (arg instanceof Error) {
-                return arg.message;
+                return arg.stack;
             }
             return arg;
         }, arg)));
