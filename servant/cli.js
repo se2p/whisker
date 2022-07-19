@@ -183,8 +183,7 @@ class WhiskerSubCommand extends Command {
         return this.option(
             '-mm, --max-mutants <Integer>',
             'upper bound of analysed mutants during mutation analysis',
-            (maxMutants) => util.processPositiveInt(maxMutants),
-            Number.MAX_SAFE_INTEGER);
+            (maxMutants) => util.processPositiveInt(maxMutants));
     }
 
     /**
