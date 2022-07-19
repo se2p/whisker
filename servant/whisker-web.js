@@ -24,6 +24,17 @@ async function openNewBrowser() {
     });
 }
 
+async function forwardJSHandleError(msg) {
+    // Based on https://github.com/puppeteer/puppeteer/issues/3397#issuecomment-434970058
+    return await Promise.all(msg.args().map((arg) =>
+        arg.executionContext().evaluate((arg) => {
+            if (arg instanceof Error) {
+                return arg.message;
+            }
+            return arg;
+        }, arg)));
+}
+
 async function openNewPage(browser) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', (error) => {
@@ -37,9 +48,13 @@ async function openNewPage(browser) {
     if (consoleForwarded) {
         // https://github.com/puppeteer/puppeteer/issues/1512#issuecomment-349784408
         // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#class-consolemessage
-        page.on('console', msg => {
+        page.on('console', async (msg) => {
             if (msg.type() === "warning") {
-                logger.warn(`Forwarded: ${msg.text()}`);
+                if (msg.text() === "JSHandle@error") {
+                    logger.warn('Forwarded:', ...await forwardJSHandleError(msg));
+                } else {
+                    logger.warn('Forwarded:', msg.text());
+                }
             } else {
                 logger.info(`Forwarded: ${msg.text()}`);
             }
