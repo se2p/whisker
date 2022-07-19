@@ -82,8 +82,20 @@ const loadTestsFromString = async function (string) {
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
-        tests = eval(`${string};
-        module.exports;`);
+        tests = eval(`
+            (function () {
+                /*
+                 * Evil hack: Every Whisker test is a CommonJS module. As such, it contains a "module.exports"
+                 * declaration at the end. In the browser, CommonJS modules usually cannot be used as the global
+                 * "module" object does not exist there. For our purposes, we work around this by creating an empty
+                 * dummy object called "module", letting the test set the "module.exports" property, and return that as
+                 * result of evaluating the test.
+                 */
+                const module = Object.create(null);
+                ${string};
+                return module.exports;
+            })();
+        `);
     } catch (err) {
         console.error(err);
         const message = `${err.name}: ${err.message}`;
@@ -156,7 +168,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const accelerationFactor = $('#acceleration-value').text();
         const seed = document.getElementById('seed').value;
         const setMutators = document.querySelector('#container').mutators;
-        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
         const mutationBudget = document.querySelector('#container').mutationBudget;
         const maxMutants = document.querySelector('#container').maxMutants;
         let duration = Number(document.querySelector('#model-duration').value);
@@ -226,8 +238,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
         const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+        let modelCoverageString = '';
+
+        // Add model coverage if we have model-based results
+        if (Object.keys(coverageModels).length > 0) {
+            const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+            modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+        }
 
         Whisker.outputRun.println([
             summaryString,
