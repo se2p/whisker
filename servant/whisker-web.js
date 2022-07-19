@@ -51,7 +51,15 @@ async function openNewPage(browser) {
         page.on('console', async (msg) => {
             if (msg.type() === "warning") {
                 if (msg.text() === "JSHandle@error") {
-                    logger.warn('Forwarded:', ...await forwardJSHandleError(msg));
+                    // When the message text is "JSHandle@error", we assume we have something that can be evaluated in
+                    // the page context to get the actual stack trace of the error. This assumption probably holds in
+                    // 99.9% of the cases. If not (e.g., because the actual error message is "JSHandle@error", but maybe
+                    // in other cases, too), we fall back to just printing "JSHandle@error".
+                    try {
+                        logger.warn('Forwarded:', ...await forwardJSHandleError(msg));
+                    } catch {
+                        logger.warn('Forwarded: JSHandle@error');
+                    }
                 } else {
                     logger.warn('Forwarded:', msg.text());
                 }
