@@ -24,6 +24,8 @@ const {
     errorWitnessPath,
     numberOfJobs,
     scratchPath,
+    mutationBudget,
+    maxMutants,
 } = require("./cli").opts;
 const {subcommand} = require("./cli");
 
