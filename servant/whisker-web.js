@@ -7,6 +7,7 @@ async function openNewBrowser() {
         '--disable-gpu',
         '--no-sandbox',
         '--disable-setuid-sandbox',
+        '--autoplay-policy=no-user-gesture-required', // https://developer.chrome.com/blog/autoplay/
         // '--use-gl=desktop', // could be used next to headless, but pages tend to quit unexpectedly
     ];
 
