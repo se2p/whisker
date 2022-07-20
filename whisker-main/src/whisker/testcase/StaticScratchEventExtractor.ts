@@ -32,6 +32,7 @@ import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import Arrays from "../utils/Arrays";
 import {Container} from "../utils/Container";
+import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
@@ -108,7 +109,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'motion_goto': {
                 // GoTo MousePointer block
                 const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
-                if (goToMenu.fields.TO.value === '_mouse_') {
+                if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
                     eventList.push(new MouseMoveEvent());
                 }
                 break;
@@ -117,7 +118,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value;
+                const value = field.VARIABLE ? field.VARIABLE.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
                 if (value == "_mouse_") {
@@ -177,6 +178,9 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_askandwait':
                 // Type text
                 eventList.push(...this._getTypeTextEvents());
+                if (this.potentiallyComparesNumbers) {
+                    eventList.push(new TypeNumberEvent());
+                }
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite

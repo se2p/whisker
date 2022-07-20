@@ -198,7 +198,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0) || this._maxMutationCount === 0
                 || this._random.nextDouble() < this._randomSelectionProbability) {
                 const chromosome = this._chromosomeGenerator.get();
-                await chromosome.evaluate();
+                await chromosome.evaluate(true);
                 this.updateArchive(chromosome);
                 // By chance apply LocalSearch to the randomly generated chromosome.
                 await this.applyLocalSearch(chromosome);
@@ -222,7 +222,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 while (mutationCounter < this._maxMutationCount && !this._archiveCovered.has(fitnessFunctionKey)) {
                     const mutant = chromosome.mutate();
                     mutant.targetFitness = fitnessFunction;
-                    await mutant.evaluate();
+                    await mutant.evaluate(true);
                     this.updateArchive(mutant);
                     const mutantHeuristic = this.getHeuristicValue(mutant, fitnessFunctionKey);
                     // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome

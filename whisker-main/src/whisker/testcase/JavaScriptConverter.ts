@@ -18,18 +18,31 @@
  *
  */
 
-import {TestChromosome} from "./TestChromosome";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
 import {Container} from "../utils/Container";
+import {Randomness} from "../utils/Randomness";
 
 export class JavaScriptConverter {
 
-    getText(test: TestChromosome): string {
-        let text = "const test = async function (t) {\n";
-        for (const {event} of test.trace.events) {
+    private getTestBody(test: WhiskerTest) {
+        let text = "";
+        let position = 0;
+
+        for (const {event} of test.chromosome.trace.events) {
             text += "  " + event.toJavaScript() + "\n";
+            for (const assertion of test.getAssertionsAt(position)) {
+                text += "  " + assertion.toJavaScript() + "\n";
+            }
+            position++;
         }
         text += "  t.end();\n";
+
+        return text;
+    }
+
+    getText(test: WhiskerTest): string {
+        let text = "const test = async function (t) {\n";
+        text += this.getTestBody(test);
         text += `}
 
         module.exports = [
@@ -37,7 +50,9 @@ export class JavaScriptConverter {
                 test: test,
                 name: 'Generated Test',
                 description: '',
-                categories: []
+                categories: [],
+                generationAlgorithm: '${Container.config.getAlgorithm()}',
+                seed: '${Randomness.getInitialRNGSeed()}'
             }
         ];`;
         return text;
@@ -59,17 +74,18 @@ export class JavaScriptConverter {
             let i = 0;
             let footer = "";
             for (const test of tests) {
-                text += "const test" + i + " = async function (t) {\n";
-                for (const {event} of test.chromosome.trace.events) {
-                    text += "  " + event.toJavaScript() + "\n";
-                }
+                text += `const test${i} = async function (t) {\n`;
+                text += this.getTestBody(test);
                 text += "}\n";
 
                 footer += "  {\n";
-                footer += "      test: test" + i + ",\n";
-                footer += "      name: 'Generated Test',\n";
+                footer += `      test: test${i},\n`;
+                footer += `      name: 'Generated Test ${i}',\n`;
                 footer += "      description: '',\n";
-                footer += "      categories: []\n";
+                footer += "      categories: [],\n";
+                footer += `      generationAlgorithm: '${Container.config.getAlgorithm()}',\n`;
+                footer += `      seed: '${Randomness.getInitialRNGSeed()}'\n`;
+
                 if (i < tests.length - 1) {
                     footer += "  },\n";
                 } else {

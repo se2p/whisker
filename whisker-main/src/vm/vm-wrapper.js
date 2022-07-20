@@ -12,12 +12,17 @@ require('setimmediate'); // attaches setImmediate to the global scope as side ef
  * Wraps the used virtual machine and extends existing functionality.
  */
 class VMWrapper {
-    constructor(vm) {
+    constructor(vm, project) {
 
         /**
          * @type {VirtualMachine} The used virtual machine.
          */
         this.vm = vm;
+
+        /**
+         * {object} The original project json, which is used to reload the original VM state.
+         */
+        this._originalProjectJSON = project;
 
         /**
          * @type {Stepper} The stepper that counts steps of the virtual machine.
@@ -120,6 +125,9 @@ class VMWrapper {
      * @returns {Promise<*>} Returns AssertionError, if constraint failed.
      */
     async step() {
+
+        await this.vm.runtime.translateText2Speech();
+
         this.callbacks.callCallbacks(false);
         await this._yield();
 
@@ -375,6 +383,77 @@ class VMWrapper {
     }
 
     /**
+     * Records the current vm state and saves it in an object that can be used to restore that state by
+     * using the resetState method.
+     * @returns {object} current vm state.
+     */
+    _recordInitialState() {
+        const initialState = {};
+        for (const targetsKey in this.vm.runtime.targets) {
+            initialState[targetsKey] = {
+                name: this.vm.runtime.targets[targetsKey].sprite['name'],
+                direction: this.vm.runtime.targets[targetsKey]["direction"],
+                size: this.vm.runtime.targets[targetsKey]['size'],
+                currentCostume: this.vm.runtime.targets[targetsKey]["currentCostume"],
+                draggable: this.vm.runtime.targets[targetsKey]["draggable"],
+                dragging: this.vm.runtime.targets[targetsKey]["dragging"],
+                drawableID: this.vm.runtime.targets[targetsKey]['drawableID'],
+                effects: Object.assign({}, this.vm.runtime.targets[targetsKey]["effects"]),
+                videoState: this.vm.runtime.targets[targetsKey]["videoState"],
+                videoTransparency: this.vm.runtime.targets[targetsKey]["videoTransparency"],
+                visible: this.vm.runtime.targets[targetsKey]["visible"],
+                volume: this.vm.runtime.targets[targetsKey]["volume"],
+                x: this.vm.runtime.targets[targetsKey]["x"],
+                y: this.vm.runtime.targets[targetsKey]["y"],
+                variables: JSON.parse(JSON.stringify(this.vm.runtime.targets[targetsKey]["variables"]))
+            };
+        }
+        return initialState;
+    }
+
+    /**
+     * Loads supplied saveState. Usually used for resetting the VM state to a previously saved initial state.
+     * @param {object} saveState of a previous vm state, can be generated using the recordState() method.
+     */
+    loadSaveState(saveState) {
+        // Delete clones
+        const clones = [];
+        for (const targetsKey in this.vm.runtime.targets) {
+            if (!this.vm.runtime.targets[targetsKey].isOriginal) {
+                clones.push(this.vm.runtime.targets[targetsKey]);
+            }
+        }
+
+        for (const target of clones) {
+            this.vm.runtime.stopForTarget(target);
+            this.vm.runtime.disposeTarget(target);
+        }
+
+        // Restore state of all others
+        for (const targetsKey in this.vm.runtime.targets) {
+            this.vm.runtime.targets[targetsKey]["direction"] = saveState[targetsKey]["direction"];
+            this.vm.runtime.targets[targetsKey]["size"] = saveState[targetsKey]["size"];
+            this.vm.runtime.targets[targetsKey]["currentCostume"] = saveState[targetsKey]["currentCostume"];
+            this.vm.runtime.targets[targetsKey]["draggable"] = saveState[targetsKey]["draggable"];
+            this.vm.runtime.targets[targetsKey]["dragging"] = saveState[targetsKey]["dragging"];
+            this.vm.runtime.targets[targetsKey]["drawableID"] = saveState[targetsKey]["drawableID"];
+            this.vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, saveState[targetsKey]["effects"]);
+            this.vm.runtime.targets[targetsKey]["videoState"] = saveState[targetsKey]["videoState"];
+            this.vm.runtime.targets[targetsKey]["videoTransparency"] = saveState[targetsKey]["videoTransparency"];
+            this.vm.runtime.targets[targetsKey]["visible"] = saveState[targetsKey]["visible"];
+            this.vm.runtime.targets[targetsKey]["volume"] = saveState[targetsKey]["volume"];
+            const x = saveState[targetsKey]["x"];
+            const y = saveState[targetsKey]["y"];
+            this.vm.runtime.targets[targetsKey].setXY(x, y, true, true);
+            this.vm.runtime.targets[targetsKey]["variables"] = JSON.parse(JSON.stringify(saveState[targetsKey]["variables"]));
+        }
+
+        this.inputs.clearInputs();
+        this.inputs.resetMouse();
+        this.inputs.resetKeyboard();
+    }
+
+    /**
      * Start the vm wrapper by resetting it to its original state and starting the virtual machine.
      */
     start() {
@@ -399,6 +478,7 @@ class VMWrapper {
         this.vm.greenFlag();
         this.startTime = Date.now();
         this.vm.runtime.stepsExecuted = 0;
+        this.vm.runtime.stepTimer = 0;
         this.vm.runtime.virtualSound = -1;
 
         this.aborted = false;
@@ -423,6 +503,17 @@ class VMWrapper {
         this.vm.runtime.removeListener('SAY', this._onSayOrThink);
         this.vm.runtime.removeListener('DELETE_SAY_OR_THINK', this._onSayOrThink);
         this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange);
+    }
+
+    /**
+     * Resets the VM state to the state of the original .sb3 file.
+     * This approach may lead to page crashed and should therefore be avoided.
+     * Please use the recordState() and resetState() method for this purpose.
+     * @returns {Promise<void>}
+     * @deprecated
+     */
+    async resetVM() {
+        await this.vm.loadProject(this._originalProjectJSON);
     }
 
     /**

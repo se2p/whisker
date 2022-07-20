@@ -2,7 +2,7 @@
     "testGenerator": "iterative",
     "algorithm": "onePlusOne",
     "extractor": "dynamic",
-    "eventSelector": "clustering",
+    "eventSelector": "interleaving",
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,

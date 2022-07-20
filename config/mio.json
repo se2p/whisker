@@ -2,7 +2,7 @@
     "testGenerator": "manyObjective",
     "algorithm": "mio",
     "extractor": "dynamic",
-    "eventSelector": "clustering",
+    "eventSelector": "interleaving",
     "startOfFocusedPhase": 1,
     "chromosome": {
         "type": "variableLengthTest",
@@ -62,5 +62,7 @@
         "soundDuration": 1
     },
     "debugLogging": true,
-    "minimize": true
+    "minimize": true,
+    "assertions": true,
+    "minimizeAssertions": true
 }

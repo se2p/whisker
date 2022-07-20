@@ -287,23 +287,23 @@ describe('Fitness tests', () => {
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
-    test('Test branchDistance for execution halting think for glide to (x,y) blocks', async () => {
+    test('Test branchDistance for execution halting glide to (x,y) blocks', async () => {
         await loadProject('test/integration/branchDistance/ExecutionHalting-GlideToXY.sb3')
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
-    test('Test branchDistance for execution halting think for glide to blocks', async () => {
+    test('Test branchDistance for execution halting glide to blocks', async () => {
         await loadProject('test/integration/branchDistance/ExecutionHalting-GlideTo.sb3')
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
-    test('Test branchDistance for execution halting think for play sound until done blocks', async () => {
+    test('Test branchDistance for execution play sound until done blocks', async () => {
         await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 
-    test('Test branchDistance for execution halting think for text2speech blocks', async () => {
-        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
+    test('Test branchDistance for execution halting text2speech blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-Text2Speech.sb3')
         await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 });

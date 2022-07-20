@@ -114,8 +114,33 @@ assert.fail = function (...message) {
  * @param {...*} message .
  */
 assert.equal = function (actual, expected, ...message) {
+
+    // Translate NaN to String to avoid type problems.
+    if(isNaN(actual)){
+        actual = "NaN";
+    }
+    if(isNaN(expected)){
+        expected = "NaN";
+    }
+
     /* eslint-disable-next-line eqeqeq */
-    if (!(actual == expected)) {
+    if ((isNaN(actual) && !isNaN(expected)) || !(actual == expected)) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: actual,
+            expected: expected,
+            operator: '=='
+        });
+    }
+};
+
+/**
+ * @param {*} actual .
+ * @param {*} expected .
+ * @param {...*} message .
+ */
+assert.equalDictionaries = function (actual, expected, ...message) {
+    if (!(JSON.stringify(actual) === JSON.stringify(expected))) {
         throw new AssertionError({
             message: getMessage(message),
             actual: actual,
@@ -233,6 +258,25 @@ assert.lessOrEqual = function (actual, expected, ...message) {
             actual: actual,
             expected: expected,
             operator: '<='
+        });
+    }
+};
+
+/**
+ * @param {number} actual .
+ * @param {number} expected .
+ * @param {number} delta .
+ * @param {...*} message .
+ */
+assert.withinRange = function (actual, expected, delta = 0, ...message) {
+    const lowerBound = expected - delta;
+    const upperBound = expected + delta;
+    if (!(actual >= lowerBound && actual <= upperBound)) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: actual,
+            expected: expected,
+            operator: `withinRange`
         });
     }
 };
@@ -373,6 +417,14 @@ assume.fail = function (...message) {
  * @param {...*} message .
  */
 assume.equal = function (actual, expected, ...message) {
+    // Translate NaN to String to avoid type problems.
+    if(isNaN(actual)){
+        actual = "NaN";
+    }
+    if(isNaN(expected)){
+        expected = "NaN";
+    }
+
     /* eslint-disable-next-line eqeqeq */
     if (!(actual == expected)) {
         throw new AssumptionError({
@@ -492,6 +544,25 @@ assume.lessOrEqual = function (actual, expected, ...message) {
             actual: actual,
             expected: expected,
             operator: '<='
+        });
+    }
+};
+
+/**
+ * @param {number} actual .
+ * @param {number} expected .
+ * @param {number} delta .
+ * @param {...*} message .
+ */
+assume.withinRange = function (actual, expected, delta = 0, ...message) {
+    const lowerBound = expected - delta;
+    const upperBound = expected + delta;
+    if (!(actual >= lowerBound && actual <= upperBound)) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: actual,
+            expected: expected,
+            operator: `withinRange`
         });
     }
 };

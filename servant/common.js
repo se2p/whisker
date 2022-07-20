@@ -24,6 +24,8 @@ const {
     errorWitnessPath,
     numberOfJobs,
     scratchPath,
+    mutationBudget,
+    maxMutants,
 } = require("./cli").opts;
 const {subcommand} = require("./cli");
 
@@ -96,6 +98,8 @@ async function runTests(path, openNewPage, index, targetProject) {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
+        await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
+        await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (path) {
             await (await page.$('#fileselect-tests')).uploadFile(path);
@@ -141,7 +145,14 @@ async function runTests(path, openNewPage, index, targetProject) {
 
                 // Return CSV file
                 const currentLogString = currentLog.toString();
-                return currentLogString.slice(currentLogString.indexOf('projectName'));
+                const startIndex = currentLogString.indexOf('projectName');
+                const endIndex = currentLogString.indexOf("\n\n\n");    // We may have additional output after 3 newlines
+                if(endIndex > 0) {
+                    return currentLogString.slice(startIndex, endIndex).trim();
+                }
+                else{
+                    return currentLogString.slice(startIndex);
+                }
             }
 
             if (liveLog) {

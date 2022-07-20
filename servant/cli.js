@@ -160,6 +160,32 @@ class WhiskerSubCommand extends Command {
             (downloadPath) => util.processDirPathExists(downloadPath));
     }
 
+    optionMutationBudget() {
+        customChecks.push(function mutationBudgetImpliesMutators() {
+            if ('mutationBudget' in opts && !('mutators' in opts)) {
+                throw new InvalidArgumentError('You gave a budget for mutation but did not enable mutators.');
+            }
+        });
+
+        return this.option(
+            '-bt, --mutation-budget <Integer>',
+            'timeout for the mutation analysis',
+            (budget) => util.processPositiveInt(budget));
+    }
+
+    optionMaxMutants() {
+        customChecks.push(function maxMutantsImpliesMutators() {
+            if ('maxMutants' in opts && !('mutators' in opts)) {
+                throw new InvalidArgumentError('You gave a maximum number for mutants but did not enable mutators.');
+            }
+        });
+
+        return this.option(
+            '-bm, --max-mutants <Integer>',
+            'upper bound of analysed mutants during mutation analysis',
+            (maxMutants) => util.processPositiveInt(maxMutants));
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -189,7 +215,9 @@ const subCommands = [
         .requireTestPath()
         .optionNumberOfJobs()
         .optionMutators()
-        .optionMutantsDownloadPath(),
+        .optionMutantsDownloadPath()
+        .optionMutationBudget()
+        .optionMaxMutants(),
 
     newSubCommand('generate')
         .description('generate Whisker test suites')
@@ -215,7 +243,9 @@ const subCommands = [
             'directory path to store dynamic tests',
             (testPath) => util.processDirPathExists(testPath))
         .optionMutators()
-        .optionMutantsDownloadPath(),
+        .optionMutantsDownloadPath()
+        .optionMutationBudget()
+        .optionMaxMutants(),
 
     newSubCommand('model')
         .description('test with model')
@@ -237,7 +267,9 @@ const subCommands = [
         .optionTestPath()
         .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive')
         // .optionMutators()    // TODO: Implement ModelTesting + MutationAnalysis
-        .optionMutantsDownloadPath(),
+        .optionMutantsDownloadPath()
+        .optionMutationBudget()
+        .optionMaxMutants(),
 
     newSubCommand('witness')
         .description('generate and replay error witnesses')

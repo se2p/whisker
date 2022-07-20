@@ -62,7 +62,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         while (!(this._stoppingCondition.isFinished(this))) {
             const candidateChromosome = this._chromosomeGenerator.get();
-            await candidateChromosome.evaluate();
+            await candidateChromosome.evaluate(true);
             this.updateArchive(candidateChromosome);
 
             // Update the best performing chromosome if we have a single targeted fitness function.
@@ -80,6 +80,23 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             Container.debugLog(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
         }
         return this._archive;
+    }
+
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - iterationCount
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
+     */
+    protected updateStatistics(): void {
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
+        StatisticsCollector.getInstance().incrementIterationCount();
+        if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage = StatisticsCollector.getInstance().numberFitnessEvaluations;
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+        }
     }
 
     getNumberOfIterations(): number {

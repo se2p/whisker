@@ -38,7 +38,7 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return `t.mouseMoveToEvent(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
+        return `t.mouseMove(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
     }
 
     public toJSON(): Record<string, any> {

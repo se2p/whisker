@@ -21,6 +21,9 @@
 import {TestChromosome} from "../testcase/TestChromosome";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Container} from "../utils/Container";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {ExecutionTrace} from "../testcase/ExecutionTrace";
+import Arrays from "../utils/Arrays";
 
 export class TestMinimizer {
 
@@ -28,12 +31,12 @@ export class TestMinimizer {
 
     private readonly _reservedCodons: number;
 
-    constructor (fitnessFunction: FitnessFunction<TestChromosome>, reservedCodons: number) {
+    constructor(fitnessFunction: FitnessFunction<TestChromosome>, reservedCodons: number) {
         this._fitnessFunction = fitnessFunction;
-        this._reservedCodons  = reservedCodons;
+        this._reservedCodons = reservedCodons;
     }
 
-    public async minimize(test: TestChromosome): Promise<TestChromosome> {
+    public async minimize(test: TestChromosome, timeBudget: number): Promise<TestChromosome> {
 
         let changed = true;
         let oldFitness = this._fitnessFunction.getFitness(test);
@@ -42,15 +45,22 @@ export class TestMinimizer {
         newTest.trace = test.trace;
         newTest.coverage = new Set<string>(test.coverage);
         newTest.lastImprovedCodon = test.lastImprovedCodon;
-        Container.debugLog("Minimizing test of length: " + test.getLength());
+        const nEventsPreMinimization = test.getLength();
+        const startTime = Date.now();
+        Container.debugLog(`Starting minimization for ${nEventsPreMinimization} events and a time-limit of ${timeBudget}`);
 
-        while (changed) {
+        while (changed && Date.now() - startTime < timeBudget) {
             changed = false;
+            const eventChunks = Arrays.chunk(newTest.trace.events, 2);
+            const codonChunks = Arrays.chunk(newTest.getGenes(), this._reservedCodons);
 
-            for (let i = newTest.getGenes().length - 1; i >= this._reservedCodons; i -= this._reservedCodons) {
-                const newCodons = newTest.getGenes().slice(0, i - this._reservedCodons).concat(newTest.getGenes().slice(i + 1, newTest.getGenes().length));
+            for (let i = eventChunks.length - 1; i >= 1; i--) {
+                const newEvents = eventChunks.slice(0, i).concat(eventChunks.slice(i + 1)).flat();
+                const newCodons = codonChunks.slice(0, i).concat(codonChunks.slice(i + 1)).flat();
+
                 const newChromosome = newTest.cloneWith(newCodons);
-                await newChromosome.evaluate();
+                newChromosome.trace = new ExecutionTrace([], newEvents);
+                await newChromosome.evaluate(false);
 
                 const fitness = this._fitnessFunction.getFitness(newChromosome);
                 if (this._fitnessFunction.compare(fitness, oldFitness) >= 0) {
@@ -61,7 +71,9 @@ export class TestMinimizer {
                 }
             }
         }
-        Container.debugLog("Final length: " + newTest.getLength());
+
+        StatisticsCollector.getInstance().addMinimizedEvents(nEventsPreMinimization - newTest.getLength());
+        Container.debugLog(`Test minimization finished with ${nEventsPreMinimization - newTest.getLength()} fewer events and a duration of ${Date.now() - startTime} ms`);
         return newTest;
     }
 }

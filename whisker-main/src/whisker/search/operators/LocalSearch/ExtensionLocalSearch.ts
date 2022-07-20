@@ -104,8 +104,6 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
         // Now extend the codons of the original chromosome to increase coverage.
         const lastImprovedResults = await this._extendGenes(newCodons, events, chromosome);
-        this._vmWrapper.end();
-        this._testExecutor.resetState();
 
         // Create the chromosome resulting from local search.
         const newChromosome = chromosome.cloneWith(newCodons);
@@ -113,6 +111,9 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
         newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
+
+        this._vmWrapper.end();
+        this._vmWrapper.loadSaveState(this._testExecutor.initialState);
 
         // Reset the trace and coverage of the original chromosome
         chromosome.trace = trace;
@@ -151,6 +152,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const upperLengthBound = Container.config.searchAlgorithmProperties['chromosomeLength'];
         const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
         const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
+        const eventSelector = Container.config.getEventSelector();
         let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
         let lastImprovedCodon = chromosome.lastImprovedCodon;
         let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
@@ -179,7 +181,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Check if we have a typeTextEvent; if yes apply it!
             if (typeTextEvents.length !== 0) {
                 const typeTextEvent = this._random.pick(typeTextEvents);
-                const typeEventCodon = Arrays.findElement(availableEvents, typeTextEvent);
+                const typeEventCodon = eventSelector.getIndexForEvent(typeTextEvent, availableEvents);
                 codons.push(typeEventCodon);
                 // Fill reservedCodons codons.
                 codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, reservedCodons - 1));
@@ -193,7 +195,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 && this._random.nextDouble() < this._newEventProbability) {
                 // Choose random event amongst the newly found ones and determine its codon value.
                 const chosenNewEvent = this._random.pick(newEvents);
-                const newEventCodon = Arrays.findElement(availableEvents, chosenNewEvent);
+                const newEventCodon = eventSelector.getIndexForEvent(chosenNewEvent, availableEvents);
                 codons.push(newEventCodon);
 
                 // Add missing reservedCodons.
@@ -211,17 +213,24 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 }
                 await chosenNewEvent.apply();
                 extendWait = false;
+
+                // Send a WaitEvent to the VM to make sure every 2. Event corresponds to an actively selected one
+                const waitEvent = new WaitEvent(1);
+                events.push(new EventAndParameters(waitEvent, []));
+                await waitEvent.apply();
             }
 
             // In case we neither found a typeTextEvent nor a new event, extend an existing wait or add a new WaitEvent.
             else {
                 if (extendWait) {
                     // Fetch the old waitDuration and add the upper bound to it.
-                    let newWaitDuration = codons[(codons.length - (reservedCodons - 1))] + Container.config.getWaitStepUpperBound();
+                    let extendValue = Container.config.getWaitStepUpperBound();
+                    let newWaitDuration = codons[(codons.length - (reservedCodons - 1))] + extendValue;
 
                     // Check if we have reached the maximum codon value. If so force the localSearch operator to
                     // crate a new WaitEvent.
                     if (newWaitDuration > upperCodonValueBound) {
+                        extendValue = extendValue - (newWaitDuration - upperCodonValueBound);
                         newWaitDuration = upperCodonValueBound;
                         extendWait = false;
                     }
@@ -230,11 +239,11 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     // duration; Replace the old Event in the events list of the chromosome with the new one.
                     codons[codons.length - (reservedCodons - 1)] = newWaitDuration;
                     const waitEvent = new WaitEvent(newWaitDuration);
-                    events[events.length - 1] = new EventAndParameters(waitEvent, [newWaitDuration]);
-                    await waitEvent.apply();
+                    events[events.length - 2] = new EventAndParameters(waitEvent, [newWaitDuration]);
+                    await new WaitEvent(extendValue).apply();
                 } else {
                     // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
-                    const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
+                    const waitEventCodon = eventSelector.getIndexForEvent(new WaitEvent(), availableEvents);
                     codons.push(waitEventCodon);
 
                     // Set the waitDuration to the specified upper bound.
@@ -253,6 +262,11 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     events.push(new EventAndParameters(waitEvent, [waitDurationCodon]));
                     await waitEvent.apply();
                     extendWait = true;
+
+                    // Send a WaitEvent to the VM to make sure every 2. Event corresponds to an actively selected one
+                    const waitEventShort = new WaitEvent(1);
+                    events.push(new EventAndParameters(waitEventShort, []));
+                    await waitEventShort.apply();
                 }
             }
 
@@ -283,6 +297,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
             fitnessValues = newFitnessValues;
         }
+        this._vmWrapper.vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         StatisticsCollector.getInstance().incrementExecutedTests();
         return {lastImprovedCodon, lastImprovedTrace};
     }

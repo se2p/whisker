@@ -150,7 +150,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
                 population.push(...executedChromosomes);
                 return;
             } else {
-                await chromosome.evaluate();
+                await chromosome.evaluate(true);
                 this.updateArchive(chromosome);
             }
         }
