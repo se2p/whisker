@@ -28,6 +28,7 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -104,7 +105,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         await this.evaluatePopulation(population);
 
         // Evaluate population, but before check if we have already reached our stopping condition
-        if(!(this._stoppingCondition.isFinished(this))) {
+        if (!(this._stoppingCondition.isFinished(this))) {
             this.evaluateAndSortPopulation(population);
         }
 
@@ -113,7 +114,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
             const nextGeneration = this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
-            if(!(this._stoppingCondition.isFinished(this))) {
+            if (!(this._stoppingCondition.isFinished(this))) {
                 this.evaluateAndSortPopulation(nextGeneration);
             }
             population = nextGeneration;
@@ -218,7 +219,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        if(this._fitnessFunctions) {
+        if (this._fitnessFunctions) {
             return this._fitnessFunctions.values();
         }
         return [this._fitnessFunction];
@@ -226,5 +227,13 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    setHeuristicFunctions(heuristicFunctions: Map<number, (number: any) => number>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
+        throw new Error('Method not implemented.');
     }
 }

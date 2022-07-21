@@ -5,11 +5,15 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
-import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
+import {
+    RandomNeuroevolutionPopulation
+} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 import Arrays from "../../utils/Arrays";
 import {NeatProperties} from "../../whiskerNet/NeatProperties";
 import {NeatChromosome} from "../../whiskerNet/Networks/NeatChromosome";
 import {Container} from "../../utils/Container";
+import {LocalSearch} from '../operators/LocalSearch/LocalSearch';
+import {Selection} from '../Selection';
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -186,5 +190,21 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<NeatChromosome>>): void {
         this._fitnessFunctions = fitnessFunctions;
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<NeatChromosome>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setHeuristicFunctions(heuristicFunctions: Map<number, (number: any) => number>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setSelectionOperator(selectionOperator: Selection<NeatChromosome>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setLocalSearchOperators(localSearchOperators: LocalSearch<NeatChromosome>[]): void {
+        throw new Error('Method not implemented.');
     }
 }

@@ -30,6 +30,7 @@ import {TestChromosome} from "../../testcase/TestChromosome";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
+import {Selection} from '../Selection';
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -553,6 +554,14 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>): void {
+        throw new Error('Method not implemented.');
     }
 }
 

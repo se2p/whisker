@@ -24,7 +24,6 @@ import {ChromosomeGenerator} from "../ChromosomeGenerator";
 import {FitnessFunction} from "../FitnessFunction";
 import {Selection} from "../Selection";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {StoppingCondition} from "../StoppingCondition";
@@ -89,53 +88,29 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
      */
     protected _startTime: number;
 
-    async findSolution(): Promise<Map<number, C>> {
-        throw new NotSupportedFunctionException();
-    }
+    abstract findSolution(): Promise<Map<number, C>>;
 
-    setProperties(properties: SearchAlgorithmProperties<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setProperties(properties: SearchAlgorithmProperties<C>): void;
 
-    setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setChromosomeGenerator(generator: ChromosomeGenerator<C>): void;
 
-    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setFitnessFunction(fitnessFunction: FitnessFunction<C>): void;
 
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void;
 
-    setSelectionOperator(selectionOperator: Selection<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setSelectionOperator(selectionOperator: Selection<C>): void;
 
-    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void;
 
-    getNumberOfIterations(): number {
-        throw new NotSupportedFunctionException();
-    }
+    abstract getNumberOfIterations(): number;
 
-    getCurrentSolution(): C[] {
-        throw new NotSupportedFunctionException();
-    }
+    abstract getCurrentSolution(): C[];
 
-    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        throw new NotSupportedFunctionException();
-    }
+    abstract getFitnessFunctions(): Iterable<FitnessFunction<C>>;
 
-    getStartTime(): number {
-        throw new NotSupportedFunctionException();
-    }
+    abstract getStartTime(): number;
 
     /**
      * Evaluates the current Population of Chromosomes and stops as soon as we have reached a stopping criterion.
