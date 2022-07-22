@@ -43,7 +43,7 @@ export class BiasNode extends NodeGene {
         return 1;
     }
 
-    public reset(): void {
+    public override reset(): void {
         this.nodeValue = 1;
         this.activationValue = 1;
         this.lastActivationValue = 1;

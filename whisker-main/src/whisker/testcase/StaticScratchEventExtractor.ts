@@ -75,7 +75,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
      * @param block the given block from which events might get extracted.
      * @returns List<ScratchEvent> containing all extracted events.
      */
-    protected _extractEventsFromBlock(target, block: ScratchBlocks): ScratchEvent[] {
+    protected override _extractEventsFromBlock(target, block: ScratchBlocks): ScratchEvent[] {
         const eventList: ScratchEvent[] = [];
         if (typeof block.opcode === 'undefined') {
             return eventList;

@@ -71,7 +71,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      *
      * @param candidateChromosome The candidate chromosome to update the archive with.
      */
-    protected updateArchive(candidateChromosome: NeatChromosome): void {
+    protected override updateArchive(candidateChromosome: NeatChromosome): void {
 
         // We save the first chromosome which managed to cover a block instead of the best performing network since
         // otherwise the dynamic test suite later fails to cover the easiest blocks, e.g simple GameOver state.

@@ -51,7 +51,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
      * Applies the crossover operator.
      * @param parents the parents that should be mated with each other.
      */
-    applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {
+    override applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {
         return this.apply(parents[0], parents[1]);
     }
 

@@ -40,7 +40,7 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
      * @param outputNodes all outputNodes of the generated network.
      * @returns ConnectionGene[] the generated network connections.
      */
-    createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]):ConnectionGene[] {
+    override createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]):ConnectionGene[] {
         const connections: ConnectionGene[] = [];
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {

@@ -43,7 +43,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Defines SearchParameters set within the config file.
      */
-    protected _properties: MIOProperties<C>;
+    protected override _properties: MIOProperties<C>;
 
     /**
      * Function determining how good a chromosome performs with respect to a target statement.
@@ -317,7 +317,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
      *
      * @param chromosome The candidate chromosome for the archive.
      */
-    protected updateArchive(chromosome: C): void {
+    protected override updateArchive(chromosome: C): void {
         this.updateCoveredArchive(chromosome);
         this.updateUncoveredArchive(chromosome);
     }

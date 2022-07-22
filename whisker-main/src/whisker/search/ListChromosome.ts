@@ -50,7 +50,7 @@ export abstract class ListChromosome<T> extends Chromosome {
         this._genes = genes;
     }
 
-    public toString = () : string => {
+    public override toString = () : string => {
         let result = "";
         for(const gene of this.getGenes()) {
             result += gene + ":";
@@ -64,5 +64,5 @@ export abstract class ListChromosome<T> extends Chromosome {
      * TODO: This is a bit of a hack because of polymorphism. There must be a nicer way?
      * @param newGenes
      */
-    abstract cloneWith(newGenes: T[]);
+    abstract override cloneWith(newGenes: T[]);
 }

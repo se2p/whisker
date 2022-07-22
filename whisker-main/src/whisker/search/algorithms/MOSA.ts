@@ -41,7 +41,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Defines SearchParameters set within the config file.
      */
-    protected _properties: GeneticAlgorithmProperties<C>;
+    protected override _properties: GeneticAlgorithmProperties<C>;
 
     /**
      * Defines the selection operator used by this MOSA instance.
@@ -411,7 +411,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *  - createdTestsToReachFullCoverage
      *  - timeToReachFullCoverage
      */
-    protected updateStatistics(): void {
+    protected override updateStatistics(): void {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;

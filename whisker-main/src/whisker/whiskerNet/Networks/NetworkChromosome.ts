@@ -121,13 +121,13 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param newGenes the ConnectionGenes the network should be initialised with.
      * @returns NetworkChromosome the cloned network.
      */
-    abstract cloneWith(newGenes: ConnectionGene[]);
+    abstract override cloneWith(newGenes: ConnectionGene[]);
 
     /**
      * Deep clone of a network including its structure and attributes.
      * @returns NetworkChromosome the cloned network.
      */
-    abstract clone();
+    abstract override clone();
 
     /**
      * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
@@ -522,7 +522,7 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._trace.events.length;
     }
 
-    toString(): string {
+    override toString(): string {
         let outputString = 'NodeGenes: \n';
         for (const node of this.allNodes) {
             outputString += node.toString() + '\n';
@@ -552,7 +552,7 @@ export abstract class NetworkChromosome extends Chromosome {
         this._uID = value;
     }
 
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
+    override getFitness(fitnessFunction: FitnessFunction<this>): number {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {

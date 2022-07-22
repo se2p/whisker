@@ -11,5 +11,5 @@ export abstract class NetworkCrossover<C extends NetworkChromosome> extends Cros
      * @param parent2 the second parent
      * @returns the offspring formed by applying crossover to the given parents
      */
-    abstract apply(parent1: C, parent2: C): Pair<C>;
+    abstract override apply(parent1: C, parent2: C): Pair<C>;
 }

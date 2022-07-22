@@ -52,7 +52,7 @@ export class Condition extends Check {
     /**
      * Get a compact representation for this condition for edge tracing.
      */
-    toString() {
+    override toString(): string {
         let result = (this._negated ? "!" : "") + this.name + "(";
 
         if (this.args.length == 1) {
