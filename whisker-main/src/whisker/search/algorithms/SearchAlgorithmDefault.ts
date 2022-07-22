@@ -98,8 +98,6 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
 
     abstract setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
 
-    abstract setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void;
-
     abstract setSelectionOperator(selectionOperator: Selection<C>): void;
 
     abstract setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void;

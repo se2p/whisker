@@ -424,8 +424,4 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
         throw new Error('Method not implemented.');
     }
-    
-    setHeuristicFunctions(heuristicFunctions: Map<number, (number: any) => number>): void {
-        throw new Error('Method not implemented.');
-    }
 }

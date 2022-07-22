@@ -229,10 +229,6 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._startTime;
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, (number: any) => number>): void {
-        throw new Error('Method not implemented.');
-    }
-
     setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
         throw new Error('Method not implemented.');
     }

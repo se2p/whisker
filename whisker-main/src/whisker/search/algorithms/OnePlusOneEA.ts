@@ -140,10 +140,6 @@ ${bestIndividual.toString()}`);
         return this._startTime;
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, (number: any) => number>): void {
-        throw new Error('Method not implemented.');
-    }
-
     setSelectionOperator(selectionOperator: Selection<C>): void {
         throw new Error('Method not implemented.');
     }

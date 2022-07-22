@@ -120,10 +120,6 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._startTime;
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, (number: any) => number>): void {
-        throw new Error('Method not implemented.');
-    }
-
     setSelectionOperator(selectionOperator: Selection<C>): void {
         throw new Error('Method not implemented.');
     }

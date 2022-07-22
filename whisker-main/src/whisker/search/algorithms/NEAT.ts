@@ -196,10 +196,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         throw new Error('Method not implemented.');
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, (number: any) => number>): void {
-        throw new Error('Method not implemented.');
-    }
-
     setSelectionOperator(selectionOperator: Selection<NeatChromosome>): void {
         throw new Error('Method not implemented.');
     }
