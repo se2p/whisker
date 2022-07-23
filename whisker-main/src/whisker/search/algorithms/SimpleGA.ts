@@ -35,7 +35,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Defines SearchParameters set within the config file.
      */
-    protected _properties: GeneticAlgorithmProperties<C>;
+    protected override _properties: GeneticAlgorithmProperties<C>;
 
     /**
      * Defines the selection operator used by this SimpleGA instance.

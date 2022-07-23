@@ -5,7 +5,7 @@ export class RandomNeuroevolutionPopulation extends NeatPopulation {
     /**
      * In RandomNeuroevolutionPopulation each network is allowed to generate exactly one child.
      */
-    protected assignNumberOfOffspring(): void {
+    protected override assignNumberOfOffspring(): void {
         for (const chromosome of this.networks) {
             chromosome.expectedOffspring = 1;
             chromosome.isParent = true;

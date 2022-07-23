@@ -45,7 +45,7 @@ export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerat
      * codon space.
      * @returns number representing the length of the codon sequence that should be generated.
      */
-    protected getLength(): number {
+    protected override getLength(): number {
         const length = Randomness.getInstance().nextInt(this._minInitialLength, this._maxInitialLength);
         return length * this._properties.reservedCodons;
     }

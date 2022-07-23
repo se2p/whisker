@@ -110,7 +110,7 @@ export class NeatChromosome extends NetworkChromosome {
      * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
      * @param sprites a map which maps each sprite to its input feature vector.
      */
-    protected updateInputNodes(sprites: Map<string, Map<string, number>>): void {
+    protected override updateInputNodes(sprites: Map<string, Map<string, number>>): void {
         let updated = false;
         sprites.forEach((spriteFeatures, spriteKey) => {
 
@@ -162,7 +162,7 @@ export class NeatChromosome extends NetworkChromosome {
      * Connects an input node to the network by creating a connection between the input node and all output nodes.
      * @param iNode the input node to connect.
      */
-    protected connectInputNode(iNode: NodeGene): void {
+    protected override connectInputNode(iNode: NodeGene): void {
         for (const oNode of this.outputNodes) {
             const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
                 true, 0, false);
@@ -176,7 +176,7 @@ export class NeatChromosome extends NetworkChromosome {
      * Connects an output node to the network by creating a connection between the output node and all input nodes.
      * @param oNode the output node to connect.
      */
-    protected connectOutputNode(oNode: NodeGene): void {
+    protected override connectOutputNode(oNode: NodeGene): void {
         for (const iNodes of this.inputNodes.values()) {
             for (const iNode of iNodes.values()) {
                 const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
