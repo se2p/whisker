@@ -30,6 +30,7 @@ import {TestChromosome} from "../../testcase/TestChromosome";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
+import {Selection} from '../Selection';
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -165,6 +166,11 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
+    /**
+     * Sets the functions for calculating the heuristic values.
+     * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
+     *          from the fitness values, where 0 is the worst value and 1 is the best value.
+     */
     setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void {
         this._heuristicFunctions = heuristicFunctions;
     }
@@ -553,6 +559,14 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>): void {
+        throw new Error('Method not implemented.');
     }
 }
 

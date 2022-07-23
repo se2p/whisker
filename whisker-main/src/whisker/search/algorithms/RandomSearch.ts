@@ -25,6 +25,8 @@ import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {Container} from "../../utils/Container";
+import {Selection} from "../Selection";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -116,5 +118,13 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
+        throw new Error('Method not implemented.');
     }
 }
