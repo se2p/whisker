@@ -124,8 +124,9 @@ class VMWrapper {
      * @returns {Promise<*>} Returns AssertionError, if constraint failed.
      */
     async step() {
-
-        await this.vm.runtime.translateText2Speech();
+        if(typeof this.vm.runtime.translateText2Speech == "function") {
+            await this.vm.runtime.translateText2Speech();
+        }
 
         this.callbacks.callCallbacks(false);
         await this._yield();
