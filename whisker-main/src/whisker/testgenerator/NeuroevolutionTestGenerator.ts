@@ -38,7 +38,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      * Builds the specified Neuroevolution search algorithm (specified in config file)
      * @param initializeFitnessFunction flag determining if search algorithm fitness functions should be initialised.
      */
-    protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
+    protected override buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .addProperties(this._config.neuroevolutionProperties as unknown as SearchAlgorithmProperties<any>);
 

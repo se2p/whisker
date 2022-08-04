@@ -14,7 +14,7 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
     /**
      * Contains all behaviours seen so far.
      */
-    protected _behaviourArchive: ScratchPosition[] = [];
+    protected override _behaviourArchive: ScratchPosition[] = [];
 
     /**
      * Constructs a new NoveltyTargetNetworkFitness object, whose behaviour is determined by the final position

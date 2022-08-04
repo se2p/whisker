@@ -1,5 +1,8 @@
 const fileUrl = require('file-url');
 
+// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
+const URL = "dist/index.html";
+
 const timeout = process.env.SLOWMO ? 100000 : 90000;
 const ACCELERATION = 10;
 

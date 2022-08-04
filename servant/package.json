@@ -5,16 +5,16 @@
     "main": "servant.js",
     "dependencies": {
         "chalk": "^4.1.2",
-        "commander": "^8.2.0",
+        "commander": "^9.3.0",
         "csv-stringify": "^5.6.5",
         "js-yaml": "^4.1.0",
-        "puppeteer": "10.2.0",
+        "puppeteer": "15.4.0",
         "rimraf": "3.0.2",
         "whisker-web": "0.6.0",
         "yaml": "^1.10.2"
     },
     "scripts": {
-        "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --colors --bail"
+        "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail"
     },
     "author": "",
     "license": "ISC",

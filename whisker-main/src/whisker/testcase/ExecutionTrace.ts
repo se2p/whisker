@@ -39,6 +39,10 @@ export class EventAndParameters {
         // invariant: this._event.numSearchParameter() === this._parameters.length
         return 1 + this._event.numSearchParameter();
     }
+
+    toString():string{
+        return `Event ${this._event} with parameter(s) ${this.parameters}`;
+    }
 }
 
 /**
@@ -47,7 +51,7 @@ export class EventAndParameters {
 export class ExecutionTrace {
     private readonly _blockTraces: Trace[];
 
-    private readonly _events: EventAndParameters[];
+    private _events: EventAndParameters[];
 
     constructor(traces: Trace[], events: EventAndParameters[]) {
         this._blockTraces = traces;
@@ -64,5 +68,9 @@ export class ExecutionTrace {
 
     get events(): EventAndParameters[] {
         return this._events;
+    }
+
+    set events(value: EventAndParameters[]) {
+        this._events = value;
     }
 }

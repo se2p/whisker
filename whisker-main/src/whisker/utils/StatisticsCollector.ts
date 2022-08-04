@@ -39,6 +39,8 @@ export class StatisticsCollector {
     private _eventsCount: number; //executed events
     private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
+    private _minimizedTests: number;
+    private _minimizedEvents: number;
     private _numberFitnessEvaluations: number;
     private _executedTests: number
     private _createdTestsToReachFullCoverage: number;
@@ -76,6 +78,8 @@ export class StatisticsCollector {
         this._coveredFitnessFunctionsCount = 0;
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
+        this._minimizedTests = 0;
+        this._minimizedEvents = 0;
         this._bestCoverage = 0;
         this._greenFlagCovered = 0;
         this._startTime = 0;
@@ -198,8 +202,24 @@ export class StatisticsCollector {
         this._fitnessOverTime.set(timeStamp, value);
     }
 
+    get averageTestExecutionTime(): number {
+        return this._averageTestExecutionTime;
+    }
+
+    set averageTestExecutionTime(value: number) {
+        this._averageTestExecutionTime = value;
+    }
+
     public incrementExecutedTests(): void {
         this._executedTests++;
+    }
+
+    get executedTests(): number {
+        return this._executedTests;
+    }
+
+    set executedTests(value: number) {
+        this._executedTests = value;
     }
 
     get bestCoverage(): number {
@@ -247,6 +267,14 @@ export class StatisticsCollector {
 
     set numberFitnessEvaluations(value: number) {
         this._numberFitnessEvaluations = value;
+    }
+
+    set minimizedTests(value: number) {
+        this._minimizedTests = value;
+    }
+
+    addMinimizedEvents(minimizationCount:number): void{
+        this._minimizedEvents += minimizationCount;
     }
 
     get createdTestsToReachFullCoverage(): number {
@@ -345,13 +373,13 @@ export class StatisticsCollector {
         const coverageValues = values.join(",");
 
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "testsuiteEventCount", "executedEventsCount", "executedTests", "averageTestExecutionTime",
-            "bestTestSuiteSize", "numberFitnessEvaluations", "createdTestsToReachFullCoverage",
+            "bestCoverage", "testsuiteEventCount", "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents",
+            "averageTestExecutionTime", "bestTestSuiteSize", "numberFitnessEvaluations", "createdTestsToReachFullCoverage",
             "timeToReachFullCoverage"];
         const headerRow = headers.join(",").concat(",", coveragesHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
             this._coveredFitnessFunctionsCount, this._bestCoverage, this._testEventCount, this._eventsCount,
-            this._executedTests, this._averageTestExecutionTime, this._bestTestSuiteSize,
+            this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime, this._bestTestSuiteSize,
             this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");

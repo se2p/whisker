@@ -2,7 +2,7 @@
     "testGenerator": "manyObjective",
     "algorithm": "mosa",
     "extractor": "dynamic",
-    "eventSelector": "clustering",
+    "eventSelector": "interleaving",
     "populationSize": 30,
     "chromosome": {
         "type": "variableLengthTest",
@@ -61,5 +61,7 @@
         "soundDuration": 1
     },
     "debugLogging": true,
-    "minimize": true
+    "minimize": true,
+    "assertions": true,
+    "minimizeAssertions": true
 }

@@ -31,6 +31,7 @@ import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {Randomness} from "../utils/Randomness";
 import Arrays from "../utils/Arrays";
+import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 export class NaiveScratchEventExtractor extends ScratchEventExtractor {
 
@@ -40,7 +41,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
     private readonly _random: Randomness;
 
     /**
-     * NaiveScratchEventExtractor adds every type of supported Whisker-Event to the set of avilalbe events.
+     * NaiveScratchEventExtractor adds every type of supported Whisker-Event to the set of available events.
      * Whenever a parameter is required, it is randomly selected.
      * @param vm the Scratch-VM
      */
@@ -55,6 +56,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         eventList.push(new ClickStageEvent());
         eventList.push(new WaitEvent());
         eventList.push(new TypeTextEvent(ScratchEventExtractor._randomText(3)));
+        eventList.push(new TypeNumberEvent());
         eventList.push(new MouseDownEvent(true));
         eventList.push(new MouseDownEvent(false));
         eventList.push(new MouseMoveEvent());

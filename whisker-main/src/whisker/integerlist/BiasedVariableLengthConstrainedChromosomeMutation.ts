@@ -28,7 +28,7 @@ export class BiasedVariableLengthConstrainedChromosomeMutation extends VariableL
         super(min, max, length, reservedCodons, gaussianMutationPower);
     }
 
-    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+    protected override _getMutationProbability(idx: number, numberOfCodons: number): number {
         Preconditions.checkArgument(idx < numberOfCodons);
         return 2 * (idx + 1) / (numberOfCodons * (numberOfCodons + 1));
     }

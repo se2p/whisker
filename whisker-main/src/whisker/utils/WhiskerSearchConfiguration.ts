@@ -666,4 +666,30 @@ export class WhiskerSearchConfiguration {
             return true; // default
         }
     }
+
+    public isAssertionGenerationActive(): boolean {
+        if ("assertions" in this._config) {
+            return this._config['assertions'];
+        } else {
+            return true; // default
+        }
+    }
+
+    public isMinimizeAssertionsActive(): boolean {
+        if ("minimizeAssertions" in this._config) {
+            return this._config['minimizeAssertions'];
+        } else {
+            return true; // default
+        }
+    }
+
+    // Time budget for test minimization in milliseconds.
+    public getMinimizationTimeBudget(): number {
+        if ("minimizationTimeBudget" in this._config) {
+            return this._config["minimizationTimeBudget"];
+        } else {
+            return 0; // default, 0 means unlimited budget
+        }
+    }
+
 }

@@ -15,11 +15,10 @@ whisker() {
     # Make sure to use `exec` here (instead of `eval`). This allows Whisker to receive any
     # Unix signals sent to this wrapper script. See:
     # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
-    exec node servant.js \
+    exec node servant.js generate \
         -d \
         -k \
         -l \
-        -u ../whisker-web/dist/index.html \
         "$@"
 }
 
@@ -27,6 +26,8 @@ print_info() {
     node_ver=$(node --version)
     . /etc/os-release
     echo "INFO: Running Node.js ${node_ver} on ${PRETTY_NAME}"
+    # Just to double check how much memory is available to Whisker.
+    df -h /dev/shm
 }
 
 # We support redirection of stdout and stderr to files in a custom directory.

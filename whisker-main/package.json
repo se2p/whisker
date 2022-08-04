@@ -11,8 +11,8 @@
     },
     "main": "./src/index.js",
     "scripts": {
-        "build": "if [ -d dist ]; then rm -rf dist; fi && tsc --incremental && webpack --colors --bail",
-        "build:prod": "if [ -d dist ]; then rm -rf dist; fi && NODE_ENV=production webpack --colors --bail",
+        "build": "if [ -d dist ]; then rm -rf dist; fi && tsc --incremental && webpack --color --bail",
+        "build:prod": "if [ -d dist ]; then rm -rf dist; fi && NODE_ENV=production webpack --color --bail",
         "test": "jest --forceExit --coverage --verbose",
         "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
         "watch-test": "npm run test -- --watchAll",
@@ -24,6 +24,7 @@
         "lint:fix": "eslint . --fix"
     },
     "dependencies": {
+        "assert": "^2.0.0",
         "clean-yaml-object": "^0.1.0",
         "js-yaml": "^4.1.0",
         "lodash.defaults": "^4.2.0",
@@ -32,6 +33,7 @@
         "scratch-analysis": "0.6.0",
         "scratch-vm": "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#develop",
         "seed-random": "^2.2.0",
+        "setimmediate": "^1.0.5",
         "source-map-loader": "^1.1.3",
         "xml-js": "^1.6.11"
     }

@@ -41,18 +41,17 @@ export class DragSpriteEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        this._target.setXY(this._x, this._y, true);
+        Container.testDriver.dragSprite(this._target.sprite.name, this._x, this._y, this._target.cloneID);
     }
 
     public toJavaScript(): string {
-        const spriteName = this._target.sprite.name.replace(/'/g, "\\'");
-        return `t.dragSprite('${spriteName}', ${this._x}, ${this._y});`;
+        return `t.dragSprite('${this._escapeSpriteName()}', ${this._x}, ${this._y}, ${this._target.cloneID});`;
     }
 
     public toJSON(): Record<string, any> {
         const event = {};
         event[`type`] = `DragSpriteEvent`;
-        event[`args`] = {"x": this._x, "y": this._y, "target": this._target.sprite.name};
+        event[`args`] = {"x": this._x, "y": this._y, "target": this._escapeSpriteName()};
         return event;
     }
 
@@ -108,5 +107,9 @@ export class DragSpriteEvent extends ScratchEvent {
 
     stringIdentifier(): string {
         return `DragSpriteEvent-${this._target.sprite.name}-${this._x}-${this._y}`;
+    }
+
+    private _escapeSpriteName() {
+        return this._target.sprite.name.replace(/'/g, "\\'");
     }
 }

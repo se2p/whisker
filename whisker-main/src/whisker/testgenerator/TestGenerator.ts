@@ -31,6 +31,7 @@ import Arrays from "../utils/Arrays";
 import {TestMinimizer} from "./TestMinimizer";
 import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
+import {AssertionGenerator} from './AssertionGenerator';
 
 export abstract class TestGenerator {
 
@@ -86,43 +87,79 @@ export abstract class TestGenerator {
     }
 
     protected async getTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
+        let whiskerTests: WhiskerTest[];
+
         if (this._config.isMinimizationActive()) {
-            return await this.getMinimizedTestSuite(tests);
+            whiskerTests = await this.getMinimizedTestSuite(tests);
         } else {
-            return this.getCoveringTestSuite(tests);
+            whiskerTests = this.getCoveringTestSuite(tests);
         }
+
+        if (this._config.isAssertionGenerationActive()) {
+            const assertionGenerator = new AssertionGenerator();
+            if (this._config.isMinimizeAssertionsActive()) {
+                await assertionGenerator.addStateChangeAssertions(whiskerTests);
+            } else {
+                await assertionGenerator.addAssertions(whiskerTests);
+            }
+        }
+
+        return whiskerTests;
     }
 
     protected async getMinimizedTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
         const minimizedSuite: WhiskerTest[] = [];
         const coveredObjectives = new Set<number>();
+        const nTestsPreMinimization = tests.length;
+        const timeBudget = Container.config.getMinimizationTimeBudget() === 0 ?
+            Number.POSITIVE_INFINITY : Container.config.getMinimizationTimeBudget();
+        const startTime = Date.now();
 
-        Container.debugLog("Pre-minimization: "+tests.length+" tests");
+        Container.debugLog(`Starting minimization for ${nTestsPreMinimization} tests and a time-limit of ${timeBudget}`);
 
+        // Sort by depth as leaves in the CDG cover all previous targets.
         const sortedFitnessFunctions = new Map<number, FitnessFunction<TestChromosome>>([...this._fitnessFunctions].sort((a, b) =>
             b[1].getCDGDepth() - a[1].getCDGDepth()
         ));
 
+        // Map statements to the tests that cover them.
+        const fitnessMap = new Map<number, TestChromosome[]>();
         for (const [objective, fitnessFunction] of sortedFitnessFunctions.entries()) {
+            fitnessMap.set(objective, []);
+            for (const test of tests) {
+                if (fitnessFunction.isCovered(test)) {
+                    fitnessMap.get(objective).push(test);
+                }
+            }
+        }
+
+        // Iterate over all tests and minimize them if we have time left.
+        for (const [objective, coveringTests] of fitnessMap.entries()) {
             if (coveredObjectives.has(objective)) {
                 continue;
             }
-
-            const coveringTests: TestChromosome[] = [];
-            for (const test of tests) {
-                if (fitnessFunction.isCovered(test)) {
-                    coveringTests.push(test);
-                }
-            }
             if (coveringTests.length > 0) {
-                const minimizer = new TestMinimizer(fitnessFunction, Container.config.searchAlgorithmProperties['reservedCodons']);
-                const test = await minimizer.minimize(Randomness.getInstance().pick(coveringTests));
+                const testToMinimize = Randomness.getInstance().pick(coveringTests);
+                let test: TestChromosome;
+
+                // We have still time for minimization left
+                if (Date.now() - startTime < timeBudget) {
+                    const minimizer = new TestMinimizer(this._fitnessFunctions.get(objective),
+                        Container.config.searchAlgorithmProperties['reservedCodons']);
+                    test = await minimizer.minimize(testToMinimize, timeBudget);
+                }
+
+                // No time left, hence we do not minimize the test.
+                else {
+                    test = testToMinimize;
+                }
                 minimizedSuite.push(new WhiskerTest(test));
                 this.updateCoveredObjectives(coveredObjectives, test);
             }
         }
-        Container.debugLog("Post-minimization: "+minimizedSuite.length+" tests");
 
+        StatisticsCollector.getInstance().minimizedTests = nTestsPreMinimization - minimizedSuite.length;
+        Container.debugLog(`Minimization finished with a difference of ${minimizedSuite.length - nTestsPreMinimization} tests and a duration of ${Date.now() - startTime} ms`);
         return minimizedSuite;
     }
 
@@ -209,8 +246,7 @@ export abstract class TestGenerator {
                         branchDistance = fitnessFunction.getBranchDistance(chromosome);
                         if (branchDistance === 0) {
                             CFGDistance = fitnessFunction.getCFGDistance(chromosome, approachLevel > 0);
-                        }
-                        else {
+                        } else {
                             CFGDistance = Number.MAX_VALUE;
                             //this means that it was unnecessary to calculate cfg distance, since
                             //branch distance was not 0;

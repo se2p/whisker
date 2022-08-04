@@ -30,6 +30,7 @@ import {TestChromosome} from "../../testcase/TestChromosome";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
+import {Selection} from '../Selection';
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -42,7 +43,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Defines SearchParameters set within the config file.
      */
-    protected _properties: MIOProperties<C>;
+    protected override _properties: MIOProperties<C>;
 
     /**
      * Function determining how good a chromosome performs with respect to a target statement.
@@ -165,6 +166,11 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
+    /**
+     * Sets the functions for calculating the heuristic values.
+     * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
+     *          from the fitness values, where 0 is the worst value and 1 is the best value.
+     */
     setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void {
         this._heuristicFunctions = heuristicFunctions;
     }
@@ -198,7 +204,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0) || this._maxMutationCount === 0
                 || this._random.nextDouble() < this._randomSelectionProbability) {
                 const chromosome = this._chromosomeGenerator.get();
-                await chromosome.evaluate();
+                await chromosome.evaluate(true);
                 this.updateArchive(chromosome);
                 // By chance apply LocalSearch to the randomly generated chromosome.
                 await this.applyLocalSearch(chromosome);
@@ -222,7 +228,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 while (mutationCounter < this._maxMutationCount && !this._archiveCovered.has(fitnessFunctionKey)) {
                     const mutant = chromosome.mutate();
                     mutant.targetFitness = fitnessFunction;
-                    await mutant.evaluate();
+                    await mutant.evaluate(true);
                     this.updateArchive(mutant);
                     const mutantHeuristic = this.getHeuristicValue(mutant, fitnessFunctionKey);
                     // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome
@@ -311,7 +317,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
      *
      * @param chromosome The candidate chromosome for the archive.
      */
-    protected updateArchive(chromosome: C): void {
+    protected override updateArchive(chromosome: C): void {
         this.updateCoveredArchive(chromosome);
         this.updateUncoveredArchive(chromosome);
     }
@@ -553,6 +559,14 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>): void {
+        throw new Error('Method not implemented.');
     }
 }
 

@@ -270,7 +270,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'MIO' search algorithm with all necessary properties.
      */
     private _buildMIO(): SearchAlgorithm<C> {
-        const searchAlgorithm: SearchAlgorithm<C> = new MIO();
+        const searchAlgorithm = new MIO<C>();
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setHeuristicFunctions(this._heuristicFunctions);
         searchAlgorithm.setLocalSearchOperators(this._localSearchOperators);

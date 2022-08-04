@@ -41,7 +41,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Defines SearchParameters set within the config file.
      */
-    protected _properties: GeneticAlgorithmProperties<C>;
+    protected override _properties: GeneticAlgorithmProperties<C>;
 
     /**
      * Defines the selection operator used by this MOSA instance.
@@ -216,10 +216,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
 
             // If no mutation/crossover was applied clone the parents
-            if(!child1){
+            if (!child1) {
                 child1 = parent1.clone() as C;
             }
-            if(!child2){
+            if (!child2) {
                 child2 = parent2.clone() as C;
             }
 
@@ -411,7 +411,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *  - createdTestsToReachFullCoverage
      *  - timeToReachFullCoverage
      */
-    protected updateStatistics(): void {
+    protected override updateStatistics(): void {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
@@ -419,5 +419,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 (this._iterations + 1) * this._properties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new Error('Method not implemented.');
     }
 }

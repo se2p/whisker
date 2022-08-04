@@ -242,7 +242,7 @@ export abstract class ScratchEventExtractor {
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value;
+                const value = field.VARIABLE ? field.VARIABLE.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
                 if (value == "_mouse_") {

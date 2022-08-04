@@ -30,16 +30,16 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
         super(size);
     }
 
-    getFitness(chromosome: BitstringChromosome): number {
+    override getFitness(chromosome: BitstringChromosome): number {
         return this._size - (super.getFitness(chromosome));
     }
 
-    compare (value1: number, value2: number): number {
+    override compare (value1: number, value2: number): number {
         // Smaller fitness values are better
         return value2 - value1;
     }
 
-    isOptimal(fitnessValue: number): boolean {
+    override isOptimal(fitnessValue: number): boolean {
         return fitnessValue == 0;
     }
 }

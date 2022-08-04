@@ -1,6 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
+// eslint-disable-next-line node/no-extraneous-require
 const Parser = require('tap-parser');
 const csvStringify = require('csv-stringify/lib/sync');
 const yaml = require('js-yaml');
@@ -146,7 +144,7 @@ const rowsToCsv = function (rows, modelPath) {
     }
 
     const csvBody = [csvHeader];
-    for (row of rows) {
+    for (const row of rows) {
         const csvLine = [];
 
         csvLine.push(row.projectname);

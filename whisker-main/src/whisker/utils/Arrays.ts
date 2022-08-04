@@ -263,7 +263,9 @@ export default class Arrays {
      *
      * @param array the last element
      */
-    static last<T>(array: T[]): T {
+    static last<T>(array: readonly T[]): T {
         return array[array.length - 1];
     }
 }
+
+export const shuffle = Arrays.shuffle;

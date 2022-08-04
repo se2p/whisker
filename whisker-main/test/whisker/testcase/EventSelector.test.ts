@@ -2,6 +2,9 @@ import {ClusteringEventSelector, InterleavingEventSelector} from "../../../src/w
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Arrays from "../../../src/whisker/utils/Arrays";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
+import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 
 class DummyEvent extends ScratchEvent {
 
@@ -120,6 +123,22 @@ describe("ClusteringEventSelector Test", () => {
 
         expect(actual).toStrictEqual(expected);
     });
+
+    test("Find index for given event type with even number of available Events", () => {
+        const codons = Arrays.range(0,101);
+        const availableEvents = [new WaitEvent(), new MouseMoveEvent()];
+        const desiredEvent = availableEvents[0];
+        const index = selector.getIndexForEvent(desiredEvent, availableEvents);
+        expect(selector.selectEvent(codons, index, availableEvents)).toStrictEqual(desiredEvent);
+    });
+
+    test("Find index for given event type with odd number of available Events", () => {
+        const codons = Arrays.range(0,15);
+        const availableEvents = [new WaitEvent(), new MouseMoveEvent(), new KeyPressEvent("space")];
+        const desiredEvent = availableEvents[2];
+        const index = selector.getIndexForEvent(desiredEvent, availableEvents);
+        expect(selector.selectEvent(codons, index, availableEvents)).toStrictEqual(desiredEvent);
+    });
 });
 
 describe("InterleavingEventSelector Test", () => {
@@ -144,5 +163,13 @@ describe("InterleavingEventSelector Test", () => {
         }
 
         expect(actual).toStrictEqual(expected);
+    });
+
+    test("Find index for given event type", () => {
+        const codons = Arrays.range(0,15);
+        const availableEvents = [new WaitEvent(), new MouseMoveEvent(), new KeyPressEvent("space")];
+        const desiredEvent = availableEvents[1];
+        const index = selector.getIndexForEvent(desiredEvent, availableEvents);
+        expect(selector.selectEvent(codons, index, availableEvents)).toStrictEqual(desiredEvent);
     });
 });
