@@ -322,7 +322,7 @@ export class Neatest extends NEAT {
      * Reports the current state of the search.
      */
     protected override reportOfCurrentIteration(): void {
-        Container.debugLog(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
+        Container.debugLog(`\nTotal Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
         Container.debugLog(`Covered Statements: ${this._archive.size}/${this._fitnessFunctions.size}`);
         Container.debugLog(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);

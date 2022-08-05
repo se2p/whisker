@@ -1,5 +1,8 @@
 const fileUrl = require('file-url');
 
+// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
+const URL = "dist/index.html";
+
 const timeout = process.env.SLOWMO ? 100000 : 90000;
 const ACCELERATION = 10;
 
@@ -40,19 +43,12 @@ beforeEach(async () => {
 });
 
 
-describe('Test Network Suites', () => {
-    test('Dynamic Suite', async () => {
+describe('Test Dynamic Network Suites', () => {
+    test('Dynamic Suite FruitCatching', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingDynamic.json");
         await (await page.$('#run-all-tests')).click();
         const coveredBlocks = await getLogAfterSearch();
         expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(50);
-    }, timeout);
-
-    test('Static Suite', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingStatic.js");
-        await (await page.$('#run-all-tests')).click();
-        const coveredBlocks = await getLogAfterSearch();
-        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(30);
     }, timeout);
 });
 
