@@ -335,7 +335,7 @@ export class Neatest extends NEAT {
             Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
         }
         Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        Container.debugLog("-----------------------------------------------------");
+        Container.debugLog("\n-----------------------------------------------------\n");
     }
 
     /**
