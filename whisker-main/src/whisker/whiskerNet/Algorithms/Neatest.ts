@@ -17,7 +17,7 @@ export class Neatest extends NEAT {
     /**
      * The search parameters.
      */
-    protected _neuroevolutionProperties: NeatestParameter;
+    protected override _neuroevolutionProperties: NeatestParameter;
 
     /**
      * The population of networks for the current generation.
@@ -61,7 +61,7 @@ export class Neatest extends NEAT {
      * Searches for a suite of networks that are able to cover all statements of a given Scratch program reliably.
      * @returns a Map mapping a statement's key to the network capable of reaching the given statement reliably.
      */
-    async findSolution(): Promise<Map<number, NeatChromosome>> {
+    override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialise();
         const totalGoals = this._fitnessFunctions.size;
         while (this._archive.size != totalGoals && !(this._stoppingCondition.isFinished(this))) {
@@ -225,7 +225,7 @@ export class Neatest extends NEAT {
     /**
      * Evaluates the networks by letting them play the given Scratch game.
      */
-    protected async evaluateNetworks(): Promise<void> {
+    protected override async evaluateNetworks(): Promise<void> {
         for (const network of this._population.networks) {
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout,
                 this._neuroevolutionProperties.eventSelection);
@@ -281,7 +281,7 @@ export class Neatest extends NEAT {
      * Updates the archive of covered block statements. Each chromosome is mapped to the block it covers.
      * @param network The candidate network to update the archive with.
      */
-    protected updateArchive(network: NeatChromosome): void {
+    protected override updateArchive(network: NeatChromosome): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
 
@@ -321,7 +321,7 @@ export class Neatest extends NEAT {
     /**
      * Reports the current state of the search.
      */
-    protected reportOfCurrentIteration(): void {
+    protected override reportOfCurrentIteration(): void {
         Container.debugLog(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
         Container.debugLog(`Covered Statements: ${this._archive.size}/${this._fitnessFunctions.size}`);
@@ -341,7 +341,7 @@ export class Neatest extends NEAT {
     /**
      * Updates the List of the best networks found so far and the statistics used for reporting.
      */
-    protected updateBestIndividualAndStatistics(): void {
+    protected override updateBestIndividualAndStatistics(): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().iterationCount = this._iterations;
@@ -378,7 +378,7 @@ export class Neatest extends NEAT {
      * networks by querying the defined NetworkGenerator.
      * @returns a population of networks.
      */
-    protected getPopulation(): NeatPopulation {
+    protected override getPopulation(): NeatPopulation {
         let startingNetworks: NeatChromosome[];
 
         // Trivial case, we have not yet covered anything...
@@ -400,7 +400,7 @@ export class Neatest extends NEAT {
      * Sets the required hyperparameter.
      * @param properties the user-defined hyperparameter.
      */
-    setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
+    override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         this._neuroevolutionProperties = properties as unknown as NeatestParameter;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         if (this._stoppingCondition instanceof OneOfStoppingCondition) {

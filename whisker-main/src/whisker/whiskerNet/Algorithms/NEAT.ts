@@ -64,7 +64,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Additionally, we save the best performing chromosome regarding the achieved network fitness.
      * @param candidateChromosome The candidate chromosome to update the archive with.
      */
-    protected updateArchive(candidateChromosome: NeatChromosome): void {
+    protected override updateArchive(candidateChromosome: NeatChromosome): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             const statementFitness = fitnessFunction.getFitness(candidateChromosome);
@@ -181,5 +181,17 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<NeatChromosome>>): void {
         this._fitnessFunctions = fitnessFunctions;
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    }
+
+    setFitnessFunction(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setSelectionOperator(): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setLocalSearchOperators(): void {
+        throw new Error('Method not implemented.');
     }
 }

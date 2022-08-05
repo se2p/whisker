@@ -21,7 +21,7 @@ export class TargetStatementPopulation extends NeatPopulation {
      * and to favour simple network structures, we also generate some new networks. In case we have not yet covered
      * anything, we just generate the desired amount of networks using the defined NetworkGenerator.
      */
-    public generatePopulation(): void {
+    public override generatePopulation(): void {
         // If we don't have any starting networks, i.e. it's the first ever selected fitness target simply generate
         // the desired amount of networks using the defined generator.
         if (this._startingNetworks.length === 0) {

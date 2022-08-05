@@ -554,7 +554,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * Generates a string representation in dot format of the given NetworkChromosome.
      * @returns string dot format of the given chromosome
      */
-    toString(): string {
+    override toString(): string {
         const edges = [];
         const minNodes: string[] = [];
         const maxNodes: string[] = [];
@@ -603,7 +603,7 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons.length;
     }
 
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
+    override getFitness(fitnessFunction: FitnessFunction<this>): number {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {

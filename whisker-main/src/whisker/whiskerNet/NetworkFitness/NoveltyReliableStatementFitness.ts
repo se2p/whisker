@@ -65,7 +65,7 @@ export class NoveltyReliableStatementFitness extends ReliableStatementFitness {
      * @param eventSelection defines how the networks select events.
      * @returns Promise<number> the combined fitness value of novelty and reliable statement coverage.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
+    override async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
         const statementFitness = await super.getFitness(network, timeout, eventSelection);
         const sparseNess = this.novelty(network);
         this.addToBehaviourArchive(network.trace.events.map(eventAndParameter => eventAndParameter.event), sparseNess);

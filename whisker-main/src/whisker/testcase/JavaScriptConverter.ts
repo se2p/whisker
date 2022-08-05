@@ -94,7 +94,7 @@ export class JavaScriptConverter {
             footer += "      description: '',\n";
             footer += "      categories: [],\n";
             footer += `      generationAlgorithm: '${Container.config.getAlgorithm()}',\n`;
-            footer += `      seed: '${Randomness.getInitialRNGSeed()}'\n`;
+            footer += `      seed: '${Randomness.getInitialRNGSeed()}',\n`;
             footer += "      type: '" + type + "',\n";
             if (type === "neuroevolution") {
                 footer += "      configs: " + JSON.stringify(configs) + ",\n";

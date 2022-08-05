@@ -41,7 +41,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
      * @param block the block which will be analysed for potential input events.
      * @returns a list of extracted scratch events.
      */
-    protected _extractEventsFromBlock(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
+    protected override _extractEventsFromBlock(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
         const eventList: ScratchEvent[] = [];
         if (typeof block.opcode === 'undefined') {
             return eventList;

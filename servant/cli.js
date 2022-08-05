@@ -186,6 +186,13 @@ class WhiskerSubCommand extends Command {
             (maxMutants) => util.processPositiveInt(maxMutants));
     }
 
+    optionActivationTraceRepetitions() {
+        return this.option(
+            '-at, --activation-traces <Integer>',
+            'number of activation traces for surprise adequacy based error detection',
+            (activationTraces) => util.processPositiveInt(activationTraces));
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -240,8 +247,9 @@ const subCommands = [
         .requireConfigPath()
         .requiredOption(
             '-t, --test-path <Path>',
-            'directory path to store dynamic tests',
-            (testPath) => util.processDirPathExists(testPath))
+            'path to dynamic test suite',
+            (testPath) => util.processFilePathExists(testPath, 'json'))
+        .optionActivationTraceRepetitions()
         .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()

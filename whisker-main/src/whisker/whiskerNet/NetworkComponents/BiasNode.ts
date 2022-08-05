@@ -48,7 +48,7 @@ export class BiasNode extends NodeGene {
     /**
      * The BiasNode node emits a constant value of 1.
      */
-    public reset(): void {
+    public override reset(): void {
         this.nodeValue = 1;
         this.activationValue = 1;
         this.lastActivationValue = 1;

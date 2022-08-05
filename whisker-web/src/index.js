@@ -1,7 +1,6 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
-import {DynamicSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicSuite';
-import {StaticSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/StaticSuite';
+import {DynamicNetworkSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -291,17 +290,19 @@ const runAllTests = async function () {
 
             const properties = {};
             const setMutators = document.querySelector('#container').mutators;
-            const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+            const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
+            const maxMutants = document.querySelector('#container').maxMutants;
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
             properties.log = true;
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
+            properties.maxMutants = maxMutants;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
 
-            const dynamicSuite = new DynamicSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
-                Whisker.tests);
+            const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
+                properties);
             const [csv, mutantPrograms] = await dynamicSuite.execute();
 
             // Set the mutants in the output log from where we can download it later.
@@ -330,69 +331,7 @@ const runAllTests = async function () {
         Whisker.outputRun.println([
             coverageString
         ].join('\n'));
-    } else if (Whisker.tests !== undefined && Whisker.tests.length > 0 && Whisker.tests[0].type === 'neuroevolution') {
-        // Static NE Suite
-        let coverage;
-        try {
-            await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
-            CoverageGenerator.prepareClasses({Thread});
-            CoverageGenerator.prepareVM(Whisker.scratch.vm);
-
-            const properties = {};
-            const setMutators = document.querySelector('#container').mutators;
-            const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
-            properties.projectName = Whisker.projectFileSelect.getName();
-            properties.testName = Whisker.testFileSelect.getName();
-            properties.acceleration = $('#acceleration-value').text();
-            properties.log = true;
-            properties.seed = document.getElementById('seed').value;
-            properties.mutators = mutators;
-            properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
-
-            const staticSuite = new StaticSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
-                Whisker.tests);
-            const [csv, mutantPrograms] = await staticSuite.execute();
-
-            // Set the mutants in the output log from where we can download it later.
-            if (mutantPrograms.length > 0){
-                Whisker.outputRun.setScratch(Whisker.scratch);
-                Whisker.outputRun.mutants = mutantPrograms;
-            }
-
-            coverage = CoverageGenerator.getCoverage();
-            CoverageGenerator.restoreClasses({Thread});
-            Whisker.outputLog.println(csv);
-        } finally {
-            _showRunIcon();
-            enableVMRelatedButtons();
-            accSlider.slider('enable');
-            testsRunning = false;
-        }
-
-        if (!coverage) {
-            return;
-        }
-
-        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-
-        Whisker.outputRun.println([
-            coverageString
-        ].join('\n'));
-
-        if (typeof window.messageServantCallback === 'function') {
-            const coveredBlockIdsPerSprite =
-                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-            const blockIdsPerSprite =
-                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-
-            const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-            const modelCoverage = [];
-            const serializableModelCoverage = {modelCoverage};
-            window.messageServantCallback({serializableCoverageObject, undefined, serializableModelCoverage});
-        }
-
-    } else { // Normal Static Suite
+    } else { // Static Suite
         for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
             const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
             Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
