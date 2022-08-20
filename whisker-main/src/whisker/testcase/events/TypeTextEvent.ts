@@ -55,16 +55,16 @@ export class TypeTextEvent extends ScratchEvent {
         return 0; // Text
     }
 
-    getParameters(): string[] {
+    getParameters(): [string] {
         return [this._text];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [] {
         return [];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): [] {
+        return [];
     }
 
     stringIdentifier(): string {

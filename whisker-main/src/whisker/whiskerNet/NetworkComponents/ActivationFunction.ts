@@ -5,5 +5,7 @@ export enum ActivationFunction {
 
     SOFTMAX,
 
-    RELU
+    RELU,
+
+    TANH
 }

@@ -58,15 +58,15 @@ export class MouseMoveEvent extends ScratchEvent {
         return 2; // x and y?
     }
 
-    getParameters(): number[] {
+    getParameters(): [number, number] {
         return [this._x, this._y];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string, string] {
         return ["X", "Y"];
     }
 
-    setParameter(args: number[], argType: ParameterType): void {
+    setParameter(args: number[], argType: ParameterType): [number, number] {
         switch (argType) {
             case "random": {
                 const random = Randomness.getInstance();
@@ -83,12 +83,15 @@ export class MouseMoveEvent extends ScratchEvent {
                 this._y = y;
                 break;
             }
-            case "regression": {
-                this._x = Math.tanh(args[0]) * 240;
-                this._y = Math.tanh(args[1]) * 180;
+            case "activation": {
+                // Multiply with 0.2 to stretch the tanh function to focus around the center of the screen. If not
+                // stretched networks tends to move the mouse to the border of the screen.
+                this._x = Math.tanh(0.5 * args[0]) * 240;
+                this._y = Math.tanh(0.5 * args[1]) * 180;
                 break;
             }
         }
+        return [this._x, this._y];
     }
 
     stringIdentifier(): string {

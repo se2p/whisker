@@ -2,7 +2,8 @@ import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {NetworkExecutor} from "../NetworkExecutor";
+import {NetworkExecutor} from "../Misc/NetworkExecutor";
+import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 
 export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -11,11 +12,11 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * Calculates the score the network has achieved while playing the game.
      * @param network the network that should be evaluated
      * @param timeout the timeout defining how long a network is allowed to play the game.
-     * @param eventSelection defines how the network should be executed (network (default) | random | static
-     * events | eventsExtended).
+     * @param eventSelection defines how the networks select events.
+     * @returns Promise<number> the achieved score.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
         let score = ScoreFitness.gatherPoints(Container.vm);
         if (score < 0) {
@@ -32,25 +33,26 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * @param vm the Scratch-VM after the playthrough.
      * @returns number representing the achieved score of the network.
      */
-    private static gatherPoints(vm: VirtualMachine): number {
+    public static gatherPoints(vm: VirtualMachine): number {
         let points = 0;
         for (const target of vm.runtime.targets) {
             for (const value of Object.values(target.variables)) {
-                // @ts-ignore
-                const name = value.name.toLowerCase();
+                const name = value['name'].toLowerCase();
                 if (name.includes('punkte') ||
                     name.includes('points') ||
                     name.includes('score') ||
                     name.includes('level') ||
                     name.includes('hits') ||
                     name.includes('treffer') ||
+                    //name.includes('scrollx') ||  // Super Mario
                     name === 'distance' || // Sprint Game
                     name === 'länge' || // Snake Game
                     name === 'geimpfte' || // VirusBuster Game
                     name === 'progress') // WeightLifter Game
                 {
-                    // @ts-ignore
-                    points += Number(value.value);
+                    if (value['type'] != 'list' && typeof value['value'] === 'number') {
+                        points += Math.abs(Number(value['value']));
+                    }
                 }
             }
         }

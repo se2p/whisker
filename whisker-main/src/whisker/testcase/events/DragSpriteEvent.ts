@@ -59,11 +59,11 @@ export class DragSpriteEvent extends ScratchEvent {
         return `DragSprite ${this._target.sprite.name} to  ${Math.trunc(this._x)}/${Math.trunc(this._y)}`;
     }
 
-    getParameters(): (number | string)[] {
+    getParameters(): [number, number, number, string] {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
 
-    setParameter(args: number[], argType: ParameterType): void {
+    setParameter(args: number[], argType: ParameterType): [number] {
         switch (argType) {
             case "random": {
                 const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
@@ -93,14 +93,16 @@ export class DragSpriteEvent extends ScratchEvent {
             this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
             this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
+
+        return [this.angle];
     }
 
     numSearchParameter(): number {
         return 1;
     }
 
-    getSearchParameterNames(): string[] {
-        return [];
+    getSearchParameterNames(): [string] {
+        return ["Angle"];
     }
 
     stringIdentifier(): string {

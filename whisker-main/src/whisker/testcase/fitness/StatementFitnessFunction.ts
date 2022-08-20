@@ -20,9 +20,10 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ControlDependenceGraph, ControlFlowGraph, GraphNode, Graph} from 'scratch-analysis';
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode, EventNode, UserEventNode, Graph} from 'scratch-analysis';
 import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter';
 import {Trace} from "scratch-vm/src/engine/tracing.js";
+import {Container} from "../../utils/Container";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -63,7 +64,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             const currentLevel = level + 1;
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
 
-                if (n.hasOwnProperty("userEvent") || n.hasOwnProperty("event")) {
+                if ("userEvent" in n || "event" in n) {
                     this._eventMapping[node.id] = n.id;
                     const succs: [GraphNode] = cdg.successors(n.id);
                     for (const s of Array.from(succs.values())) {
@@ -131,7 +132,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const trace = chromosome.trace;
         let min = Number.MAX_SAFE_INTEGER;
 
-        for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
+        for (const blockTrace of Object.values(trace.blockTraces)) {
             const newMin = this._approachLevelByTrace(blockTrace, min);
             if (newMin <= min) {
                 min = newMin;
@@ -161,7 +162,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const trace = chromosome.trace;
         let minBranchApproachLevel: number = Number.MAX_SAFE_INTEGER;
         let branchDistance = Number.MAX_SAFE_INTEGER;
-        for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
+        for (const blockTrace of Object.values(trace.blockTraces)) {
             let traceMin;
             if (blockTrace.id === this._targetNode.block.id) {
                 // if we hit the block in the trace, it must have approach level zero and branch distance 0
@@ -177,7 +178,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     if (controlNode === undefined) {
-                        console.warn("Traced block not found in CDG: "+blockTrace.id);
+                        console.warn("Traced block not found in CDG: " + blockTrace.id);
                         continue;
                     }
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -218,7 +219,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return this._cfg;
     }
 
-    getTargetNode(): string {
+    public getTargetNode(): GraphNode {
         return this._targetNode;
     }
 
@@ -293,7 +294,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
             //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
             console.warn('Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
-            + targetNode.block.opcode +" with id " + targetNode.block.id);
+                + targetNode.block.opcode + " with id " + targetNode.block.id);
             return [];
         }
 
@@ -435,7 +436,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     /**
      * Traverse through all fitnessFunctions and extract the independent ones. A fitnessFunction is defined to be
      * independent if it is
-     *  - the child of a execution halting block
+     *  - the child of an execution halting block
      *  - the last block inside a branching statement
      *  - the last block inside a block of statements being dependent on a hatBlock
      *  We call the blocks of independent fitnessFunctions mergeBlocks since all blocks contained in the same branch
@@ -467,11 +468,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
                 // 2) or a block whose child is a branch --> nested branches
                 const filterNestedBranches = (node) => {
-                    if(node.block.next == undefined){
+                    if (node.block.next == undefined) {
                         return false;
                     }
                     const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg);
-                    if(childOfNode == undefined){
+                    if (childOfNode == undefined) {
                         return false;
                     }
                     return ControlFilter.branch(childOfNode.block);
@@ -532,6 +533,47 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
     /**
+     * Extracts statements from the CDG that are immediate children of already covered statements.
+     * @param allStatements of the Scratch program.
+     * @param uncoveredStatements uncovered subset of allStatements.
+     * @returns uncovered immediate children of already covered statements.
+     */
+    public static getNearestUncoveredStatements(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Set<StatementFitnessFunction> {
+        const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
+        const cdg = uncoveredStatements[0]._cdg;
+        const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
+        Container.debugLog(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`);
+        for (const statement of uncoveredStatements) {
+            const parents = StatementFitnessFunction.getCDGParent(statement._targetNode, cdg);
+            if (!parents) {
+                throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`);
+            }
+            for (const parent of parents) {
+                const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
+                if (!uncoveredStatements.includes(parentStatement) || parentStatement._targetNode.id === statement._targetNode.id) {
+                    nearestUncoveredStatements.add(statement);
+                }
+            }
+        }
+        return nearestUncoveredStatements;
+    }
+
+    /**
+     * Maps a node in the CDG to the corresponding Scratch Statement.
+     * @param node the CDG node.
+     * @param allStatements all Scratch statements.
+     * @returns Scratch Statement matching to the given CDG node.
+     */
+    private static mapNodeToStatement(node: GraphNode, allStatements: StatementFitnessFunction[]): StatementFitnessFunction {
+        for (const statement of allStatements) {
+            if (statement.getTargetNode().id === node.id) {
+                return statement;
+            }
+        }
+        return undefined;
+    }
+
+    /**
      * Fetches the parent of the given node.
      * @param node the node whose parent should be fetched
      * @param cdg the control dependence graph which contains all blocks and hence the parent of node
@@ -543,6 +585,50 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         } else {
             return undefined;
         }
+    }
+
+    /**
+     * Extracts the direct CDG parent of a given node.
+     * @param node the node whose parent should be found.
+     * @param cdg the control dependence graph based on which a direct ancestor should be found.
+     * @return parent node of the given child node.
+     */
+    private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode[] {
+        const predecessors = Array.from(cdg.predecessors(node.id)) as GraphNode[];
+        const flagClickedParent = predecessors.find(node => node.id === 'flagclicked');
+
+        // If we have direct successors of the flagClicked event, use this as a CDG parent since this parent will
+        // always be reached. (Should only evaluate to true when selecting the first statement).
+        if (flagClickedParent !== undefined) {
+            return [flagClickedParent];
+        }
+
+        // Parents could be EventNodes, for example when having a block that depends on a clone being created.
+        if (predecessors.some(pred => pred instanceof EventNode)) {
+            const eventNodes = predecessors.filter(pred => pred instanceof EventNode && pred.id != node.id);
+            const eventPredecessors = [];
+            // Fetch the parent of every EventNode parent...
+            for (const eventNode of eventNodes) {
+                eventPredecessors.push(StatementFitnessFunction.getCDGParent(eventNode, cdg));
+            }
+            return eventPredecessors.flat();
+        }
+
+        // For user event blocks like key press just return the hat block.
+        else if (predecessors.length === 1 && predecessors[0] instanceof UserEventNode) {
+            return [node];
+        }
+
+        // Statements with a self reference
+        else if (predecessors.length > 1) {
+            const filtered = predecessors.filter(node => node.block !== undefined);
+            if (filtered.length === 1 && filtered[0].id === node.id) {
+                return [node];
+            }
+        }
+
+        // Otherwise, make sure to filter for StatementBlocks and duplicates as in repeat blocks.
+        return predecessors.filter(pred => pred.block !== undefined && pred.id !== node.id);
     }
 
     /**

@@ -17,27 +17,23 @@ export class InputNode extends NodeGene {
 
     /**
      * Constructs a new InputNode.
+     * @param uID the unique identifier of this node in the network.
      * @param sprite the name of the sprite this InputNode is connected to.
      * @param feature the feature of the given sprite this InputNode is connected to.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new input node.
      */
-    constructor(sprite: string, feature: string, incrementIDCounter = true) {
-        super(ActivationFunction.NONE, NodeType.INPUT, incrementIDCounter);
+    constructor(uID: number, sprite: string, feature: string) {
+        super(uID, ActivationFunction.NONE, NodeType.INPUT);
         this._sprite = sprite;
         this._feature = feature;
     }
 
     equals(other: unknown): boolean {
         if (!(other instanceof InputNode)) return false;
-        return this.activationFunction === other.activationFunction &&
-            this.sprite === other.sprite &&
-            this.feature === other.feature;
+        return this.sprite === other.sprite && this.feature === other.feature;
     }
 
     clone(): InputNode {
-        const clone = new InputNode(this.sprite, this.feature, false);
-        clone.uID = this.uID;
+        const clone = new InputNode(this.uID, this.sprite, this.feature);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -51,11 +47,17 @@ export class InputNode extends NodeGene {
      * Since input nodes no not apply any activation function, the activationValue is set to the pure node value.
      * @returns number activation value of the input node.
      */
-    getActivationValue(): number {
-        {
-            this.activationValue = this.nodeValue;
-            return this.activationValue;
-        }
+    activate(): number {
+        this.activationValue = this.nodeValue;
+        return this.activationValue;
+    }
+
+    /**
+     * Input nodes are identified by their type and the represented input feature.
+     * @returns identifier based on the node type and represented input feature.
+     */
+    public identifier(): string {
+        return `I:${this.sprite}-${this.feature}`;
     }
 
     toString(): string {

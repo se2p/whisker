@@ -59,47 +59,75 @@ export class JavaScriptConverter {
     }
 
     getSuiteText(tests: WhiskerTest[]): string {
+        // If we create a NE Suite, we have to set some configurations.
+        const configs = {};
+        if (Container.isNeuroevolution) {
+            // Set necessary configuration parameter for re-executing the dynamic suite.
+            configs['testSuiteType'] = 'dynamic';
+            configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
+            configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
+            configs['seed'] = Container.config.getRandomSeed();
 
-        // Generate dynamic test suite.
-        if (Container.config.getTestSuiteType() === 'dynamic') {
+            const durationConfigs = {};
+            durationConfigs['waitStepUpperBound'] = Container.config.getWaitStepUpperBound();
+            durationConfigs['pressDurationUpperBound'] = Container.config.getPressDurationUpperBound();
+            durationConfigs['soundDuration'] = Container.config.getSoundDuration();
+            durationConfigs['clickDuration'] = Container.config.getClickDuration();
+            configs['durations'] = durationConfigs;
+        }
+
+        // Generate static test suite.
+        let text = "";
+        let i = 0;
+        let footer = "";
+        const type = Container.isNeuroevolution ? 'neuroevolution' : 'standard';
+        for (const test of tests) {
+            text += "const test" + i + " = async function (t) {\n";
+            for (const {event} of test.chromosome.trace.events) {
+                text += "  " + event.toJavaScript() + "\n";
+            }
+            text += "}\n";
+
+            footer += "  {\n";
+            footer += "      test: test" + i + ",\n";
+            footer += "      name: 'Generated Test',\n";
+            footer += "      description: '',\n";
+            footer += "      categories: [],\n";
+            footer += `      generationAlgorithm: '${Container.config.getAlgorithm()}',\n`;
+            footer += `      seed: '${Randomness.getInitialRNGSeed()}',\n`;
+            footer += "      type: '" + type + "',\n";
+            if (type === "neuroevolution") {
+                footer += "      configs: " + JSON.stringify(configs) + ",\n";
+            }
+            if (i < tests.length - 1) {
+                footer += "  },\n";
+            } else {
+                footer += "  }\n";
+            }
+
+            i++;
+        }
+
+        text += "\nmodule.exports = [\n";
+        text += footer;
+        text += "]\n";
+
+        if (Container.isNeuroevolution) {
+            const testSuites = {};
+            const networkJSON = {};
+            networkJSON['Configs'] = configs;
+
+            // Save the networks.
             const networkTestSuite = {};
             for (let i = 0; i < tests.length; i++) {
                 networkTestSuite[`Network ${i}`] = tests[i].chromosome;
             }
-            return JSON.stringify(networkTestSuite, undefined, 4);
+            networkJSON['Networks'] = networkTestSuite;
+            testSuites['Static'] = text;
+            testSuites['Dynamic'] = networkJSON;
+            return `{"Static":${JSON.stringify(testSuites['Static'])},"Dynamic":${JSON.stringify(testSuites['Dynamic'])}}`;
         }
-        // Generate static test suite.
-        else {
-            let text = "";
-            let i = 0;
-            let footer = "";
-            for (const test of tests) {
-                text += `const test${i} = async function (t) {\n`;
-                text += this.getTestBody(test);
-                text += "}\n";
 
-                footer += "  {\n";
-                footer += `      test: test${i},\n`;
-                footer += `      name: 'Generated Test ${i}',\n`;
-                footer += "      description: '',\n";
-                footer += "      categories: [],\n";
-                footer += `      generationAlgorithm: '${Container.config.getAlgorithm()}',\n`;
-                footer += `      seed: '${Randomness.getInitialRNGSeed()}'\n`;
-
-                if (i < tests.length - 1) {
-                    footer += "  },\n";
-                } else {
-                    footer += "  }\n";
-                }
-
-                i++;
-            }
-
-            text += "\nmodule.exports = [\n";
-            text += footer;
-            text += "]\n";
-
-            return text;
-        }
+        return text;
     }
 }

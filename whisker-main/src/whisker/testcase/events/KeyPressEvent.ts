@@ -22,7 +22,7 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
 import {ParameterType} from "./ParameterType";
-import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
+import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
 
 export class KeyPressEvent extends ScratchEvent {
@@ -39,8 +39,10 @@ export class KeyPressEvent extends ScratchEvent {
     async apply(): Promise<void> {
         // Press the specified key
         Container.testDriver.keyPress(this._keyOption, this._steps);
-        // Wait for the key to be released again.
-        await new WaitEvent(this._steps).apply();
+        // Wait for the key to be released again if we use a codon based test generator.
+        if(!Container.isNeuroevolution) {
+            await new WaitEvent(this._steps).apply();
+        }
     }
 
     public toJavaScript(): string {
@@ -63,15 +65,15 @@ export class KeyPressEvent extends ScratchEvent {
         return 1;
     }
 
-    getParameters(): (string | number)[] {
+    getParameters(): [string, number] {
         return [this._keyOption, this._steps];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string] {
         return ["Steps"];
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): void {
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
         switch (testExecutor){
             case "random":
                 this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
@@ -79,19 +81,21 @@ export class KeyPressEvent extends ScratchEvent {
             case "codon":
                 this._steps = args[0];
                 break;
-            case "regression":
-                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
+            case "activation":
+                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getPressDurationUpperBound());
                 break;
         }
-        this._steps %= Container.config.getPressDurationUpperBound();
-
+        if(!Container.isNeuroevolution) {
+            this._steps %= Container.config.getPressDurationUpperBound();
+        }
         // If the event has been selected ensure that it is executed for at least one step.
         if(this._steps < 1){
             this._steps = 1;
         }
+        return [this._steps];
     }
 
     stringIdentifier(): string {
-        return `KeyPressEvent-"${this._keyOption}`;
+        return `KeyPressEvent-${this._keyOption}`;
     }
 }

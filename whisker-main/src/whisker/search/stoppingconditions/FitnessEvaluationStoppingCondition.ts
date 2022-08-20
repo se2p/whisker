@@ -20,4 +20,8 @@ export class FitnessEvaluationStoppingCondition<T extends Chromosome> implements
     isFinished(): boolean {
         return StatisticsCollector.getInstance().numberFitnessEvaluations >= this._maxEvaluations;
     }
+
+    get maxEvaluations(): number {
+        return this._maxEvaluations;
+    }
 }

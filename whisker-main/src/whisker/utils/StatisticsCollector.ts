@@ -35,6 +35,7 @@ export class StatisticsCollector {
     private _iterationCount: number;
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
     private _bestCoverage: number;
+    private _greenFlagCovered: number;
     private _eventsCount: number; //executed events
     private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
@@ -47,10 +48,20 @@ export class StatisticsCollector {
     private _averageTestExecutionTime: number;
     private _averageTestExecutionCount: number;
     private _timeToReachFullCoverage: number;
-    private _highestNetworkFitness: number;
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
-    private readonly _bestNetworkFitness: Map<number, number>;
+
+    // Neuroevolution
+    private _highestNetworkFitness: number;
+    private _highestScore: number;
+    private _highestPlayTime: number;
+    private readonly _fitnessOverTime: Map<number, NeuroevolutionFitnessOverTime>;
+
+    // Dynamic Suite
+    private _testName: string;
+    private _surpriseAdequacy: number;
+    private _surpriseNodeAdequacy: number;
+    private readonly _networkSuiteResults: NetworkTestSuiteResults[];
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -70,6 +81,7 @@ export class StatisticsCollector {
         this._minimizedTests = 0;
         this._minimizedEvents = 0;
         this._bestCoverage = 0;
+        this._greenFlagCovered = 0;
         this._startTime = 0;
         this._executedTests = 0;
         this._averageTestExecutionTime = 0;
@@ -78,8 +90,13 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = 0;
         this._highestNetworkFitness = 0;
         this._covOverTime = new Map<number, number>();
+        this._fitnessOverTime = new Map<number, NeuroevolutionFitnessOverTime>();
         this.coveredFitnessFunctions = [];
-        this._bestNetworkFitness = new Map<number, number>();
+        this._networkSuiteResults = [];
+        this._highestScore = 0;
+        this._highestPlayTime = 0;
+        this._surpriseAdequacy = 0;
+        this._surpriseNodeAdequacy = 0;
     }
 
     public static getInstance(): StatisticsCollector {
@@ -137,6 +154,14 @@ export class StatisticsCollector {
         this._coveredFitnessFunctionsCount = value;
     }
 
+    set greenFlagCovered(value: number) {
+        this._greenFlagCovered = value;
+    }
+
+    get greenFlagCovered(): number {
+        return this._greenFlagCovered;
+    }
+
     /**
      * Increments the number of covered fitness functions by one
      */
@@ -149,10 +174,6 @@ export class StatisticsCollector {
         }
     }
 
-    public updateBestNetworkFitnessTimeline(iteration: number, bestNetworkFitness: number): void {
-        this._bestNetworkFitness.set(iteration, Math.trunc(bestNetworkFitness));
-    }
-
     public updateHighestNetworkFitness(networkFitness: number): void {
         if (networkFitness > this._highestNetworkFitness) {
             this._highestNetworkFitness = networkFitness;
@@ -163,6 +184,22 @@ export class StatisticsCollector {
         this._averageTestExecutionCount++;
         this._averageTestExecutionTime = this._averageTestExecutionTime + (
             (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
+    }
+
+    public updateHighestScore(value: number): void {
+        if (value > this.highestScore) {
+            this._highestScore = value;
+        }
+    }
+
+    public updateHighestPlaytime(value: number): void {
+        if (value > this.highestPlayTime) {
+            this._highestPlayTime = value;
+        }
+    }
+
+    public updateFitnessOverTime(timeStamp: number, value: NeuroevolutionFitnessOverTime): void {
+        this._fitnessOverTime.set(timeStamp, value);
     }
 
     get averageTestExecutionTime(): number {
@@ -264,12 +301,43 @@ export class StatisticsCollector {
         this._timeToReachFullCoverage = value;
     }
 
+    set testName(value: string) {
+        this._testName = value;
+    }
+
+    get surpriseAdequacy(): number {
+        return this._surpriseAdequacy;
+    }
+
+    set surpriseAdequacy(value: number) {
+        this._surpriseAdequacy = value;
+    }
+
+    get surpriseNodeAdequacy(): number {
+        return this._surpriseNodeAdequacy;
+    }
+
+    set surpriseNodeAdequacy(value: number) {
+        this._surpriseNodeAdequacy = value;
+    }
+
+    get highestScore(): number {
+        return this._highestScore;
+    }
+
+    get highestPlayTime(): number {
+        return this._highestPlayTime;
+    }
+
+    public addNetworkSuiteResult(results: NetworkTestSuiteResults): void {
+        this._networkSuiteResults.push(results);
+    }
+
     /**
      * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so-called
      * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
      * truncate this timeline. The optional parameter `numberOfCoverageValues` can be used to specify how many entries
      * this timeline should consist of. If no value or `undefined` is given, all entries are included.
-     *
      * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
      */
     public asCsv(numberOfCoverageValues?: number): string {
@@ -317,45 +385,93 @@ export class StatisticsCollector {
         return [headerRow, dataRow].join("\n");
     }
 
-    public asCsvNeuroevolution(numberOfIterations?: number): string {
+    public asCsvNeuroevolution(sampleDistance?: number, maxTimeStamp?: number): string {
+        // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
+        const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance);
+        const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
+        const timelineValues = timestamps.map((ts) => Object.values(fitnessOverTimeMap.get(ts)).join('|'));
 
-        let header = [...this._bestNetworkFitness.keys()].sort((a, b) => a - b);
-        let values = [...this._bestNetworkFitness.values()];
+        let header = timestamps;
+        let values = timelineValues;
 
-        // Truncate the fitness timeline to the given numberOfIterations count if necessary.
-        const truncateFitnessTimeline = numberOfIterations != undefined && 0 <= numberOfIterations;
+        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        const truncateFitnessTimeline = maxTimeStamp !== undefined && 0 <= maxTimeStamp;
 
-        // If the search stops before the maximum iteration count has been reached, the CSV file will only include
-        // columns up to that iteration count, and not until the desired max iteration count. As a result, experiment
-        // data becomes difficult to merge. Therefore, the number of columns should be padded in this case so that
-        // the number of iterations is always identical.
+        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
+        // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
+        // the number of columns should be padded in this case so that the number of columns is always identical.
         if (truncateFitnessTimeline) {
-            const nextIteration = this.iterationCount > 0 ? this.iterationCount : 0;
-            const nextCoverageValue = this._bestNetworkFitness.get(this.iterationCount - 1);
+            const nextTimeStamp = timestamps[timestamps.length - 1] + sampleDistance;
+            const nextCoverageValue = timelineValues[timelineValues.length - 1];
 
-            const lengthDiff = Math.abs(numberOfIterations - this.iterationCount);
-
+            const lengthDiff = Math.ceil(Math.abs(maxTimeStamp - timestamps[timestamps.length - 1]) / sampleDistance);
             const range: (until: number) => number[] = (until) => [...Array(until).keys()];
-            const headerPadding = range(lengthDiff).map(x => nextIteration + x);
+            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance);
             const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
 
-            header = [...header, ...headerPadding].slice(0, numberOfIterations);
-            values = [...values, ...valuePadding].slice(0, numberOfIterations);
+            header = [...header, ...headerPadding].slice(0, maxTimeStamp);
+            values = [...values, ...valuePadding].slice(0, maxTimeStamp);
         }
 
         const fitnessHeaders = header.join(",");
         const fitnessValues = values.join(",");
 
-        // Standard headers
-        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage", "highestNetworkFitness"];
+        // Default header and data arrays
+        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
+            "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
+            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime'];
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
+            this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
+            this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
+            this._highestScore, this._highestPlayTime];
 
-        // Average population fitness header depending on max iteration count.
-        const headerRow = headers.join(",").concat(",", fitnessHeaders);
-        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
-            this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness];
-        const dataRow = data.join(",").concat(",", fitnessValues);
-        return [headerRow, dataRow].join("\n");
+        // Combine the header and data arrays
+        const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
+        const body = fitnessValues === undefined ? data.join(',') : data.join(",").concat(",", fitnessValues);
+        return [headerCombined, body].join("\n");
+    }
+
+    public asCsvNetworkSuite(): string {
+        let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
+            "playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
+
+        for (const testResult of this._networkSuiteResults) {
+            const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
+                testResult.totalObjectives, testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite,
+                testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
+                testResult.avgUncertainty, testResult.isMutant];
+            const dataRow = data.join(",").concat("\n");
+            csv = csv.concat(dataRow);
+        }
+        return csv;
+    }
+
+    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, NeuroevolutionFitnessOverTime> {
+        const adjusted: Map<number, NeuroevolutionFitnessOverTime> = new Map();
+        let maxTime = 0;
+        for (const timeSample of this._fitnessOverTime.keys()) {
+            const rounded = Math.round(timeSample / sampleDistance) * sampleDistance;
+            adjusted.set(rounded, this._fitnessOverTime.get(timeSample));
+            if (rounded > maxTime) {
+                maxTime = rounded;
+            }
+
+        }
+        let max: NeuroevolutionFitnessOverTime = {
+            coverage: 0,
+            fitness: 0,
+            score: 0,
+            survive: 0
+        };
+        for (let i = 0; i <= maxTime; i = i + sampleDistance) {
+            if (adjusted.has(i)) {
+                max = adjusted.get(i);
+            } else {
+                adjusted.set(i, max);
+            }
+        }
+
+        return adjusted;
     }
 
     private _adjustCoverageOverTime() {
@@ -393,4 +509,27 @@ export class StatisticsCollector {
         this._projectName = this._unknownProject;
         this._configName = this._unknownConfig;
     }
+}
+
+export interface NetworkTestSuiteResults {
+    projectName: string,
+    testName: string,
+    testID: number,
+    seed: string,
+    totalObjectives: number,
+    coveredObjectivesByTest: number,
+    coveredObjectivesBySuite: number
+    score: number,
+    playTime: number,
+    surpriseNodeAdequacy: number,
+    surpriseCount: number,
+    avgUncertainty: number,
+    isMutant?: boolean,
+}
+
+export interface NeuroevolutionFitnessOverTime {
+    coverage: number,
+    fitness: number,
+    score: number,
+    survive: number
 }

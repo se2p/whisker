@@ -40,9 +40,10 @@ import {FitnessFunctionType} from "./FitnessFunctionType";
 import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../utils/Container";
 import {SimpleGA} from "./algorithms/SimpleGA";
-import {NEAT} from "./algorithms/NEAT";
+import {NEAT} from "../whiskerNet/Algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
+import {Neatest} from "../whiskerNet/Algorithms/Neatest";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -170,7 +171,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 this._initializeSingleBitFitness(length);
                 break;
             case FitnessFunctionType.STATEMENT:
-                this._initializeStatementFitness(length, targets);
+                this._initializeStatementFitness(targets);
                 break;
         }
         return this as unknown as SearchAlgorithmBuilder<C>;
@@ -227,6 +228,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 break;
             case "neat":
                 searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>;
+                break;
+            case "neatest":
+                searchAlgorithm = this._buildNeatest();
                 break;
             case "random":
             default:
@@ -316,6 +320,15 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     }
 
     /**
+     * A helper method that builds the 'explorativeNEAT' Neuroevolution search algorithm with all necessary properties.
+     */
+    private _buildNeatest() {
+        const searchAlgorithm: SearchAlgorithm<C> = new Neatest() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        return searchAlgorithm;
+    }
+
+    /**
      * A helper method that initializes the 'One max' fitness function(s).
      */
     private _initializeOneMaxFitness(length: number) {
@@ -338,7 +351,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * A helper method that initializes the 'Statement' fitness function(s).
      */
-    private _initializeStatementFitness(chromosomeLength: number, targets: string[]) {
+    private _initializeStatementFitness(targets: string[]) {
         // TODO: Check if this is done correctly
         const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
         const fitnesses = factory.extractFitnessFunctions(Container.vm, targets);

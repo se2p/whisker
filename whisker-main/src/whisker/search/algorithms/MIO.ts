@@ -211,7 +211,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 this._iterations++;
                 StatisticsCollector.getInstance().incrementIterationCount();
             } else {
-                // Otherwise we choose a chromosome to mutate from one of our populations, preferring uncovered ones.
+                // Otherwise, we choose a chromosome to mutate from one of our populations, preferring uncovered ones.
                 const anyUncovered: boolean = this._archiveUncovered.size > 0;
                 const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);

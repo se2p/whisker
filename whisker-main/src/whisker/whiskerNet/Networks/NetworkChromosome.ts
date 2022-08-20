@@ -4,13 +4,18 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
-import assert from "assert";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {Randomness} from "../../utils/Randomness";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {ActivationTrace} from "../Misc/ActivationTrace";
+import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import {name} from "ntc";
+import {BiasNode} from "../NetworkComponents/BiasNode";
+import {Container} from "../../utils/Container";
+import assert from "assert";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -23,10 +28,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Unique identifier.
      */
     private _uID: number;
-    /**
-     * Holds all nodes of a network.
-     */
-    private readonly _allNodes: NodeGene[];
 
     /**
      * Maps sprites and their respective features to the corresponding input node.
@@ -49,25 +50,64 @@ export abstract class NetworkChromosome extends Chromosome {
     protected readonly _regressionNodes = new Map<string, RegressionNode[]>();
 
     /**
-     * Holds all connections of a network.
-     */
-    protected readonly _connections: ConnectionGene[];
-
-    /**
-     * The stabilize count of the network defining how often the network has to be executed in order to reach a
-     * stable state.
-     */
-    private _stabiliseCount = 0;
-
-    /**
      * True if this network implements at least one recurrent connection
      */
     private _isRecurrent = false;
 
     /**
+     * Reference activation trace serving as the ground truth.
+     */
+    private _referenceActivationTrace: ActivationTrace;
+
+    /**
+     * Test activation trace which will be compared to the reference to detect deviating program behaviour.
+     */
+    private _testActivationTrace: ActivationTrace;
+
+    /**
+     * Determines whether an ActivationTrace and uncertainty values should be recorded during a playthrough.
+     */
+    private _recordNetworkStatistics = false;
+
+    /**
+     * The average surprise value across all steps calculated between pairs of nodes.
+     */
+    private _averageLSA = 0;
+
+    /**
+     * Counts the number of surprising node activations.
+     */
+    private _surpriseCount = 0;
+
+    /**
+     * Maps Scratch steps to the uncertainty values observed during the execution of a sample program.
+     */
+    private _referenceUncertainty = new Map<number, number>();
+
+    /**
+     * Maps Scratch steps to the uncertainty values observed during the test execution.
+     * */
+    private _testUncertainty = new Map<number, number>();
+
+    /**
+     * Maps each uncovered target statement to the number of times it has been covered using different seeds.
+     */
+    private _openStatementTargets: Map<FitnessFunction<NetworkChromosome>, number>;
+
+    /**
      * The fitness value of the network.
      */
     private _fitness = 0;
+
+    /**
+     * The achieved score of a network.
+     */
+    private _score = 0;
+
+    /**
+     * The time a network has been playing a game.
+     */
+    private _playTime = 0;
 
     /**
      * Saves the execution trace during the playthrough.
@@ -92,17 +132,20 @@ export abstract class NetworkChromosome extends Chromosome {
 
     /**
      * Constructs a new NetworkChromosome.
-     * @param allNodes all nodes of a network.
-     * @param connections the connections between the Nodes.
+     * @param _allNodes all nodes of a network.
+     * @param _connections the connections between the Nodes.
+     * @param _inputConnectionMethod determines how novel nodes are being connected to the input layer.
+     * @param _activationFunction the activation function that will be used for hidden nodes.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
-    protected constructor(allNodes: NodeGene[], connections: ConnectionGene[], incrementID = true) {
+    protected constructor(protected readonly _allNodes: NodeGene[],
+                          protected readonly _connections: ConnectionGene[],
+                          protected readonly _inputConnectionMethod: InputConnectionMethod,
+                          protected readonly _activationFunction = ActivationFunction.TANH,
+                          incrementID = true) {
         super();
         this._uID = NetworkChromosome._uIDCounter;
-        this._allNodes = allNodes;
-        this._connections = connections;
         this.generateNetwork();
-        this._stabiliseCount = this.updateStabiliseCount(100);
         if (incrementID) {
             NetworkChromosome._uIDCounter++;
         }
@@ -114,26 +157,24 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param incrementID determines whether the ID counter should be incremented during the cloning process.
      * @returns NetworkChromosome the cloned Network with default attribute values.
      */
-    public abstract cloneStructure(incrementID: boolean);
+    public abstract cloneStructure(incrementID: boolean): NetworkChromosome;
 
     /**
-     * Deep clone of a NetworkChromosome using a defined list of genes.
-     * @param newGenes the ConnectionGenes the network should be initialised with.
-     * @returns NetworkChromosome the cloned network.
+     * Clones the network during the test execution process.
      */
-    abstract override cloneWith(newGenes: ConnectionGene[]);
+    public abstract cloneAsTestCase(): NetworkChromosome;
 
     /**
-     * Deep clone of a network including its structure and attributes.
-     * @returns NetworkChromosome the cloned network.
+     * Determines how a novel connection is added to the network.
+     * @param connection the connection to add.
      */
-    abstract override clone();
+    public abstract addConnection(connection: ConnectionGene): void;
 
     /**
      * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
      * @param sprites a map which maps each sprite to its input feature vector.
      */
-    protected updateInputNodes(sprites: Map<string, Map<string, number>>): void {
+    private updateInputNodes(sprites: Map<string, Map<string, number>>): void {
         let updated = false;
         sprites.forEach((spriteFeatures, spriteKey) => {
 
@@ -142,34 +183,33 @@ export abstract class NetworkChromosome extends Chromosome {
                 updated = true;
                 const spriteNodes = new Map<string, InputNode>();
                 spriteFeatures.forEach((featureValue, featureKey) => {
-                    const iNode = new InputNode(spriteKey, featureKey);
+                    const featureID = `I:${spriteKey}-${featureKey}`;
+                    const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                    const iNode = new InputNode(id, spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
-                    this.allNodes.push(iNode);
-                    this.connectInputNode(iNode);
+                    this._allNodes.push(iNode);
                 });
                 this.inputNodes.set(spriteKey, spriteNodes);
-            }
-
-                // We haven't encountered a new Sprite but we still have to check if we encountered new features of a
-            // Sprite.
-            else {
+            } else {
+                // We haven't encountered a new Sprite, but we still have to check
+                // if we encountered new features of a Sprite.
                 spriteFeatures.forEach((featureValue, featureKey) => {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
                     if (!savedSpriteMap.has(featureKey)) {
                         updated = true;
-                        const iNode = new InputNode(spriteKey, featureKey);
+                        const featureID = `I:${spriteKey}-${featureKey}`;
+                        const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                        const iNode = new InputNode(id, spriteKey, featureKey);
                         savedSpriteMap.set(featureKey, iNode);
-                        this.allNodes.push(iNode);
-                        this.connectInputNode(iNode);
+                        this._allNodes.push(iNode);
                     }
                 });
             }
         });
 
-        // If the network's structure has changed generate the new network and update the stabilize count.
+        // If the network's structure has changed re-generate the new network.
         if (updated) {
             this.generateNetwork();
-            this.updateStabiliseCount(100);
         }
     }
 
@@ -182,48 +222,52 @@ export abstract class NetworkChromosome extends Chromosome {
         for (const event of events) {
             if (!this.classificationNodes.has(event.stringIdentifier())) {
                 updated = true;
-                const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID);
-                this.allNodes.push(classificationNode);
-                this.connectOutputNode(classificationNode);
+                const featureID = `C:${event.stringIdentifier()}`;
+                const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                const classificationNode = new ClassificationNode(id, event, ActivationFunction.NONE);
+                this._allNodes.push(classificationNode);
+                this.connectNodeToInputLayer([classificationNode], this.inputNodes, this._inputConnectionMethod);
+            }
+            // Check if we also have to add regression nodes.
+            if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
+                updated = true;
                 for (const parameter of event.getSearchParameterNames()) {
-                    const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE);
-                    this.allNodes.push(regressionNode);
-                    this.connectOutputNode(regressionNode);
+                    const featureID = `R:${event.stringIdentifier()}-${parameter}`;
+                    const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                    const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
+                    this._allNodes.push(regressionNode);
+                    this.connectNodeToInputLayer([regressionNode], this.inputNodes, this._inputConnectionMethod);
                 }
             }
         }
-        // If the network's structure has changed generate the new network and update the stabilize count.
+        // If the network's structure has changed re-generate the new network.
         if (updated) {
             this.generateNetwork();
-            this.updateStabiliseCount(100);
         }
     }
 
     /**
-     * Connects an input node to the network by creating a connection between the input node and all output nodes.
-     * @param iNode the input node to connect.
+     * Connects nodes to the specified input nodes using defined mode to connect the nodes.
+     * @param nodesToConnect the nodes that should be connected to the input layer.
+     * @param inputNodes defines the input nodes that should be connected to the node.
+     * @param mode determines how the input layer should be connected to the given nodes.
      */
-    protected connectInputNode(iNode: NodeGene): void {
-        for (const oNode of this.outputNodes) {
-            const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                true, 0, false);
-            this.connections.push(newConnection);
-            oNode.incomingConnections.push(newConnection);
-        }
-    }
+    public abstract connectNodeToInputLayer(nodesToConnect: NodeGene[],
+                                               inputNodes: Readonly<Map<string, Map<string, InputNode | BiasNode>>>,
+                                               mode:InputConnectionMethod): void;
 
     /**
-     * Connects an output node to the network by creating a connection between the output node and all input nodes.
-     * @param oNode the output node to connect.
+     * Fetches the ID of a functional Node, i.e. a non-Hidden node.
+     * @param featureID the featureID of the node whose id should be extracted.
+     * @returns the found ID.
      */
-    protected connectOutputNode(oNode: NodeGene): void {
-        for (const iNodes of this.inputNodes.values()) {
-            for (const iNode of iNodes.values()) {
-                const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                    true, 0, false);
-                this.connections.push(newConnection);
-                oNode.incomingConnections.push(newConnection);
-            }
+    private static getNonHiddenNodeId(featureID: string): number {
+        if (NeatPopulation.nodeToId.has(featureID)) {
+            return NeatPopulation.nodeToId.get(featureID);
+        } else {
+            const id = NeatPopulation.highestNodeId + 1;
+            NeatPopulation.nodeToId.set(featureID, id);
+            return id;
         }
     }
 
@@ -235,7 +279,7 @@ export abstract class NetworkChromosome extends Chromosome {
         this.sortConnections();
         this.sortNodes();
         // Place the input, regression and output nodes into the corresponding Map/List.
-        for (const node of this.allNodes) {
+        for (const node of this._allNodes) {
 
             // Add input nodes to the InputNode-Map.
             if (node instanceof InputNode) {
@@ -271,90 +315,13 @@ export abstract class NetworkChromosome extends Chromosome {
         }
 
         // Go through each connection and set up the incoming connections of each node.
-        for (const connection of this.connections) {
+        for (const connection of this._connections) {
             const targetNode = connection.target;
             // Add the connection to the incoming connections of the target node if it is not present yet and enabled.
             if (!targetNode.incomingConnections.includes(connection) && connection.isEnabled) {
                 targetNode.incomingConnections.push(connection);
             }
         }
-    }
-
-    /**
-     * Calculates the number of activations this networks needs in order to produce a stabilised output.
-     * @param period the number of iterations each outputNode has to be stable until this network is regarded
-     * stabilised.
-     * @returns number of activations required to stabilise this network.
-     */
-    public updateStabiliseCount(period: number): number {
-        this.generateNetwork();
-        this.flushNodeValues();
-
-        // Check if we have a recurrent network.
-        if (!this.isRecurrent) {
-            for (const connection of this.connections) {
-                if (connection.isRecurrent && connection.isEnabled) {
-                    this.isRecurrent = true;
-                }
-            }
-        }
-
-        let done = false;
-        let rounds = 0;
-        let stableCounter = 0;
-        let level = 0;
-        const limit = period + 90;
-
-        // Recurrent Networks are by definition unstable.
-        if (this.isRecurrent)
-            return 0;
-
-        // Activate the network repeatedly until it stabilises or we reach the defined limit.
-        while (!done) {
-            // Network is unstable!
-            if (rounds >= limit) {
-                return -1;
-            }
-
-            // Activate network with some input values.
-            const inputs = new Map<string, Map<string, number>>();
-            this.inputNodes.forEach((sprite, k) => {
-                const spriteFeatures = new Map<string, number>();
-                sprite.forEach((featureNode, featureKey) => {
-                    spriteFeatures.set(featureKey, 1);
-                });
-                inputs.set(k, spriteFeatures);
-            });
-            this.activateNetwork(inputs);
-
-            // If our output nodes got activated check if they changed their values.
-            if (!this.outputsOff()) {
-                let hasChanged = false;
-                for (const oNode of this.outputNodes) {
-                    if (oNode.lastActivationValue !== oNode.activationValue) {
-                        hasChanged = true;
-                        break;
-                    }
-                }
-                if (!hasChanged) {
-                    stableCounter++;
-                    if (stableCounter >= period) {
-                        done = true;
-                        level = rounds;
-                        break;
-                    }
-                } else {
-                    stableCounter = 0;
-                }
-            }
-            rounds++;
-        }
-
-        // Clean the nodes and report the stabilise count.
-        this.flushNodeValues();
-        const stableCount = (level - period + 1);
-        this._stabiliseCount = stableCount;
-        return stableCount;
     }
 
     /**
@@ -366,47 +333,62 @@ export abstract class NetworkChromosome extends Chromosome {
         // Generate the network and load the inputs
         this.generateNetwork();
         this.setUpInputs(inputs);
-        let activatedOnce = false;
-        let abortCount = 0;
+        let activationCount = 0;
         let incomingValue = 0;
+        this.outputNodes.forEach(node => node.activatedFlag = false);
 
         // Repeatedly send the input signals through the network until at least one output node gets activated.
-        while (this.outputsOff() || !activatedOnce) {
-            abortCount++;
-            if (abortCount >= 100) {
+        while (this.outputsOff() || activationCount < 0) {
+            activationCount++;
+
+            // We may have a defect network if none of the activated input nodes has a valid path to an output node.
+            if (activationCount == 20) {
+                Container.debugLog("Defect network");
                 return false;
             }
 
             // For each node compute the sum of its incoming connections.
-            for (const node of this.allNodes) {
+            for (const node of this._allNodes) {
                 if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
 
-                    // Reset the activation Flag and the activation value.
+                    // Reset the activation Flag and the node value.
                     node.nodeValue = 0.0;
                     node.activatedFlag = false;
 
                     for (const connection of node.incomingConnections) {
-                        incomingValue = connection.weight * connection.source.activationValue;
-                        if (connection.source.activatedFlag) {
-                            node.activatedFlag = true;
+
+                        // Do not include disabled connections or connections coming from deactivated inputs.
+                        if (!connection.isEnabled || (connection.source.type === NodeType.INPUT && !connection.source.activatedFlag)) {
+                            continue;
                         }
-                        node.nodeValue += incomingValue;
+
+                        // Handle time delayed connections.
+                        if (connection.isRecurrent) {
+                            incomingValue = connection.weight * connection.source.lastActivationValue;
+                            node.nodeValue += incomingValue;
+                        } else {
+                            incomingValue = connection.weight * connection.source.activationValue;
+                            if (connection.source.activatedFlag) {
+                                node.activatedFlag = true;
+                            }
+                            node.nodeValue += incomingValue;
+                        }
                     }
                 }
             }
 
-            // Activate all the non-input nodes.
-            for (const node of this.allNodes) {
-                if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
+            // Activate all the non-input nodes based on their incoming activations   .
+            for (const node of this._allNodes) {
+                if (node.type !== NodeType.INPUT) {
                     // Only activate if we received some input
                     if (node.activatedFlag) {
+                        // Keep track of previous activations
                         node.lastActivationValue = node.activationValue;
-                        node.activationValue = node.getActivationValue();
+                        node.activationValue = node.activate();
                         node.activationCount++;
                     }
                 }
             }
-            activatedOnce = true;
         }
         return true;
     }
@@ -415,16 +397,25 @@ export abstract class NetworkChromosome extends Chromosome {
      * Load the given inputs into the input nodes of the network.
      * @param inputs a map which maps each sprite to its input feature vector.
      */
-    private setUpInputs(inputs: Map<string, Map<string, number>>): void {
-        // First check if we encountered new nodes.
+    public setUpInputs(inputs: Map<string, Map<string, number>>): void {
+
+        // Reset the input nodes' activation flag to only use inputs during activation for which we collected values.
+        for (const iNodeMap of this.inputNodes.values()) {
+            for (const iNode of iNodeMap.values()) {
+                iNode.activatedFlag = false;
+            }
+        }
         this.updateInputNodes(inputs);
         inputs.forEach((spriteValue, spriteKey) => {
             spriteValue.forEach((featureValue, featureKey) => {
                 const iNode = this.inputNodes.get(spriteKey).get(featureKey);
-                iNode.activationCount++;
-                iNode.activatedFlag = true;
-                iNode.nodeValue = featureValue;
-                iNode.activationValue = featureValue;
+                if (iNode) {
+                    iNode.lastActivationValue = iNode.activationValue;
+                    iNode.activationCount++;
+                    iNode.activatedFlag = true;
+                    iNode.nodeValue = featureValue;
+                    iNode.activationValue = featureValue;
+                }
             });
         });
     }
@@ -433,7 +424,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * Flushes all saved node and activation values from the nodes of the network.
      */
     flushNodeValues(): void {
-        for (const node of this.allNodes) {
+        for (const node of this._allNodes) {
             node.reset();
         }
     }
@@ -443,13 +434,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * @return true if not a single output node has been activated at least once.
      */
     private outputsOff(): boolean {
-        let activatedOnce = true;
-        this.outputNodes;
-        for (const outputNode of this.outputNodes) {
-            if (outputNode.activationCount !== 0)
-                activatedOnce = false;
-        }
-        return activatedOnce;
+        return this.outputNodes.every(node => !node.activatedFlag || node.nodeValue === 0);
     }
 
     /**
@@ -465,11 +450,11 @@ export abstract class NetworkChromosome extends Chromosome {
 
         if (level === 0) {
             // Reset the traverse flag
-            for (const node of this.allNodes)
+            for (const node of this._allNodes)
                 node.traversed = false;
         }
 
-        // if the source node is in the output layer it has to be a recurrent connection!
+        // If the source node is in the output layer it has to be a recurrent connection!
         if (node1.type === NodeType.OUTPUT) {
             return true;
         }
@@ -500,17 +485,60 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Sorts the nodes of this network according to their types.
+     * Generates dummy inputs that match the input nodes.
+     * @returns dummy inputs to test a network.
+     */
+    public generateDummyInputs(): Map<string, Map<string, number>> {
+        const inputs = new Map<string, Map<string, number>>();
+        this.inputNodes.forEach((sprite, k) => {
+            const spriteFeatures = new Map<string, number>();
+            sprite.forEach((featureNode, featureKey) => {
+                spriteFeatures.set(featureKey, 1);
+            });
+            inputs.set(k, spriteFeatures);
+        });
+        return inputs;
+    }
+
+    /**
+     * Sorts the nodes of this network according to their types and uIDs in increasing order.
      */
     private sortNodes(): void {
-        this.allNodes.sort((a, b) => a.type - b.type);
+        this._allNodes.sort((a, b) => a.type - b.type || a.uID - b.uID);
     }
 
     /**
      * Sorts the connections of this network according to their innovation numbers in increasing order.
      */
     private sortConnections(): void {
-        this.connections.sort((a, b) => a.innovation - b.innovation);
+        this._connections.sort((a, b) => a.innovation - b.innovation);
+    }
+
+    /**
+     * Initialises the open target statements, setting each coverage count to zero; Used for Explorative-NEAT's
+     * robustness check.
+     * @param targets all block statements of the given Scratch program.
+     */
+    public initialiseOpenStatements(targets: FitnessFunction<NetworkChromosome>[]): void {
+        this.openStatementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
+        for (const t of targets) {
+            this.openStatementTargets.set(t, 0);
+        }
+    }
+
+    /**
+     * Adds a single ActivationTrace to the network's current trace.
+     * @param step the previously performed step whose ActivationTrace should be recorded.
+     */
+    public updateActivationTrace(step: number): void {
+        this.sortNodes();
+        const tracedNodes = this._allNodes.filter(node => node.type === NodeType.HIDDEN);
+
+        if (this.testActivationTrace === undefined) {
+            this.testActivationTrace = new ActivationTrace(tracedNodes);
+        }
+
+        this.testActivationTrace.update(step, tracedNodes);
     }
 
     /**
@@ -522,16 +550,47 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._trace.events.length;
     }
 
+    /**
+     * Generates a string representation in dot format of the given NetworkChromosome.
+     * @returns string dot format of the given chromosome
+     */
     override toString(): string {
-        let outputString = 'NodeGenes: \n';
-        for (const node of this.allNodes) {
-            outputString += node.toString() + '\n';
+        const edges = [];
+        const minNodes: string[] = [];
+        const maxNodes: string[] = [];
+
+        const convertIdentifier = (identifier: string): string => {
+            return identifier
+                .replace(/-/g, '')
+                .replace(/:/, '')
+                // Rename colors in hex-format
+                .replace(/#([a-fA-F\d]{6}|[a-fA-F\d]{3})$/g, substring => name(substring)[1])
+                .replace(/ /g, '');
+        };
+
+        for (const node of this._allNodes) {
+            if (node.type === NodeType.INPUT || node.type === NodeType.BIAS) {
+                minNodes.push(convertIdentifier(node.identifier()));
+            } else if (node.type === NodeType.OUTPUT) {
+                maxNodes.push(convertIdentifier(node.identifier()));
+            }
         }
-        outputString += 'ConnectionGenes: \n';
-        for (const connection of this.connections) {
-            outputString += connection.toString() + '\n';
+
+        const minRanks = `\t{ rank = min; ${minNodes.toString()} }`.replace(/,/g, '; ');
+        const maxRanks = `\t{ rank = max; ${maxNodes.toString()} }`.replace(/,/g, '; ');
+
+        for (const connection of this._connections) {
+            const source = convertIdentifier(connection.source.identifier());
+            const target = convertIdentifier(connection.target.identifier());
+            const lineStyle = connection.isEnabled ? 'solid' : 'dotted';
+            const weight = connection.weight.toFixed(2);
+            const color = Math.min(11, Math.max(1, Math.round(Number(weight) + 6)));
+            edges.push(`\t"${source}" -> "${target}" [label=${weight} style=${lineStyle} color="/rdylgn11/${color}" penwidth=3];`);
         }
-        return outputString;
+
+        const renderedEdges = edges.join('\n');
+        const graphConfigs = "\trankdir = BT;\n\tranksep = 10;";
+        return `digraph Network {\n${graphConfigs}\n${renderedEdges}\n${minRanks}\n${maxRanks}\n}`;
     }
 
     /**
@@ -544,14 +603,6 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons.length;
     }
 
-    get uID(): number {
-        return this._uID;
-    }
-
-    set uID(value: number) {
-        this._uID = value;
-    }
-
     override getFitness(fitnessFunction: FitnessFunction<this>): number {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
@@ -560,6 +611,30 @@ export abstract class NetworkChromosome extends Chromosome {
             this._fitnessCache.set(fitnessFunction, fitness);
             return fitness;
         }
+    }
+
+    get uID(): number {
+        return this._uID;
+    }
+
+    set uID(value: number) {
+        this._uID = value;
+    }
+
+    get allNodes(): NodeGene[] {
+        return this._allNodes;
+    }
+
+    get connections(): ConnectionGene[] {
+        return this._connections;
+    }
+
+    get inputConnectionMethod(): InputConnectionMethod {
+        return this._inputConnectionMethod;
+    }
+
+    get activationFunction(): ActivationFunction {
+        return this._activationFunction;
     }
 
     get inputNodes(): Map<string, Map<string, InputNode>> {
@@ -578,24 +653,84 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._regressionNodes;
     }
 
-    get allNodes(): NodeGene[] {
-        return this._allNodes;
-    }
-
-    get stabiliseCount(): number {
-        return this._stabiliseCount;
-    }
-
-    set stabiliseCount(value: number) {
-        this._stabiliseCount = value;
-    }
-
     get fitness(): number {
         return this._fitness;
     }
 
     set fitness(value: number) {
         this._fitness = value;
+    }
+
+    get score(): number {
+        return this._score;
+    }
+
+    set score(value: number) {
+        this._score = value;
+    }
+
+    get playTime(): number {
+        return this._playTime;
+    }
+
+    set playTime(value: number) {
+        this._playTime = value;
+    }
+
+    get testActivationTrace(): ActivationTrace {
+        return this._testActivationTrace;
+    }
+
+    set testActivationTrace(value: ActivationTrace) {
+        this._testActivationTrace = value;
+    }
+
+    get referenceActivationTrace(): ActivationTrace {
+        return this._referenceActivationTrace;
+    }
+
+    set referenceActivationTrace(value: ActivationTrace) {
+        this._referenceActivationTrace = value;
+    }
+
+    get recordNetworkStatistics(): boolean {
+        return this._recordNetworkStatistics;
+    }
+
+    set recordNetworkStatistics(value: boolean) {
+        this._recordNetworkStatistics = value;
+    }
+
+    get averageLSA(): number {
+        return this._averageLSA;
+    }
+
+    set averageLSA(value: number) {
+        this._averageLSA = value;
+    }
+
+    get surpriseCount(): number {
+        return this._surpriseCount;
+    }
+
+    set surpriseCount(value: number) {
+        this._surpriseCount = value;
+    }
+
+    get referenceUncertainty(): Map<number, number> {
+        return this._referenceUncertainty;
+    }
+
+    set referenceUncertainty(value: Map<number, number>) {
+        this._referenceUncertainty = value;
+    }
+
+    get testUncertainty(): Map<number, number> {
+        return this._testUncertainty;
+    }
+
+    set testUncertainty(value: Map<number, number>) {
+        this._testUncertainty = value;
     }
 
     get trace(): ExecutionTrace {
@@ -614,10 +749,6 @@ export abstract class NetworkChromosome extends Chromosome {
         this._coverage = value;
     }
 
-    get connections(): ConnectionGene[] {
-        return this._connections;
-    }
-
     set codons(value: number[]) {
         this._codons = value;
     }
@@ -633,4 +764,17 @@ export abstract class NetworkChromosome extends Chromosome {
     set isRecurrent(value: boolean) {
         this._isRecurrent = value;
     }
+
+    get openStatementTargets(): Map<FitnessFunction<NetworkChromosome>, number> {
+        return this._openStatementTargets;
+    }
+
+    set openStatementTargets(value: Map<FitnessFunction<NetworkChromosome>, number>) {
+        this._openStatementTargets = value;
+    }
 }
+
+export type InputConnectionMethod =
+    | 'fully'
+    | 'fullyHidden'
+    | 'sparse'

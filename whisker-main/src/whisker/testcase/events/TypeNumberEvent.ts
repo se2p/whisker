@@ -22,7 +22,7 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
+import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 
 export class TypeNumberEvent extends ScratchEvent {
 
@@ -49,11 +49,11 @@ export class TypeNumberEvent extends ScratchEvent {
         return `TypeNumber '${this._num}'`;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number] {
         return [this._num];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string] {
         return ["Number"];
     }
 
@@ -61,23 +61,24 @@ export class TypeNumberEvent extends ScratchEvent {
         return 1;
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): void {
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
         switch (testExecutor) {
             case "random":
                 this._num = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
                 break;
             case "codon": {
                 const range = Container.config.searchAlgorithmProperties['integerRange']['max'] - Container.config.searchAlgorithmProperties['integerRange']['min'];
-                this._num = args[0] - range/2;
+                this._num = args[0] - range / 2;
                 break;
             }
-            case "regression":
-                this._num = Math.round(NeuroevolutionUtil.relu(args[0]));
+            case "activation":
+                this._num = Math.round(Math.tanh(args[0]) * 240); // 240 to mirror range value of the codon case
                 break;
         }
+        return [this._num];
     }
 
     stringIdentifier(): string {
-        return `TypeNumberEvent-${this._num}`;
+        return `TypeNumberEvent`;
     }
 }

@@ -1,5 +1,6 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
+import {DynamicNetworkSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -278,13 +279,67 @@ const runAllTests = async function () {
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
-        const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
-        Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
-        Whisker.outputRun.println();
-        Whisker.outputLog.println();
+
+    // Dynamic Suite
+    if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
+        let coverage;
+        try {
+            await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
+            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareVM(Whisker.scratch.vm);
+
+            const properties = {};
+            const setMutators = document.querySelector('#container').mutators;
+            const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
+            const maxMutants = document.querySelector('#container').maxMutants;
+            properties.projectName = Whisker.projectFileSelect.getName();
+            properties.testName = Whisker.testFileSelect.getName();
+            properties.acceleration = $('#acceleration-value').text();
+            properties.log = true;
+            properties.seed = document.getElementById('seed').value;
+            properties.mutators = mutators;
+            properties.maxMutants = maxMutants;
+            properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
+
+            const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
+                properties);
+            const [csv, mutantPrograms] = await dynamicSuite.execute();
+
+            // Set the mutants in the output log from where we can download it later.
+            if (mutantPrograms.length > 0){
+                Whisker.outputRun.setScratch(Whisker.scratch);
+                Whisker.outputRun.setMutants(mutantPrograms);
+            }
+
+            coverage = CoverageGenerator.getCoverage();
+            CoverageGenerator.restoreClasses({Thread});
+            Whisker.outputLog.println(csv);
+        } finally {
+            _showRunIcon();
+            enableVMRelatedButtons();
+            accSlider.slider('enable');
+            testsRunning = false;
+        }
+
+        if (!coverage) {
+            return;
+        }
+
+        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+        Whisker.outputRun.println([
+            coverageString
+        ].join('\n'));
+    } else { // Static Suite
+        for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
+            const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
+            Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+            Whisker.outputRun.println();
+            Whisker.outputLog.println();
+        }
     }
 };
 
