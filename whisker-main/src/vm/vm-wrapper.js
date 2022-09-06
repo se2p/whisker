@@ -490,6 +490,12 @@ class VMWrapper {
     end() {
         this.cancelRun();
         this.vm.stopAll();
+
+        this.sprites.onSpriteMoved(null);
+        this.sprites.onSpriteVisualChange(null);
+        this.sprites.onSayOrThink(null);
+        this.sprites.onVariableChange(null);
+
         this.vm.runtime._step();
 
         this.inputs.resetMouse();
