@@ -145,6 +145,7 @@ class TestRunner extends EventEmitter {
             this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
             for (const test of tests) {
+                this.vmWrapper.sprites.onSpriteMoved(null);
                 this.vmWrapper.loadSaveState(this.saveState);
                 let result;
                 if("generationAlgorithm" in test){
