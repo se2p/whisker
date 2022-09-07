@@ -378,10 +378,8 @@ function prepareTestSource(path) {
     const exportStatement = 'module.exports =';
     const test = fs.readFileSync(path, {encoding: 'utf8'});
     const testArrayStartIndex = test.indexOf(exportStatement) + exportStatement.length;
-    const testSourceWithoutExportArray = test.substr(0, testArrayStartIndex);
-    // eslint-disable-next-line no-eval
-    const evaledTest = eval(test);
-
+    const testSourceWithoutExportArray = test.substring(0, testArrayStartIndex);
+    const evaledTest = require(path);
     return {evaledTest, testSourceWithoutExportArray};
 }
 
