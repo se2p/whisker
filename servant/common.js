@@ -302,28 +302,27 @@ function prepareTestFiles(whiskerTestPath = testPath) {
  * @returns {Array<string>}     The test declarations as parseable javascript
  */
 function splitTestsSourceCodeIntoSingleTestSources(tests) {
-    return tests.reverse()
-        .map(test => {
-            /*
-                This will remove the "test" property from the object, since its value is a function, resulting in:
+    return tests.map((test) => {
+        /*
+            This will remove the "test" property from the object, since its value is a function, resulting in:
 
-                {
-                  "name": "...",
-                  "description": "...",
-                  "categories": [...]
-                }
-             */
-            const testDescription = JSON.parse(JSON.stringify(test));
+            {
+              "name": "...",
+              "description": "...",
+              "categories": [...]
+            }
+         */
+        const testDescription = JSON.parse(JSON.stringify(test));
 
-            // Stringify the object again, but with newlines between the properties. Split the string at each newline.
-            // This gives an array where each entry is exactly one line. Drop the first and last line ("{" and "}").
-            const space = 2
-            const jsonLines = JSON.stringify(testDescription, null, space).split('\n').slice(1, -1);
+        // Stringify the object again, but with newlines between the properties. Split the string at each newline.
+        // This gives an array where each entry is exactly one line. Drop the first and last line ("{" and "}").
+        const space = 2;
+        const jsonLines = JSON.stringify(testDescription, null, space).split('\n').slice(1, -1);
 
-            // Add the "test" property again, with the name of the test NOT wrapped in quotes.
-            const indent = " ".repeat(space);
-            return ['{', `${indent}"test": ${test.test.name},`, ...jsonLines, '}'].join('\n');
-        });
+        // Add the "test" property again, with the name of the test NOT wrapped in quotes.
+        const indent = " ".repeat(space);
+        return ['{', `${indent}"test": ${test.test.name},`, ...jsonLines, '}'].join('\n');
+    });
 }
 
 /**
@@ -341,8 +340,8 @@ function distributeTestSourcesOverTabs(tabs, singleTestSources) {
     while (singleTestSources.length) {
         testSourcesPerTab[index] = testSourcesPerTab[index] ?
             testSourcesPerTab[index].concat(', ')
-                .concat(singleTestSources.pop()) :
-            singleTestSources.pop();
+                .concat(singleTestSources.shift()) :
+            singleTestSources.shift();
 
         index++;
 
