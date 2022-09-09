@@ -36,6 +36,18 @@ async function forwardJSHandleError(msg) {
         }, arg)));
 }
 
+async function evaluateMsgArgsInExecutionContext(msg) {
+    return await Promise.all(msg.args().map((arg) => arg.executionContext().evaluate((arg) => arg, arg)));
+}
+
+function formatStackTrace(msg) {
+    const frames = msg.stackTrace().map((frame) => {
+        const {url, lineNumber, columnNumber} = frame;
+        return `  @ ${url || "<unknown>"}:${lineNumber}:${columnNumber}`;
+    });
+    return [msg.text(), ...frames].join('\n');
+}
+
 async function openNewPage(browser) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', (error) => {
@@ -50,22 +62,41 @@ async function openNewPage(browser) {
         // https://github.com/puppeteer/puppeteer/issues/1512#issuecomment-349784408
         // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#class-consolemessage
         page.on('console', async (msg) => {
-            if (msg.type() === "warning") {
-                if (msg.text() === "JSHandle@error") {
-                    // When the message text is "JSHandle@error", we assume we have something that can be evaluated in
-                    // the page context to get the actual stack trace of the error. This assumption probably holds in
-                    // 99.9% of the cases. If not (e.g., because the actual error message is "JSHandle@error", but maybe
-                    // in other cases, too), we fall back to just printing "JSHandle@error".
-                    try {
-                        logger.warn('Forwarded:', ...await forwardJSHandleError(msg));
-                    } catch {
-                        logger.warn('Forwarded: JSHandle@error');
-                    }
-                } else {
-                    logger.warn('Forwarded:', msg.text());
+            if (msg.text() === "JSHandle@error") {
+                // When the message text is "JSHandle@error", we assume we have something that can be evaluated in
+                // the page context to get the actual stack trace of the error. This assumption probably holds in
+                // 99.9% of the cases. If not (e.g., because the actual error message is "JSHandle@error", but maybe
+                // in other cases, too), we fall back to just printing "JSHandle@error".
+                try {
+                    logger.error('Forwarded:', ...await forwardJSHandleError(msg));
+                } catch {
+                    // Unable to forward the JSHandle@error
+                    logger.error('Forwarded: JSHandle@error');
                 }
-            } else {
-                logger.info(`Forwarded: ${msg.text()}`);
+                return;
+            }
+
+            switch (msg.type()) {
+                case 'warning':
+                    logger.warn('Forwarded:', msg.text());
+                    break;
+                case 'log':
+                    logger.info('Forwarded:', msg.text());
+                    break;
+                case 'trace':
+                    logger.error('Forwarded:', formatStackTrace(msg));
+                    break;
+                case 'table':
+                    try {
+                        logger.info('Forwarded:');
+                        console.table(...await evaluateMsgArgsInExecutionContext(msg));
+                    } catch {
+                        logger.info('Forwarded:', msg.text());
+                    }
+                    break;
+                default:
+                    // Assume error
+                    logger.error('Forwarded:', msg.text());
             }
         });
     }
