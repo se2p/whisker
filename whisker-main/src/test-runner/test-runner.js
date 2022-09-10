@@ -29,19 +29,21 @@ class TestRunner extends EventEmitter {
             props.extend = {};
         }
 
-        this._setRNGSeeds(props['seed']);
-
-        // Load project and establish an initial save state
-        this.util = await this._loadProject(vm, project, props);
-        this.saveState = this.vmWrapper._recordInitialState();
-
-        // Count number of assertions across all test cases.
+        // Count number of assertions across all test cases and define a sampleTest used for setting the seed.
         let totalAssertions = 0;
+        let sampleTest = undefined;
         if(tests) {
+            sampleTest = tests[0];
             for (const test of tests) {
                 totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
             }
         }
+
+        this._setRNGSeeds(props['seed'], sampleTest);
+
+        // Load project and establish an initial save state
+        this.util = await this._loadProject(vm, project, props);
+        this.saveState = this.vmWrapper._recordInitialState();
 
         const projectName = props['projectName'];
         const testResults = [];
@@ -183,17 +185,27 @@ class TestRunner extends EventEmitter {
     }
 
     /**
-     * Sets the seeds for the RNG generator based on the supplied cli parameter.
+     * Sets the seeds for the RNG generator and Scratch based on the supplied cli parameter
+     * or the seed used during the test generation phase.
      * @param {string | undefined } seed the supplied seed form the cli.
+     @param {Test} test the test to be executed that may contain the seed used during the generation phase.
      */
-    _setRNGSeeds(seed) {
+    _setRNGSeeds(seed, test) {
+
+        // Prioritise seeds set using the CLI.
         if (seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
         }
-            // If no seed is specified via the CLI use Date.now() as RNG-Seed but only set it once to keep consistent if
-        // several test runs are executed at once
+
+        // Check if a seed is saved in the test and set the RNG generators to that seed if present.
+        else if (test !== undefined && "seed" in test){
+            Randomness.setInitialSeeds(test.seed);
+        }
+
+        // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
+        // but only set it once to keep consistent if several test runs are executed at once
         else if (Randomness.getInitialRNGSeed() === undefined) {
-            Randomness.setInitialRNGSeed(Date.now());
+            Randomness.setInitialSeeds(Date.now());
         }
         Randomness.seedScratch();
     }
@@ -397,7 +409,7 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.TEST_START, test);
         this.vmWrapper.start();
-        this._setRNGSeeds(props.seed);
+        this._setRNGSeeds(props.seed, test);
         this._checkSeed(test);
 
         if (modelTester && modelTester.someModelLoaded()) {
