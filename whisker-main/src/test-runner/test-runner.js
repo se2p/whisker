@@ -188,7 +188,7 @@ class TestRunner extends EventEmitter {
      * Sets the seeds for the RNG generator and Scratch based on the supplied cli parameter
      * or the seed used during the test generation phase.
      * @param {string | undefined } seed the supplied seed form the cli.
-     @param {Test} test the test to be executed that may contain the seed used during the generation phase.
+     * @param {Test} test the test to be executed that may contain the seed used during the generation phase.
      */
     _setRNGSeeds(seed, test) {
 
