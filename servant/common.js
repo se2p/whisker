@@ -147,10 +147,9 @@ async function runTests(path, openNewPage, index, targetProject) {
                 const currentLogString = currentLog.toString();
                 const startIndex = currentLogString.indexOf('projectName');
                 const endIndex = currentLogString.indexOf("\n\n\n");    // We may have additional output after 3 newlines
-                if(endIndex > 0) {
+                if (endIndex > 0) {
                     return currentLogString.slice(startIndex, endIndex).trim();
-                }
-                else{
+                } else {
                     return currentLogString.slice(startIndex);
                 }
             }
@@ -225,7 +224,7 @@ async function runTests(path, openNewPage, index, targetProject) {
             const coverageObject = {};
             values.forEach(({key, values}) => {
                 coverageObject[key] = values;
-            })
+            });
             modelCoverage[key] = coverageObject;
         });
         return modelCoverage;
@@ -299,31 +298,40 @@ function prepareTestFiles(whiskerTestPath = testPath) {
 /**
  * Takes the evaled test declarations and returns them as parseable javascript code.
  *
- * @param {*} tests     The evaled code of the test declerations
- * @returns {Array}     The test declerations as parseable ajavscript
+ * @param {*} tests     The evaled code of the test declarations
+ * @returns {Array<string>}     The test declarations as parseable javascript
  */
 function splitTestsSourceCodeIntoSingleTestSources(tests) {
-    return tests.reverse()
-        .map(test => {
-            const testDescription = JSON.parse(JSON.stringify(test));
-            testDescription.test = test.test.name;
+    return tests.map((test) => {
+        /*
+            This will remove the "test" property from the object, since its value is a function, resulting in:
 
-            return JSON.stringify(testDescription, null, 2)
-                .replace('"name"', 'name')
-                .replace('"description"', 'description')
-                .replace('"categories"', 'categories')
-                .replace('"test"', 'test')
-                .replace(`"${test.test.name}"`, `${test.test.name}`);
-        });
+            {
+              "name": "...",
+              "description": "...",
+              "categories": [...]
+            }
+         */
+        const testDescription = JSON.parse(JSON.stringify(test));
+
+        // Stringify the object again, but with newlines between the properties. Split the string at each newline.
+        // This gives an array where each entry is exactly one line. Drop the first and last line ("{" and "}").
+        const space = 2;
+        const jsonLines = JSON.stringify(testDescription, null, space).split('\n').slice(1, -1);
+
+        // Add the "test" property again, with the name of the test NOT wrapped in quotes.
+        const indent = " ".repeat(space);
+        return ['{', `${indent}"test": ${test.test.name},`, ...jsonLines, '}'].join('\n');
+    });
 }
 
 /**
  * Distributes the tests over the tabs / pages of the chrome instance.
  *
  * @param {number} tabs          The number of tabs puppeteer will open
- * @param {*} singleTestSources  A parseable test decleration
+ * @param {*} singleTestSources  A parseable test declaration
  * @returns {Array}              An array with the length of the amount of tabs that will be started, containing a
- *                               collection of test declerations for each of the tabs
+ *                               collection of test declarations for each of the tabs
  */
 function distributeTestSourcesOverTabs(tabs, singleTestSources) {
     let index = 0;
@@ -332,8 +340,8 @@ function distributeTestSourcesOverTabs(tabs, singleTestSources) {
     while (singleTestSources.length) {
         testSourcesPerTab[index] = testSourcesPerTab[index] ?
             testSourcesPerTab[index].concat(', ')
-                .concat(singleTestSources.pop()) :
-            singleTestSources.pop();
+                .concat(singleTestSources.shift()) :
+            singleTestSources.shift();
 
         index++;
 
@@ -378,9 +386,16 @@ function prepareTestSource(path) {
     const exportStatement = 'module.exports =';
     const test = fs.readFileSync(path, {encoding: 'utf8'});
     const testArrayStartIndex = test.indexOf(exportStatement) + exportStatement.length;
-    const testSourceWithoutExportArray = test.substr(0, testArrayStartIndex);
+    const testSourceWithoutExportArray = test.substring(0, testArrayStartIndex);
+    const evaledTest = require(path);
+
     // eslint-disable-next-line no-eval
-    const evaledTest = eval(test);
+    // const evaledTest = eval(`
+    //     (function () {
+    //         ${test};
+    //         return module.exports;
+    //     })();
+    // `);
 
     return {evaledTest, testSourceWithoutExportArray};
 }
@@ -404,4 +419,4 @@ module.exports = {
     tmpDir,
     prepareTestFiles,
     getProjectsInScratchPath,
-}
+};
