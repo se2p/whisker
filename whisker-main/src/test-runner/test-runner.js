@@ -108,7 +108,8 @@ class TestRunner extends EventEmitter {
                 const duration = (Date.now() - startTime) / 1000;
                 const total = this.statementMap.size;
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
-                csv += this._generateCSVRow(projectMutation, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
+                const seed = Randomness.scratchSeed;
+                csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
             }
@@ -138,7 +139,8 @@ class TestRunner extends EventEmitter {
                 const total = this.statementMap.size;
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
                 const modelResults = this._extractModelCSVData(result.modelResult);
-                csv += this._generateCSVRow(projectName, props.seed, totalAssertions,[result.status], total,  covered, duration, undefined, modelResults);
+                const seed = Randomness.scratchSeed;
+                csv += this._generateCSVRow(projectName, seed, totalAssertions,[result.status], total,  covered, duration, undefined, modelResults);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -174,7 +176,8 @@ class TestRunner extends EventEmitter {
             const duration = (Date.now() - startTime) / 1000;
             const total = this.statementMap.size;
             const covered = [...this.statementMap.values()].filter(cov => cov).length;
-            csv += this._generateCSVRow(projectName, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
+            const seed = Randomness.scratchSeed;
+            csv += this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
 
