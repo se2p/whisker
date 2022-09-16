@@ -30,6 +30,7 @@ class Scratch extends EventEmitter {
     async loadProject (project) {
         this.project = project;
         this.vm.clear();
+        this.vm.destroyAllSkins();
         await this.vm.loadProject(project);
         this.vm.runtime._step();
     }
