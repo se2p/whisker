@@ -8953,32 +8953,9 @@ scratch-translate-extension-languages@0.0.20191118205314:
   resolved "https://registry.yarnpkg.com/scratch-translate-extension-languages/-/scratch-translate-extension-languages-0.0.20191118205314.tgz#9f781cc0c89785faba8ae86775a4915225676284"
   integrity sha512-r0lvpgQjPMjbhI2wROrgoXzBhCvWJdkbAqJMfl2CdNqrwBpUXqLvNNtI3VtNLPJAcp9VfxEylkU9lVZ0gvU46Q==
 
-"scratch-vm@git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#4881b5cf9d818a373ce3314806214b2a14203507":
+"scratch-vm@git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#4137cfb234cb2fc866444fe0511de4bc7d70d0a8":
   version "0.2.0"
-  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#4881b5cf9d818a373ce3314806214b2a14203507"
-  dependencies:
-    "@vernier/godirect" "1.5.0"
-    arraybuffer-loader "^1.0.6"
-    atob "2.1.2"
-    btoa "1.2.1"
-    canvas-toBlob "1.0.0"
-    decode-html "2.0.0"
-    diff-match-patch "1.0.4"
-    format-message "6.2.1"
-    htmlparser2 "3.10.0"
-    immutable "3.8.1"
-    jszip "^3.1.5"
-    minilog "3.1.0"
-    nets "3.2.0"
-    scratch-parser "5.0.0"
-    scratch-sb1-converter "0.2.7"
-    scratch-translate-extension-languages "0.0.20191118205314"
-    text-encoding "0.7.0"
-    twgl.js latest
-
-"scratch-vm@git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#handle-variables-in-text2speech":
-  version "0.2.0"
-  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#ed4055f28514bdfbe33f6453afb0f0bf58d48edd"
+  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#4137cfb234cb2fc866444fe0511de4bc7d70d0a8"
   dependencies:
     "@vernier/godirect" "1.5.0"
     arraybuffer-loader "^1.0.6"
