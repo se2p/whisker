@@ -221,3 +221,12 @@ Whisker is supported by the project FR 2955/3-1 funded by the
       primaryClass={cs.SE}
 }
 ```
+
+```
+@article{feldmeier2022neuroevolution,
+  title={Neuroevolution-Based Generation of Tests and Oracles for Games},
+  author={Feldmeier, Patric and Fraser, Gordon},
+  journal={arXiv preprint arXiv:2208.13632},
+  year={2022}
+}
+```
