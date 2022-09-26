@@ -21,8 +21,8 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
-import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
+import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 
 export class WaitEvent extends ScratchEvent {
 
@@ -53,15 +53,15 @@ export class WaitEvent extends ScratchEvent {
         return 1;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number] {
         return [this._steps];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string] {
         return ["Duration"];
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): void {
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
         switch (testExecutor) {
             case "random":
                 this._steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
@@ -69,8 +69,8 @@ export class WaitEvent extends ScratchEvent {
             case "codon":
                 this._steps = args[0];
                 break;
-            case "regression":
-                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
+            case "activation":
+                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getWaitStepUpperBound());
                 break;
         }
 
@@ -82,6 +82,7 @@ export class WaitEvent extends ScratchEvent {
             this._steps !== Container.config.searchAlgorithmProperties['integerRange'].max) {
             this._steps %= Container.config.getWaitStepUpperBound();
         }
+        return [this._steps];
     }
 
     stringIdentifier(): string {

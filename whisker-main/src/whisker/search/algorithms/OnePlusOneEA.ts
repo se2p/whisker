@@ -25,6 +25,8 @@ import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {Container} from "../../utils/Container";
+import {Selection} from "../Selection";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -64,7 +66,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         Container.debugLog("1+1 EA started at " + this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
-        await bestIndividual.evaluate();
+        await bestIndividual.evaluate(true);
         this.updateArchive(bestIndividual);
         this._bestIndividual = bestIndividual;
         let bestFitness = bestIndividual.getFitness(this._fitnessFunction);
@@ -75,7 +77,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         while (!(this._stoppingCondition.isFinished(this))) {
             const candidateChromosome = bestIndividual.mutate();
-            await candidateChromosome.evaluate();
+            await candidateChromosome.evaluate(true);
             this.updateArchive(candidateChromosome);
             const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
             Container.debugLog(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
@@ -136,5 +138,13 @@ ${bestIndividual.toString()}`);
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
+        throw new Error('Method not implemented.');
     }
 }

@@ -235,11 +235,37 @@ export default class Arrays {
     }
 
     /**
+     * Subtracts two array if they have the same size.
+     * @param minuend the array from which we will subtract.
+     * @param subtrahend the array which will be subtracted from the minuend.
+     * @returns Array<number> the difference between the two arrays.
+     */
+    static subtract(minuend:number[], subtrahend:number[]): number[]{
+        // Make sure the subtrahend is at least as big as the minuend; pad with zeros if necessary.
+        if(minuend.length > subtrahend.length){
+            subtrahend.push(...[minuend.length - subtrahend.length].fill(0));
+        }
+        return minuend.map(((value, index) => value - subtrahend[index]));
+    }
+
+    /**
+     * Multiplies each element of the array with the given scalar value.
+     * @param array the array with which the scalar should be multiplied.
+     * @param scalar the scalar to be multiplied with the array.
+     * @returns Array<number> the array after multiplying the scalar to the given array.
+     */
+    static scalarProduct(array:number[], scalar:number): number[]{
+        return array.map(value => value * scalar);
+    }
+
+    /**
      * Returns the last element from an array.
      *
      * @param array the last element
      */
-    static last<T>(array: T[]): T {
+    static last<T>(array: readonly T[]): T {
         return array[array.length - 1];
     }
 }
+
+export const shuffle = Arrays.shuffle;

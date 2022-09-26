@@ -1,5 +1,6 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
+import {DynamicNetworkSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -82,8 +83,20 @@ const loadTestsFromString = async function (string) {
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
-        tests = eval(`${string};
-        module.exports;`);
+        tests = eval(`
+            (function () {
+                /*
+                 * Evil hack: Every Whisker test is a CommonJS module. As such, it contains a "module.exports"
+                 * declaration at the end. In the browser, CommonJS modules usually cannot be used as the global
+                 * "module" object does not exist there. For our purposes, we work around this by creating an empty
+                 * dummy object called "module", letting the test set the "module.exports" property, and return that as
+                 * result of evaluating the test.
+                 */
+                const module = Object.create(null);
+                ${string};
+                return module.exports;
+            })();
+        `);
     } catch (err) {
         console.error(err);
         const message = `${err.name}: ${err.message}`;
@@ -157,7 +170,9 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const accelerationFactor = $('#acceleration-value').text();
         const seed = document.getElementById('seed').value;
         const setMutators = document.querySelector('#container').mutators;
-        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
+        const mutationBudget = document.querySelector('#container').mutationBudget;
+        const maxMutants = document.querySelector('#container').maxMutants;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -171,7 +186,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
@@ -225,8 +240,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
         const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+        let modelCoverageString = '';
+
+        // Add model coverage if we have model-based results
+        if (Object.keys(coverageModels).length > 0) {
+            const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+            modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+        }
 
         Whisker.outputRun.println([
             summaryString,
@@ -259,13 +280,67 @@ const runAllTests = async function () {
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
-        const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
-        Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
-        Whisker.outputRun.println();
-        Whisker.outputLog.println();
+
+    // Dynamic Suite
+    if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
+        let coverage;
+        try {
+            await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
+            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareVM(Whisker.scratch.vm);
+
+            const properties = {};
+            const setMutators = document.querySelector('#container').mutators;
+            const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
+            const maxMutants = document.querySelector('#container').maxMutants;
+            properties.projectName = Whisker.projectFileSelect.getName();
+            properties.testName = Whisker.testFileSelect.getName();
+            properties.acceleration = $('#acceleration-value').text();
+            properties.log = true;
+            properties.seed = document.getElementById('seed').value;
+            properties.mutators = mutators;
+            properties.maxMutants = maxMutants;
+            properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
+
+            const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
+                properties);
+            const [csv, mutantPrograms] = await dynamicSuite.execute();
+
+            // Set the mutants in the output log from where we can download it later.
+            if (mutantPrograms.length > 0){
+                Whisker.outputRun.setScratch(Whisker.scratch);
+                Whisker.outputRun.setMutants(mutantPrograms);
+            }
+
+            coverage = CoverageGenerator.getCoverage();
+            CoverageGenerator.restoreClasses({Thread});
+            Whisker.outputLog.println(csv);
+        } finally {
+            _showRunIcon();
+            enableVMRelatedButtons();
+            accSlider.slider('enable');
+            testsRunning = false;
+        }
+
+        if (!coverage) {
+            return;
+        }
+
+        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+        Whisker.outputRun.println([
+            coverageString
+        ].join('\n'));
+    } else { // Static Suite
+        for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
+            const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
+            Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+            Whisker.outputRun.println();
+            Whisker.outputLog.println();
+        }
     }
 };
 

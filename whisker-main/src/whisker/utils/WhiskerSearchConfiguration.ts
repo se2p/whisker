@@ -26,17 +26,16 @@ import {StoppingCondition} from "../search/StoppingCondition";
 import {FixedTimeStoppingCondition} from "../search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
 import {NeatMutation} from "../whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/Operators/NeatCrossover";
 import {Container} from "./Container";
 import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
-import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
+import {InputConnectionMethod, NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
-import {InputExtraction} from "../whiskerNet/InputExtraction";
+import {InputExtraction} from "../whiskerNet/Misc/InputExtraction";
 import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
 import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/FitnessEvaluationStoppingCondition";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
@@ -55,10 +54,13 @@ import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyT
 import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {NeatProperties} from "../whiskerNet/NeatProperties";
-import {NeatChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
-import {NeatChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
-import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorTemplateNetwork";
+import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {BasicNeuroevolutionParameter, NeuroevolutionEventSelection} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
+import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
+import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
+import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
+import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
+import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
 
 
 class ConfigException implements Error {
@@ -70,15 +72,20 @@ class ConfigException implements Error {
 export class WhiskerSearchConfiguration {
 
     private readonly _config: Record<string, any>;
-    private readonly _searchAlgorithmProperties: (SearchAlgorithmProperties<any> | NeatProperties)
+    private readonly _properties: (SearchAlgorithmProperties<any> | NeuroevolutionTestGenerationParameter | BasicNeuroevolutionParameter);
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
-        if (this.getAlgorithm() === "neat") {
-            this._searchAlgorithmProperties = this.setNeuroevolutionProperties();
+
+        if ('testSuiteType' in this._config && this._config['testSuiteType'] === 'dynamic') {
+            this._properties = this.setDynamicSuiteParameter();
+            Container.isNeuroevolution = true;
+        } else if (this.getAlgorithm() === 'neat' ||
+            this.getAlgorithm() === 'neatest') {
+            this._properties = this.setNeuroevolutionProperties();
             Container.isNeuroevolution = true;
         } else {
-            this._searchAlgorithmProperties = this._buildSearchAlgorithmProperties();
+            this._properties = this._buildSearchAlgorithmProperties();
             Container.isNeuroevolution = false;
         }
     }
@@ -156,23 +163,23 @@ export class WhiskerSearchConfiguration {
 
 
     get searchAlgorithmProperties(): SearchAlgorithmProperties<any> {
-        return this._searchAlgorithmProperties as SearchAlgorithmProperties<any>;
+        return this._properties as SearchAlgorithmProperties<any>;
     }
 
-    public setNeuroevolutionProperties(): NeatProperties {
-        let populationSize: number;
-        if (this._config['populationSize']) {
-            populationSize = this._config['populationSize'] as number;
+    public setNeuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
+        let properties: NeuroevolutionTestGenerationParameter | NeatestParameter;
+        if (this.getAlgorithm() === 'neat') {
+            properties = new NeuroevolutionTestGenerationParameter();
         } else {
-            populationSize = Object.keys(JSON.parse(Container.template)).length;
+            properties = new NeatestParameter();
         }
-        const properties = new NeatProperties(populationSize);
-
+        const populationSize = this._config['populationSize'] as number;
         const parentsPerSpecies = this._config['parentsPerSpecies'] as number;
         const numberOfSpecies = this._config['numberOfSpecies'] as number;
         const penalizingAge = this._config['penalizingAge'] as number;
         const ageSignificance = this._config['ageSignificance'] as number;
         const inputRate = this._config['inputRate'] as number;
+        const activationFunction = this.getActivationFunction();
 
         const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number;
         const interspeciesMating = this._config['crossover']['interspeciesRate'] as number;
@@ -196,18 +203,22 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
+        const coverageStableCount = this._config['networkFitness']['stableCount'] !== undefined ?
+            this._config['networkFitness']['stableCount'] : 0;
+        const switchTargetCount = this._config['switchTargetCount'] !== undefined ?
+            this._config['switchTargetCount'] : 20;
         const timeout = this._config['networkFitness']['timeout'];
+        const activationTraceRepetitions = this._config['aTRepetitions'] !== undefined ?
+            this._config['aTRepetitions'] : 0;
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
 
-        properties.populationType = this._config[`populationType`] as string;
-        properties.eventSelection = this._config[`eventSelection`] as string;
-        properties.testSuiteType = this.getTestSuiteType();
-        properties.testTemplate = Container.template;
+        properties.populationSize = populationSize;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
         properties.ageSignificance = ageSignificance;
         properties.inputRate = inputRate;
+        properties.activationFunction = activationFunction;
 
         properties.crossoverWithoutMutation = crossoverWithoutMutation;
         properties.interspeciesMating = interspeciesMating;
@@ -226,21 +237,42 @@ export class WhiskerSearchConfiguration {
         properties.toggleEnableConnectionTimes = toggleEnableConnectionTimes;
         properties.mutateEnableConnection = mutateEnableConnection;
 
-        properties.distanceThreshold = distanceThreshold;
+        properties.compatibilityDistanceThreshold = distanceThreshold;
         properties.disjointCoefficient = disjointCoefficient;
         properties.excessCoefficient = excessCoefficient;
         properties.weightCoefficient = weightCoefficient;
 
+        properties.eventSelection = this.getNeuroevolutionEventSelection();
         properties.timeout = timeout;
-        properties.doPrintPopulationRecord = doPrintPopulationRecord;
+        properties.activationTraceRepetitions = activationTraceRepetitions;
+        properties.printPopulationRecord = doPrintPopulationRecord;
+
+        if (properties instanceof NeatestParameter) {
+            properties.coverageStableCount = coverageStableCount;
+            properties.switchTargetCount = switchTargetCount;
+        }
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
         properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']);
         return properties;
     }
 
-    get neuroevolutionProperties(): NeatProperties {
-        return this._searchAlgorithmProperties as NeatProperties;
+    get neuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
+        return this._properties as NeuroevolutionTestGenerationParameter;
+    }
+
+    private setDynamicSuiteParameter(): BasicNeuroevolutionParameter {
+        const parameter = new BasicNeuroevolutionParameter();
+        parameter.timeout = this._config['timeout'];
+        parameter.networkFitness = new ReliableStatementFitness(1);
+        return parameter;
+    }
+
+    get dynamicSuiteParameter(): BasicNeuroevolutionParameter {
+        if (this._properties instanceof BasicNeuroevolutionParameter) {
+            return this._properties;
+        }
+        return undefined;
     }
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
@@ -255,7 +287,7 @@ export class WhiskerSearchConfiguration {
             case 'events':
                 return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
             case 'evaluations':
-                return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
+                return new FitnessEvaluationStoppingCondition(stoppingCondition['maxEvaluations']);
             case "combined": {
                 const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
                 return new OneOfStoppingCondition(...conditions);
@@ -277,32 +309,32 @@ export class WhiskerSearchConfiguration {
             case 'variableLength':
                 return new VariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.searchAlgorithmProperties['chromosomeLength'],
-                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'variableLengthConstrained':
                 return new VariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.searchAlgorithmProperties['chromosomeLength'],
-                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLength':
                 return new BiasedVariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.searchAlgorithmProperties['chromosomeLength'],
-                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLengthConstrained':
                 return new BiasedVariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.searchAlgorithmProperties['chromosomeLength'],
-                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'eventBiased':
                 return new EventBiasedMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.searchAlgorithmProperties['chromosomeLength'],
-                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(this._config['mutation']);
@@ -321,7 +353,7 @@ export class WhiskerSearchConfiguration {
         const crossoverOperator = this._config['crossover']['operator'];
         switch (crossoverOperator) {
             case 'singlePointRelative':
-                return new SinglePointRelativeCrossover(this.searchAlgorithmProperties['reservedCodons']);
+                return new SinglePointRelativeCrossover(this._config['reservedCodons']);
             case 'neatCrossover':
                 return new NeatCrossover(this._config['crossover']);
             case 'singlePoint':
@@ -366,7 +398,7 @@ export class WhiskerSearchConfiguration {
             return operators;
         }
 
-        // Otherwise add the defined local search operators
+        // Otherwise, add the defined local search operators
         for (const operator of localSearchOperators) {
             let type: LocalSearch<any>;
             switch (operator['type']) {
@@ -436,21 +468,24 @@ export class WhiskerSearchConfiguration {
                     this._getCrossoverOperator(),
                     this._config['chromosome']['minSampleLength'],
                     this._config['chromosome']['maxSampleLength']);
-            case 'sparseNetwork': {
+            case 'neatChromosome': {
                 const eventExtractor = this.getEventExtractor();
-                return new NeatChromosomeGeneratorSparse(this._config['mutation'], this._config['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm),
-                    this._config['inputRate']);
-            }
-            case 'fullyConnectedNetwork': {
-                const eventExtractor = this.getEventExtractor();
-                return new NeatChromosomeGeneratorFullyConnected(this._config['mutation'], this._config['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm));
-            }
-            case 'templateNetwork': {
-                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
-                return new NeatChromosomeGeneratorTemplateNetwork(this._config['mutation'], this._config['crossover'],
-                    Container.template, eventExtractor.extractEvents(Container.vm));
+                const mutationOperator = this._getMutationOperator();
+                if (!(mutationOperator instanceof NeatMutation)) {
+                    throw new ConfigException(`The neatChromosome generator requires a NeatMutation operator, but  ${typeof mutationOperator} was specified`);
+                }
+                const crossoverOperator = this._getCrossoverOperator();
+                if (!(crossoverOperator instanceof NeatCrossover)) {
+                    throw new ConfigException(`The neatChromosome generator requires a NeatCrossover operator, but  ${typeof crossoverOperator} was specified`);
+                }
+                return new NeatChromosomeGenerator(
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper),
+                    eventExtractor.extractEvents(Container.vm),
+                    this.getInputConnectionMethod(),
+                    this.neuroevolutionProperties.activationFunction,
+                    mutationOperator,
+                    crossoverOperator,
+                    Number(this._config['inputRate']));
             }
             case 'test':
                 return new TestChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
@@ -482,6 +517,14 @@ export class WhiskerSearchConfiguration {
                 return new ScoreFitness();
             case 'survive':
                 return new SurviveFitness();
+            case 'reliableStatement': {
+                const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
+                return new ReliableStatementFitness(stableCount);
+            }
+            case 'noveltyReliableStatement': {
+                const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
+                return new NoveltyReliableStatementFitness(stableCount);
+            }
             case 'target':
                 return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
                     fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
@@ -523,6 +566,34 @@ export class WhiskerSearchConfiguration {
         }
 
         throw new ConfigException("Unknown TestGenerator " + this._config["testGenerator"]);
+    }
+
+    public getActivationFunction(): ActivationFunction {
+        switch (this._config['chromosome']['activationFunction'].toUpperCase()) {
+            case 'SIGMOID':
+                return ActivationFunction.SIGMOID;
+            case 'SOFTMAX':
+                return ActivationFunction.SOFTMAX;
+            case 'RELU':
+                return ActivationFunction.RELU;
+            case 'TANH':
+                return ActivationFunction.TANH;
+            case 'NONE':
+                return ActivationFunction.NONE;
+        }
+        throw new ConfigException("Unknown Activation Function " + this._config['chromosome']['activationFunction']);
+    }
+
+    public getInputConnectionMethod(): InputConnectionMethod {
+        switch (this._config['chromosome']['inputConnectionMethod']) {
+            case'sparse':
+                return 'sparse';
+            case 'fullyHidden':
+                return 'fullyHidden';
+            case 'fully':
+                return 'fully';
+        }
+        throw new ConfigException("Unknown InputConnectionMethod " + this._config['chromosome']['inputConnectionMethod']);
     }
 
     public getWaitStepUpperBound(): number {
@@ -575,12 +646,17 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getTestSuiteType(): string {
-        if ("testSuiteType" in this._config) {
-            return this._config['testSuiteType'];
-        } else {
-            return undefined;
+    public getNeuroevolutionEventSelection(): NeuroevolutionEventSelection {
+        if ("eventSelection" in this._config) {
+            switch (this._config['eventSelection']) {
+                case 'random':
+                    return 'random';
+                case 'activation':
+                default:
+                    return 'activation';
+            }
         }
+        return 'activation';
     }
 
     public isMinimizationActive(): boolean {
@@ -590,4 +666,30 @@ export class WhiskerSearchConfiguration {
             return true; // default
         }
     }
+
+    public isAssertionGenerationActive(): boolean {
+        if ("assertions" in this._config) {
+            return this._config['assertions'];
+        } else {
+            return true; // default
+        }
+    }
+
+    public isMinimizeAssertionsActive(): boolean {
+        if ("minimizeAssertions" in this._config) {
+            return this._config['minimizeAssertions'];
+        } else {
+            return true; // default
+        }
+    }
+
+    // Time budget for test minimization in milliseconds.
+    public getMinimizationTimeBudget(): number {
+        if ("minimizationTimeBudget" in this._config) {
+            return this._config["minimizationTimeBudget"];
+        } else {
+            return 0; // default, 0 means unlimited budget
+        }
+    }
+
 }

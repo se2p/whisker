@@ -38,7 +38,7 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return `t.mouseMoveToEvent(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
+        return `t.mouseMove(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
     }
 
     public toJSON(): Record<string, any> {
@@ -56,16 +56,16 @@ export class MouseMoveToEvent extends ScratchEvent {
         return 0;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number, number] {
         return [this.x, this.y];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [] {
         return [];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): [] {
+        return [];
     }
 
     stringIdentifier(): string {

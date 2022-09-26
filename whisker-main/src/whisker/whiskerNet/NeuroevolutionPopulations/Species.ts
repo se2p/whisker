@@ -1,7 +1,7 @@
 import {Randomness} from "../../utils/Randomness";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
-import {NeatProperties} from "../NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
 
@@ -10,7 +10,7 @@ export class Species<C extends NeatChromosome> {
     /**
      * The hyperParameters defined by the user.
      */
-    private readonly _hyperParameter: NeatProperties;
+    private readonly _hyperParameter: NeuroevolutionTestGenerationParameter;
 
     /**
      * Unique identifier for the species.
@@ -76,10 +76,10 @@ export class Species<C extends NeatChromosome> {
     /**
      * Constructs a new Species.
      * @param uID the id of the species
-     * @param novel true if its a new species
+     * @param novel true if it's a new species
      * @param hyperParameter the search parameters
      */
-    constructor(uID: number, novel: boolean, hyperParameter: NeatProperties) {
+    constructor(uID: number, novel: boolean, hyperParameter: NeuroevolutionTestGenerationParameter) {
         this._uID = uID;
         this._isNovel = novel;
         this._hyperParameter = hyperParameter;
@@ -97,11 +97,12 @@ export class Species<C extends NeatChromosome> {
      * Assigns the shared fitness value to each member of the species.
      */
     public assignSharedFitness(): void {
-        // Calculate the age debt based on the penalizing factor -> Determines after how much generations of no improvement
-        // the species gets penalized
+        // Calculate the age debt based on the penalizing factor -> Determines after how many generations of no
+        // improvement the species gets penalized
         let ageDept = (this.age - this.ageOfLastImprovement + 1) - this.hyperParameter.penalizingAge;
-        if (ageDept == 0)
+        if (ageDept == 0) {
             ageDept = 1;
+        }
 
         for (const network of this.networks) {
             network.sharedFitness = network.fitness;
@@ -114,7 +115,7 @@ export class Species<C extends NeatChromosome> {
 
             // Boost fitness for young generations to give them a chance to evolve for some generations.
             if (this._age <= 10) {
-                network.sharedFitness = network.sharedFitness * this.hyperParameter.ageSignificance;
+                network.sharedFitness *= this.hyperParameter.ageSignificance;
             }
 
             // Do not allow negative fitness values
@@ -123,7 +124,7 @@ export class Species<C extends NeatChromosome> {
             }
 
             // Share fitness with the entire species.
-            network.sharedFitness = network.sharedFitness / this.networks.length;
+            network.sharedFitness /= this.networks.length;
 
         }
         this.markParents();
@@ -165,7 +166,7 @@ export class Species<C extends NeatChromosome> {
      * Those leftOvers are carried on from calculation to calculation across all species and are awarded to the
      * population champion's species.
      * The given implementation follows the approach described within the NEAT publication.
-     * @param leftOver makes sure to not loose childs due to rounding errors.
+     * @param leftOver makes sure to not lose childs due to rounding errors.
      * @returns number leftOver collects rounding errors to ensure a constant populationSize.
      */
     public getNumberOfOffspringsNEAT(leftOver: number): number {
@@ -197,7 +198,7 @@ export class Species<C extends NeatChromosome> {
      * Calculates the number of offspring based on the average fitness across all members of the species. Saves
      * leftOvers occurring due to rounding errors and carries them on from calculation to calculation across all
      * species to assign them to the population champion's species in the end.
-     * @param leftOver leftOver makes sure to not loose childs due to rounding errors.
+     * @param leftOver leftOver makes sure to not lose childs due to rounding errors.
      * @param totalAvgSpeciesFitness the average fitness of all species combined.
      * @param populationSize the size of the whole population.
      * @returns number leftOver collects rounding errors to ensure a constant populationSize.
@@ -263,7 +264,7 @@ export class Species<C extends NeatChromosome> {
                 child = this.breedMutationOnly();
             }
 
-            // Otherwise we apply crossover.
+            // Otherwise, we apply crossover.
             else {
                 child = this.breedCrossover(population, populationSpecies);
             }
@@ -309,7 +310,7 @@ export class Species<C extends NeatChromosome> {
         }
 
         // Select second parent from a different species.
-        else  {
+        else {
             const candidateSpecies = populationSpecies.filter(species => species.uID !== this.uID && species.networks.length > 0);
             // Check if we have at least one other species that contains at least 1 network.
             if (candidateSpecies.length > 0) {
@@ -477,7 +478,7 @@ export class Species<C extends NeatChromosome> {
         this._champion = value;
     }
 
-    get hyperParameter(): NeatProperties {
+    get hyperParameter(): NeuroevolutionTestGenerationParameter {
         return this._hyperParameter;
     }
 }

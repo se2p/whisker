@@ -85,13 +85,14 @@ export class Randomness {
     }
 
     /**
-     * Set the initial random number generator seed.
-     * @param seed the random number generator seed
+     * Set the initial random number generator seed and the current RNG seed.
+     * @param seed the random number generator.
      */
     public static setInitialRNGSeed(seed: (number | string)): void {
         const convertedSeed = this.convertSeed(seed);
         console.log(`Seeding the RNG to ${convertedSeed}`);
         Randomness._initialRNGSeed = convertedSeed;
+        Randomness.getInstance()._RNGSeed = Randomness._initialRNGSeed; // In case the class instance already exists
     }
 
     /**

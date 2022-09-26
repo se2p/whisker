@@ -11,7 +11,7 @@ abstract class ScratchEventMock extends ScratchEvent {
         throw new Error("Method not implemented.");
     }
 
-    setParameter(): void {
+    setParameter(): number[] {
         throw new Error("Method not implemented.");
     }
 

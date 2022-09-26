@@ -1,7 +1,7 @@
 import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {NeuroevolutionUtil} from "../Misc/NeuroevolutionUtil";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 
 export class RegressionNode extends NodeGene {
@@ -18,31 +18,30 @@ export class RegressionNode extends NodeGene {
 
     /**
      * Constructs a new regression Node.
+     * @param uID the unique identifier of this node in the network.
      * @param event the event for which this regression node produces values for.
      * @param eventParameter specifies the parameter of the event this regression node produces values for.
      * @param activationFunction the activation function of the regression node.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new regression node.
-
      */
-    constructor(event: ScratchEvent, eventParameter: string, activationFunction: ActivationFunction,
-                incrementIDCounter = true) {
-        super(activationFunction, NodeType.OUTPUT, incrementIDCounter);
+    constructor(uID: number, event: ScratchEvent, eventParameter: string, activationFunction = ActivationFunction.NONE) {
+        super(uID, activationFunction, NodeType.OUTPUT);
         this._event = event;
         this._eventParameter = eventParameter;
     }
 
+    /**
+     * Two regression nodes are equal if they represent the same parameter of an output event.
+     * @param other the node to compare this node to.
+     */
     equals(other: unknown): boolean {
         if (!(other instanceof RegressionNode)) return false;
         return this.event.stringIdentifier() === other.event.stringIdentifier()
-            && this.eventParameter === other.eventParameter
-            && this.activationFunction === other.activationFunction;
+            && this.eventParameter === other.eventParameter;
     }
 
     clone(): RegressionNode {
-        const clone = new RegressionNode(this.event, this.eventParameter,
-            this.activationFunction, false);
-        clone.uID = this.uID;
+        const clone = new RegressionNode(this.uID, this.event, this.eventParameter,
+            this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -56,8 +55,8 @@ export class RegressionNode extends NodeGene {
      * Calculates the activation value of the regression node based on the node value and the activation function.
      * @returns number activation value of the regression node.
      */
-    getActivationValue(): number {
-        if (this.activationCount > 0) {
+    activate(): number {
+        if (this.activatedFlag) {
             switch (this.activationFunction) {
                 case ActivationFunction.RELU:
                     this.activationValue = NeuroevolutionUtil.relu(this.nodeValue);
@@ -79,6 +78,14 @@ export class RegressionNode extends NodeGene {
         return this._event;
     }
 
+    /**
+     * Regression nodes are identified by their type and represented event parameter.
+     * @returns identifier based on the node type and represented event parameter.
+     */
+    public identifier(): string {
+        return `R:${this.event.stringIdentifier()}-${this.eventParameter}`;
+    }
+
     toString(): string {
         return `RegressionNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\
@@ -94,10 +101,10 @@ export class RegressionNode extends NodeGene {
      */
     public toJSON(): Record<string, (number | string)> {
         const node = {};
-        node[`id`] = this.uID;
-        node[`t`] = "R";
-        node[`aF`] = ActivationFunction[this.activationFunction];
-        node[`event`] = this._event.stringIdentifier();
+        node['id'] = this.uID;
+        node['t'] = "R";
+        node['aF'] = ActivationFunction[this.activationFunction];
+        node['event'] = this._event.stringIdentifier();
         node['eventP'] = this._eventParameter;
         return node;
     }

@@ -178,6 +178,29 @@ describe("Arrays", () => {
         expect(array.length).toBe(length);
     });
 
+    test("Subtract two arrays, e.g. vectors of equal size", () => {
+        const subtrahend = [1, 0, 5];
+        const expected = [0, 2, -2];
+        expect(Arrays.subtract(array, subtrahend)).toStrictEqual(expected);
+    });
+
+    test("Subtract two arrays, e.g. vectors of different sizes with a bigger minuend", () => {
+        const subtrahend = [1, 0];
+        const expected = [0, 2, 3];
+        expect(Arrays.subtract(array, subtrahend)).toStrictEqual(expected);
+    });
+
+    test("Subtract two arrays, e.g. vectors of different sizes with a bigger subtrahend", () => {
+        const subtrahend = [1, 0, 5, 10];
+        const expected = [0, 2, -2];
+        expect(Arrays.subtract(array, subtrahend)).toStrictEqual(expected);
+    });
+
+    test("Scalar multiplication", () => {
+        const expected = [3, 6, 9];
+        expect(Arrays.scalarProduct(array, 3)).toStrictEqual(expected);
+    });
+
     test("Arrays.last returns last element from array", () => {
         const actual = Arrays.last(array);
         const expected = array[array.length - 1];

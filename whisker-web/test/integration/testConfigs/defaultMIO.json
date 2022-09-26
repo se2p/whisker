@@ -12,7 +12,7 @@
     },
     "mutation": {
         "operator": "variableLength",
-        "gaussianMutationPower": 5,
+        "gaussianMutationPower": 10,
         "maxMutationCountStart": 0,
         "maxMutationCountFocusedPhase": 10
     },
@@ -50,5 +50,8 @@
         "pressDuration": 10,
         "soundDuration": 10
     },
-    "minimize": false
+    "debugLogging": false,
+    "minimize": false,
+    "assertions": false,
+    "minimizeAssertions": false
 }

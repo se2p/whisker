@@ -21,8 +21,12 @@ const Extract = {
         Extract.broadcastForBlock(blocks.get(statement.inputs.BROADCAST_INPUT.block)),
     backdropStartTarget: (statement) =>
         statement.fields.BACKDROP.value,
-    backdropChangeTarget: (blocks, statement) =>
-        blocks.get(statement.inputs.BACKDROP.block).fields.BACKDROP.value,
+    backdropChangeTarget: (blocks, statement) => {
+        const argumentBlock = blocks.get(statement.inputs.BACKDROP.block);
+        if("BACKDROP" in argumentBlock.fields){
+            return argumentBlock.fields.BACKDROP.value;
+        }
+    },
     cloneCreateTarget: (blocks, statement) =>
         blocks.get(statement.inputs.CLONE_OPTION.block).fields.CLONE_OPTION.value,
     cloneSendTarget: block =>

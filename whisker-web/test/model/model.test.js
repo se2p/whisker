@@ -1,5 +1,8 @@
 const fileUrl = require('file-url');
 
+// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
+const URL = "dist/index.html";
+
 const timeout = process.env.SLOWMO ? 1000000 : 900000;
 const ACCELERATION = 10;
 
@@ -13,17 +16,18 @@ async function loadProject(scratchPath, modelPath) {
 
 async function readModelErrors() {
     const coverageOutput = await page.$('#output-run .output-content');
-    const errorsInModelR = /errors_in_model: (\d)+/i;
-    const failsInModelR = /fails_in_model: (\d)+/i;
-    const modelCoverageR = /modelCoverage:\n(.)*combined: (\d+\.\d+)/i;
-
     while (true) {
         const log = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
         if (log.includes('summary')) {
+            const logArray = log.split("\n");
+            const errors = logArray.find(x => x.includes("modelErrors")).split("(")[1].split(")")[0];
+            const fails = logArray.find(x => x.includes("modelFails")).split("(")[1].split(")")[0];
+            const coverageIndex = logArray.findIndex(x => x.includes("modelCoverage"));
+            const coverage = logArray[coverageIndex + 1].split(": ")[1].split(" ")[0];
             return {
-                errorsInModel: log.match(errorsInModelR)[1],
-                failsInModel: log.match(failsInModelR)[1],
-                modelCoverage: log.match(modelCoverageR)[2]
+                errorsInModel: errors,
+                failsInModel: fails,
+                modelCoverage: coverage
             };
         }
     }

@@ -441,11 +441,15 @@ class Inputs {
      * @param {string} spriteName The name of the sprite to move.
      * @param {number} x The x coordinate of the end position.
      * @param {number} y The y coordinate of the end position.
+     * @param {number | null} cloneID determines whether and which clone should be dragged.
      */
-    dragSprite (spriteName, x, y) {
-        const target = this.vmWrapper.getTargetBySpriteName(spriteName);
+    dragSprite (spriteName, x, y, cloneID) {
+        let target = this.vmWrapper.getTargetBySpriteName(spriteName);
+        if(cloneID !== null){
+            target = target.sprite.clones.find(target => target.cloneID === cloneID);
+        }
         if (target != null) {
-            target.setXY(x, y, true);
+            target.setXY(x, y, true, true);
         }
     }
 
@@ -489,6 +493,18 @@ class Inputs {
         this.inputImmediate({
             device: 'mouse',
             isDown: value
+        });
+    }
+
+    /**
+     * Presses the left mouse button for the given amount of steps.
+     * @param {number} steps The number of steps indicating how long the mouse button should be pressed.
+     */
+    mouseDownForSteps (steps = 1) {
+        this.inputImmediate({
+            device: 'mouse',
+            isDown: true,
+            steps: steps
         });
     }
 

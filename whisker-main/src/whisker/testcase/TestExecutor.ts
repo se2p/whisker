@@ -34,7 +34,6 @@ import VMWrapper = require("../../vm/vm-wrapper.js");
 import {Container} from "../utils/Container";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
-import cloneDeep from "lodash.clonedeep";
 
 
 export class TestExecutor {
@@ -44,15 +43,16 @@ export class TestExecutor {
     private _eventExtractor: ScratchEventExtractor;
     private readonly _eventSelector: EventSelector;
     private _eventObservers: EventObserver[] = [];
-    private _initialState = {};
     private _projectRunning: boolean;
+    private readonly _initialState = {};
+
 
     constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._eventExtractor = eventExtractor;
         this._eventSelector = eventSelector;
-        this.recordInitialState();
+        this._initialState = this._vmWrapper._recordInitialState();
     }
 
     async executeTests(tests: TestChromosome[]): Promise<void> {
@@ -83,7 +83,7 @@ export class TestExecutor {
         let targetFitness = Number.MAX_SAFE_INTEGER;
 
         const startTime = Date.now();
-        while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+        while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(this._eventExtractor.extractEvents(this._vm)))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
@@ -140,13 +140,43 @@ export class TestExecutor {
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
-        this.resetState();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vmWrapper.loadSaveState(this._initialState);
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
 
         return testChromosome.trace;
+    }
+
+    /**
+     * Executes a saved event trace.
+     * @param chromosome the chromosome hosting the event trace.
+     * @returns executed trace.
+     */
+    async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace>{
+        Randomness.seedScratch();
+        this._vmWrapper.start();
+        const eventAndParams = chromosome.trace.events;
+        for (let i = 0; i < eventAndParams.length; i+=2) {
+            const nextEvent = eventAndParams[i].event;
+            const parameters = eventAndParams[i].parameters;
+            const nextStepEvent = eventAndParams[i+1].event;
+            this.notify(nextEvent, parameters);
+            await nextEvent.apply();
+            await nextStepEvent.apply();
+            this.notifyAfter(nextEvent, parameters);
+        }
+
+        // Set attributes of the testChromosome after executing its genes.
+        chromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, chromosome.trace.events);
+        chromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
+        this._vmWrapper.end();
+        this._vmWrapper.loadSaveState(this._initialState);
+
+        return chromosome.trace;
     }
 
     /**
@@ -166,7 +196,7 @@ export class TestExecutor {
         const events: EventAndParameters[] = [];
 
         const startTime = Date.now();
-        while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+        while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(this._eventExtractor.extractEvents(this._vm)))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
@@ -200,7 +230,8 @@ export class TestExecutor {
         randomEventChromosome.trace = trace;
 
         this._vmWrapper.end();
-        this.resetState();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vmWrapper.loadSaveState(this._initialState);
 
         StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
@@ -235,6 +266,9 @@ export class TestExecutor {
         const waitEvent = new WaitEvent(1);
         events.push(new EventAndParameters(waitEvent, []));
         await waitEvent.apply();
+
+        this.notifyAfter(nextEvent, parameters);
+
         return numCodon;
     }
 
@@ -272,6 +306,12 @@ export class TestExecutor {
         }
     }
 
+    private notifyAfter(event: ScratchEvent, args: number[]): void {
+        for (const observer of this._eventObservers) {
+            observer.updateAfter(event, args);
+        }
+    }
+
     /**
      * Event listener checking if the project is still running.
      */
@@ -280,68 +320,11 @@ export class TestExecutor {
     }
 
     /**
-     * Checks if the given event list contains actionEvents, i.e events other than WaitEvents.
+     * Checks if the given event list contains actionEvents, i.e. events other than WaitEvents.
      * @param events the event list to check.
      */
     private hasActionEvents(events: ScratchEvent[]) {
         return events.filter(event => !(event instanceof WaitEvent)).length > 0;
-    }
-
-    public resetState(): void {
-        // Delete clones
-        const clones = [];
-        for (const targetsKey in this._vm.runtime.targets) {
-            if (!this._vm.runtime.targets[targetsKey].isOriginal) {
-                clones.push(this._vm.runtime.targets[targetsKey]);
-            }
-        }
-
-        for (const target of clones) {
-            this._vm.runtime.stopForTarget(target);
-            this._vm.runtime.disposeTarget(target);
-        }
-
-        // Restore state of all others
-        for (const targetsKey in this._vm.runtime.targets) {
-            this._vm.runtime.targets[targetsKey]["direction"] = this._initialState[targetsKey]["direction"];
-            this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
-            this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
-            this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
-            this._vm.runtime.targets[targetsKey]["drawableID"] = this._initialState[targetsKey]["drawableID"];
-            this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
-            this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
-            this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
-            this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
-            this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
-            const x = this._initialState[targetsKey]["x"];
-            const y = this._initialState[targetsKey]["y"];
-            this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
-            this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
-        }
-
-        this._vmWrapper.inputs.resetMouse();
-        this._vmWrapper.inputs.resetKeyboard();
-    }
-
-    private recordInitialState() {
-        for (const targetsKey in this._vm.runtime.targets) {
-            this._initialState[targetsKey] = {
-                name: this._vm.runtime.targets[targetsKey].sprite['name'],
-                direction: this._vm.runtime.targets[targetsKey]["direction"],
-                currentCostume: this._vm.runtime.targets[targetsKey]["currentCostume"],
-                draggable: this._vm.runtime.targets[targetsKey]["draggable"],
-                dragging: this._vm.runtime.targets[targetsKey]["dragging"],
-                drawableID: this._vm.runtime.targets[targetsKey]['drawableID'],
-                effects: Object.assign({}, this._vm.runtime.targets[targetsKey]["effects"]),
-                videoState: this._vm.runtime.targets[targetsKey]["videoState"],
-                videoTransparency: this._vm.runtime.targets[targetsKey]["videoTransparency"],
-                visible: this._vm.runtime.targets[targetsKey]["visible"],
-                volume: this._vm.runtime.targets[targetsKey]["volume"],
-                x: this._vm.runtime.targets[targetsKey]["x"],
-                y: this._vm.runtime.targets[targetsKey]["y"],
-                variables: cloneDeep(this._vm.runtime.targets[targetsKey]["variables"])
-            };
-        }
     }
 
     /**
@@ -383,5 +366,9 @@ export class TestExecutor {
     public static hasFitnessOfUncoveredStatementsImproved(oldFitnessValues: number[], newFitnessValues: number[]): boolean {
         return newFitnessValues.length < oldFitnessValues.length ||
             newFitnessValues.some((value, index) => value < oldFitnessValues[index]);
+    }
+
+    get initialState(): Record<string, unknown> {
+        return this._initialState;
     }
 }

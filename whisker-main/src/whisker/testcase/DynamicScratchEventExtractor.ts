@@ -30,11 +30,19 @@ import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
 
+    // TODO: Maybe also good for SB-Algorithms to avoid explosion of available Events.
+    /**
+     * Number of generated ClickSpriteEvents belonging due to clones mapped to their sprite name. Used for the
+     * NE-Extractor to avoid explosion of ClickClone output nodes.
+     */
+    protected currentClickClones: Map<string, number>;
+
     constructor(vm: VirtualMachine) {
         super(vm);
     }
 
     public extractEvents(vm: VirtualMachine): ScratchEvent[] {
+        this.currentClickClones = new Map<string, number>();
         let eventList: ScratchEvent[] = [];
         const lastStepCoveredBlocks: Set<string> = vm.runtime.traceInfo.tracer.lastStepCoverage;
 
@@ -56,11 +64,11 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
             }
         }
 
+        // If we encounter a state that is waiting for some text input from the user, we prioritise these events.
         if (eventList.some(event => (event instanceof TypeTextEvent || event instanceof TypeNumberEvent))) {
             eventList = eventList.filter(event => (event instanceof TypeTextEvent || event instanceof TypeNumberEvent));
         } else {
-            // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
-            // of -1.
+            // If we do not have such events, we need to make sure to add a WaitEvent for ExtensionLocalSearch.
             eventList.push(new WaitEvent());
         }
         const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();

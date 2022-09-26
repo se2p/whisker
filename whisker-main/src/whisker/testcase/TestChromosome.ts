@@ -56,14 +56,24 @@ export class TestChromosome extends IntegerListChromosome {
         this._trace = null;
     }
 
-    async evaluate(): Promise<void> {
+    /**
+     * Determines whether codons or a saved execution trace should be exectued.
+     * @param executeCodons if true the saved codons will be exectued instead of the execution code originating from
+     * a previous test execution.
+     */
+    override async evaluate(executeCodons:boolean): Promise<void> {
         const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(),
             Container.config.getEventSelector());
-        await executor.execute(this);
+        if(executeCodons) {
+            await executor.execute(this);
+        }
+        else{
+            await executor.executeEventTrace(this);
+        }
         assert(this.trace != null);
     }
 
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
+    override getFitness(fitnessFunction: FitnessFunction<this>): number {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {
@@ -105,7 +115,7 @@ export class TestChromosome extends IntegerListChromosome {
         this._lastImprovedTrace = value;
     }
 
-    clone(): TestChromosome {
+    override clone(): TestChromosome {
         const clone = new TestChromosome(this.getGenes(), this.getMutationOperator(), this.getCrossoverOperator());
         clone.trace = this._trace;
         clone.lastImprovedCodon = this.lastImprovedCodon;
@@ -113,7 +123,7 @@ export class TestChromosome extends IntegerListChromosome {
         return clone;
     }
 
-    cloneWith(newGenes: number[]): TestChromosome {
+    override cloneWith(newGenes: number[]): TestChromosome {
         return new TestChromosome(newGenes, this.getMutationOperator(), this.getCrossoverOperator());
     }
 
@@ -122,7 +132,7 @@ export class TestChromosome extends IntegerListChromosome {
         return this._trace.events.length;
     }
 
-    public toString = (): string => {
+    public override toString = (): string => {
         assert(this._trace != null);
         let text = "";
         for (const {event} of this._trace.events) {

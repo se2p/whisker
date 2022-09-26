@@ -32,6 +32,7 @@ import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import Arrays from "../utils/Arrays";
 import {Container} from "../utils/Container";
+import {TypeNumberEvent} from "./events/TypeNumberEvent";
 
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
@@ -74,7 +75,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
      * @param block the given block from which events might get extracted.
      * @returns List<ScratchEvent> containing all extracted events.
      */
-    protected _extractEventsFromBlock(target, block: ScratchBlocks): ScratchEvent[] {
+    protected override _extractEventsFromBlock(target, block: ScratchBlocks): ScratchEvent[] {
         const eventList: ScratchEvent[] = [];
         if (typeof block.opcode === 'undefined') {
             return eventList;
@@ -90,7 +91,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                if (fields.hasOwnProperty("KEY_OPTION")) {
+                if ("KEY_OPTION" in fields) {
                     eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
                 } else {
                     // TODO: The key is dynamically computed
@@ -108,7 +109,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'motion_goto': {
                 // GoTo MousePointer block
                 const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
-                if (goToMenu.fields.TO.value === '_mouse_') {
+                if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
                     eventList.push(new MouseMoveEvent());
                 }
                 break;
@@ -117,7 +118,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value;
+                const value = field.VARIABLE ? field.VARIABLE.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
                 if (value == "_mouse_") {
@@ -177,6 +178,9 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_askandwait':
                 // Type text
                 eventList.push(...this._getTypeTextEvents());
+                if (this.potentiallyComparesNumbers) {
+                    eventList.push(new TypeNumberEvent());
+                }
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
@@ -190,7 +194,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 if (block.fields.WHENGREATERTHANMENU.value == "loudness") {
                     // Sound
                     const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
-                    if (soundParameterBlock.fields.hasOwnProperty("NUM")) {
+                    if ('NUM' in soundParameterBlock.fields) {
                         const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
                         eventList.push(new SoundEvent(soundValue));
                     } else {

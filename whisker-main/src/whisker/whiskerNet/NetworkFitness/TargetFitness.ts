@@ -2,10 +2,10 @@ import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
-import {NetworkExecutor} from "../NetworkExecutor";
+import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import {PathFinder} from "../../scratch/PathFinder";
 import {ScratchPosition} from "../../scratch/ScratchPosition";
-import {ScratchInterface} from "../../scratch/ScratchInterface";
+import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
@@ -54,17 +54,16 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      * Calculates the novelty score.
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
-     * @param eventSelection defines how the network should be executed (network (default) | random | static
-     * events | eventsExtended).
+     * @param eventSelection defines how the networks select events.
      * @returns Promise<number> the sparseness of the network's behaviour, which is a metric of novelty.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
         const playerRenderedTarget = Container.vmWrapper.getTargetBySpriteName(this.player);
         if (!playerRenderedTarget) {
             throw new Error("Player Sprite not found. Please check your config file.");
         }
         const initialPosition = new ScratchPosition(playerRenderedTarget.x, playerRenderedTarget.y);
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
 
 

@@ -1,28 +1,31 @@
 import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {NeuroevolutionUtil} from "../Misc/NeuroevolutionUtil";
 
 export class HiddenNode extends NodeGene {
 
     /**
      * Constructs a new HiddenNode.
      * @param activationFunction the activation function used within this node gene.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new hidden node.
+     * @param uID the unique identifier of this node in the network.
      */
-    constructor(activationFunction: ActivationFunction, incrementIDCounter = true) {
-        super(activationFunction, NodeType.HIDDEN, incrementIDCounter);
+    constructor(uID: number, activationFunction: ActivationFunction) {
+        super(uID, activationFunction, NodeType.HIDDEN);
     }
 
+    /**
+     * Two hidden nodes are equal if they have the same identifier. However, each hidden node inside a network
+     * should have its own identifier!
+     * @param other the node to compare this node to.
+     */
     equals(other: unknown): boolean {
         if (!(other instanceof HiddenNode)) return false;
-        return this.uID === other.uID && this.activationFunction === other.activationFunction;
+        return this.uID === other.uID;
     }
 
     clone(): HiddenNode {
-        const clone = new HiddenNode(this.activationFunction, false);
-        clone.uID = this.uID;
+        const clone = new HiddenNode(this.uID, this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -36,11 +39,14 @@ export class HiddenNode extends NodeGene {
      * Calculates the activation value of the hidden node based on the node value and the activation function.
      * @returns number activation value of the hidden node.
      */
-    getActivationValue(): number {
-        if (this.activationCount > 0) {
+    activate(): number {
+        if (this.activatedFlag) {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:
-                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);
+                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
+                    break;
+                case ActivationFunction.TANH:
+                    this.activationValue = Math.tanh(this.nodeValue);
                     break;
                 default:
                     this.activationValue = this.nodeValue;
@@ -51,6 +57,14 @@ export class HiddenNode extends NodeGene {
             return 0.0;
     }
 
+    /**
+     * Hidden nodes are identified by their type and the uID due to the absence of other crucial attributes.
+     * @returns identifier based on the node type and the uID.
+     */
+    public identifier(): string {
+        return `H:${this.uID}`;
+    }
+
     toString(): string {
         return `HiddenNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\
@@ -59,9 +73,9 @@ export class HiddenNode extends NodeGene {
 
     public toJSON(): Record<string, (number | string)> {
         const node = {};
-        node[`id`] = this.uID;
-        node[`t`] = "H";
-        node[`aF`] = ActivationFunction[this.activationFunction];
+        node['id'] = this.uID;
+        node['t'] = "H";
+        node['aF'] = ActivationFunction[this.activationFunction];
         return node;
     }
 

@@ -40,7 +40,6 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
-import {FixedIterationsStoppingCondition} from "./search/stoppingconditions/FixedIterationsStoppingCondition";
 
 export class Search {
 
@@ -77,7 +76,7 @@ export class Search {
 
         let hasBlocks = false;
         for (const target of this.vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if ('blocks' in target) {
                 if (target.blocks._blocks) {
                     hasBlocks = true;
                     break;
@@ -113,20 +112,19 @@ export class Search {
          */
         let stoppingCondition: StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator) {
-            let maxIterations: number = undefined;
+            let upperBound: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-            if (stoppingCondition instanceof FixedIterationsStoppingCondition) {
-                maxIterations = stoppingCondition.maxIterations;
+            if (stoppingCondition instanceof FixedTimeStoppingCondition) {
+                upperBound = stoppingCondition.maxTime;
             } else if (stoppingCondition instanceof OneOfStoppingCondition) {
                 for (const d of stoppingCondition.conditions) {
-                    if (d instanceof FixedIterationsStoppingCondition) {
-                        if (maxIterations == undefined || maxIterations > d.maxIterations) { // take the minimum
-                            maxIterations = d.maxIterations;
-                        }
+                    if (d instanceof FixedTimeStoppingCondition) {
+                            upperBound = d.maxTime;
                     }
                 }
             }
-            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(maxIterations);
+            // Sample every minute
+            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(60000, upperBound);
             console.log(csvOutput);
             return csvOutput;
         } else {
@@ -197,6 +195,9 @@ seed ${configSeed} defined within the config files.`);
             Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {
             Randomness.setInitialSeeds(configSeed);
+        }
+        else{
+            Randomness.setInitialSeeds(Date.now());
         }
 
         StatisticsCollector.getInstance().reset();

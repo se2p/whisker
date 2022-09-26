@@ -25,14 +25,14 @@ import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingConditi
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _conditions: readonly StoppingCondition<T>[];
+    private _conditions: StoppingCondition<T>[] = [];
 
-    constructor(...stoppingConditions: readonly StoppingCondition<T>[]) {
+    constructor(...stoppingConditions: StoppingCondition<T>[]) {
         // Immediately flatten nested OneOfStoppingConditions.
         this._conditions = this._flatten(stoppingConditions);
     }
 
-    private _flatten(stoppingConditions: readonly StoppingCondition<T>[]): readonly StoppingCondition<T>[] {
+    private _flatten(stoppingConditions: StoppingCondition<T>[]): StoppingCondition<T>[] {
         const flattened = [];
         for (const stoppingCondition of stoppingConditions) {
             if (stoppingCondition instanceof OneOfStoppingCondition) {
@@ -63,7 +63,11 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
         return Math.max(...progress);
     }
 
-    get conditions(): readonly StoppingCondition<T>[] {
+    get conditions(): StoppingCondition<T>[] {
         return this._conditions;
+    }
+
+    set conditions(value: StoppingCondition<T>[]) {
+        this._conditions = value;
     }
 }

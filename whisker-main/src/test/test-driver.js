@@ -27,6 +27,7 @@ class TestDriver {
         this.keyPress = vmWrapper.inputs.keyPress.bind(vmWrapper.inputs);
         this.keyRelease = vmWrapper.inputs.keyRelease.bind(vmWrapper.inputs);
         this.mouseDown = vmWrapper.inputs.mouseDown.bind(vmWrapper.inputs);
+        this.mouseDownForSteps = vmWrapper.inputs.mouseDownForSteps.bind(vmWrapper.inputs);
         this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
         this.typeText = vmWrapper.inputs.typeText.bind(vmWrapper.inputs);
         this.sendSound = vmWrapper.inputs.sendSound.bind(vmWrapper.inputs);
@@ -79,8 +80,8 @@ class TestDriver {
         /* Further Test Tools  */
         this.seedScratch = (seed) => {
             Randomness.setInitialSeeds(seed);
-            Randomness.seedScratch(this.vm);
-        }
+            Randomness.seedScratch();
+        };
         this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
         this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;
         this.getAccelerationFactor = () => vmWrapper.accelerationFactor;

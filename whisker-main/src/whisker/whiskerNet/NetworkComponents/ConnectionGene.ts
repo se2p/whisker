@@ -97,12 +97,12 @@ export class ConnectionGene {
      */
     public toJSON(): Record<string, (number | boolean)> {
         const connection = {};
-        connection[`s`] = this.source.uID;
-        connection[`t`] = this.target.uID;
-        connection[`w`] = Number(this.weight.toFixed(5));
-        connection[`e`] = this.isEnabled;
-        connection[`i`] = this.innovation;
-        connection[`r`] = this.isRecurrent;
+        connection['s'] = this.source.uID;
+        connection['t'] = this.target.uID;
+        connection['w'] = Number(this.weight.toFixed(5));
+        connection['e'] = this.isEnabled;
+        connection['i'] = this.innovation;
+        connection['r'] = this.isRecurrent;
         return connection;
     }
 

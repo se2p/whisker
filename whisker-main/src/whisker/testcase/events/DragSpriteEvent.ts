@@ -41,18 +41,17 @@ export class DragSpriteEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        this._target.setXY(this._x, this._y, true);
+        Container.testDriver.dragSprite(this._target.sprite.name, this._x, this._y, this._target.cloneID);
     }
 
     public toJavaScript(): string {
-        const spriteName = this._target.sprite.name.replace(/'/g, "\\'");
-        return `t.dragSprite('${spriteName}', ${this._x}, ${this._y});`;
+        return `t.dragSprite('${this._escapeSpriteName()}', ${this._x}, ${this._y}, ${this._target.cloneID});`;
     }
 
     public toJSON(): Record<string, any> {
         const event = {};
         event[`type`] = `DragSpriteEvent`;
-        event[`args`] = {"x": this._x, "y": this._y, "target": this._target.sprite.name};
+        event[`args`] = {"x": this._x, "y": this._y, "target": this._escapeSpriteName()};
         return event;
     }
 
@@ -60,11 +59,11 @@ export class DragSpriteEvent extends ScratchEvent {
         return `DragSprite ${this._target.sprite.name} to  ${Math.trunc(this._x)}/${Math.trunc(this._y)}`;
     }
 
-    getParameters(): (number | string)[] {
+    getParameters(): [number, number, number, string] {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
 
-    setParameter(args: number[], argType: ParameterType): void {
+    setParameter(args: number[], argType: ParameterType): [number] {
         switch (argType) {
             case "random": {
                 const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
@@ -94,17 +93,23 @@ export class DragSpriteEvent extends ScratchEvent {
             this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
             this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
+
+        return [this.angle];
     }
 
     numSearchParameter(): number {
         return 1;
     }
 
-    getSearchParameterNames(): string[] {
-        return [];
+    getSearchParameterNames(): [string] {
+        return ["Angle"];
     }
 
     stringIdentifier(): string {
         return `DragSpriteEvent-${this._target.sprite.name}-${this._x}-${this._y}`;
+    }
+
+    private _escapeSpriteName() {
+        return this._target.sprite.name.replace(/'/g, "\\'");
     }
 }
