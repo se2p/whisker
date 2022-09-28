@@ -94,7 +94,7 @@ export class TestExecutor {
             numCodon = await this.selectAndSendEvent(codons, numCodon, availableEvents, events);
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
-            testChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
+            testChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, events);
             testChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
             // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
@@ -121,7 +121,7 @@ export class TestExecutor {
                 // Check if the latest execution of the given event has improved overall fitness.
                 if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
                     testChromosome.lastImprovedCodon = numCodon;
-                    testChromosome.lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, [...events]);
+                    testChromosome.lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
                 }
                 fitnessValues = newFitnessValues;
             }
@@ -136,7 +136,7 @@ export class TestExecutor {
         }
 
         // Set attributes of the testChromosome after executing its genes.
-        testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
@@ -156,7 +156,7 @@ export class TestExecutor {
      * @returns executed trace.
      */
     async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace>{
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vm);
         this._vmWrapper.start();
         const eventAndParams = chromosome.trace.events;
         for (let i = 0; i < eventAndParams.length; i+=2) {
@@ -170,7 +170,7 @@ export class TestExecutor {
         }
 
         // Set attributes of the testChromosome after executing its genes.
-        chromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, chromosome.trace.events);
+        chromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, chromosome.trace.events);
         chromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         this._vmWrapper.end();
@@ -225,7 +225,7 @@ export class TestExecutor {
 
         }
         const endTime = Date.now() - startTime;
-        const trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        const trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, events);
         randomEventChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
         randomEventChromosome.trace = trace;
 
