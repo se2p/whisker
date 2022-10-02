@@ -77,6 +77,10 @@ class TestDriver {
         this.isScratchRunning = vmWrapper.isScratchRunning.bind(vmWrapper);
         this.isWhiskerRunning= vmWrapper.isWhiskerRunning.bind(vmWrapper);
 
+        // Backward compatibility
+        this.isRunning = vmWrapper.isScratchRunning.bind(vmWrapper);
+        this.isProjectRunning = vmWrapper.isWhiskerRunning.bind(vmWrapper);
+
         /* Further Test Tools  */
         this.seedScratch = (seed) => {
             Randomness.setInitialSeeds(seed);
