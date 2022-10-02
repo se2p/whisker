@@ -82,7 +82,7 @@ class VMWrapper {
         /**
          * @type {boolean} Indicates is the virtual machine is running.
          */
-        this.running = false;
+        this._isScratchRunning = false;
 
         /**
          * @type {boolean} Indicates if the virtual machine is aborted.
@@ -92,7 +92,7 @@ class VMWrapper {
         /**
          * @type {boolean} Indicates if the tested project is currently running.
          */
-        this.projectRunning = false;
+        this._isWhiskerRunning = false;
 
         /**
          * @type {string} Text for a question.
@@ -131,7 +131,7 @@ class VMWrapper {
         this.callbacks.callCallbacks(false);
         await this._yield();
 
-        if (!this.isRunning()) return;
+        if (!this.isScratchRunning()) return;
 
         this.randomInputs.performRandomInput();
         await this._yield();
@@ -152,12 +152,12 @@ class VMWrapper {
         this.modelCallbacks.callCallbacks(true);
         await this._yield();
 
-        if (!this.isRunning()) return;
+        if (!this.isScratchRunning()) return;
 
         this.callbacks.callCallbacks(true);
         await this._yield();
 
-        if (!this.isRunning()) return;
+        if (!this.isScratchRunning()) return;
 
         const returnValue = this.constraints.checkConstraints();
         await this._yield();
@@ -172,7 +172,7 @@ class VMWrapper {
      * @returns {number} Runtime in ms.
      */
     async run(condition, timeout, steps) {
-        if (this.isRunning()) {
+        if (this.isScratchRunning()) {
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
                 'missing any await-statements in your test.');
         }
@@ -183,12 +183,12 @@ class VMWrapper {
         }
         steps = steps === undefined ? Infinity : steps;
 
-        this.running = true;
+        this._isScratchRunning = true;
         this.runStartStepsExecuted = this.getTotalStepsExecuted();
 
         let constraintError = null;
 
-        while (this.isRunning() && this.getRunStepsExecuted() < steps && !condition()) {
+        while (this.isScratchRunning() && this.getRunStepsExecuted() < steps && !condition()) {
 
             constraintError = await this.stepper.step(this.step.bind(this));
 
@@ -205,7 +205,7 @@ class VMWrapper {
             throw new Error('Run was aborted!');
         }
 
-        this.running = false;
+        this._isScratchRunning = false;
         const stepsExecuted = this.getRunStepsExecuted();
         this.inputs.updateInputs(stepsExecuted);
 
@@ -258,15 +258,15 @@ class VMWrapper {
     /**
      * Cancels the current run by setting the running property to false.
      */
-    cancelRun() {
-        this.running = false;
+    cancelScratchRun() {
+        this._isScratchRunning = false;
     }
 
     /**
      * Cancels and aborts the current run.
      */
     abort() {
-        this.cancelRun();
+        this.cancelScratchRun();
         this.aborted = true;
         log.warn("Run aborted");
     }
@@ -488,7 +488,7 @@ class VMWrapper {
      * Stop the vm wrapper by resetting it to its original state and stopping the virtual machine.
      */
     end() {
-        this.cancelRun();
+        this.cancelScratchRun();
         this.vm.stopAll();
 
         this.sprites.onSpriteMoved(null);
@@ -674,30 +674,30 @@ class VMWrapper {
      * Gives back if the virtual machine is currently running.
      * @returns {boolean} true if running, false otherwise.
      */
-    isRunning() {
-        return this.running;
+    isScratchRunning() {
+        return this._isScratchRunning;
     }
 
     /**
      * Gives back if the tested project is currently running.
      * @returns {boolean} true if running, false otherwise.
      */
-    isProjectRunning() {
-        return this.projectRunning;
+    isWhiskerRunning() {
+        return this._isWhiskerRunning;
     }
 
     /**
      * Sets the project to running on start.
      */
     onRunStart() {
-        this.projectRunning = true;
+        this._isWhiskerRunning = true;
     }
 
     /**
      * Sets the project to not running on stop.
      */
     onRunStop() {
-        this.projectRunning = false;
+        this._isWhiskerRunning = false;
     }
 
     /**
