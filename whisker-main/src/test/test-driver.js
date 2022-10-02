@@ -78,6 +78,7 @@ class TestDriver {
         this.isWhiskerRunning= vmWrapper.isWhiskerRunning.bind(vmWrapper);
 
         // Backward compatibility
+        this.cancelRun = vmWrapper.cancelScratchRun.bind(vmWrapper);
         this.isRunning = vmWrapper.isScratchRunning.bind(vmWrapper);
         this.isProjectRunning = vmWrapper.isWhiskerRunning.bind(vmWrapper);
 
