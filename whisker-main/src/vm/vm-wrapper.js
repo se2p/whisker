@@ -191,17 +191,18 @@ class VMWrapper {
         while (this.isRunning() && this.getRunStepsExecuted() < steps && !condition()) {
             if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
                 const previousStepsExecuted = this.vm.runtime.stepsExecuted;
-                
+
                 constraintError = await this.stepper.step(this.step.bind(this));
 
                 this.stepsExecuted += this.vm.runtime.stepsExecuted - previousStepsExecuted;
-    
+
                 if (constraintError &&
                     (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
                         this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
                     break;
                 }
             } else {
+                // The execution of a test is paused in the debugger. Without the timeout, the debugger GUI freezes.
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
