@@ -671,16 +671,30 @@ class VMWrapper {
     }
 
     /**
-     * Gives back if the given Scratch program has active threads that are being executed.
+     * Tells if the currently loaded Scratch program has active threads that are being executed.
      * @returns {boolean} true if active, false otherwise.
+     * @see isWhiskerRunning
      */
     isScratchRunning() {
         return this._scratchRunning;
     }
 
     /**
-     * Gives back if Whisker is currently active and has not been stopped by a call to the vm-wrapper.end() method.
-     * @returns {boolean} true if active, false otherwise.
+     * Tells if Whisker (more precisely, Whisker's {@link step()} function) is currently active. Always returns true,
+     * unless Whisker has been stopped by a prior call to {@link end()}.
+     *
+     * The difference to {@link isScratchRunning()} is that isWhiskerRunning() does not necessarily tell you if the
+     * Scratch program itself is currently running. For example, let a program with a single event handler be given:
+     * ```
+     * when [space v] key pressed
+     * say [hello] for (2) seconds
+     * ```
+     * If Whisker sends a wait event, isWhiskerRunning() returns true since Whisker is interacting with the VM. However,
+     * the Scratch program itself is not executed, since no event handler responds to the wait event, and therefore no
+     * scripts are being executed. As a result, isScratchRunning() returns false.
+     *
+     * @returns {boolean} true if and only if Whisker has not been stopped by a call to {@link end()}, false otherwise
+     * @see isScratchRunning
      */
     isWhiskerRunning() {
         return this._whiskerRunning;
