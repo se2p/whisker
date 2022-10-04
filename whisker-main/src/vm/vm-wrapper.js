@@ -80,9 +80,9 @@ class VMWrapper {
         this.runStartStepsExecuted = 0;
 
         /**
-         * @type {boolean} Indicates is the virtual machine is running.
+         * @type {boolean} Indicates if the Scratch program has active threads that are being executed.
          */
-        this._isScratchRunning = false;
+        this._scratchRunning = false;
 
         /**
          * @type {boolean} Indicates if the virtual machine is aborted.
@@ -90,9 +90,9 @@ class VMWrapper {
         this.aborted = false;
 
         /**
-         * @type {boolean} Indicates if the tested project is currently running.
+         * @type {boolean} Indicates if Whisker is actively running and has not been stopped by a call to vm-wrapper.end().
          */
-        this._isWhiskerRunning = false;
+        this._whiskerRunning = false;
 
         /**
          * @type {string} Text for a question.
@@ -183,7 +183,7 @@ class VMWrapper {
         }
         steps = steps === undefined ? Infinity : steps;
 
-        this._isScratchRunning = true;
+        this._scratchRunning = true;
         this.runStartStepsExecuted = this.getTotalStepsExecuted();
 
         let constraintError = null;
@@ -205,7 +205,7 @@ class VMWrapper {
             throw new Error('Run was aborted!');
         }
 
-        this._isScratchRunning = false;
+        this._scratchRunning = false;
         const stepsExecuted = this.getRunStepsExecuted();
         this.inputs.updateInputs(stepsExecuted);
 
@@ -259,7 +259,7 @@ class VMWrapper {
      * Cancels the current run by setting the running property to false.
      */
     cancelScratchRun() {
-        this._isScratchRunning = false;
+        this._scratchRunning = false;
     }
 
     /**
@@ -671,33 +671,33 @@ class VMWrapper {
     }
 
     /**
-     * Gives back if the virtual machine is currently running.
-     * @returns {boolean} true if running, false otherwise.
+     * Gives back if the given Scratch program has active threads that are being executed.
+     * @returns {boolean} true if active, false otherwise.
      */
     isScratchRunning() {
-        return this._isScratchRunning;
+        return this._scratchRunning;
     }
 
     /**
-     * Gives back if the tested project is currently running.
-     * @returns {boolean} true if running, false otherwise.
+     * Gives back if Whisker is currently active and has not been stopped by a call to the vm-wrapper.end() method.
+     * @returns {boolean} true if active, false otherwise.
      */
     isWhiskerRunning() {
-        return this._isWhiskerRunning;
+        return this._whiskerRunning;
     }
 
     /**
-     * Sets the project to running on start.
+     * Sets Whisker to running on start.
      */
     onRunStart() {
-        this._isWhiskerRunning = true;
+        this._whiskerRunning = true;
     }
 
     /**
-     * Sets the project to not running on stop.
+     * Sets Whisker to not running on stop.
      */
     onRunStop() {
-        this._isWhiskerRunning = false;
+        this._whiskerRunning = false;
     }
 
     /**

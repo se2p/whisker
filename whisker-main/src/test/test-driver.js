@@ -78,8 +78,13 @@ class TestDriver {
         this.isWhiskerRunning= vmWrapper.isWhiskerRunning.bind(vmWrapper);
 
         // Backward compatibility
+        /** @deprecated Please use the method cancelScratchRun() instead */
         this.cancelRun = vmWrapper.cancelScratchRun.bind(vmWrapper);
+
+        /** @deprecated Please use the method isScratchRunning() instead */
         this.isRunning = vmWrapper.isScratchRunning.bind(vmWrapper);
+
+        /** @deprecated Please use the method isWhiskerRunning() instead */
         this.isProjectRunning = vmWrapper.isWhiskerRunning.bind(vmWrapper);
 
         /* Further Test Tools  */
