@@ -277,8 +277,8 @@ class Inputs {
      */
     inputImmediate (dataOrInput, name) {
         let input;
-        const executedSteps = this.vmWrapper.isRunning()
-            ? this.vmWrapper.getRunStepsExecuted() : 0
+        const executedSteps = this.vmWrapper.isScratchRunning()
+            ? this.vmWrapper.getRunStepsExecuted() : 0;
 
         if (dataOrInput instanceof Input) {
             input = dataOrInput;
