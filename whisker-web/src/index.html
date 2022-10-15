@@ -10,6 +10,11 @@
     <link rel="icon" type="image/png" href="assets/favicon_whisker.png"/>
     <link rel="stylesheet" href="whisker-gui.css"/>
     <script defer src="whisker-gui.js"></script>
+    <script src="includes/bootstrap.js"></script>
+    <script type="text/javascript" src="includes/jquery-1.4.3.min.js"></script>
+    <script type="text/javascript" src="includes/jquery.fancybox-1.3.4.pack.js"></script>
+    <script type="text/javascript" src="includes/prettify.js"></script>
+    <link rel="stylesheet" href="includes/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
 
     <script> // This should be executed before anything else to prevent loading the whole page twice
     const params = new URLSearchParams(window.location.search);
@@ -60,26 +65,42 @@
     <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
         <img id="banner" class="banner" alt="Scratch Items" src=""/>
     </a>
-
-    <!-- Welcome message -->
-    <div class="container headline-spacer">
-        <div class="row spacer10">
-            <div class="col-lg-12 text-center">
-                <h2 data-i18n="h2"></h2>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-9" style="padding-right:0px;">
+                <ul class="nav nav-tabs" id="whiskerTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tabUpload" data-bs-toggle="tab" data-bs-target="#contentUpload" type="button" role="tab" aria-controls="contentUpload" aria-selected="true" data-i18n="title-uploads"></button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tabProject" data-bs-toggle="tab" data-bs-target="#contentProject" type="button" role="tab" aria-controls="contentProject" aria-selected="false" data-i18n="title-project"></button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tabLogs" data-bs-toggle="tab" data-bs-target="#contentLogs" type="button" role="tab" aria-controls="contentLogs" aria-selected="false" data-i18n="title-console"></button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tabTestEditor" data-bs-toggle="tab" data-bs-target="#contentTestEditor" type="button" role="tab" aria-controls="contentTestEditor" aria-selected="false" data-i18n="title-editor"></button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tabModelEditor" data-bs-toggle="tab" data-bs-target="#contentModelEditor" type="button" role="tab" aria-controls="contentModelEditor" aria-selected="false" data-i18n="title-model"></button>
+                    </li>
+                </ul>
             </div>
-        </div>
-        <div class="row spacer100">
-            <div class="col-lg-12 text-center">
-                <h4 data-i18n="h4"></h4>
+            <div class="col-lg-3" style="padding:0px; border-bottom: 1px solid #dee2e6; margin-left:-15px; text-align:right;">
+                Erweiterte Ansicht
+                <label class="switch">
+                      <input type="checkbox" id="extendedView" onchange="_updateExtendedView()">
+                      <span class="slider round"></span>
+                </label>
             </div>
         </div>
     </div>
 
-    <!-- Upload of sb3 project and test file -->
-    <div class="main">
-        <div class="container">
+    <div class="tab-content container" id="whiskerTabContent">
+        <div class="tab-pane tabBorder fade show active" id="contentUpload" role="tabpanel" aria-labelledby="home-tab">
             <div class="row">
-                <div class="col-lg-12 spacer50">
+                <div class="col-lg-12">
                     <form>
                         <div class="row">
 
@@ -91,6 +112,24 @@
                                             <div class="col-lg-10 label-padding">
                                                 <label id="fileselect-project-label" for="fileselect-project"
                                                        data-i18n="program"></label>
+                                                <div class="help-tooltip">
+                                                    <a href="#upload-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                                    <span class="help-text" data-i18n="upload-tooltip"></span>
+                                                </div>
+
+                                                <div style="display:none">
+                                                    <div id="upload-tooltip">
+                                                        <ol>
+                                                            <li data-i18n="upload-helptext01"></li>
+                                                            <li data-i18n="upload-helptext02"></li>
+                                                            <li data-i18n="upload-helptext03"></li>
+                                                        </ol>
+                                                        <div style="text-align:center; padding-left: 30px; display:inline-block;">
+                                                            <img src='assets/upload01.png' />
+                                                            <img src='assets/upload02.png' style="padding-left:30px;" />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="col-lg-2">
                                                 <img class="img" src="assets/sb3.png" alt="sb3"/>
@@ -109,6 +148,10 @@
                                                            data-i18n="no-file"
                                                            data-toggle="tooltip" data-placement="top"></label>
                                                 </div>
+                                                <div class="form-group">
+                                                    <small id="help-text2" class="form-text text-muted"
+                                                           data-i18n="choose-file"></small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -123,6 +166,24 @@
                                             <div class="col-lg-10 label-padding">
                                                 <label id="fileselect-tests-label" for="fileselect-tests"
                                                        data-i18n="test" data-animation="false"></label>
+                                                <div class="help-tooltip">
+                                                    <a href="#test-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                                    <span class="help-text" data-i18n="test-tooltip"></span>
+                                                </div>
+
+                                                <div style="display:none">
+                                                    <div id="test-tooltip">
+                                                        <ol>
+                                                            <li data-i18n="test-helptext01"></li>
+                                                            <li data-i18n="test-helptext02"></li>
+                                                            <li data-i18n="test-helptext03"></li>
+                                                        </ol>
+                                                        <div style="text-align:center; padding-left: 30px; display:inline-block;">
+                                                            <img src='assets/test01.png' />
+                                                            <img src='assets/test02.png' style="padding-left:30px;" />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="col-lg-2">
                                                 <img class="img" src="assets/js.png" alt="js"/>
@@ -150,8 +211,8 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- Model upload and settings -->
+            </div>
+            <div class="row">
                 <div class="col-lg-12">
                     <div id="model-upload" class="row form">
                         <div class="col-lg-6">
@@ -227,177 +288,134 @@
                 </div>
             </div>
         </div>
-
-        <!-- Separate issue: Download via URL
-        <div id="advanced-upload" class="row">
-           <div class="col-lg-6">
-               <div id="project-url" class="row chooseFile">
-                   <div class="col-lg-12">
-                       <div class="row">
-                           <div class="col-lg-10 label-padding">
-                               <label for="programUrl" data-i18n="url"></label>
-                            </div>
-                            <div class="col-lg-2">
-                                <img class="img" src="assets/url.png" alt="url"/>
-                             </div>
-                        </div>
-                        <div class="row">
-                           <div class="col-lg-12">
-                               <div class="input-group mb-3">
-                                   <div class="input-group-prepend">
-                                        <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
-                                    </div>
-                                    <input name="programURL" type="text" class="form-control"
-                                           id="programURL" aria-describedby="basic-addon3">
+        <div class="tab-pane tabBorder fade" id="contentProject" role="tabpanel" aria-labelledby="contact-tab">
+            <!-- Scratch project -->
+            <div id="scratch-project" class="row">
+                <div class="col-lg-6">
+                    <!-- Stage -->
+                    <!-- Use tabindex to make the canvas focusable. -->
+                    <div id="viewer">
+                        <canvas id="scratch-stage" tabindex="1"></canvas>
+                    </div>
+                    <!-- Acceleration slider, seed, scratch controls -->
+                    <div class="row">
+                        <div class="slide-container but">
+                            <div class="col-lg-12">
+                                <div class="row">
+                                    <input id="acceleration-factor" type="text"
+                                           data-slider-min="1" data-slider-max="10"
+                                           data-slider-step="1" data-slider-value="1">
+                                    <input id="seed" name="seed" placeholder="-">
+                                    <button id="green-flag" type="button"
+                                            class="btn btn-outline-success but1 vm-related record-related"
+                                            data-toggle="tooltip" data-placement="top"
+                                            data-animation="false" data-i18n="[title]start">
+                                        <i class="fas fa-flag"></i></button>
+                                    <button id="stop-scratch" type="button"
+                                            class="btn btn-danger but2 vm-related record-related"
+                                            data-toggle="tooltip" data-placement="top"
+                                            data-animation="false" data-i18n="[title]stop">
+                                        <i class="fas fa-stop"></i></button>
+                                </div>
+                                <div class="row">
+                                    <label for="acceleration-factor" id="acceleration"
+                                           data-i18n="acceleration"></label>
+                                    <div id="acceleration-value"></div>
+                                    <label data-i18n="[title]t-seed;seed" for="seed"
+                                           data-toggle="tooltip" data-placement="top"
+                                           data-animation="false"></label>
                                 </div>
                             </div>
-                         </div>
-                     </div>
-                 </div>
-             </div>
-         </div>
-        -->
-
-        <div class="main container">
-            <div class="container spacer100">
-
-                <!-- Automated help -->
-                <div id="scratch-controls">
-                    <div class="row spacer50 p-0 mt-4">
-                        <!-- Test generation -->
-                        <div class="col-lg-6">
-                            <!-- Explanation, start button -->
-                            <h3 data-i18n="test-generation" id="test-generation"></h3>
-                            <p data-i18n="explain-generation"></p>
-
-                            <!-- Config file upload -->
-                            <div id="config-upload" class="row form m-4 mr-5">
-                                <div class="col-lg-12">
-                                    <div class="row">
-                                        <div class="col-lg-10 label-padding">
-                                            <label id="fileselect-config-label" for="fileselect-config"
-                                                   data-i18n="configuration"></label>
-                                        </div>
-                                        <div class="col-lg-2">
-                                            <img class="img" src="assets/json.png" alt="json"/>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <div class="upload-btn-wrapper">
-                                                <button class="btnr" data-i18n="browse"></button>
-                                                <input type="file" class="vm-related" id="fileselect-config"
-                                                       accept=".json"
-                                                       name="config-file" title=""/>
-                                                <label id="config-label" class="filename-label"
-                                                       for="fileselect-config"
-                                                       data-i18n="mio-config"></label>
-                                            </div>
-                                            <div class="form-group">
-                                                <small id="help-text3" class="form-text text-muted"
-                                                       data-i18n="choose-file"></small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Start test generation button -->
-                            <button id="run-search" type="button"
-                                    class="btn btn-main btn-sm search-button vm-related"
-                                    data-toggle="tooltip" data-placement="top" data-animation="false"
-                                    data-i18n="search"></button>
-                            <button id="search-running" type="button"
-                                    class="btn btn-main btn-sm search-button" disabled>
-                                <i class="fas fa-circle-notch fa-spin result-spinner"></i></button>
-                        </div>
-
-                        <!-- Record inputs -->
-                        <div class="col-lg-6 p-0">
-                            <h3 data-i18n="input-recording"></h3>
-                            <p data-i18n="explain-recording"></p>
-                            <!-- Record inputs button -->
-                            <button id="record" type="button"
-                                    class="btn btn-main btn-sm search-button vm-related record-related"
-                                    data-toggle="tooltip" data-placement="top" data-animation="false"
-                                    data-i18n="[title]t-record;start-record;"></button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Scratch project -->
-                <div id="scratch-project" class="row">
+                <!-- Tests table -->
+                <div class="col-lg-6">
+                    <div id="test-table" class="scrollTable hide spacer50">
+                        <h3 data-i18n="uploaded-tests" id="tests-header"></h3>
+                        <table class="display table table-sm mt-4">
+                            <thead class="thead-white">
+                            <tr>
+                                <th></th>
+                                <th>#</th>
+                                <th data-i18n="table-name"></th>
+                                <th data-i18n="table-categories"></th>
+                                <th data-i18n="table-test-result"
+                                    class="result text-center"></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="scratch-controls">
+                <div class="row spacer50 p-0 mt-4">
+                    <!-- Test generation -->
                     <div class="col-lg-6">
-                        <h3 data-i18n="project"></h3>
-                        <!-- Stage -->
-                        <!-- Use tabindex to make the canvas focusable. -->
-                        <div id="viewer">
-                            <canvas id="scratch-stage" tabindex="1"></canvas>
-                        </div>
-                        <!-- Acceleration slider, seed, scratch controls -->
-                        <div class="row">
-                            <div class="slide-container but">
-                                <div class="col-lg-12">
-                                    <div class="row">
-                                        <input id="acceleration-factor" type="text"
-                                               data-slider-min="1" data-slider-max="10"
-                                               data-slider-step="1" data-slider-value="1">
-                                        <input id="seed" name="seed" placeholder="-">
-                                        <button id="green-flag" type="button"
-                                                class="btn btn-outline-success but1 vm-related record-related"
-                                                data-toggle="tooltip" data-placement="top"
-                                                data-animation="false" data-i18n="[title]start">
-                                            <i class="fas fa-flag"></i></button>
-                                        <button id="stop-scratch" type="button"
-                                                class="btn btn-danger but2 vm-related record-related"
-                                                data-toggle="tooltip" data-placement="top"
-                                                data-animation="false" data-i18n="[title]stop">
-                                            <i class="fas fa-stop"></i></button>
+                        <!-- Explanation, start button -->
+                        <h3 data-i18n="test-generation" id="test-generation"></h3>
+
+                        <!-- Config file upload -->
+                        <div id="config-upload" class="row form m-4 mr-5">
+                            <div class="col-lg-12">
+                                <div class="row">
+                                    <div class="col-lg-10 label-padding">
+                                        <label id="fileselect-config-label" for="fileselect-config"
+                                               data-i18n="configuration"></label>
                                     </div>
-                                    <div class="row">
-                                        <label for="acceleration-factor" id="acceleration"
-                                               data-i18n="acceleration"></label>
-                                        <div id="acceleration-value"></div>
-                                        <label data-i18n="[title]t-seed;seed" for="seed"
-                                               data-toggle="tooltip" data-placement="top"
-                                               data-animation="false"></label>
+                                    <div class="col-lg-2">
+                                        <img class="img" src="assets/json.png" alt="json"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="upload-btn-wrapper">
+                                            <button class="btnr" data-i18n="browse"></button>
+                                            <input type="file" class="vm-related" id="fileselect-config"
+                                                   accept=".json"
+                                                   name="config-file" title=""/>
+                                            <label id="config-label" class="filename-label"
+                                                   for="fileselect-config"
+                                                   data-i18n="mio-config"></label>
+                                        </div>
+                                        <div class="form-group">
+                                            <small id="help-text3" class="form-text text-muted"
+                                                   data-i18n="choose-file"></small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Start test generation button -->
+                        <button id="run-search" type="button"
+                                class="btn btn-main btn-sm search-button vm-related"
+                                data-toggle="tooltip" data-placement="top" data-animation="false"
+                                data-i18n="search"></button>
+                        <button id="search-running" type="button" style="display:none;"
+                                class="btn btn-main btn-sm search-button" disabled>
+                            <i class="fas fa-circle-notch fa-spin result-spinner"></i></button>
                     </div>
 
-                    <!-- Tests table -->
-                    <div class="col-lg-6">
-                        <div id="test-table" class="scrollTable hide spacer50">
-                            <h3 data-i18n="uploaded-tests" id="tests-header"></h3>
-                            <table class="display table table-sm mt-4">
-                                <thead class="thead-white">
-                                <tr>
-                                    <th></th>
-                                    <th>#</th>
-                                    <th data-i18n="table-name"></th>
-                                    <th data-i18n="table-categories"></th>
-                                    <th data-i18n="table-test-result"
-                                        class="result text-center"></th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
+                    <!-- Record inputs -->
+                    <div class="col-lg-6 p-0">
+                        <h3 data-i18n="input-recording"></h3>
+                        <p data-i18n="explain-recording"></p>
+                        <!-- Record inputs button -->
+                        <button id="record" type="button"
+                                class="btn btn-main btn-sm search-button vm-related record-related"
+                                data-toggle="tooltip" data-placement="top" data-animation="false"
+                                data-i18n="[title]t-record;start-record;"></button>
                     </div>
                 </div>
             </div>
-
-            <!-- Test editor -->
-            <div id="test-editor-div" class="mt-4 spacer10 hide">
-                <h3 data-i18n="header:test-editor"></h3>
-                <div id="test-editor"></div>
-            </div>
-
+        </div>
+        <div class="tab-pane tabBorder fade" id="contentLogs" role="tabpanel" aria-labelledby="profile-tab">
             <!-- TAP13 output -->
-            <div id="output-run" class="mt-4 spacer50 hide">
+            <div id="output-run" class="mt-4 spacer50">
                 <h3 data-i18n="header:tap"></h3>
                 <pre class="output-content"></pre>
                 <form class="form-inline">
@@ -419,7 +437,7 @@
             </div>
 
             <!-- Log output -->
-            <div id="output-log" class="mt-4 spacer50 hide">
+            <div id="output-log" class="mt-4 spacer50">
                 <h3 data-i18n="header:log"></h3>
                 <pre class="output-content"></pre>
                 <form class="form-inline">
@@ -439,9 +457,247 @@
                     </div>
                 </form>
             </div>
+        </div>
+        <div class="tab-pane tabBorder fade" id="contentTestEditor" role="tabpanel" aria-labelledby="contact-tab">
+            <!-- Test editor -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div id="test-editor-div" class="mt-4 spacer10">
+                        <div id="test-editor"></div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <h3>Codesnippets:</h3>
+                    <ul style="margin-left:-40px; list-style: none;">
+                        <li>
+                            <button class="snippetButton" onclick="_displaySnippet(1)">Grundstruktur eines Tests</button>
+                            <div class="help-tooltip">
+                                <a href="#snippet1-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                <span class="help-text">Jeder Test wird als separate Funktion geschrieben. Als Übergabeparameter erhält die Funktion ein sehr mächtiges TestDriver Objekt.</span>
+                            </div>
+                            <div style="display:none">
+                                <div id="snippet1-tooltip">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <ol>
+                                                <li>Jeder Test wird als eigenständige Funktion geschrieben. Den Namen des Tests (hier 'myTest01' und 'myTest02') kannst du beliebig wählen.</li>
+                                                <li>Als Parameter erhält die Funktion das sogenannte Test Driver Objekt. Mit diesem sehr nützlichen Objekt kannst du während des Tests arbeiten. Mehr dazu erfährst du in den anderen Codesnippets.</li>
+                                                <li>Sobald du eine Test erstellt hast, musst du ihn zur Liste der auszuführenden Tests hinzufügen. Wird Whisker anschließend aufgerufen, wird dieser Test ebenfalls durchgeführt.</li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <pre class="prettyprint">const myTest01 = async function (t) {
+    /* ... */
+}
+const myTest02 = async function (t) {
+    /* ... */
+}
 
+module.exports = [
+    {
+        test: myTest01,
+        name: 'My first Test'
+    },
+    {
+        test: myTest02,
+        name: 'My second Test'
+    }
+];</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="snippet1" style="display:none;">
+                                <pre class="prettyprint">const myTest = async function(t) {
+    /* your code here */
+    t.end();
+}</pre>
+                            </div>
+                        </li>
+                        <li>
+                            <button class="snippetButton" onclick="_displaySnippet(2)">Sprite abfragen</button>
+                            <div class="help-tooltip">
+                                <a href="#snippet2-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                <span class="help-text">Um die Eigenschaften eines Sprites abzurufen oder dieses anderweitig zu verwenden, musst du dir zuerst eine Referenz auf das Sprite holen.</span>
+                            </div>
+                            <div style="display:none">
+                                <div id="snippet2-tooltip">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <ol>
+                                                <li>Oft soll überprüft werden, ob sich ein Sprite nach Starten des Projekts bewegt oder eine andere Eigenschaft erfüllt.</li>
+                                                <li>Dazu wird jedoch zuerst Zugriff auf das Sprite und all seine Attribute benötigt.</li>
+                                                <li>Definiere zuerst eine neue Variable mit einem beliebigen Namen (hier 'mySprite01' und 'mySprite02') und nutze anschließend das TestDriver Objekt, um das Sprite namens 'spriteName' zu referenzieren.</li>
+                                                <li>Alternativ kannst du auch eine Referenz auf ein Sprite erhalten, das sich an einer bestimmten Position befindet (hier bei den Koordinaten (50|100)).</li>
+                                                <li>Anschließend ist es bspw. möglich, auf die Position des Sprites zuzugreifen und sie für verschiedene Tests heranzuziehen. Viele weitere nützliche Verwendungszwecke findest du in den anderen Codesnippets.</li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <pre class="prettyprint">const myTest01 = async function (t) {
+    let mySprite01 = t.getSprite('spriteName');
+    let mySprite02 = t.getSpriteAtPoint(50, 100);
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="snippet2" style="display:none;">
+                                <pre class="prettyprint">let mySprite = t.getSprite('spriteName');</pre>
+                            </div>
+                        </li>
+                        <li>
+                            <button class="snippetButton" onclick="_displaySnippet(3)">Bühnenbild abfragen</button>
+                            <div class="help-tooltip">
+                                <a href="#snippet3-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                <span class="help-text">Um die Eigenschaften der Bühne abzurufen, musst du dir zuerst eine Referenz auf die Bühne holen.</span>
+                            </div>
+                            <div style="display:none">
+                                <div id="snippet3-tooltip">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <ol>
+                                                <li>Oft soll überprüft werden, ob sich die Bühne nach Starten des Spiels verändert oder eine bestimmte Eigenschaft aufweist.</li>
+                                                <li>Dazu wird jedoch zuerst Zugriff auf die Bühne und all ihre Attribute benötigt.</li>
+                                                <li>Definiere zuerst eine neue Variable mit einem beliebigen Namen (hier 'myStage') und nutze anschließend das TestDriver Objekt, um eine Referenz auf die Bühne zu erhalten.</li>
+                                                <li>Anschließend ist es bspw. möglich, auf das Bühnenbild der Bühne zuzugreifen. Viele weitere nützliche Verwendungszwecke findest du in den anderen Codesnippets.</li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <pre class="prettyprint">const myTest01 = async function (t) {
+    let myStage = t.getStage();
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="snippet3" style="display:none;">
+                                <pre class="prettyprint">let myStage = t.getStage();</pre>
+                            </div>
+                        </li>
+                        <li>
+                            <button class="snippetButton" onclick="_displaySnippet(4)">Attribute eines Sprites</button>
+                            <div class="help-tooltip">
+                                <a href="#snippet4-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                <span class="help-text">Nachdem du eine Referenz auf ein Sprite erhalten hast, kannst du viele Attributwerte abfragen. Die wichtigsten findest du hier.</span>
+                            </div>
+                            <div style="display:none">
+                                <div id="snippet4-tooltip">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            Folgende wichtige Attribute weist ein Sprite Objekt auf. Auf die einzelnen Eigenschaften kann direkt per Punktnotation zugegriffen werden.
+                                            <ol>
+                                                <li>Name</li>
+                                                <li>Id</li>
+                                                <li>Position (x-Koordinate, y-Koordinate)</li>
+                                                <li>Blickrichtung</li>
+                                                <li>Sichtbarkeit</li>
+                                                <li>Größe</li>
+                                                <li>Name des aktuellen Kostüms</li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <pre class="prettyprint">const myTest01 = async function (t) {
+    let name = mySprite.name;
+    let id = mySprite.id;
+    let x = mySprite.x;
+    let y = mySprite.y;
+    let direction = mySprite.direction;
+    let visibility = mySprite.visible;
+    let size = mySprite.size;
+    let currentCostume = mySprite.currentCostume;
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="snippet4" style="display:none;">
+                                <pre class="prettyprint">let name = mySprite.name;
+let id = mySprite.id;
+let x = mySprite.x;
+let y = mySprite.y;
+let direction = mySprite.direction;
+let visibility = mySprite.visible;
+let size = mySprite.size;
+let currentCostume = mySprite.currentCostume;</pre>
+                            </div>
+                        </li>
+                        <li>
+                            <button class="snippetButton" onclick="_displaySnippet(5)">Attribute der  Bühne</button>
+                            <div class="help-tooltip">
+                                <a href="#snippet5-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                <span class="help-text">Nachdem du eine Referenz auf die Bühne erhalten hast, kannst du viele Attributwerte abfragen. Die wichtigsten findest du hier.</span>
+                            </div>
+                            <div style="display:none">
+                                <div id="snippet5-tooltip">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            Folgende wichtige Attribute weist das Bühnenobjekt auf. Auf die einzelnen Eigenschaften kann direkt per Punktnotation zugegriffen werden.
+                                            <ol>
+                                                <li>Name</li>
+                                                <li>Id</li>
+                                                <li>Name des aktuellen Kostüms</li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <pre class="prettyprint">const myTest01 = async function (t) {
+    let name = myStage.name;
+    let id = myStage.id;
+    let currentCostume = myStage.currentCostume;
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="snippet5" style="display:none;">
+                                <pre class="prettyprint">let name = myStage.name;
+let id = myStage.id;
+let currentCostume = myStage.currentCostume;</pre>
+                            </div>
+                        </li>
+                        <li>
+                            <button class="snippetButton" onclick="_displaySnippet(6)">Variablen abrufen und setzen</button>
+                            <div class="help-tooltip">
+                                <a href="#snippet6-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                <span class="help-text">Mit Hilfe des TestDriver Objekts kannst du auch die Werte von Sprite-Variablen abrufen und auswerten.</span>
+                            </div>
+                            <div style="display:none">
+                                <div id="snippet6-tooltip">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <ol>
+                                                <li>Auf die Variable eines Sprites kannst du einfach zugreifen oder sie auch setzen.</li>
+                                                <li>Zudem kannst du auch die Werte von globalen Variablen auslesen und festlegen.</li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <pre class="prettyprint">const myTest01 = async function (t) {
+    let mySprite = t.getSprite('spriteName');
+    let variable = mySprite.getVariable('varName');
+    let list = mySprite.getList('listName');
+}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="snippet6" style="display:none;">
+                                <pre class="prettyprint">let mySprite = t.getSprite('spriteName');
+let variable = mySprite.getVariable('varName');
+let list = mySprite.getList('listName');</pre>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane tabBorder fade" id="contentModelEditor" role="tabpanel" aria-labelledby="contact-tab">
             <!-- Model editor -->
-            <div id="model-editor" class="mt-4 spacer10 hide">
+            <div id="model-editor" class="mt-4 spacer10">
                 <h3 data-i18n="modelEditor:title"></h3>
                 <div class="col" style="background-color: #f1f1f1; border-radius: 5px;">
                     <!-- model editor TABS -->
@@ -720,6 +976,48 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        $("a.inlinebox").fancybox({
+            'hideOnContentClick': false,
+            'transitionIn'	:	'fade',
+            'transitionOut'	:	'fade',
+            'speedIn'		:	300, 
+            'speedOut'		:	200, 
+            'overlayShow'	:	true,
+            'showCloseButton': true,
+            'scrolling'     : true,
+            'autoDimensions': false,
+            'height'        : '50%',
+            'width'         : '70%'
+        });
+        document.getElementById("extendedView").checked = false;
+        function _updateExtendedView() {
+            if(document.getElementById("extendedView").checked)
+            {
+                document.getElementById("model-upload").style.display = "flex";
+                document.getElementById("tabModelEditor").parentElement.style.display = "list-item";
+                document.getElementById("tabLogs").parentElement.style.display = "list-item";
+            }
+            else
+            {
+                document.getElementById("model-upload").style.display = "none";
+                document.getElementById("tabModelEditor").parentElement.style.display = "none";
+                document.getElementById("tabLogs").parentElement.style.display = "none";
+            }
+        }
+        function _displaySnippet(i) {
+            if(document.getElementById("snippet" + i).style.display == "none")
+            {
+                document.getElementById("snippet" + i).style.display = "block";   
+            }
+            else
+            {
+                document.getElementById("snippet" + i).style.display = "none";   
+            }
+        }
+        _updateExtendedView()
+    </script>
 
     <!-- Footer -->
     <div id="footer" role="contentinfo"></div>

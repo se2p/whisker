@@ -10,11 +10,39 @@ body {
     --subColor: #45bce4;
     --headingColor: #777;
     --subheadingColor: #313b48;
-    --backgroundColor: #313b48
+    --backgroundColor: #313b48;
+    overflow-x: hidden;
 }
 
 .patternLink {
     color: var(--textColor);
+}
+
+.help-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.help-icon img, .help-image-icon {
+   max-width:20px; 
+}
+
+.help-text {
+    visibility: hidden;
+    width: 240px;
+    font-size:10px;
+    background-color: var(--mainColor);
+    color: #000;
+    text-align: left;
+    border-radius: 3px;
+    padding: 3px 3px;
+    position: absolute;
+    z-index: 1;
+    margin-left:10px;
+}
+
+.help-tooltip:hover .help-text {
+  visibility: visible;
 }
 
 .patternLink:hover {
@@ -162,11 +190,29 @@ p {
     top:8px;
     left:50px;
 }
+.nav-link {
+    background:none !important;
+}
+
+#mainMenu {
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: 0px;
+}
 
 .links {
     position: absolute;
     padding-top: 15px;
     right: 5px;
+}
+
+#fancybox-content {
+    border-width:0px !important;
+    padding:10px !important;
+}
+
+#form-lang {
+    padding: 0.5rem 1rem;
 }
 
 #form-lang select {
@@ -298,6 +344,17 @@ p {
     right: 0;
 }
 
+pre.prettyprint {
+    padding: 0px !important;
+    border: none !important;
+}
+
+.snippetButton {
+    border: none;
+    background: none;
+    padding:0px;
+}
+
 .but1 {
     margin-left: 80%;
 }
@@ -316,7 +373,7 @@ p {
     opacity: 0.9;
     -webkit-transition: .2s;
     transition: opacity .2s;
-    margin-top: 8px;
+    margin-top: 5px;
 }
 
 .slider::-webkit-slider-thumb {
@@ -970,10 +1027,24 @@ img {vertical-align: middle;}
     top: 0;
 }
 
+.tabBorder {
+    border-bottom: 1px solid #dee2e6;
+    border-left: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    padding:15px;
+}
+
 #scroll-background {
-    background-color: white;
+    background: none;
     height: 60px;
     width: 100%;
+    margin-bottom: -50px;
+    z-index: 9998;
+    position: relative;
+}
+
+#whiskerTabContent {
+    margin-bottom:50px;
 }
 
 .scrolled {
@@ -1108,7 +1179,7 @@ input:checked + .slider:before {
 }
 
 #model-add-tab-container {
-    max-width: 145px;
+    max-width: 200px;
     padding-right: 0;
     padding-left: 0;
 }
@@ -1120,7 +1191,7 @@ input:checked + .slider:before {
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 14px 16px;
+    padding: 6px 16px;
     transition: 0.3s;
 }
 
@@ -1280,13 +1351,19 @@ label[for=seed] {
     margin-left: 90px;
 }
 
+
+
 #green-flag {
     margin-left: 100px;
 }
 
+label {
+    margin-bottom:0.2rem !important;
+}
+
 #main-functionality {
     position: fixed;
-    z-index: 9998;
+    z-index: 1000;
     bottom: 40%;
     display: grid;
     left: 6vw;

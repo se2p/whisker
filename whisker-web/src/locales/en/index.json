@@ -68,5 +68,18 @@
     "model-output-no-user-model": "No user model for input generation found",
     "model-output-user-model": "Input generation with user model",
     "seed": "Seed",
-    "t-seed": "Ensures consistent program behaviour when using the same seed"
+    "t-seed": "Ensures consistent program behaviour when using the same seed",
+    "title-uploads": "Uploads",
+    "title-project": "My project",
+    "title-console": "Console-Log",
+    "title-editor": "Test Editor",
+    "title-model": "Model Editor",
+    "upload-tooltip": "Click the button 'Browse' and choose a Scratch-Project from your hard drive.",
+    "upload-helptext01": "Click the button 'Browse'.",
+    "upload-helptext02": "Choose a *.sb3-file from your hard drive. You can download a Scratch project from the Web-GUI.",
+    "upload-helptext03": "Click the button 'Open'. Your Scratch-project will be loaded automatically.",
+    "test-tooltip": "If you have already written some test files for your Scratch project, click the button 'Browse' and choose the file from your hard drive.",
+    "test-helptext01": "Click the button 'Browse'.",
+    "test-helptext02": "Choose a *.js-file from your hard drive. This is just possible if you've already written tests for your project. If you did not write any tests for your Scratch project yet, leave this field empty.",
+    "test-helptext03": "With a valid test file chosen, click the button 'Open'. The test file will be loaded automatically."
 }

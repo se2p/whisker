@@ -68,5 +68,18 @@
     "model-output-no-user-model": "Kein User Modell für Input Generierung gefunden",
     "model-output-user-model": "Input Generierung mit User Modell",
     "seed": "Seed",
-    "t-seed": "Gleiche Seeds führen zu konsistentem Programmverhalten"
+    "t-seed": "Gleiche Seeds führen zu konsistentem Programmverhalten",
+    "title-uploads": "Uploads",
+    "title-project": "Mein Projekt",
+    "title-console": "Console-Log",
+    "title-editor": "Test Editor",
+    "title-model": "Model Editor",
+    "upload-tooltip": "Klicke auf den Button 'Durchsuchen' und wähle eine Scratch-Datei von deiner Festplatte aus.",
+    "upload-helptext01": "Klicke auf den Button 'Durchsuchen'.",
+    "upload-helptext02": "Wähle eine *.sb3-Datei von deiner Festplatte aus. Du kannst jedes Scratch-Programm in der Web-GUI downloaden und lokal as Datei speichern.",
+    "upload-helptext03": "Klicke auf den Button 'Öffnen'. Das Scratch-Projekt wird automatisch geladen.",
+    "test-tooltip": "Sofern du bereits Tests für dein Projekt erstellt hast, klicke auf den Button 'Durchsuchen' und wähle deine Test-Datei von deiner Festplatte aus.",
+    "test-helptext01": "Klicke auf den Button 'Durchsuchen'.",
+    "test-helptext02": "Wähle eine *.js-Datei von deiner Festplatte aus. Dies geht natürlich nur, wenn du bereits Tests für dein Projekt geschrieben hast. Solltest du noch keine Testdateien haben, lasse diese Feld einfach frei.",
+    "test-helptext03": "Wenn du eine gültige Testdatei ausgewählt hast, klicke auf den Button 'Öffnen'. Die Testdatei wird automatisch geladen."
 }

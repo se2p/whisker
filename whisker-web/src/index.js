@@ -349,10 +349,8 @@ const initScratch = function () {
 
 const initComponents = function () {
     Whisker.outputRun = new Output($('#output-run')[0]);
-    Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
-    Whisker.outputLog.hide();
-
+    
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
     Whisker.testEditor.show();
@@ -590,12 +588,16 @@ const loadHeader = function () {
     localize('#header');
     if (window.location.href.includes('/html')) {
         $('#link').attr('href', '../index.html');
+        $('#tutorial').attr('href', '../tutorial.html');
+        $('#about').attr('href', '../about.html');
         $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
-        $('#banner').attr('src', '../assets/banner_slim.jpg');
+        $('#banner').attr('src', '../assets/whiskerHeader.png');
     } else {
         $('#link').attr('href', 'index.html');
+        $('#tutorial').attr('href', 'tutorial.html');
+        $('#about').attr('href', 'about.html');
         $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
-        $('#banner').attr('src', 'assets/banner_slim.jpg');
+        $('#banner').attr('src', 'assets/whiskerHeader.png');
     }
     /* Add border to header if it sticks to the top */
     $(() => {
