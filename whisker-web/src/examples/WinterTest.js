@@ -1,12 +1,12 @@
 const schorschInitialization = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let schorsch = t.getSprite('Schorsch');
     t.assert.ok(schorsch.visible, 'Schorsch must be visible');
     t.end();
 };
 
 const stellaInitialization = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let stella = t.getSprite('Stella');
     t.assert.ok(stella.visible, 'Stella must be visible');
     t.end();
@@ -14,7 +14,7 @@ const stellaInitialization = async function (t) {
 
 
 const stellaStopping = async function (t) {
-    await t.wait(3);
+    await t.runForTime(3);
     let stella = t.getSprite('Stella');
     let xOrigStella = stella.x;
     let yOrigStella = stella.y;
@@ -50,7 +50,7 @@ const stellaStopping = async function (t) {
     t.assert.ok(stellaFinished, "stella must have finsihed");
     t.assert.ok(stella.direction === dirStella, "stella must have direction from start");
     t.assert.ok(stella.x <= (xOrigStella + 1) && stella.x >= (xOrigStella - 1) && stella.y <= (yOrigStella + 1) && stella.y >= (yOrigStella - 1), "stella must have returned");
-    await t.wait(10);
+    await t.runForTime(10);
     stellaFinished = false
     stellaMove = false;
     stellaStopped = false;
@@ -62,7 +62,7 @@ const stellaStopping = async function (t) {
 };
 
 const schorschDrawing = async function (t) {
-    await t.wait(3);
+    await t.runForTime(3);
     let schorsch = t.getSprite('Schorsch');
     let stella = t.getSprite('Stella');
     let xOrigSchorsch = schorsch.x;

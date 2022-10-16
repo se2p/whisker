@@ -21,7 +21,7 @@ const happyNewYearUnicorn = async function (t) {
             failed = true;
         }
     });
-    await t.wait(50);
+    await t.runForTime(50);
     t.assert.ok(!failed, 'wished happy new year before countdown ends')
     let changedYear = false;
     t.addCallback(() => {
@@ -32,7 +32,7 @@ const happyNewYearUnicorn = async function (t) {
     await t.runUntil(() => changedYear === true, 5000);
 
     t.assert.ok(parseInt(currentYear.value, 10) === 2021, 'it is not 2021');
-    await t.wait(20);
+    await t.runForTime(20);
     let text = unicorn.sayText;
     t.assert.ok(text.includes('Frohes neues Jahr') === true, 'text must have changed a final time');
     t.end();

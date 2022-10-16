@@ -207,7 +207,7 @@ const boatCrashOtherInvisible = async function (t) {
     await t.runForTime(10);
     let crab = t.getSprite('Krebs');
     t.assert.ok(!crab.visible, 'Crab did not turn invisible');
-    let gate = t.getSprite('Holz');
+    let gate = t.getSprite('Holzdrehtor');
     t.assert.ok(!gate.visible, 'gate did not turn invisible');
     t.end();
 };
@@ -266,13 +266,13 @@ const boatIsWinningOtherInvisible = async function (t) {
     await t.runForTime(30);
     let crab = t.getSprite('Krebs');
     t.assert.ok(!crab.visible, 'Crab did not turn invisible');
-    let gate = t.getSprite('Holz');
+    let gate = t.getSprite('Holzdrehtor');
     t.assert.ok(!gate.visible, 'gate did not turn invisible');
     t.end();
 };
 
 const gateVisible = async function (t) {
-    let gate = t.getSprite('Holz');
+    let gate = t.getSprite('Holzdrehtor');
     t.greenFlag();
     await t.runForTime(3);
     t.assert.ok(gate.visible, 'Gate must be visible');
@@ -288,7 +288,7 @@ const crabVisible = async function (t) {
 }
 
 const gateSpinning = async function (t) {
-    let gate = t.getSprite('Holz');
+    let gate = t.getSprite('Holzdrehtor');
     t.greenFlag();
     let oldDirection = gate.direction;
     let directionChanged = false;
@@ -305,7 +305,7 @@ const gateSpinning = async function (t) {
 const gateCrash = async function (t) {
     await t.runForTime(2);
     let boat = t.getSprite('Boot');
-    let gate = t.getSprite('Holz');
+    let gate = t.getSprite('Holzdrehtor');
     t.greenFlag();
     await t.runForTime(3);
     t.dragSprite('Boot', 90, -120);
@@ -366,7 +366,7 @@ const boatCrashGateOtherInvisible = async function (t) {
     await t.runForTime(15);
     let crab = t.getSprite('Krebs');
     t.assert.ok(!crab.visible, 'Crab did not turn invisible');
-    let gate = t.getSprite('Holz');
+    let gate = t.getSprite('Holzdrehtor');
     t.assert.ok(!gate.visible, 'gate did not turn invisible');
     t.end();
 };

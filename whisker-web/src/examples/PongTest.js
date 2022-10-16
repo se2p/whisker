@@ -1,40 +1,40 @@
 const ballInitialization = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let ball = t.getSprite('Ball');
     t.assert.ok(ball.visible, 'ball must be visible');
     t.end();
 };
 
 const paddleInitialization = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let paddle = t.getSprite('Spieler');
     t.assert.ok(paddle.visible, 'player must be visible');
     t.end();
 };
 
 const computerInitialization = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let paddle = t.getSprite('Computer');
     t.assert.ok(paddle.visible, 'computer must be visible');
     t.end();
 };
 
 const outInitialization = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let out = t.getSprite('Aus-Linie Spieler');
     t.assert.ok(out.visible, 'out player must be visible');
     t.end();
 };
 
 const outComputerInitialization = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let out = t.getSprite('Aus-Linie Computer');
     t.assert.ok(out.visible, 'out computer must be visible');
     t.end();
 };
 
 const ballOut = async function (t) {
-    await t.wait(5);
+    await t.runForTime(5);
     let stage = t.getStage();
     let score = stage.getVariable('Meine Punkte');
     let state = stage.getVariable('Status');
@@ -44,7 +44,7 @@ const ballOut = async function (t) {
     if (parseInt(score.value, 10) > 1) {
         t.assert.ok(state.value === 'Experte', 'score >1 but not Experte at beginning');
         t.clickSprite('Reset', 20);
-        await t.wait(50);
+        await t.runForTime(50);
         t.assert.ok(score.value === '0', "score must be 0 after reset");
         t.assert.ok(state.value.startsWith('Anf'), "score ==0 but not Anf");
     }
@@ -53,7 +53,7 @@ const ballOut = async function (t) {
     let ball = t.getSprite('Ball');
     let paddle = t.getSprite('Spieler');
     t.clickSprite('Reset', 5);
-    await t.wait(10);
+    await t.runForTime(10);
 
     t.assert.ok(score.value === '0', "score must be 0 after reset");
     t.assert.ok(state.value.startsWith('Anf'), "score ==0 but not Anf");
@@ -79,7 +79,7 @@ const ballOut = async function (t) {
     while (parseInt(score.value, 10) < 2) {
         if (!t.isProjectRunning()) {
             t.greenFlag();
-            await t.wait(10);
+            await t.runForTime(10);
             t.assert.ok(t.isProjectRunning(), "project must run");
             t.assert.ok(state.value.startsWith('Anf'), "score <= 1 but not Anf");
         }
