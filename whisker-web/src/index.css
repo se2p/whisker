@@ -14,6 +14,17 @@ body {
     overflow-x: hidden;
 }
 
+#DataTables_Table_0_wrapper {
+	margin-top: -27px;
+}
+ul {
+	list-style-type: none;;
+}
+
+pre.prettyprint {
+	font-size: 12px !important;
+}
+
 .patternLink {
     color: var(--textColor);
 }
@@ -21,6 +32,16 @@ body {
 .help-tooltip {
     position: relative;
     display: inline-block;
+}
+
+#fancybox-wrap {
+	left: 15% !important;
+	width: 70% !important;
+	right: 15% !important;
+}
+
+#fancybox-content {
+	width:100% !important;
 }
 
 .help-icon img, .help-image-icon {
