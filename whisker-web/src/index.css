@@ -14,6 +14,29 @@ body {
     overflow-x: hidden;
 }
 
+@keyframes glowing {
+    0% {
+      background-color: #45bce4;
+      box-shadow: 0 0 5px #45bce4;
+    }
+    50% {
+      background-color: #8ae2ff;
+      box-shadow: 0 0 20px #8ae2ff;
+    }
+    100% {
+      background-color: #45bce4;
+      box-shadow: 0 0 5px #45bce4;
+    }
+}
+
+.applyChangesClass {
+    animation: glowing 1300ms infinite;
+}
+
+.applyChangesClass:hover {
+    color: var(--subheadingColor) !important;
+}
+
 #DataTables_Table_0_wrapper {
 	margin-top: -27px;
 }

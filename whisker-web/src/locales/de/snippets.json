@@ -8,7 +8,7 @@
     "snippet01-shortcode" : "const myTest = async function(t) {\n   /* your code here */\n    t.end();\n}",
     
     "snippet02-title" : "Sprite abfragen",
-    "snippet02-tooltip" : "Um die Eigenschaften eines Sprites abzurufen oder dieses anderweitig zu verwenden, musst du dir zuerst eine Referenz auf das Sprite holen.",
+    "snippet02-tooltip" : "Du erfährst hier mehr darüber, wie du Sprite-Objekte abfragen kannst.",
     "snippet02-helptext01" : "Oft soll überprüft werden, ob sich ein Sprite nach Starten des Projekts bewegt oder eine andere Eigenschaft erfüllt.",
     "snippet02-helptext02" : "Dazu wird jedoch zuerst Zugriff auf das Sprite und all seine Attribute benötigt.",
     "snippet02-helptext03" : "Definiere zuerst eine neue Variable mit einem beliebigen Namen (hier 'mySprite01' und 'mySprite02') und nutze anschließend das TestDriver Objekt, um das Sprite namens 'spriteName' zu referenzieren.",
@@ -18,7 +18,7 @@
     "snippet02-shortcode" : "let mySprite = t.getSprite('spriteName');",
     
     "snippet03-title" : "Bühnenbild abfragen",
-    "snippet03-tooltip" : "Um die Eigenschaften der Bühne abzurufen, musst du dir zuerst eine Referenz auf die Bühne holen.",
+    "snippet03-tooltip" : "Hier lernst du, wie du auf das Bühnenobjekt zugreifen kannst.",
     "snippet03-helptext01" : "Oft soll überprüft werden, ob sich die Bühne nach Starten des Spiels verändert oder eine bestimmte Eigenschaft aufweist.",
     "snippet03-helptext02" : "Dazu wird jedoch zuerst Zugriff auf die Bühne und all ihre Attribute benötigt.",
     "snippet03-helptext03" : "Definiere zuerst eine neue Variable mit einem beliebigen Namen (hier 'myStage') und nutze anschließend das TestDriver Objekt, um eine Referenz auf die Bühne zu erhalten.",
@@ -27,7 +27,7 @@
     "snippet03-shortcode" : "let myStage = t.getStage();",
     
     "snippet04-title" : "Attribute eines Sprites",
-    "snippet04-tooltip" : "Nachdem du eine Referenz auf ein Sprite erhalten hast, kannst du viele Attributwerte abfragen. Die wichtigsten findest du hier.",
+    "snippet04-tooltip" : "Die wichtigsten Attribute eines Sprites und wie du auf sie zugreifst, wird hier erklärt.",
     "snippet04-helptext01" : "Folgende wichtige Attribute weist ein Sprite Objekt auf. Auf die einzelnen Eigenschaften kann direkt per Punktnotation zugegriffen werden.",
     "snippet04-helptext02" : "Name",
     "snippet04-helptext03" : "Id",
@@ -36,20 +36,20 @@
     "snippet04-helptext06" : "Sichtbarkeit",
     "snippet04-helptext07" : "Größe",
     "snippet04-helptext08" : "Name des aktuellen Kostüms",
-    "snippet04-code" : "const myTest01 = async function (t) {\n    let name = mySprite.name;\n    let id = mySprite.id;\n    let x = mySprite.x;\n    let y = mySprite.y;\n    let direction = mySprite.direction;\n    let visibility = mySprite.visible;\n    let size = mySprite.size;\n    let currCostume = mySprite.currCostume;\n}",
-    "snippet04-shortcode" : "let name = mySprite.name;\nlet id = mySprite.id;\nlet x = mySprite.x;\nlet y = mySprite.y;\nlet direction = mySprite.direction;\nlet visibility = mySprite.visible;\nlet size = mySprite.size;\nlet currCostume = mySprite.currCostume;",
+    "snippet04-code" : "const myTest01 = async function (t) {\n    let mySprite = t.getSprite('spriteName');\n    let name = mySprite.name;\n    let id = mySprite.id;\n    let x = mySprite.x;\n    let y = mySprite.y;\n    let direction = mySprite.direction;\n    let visibility = mySprite.visible;\n    let size = mySprite.size;\n    let currCostume = mySprite.currCostume;\n}",
+    "snippet04-shortcode" : "let mySprite = t.getSprite('spriteName');\nlet name = mySprite.name;\nlet id = mySprite.id;\nlet x = mySprite.x;\nlet y = mySprite.y;\nlet direction = mySprite.direction;\nlet visibility = mySprite.visible;\nlet size = mySprite.size;\nlet currCostume = mySprite.currCostume;",
     
     "snippet05-title" : "Attribute der Bühne",
-    "snippet05-tooltip" : "Nachdem du eine Referenz auf die Bühne erhalten hast, kannst du viele Attributwerte abfragen. Die wichtigsten findest du hier.",
+    "snippet05-tooltip" : "Wie du die Attribute der Bühne verwenden kannst, erfährst du hier.",
     "snippet05-helptext01" : "Folgende wichtige Attribute weist das Bühnenobjekt auf. Auf die einzelnen Eigenschaften kann direkt per Punktnotation zugegriffen werden.",
     "snippet05-helptext02" : "Name",
     "snippet05-helptext03" : "Id",
     "snippet05-helptext04" : "Name des aktuellen Kostüms",
-    "snippet05-code" : "const myTest01 = async function (t) {\n    let name = myStage.name;\n    let id = myStage.id;\n    let currCostume = myStage.currCostume;\n}",
-    "snippet05-shortcode" : "let name = myStage.name;\nlet id = myStage.id;\nlet currCostume = myStage.currCostume;",
+    "snippet05-code" : "const myTest01 = async function (t) {\n    let myStage = t.getStage();\n    let name = myStage.name;\n    let id = myStage.id;\n    let currCostume = myStage.currCostume;\n}",
+    "snippet05-shortcode" : "let myStage = t.getStage();\nlet name = myStage.name;\nlet id = myStage.id;\nlet currCostume = myStage.currCostume;",
     
-    "snippet06-title" : "Variablen abrufen und setzen",
-    "snippet06-tooltip" : "Mit Hilfe des TestDriver Objekts kannst du auch die Werte von Sprite-Variablen abrufen und auswerten.",
+    "snippet06-title" : "Attribute abrufen und setzen",
+    "snippet06-tooltip" : "Hier erhältst du verschiedene Werkzeuge zum Abrufen und Bearbeiten der Variablen von Sprites.",
     "snippet06-helptext01" : "Auf die Variable eines Sprites kannst du einfach zugreifen oder sie auch setzen.",
     "snippet06-helptext02" : "Zudem kannst du auch die Werte von globalen Variablen auslesen und festlegen.",
     "snippet06-code" : "const myTest01 = async function (t) {\n    let mySprite = t.getSprite('spriteName');\n    let var = mySprite.getVariable('varName');\n    let list = mySprite.getList('listName');\n}",
@@ -85,10 +85,10 @@
     "snippet10-code" : "const myTest01 = async function (t) {\n    let mySprite = t.getSprite('spriteName');\n    const clones = mySprite.getClones();\n    if(clones.length > 0)\n    {\n        let firstClone = clones[0];\n    }\n    t.end();\n}",
     "snippet10-shortcode" : "let mySprite = t.getSprite('spriteName');\nconst clones = mySprite.getClones();\nlet firstClone = clones[0];",
     
-    "snippet10-title" : "Berührung überprüfen",
-    "snippet10-tooltip" : "Du kannst mit verschiedenen Methoden überprüfen, was ein Sprite gerade berührt (oder auch nicht).",
-    "snippet10-helptext01" : "Hole dir dazu zuerst ein beliebiges Sprite über seinen Bezeichner.",
-    "snippet10-helptext02" : "Nun kannst du überprüfen, ob das Sprite an einem bestimmten Punkt ist, die Maus oder ein anderes Sprite oder eine spezielle Farbe berührt.",
-    "snippet10-code" : "const myTest01 = async function (t) {\n    let mySprite = t.getSprite('spriteName');\n    \n    // Check if sprite with name 'spriteName' is touching point (20|40).\n    mySprite.isPointInBounds(20, 40);\n\n    // Check if sprite with name 'spriteName' is touching the mouse pointer.\n    mySprite.isTouchingMouse();\n\n    // Check if sprite with name 'spriteName' is touching sprite with name 'spriteName2'.\n    mySprite.isTouchingSprite('spriteName2');\n    \n    // Check if sprite with name 'spriteName' is touching the color white = RGB(255, 255, 255). \n    mySprite.isTouchingColor([255,255,255]);\n\n    t.end();\n}",
-    "snippet10-shortcode" : "let mySprite = t.getSprite('spriteName');\nmySprite.isPointInBounds(20, 40);\nmySprite.isTouchingMouse();\nmySprite.isTouchingSprite('spriteName2');\nmySprite.isTouchingColor([255,255,255]);"
+    "snippet11-title" : "Berührung überprüfen",
+    "snippet11-tooltip" : "Du kannst mit verschiedenen Methoden überprüfen, was ein Sprite gerade berührt (oder auch nicht).",
+    "snippet11-helptext01" : "Hole dir dazu zuerst ein beliebiges Sprite über seinen Bezeichner.",
+    "snippet11-helptext02" : "Nun kannst du überprüfen, ob das Sprite an einem bestimmten Punkt ist, die Maus oder ein anderes Sprite oder eine spezielle Farbe berührt.",
+    "snippet11-code" : "const myTest01 = async function (t) {\n    let mySprite = t.getSprite('spriteName');\n    \n    // Check if sprite with name 'spriteName' is touching point (20|40).\n    mySprite.isPointInBounds(20, 40);\n\n    // Check if sprite with name 'spriteName' is touching the mouse pointer.\n    mySprite.isTouchingMouse();\n\n    // Check if sprite with name 'spriteName' is touching sprite with name 'spriteName2'.\n    mySprite.isTouchingSprite('spriteName2');\n    \n    // Check if sprite with name 'spriteName' is touching the color white = RGB(255, 255, 255). \n    mySprite.isTouchingColor([255,255,255]);\n\n    t.end();\n}",
+    "snippet11-shortcode" : "let mySprite = t.getSprite('spriteName');\nmySprite.isPointInBounds(20, 40);\nmySprite.isTouchingMouse();\nmySprite.isTouchingSprite('spriteName2');\nmySprite.isTouchingColor([255,255,255]);"
 }

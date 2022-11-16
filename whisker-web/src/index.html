@@ -47,9 +47,9 @@
             <i class="fas fa-undo"></i>
         </button>
         <!-- Load tests button -->
-        <button class="editor-apply btn btn-main" type="button"
+        <button id="applyChanges" class="editor-apply btn btn-main" type="button"
                 data-toggle="tooltip" data-placement="top" data-animation="false"
-                data-i18n="[title]t-load">
+                onclick="_removeTestClass()" data-i18n="[title]t-load">
             <i class="fas fa-sync"></i>
         </button>
         <!-- Download tests button -->
@@ -68,6 +68,7 @@
                     <li data-i18n="controls-helptext01"></li>
                     <li data-i18n="controls-helptext02"></li>
                     <li data-i18n="controls-helptext03"></li>
+                    <li data-i18n="controls-helptext04"></li>
                 </ol>
             </div>
         </div>
@@ -93,7 +94,7 @@
                         <button class="nav-link" id="tabLogs" data-bs-toggle="tab" data-bs-target="#contentLogs" type="button" role="tab" aria-controls="contentLogs" aria-selected="false" data-i18n="title-console"></button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tabTestEditor" data-bs-toggle="tab" data-bs-target="#contentTestEditor" type="button" role="tab" aria-controls="contentTestEditor" aria-selected="false" data-i18n="title-editor"></button>
+                        <button class="nav-link" id="tabTestEditor" data-bs-toggle="tab" data-bs-target="#contentTestEditor" type="button" role="tab" aria-controls="contentTestEditor" onclick="_manipulateTestEditor()" aria-selected="false" data-i18n="title-editor"></button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="tabModelEditor" data-bs-toggle="tab" data-bs-target="#contentModelEditor" type="button" role="tab" aria-controls="contentModelEditor" aria-selected="false" data-i18n="title-model"></button>
@@ -101,7 +102,7 @@
                 </ul>
             </div>
             <div class="col-lg-3" style="padding:0px; border-bottom: 1px solid #dee2e6; margin-left:-15px; text-align:right;">
-                Erweiterte Ansicht
+                <span data-i18n="extended-view"></span>
                 <label class="switch">
                       <input type="checkbox" id="extendedView" onchange="_updateExtendedView()">
                       <span class="slider round"></span>
@@ -137,6 +138,7 @@
                                                             <li data-i18n="upload-helptext02"></li>
                                                             <li data-i18n="upload-helptext03"></li>
                                                         </ol>
+                                                        <a href='https://scratch.mit.edu' target='_blank'>Scratch Web-GUI</a>
                                                         <div style="text-align:center; padding-left: 30px; display:inline-block;">
                                                             <img src='assets/upload01.png' />
                                                             <img src='assets/upload02.png' style="padding-left:30px;" />
@@ -373,7 +375,7 @@
                                     <label for="acceleration-factor" id="acceleration"
                                            data-i18n="acceleration"></label>
                                     <div id="acceleration-value"></div>
-                                    <label data-i18n="[title]t-seed;seed" for="seed"
+                                    <label id="seedLabel" data-i18n="[title]t-seed;seed" for="seed"
                                            data-toggle="tooltip" data-placement="top"
                                            data-animation="false"></label>
                                 </div>
@@ -476,24 +478,26 @@
 
 
                 <!-- Tests table -->
+                
                 <div class="col-lg-6">
+                    <div class="help-tooltip">
+                        <a href="#testtable-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                        <span class="help-text" data-i18n="testtable-tooltip"></span>
+                    </div>
+
+                    <div style="display:none">
+                        <div id="testtable-tooltip">
+                            <ul>
+                                <li data-i18n="testtable-helptext01"></li>
+                                <li data-i18n="testtable-helptext02"></li>
+                                <li data-i18n="testtable-helptext03"></li>
+                                <li data-i18n="testtable-helptext04"></li>
+                            </ul>
+                        </div>
+                    </div>
                     <div id="test-table" class="scrollTable hide spacer50" style="height:100%;">
                         <b><label id="tests-header" data-i18n="uploaded-tests"></label></b>
-                        <div class="help-tooltip">
-                            <a href="#testtable-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
-                            <span class="help-text" data-i18n="testtable-tooltip"></span>
-                        </div>
-
-                        <div style="display:none">
-                            <div id="testtable-tooltip">
-                                <ul>
-                                    <li data-i18n="testtable-helptext01"></li>
-                                    <li data-i18n="testtable-helptext02"></li>
-                                    <li data-i18n="testtable-helptext03"></li>
-                                    <li data-i18n="testtable-helptext04"></li>
-                                </ul>
-                            </div>
-                        </div>
+                        
                         <table class="display table table-sm mt-4">
                             <thead class="thead-white">
                             <tr>
@@ -623,7 +627,7 @@
                                 <li data-i18n="snippets-helptext02"></li>
                                 <li data-i18n="snippets-helptext03"></li>
                             </ul>
-                            <a href="https://github.com/se2p/whisker" target="_blank">SE2P-Whisker on github</a>
+                            <a href="https://github.com/se2p/whisker/blob/master/HOWTO.md" target="_blank">SE2P-Whisker on github</a>
                         </div>
                     </div>
                     <ul style="margin-left:-40px; list-style: none;">
@@ -900,6 +904,32 @@
                             <br />
                             <div id="snippet10" style="display:none;">
                                 <pre class="prettyprint" data-i18n="snippets:snippet10-shortcode"></pre>
+                            </div>
+                        </li>
+                        <li>
+                            <button class="snippetButton" onclick="_displaySnippet(11)" data-i18n="snippets:snippet11-title"></button>
+                            <div class="help-tooltip">
+                                <a href="#snippet11-tooltip" class="help-icon inlinebox"><img src="assets/help.png" alt="help"/></a>
+                                <span class="help-text" data-i18n="snippets:snippet11-tooltip"></span>
+                            </div>
+                            <div style="display:none">
+                                <div id="snippet11-tooltip">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <ol>
+                                                <li data-i18n="snippets:snippet11-helptext01"></li>
+                                                <li data-i18n="snippets:snippet11-helptext02"></li>
+                                            </ol>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <pre class="prettyprint" data-i18n="snippets:snippet11-code"></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="snippet11" style="display:none;">
+                                <pre class="prettyprint" data-i18n="snippets:snippet11-shortcode"></pre>
                             </div>
                         </li>
                     </ul>
@@ -1209,6 +1239,10 @@
                 document.getElementById("scratch-controls").style.display = "block";
                 document.getElementById("tabModelEditor").parentElement.style.display = "list-item";
                 document.getElementById("tabLogs").parentElement.style.display = "list-item";
+                document.getElementById("seed").style.display = "block";
+                document.getElementById("seedLabel").style.display = "block";
+                document.getElementById("green-flag").style.display = "block";
+                document.getElementById("stop-scratch").style.display = "block";
             }
             else
             {
@@ -1216,7 +1250,20 @@
                 document.getElementById("scratch-controls").style.display = "none";
                 document.getElementById("tabModelEditor").parentElement.style.display = "none";
                 document.getElementById("tabLogs").parentElement.style.display = "none";
+                document.getElementById("seed").style.display = "none";
+                document.getElementById("seedLabel").style.display = "none";
+                document.getElementById("green-flag").style.display = "none";
+                document.getElementById("stop-scratch").style.display = "none";
             }
+        }
+        function _addTestClass() {
+            document.getElementById("applyChanges").classList.add("applyChangesClass");
+        }
+        function _removeTestClass() {
+            document.getElementById("applyChanges").classList.remove("applyChangesClass");
+        }
+        function _manipulateTestEditor() {
+            document.getElementById("test-editor").firstChild.onclick = _addTestClass;
         }
         function _displaySnippet(i) {
             if(document.getElementById("snippet" + i).style.display == "none")
@@ -1228,7 +1275,8 @@
                 document.getElementById("snippet" + i).style.display = "none";   
             }
         }
-        _updateExtendedView()
+        _updateExtendedView();
+        
     </script>
 
     <!-- Footer -->

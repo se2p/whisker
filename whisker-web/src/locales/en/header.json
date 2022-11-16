@@ -5,5 +5,8 @@
     "log" : "Log",
     "show-advanced" : "Show test generation and record input features",
     "advanced" : "Test automation",
-    "test-editor" : "Test editor"
+    "test-editor" : "Test editor",
+    "testing": "Home",
+    "tutorial": "Tutorial",
+    "about": "About Whisker"
 }
