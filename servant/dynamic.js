@@ -1,6 +1,6 @@
 const fs = require("fs");
 const logger = require("./logger");
-const {showHiddenFunctionality} = require("./common");
+const {switchToProjectTab} = require("./common");
 const {
     scratchPath,
     csvFile,
@@ -32,7 +32,7 @@ async function runDynamicTestSuite(openNewPage, path) {
         await (await page.$('#fileselect-project')).uploadFile(path);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        await showHiddenFunctionality(page);
+        await switchToProjectTab(page, false);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
