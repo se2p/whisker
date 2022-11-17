@@ -13,9 +13,10 @@ void async function main() {
     try {
         browser = await openNewBrowser();
 
-        // The prettify file keeps running into a null exception. Since this is a purely visual feature and does not
-        // harm the test execution in any way, we simply remove the file when calling the servant.
-        // TODO Find better fix for this issue.
+        // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
+        // Since this is a purely visual feature and does not harm the test execution in any way,
+        // we simply remove the file when calling the servant.
+        // TODO Find better fix for that.
         const prettifyPath = path.resolve(__dirname, "../whisker-web/dist/includes/prettify.js");
         if(fs.existsSync(prettifyPath)) {
             fs.unlinkSync(prettifyPath)
