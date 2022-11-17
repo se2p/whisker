@@ -71,13 +71,19 @@ async function runTestsOnFile(openNewPage, targetProject) {
 }
 
 /**
- * Switches to the project tab, which is necessary to start the test execution.
+ * Switches to the project tab, which is necessary to start the test run. Additionally, to click on the start test
+ * generation button for test generation runs, we have to toggle the extended view.
  * @param {Page} page
+ * @param {boolean} toggleExtendedView
  * @returns {Promise<void>}
  */
-async function switchToProjectTab(page) {
+async function switchToProjectTab(page,toggleExtendedView) {
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
+    if(toggleExtendedView){
+        const toggleExtendedView = await page.$('#extendedView');
+        await toggleExtendedView.evaluate(t => t.click());
+    }
 }
 
 async function runTests(path, openNewPage, index, targetProject) {
@@ -105,7 +111,7 @@ async function runTests(path, openNewPage, index, targetProject) {
                 await (await page.$('#model-case-sensitive')).click();
             }
         }
-        await switchToProjectTab(page);
+        await switchToProjectTab(page, false);
     }
 
     /**
@@ -408,6 +414,7 @@ function getProjectsInScratchPath() {
 
 module.exports = {
     runTestsOnFile,
+    switchToProjectTab,
     tmpDir,
     prepareTestFiles,
     getProjectsInScratchPath,
