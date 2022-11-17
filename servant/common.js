@@ -71,20 +71,13 @@ async function runTestsOnFile(openNewPage, targetProject) {
 }
 
 /**
- * Shows the test generation and input recording features, the TAP13 and the log output.
+ * Switches to the project tab, which is necessary to start the test execution.
  * @param {Page} page
  * @returns {Promise<void>}
  */
-async function showHiddenFunctionality(page) {
-    // a simple 'await (await page.$('#toggle-log')).click();' does not work here due to the toggle buttons
-    const toggleAdvanced = await page.$('#toggle-advanced');
-    await toggleAdvanced.evaluate(t => t.click());
-    const toggleTap = await page.$('#toggle-tap');
-    await toggleTap.evaluate(t => t.click());
-    const toggleLog = await page.$('#toggle-log');
-    await toggleLog.evaluate(t => t.click());
-    const toggleModelEditor = await page.$('#toggle-model-editor');
-    await toggleModelEditor.evaluate(t => t.click());
+async function switchToProjectTab(page) {
+    const projectTab = await page.$('#tabProject');
+    await projectTab.evaluate(t => t.click());
 }
 
 async function runTests(path, openNewPage, index, targetProject) {
@@ -112,7 +105,7 @@ async function runTests(path, openNewPage, index, targetProject) {
                 await (await page.$('#model-case-sensitive')).click();
             }
         }
-        await showHiddenFunctionality(page);
+        await switchToProjectTab(page);
     }
 
     /**
@@ -415,7 +408,6 @@ function getProjectsInScratchPath() {
 
 module.exports = {
     runTestsOnFile,
-    showHiddenFunctionality,
     tmpDir,
     prepareTestFiles,
     getProjectsInScratchPath,
