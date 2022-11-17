@@ -18,7 +18,7 @@ void async function main() {
         // we simply remove the file when calling the servant.
         // TODO Find better fix for that.
         const prettifyPath = path.resolve(__dirname, "../whisker-web/dist/includes/prettify.js");
-        if(fs.existsSync(prettifyPath)) {
+        if (fs.existsSync(prettifyPath)) {
             fs.unlinkSync(prettifyPath)
         }
 
