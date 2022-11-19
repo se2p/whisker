@@ -1,11 +1,11 @@
 {
     "t-tap" : "Show result in TAP13 format",
     "tap" : "TAP13",
-    "t-log" : "Show log file",
+    "t-log" : "Show Log File",
     "log" : "Log",
     "show-advanced" : "Show test generation and record input features",
-    "advanced" : "Test automation",
-    "test-editor" : "Test editor",
+    "advanced" : "Test Automation",
+    "test-editor" : "Test Editor",
     "testing": "Home",
     "tutorial": "Tutorial",
     "about": "About Whisker"
