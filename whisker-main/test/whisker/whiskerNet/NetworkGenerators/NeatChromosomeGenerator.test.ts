@@ -9,12 +9,15 @@ import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMut
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
+import {generateInputs} from "../Algorithms/NEAT.test";
+
 
 describe('Test NeatChromosomeGenerator', () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
-    let inputSpace: Map<string, Map<string, number>>;
+    let inputSpace: InputFeatures;
     let outputSpace: ScratchEvent[];
 
     beforeEach(() => {
@@ -44,18 +47,7 @@ describe('Test NeatChromosomeGenerator', () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
         crossoverOp = new NeatCrossover(crossoverConfig);
-        inputSpace = new Map<string, Map<string, number>>();
-
-        const sprite1 = new Map<string, number>();
-        sprite1.set("X-Position", 1);
-        sprite1.set("Y-Position", 2);
-        sprite1.set("Costume", 3);
-        inputSpace.set("Sprite1", sprite1);
-
-        const sprite2 = new Map<string, number>();
-        sprite2.set("X-Position", 6);
-        sprite2.set("Y-Position", 7);
-        inputSpace.set("Sprite2", sprite2);
+        inputSpace = generateInputs();
 
         outputSpace = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
@@ -65,10 +57,10 @@ describe('Test NeatChromosomeGenerator', () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace,'fully',
             ActivationFunction.TANH,mutationOp, crossoverOp);
         const neatChromosome = generator.get();
-        expect(neatChromosome.allNodes.length).toBe(15);
-        expect(neatChromosome.connections.length).toBe(54);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(3);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(2);
+        expect(neatChromosome.allNodes.length).toBe(19);
+        expect(neatChromosome.connections.length).toBe(90);
+        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
+        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.allNodes.filter(node => node instanceof HiddenNode).length).toBe(0);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
@@ -79,10 +71,10 @@ describe('Test NeatChromosomeGenerator', () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace,'fullyHidden',
             ActivationFunction.TANH,mutationOp, crossoverOp);
         const neatChromosome = generator.get();
-        expect(neatChromosome.allNodes.length).toBe(18);
-        expect(neatChromosome.connections.length).toBe(33);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(3);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(2);
+        expect(neatChromosome.allNodes.length).toBe(22);
+        expect(neatChromosome.connections.length).toBe(37);
+        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
+        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.allNodes.filter(node => node instanceof HiddenNode).length).toBe(3);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
@@ -95,8 +87,8 @@ describe('Test NeatChromosomeGenerator', () => {
         const neatChromosome = generator.get();
         expect(neatChromosome.allNodes.length).toBeGreaterThanOrEqual(15);
         expect(neatChromosome.connections.length).toBeGreaterThanOrEqual(18);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(3);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(2);
+        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
+        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.allNodes.filter(node => node instanceof HiddenNode).length).toBe(0);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);

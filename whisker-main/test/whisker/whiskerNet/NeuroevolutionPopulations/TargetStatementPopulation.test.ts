@@ -9,6 +9,7 @@ import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCr
 import {Container} from "../../../../src/whisker/utils/Container";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {TargetStatementPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/TargetStatementPopulation";
+import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 
 describe("Test TargetStatementPopulation", () => {
 
@@ -44,7 +45,7 @@ describe("Test TargetStatementPopulation", () => {
             "toggleEnableConnectionTimes": 3,
             "mutateEnableConnection": 0.03
         };
-        const genInputs = new Map<string, Map<string, number>>();
+        const genInputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         genInputs.set("Sprite1", sprite1);

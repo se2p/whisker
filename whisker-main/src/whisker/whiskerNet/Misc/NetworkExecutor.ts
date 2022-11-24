@@ -6,7 +6,7 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {InputExtraction} from "./InputExtraction";
+import {InputExtraction, InputFeatures} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../../testcase/ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
@@ -101,7 +101,7 @@ export class NetworkExecutor {
             }
 
             // Update input nodes and load inputs into the Network.
-            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
+            const spriteFeatures = InputExtraction.extractFeatures(this._vmWrapper);
 
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
@@ -110,7 +110,7 @@ export class NetworkExecutor {
 
             // Select the next event and execute it if we did not decide to wait
             if (this._waitDuration == 0) {
-                let eventIndex = this.selectNextEvent(network, spriteFeatures, isGreenFlag);
+                let eventIndex = this.selectNextEvent(network, isGreenFlag);
                 let nextEvent = this.availableEvents[eventIndex];
 
                 // If something goes wrong, e.g. we have a defect network due to all active input nodes being
@@ -186,7 +186,7 @@ export class NetworkExecutor {
                 break;
             }
             // Load input features into the node to record the AT later.
-            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
+            const spriteFeatures = InputExtraction.extractFeatures(this._vmWrapper);
             network.setUpInputs(spriteFeatures);
 
             // Execute the event
@@ -221,16 +221,14 @@ export class NetworkExecutor {
     }
 
     /**
-     * Selects the next event by 1) Waiting for 1 step if we are currently trying to cover the GreenFlag event
-     *                           2) Selecting a random event if the eventSelection variable is set appropriately
-     *                           3) Querying the network's classification head
-     * @param network the network that will be queried in case of 3)
-     * @param inputFeatures the inputFeatures with which the network will be fed in scenario 3)
-     * @param isGreenFlag boolean determining whether we are currently trying to cover the greenFlagEvent as in 1)
-     * @returns the index of the chosen event parameter based ont the available events set.
+     * Selects the next event by 1) Waiting for 1 step if we are currently trying to cover the GreenFlag event.
+     *                           2) Selecting a random event if the eventSelection variable is set appropriately.
+     *                           3) Querying the network's classification head.
+     * @param network the network that will be queried in case of 3).
+     * @param isGreenFlag boolean determining whether we are currently trying to cover the greenFlagEvent.
+     * @returns the index of the chosen event parameter based on the set of events extracted from the Scratch state.
      */
-    private selectNextEvent(network: NetworkChromosome, inputFeatures: Map<string, Map<string, number>>,
-                            isGreenFlag: boolean): number {
+    private selectNextEvent(network: NetworkChromosome, isGreenFlag: boolean): number {
         // 1) GreenFlag is current target Statement
         if (isGreenFlag) {
             return this.availableEvents.findIndex(event => event instanceof WaitEvent);
@@ -321,9 +319,9 @@ export class NetworkExecutor {
      * we are interested in step 1 as this one reflects initialisation values.
      * @param network the network whose activation trace should be updated.
      * @param step determines whether we want to record the trace at the current step.
-     * @param inputs the inputs from which an activationTrace will be recorded within the input nodes.
+     * @param inputs the inputs based on which an activationTrace will be recorded.
      */
-    private recordActivationTrace(network: NetworkChromosome, step: number, inputs: Map<string, Map<string, number>>) {
+    private recordActivationTrace(network: NetworkChromosome, step: number, inputs: InputFeatures) {
         if (network.recordNetworkStatistics && step > 0 && (step % 5 == 0 || step == 1)) {
             network.setUpInputs(inputs);
             network.updateActivationTrace(step);

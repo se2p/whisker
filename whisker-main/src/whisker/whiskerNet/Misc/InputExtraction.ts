@@ -14,41 +14,40 @@ export class InputExtraction {
     private static CLONE_THRESHOLD = 5;
 
     /**
-     * Extracts pieces of information from all Sprites of the given Scratch project.
-     * @param vmWrapper the Scratch VM-Wrapper.
-     * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
+     * Extracts input features from the current Scratch state.
+     * @param vmWrapper the Scratch VM-Wrapper hosting the Scratch state.
+     * @returns the extracted input features.
      */
-    static extractSpriteInfo(vmWrapper: VMWrapper): Map<string, Map<string, number>> {
-        // Go through each sprite and collect input features from them.
-        const spriteMap = new Map<string, Map<string, number>>();
-        const cloneRecording = new Map<string, number>();
+    static extractFeatures(vmWrapper: VMWrapper): InputFeatures {
+        const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
+        const cloneRecord = new Map<string, number>();
         for (const target of vmWrapper.vm.runtime.targets) {
             if ('blocks' in target && target.visible) {
                 if (target.isStage) {
                     const stageFeatures = this._extractStageFeatures(target);
                     if (stageFeatures.size > 0) {
-                        spriteMap.set("Stage", stageFeatures);
+                        inputFeatures.set("Stage", stageFeatures);
                     }
                 } else {
                     const spriteFeatures = this._extractSpriteFeatures(target, vmWrapper);
                     if (target.isOriginal) {
-                        spriteMap.set(target.sprite.name, spriteFeatures);
+                        inputFeatures.set(target.sprite.name, spriteFeatures);
                     } else {
                         const cloneID = this.getCloneIdentifier(target);
                         const parentSprite = target.sprite.name;
                         // Only allow a limited number of clones per sprite to avoid input feature explosion.
-                        if (!cloneRecording.has(parentSprite) || cloneRecording.get(parentSprite) < this.CLONE_THRESHOLD) {
-                            spriteMap.set(cloneID, spriteFeatures);
-                            if (!cloneRecording.has(parentSprite)) {
-                                cloneRecording.set(parentSprite, 0);
+                        if (!cloneRecord.has(parentSprite) || cloneRecord.get(parentSprite) < this.CLONE_THRESHOLD) {
+                            inputFeatures.set(cloneID, spriteFeatures);
+                            if (!cloneRecord.has(parentSprite)) {
+                                cloneRecord.set(parentSprite, 0);
                             }
-                            cloneRecording.set(parentSprite, cloneRecording.get(parentSprite) + 1);
+                            cloneRecord.set(parentSprite, cloneRecord.get(parentSprite) + 1);
                         }
                     }
                 }
             }
         }
-        return spriteMap;
+        return inputFeatures;
     }
 
     /**
@@ -66,7 +65,7 @@ export class InputExtraction {
      * @param target the Scratch Stage.
      * @returns Mapping of feature to normalised value.
      */
-    private static _extractStageFeatures(target: RenderedTarget): Map<string, number> {
+    private static _extractStageFeatures(target: RenderedTarget): FeatureGroup {
         const stageFeatures = new Map<string, number>();
         for (const variable of Object.values(target.variables)) {
             if (typeof variable['value'] === 'number') {
@@ -82,10 +81,10 @@ export class InputExtraction {
      * @param vmWrapper of the given Scratch Project.
      * @return Mapping of feature to normalised value.
      */
-    // TODO: Add more input features: effects
-    private static _extractSpriteFeatures(target: RenderedTarget, vmWrapper: VMWrapper): Map<string, number> {
+    // TODO: Only add features that actually change over time ---> Analyse Scratch Code.
+    // TODO: Add effects as features.
+    private static _extractSpriteFeatures(target: RenderedTarget, vmWrapper: VMWrapper): FeatureGroup {
         const spriteFeatures = new Map<string, number>();
-        // Stage Bounds -> (width: 480, height: 360)
         const stageBounds = vmWrapper.getStageSize();
 
         // Extract Coordinates and normalize
@@ -407,4 +406,15 @@ export class InputExtraction {
         return [wayPointDistanceX, wayPointDistanceY];
     }
 }
+
+
+/**
+ * A feature group found within a hosting sprite or the stage. Maps feature to the extracted values.
+ */
+export type FeatureGroup = Map<string, number>;
+
+/**
+ * Input features are mapped from the hosting sprite to the extracted {@link FeatureGroup}.
+ */
+export type InputFeatures = Map<string, FeatureGroup>;
 

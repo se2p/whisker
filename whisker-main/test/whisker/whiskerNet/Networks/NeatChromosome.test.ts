@@ -15,7 +15,9 @@ import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveE
 import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStageEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {
+    NeuroevolutionTestGenerationParameter
+} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {Container} from "../../../../src/whisker/utils/Container";
@@ -24,13 +26,15 @@ import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {ActivationTrace} from "../../../../src/whisker/whiskerNet/Misc/ActivationTrace";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {EventAndParameters, ExecutionTrace} from "../../../../src/whisker/testcase/ExecutionTrace";
+import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
+import {generateInputs} from "../Algorithms/NEAT.test";
 
 describe('Test NetworkChromosome', () => {
     let mutationOp: NeatMutation;
     let mutationConfig: Record<string, (string | number)>;
     let crossoverConfig: Record<string, (string | number)>;
     let crossoverOp: NeatCrossover;
-    let genInputs: Map<string, Map<string, number>>;
+    let genInputs: InputFeatures;
     let generator: NeatChromosomeGenerator;
     let chromosome: NeatChromosome;
     let properties: NeuroevolutionTestGenerationParameter;
@@ -104,21 +108,7 @@ describe('Test NetworkChromosome', () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
 
-        genInputs = new Map<string, Map<string, number>>();
-        const sprite1 = new Map<string, number>();
-        sprite1.set("X-Position", 1);
-        sprite1.set("Y-Position", 2);
-        sprite1.set("Costume", 3);
-        sprite1.set("DistanceToSprite2-X", 4);
-        sprite1.set("DistanceToSprite2-y", 5);
-        genInputs.set("Sprite1", sprite1);
-
-        const sprite2 = new Map<string, number>();
-        sprite2.set("X-Position", 6);
-        sprite2.set("Y-Position", 7);
-        sprite2.set("DistanceToWhite-X", 8);
-        sprite2.set("DistanceToWhite-Y", 9);
-        genInputs.set("Sprite2", sprite2);
+        genInputs = generateInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
@@ -126,6 +116,7 @@ describe('Test NetworkChromosome', () => {
         chromosome = generator.get();
         properties = new NeuroevolutionTestGenerationParameter();
         properties.populationSize = 10;
+        NeatPopulation.innovations = [];
     });
 
     test('Constructor Test', () => {
@@ -302,7 +293,7 @@ describe('Test NetworkChromosome', () => {
         const connections = [new ConnectionGene(iNode, oNode, 1, false, 0, false)];
 
         chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
-        const inputs = new Map<string, Map<string, number>>();
+        const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         inputs.set("Sprite1", sprite1);
@@ -312,7 +303,7 @@ describe('Test NetworkChromosome', () => {
 
     test('Network activation without hidden layer', () => {
         const chromosome = getSampleNetwork();
-        const inputs = new Map<string, Map<string, number>>();
+        const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         sprite1.set("Y-Position", 2);
@@ -337,7 +328,7 @@ describe('Test NetworkChromosome', () => {
     test('Network activation without hidden layer and novel inputs', () => {
         const chromosome = getSampleNetwork();
         const chromosome2 = getSampleNetwork();
-        const inputs = new Map<string, Map<string, number>>();
+        const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         sprite1.set("Y-Position", 2);
@@ -364,7 +355,7 @@ describe('Test NetworkChromosome', () => {
 
     test('Network activation without hidden layer and deactivated input nodes', () => {
         const chromosome = getSampleNetwork();
-        const inputs = new Map<string, Map<string, number>>();
+        const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         inputs.set("Sprite1", sprite1);
@@ -423,7 +414,7 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(deepHiddenNode, nodes[5], 0.9, true, 1, false));
 
         chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
-        const inputs = new Map<string, Map<string, number>>();
+        const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         const sprite2 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -487,7 +478,7 @@ describe('Test NetworkChromosome', () => {
         connections.push(new ConnectionGene(deepHiddenNode, nodes[4], 0.9, true, 1, false));
 
         chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp, 'fully');
-        const inputs = new Map<string, Map<string, number>>();
+        const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
         sprite1.set("Y-Position", 2);
@@ -702,8 +693,7 @@ describe('Test NetworkChromosome', () => {
             new EventAndParameters(new WaitEvent(), [1]),
             new EventAndParameters(new KeyPressEvent("Right Arrow"), [])
         ];
-        const executionTrace = new ExecutionTrace(undefined, eventAndParams);
-        chromosome.trace = executionTrace;
+        chromosome.trace = new ExecutionTrace(undefined, eventAndParams);
         expect(chromosome.getNumEvents()).toEqual(2);
     });
 

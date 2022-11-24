@@ -10,6 +10,7 @@ import {InputConnectionMethod} from "../Networks/NetworkChromosome";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
+import {InputFeatures} from "../Misc/InputExtraction";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
@@ -24,7 +25,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * @param _inputRate governs the probability of adding multiple input groups to the network when a sparse
      * connection method is being used.
      */
-    public constructor(private readonly _inputSpace: Map<string, Map<string, number>>,
+    public constructor(private readonly _inputSpace: InputFeatures,
                           private readonly _outputSpace: ScratchEvent[],
                           protected readonly _inputConnectionMethod: InputConnectionMethod,
                           protected readonly _activationFunction: ActivationFunction,

@@ -16,6 +16,7 @@ import {name} from "ntc";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {Container} from "../../utils/Container";
 import assert from "assert";
+import {InputFeatures} from "../Misc/InputExtraction";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -171,12 +172,12 @@ export abstract class NetworkChromosome extends Chromosome {
     public abstract addConnection(connection: ConnectionGene): void;
 
     /**
-     * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
-     * @param sprites a map which maps each sprite to its input feature vector.
+     * Adds additional input Nodes if we have encountered new input features during the playthrough.
+     * @param features a map which maps each sprite to its input feature vector.
      */
-    private updateInputNodes(sprites: Map<string, Map<string, number>>): void {
+    private updateInputNodes(features: InputFeatures): void {
         let updated = false;
-        sprites.forEach((spriteFeatures, spriteKey) => {
+        features.forEach((spriteFeatures, spriteKey) => {
 
             // Check if we have encountered a new Sprite.
             if (!this.inputNodes.has(spriteKey)) {
@@ -193,10 +194,12 @@ export abstract class NetworkChromosome extends Chromosome {
             } else {
                 // We haven't encountered a new Sprite, but we still have to check
                 // if we encountered new features of a Sprite.
+                // TODO is this necessary? Since features are via STATIC code analysis...
                 spriteFeatures.forEach((featureValue, featureKey) => {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
                     if (!savedSpriteMap.has(featureKey)) {
                         updated = true;
+                        console.log("ADDED FEATURE FOR EXISTING SPRITE"); // TODO: Remove once ascertained.
                         const featureID = `I:${spriteKey}-${featureKey}`;
                         const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                         const iNode = new InputNode(id, spriteKey, featureKey);
@@ -253,8 +256,8 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param mode determines how the input layer should be connected to the given nodes.
      */
     public abstract connectNodeToInputLayer(nodesToConnect: NodeGene[],
-                                               inputNodes: Readonly<Map<string, Map<string, InputNode | BiasNode>>>,
-                                               mode:InputConnectionMethod): void;
+                                            inputNodes: Readonly<Map<string, Map<string, InputNode | BiasNode>>>,
+                                            mode: InputConnectionMethod): void;
 
     /**
      * Fetches the ID of a functional Node, i.e. a non-Hidden node.
@@ -325,11 +328,12 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Activates the network in order to get an output in regard to the fed inputs.
-     * @param inputs a map which maps each sprite to its input feature vector.
-     * @returns returns true if the network generated an appropriate output as expected.
+     * Activates the network to get an output based on to the fed inputs.
+     * @param inputs consisting of the extracted features from the current Scratch state.
+     * @returns true if the network generated an appropriate and false if the network is defect,
+     *          e.g. due to a missing path from input nodes to output nodes.
      */
-    public activateNetwork(inputs: Map<string, Map<string, number>>): boolean {
+    public activateNetwork(inputs: InputFeatures): boolean {
         // Generate the network and load the inputs
         this.generateNetwork();
         this.setUpInputs(inputs);
@@ -395,9 +399,9 @@ export abstract class NetworkChromosome extends Chromosome {
 
     /**
      * Load the given inputs into the input nodes of the network.
-     * @param inputs a map which maps each sprite to its input feature vector.
+     * @param inputs consists of input features extracted from the current Scratch path.
      */
-    public setUpInputs(inputs: Map<string, Map<string, number>>): void {
+    public setUpInputs(inputs: InputFeatures): void {
 
         // Reset the input nodes' activation flag to only use inputs during activation for which we collected values.
         for (const iNodeMap of this.inputNodes.values()) {
@@ -485,15 +489,16 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Generates dummy inputs that match the input nodes.
-     * @returns dummy inputs to test a network.
+     * Generates dummy inputs for all input nodes.
+     * @returns randomly generated input features.
      */
-    public generateDummyInputs(): Map<string, Map<string, number>> {
-        const inputs = new Map<string, Map<string, number>>();
+    public generateDummyInputs(): InputFeatures {
+        const random = Randomness.getInstance();
+        const inputs: InputFeatures = new Map<string, Map<string, number>>();
         this.inputNodes.forEach((sprite, k) => {
             const spriteFeatures = new Map<string, number>();
             sprite.forEach((featureNode, featureKey) => {
-                spriteFeatures.set(featureKey, 1);
+                spriteFeatures.set(featureKey, random.nextDouble());
             });
             inputs.set(k, spriteFeatures);
         });
