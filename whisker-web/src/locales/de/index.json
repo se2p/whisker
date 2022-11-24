@@ -11,6 +11,7 @@
     "input" : "Erlaube manuelle Eingaben",
     "input-recording" : "Eingaben aufzeichnen",
     "t-record" : "Zeichne Eingaben für Tests auf",
+    "t-state-recorder": "Zeichne Aktionen und die zugehörigen Scratch Zustände auf",
     "start-record" : "Starte Aufzeichnung",
     "stop-record" : "Stoppe Aufzeichnung",
     "explain-recording" : "Du kannst Eingaben wie \"Taste gedrückt\" aufzeichnen und in Code umwandeln lassen, statt den Code selbst zu schreiben. Beachte, dass dabei deine bisherigen Tests verloren gehen.",

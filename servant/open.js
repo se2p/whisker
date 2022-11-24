@@ -1,0 +1,35 @@
+const {switchToProjectTab} = require("./common");
+const {
+    scratchPath,
+    acceleration,
+    seed,
+    stateRecorder
+} = require("./cli").opts;
+
+
+
+async function open(openNewPage){
+    const page = await openNewPage();
+    if(scratchPath) {
+        await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
+    }
+
+
+    await switchToProjectTab(page, true);
+    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
+    await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+
+    if(stateRecorder){
+        await (await page.$('#record-state')).click();
+    }
+
+    // Wait until page gets closed.
+    while (true){
+        if(page.isClosed()){
+            break;
+        }
+        await page.waitForTimeout(1000);
+    }
+}
+
+module.exports = open;

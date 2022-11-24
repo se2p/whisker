@@ -193,6 +193,11 @@ class WhiskerSubCommand extends Command {
             (activationTraces) => util.processPositiveInt(activationTraces));
     }
 
+    optionStateRecorder(){
+        return this.option('-rec, --state-recorder',
+            'records executed scratch events and maps them to the current program state');
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -216,6 +221,12 @@ function newSubCommand(name) {
 
 // noinspection JSUnresolvedFunction
 const subCommands = [
+    newSubCommand('open')
+        .description('Open the Whisker web page with the specified parameters')
+        .optionScratchPath()
+        .optionStateRecorder(),
+
+
     newSubCommand('run')
         .description('run Whisker tests')
         .requireScratchPath()

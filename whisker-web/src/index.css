@@ -68,7 +68,7 @@ pre.prettyprint {
 }
 
 .help-icon img, .help-image-icon {
-   max-width:20px; 
+   max-width:20px;
 }
 
 .help-text {
@@ -192,6 +192,12 @@ p {
 }
 
 .btn-main:hover {
+    background-color: white;
+    border-color: var(--mainColor);
+    color: var(--subColor)
+}
+
+.btn-main.active{
     background-color: white;
     border-color: var(--mainColor);
     color: var(--subColor)

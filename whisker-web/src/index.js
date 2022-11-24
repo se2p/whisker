@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
-import {DynamicNetworkSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite";
+import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
+import {StateRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateRecorder';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -354,7 +355,7 @@ const initScratch = function () {
 const initComponents = function () {
     Whisker.outputRun = new Output($('#output-run')[0]);
     Whisker.outputLog = new Output($('#output-log')[0]);
-    
+
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
     Whisker.testEditor.show();
@@ -383,6 +384,7 @@ const initComponents = function () {
         Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
+    Whisker.stateRecorder = new StateRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
@@ -454,6 +456,13 @@ const initEvents = function () {
             Whisker.inputRecorder.startRecording();
         }
     });
+
+    $('#record-state').on('click', () => {
+        Whisker.stateRecorder.startRecording();
+        $('#record-state')
+            .toggleClass('active');
+    });
+
     const modelLog = msg => {
         Whisker.outputLog.println(msg);
     };
