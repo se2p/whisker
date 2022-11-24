@@ -194,12 +194,10 @@ export abstract class NetworkChromosome extends Chromosome {
             } else {
                 // We haven't encountered a new Sprite, but we still have to check
                 // if we encountered new features of a Sprite.
-                // TODO is this necessary? Since features are via STATIC code analysis...
                 spriteFeatures.forEach((featureValue, featureKey) => {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
                     if (!savedSpriteMap.has(featureKey)) {
                         updated = true;
-                        console.log("ADDED FEATURE FOR EXISTING SPRITE"); // TODO: Remove once ascertained.
                         const featureID = `I:${spriteKey}-${featureKey}`;
                         const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                         const iNode = new InputNode(id, spriteKey, featureKey);

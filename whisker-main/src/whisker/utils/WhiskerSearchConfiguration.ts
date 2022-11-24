@@ -479,7 +479,7 @@ export class WhiskerSearchConfiguration {
                     throw new ConfigException(`The neatChromosome generator requires a NeatCrossover operator, but  ${typeof crossoverOperator} was specified`);
                 }
                 return new NeatChromosomeGenerator(
-                    InputExtraction.extractFeatures(Container.vmWrapper),
+                    InputExtraction.extractFeatures(Container.vm),
                     eventExtractor.extractEvents(Container.vm),
                     this.getInputConnectionMethod(),
                     this.neuroevolutionProperties.activationFunction,

@@ -101,7 +101,7 @@ export class NetworkExecutor {
             }
 
             // Update input nodes and load inputs into the Network.
-            const spriteFeatures = InputExtraction.extractFeatures(this._vmWrapper);
+            const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
@@ -186,7 +186,7 @@ export class NetworkExecutor {
                 break;
             }
             // Load input features into the node to record the AT later.
-            const spriteFeatures = InputExtraction.extractFeatures(this._vmWrapper);
+            const spriteFeatures = InputExtraction.extractFeatures(this._vm);
             network.setUpInputs(spriteFeatures);
 
             // Execute the event
