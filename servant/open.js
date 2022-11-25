@@ -3,7 +3,7 @@ const {
     scratchPath,
     acceleration,
     seed,
-    stateRecorder
+    stateActionRecorder
 } = require("./cli").opts;
 
 
@@ -18,9 +18,10 @@ async function open(openNewPage){
     await switchToProjectTab(page, true);
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
     await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-
-    if(stateRecorder){
-        await (await page.$('#record-state')).click();
+    console.log(stateActionRecorder);
+    if(stateActionRecorder){
+        await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
+        await (await page.$('#record')).click()
     }
 
     // Wait until page gets closed.

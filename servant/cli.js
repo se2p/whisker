@@ -193,8 +193,8 @@ class WhiskerSubCommand extends Command {
             (activationTraces) => util.processPositiveInt(activationTraces));
     }
 
-    optionStateRecorder(){
-        return this.option('-rec, --state-recorder',
+    optionStateActionRecorder(){
+        return this.option('-rec, --state-action-recorder',
             'records executed scratch events and maps them to the current program state');
     }
 
@@ -224,7 +224,7 @@ const subCommands = [
     newSubCommand('open')
         .description('Open the Whisker web page with the specified parameters')
         .optionScratchPath()
-        .optionStateRecorder(),
+        .optionStateActionRecorder(),
 
 
     newSubCommand('run')

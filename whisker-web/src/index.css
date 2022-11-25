@@ -197,12 +197,6 @@ p {
     color: var(--subColor)
 }
 
-.btn-main.active{
-    background-color: white;
-    border-color: var(--mainColor);
-    color: var(--subColor)
-}
-
 
 .btn-circle.btn-sm {
     width: 30px;

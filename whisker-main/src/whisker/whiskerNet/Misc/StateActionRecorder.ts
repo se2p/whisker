@@ -1,7 +1,7 @@
 import {EventEmitter} from "events";
 import Scratch from "whisker-web/src/components/scratch-stage";
 
-export class StateRecorder extends EventEmitter {
+export class StateActionRecorder extends EventEmitter {
 
     private scratch: Scratch;
 

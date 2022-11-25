@@ -11,7 +11,6 @@
     "input" : "Enable manual inputs",
     "input-recording" : "Record Inputs",
     "t-record" : "Record for use in tests",
-    "t-state-recorder": "Record actions and corresponding states",
     "start-record" : "Record Inputs",
     "stop-record" : "Stop recording",
     "explain-recording" : "Inputs such as \"key pressed\" can be recorded and transformed to code automatically so that you don't have to type inputs out manually. Note that existing tests will be discarded.",

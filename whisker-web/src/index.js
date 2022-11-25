@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
-import {StateRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateRecorder';
+import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -384,7 +384,7 @@ const initComponents = function () {
         Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
-    Whisker.stateRecorder = new StateRecorder(Whisker.scratch);
+    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
@@ -446,7 +446,9 @@ const initEvents = function () {
     });
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
-        if (Whisker.inputRecorder.isRecording()) {
+        if (document.querySelector('#container').stateActionRecorder){
+            Whisker.stateActionRecorder.startRecording();
+        } else if (Whisker.inputRecorder.isRecording()) {
             _enableVMRelatedButtons();
             Whisker.inputRecorder.stopRecording();
             Whisker.scratch.disableInput();
@@ -455,12 +457,6 @@ const initEvents = function () {
             Whisker.scratch.enableInput();
             Whisker.inputRecorder.startRecording();
         }
-    });
-
-    $('#record-state').on('click', () => {
-        Whisker.stateRecorder.startRecording();
-        $('#record-state')
-            .toggleClass('active');
     });
 
     const modelLog = msg => {
