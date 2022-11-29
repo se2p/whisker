@@ -447,7 +447,8 @@ const initEvents = function () {
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
         if (document.querySelector('#container').stateActionRecorder){
-            Whisker.stateActionRecorder.startRecording();
+            Whisker.stateActionRecorder.setup();
+            Whisker.scratch.enableInput();
         } else if (Whisker.inputRecorder.isRecording()) {
             _enableVMRelatedButtons();
             Whisker.inputRecorder.stopRecording();

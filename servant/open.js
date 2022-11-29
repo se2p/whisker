@@ -18,7 +18,6 @@ async function open(openNewPage){
     await switchToProjectTab(page, true);
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
     await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-    console.log(stateActionRecorder);
     if(stateActionRecorder){
         await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
         await (await page.$('#record')).click()
