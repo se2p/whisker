@@ -10,7 +10,7 @@
         "js-yaml": "^4.1.0",
         "puppeteer": "15.4.0",
         "rimraf": "3.0.2",
-        "whisker-web": "0.6.0",
+        "whisker-web": "0.7.0",
         "yaml": "^1.10.2"
     },
     "scripts": {

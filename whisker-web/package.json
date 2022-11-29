@@ -49,6 +49,6 @@
         "vis-data": "^7.0.0",
         "vis-network": "^9.0.4",
         "vis-util": "^5.0.2",
-        "whisker-main": "0.6.0"
+        "whisker-main": "0.7.0"
     }
 }
