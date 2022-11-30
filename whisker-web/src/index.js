@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
 import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
+import {FileSaver} from "./web-libs";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -447,8 +448,20 @@ const initEvents = function () {
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
         if (document.querySelector('#container').stateActionRecorder){
-            Whisker.stateActionRecorder.setup();
-            Whisker.scratch.enableInput();
+            if (Whisker.stateActionRecorder.isRecording) {
+                Whisker.inputRecorder.emit('stopRecording');
+                Whisker.stateActionRecorder.stopRecording();
+                Whisker.scratch.disableInput();
+
+                // Download the recording.
+                const recording = Whisker.stateActionRecorder.recordedJSON;
+                const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
+                FileSaver.saveAs(blob, `Recording-${Whisker.projectFileSelect.getName()}.json`);
+            } else {
+                Whisker.inputRecorder.emit('startRecording');
+                Whisker.stateActionRecorder.startRecording();
+                Whisker.scratch.enableInput();
+            }
         } else if (Whisker.inputRecorder.isRecording()) {
             _enableVMRelatedButtons();
             Whisker.inputRecorder.stopRecording();

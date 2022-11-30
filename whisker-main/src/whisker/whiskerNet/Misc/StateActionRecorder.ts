@@ -11,7 +11,6 @@ import Runtime from "scratch-vm/src/engine/runtime";
 
 
 export class StateActionRecorder extends EventEmitter {
-
     private static INPUT_EVENT_NAME = 'input';
 
     private readonly _scratch: Scratch;
@@ -19,13 +18,15 @@ export class StateActionRecorder extends EventEmitter {
     private readonly _recording: StateActionRecord;
     private readonly _eventExtractor: ScratchEventExtractor;
 
+    private _isRecording: boolean;
     private _lastActionStep: number;
     private _checkForWaitInterval: number;
+    private readonly _recordedJSON: Record<string, Record<string, InputFeatures[]>>;
 
-    private _onRunStop: () => void;
-    private _onRunStart: () => void;
-    private _onInput: () => void;
-    private _checkForWaitCallBack: () => void;
+    private readonly _onRunStart: () => void;
+    private readonly _onRunStop: () => void;
+    private readonly _onInput: () => void;
+    private readonly _checkForWaitCallBack: () => void;
 
     constructor(scratch: Scratch) {
         super();
@@ -33,40 +34,53 @@ export class StateActionRecorder extends EventEmitter {
         this._vm = scratch.vm;
         Container.vm = this._vm;
 
-        this._recording = new Map<InputFeatures, string>();
+        this._recording = new Map<string, InputFeatures[]>();
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm);
-    }
+        this._recordedJSON = {};
 
-    /**
-     * Initialises the listeners required for starting and stopping the recording.
-     */
-    public setup(): void {
-        this._onRunStart = this.startRecording.bind(this);
-        this._onRunStop = this.stopRecording.bind(this);
+        this._onRunStart = this.onGreenFlag.bind(this);
+        this._onRunStop = this.onStopAll.bind(this);
         this._onInput = this.handleInput.bind(this);
         this._checkForWaitCallBack = this._checkForWait.bind(this);
-
-        this._vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
     }
 
     /**
-     * Starts the recording procedure by setting up a listener for inputs sent to Scratch-VM and an interval that
-     * checks periodically whether the absence of an input event indicates the necessity of a WaitEvent.
+     * Starts the recording procedure by setting listeners for the start and end of Scratch runs.
      */
     public startRecording(): void {
-        this._lastActionStep = 0;
-        this._scratch.on(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
-        this._checkForWaitInterval = window.setInterval(this._checkForWaitCallBack, 500);
+        this._vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this._vm.on(Runtime.Project_STOP_ALL, this._onRunStop);
+        this._isRecording = true;
     }
 
     /**
-     * Stops the recording by clearing listeners and the periodic wait event check.
+     * Starts recording scratch input actions and sets an interval for wait event checks when a Scratch run has started.
      */
-    private stopRecording(): void {
-        this._lastActionStep = 0;
-        clearInterval(this._checkForWaitInterval);
+    private onGreenFlag(): void {
+        this._scratch.on(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
+        this._checkForWaitInterval = window.setInterval(this._checkForWaitCallBack, 500);
+        this._lastActionStep = this._getCurrentStepCount();
+    }
+
+    /**
+     * Stops the recording of scratch input actions and clears the wait event check interval when the Scratch run stops.
+     */
+    private onStopAll(): void {
         this._scratch.off(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
+        clearInterval(this._checkForWaitInterval);
+        this._recordedJSON[`${Object.keys(this._recordedJSON).length}`] = this.currentRecordToJSON();
+        this._recording.clear();
+    }
+
+    /**
+     * Stops the recording by clearing listeners.
+     */
+    public stopRecording(): void {
+        this.onStopAll();
+        this._vm.off(Runtime.PROJECT_RUN_START, this._onRunStart);
+        this._vm.off(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this._isRecording = false;
     }
 
     /**
@@ -133,7 +147,10 @@ export class StateActionRecorder extends EventEmitter {
      */
     private _addActionToRecord(action: string): void {
         const stateFeatures = InputExtraction.extractFeatures(this._vm);
-        this._recording.set(stateFeatures, action);
+        if (!this._recording.has(action)) {
+            this._recording.set(action, []);
+        }
+        this._recording.get(action).push(stateFeatures);
         this._lastActionStep = this._getCurrentStepCount();
     }
 
@@ -144,9 +161,43 @@ export class StateActionRecorder extends EventEmitter {
     private _getCurrentStepCount(): number {
         return this._vm.runtime.stepsExecuted;
     }
+
+    /**
+     * Transforms the recorded state-action pairs of the latest Scratch run to a JSON object.
+     * @returns json of the recorded state-action pairs.
+     */
+    public currentRecordToJSON(): Record<string, InputFeatures[]> {
+        const json = {};
+        for (const [action, inputFeatures] of this._recording.entries()) {
+            const inputFeaturesForAction = [];
+            for (const inputFeature of inputFeatures) {
+                const spriteFeatures = {};
+                for (const [sprite, featureGroup] of inputFeature.entries()) {
+                    const featuresForSprite = {};
+                    for (const [feature, value] of featureGroup) {
+                        featuresForSprite[feature] = value;
+                    }
+                    spriteFeatures[sprite] = featuresForSprite;
+                }
+                inputFeaturesForAction.push(spriteFeatures);
+            }
+            json[action] = inputFeaturesForAction;
+        }
+        return json;
+    }
+
+    get isRecording(): boolean {
+        return this._isRecording;
+    }
+
+    get recordedJSON(): Record<string, Record<string, InputFeatures[]>> {
+        // Remove empty records.
+        Object.keys(this._recordedJSON).forEach((k) => Object.keys(this._recordedJSON[k]).length == 0 && delete this._recordedJSON[k]);
+        return this._recordedJSON;
+    }
 }
 
 /**
  * A {@link StateActionRecord} links a set of input features to the executed action.
  */
-export type StateActionRecord = Map<InputFeatures, string>;
+export type StateActionRecord = Map<string, InputFeatures[]>;

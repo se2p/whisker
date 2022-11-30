@@ -20,7 +20,6 @@ async function open(openNewPage){
     await page.evaluate(s => document.querySelector('#seed').value = s, seed);
     if(stateActionRecorder){
         await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
-        await (await page.$('#record')).click()
     }
 
     // Wait until page gets closed.
