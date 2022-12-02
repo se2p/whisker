@@ -67,7 +67,8 @@ async function runGeneticSearch(openNewPage) {
     }
 
     async function executeSearch() {
-        await (await page.$('#run-search')).click();
+        const startSearchButton = await page.$('#run-search');
+        await startSearchButton.evaluate(t => t.click());
     }
 
     async function downloadTests() {

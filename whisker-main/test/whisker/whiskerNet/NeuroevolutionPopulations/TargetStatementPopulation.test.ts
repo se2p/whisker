@@ -58,20 +58,32 @@ describe("Test TargetStatementPopulation", () => {
     });
 
     test("Generate population without starting networks", () => {
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, []);
+        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, [], 0);
         population.generatePopulation();
         expect(population.networks.length).toBe(size);
     });
 
-    test("Generate population with starting networks", () => {
+    test("Generate population with starting networks and low random fraction", () => {
         const networks = [];
         for (let i = 0; i < 5; i++) {
             networks.push(chromosomeGenerator.get());
         }
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, networks);
+        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, networks, 0.1);
         const innovations = NeatPopulation.innovations.length;
         population.generatePopulation();
         expect(population.networks.length).toBe(size);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(innovations);
+    });
+
+    test("Generate population with starting networks and maximum random fraction", () => {
+        const networks = [];
+        for (let i = 0; i < 5; i++) {
+            networks.push(chromosomeGenerator.get());
+        }
+        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, networks, 1);
+        const innovations = NeatPopulation.innovations.length;
+        population.generatePopulation();
+        expect(population.networks.length).toBe(size);
+        expect(NeatPopulation.innovations.length).toBe(innovations);
     });
 });

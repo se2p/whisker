@@ -52,6 +52,10 @@
         "timeout": 10000,
         "stableCount": 10
     },
+    "population": {
+        "strategy": "global_solutions",
+        "randomFraction": 0.1
+    },
     "stoppingCondition": {
         "type": "combined",
         "conditions": [
