@@ -141,7 +141,7 @@ describe('Model tests on multiple events per step', () => {
         await expect(modelCoverage).toBe("1.00");
     }, timeout);
 
-    jest.setTimeout(100000);
+    jest.setTimeout(150000);
     test('fruitcatcher with random model input', async () => {
         await loadProject('test/model/scratch-programs/fruitcatcher.sb3',
             'test/model/model-jsons/fruitcatcher-random-fruit.json');

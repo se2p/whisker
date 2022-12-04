@@ -3,7 +3,7 @@ const fileUrl = require('file-url');
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = process.env.SLOWMO ? 70000 : 80000;
+const timeout = process.env.SLOWMO ? 100000 : 90000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
@@ -33,10 +33,13 @@ async function readFitnessLog() {
  * Checks approachLevel, branchDistance and CFG-Distance for executionHaltingBlocks.
  * @returns {Promise<void>}
  */
-async function checkFitnessValuesForExecutionHaltingBlocks(){
+async function checkFitnessValuesForExecutionHaltingBlocks() {
     const startSearchButton = await page.$('#run-search');
     await startSearchButton.click();
-    const log = await readFitnessLog();
+    let log = await readFitnessLog();
+    while (log.uncoveredBlocks[0] === undefined) {
+        log = await readFitnessLog();
+    }
     const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
     await expect(approachLevel).toBe(0);
     const branchDistance = log.uncoveredBlocks[0].BranchDistance;
