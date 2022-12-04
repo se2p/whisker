@@ -401,6 +401,8 @@ export class Neatest extends NEAT {
                 }
                 const allStatements = [...this._fitnessFunctionMap.values()];
                 const parentNetworks: NeatChromosome[] = [];
+
+                // We may get multiple parents. Filter for unique networks.
                 for (const parent of graphParents) {
                     const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
                     const parentId = this.mapStatementToKey(parentStatement);
@@ -410,11 +412,6 @@ export class Neatest extends NEAT {
                         }
                     }
                 }
-                if (parentNetworks.length != 1) {
-                    throw (`Incorrect parent network size of direct_parent population strategy: ${parentNetworks.length} for target ${currentTarget.toString()}`);
-                }
-                console.log("Parent:", parentNetworks[0]);
-                console.log("Target: ", currentTarget);
                 return parentNetworks;
             }
             case "random":
