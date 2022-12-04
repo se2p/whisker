@@ -250,14 +250,23 @@ export class WhiskerSearchConfiguration {
         if (properties instanceof NeatestParameter) {
             properties.coverageStableCount = coverageStableCount;
             properties.switchTargetCount = switchTargetCount;
-            const populationGeneration = this._config['population']['strategy'] ?
-                this._config['population']['strategy'] : 'random';
-            properties.populationGeneration = populationGeneration;
-            if (populationGeneration !== 'random') {
-                properties.randomFraction = this._config['population']['randomFraction'] ?
-                    this._config['population']['randomFraction'] : 0.1;
-            } else {
+            // If no population key is present just set the strategy to random.
+            if (this._config['population'] === undefined) {
+                properties.populationGeneration = 'random';
                 properties.randomFraction = 1;
+            }
+            // At this point we have a population key present. Thus, set the generation strategy and
+            // the random fraction appropriately.
+            else {
+                const populationGeneration = this._config['population']['strategy'] ?
+                    this._config['population']['strategy'] : 'random';
+                properties.populationGeneration = populationGeneration;
+                if (populationGeneration !== 'random') {
+                    properties.randomFraction = this._config['population']['randomFraction'] ?
+                        this._config['population']['randomFraction'] : 0.1;
+                } else {
+                    properties.randomFraction = 1;
+                }
             }
         }
 
