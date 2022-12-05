@@ -158,11 +158,12 @@ describe('Model tests on multiple events per step', () => {
         await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 33);
         await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 8);
 
-        await (await page.$('#run-all-tests')).click();
+        const startTestButton = await page.$('#run-all-tests');
+        await startTestButton.click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
         await expect(errorsInModel).toBe("0");
         await expect(failsInModel).toBe("0");
         // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.9.
-        await expect(Number.parseInt(modelCoverage)).toBeGreaterThan(0.9);
+        await expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.9);
     })
 });
