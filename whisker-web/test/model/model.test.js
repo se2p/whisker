@@ -141,7 +141,7 @@ describe('Model tests on multiple events per step', () => {
         await expect(modelCoverage).toBe("1.00");
     }, timeout);
 
-    jest.setTimeout(150000);
+    jest.setTimeout(100000);
     test('fruitcatcher with random model input', async () => {
         await loadProject('test/model/scratch-programs/fruitcatcher.sb3',
             'test/model/model-jsons/fruitcatcher-random-fruit.json');
@@ -154,6 +154,6 @@ describe('Model tests on multiple events per step', () => {
         await expect(errorsInModel).toBe("0");
         await expect(failsInModel).toBe("0");
         // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.9.
-        await expect(Number.parseInt(modelCoverage)).toBeGreaterThan(0.9);
+        await expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.9);
     })
 });
