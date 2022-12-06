@@ -38,8 +38,8 @@ async function readFitnessLog() {
  * @returns {Promise<void>}
  */
 async function checkFitnessValuesForExecutionHaltingBlocks() {
-    const startSearchButton = await page.$('#run-search');
-    await startSearchButton.click();
+    const runSearch = await page.$('#run-search');
+    await runSearch.evaluate(t => t.click());
     let log = await readFitnessLog();
     while (log.uncoveredBlocks[0] === undefined) {
         log = await readFitnessLog();

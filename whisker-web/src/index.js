@@ -136,11 +136,12 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-    const networkTemplate = await Whisker.testFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
-    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm,
-        Whisker.scratch.project, projectName, config, configName, accelerationFactor, seed, networkTemplate);
+    const groundTruth = document.querySelector('#container').groundTruth;
+
+    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
+        projectName, config, configName, accelerationFactor, seed, groundTruth);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);

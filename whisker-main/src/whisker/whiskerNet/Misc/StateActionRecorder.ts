@@ -15,7 +15,7 @@ export class StateActionRecorder extends EventEmitter {
 
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
-    private readonly _recording: StateActionRecord;
+    private readonly _recording: ActionStateRecord;
     private readonly _eventExtractor: ScratchEventExtractor;
 
     private _isRecording: boolean;
@@ -198,6 +198,6 @@ export class StateActionRecorder extends EventEmitter {
 }
 
 /**
- * A {@link StateActionRecord} links a set of input features to the executed action.
+ * A {@link ActionStateRecord} links an action to an array of corresponding input features.
  */
-export type StateActionRecord = Map<string, InputFeatures[]>;
+export type ActionStateRecord = Map<string, InputFeatures[]>;

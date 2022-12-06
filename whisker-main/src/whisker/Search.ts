@@ -40,6 +40,7 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
+import {Backpropagation} from "./whiskerNet/Misc/Backpropagation";
 
 export class Search {
 
@@ -162,9 +163,8 @@ export class Search {
      * Main entry point -- called from whisker-web
      */
     public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number, seedString: string, template?: string): Promise<Array<string>> {
+                     accelerationFactor: number, seedString: string, groundTruth?: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
-        Container.template = template;
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
@@ -198,6 +198,12 @@ seed ${configSeed} defined within the config files.`);
         }
         else{
             Randomness.setInitialSeeds(Date.now());
+        }
+
+        // Check presence of groundTruth for Neatest + backprop.
+        if(groundTruth){
+            Container.backpropagation = new Backpropagation(JSON.parse(groundTruth));
+            console.log(Container.backpropagation.groundTruth);
         }
 
         StatisticsCollector.getInstance().reset();

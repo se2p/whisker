@@ -113,6 +113,14 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionGroundTruthPath(){
+        return this.option(
+            '-g, --ground-truth <Path>',
+            'path to GroundTruth data for Neatest + Backpropagation',
+            (groundTruth) => util.processFilePathExists(groundTruth, '.json'),
+        );
+    }
+
     requireConfigPath() {
         return this.requiredOption(
             '-c, --config-path <Path>',
@@ -250,7 +258,8 @@ const subCommands = [
             '-r, --add-random-inputs <Integer>',
             'add random inputs to the test and wait the given number of seconds for its completion',
             (seconds) => util.processPositiveInt(seconds),
-            10),
+            10)
+        .optionGroundTruthPath(),
 
     newSubCommand('dynamic')
         .description('dynamic test suites using Neuroevolution')
