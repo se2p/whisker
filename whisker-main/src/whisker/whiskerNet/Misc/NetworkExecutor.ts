@@ -118,6 +118,13 @@ export class NetworkExecutor {
                 if (nextEvent === undefined) {
                     eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
                     nextEvent = this.availableEvents[eventIndex];
+
+                    // If we still don't have a WaitEvent, we must add it manually. This could happen if we encounter
+                    // type text events.
+                    if(nextEvent === undefined) {
+                        this.availableEvents.push(new WaitEvent());
+                        nextEvent = this.availableEvents[this.availableEvents.length - 1];
+                    }
                 }
                 network.codons.push(eventIndex);
                 await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
