@@ -680,4 +680,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     public toString = (): string => {
         return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
     }
+
+    public getNodeId():string {
+        return `${this._targetNode.id}`;
+    }
 }

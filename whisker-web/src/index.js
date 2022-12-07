@@ -455,7 +455,7 @@ const initEvents = function () {
                 Whisker.scratch.disableInput();
 
                 // Download the recording.
-                const recording = Whisker.stateActionRecorder.recordedJSON;
+                const recording = Whisker.stateActionRecorder.getRecord();
                 const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
                 FileSaver.saveAs(blob, `Recording-${Whisker.projectFileSelect.getName()}.json`);
             } else {

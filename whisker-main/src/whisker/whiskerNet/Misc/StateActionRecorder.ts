@@ -8,6 +8,7 @@ import {ScratchEventExtractor} from "../../testcase/ScratchEventExtractor";
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
 import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
 import Runtime from "scratch-vm/src/engine/runtime";
+import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -15,13 +16,15 @@ export class StateActionRecorder extends EventEmitter {
 
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
-    private readonly _recording: ActionStateRecord;
     private readonly _eventExtractor: ScratchEventExtractor;
+    private _statements: string[];
+
+    private readonly _fullRecordings: Recording[];
+    private _actionRecords: StateActionRecord[]
 
     private _isRecording: boolean;
     private _lastActionStep: number;
     private _checkForWaitInterval: number;
-    private readonly _recordedJSON: Record<string, Record<string, InputFeatures[]>>;
 
     private readonly _onRunStart: () => void;
     private readonly _onRunStop: () => void;
@@ -34,9 +37,9 @@ export class StateActionRecorder extends EventEmitter {
         this._vm = scratch.vm;
         Container.vm = this._vm;
 
-        this._recording = new Map<string, InputFeatures[]>();
+        this._actionRecords = [];
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm);
-        this._recordedJSON = {};
+        this._fullRecordings = [];
 
         this._onRunStart = this.onGreenFlag.bind(this);
         this._onRunStop = this.onStopAll.bind(this);
@@ -52,6 +55,8 @@ export class StateActionRecorder extends EventEmitter {
         this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this._vm.on(Runtime.Project_STOP_ALL, this._onRunStop);
         this._isRecording = true;
+
+        this._statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(this._vm, []).map(stat => stat.getNodeId());
     }
 
     /**
@@ -69,47 +74,47 @@ export class StateActionRecorder extends EventEmitter {
     private onStopAll(): void {
         this._scratch.off(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
         clearInterval(this._checkForWaitInterval);
-        this._recordedJSON[`${Object.keys(this._recordedJSON).length}`] = this.currentRecordToJSON();
-        this._recording.clear();
+        this.addStateActionRecordsToRecording(this._fullRecordings.length, this._vm.runtime.traceInfo.tracer.coverage as Set<string>);
     }
 
     /**
      * Stops the recording by clearing listeners.
      */
     public stopRecording(): void {
-        this.onStopAll();
+        this._scratch.off(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
+        clearInterval(this._checkForWaitInterval);
         this._vm.off(Runtime.PROJECT_RUN_START, this._onRunStart);
         this._vm.off(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this._isRecording = false;
     }
 
     /**
-     * Handles received input data by converting it to a string representation of an executable {@link ScratchEvent} and
-     * checking whether the executed action has an active listener. If there is no active listener for the received
+     * Handles received action data by converting it to a string representation of an executable {@link ScratchEvent}
+     * and checking whether the executed action has an active listener. If there is no active listener for the received
      * input event then the event can be discarded as it does not lead to a state change.
-     * @param inputData represents the received input event.
+     * @param actionData represents the received input event.
      */
-    private handleInput(inputData): void {
-        const event = this._inputToEvent(inputData);
+    private handleInput(actionData): void {
+        const event = this._inputToEvent(actionData);
         if (event) {
             const action = event.stringIdentifier();
             const availableActions = this._eventExtractor.extractEvents(this._vm).map(event => event.stringIdentifier());
             if (availableActions.indexOf(action) >= 0) {
-                this._addActionToRecord(action);
+                this._recordAction(action);
             }
         }
     }
 
     /**
-     * Maps a received input data object to the corresponding {@link ScratchEvent}.
-     * @param inputData the input data object containing details of the input event.
-     * @returns the ScratchEvent corresponding to the supplied input data.
+     * Maps a received action data object to the corresponding {@link ScratchEvent}.
+     * @param actionData the action data object containing details of the input event.
+     * @returns the ScratchEvent corresponding to the supplied action data.
      */
-    private _inputToEvent(inputData): ScratchEvent {
+    private _inputToEvent(actionData): ScratchEvent {
         let event: ScratchEvent;
-        switch (inputData.device) {
+        switch (actionData.device) {
             case 'keyboard':
-                event = this._handleKeyBoardInput(inputData);
+                event = this._handleKeyBoardInput(actionData);
                 break;
             default:
                 event = undefined;
@@ -119,12 +124,12 @@ export class StateActionRecorder extends EventEmitter {
 
     /**
      * Handles keyboard input such as key presses.
-     * @param inputData the input data object containing details of the input event.
-     * @returns the Scratch event to the observed input data..
+     * @param actionData the action data object containing details of the input event.
+     * @returns the Scratch event to the observed action data.
      */
-    private _handleKeyBoardInput(inputData): ScratchEvent {
-        if (inputData.isDown && inputData.key !== null) {
-            const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(inputData.key);
+    private _handleKeyBoardInput(actionData): ScratchEvent {
+        if (actionData.isDown && actionData.key !== null) {
+            const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(actionData.key);
             return new KeyPressEvent(key);
         }
         return undefined;
@@ -137,20 +142,21 @@ export class StateActionRecorder extends EventEmitter {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         const acceleration = Container.acceleration != undefined ? Container.acceleration : 1;
         if (stepsSinceLastAction > (50 / acceleration)) {
-            this._addActionToRecord('WaitEvent');
+            this._recordAction('WaitEvent');
         }
     }
 
     /**
-     * Adds an observed action event and the corresponding Scratch-State to the recording.
-     * @param action the observed {@link ScratchEvent} in a string representation.
+     * Records an observed action including the corresponding state by adding it to the actionRecords array.
+     * @param action the observed action.
      */
-    private _addActionToRecord(action: string): void {
+    private _recordAction(action: string): void {
         const stateFeatures = InputExtraction.extractFeatures(this._vm);
-        if (!this._recording.has(action)) {
-            this._recording.set(action, []);
-        }
-        this._recording.get(action).push(stateFeatures);
+        const record: StateActionRecord = {
+            state: stateFeatures,
+            action: action
+        };
+        this._actionRecords.push(record);
         this._lastActionStep = this._getCurrentStepCount();
     }
 
@@ -163,41 +169,64 @@ export class StateActionRecorder extends EventEmitter {
     }
 
     /**
-     * Transforms the recorded state-action pairs of the latest Scratch run to a JSON object.
-     * @returns json of the recorded state-action pairs.
+     * Adds an {@link StateActionRecord} to the global {@link Recording}.
      */
-    public currentRecordToJSON(): Record<string, InputFeatures[]> {
-        const json = {};
-        for (const [action, inputFeatures] of this._recording.entries()) {
-            const inputFeaturesForAction = [];
-            for (const inputFeature of inputFeatures) {
-                const spriteFeatures = {};
-                for (const [sprite, featureGroup] of inputFeature.entries()) {
-                    const featuresForSprite = {};
-                    for (const [feature, value] of featureGroup) {
-                        featuresForSprite[feature] = value;
-                    }
-                    spriteFeatures[sprite] = featuresForSprite;
-                }
-                inputFeaturesForAction.push(spriteFeatures);
-            }
-            json[action] = inputFeaturesForAction;
-        }
-        return json;
+    public addStateActionRecordsToRecording(id: number, coverage: Set<string>): void {
+        const filteredCoverage = [...coverage.values()].filter(value => this._statements.includes(value));
+        const fullRecord: Recording = {
+            recordings: [...this._actionRecords],
+            coverage: filteredCoverage
+        };
+        this._fullRecordings.push(fullRecord);
+        this._actionRecords = [];
     }
 
     get isRecording(): boolean {
         return this._isRecording;
     }
 
-    get recordedJSON(): Record<string, Record<string, InputFeatures[]>> {
+    /**
+     * Transforms the recording into a json object that can be transformed into a string and downloaded as '.json' file.
+     * @returns downloadable json format.
+     */
+    getRecord(): Record<string, unknown> {
         // Remove empty records.
-        Object.keys(this._recordedJSON).forEach((k) => Object.keys(this._recordedJSON[k]).length == 0 && delete this._recordedJSON[k]);
-        return this._recordedJSON;
+        const json = {};
+        for (let i = 0; i < this._fullRecordings.length; i++) {
+            const stateActionRecords = {};
+            for (const stateActionRecord of this._fullRecordings[i].recordings) {
+                const spriteFeatures = {};
+                for (const [sprite, features] of stateActionRecord.state.entries()) {
+                    const featureJSON = {};
+                    for (const [feature, value] of features.entries()) {
+                        featureJSON[feature] = value;
+                    }
+                    spriteFeatures[sprite] = featureJSON;
+                }
+                if (!(stateActionRecord.action in stateActionRecords)) {
+                    stateActionRecords[stateActionRecord.action] = [];
+                }
+                stateActionRecords[stateActionRecord.action].push(spriteFeatures);
+            }
+            stateActionRecords['coverage'] = this._fullRecordings[i].coverage;
+            json[Object.keys(json).length] = stateActionRecords;
+        }
+        return json;
     }
 }
 
 /**
- * A {@link ActionStateRecord} links an action to an array of corresponding input features.
+ * StateAction record of a single action.
  */
-export type ActionStateRecord = Map<string, InputFeatures[]>;
+export interface StateActionRecord {
+    state: InputFeatures
+    action: string
+}
+
+/**
+ * Collection of {@link StateActionRecord}s of an entire recording procedure combined with the achieved coverage.
+ */
+export interface Recording {
+    recordings: StateActionRecord[],
+    coverage: string[]
+}

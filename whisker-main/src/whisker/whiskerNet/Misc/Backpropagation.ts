@@ -1,4 +1,3 @@
-import {ActionStateRecord} from "./StateActionRecorder";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {InputFeatures} from "./InputExtraction";
 import {Randomness} from "../../utils/Randomness";
@@ -36,7 +35,7 @@ export class Backpropagation {
     private _organiseData(originalData: Record<string, unknown>): StateActionRecord {
 
         // We may have multiple recordings within one file. Collect all recordings and save them as ActionStateRecord.
-        const actionStateRecord: ActionStateRecord = new Map<string, InputFeatures[]>();
+        const actionStateRecord = new Map<string, InputFeatures[]>();
         for (const recording of Object.values(originalData)) {
             for (const [action, feature] of Object.entries(recording)) {
                 if (!actionStateRecord.has(action)) {
