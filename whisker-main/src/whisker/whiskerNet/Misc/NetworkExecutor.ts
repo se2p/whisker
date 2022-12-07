@@ -116,23 +116,15 @@ export class NetworkExecutor {
                 // If something goes wrong, e.g. we have a defect network due to all active input nodes being
                 // disconnected to every output node, just insert a Wait.
                 if (nextEvent === undefined) {
-                    console.log("Undef first");
                     eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
                     nextEvent = this.availableEvents[eventIndex];
 
                     // If we still don't have a WaitEvent, we must add it manually. This could happen if we encounter
                     // type text events.
-                    if(nextEvent === undefined) {
-                        console.log("Undef 2.", this.availableEvents.toString());
+                    if (nextEvent === undefined) {
                         this.availableEvents.push(new WaitEvent());
                         nextEvent = this.availableEvents[this.availableEvents.length - 1];
-                        console.log("Still undef? ", nextEvent);
                     }
-                }
-                if(nextEvent === undefined){
-                    console.log("Undef before call");
-                    console.log("WaitSteps: ", this._waitDuration);
-                    console.log(this.availableEvents.toString());
                 }
                 network.codons.push(eventIndex);
                 await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
