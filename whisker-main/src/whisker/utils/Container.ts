@@ -4,7 +4,6 @@ import VMWrapper from "../../vm/vm-wrapper";
 import TestDriver from "../../test/test-driver.js";
 import {ScratchPosition} from "../scratch/ScratchPosition";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
-import {Backpropagation} from "../whiskerNet/Misc/Backpropagation";
 
 export class Container {
     static config: WhiskerSearchConfiguration;
@@ -16,5 +15,5 @@ export class Container {
     static isNeuroevolution: boolean
     static debugLog: typeof console.log;
     static statementFitnessFunctions: StatementFitnessFunction[];
-    static backpropagation: Backpropagation;
+    static backpropagationData: Record<string, unknown>;
 }

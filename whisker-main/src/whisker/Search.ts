@@ -200,10 +200,9 @@ seed ${configSeed} defined within the config files.`);
             Randomness.setInitialSeeds(Date.now());
         }
 
-        // Check presence of groundTruth for Neatest + backprop.
+        // Check presence of groundTruth for Neatest + backpropagation.
         if(groundTruth){
-            Container.backpropagation = new Backpropagation(JSON.parse(groundTruth));
-            console.log(Container.backpropagation.groundTruth);
+            Container.backpropagationData = JSON.parse(groundTruth);
         }
 
         StatisticsCollector.getInstance().reset();

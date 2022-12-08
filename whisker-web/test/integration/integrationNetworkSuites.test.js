@@ -5,7 +5,7 @@ const fs = require("fs");
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = process.env.SLOWMO ? 150000 : 140000;
+const timeout = 20000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
@@ -58,7 +58,7 @@ describe('Test Dynamic Network Suites', () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingDynamic.json");
         await (await page.$('#run-all-tests')).click();
         const coveredBlocks = await getLogAfterSearch();
-        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(40);
+        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(38);   // Easy to cover blocks in FruitCatching
     }, timeout);
 });
 
