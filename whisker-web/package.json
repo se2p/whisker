@@ -9,6 +9,9 @@
         "type": "git",
         "url": "git+ssh://git@github.com/se2p/whisker-web"
     },
+    "jest": {
+        "testTimeout": 20000
+    },
     "browser": "./index.html",
     "scripts": {
         "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
