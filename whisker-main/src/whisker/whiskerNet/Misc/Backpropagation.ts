@@ -4,13 +4,13 @@ import {Randomness} from "../../utils/Randomness";
 
 export class Backpropagation {
 
-    private readonly _groundTruth: StateActionRecord;
+    private readonly _groundTruthData: Record<string, unknown>;
 
     constructor(groundTruth: Record<string, unknown>) {
-        this._groundTruth = this._organiseData(groundTruth);
+        this._groundTruthData = groundTruth;
     }
 
-    public optimiseWeights(network: NetworkChromosome): void {
+    public optimiseWeights(network: NetworkChromosome, statement:string): void {
         return;
     }
 
@@ -28,16 +28,19 @@ export class Backpropagation {
 
     /**
      * Restructures and shuffles the data obtained from the .json file such that it can be handily used during the
-     * backpropagation process.
-     * @param originalData the data obtained from .json file.
+     * backpropagation process and only includes records that correspond to the current statement target.
+     * @param statement the target for which the networks should be optimised.
      * @returns structured and shuffled input-label data for the backpropagation process.
      */
-    private _organiseData(originalData: Record<string, unknown>): StateActionRecord {
-
-        // We may have multiple recordings within one file. Collect all recordings and save them as ActionStateRecord.
+    public _organiseData(statement: string): StateActionRecord {
+        // We may have multiple recordings within one file. Collect all recordings that covered the current target in
+        // an action to feature map.
         const actionStateRecord = new Map<string, InputFeatures[]>();
-        for (const recording of Object.values(originalData)) {
+        for (const recording of Object.values(this._groundTruthData)) {
             for (const [action, feature] of Object.entries(recording)) {
+                if (action === 'coverage' || !(recording['coverage'].includes(statement))) {
+                    continue;
+                }
                 if (!actionStateRecord.has(action)) {
                     actionStateRecord.set(action, []);
                 }
@@ -60,11 +63,6 @@ export class Backpropagation {
             }
         }
         return shuffledGroundTruth;
-    }
-
-
-    get groundTruth(): StateActionRecord {
-        return this._groundTruth;
     }
 }
 
