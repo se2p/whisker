@@ -3,7 +3,7 @@ const fileUrl = require('file-url');
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = process.env.SLOWMO ? 100000 : 90000;
+const timeout = 20000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
@@ -69,6 +69,7 @@ describe('Basic event handling', () => {
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
+    jest.setTimeout(50000)
     test('Test TypeNumberEvent required to provide answers', async () => {
         await loadProject('test/integration/numberEvent/TypeNumberEvent.sb3')
         await (await page.$('#run-search')).click();
