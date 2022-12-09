@@ -1,6 +1,6 @@
 {
     "name": "scratch-analysis",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "main": "index.js",
     "license": "GPL-3.0-only",
     "scripts": {
