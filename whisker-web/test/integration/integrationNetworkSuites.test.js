@@ -49,7 +49,7 @@ describe('Test Dynamic Network Suites', () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingDynamic.json");
         await (await page.$('#run-all-tests')).click();
         const coveredBlocks = await getLogAfterSearch();
-        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(50);
+        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(38);
     }, timeout);
 });
 

@@ -3,7 +3,7 @@ const fileUrl = require('file-url');
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = 20000;
+const timeout = 30000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
@@ -38,7 +38,7 @@ beforeEach(async () => {
             return Promise.reject(err);
         });
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
+    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/random.json");
 });
 
 
