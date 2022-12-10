@@ -66,7 +66,7 @@ describe('Algorithms', () => {
         await (await page.$('#run-search')).click();
         await (await page.$('#run-all-tests')).click();
         const coverage = await getCoverage();
-        expect(coverage).toBeGreaterThanOrEqual(0.5);
+        expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 
     test('MOSA', async () => {
@@ -75,7 +75,7 @@ describe('Algorithms', () => {
         await (await page.$('#run-search')).click();
         await (await page.$('#run-all-tests')).click();
         const coverage = await getCoverage();
-        expect(coverage).toBeGreaterThanOrEqual(0.5);
+        expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 
     test('Neatest', async () => {
@@ -84,7 +84,7 @@ describe('Algorithms', () => {
         await (await page.$('#run-search')).click();
         await (await page.$('#run-all-tests')).click();
         const coverage = await getCoverage();
-        expect(coverage).toBeGreaterThanOrEqual(0.5);
+        expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 });
 
