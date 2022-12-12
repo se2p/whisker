@@ -104,7 +104,8 @@ describe('LocalSearch', () => {
     test('Test ExtensionLocalSearch without Branches', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionTest.sb3')
-        await (await page.$('#run-search')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.click();
         const log = await getUncoveredBlocks();
         await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
@@ -113,7 +114,8 @@ describe('LocalSearch', () => {
     test('Test ExtensionLocalSearch with repeat until block', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionRepeatUntilTest.sb3')
-        await (await page.$('#run-search')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.click();
         const log = await getUncoveredBlocks();
         await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
