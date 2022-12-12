@@ -71,9 +71,8 @@ describe("classificationNode Tests", () => {
     test("getActivationValue Test", () => {
         classificationNode.nodeValue = 1;
         classificationNode.activatedFlag = true;
-        const sigmoidResult = NeuroevolutionUtil.sigmoid(1, 1);
-        expect(classificationNode.activate()).toBe(sigmoidResult);
-        expect(classificationNode.activationValue).toBe(sigmoidResult);
+        expect(classificationNode.activate()).toBe(classificationNode.nodeValue);
+        expect(classificationNode.activationValue).toBe(classificationNode.nodeValue);
         classificationNode.reset();
         expect(classificationNode.activate()).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
@@ -90,9 +89,8 @@ describe("classificationNode Tests", () => {
         const classificationNode3 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.TANH);
         classificationNode3.nodeValue = -1;
         classificationNode3.activatedFlag = true;
-        const tanhResult = Math.tanh(-1);
-        expect(classificationNode3.activate()).toBe(tanhResult);
-        expect(classificationNode3.activationValue).toBe(tanhResult);
+        expect(classificationNode3.activate()).toBe(-1);
+        expect(classificationNode3.activationValue).toBe(-1);
         classificationNode3.reset();
         expect(classificationNode3.activate()).toBe(0);
         expect(classificationNode3.activationValue).toBe(0);

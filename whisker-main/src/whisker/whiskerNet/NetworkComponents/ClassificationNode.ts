@@ -43,29 +43,13 @@ export class ClassificationNode extends NodeGene {
     }
 
     /**
-     * Calculates the activation value of the classification node based on the node value and the activation function.
-     * @returns number activation value of the classification node.
+     * On classification nodes we apply softmax after the network activation.
+     * Hence, we refer from using another activation function here.
+     * @returns node value of the classification node.
      */
     activate(): number {
-        if (this.activatedFlag) {
-            switch (this.activationFunction) {
-                case ActivationFunction.SIGMOID:
-                    // The specified gain value of -4.9 is based on the original NEAT publication.
-                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
-                    break;
-                case ActivationFunction.TANH:
-                    this.activationValue = Math.tanh(this.nodeValue);
-                    break;
-                case ActivationFunction.RELU:
-                    this.activationValue = Math.max(0, this.nodeValue);
-                    break;
-                default:
-                    this.activationValue = this.nodeValue;
-                    break;
-            }
-            return this.activationValue;
-        } else
-            return 0.0;
+        this.activationValue = this.nodeValue;
+        return this.nodeValue;
     }
 
     /**

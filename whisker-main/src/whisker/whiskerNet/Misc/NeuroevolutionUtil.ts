@@ -13,24 +13,17 @@ export class NeuroevolutionUtil {
     }
 
     /**
-     * Calculates the SOFTMAX function over all classification-outputNode values
-     * @param network the network over which the softmax function should be calculated
-     * @param events the list of available events for which the softmax function should be calculated
+     * Generates a map of events and the corresponding probabilities determined via multiclass-classification using
+     * softmax
+     * @param network the network hosting the activated output nodes over which softmax has been applied.
+     * @param events the list of available events to which the output of the classification nodes is being mapped.
      */
     public static softmaxEvents(network: NetworkChromosome, events: ScratchEvent[]): Map<ScratchEvent, number> {
         const probabilityMap = new Map<ScratchEvent, number>();
-        let denominator = 0;
         for (const event of events) {
             const oNode = network.classificationNodes.get(event.stringIdentifier());
             if (oNode.activatedFlag) {
-                denominator += Math.exp(oNode.nodeValue);
-            }
-        }
-        for (const event of events) {
-            const oNode = network.classificationNodes.get(event.stringIdentifier());
-            if (oNode.activatedFlag) {
-                const probability = Math.exp(oNode.nodeValue) / denominator;
-                probabilityMap.set(event, probability);
+                probabilityMap.set(event, oNode.activationValue);
             }
         }
         return probabilityMap;

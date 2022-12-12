@@ -392,7 +392,23 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
             }
         }
+        this.applySoftMax();
         return true;
+    }
+
+    private applySoftMax(){
+        // Calculate denominator
+        let denominator = 0;
+        for(const node of this.classificationNodes.values()){
+            if (node.activatedFlag) {
+                denominator += Math.exp(node.nodeValue);
+            }
+        }
+
+        // Calculate activation value for each classification node
+        for(const node of this.classificationNodes.values()){
+            node.activationValue = Math.exp(node.nodeValue) / denominator;
+        }
     }
 
     /**
