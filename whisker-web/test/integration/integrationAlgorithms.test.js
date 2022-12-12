@@ -76,7 +76,7 @@ describe('Algorithms', () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
-        await runSearchButton.click();
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -85,7 +85,7 @@ describe('Algorithms', () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMOSA.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
-        await runSearchButton.click();
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -94,7 +94,7 @@ describe('Algorithms', () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatest.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
-        await runSearchButton.click();
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -105,7 +105,7 @@ describe('LocalSearch', () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionTest.sb3')
         const runSearchButton = await page.$('#run-search');
-        await runSearchButton.click();
+        await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
@@ -114,7 +114,7 @@ describe('LocalSearch', () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionRepeatUntilTest.sb3')
         const runSearchButton = await page.$('#run-search');
-        await runSearchButton.click();
+        await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
