@@ -29,6 +29,10 @@ body {
     }
 }
 
+.tab-content .active {
+	min-height:270px;
+}
+
 .applyChangesClass {
     animation: glowing 1300ms infinite;
 }
