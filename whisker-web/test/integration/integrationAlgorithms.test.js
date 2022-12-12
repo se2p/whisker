@@ -9,7 +9,8 @@ const timeout = 30000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+    const projectSelection = await page.$('#fileselect-project');
+    await projectSelection.uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
     const toggleExtendedView = await page.$('#extendedView');
@@ -75,8 +76,8 @@ describe('Algorithms', () => {
     test('MIO', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
-        await (await page.$('#run-search')).click();
-        await (await page.$('#run-all-tests')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -84,8 +85,8 @@ describe('Algorithms', () => {
     test('MOSA', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMOSA.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
-        await (await page.$('#run-search')).click();
-        await (await page.$('#run-all-tests')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -93,8 +94,8 @@ describe('Algorithms', () => {
     test('Neatest', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatest.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
-        await (await page.$('#run-search')).click();
-        await (await page.$('#run-all-tests')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -105,9 +106,8 @@ describe('LocalSearch', () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionTest.sb3')
         const runSearchButton = await page.$('#run-search');
-        await runSearchButton.click();
+        await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -115,9 +115,8 @@ describe('LocalSearch', () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionRepeatUntilTest.sb3')
         const runSearchButton = await page.$('#run-search');
-        await runSearchButton.click();
+        await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 });

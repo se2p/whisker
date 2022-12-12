@@ -60,7 +60,6 @@ describe('Corner cases handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log).toBe('empty project');
     }, timeout);
 
@@ -69,7 +68,6 @@ describe('Corner cases handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log).toBe('empty project');
     }, timeout);
 });
@@ -80,7 +78,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -89,7 +86,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -99,7 +95,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -109,7 +104,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -118,7 +112,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -127,7 +120,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -136,7 +128,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -145,7 +136,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -154,7 +144,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -163,7 +152,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -172,7 +160,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -181,7 +168,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -190,7 +176,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -199,7 +184,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -208,7 +192,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -217,7 +200,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -227,7 +209,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -237,7 +218,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -246,7 +226,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -255,7 +234,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -264,7 +242,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -273,7 +250,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -282,7 +258,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -291,7 +266,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -300,7 +274,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -309,7 +282,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -318,7 +290,6 @@ describe('Basic event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 });
@@ -329,7 +300,6 @@ describe('Multiple event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -339,7 +309,6 @@ describe('Multiple event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
@@ -348,7 +317,6 @@ describe('Multiple event handling', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await getLogAfterSearch();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 });
