@@ -9,7 +9,8 @@ const timeout = 30000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+    const projectSelection = await page.$('#fileselect-project');
+    await projectSelection.uploadFile(scratchPath);
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
     const toggleExtendedView = await page.$('#extendedView');
