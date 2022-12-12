@@ -56,6 +56,9 @@ export class ClassificationNode extends NodeGene {
                 case ActivationFunction.TANH:
                     this.activationValue = Math.tanh(this.nodeValue);
                     break;
+                case ActivationFunction.RELU:
+                    this.activationValue = Math.max(0, this.nodeValue);
+                    break;
                 default:
                     this.activationValue = this.nodeValue;
                     break;

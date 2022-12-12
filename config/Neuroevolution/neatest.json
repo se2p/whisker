@@ -12,7 +12,7 @@
     "aTRepetitions": 100,
     "chromosome": {
         "type": "neatChromosome",
-        "activationFunction": "TANH",
+        "activationFunction": "RELU",
         "inputConnectionMethod": "fullyHidden"
     },
     "crossover": {
