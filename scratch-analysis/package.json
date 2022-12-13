@@ -5,6 +5,7 @@
     "license": "GPL-3.0-only",
     "scripts": {
         "build": "webpack --color --bail",
+        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
         "test": "jest --forceExit --coverage --verbose",
         "test:coverage": "yarn test -- --coverage"
     },

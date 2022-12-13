@@ -13,6 +13,7 @@
     "scripts": {
         "build": "tsc --incremental && webpack --color --bail",
         "build:prod": "NODE_ENV=production webpack --color --bail",
+        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && tsc --incremental && webpack --color --bail",
         "test": "jest --forceExit --coverage --verbose",
         "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
         "watch-test": "npm run test -- --watchAll",

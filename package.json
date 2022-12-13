@@ -19,6 +19,7 @@
     },
     "scripts": {
         "build": "yarn --cwd scratch-analysis build && yarn --cwd whisker-main build && yarn --cwd whisker-web build",
+        "build:clean": "yarn --cwd scratch-analysis build:clean && yarn --cwd whisker-main build:clean && yarn --cwd whisker-web build:clean",
         "build-main": "yarn --cwd whisker-main build",
         "build-web": "yarn --cwd whisker-web build",
         "build-analysis": "yarn --cwd scratch-analysis build",
