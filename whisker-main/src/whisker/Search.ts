@@ -171,6 +171,7 @@ export class Search {
 
         Container.config = config;
         Container.vm = vm;
+        vm.deactivateDebugTracing();
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
