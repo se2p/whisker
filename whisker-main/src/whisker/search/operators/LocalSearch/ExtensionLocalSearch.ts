@@ -96,7 +96,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const newCodons: number[] = [];
         const events: EventAndParameters[] = [];
         newCodons.push(...chromosome.getGenes());
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vmWrapper.vm);
         this._vmWrapper.start();
 
         // Execute the original codons to obtain the state of the VM after executing the original chromosome.
@@ -107,7 +107,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
         // Create the chromosome resulting from local search.
         const newChromosome = chromosome.cloneWith(newCodons);
-        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
+        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
         newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
@@ -155,7 +155,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const eventSelector = Container.config.getEventSelector();
         let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
         let lastImprovedCodon = chromosome.lastImprovedCodon;
-        let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
+        let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
 
         // Monitor if the Scratch-VM is still running. If it isn't, stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
@@ -274,7 +274,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             previousEvents = Arrays.clone(availableEvents);
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
-            chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
+            chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, events);
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
             const newFitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
 
@@ -283,7 +283,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
                 if (TestExecutor.doRequireLastImprovedCodon(chromosome)) {
                     lastImprovedCodon = codons.length;
-                    lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
+                    lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
                 }
             }
             // Otherwise, stop.

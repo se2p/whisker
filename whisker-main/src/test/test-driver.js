@@ -90,7 +90,7 @@ class TestDriver {
         /* Further Test Tools  */
         this.seedScratch = (seed) => {
             Randomness.setInitialSeeds(seed);
-            Randomness.seedScratch();
+            Randomness.seedScratch(this.vm);
         };
         this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
         this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;

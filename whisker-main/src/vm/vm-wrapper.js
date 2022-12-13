@@ -189,15 +189,21 @@ class VMWrapper {
         let constraintError = null;
 
         while (this.isScratchRunning() && this.getRunStepsExecuted() < steps && !condition()) {
+            if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
+                const previousStepsExecuted = this.vm.runtime.stepsExecuted;
 
-            constraintError = await this.stepper.step(this.step.bind(this));
+                constraintError = await this.stepper.step(this.step.bind(this));
 
-            this.stepsExecuted++;
+                this.stepsExecuted += this.vm.runtime.stepsExecuted - previousStepsExecuted;
 
-            if (constraintError &&
-                (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
-                    this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
-                break;
+                if (constraintError &&
+                    (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
+                        this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
+                    break;
+                }
+            } else {
+                // The execution of a test is paused in the debugger. Without the timeout, the debugger GUI freezes.
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
 
@@ -272,11 +278,19 @@ class VMWrapper {
     }
 
     /**
+     * Gives back the current step time.
+     * @return {number} Step time in ms.
+     */
+    getCurrentStepTime() {
+        return this.vm.runtime.paused ? this.vm.runtime.oldStepTime : this.vm.runtime.currentStepTime;
+    }
+
+    /**
      * Gives back the total timespan since the start of the test suite taking the acceleration factor into account.
      * @return {number} Runtime in ms.
      */
     getTotalTimeElapsed() {
-        return this.getTotalStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
+        return this.getTotalStepsExecuted() * this.getCurrentStepTime() * this.accelerationFactor;
     }
 
     /**
@@ -284,7 +298,7 @@ class VMWrapper {
      * @return {number} Runtime in ms.
      */
     getRunTimeElapsed() {
-        return this.getRunStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
+        return this.getRunStepsExecuted() * this.getCurrentStepTime() * this.accelerationFactor;
     }
 
     /**
@@ -578,7 +592,7 @@ class VMWrapper {
      * @return {number} The converted time in steps.
      */
     convertFromTimeToSteps(timeDuration) {
-        const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
+        const stepDuration = this.getCurrentStepTime() * this.accelerationFactor;
         return timeDuration / stepDuration;
     }
 
