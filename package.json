@@ -1,6 +1,6 @@
 {
     "name": "whisker",
-    "version": "0.6.0",
+    "version": "0.8.0",
     "description": "A Testing Utility for Scratch 3.0",
     "license": "GPL-3.0-only",
     "repository": {
@@ -30,7 +30,7 @@
     "devDependencies": {
         "@babel/core": "^7.15.5",
         "@babel/preset-env": "^7.15.6",
-        "@types/jest": "^28.1.5",
+        "@types/jest": "28.1.5",
         "@types/node": "^16.9.1",
         "@typescript-eslint/eslint-plugin": "^4.31.1",
         "@typescript-eslint/parser": "^4.31.1",
