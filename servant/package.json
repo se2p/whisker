@@ -14,7 +14,8 @@
         "yaml": "^1.10.2"
     },
     "scripts": {
-        "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail"
+        "build": "webpack --color --bail",
+        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail"
     },
     "author": "",
     "license": "ISC",

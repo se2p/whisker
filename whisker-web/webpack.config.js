@@ -21,7 +21,7 @@ module.exports = [
             ]
         },
         output: {
-            path: path.resolve(__dirname, 'dist')
+            path: path.resolve(__dirname, 'dist'),
         },
         module: {
             rules: [
@@ -88,7 +88,7 @@ module.exports = [
         },
         output: {
             path: path.resolve(__dirname, 'dist'),
-            filename: '[name].js'
+            filename: '[name].js',
         },
         module: {
             rules: [

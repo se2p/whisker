@@ -18,7 +18,8 @@ module.exports = [
             library: 'Whisker',
             filename: '[name].js',
             libraryTarget: 'umd',
-            path: path.resolve('dist', 'web')
+            path: path.resolve('dist', 'web'),
+            clean: true,
         },
         module: {
             rules: [
@@ -57,7 +58,8 @@ module.exports = [
             library: 'Whisker',
             filename: '[name].js',
             libraryTarget: 'commonjs2',
-            path: path.resolve('dist', 'node')
+            path: path.resolve('dist', 'node'),
+            clean: true
         },
         resolve: {
             extensions: ['.tsx', '.ts', '.js'],
