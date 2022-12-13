@@ -74,7 +74,7 @@ export class NetworkExecutor {
         const events: EventAndParameters[] = [];
 
         // Set up the Scratch-VM and start the game
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -146,7 +146,7 @@ export class NetworkExecutor {
         network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, events);
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // Stop VM and remove listeners.
@@ -170,7 +170,7 @@ export class NetworkExecutor {
      */
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
         // Set up the Scratch-VM and start the game
-        Randomness.seedScratch();
+        Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -210,7 +210,7 @@ export class NetworkExecutor {
         network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, eventTrace);
+        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, eventTrace);
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // Stop VM and remove listeners.

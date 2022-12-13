@@ -110,6 +110,7 @@ const loadTestsFromString = async function (string) {
     }
     tests = TestRunner.convertTests(tests);
     Whisker.tests = tests;
+    Whisker.testsString = string;
     Whisker.testEditor.setValue(string);
     Whisker.testTable.setTests(tests);
     return tests;

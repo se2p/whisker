@@ -39,9 +39,10 @@ class TestRunner extends EventEmitter {
             }
         }
 
-        this._setRNGSeeds(props['seed'], sampleTest);
+        this._setRNGSeeds(props['seed'], sampleTest, vm);
 
         // Load project and establish an initial save state
+        vm.deactivateDebugTracing();
         this.util = await this._loadProject(vm, project, props);
         this.saveState = this.vmWrapper._recordInitialState();
 
@@ -192,8 +193,9 @@ class TestRunner extends EventEmitter {
      * or the seed used during the test generation phase.
      * @param {string | undefined } seed the supplied seed form the cli.
      * @param {Test} test the test to be executed that may contain the seed used during the generation phase.
+     * @param {VirtualMachine} vm the vm that contains the loaded project
      */
-    _setRNGSeeds(seed, test) {
+    _setRNGSeeds(seed, test, vm) {
 
         // Prioritise seeds set using the CLI.
         if (seed !== 'undefined' && seed !== "") {
@@ -210,7 +212,7 @@ class TestRunner extends EventEmitter {
         else if (Randomness.getInitialRNGSeed() === undefined) {
             Randomness.setInitialSeeds(Date.now());
         }
-        Randomness.seedScratch();
+        Randomness.seedScratch(vm);
     }
 
     /**
@@ -412,7 +414,7 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.TEST_START, test);
         this.vmWrapper.start();
-        this._setRNGSeeds(props.seed, test);
+        this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
         if (modelTester && modelTester.someModelLoaded()) {

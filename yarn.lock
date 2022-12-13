@@ -7641,7 +7641,7 @@ scratch-translate-extension-languages@0.0.20191118205314:
 
 "scratch-vm@git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#develop":
   version "0.2.0"
-  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#8e45c21e869afcd26ca0251a8d080e817ef3da78"
+  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#38e1b3642cdc0fab6fff372c29b8ccd097db062b"
   dependencies:
     "@vernier/godirect" "1.5.0"
     arraybuffer-loader "^1.0.6"
@@ -7659,6 +7659,8 @@ scratch-translate-extension-languages@0.0.20191118205314:
     scratch-parser "5.0.0"
     scratch-sb1-converter "0.2.7"
     scratch-translate-extension-languages "0.0.20191118205314"
+    seed-random "^2.2.0"
+    set-immediate-shim "^2.0.0"
     text-encoding "0.7.0"
     twgl.js latest
 
@@ -7707,6 +7709,11 @@ set-blocking@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
   integrity sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==
+
+set-immediate-shim@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/set-immediate-shim/-/set-immediate-shim-2.0.0.tgz#5bf3ecf5d0d6eda9a335dbb5bfd0733f3e149d8d"
+  integrity sha512-a2GXgsl1Wu9qulGQeY3c3KRVgcmxeaOI15xenfNJ1eBX6BBavWCNXdX9gcvQJAogSROaU3o5DTQUVcRdzbIOfA==
 
 setimmediate@^1.0.5:
   version "1.0.5"
