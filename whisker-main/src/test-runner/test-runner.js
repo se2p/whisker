@@ -495,11 +495,16 @@ class TestRunner extends EventEmitter {
     _log (test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
+
     /**
+     * Adds an execution trace to the trace array.
      * @param {object} object .
      */
-    dump (object) {
-        this.emit(TestRunner.TEST_DUMP, object);
+    addExecutionTrace (object) {
+        if(!this.executionTrace){
+            this.executionTrace = [];
+        }
+        this.executionTrace.push(object);
     }
 
 

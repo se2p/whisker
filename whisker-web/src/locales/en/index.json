@@ -52,7 +52,6 @@
     "pass" : "Test passed",
     "error" : "Test threw an error",
     "project" : "Your project",
-    "execution-trace" : "Execution trace",
     "error-name": "Error",
     "error-message" : "Error message",
     "error-expected" : "Expected value",

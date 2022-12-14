@@ -78,6 +78,7 @@ class WhiskerSubCommand extends Command {
         this.option('-k, --console-forwarded', 'forward browser console output');
         this.option('-l, --live-log', 'print new log output regularly');
         this.option('-o, --live-output-coverage', 'print new coverage output regularly');
+        this.option('-x', '--execution-trace', "Download the block execution trace");
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -193,6 +194,13 @@ class WhiskerSubCommand extends Command {
             (activationTraces) => util.processPositiveInt(activationTraces));
     }
 
+    optionExecutionTrace() {
+        return this.option(
+            '-et, --execution-trace',
+            'activates recording of execution trace',
+        );
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -224,7 +232,8 @@ const subCommands = [
         .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()
-        .optionMaxMutants(),
+        .optionMaxMutants()
+        .optionExecutionTrace(),
 
     newSubCommand('generate')
         .description('generate Whisker test suites')

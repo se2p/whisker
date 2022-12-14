@@ -1,8 +1,8 @@
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
 const _blockDescriptions = new Map();
-const {Input} = require('../vm/inputs');
 const cloneDeep = require('lodash.clonedeep');
+const Util = require("../vm/util");
 
 
 let threadPreparedForCoverage = false;
@@ -89,9 +89,12 @@ class Coverage {
 class CoverageGenerator {
 
     /**
-     * @param {Thread: class} classes .
+
+     * @param classes
+     * @param testRunner
+     * @param {recordExecutionTrace: boolean} recordExecutionTrace
      */
-    static prepareClasses (classes, testRunner) {
+    static prepareClasses (classes, testRunner, recordExecutionTrace=false) {
         const Thread = classes.Thread;
 
         if (!Thread.hasOwnProperty('real_pushStack')) {
@@ -110,13 +113,14 @@ class CoverageGenerator {
                 const block = target.blocks.getBlock(this.peekStack());
                 const opcode = target.blocks.getOpcode(block);
 
-                if (opcode) {
+                // Record execution traces for each opcode block if execution trace recording is activated.
+                if (recordExecutionTrace && opcode) {
 
                     const otherSpritesName = target.runtime.targets
                         .filter(t => t.sprite).map(t => t.getName());
 
                     let keysDown = target.runtime.ioDevices.keyboard._keysPressed;
-                    keysDown = keysDown.map(x => Input.scratchKeyToKeyString(x));
+                    keysDown = keysDown.map(x => Util.scratchKeyToKeyString(x));
 
                     const clockTime = target.runtime.ioDevices.clock.projectTimer();
 
@@ -154,7 +158,7 @@ class CoverageGenerator {
                         allDrawableCopy.push(propertiesToLog);
                     }
 
-                    testRunner.dump(
+                    testRunner.addExecutionTrace(
                         {
                             clockTime: clockTime,
                             block: {
