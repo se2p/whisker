@@ -201,6 +201,13 @@ class WhiskerSubCommand extends Command {
             (activationTraces) => util.processPositiveInt(activationTraces));
     }
 
+    optionExecutionTrace() {
+        return this.option(
+            '-et, --execution-trace',
+            'activates recording of execution trace',
+        );
+    }
+
     optionStateActionRecorder(){
         return this.option('-rec, --state-action-recorder',
             'records executed scratch events and maps them to the current program state');
@@ -243,7 +250,8 @@ const subCommands = [
         .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()
-        .optionMaxMutants(),
+        .optionMaxMutants()
+        .optionExecutionTrace(),
 
     newSubCommand('generate')
         .description('generate Whisker test suites')

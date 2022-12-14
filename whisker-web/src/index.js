@@ -167,6 +167,16 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', true);
         $('#record').prop('disabled', true);
 
+        // Activate listener for execution trace record at the end of a test run.
+        const traceExecution = document.querySelector('#container').executionTrace;
+        if (traceExecution) {
+            Whisker.testRunner.on(TestRunner.RUN_END, () => {
+                const blob = new Blob([JSON.stringify(Whisker.testRunner.executionTrace)],
+                    {type: 'application/json;charset=utf-8'});
+                FileSaver.saveAs(blob, `ExecutionTrace-${Whisker.projectFileSelect.getName()}.json`);
+            });
+        }
+
         let summary;
         let csvResults;
         let mutantPrograms;
@@ -189,7 +199,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         try {
             await Whisker.scratch.vm.loadProject(project);
-            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, traceExecution);
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
@@ -269,7 +279,7 @@ const runTests = async function (tests) {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
 };
 
 const runAllTests = async function () {
@@ -293,7 +303,7 @@ const runAllTests = async function () {
         let coverage;
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
-            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, false);
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
