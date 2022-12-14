@@ -496,6 +496,18 @@ class TestRunner extends EventEmitter {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
 
+    /**
+     * Adds an execution trace to the trace array.
+     * @param {object} object .
+     */
+    addExecutionTrace (object) {
+        if(!this.executionTrace){
+            this.executionTrace = [];
+        }
+        this.executionTrace.push(object);
+    }
+
+
     abort() {
         this.aborted = true;
         if (this.vmWrapper !== undefined) {
@@ -571,6 +583,13 @@ class TestRunner extends EventEmitter {
      */
     static get TEST_LOG () {
         return 'testLog';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static get TEST_DUMP() {
+        return 'testDump';
     }
 
     /**

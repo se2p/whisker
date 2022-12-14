@@ -92,6 +92,7 @@ Options:
   -t, --test-path <Path>              path to Whisker tests to run (".js")
   -v, --csv-file <Path>               create CSV file with results
   -z, --seed <String>                 custom seed for Scratch-VM
+  -et, --executionTrace               whether and execution trace should be recorded and downloaded (default: false)
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
