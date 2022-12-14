@@ -78,7 +78,6 @@ class WhiskerSubCommand extends Command {
         this.option('-k, --console-forwarded', 'forward browser console output');
         this.option('-l, --live-log', 'print new log output regularly');
         this.option('-o, --live-output-coverage', 'print new coverage output regularly');
-        this.option('-x', '--execution-trace', "Download the block execution trace");
     }
 
     // noinspection JSUnusedGlobalSymbols
