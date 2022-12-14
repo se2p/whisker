@@ -57,9 +57,38 @@ class Output {
         $(this.div).hide();
     }
 
-    save () {
-        const blob = new Blob([this.getText()], {type: 'text/plain;charset=utf-8'});
-        FileSaver.saveAs(blob, 'output.txt');
+    setTitle (title){
+        this.title = title;
+    }
+
+    setScratch (scratch){
+        this.scratch = scratch;
+    }
+
+    setMutants (mutants){
+        this.mutants = mutants;
+    }
+
+    async save () {
+        if (this.getText().length > 1) {
+            if (this.getText().includes('Networks') && this.getText().includes('Nodes')) {
+                const blob = new Blob([this.getText()], {type: 'application/json;charset=utf-8'});
+                if (this.title) {
+                    FileSaver.saveAs(blob, `${this.title}.json`);
+                } else {
+                    FileSaver.saveAs(blob, `populationRecord.json`);
+                }
+            } else if (this.mutants && this.mutants.length > 0) {
+                for (const mutant of this.mutants) {
+                    await this.scratch.vm.loadProject(JSON.parse(JSON.stringify(mutant)));
+                    const projectBlob = await this.scratch.vm.saveProjectSb3();
+                    FileSaver.saveAs(projectBlob, `${mutant.name}.sb3`);
+                }
+            } else {
+                const blob = new Blob([this.getText()], {type: 'text/plain;charset=utf-8'});
+                FileSaver.saveAs(blob, 'output.txt');
+            }
+        }
     }
 }
 

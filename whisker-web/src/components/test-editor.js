@@ -43,7 +43,7 @@ class TestEditor {
 `const test = async function (t) {
     /* your code here */
     let sprite = t.getSprite('SpriteName');
-    await t.runForTime(5000);
+    await t.wait(5000);
     t.end();
 }
 
@@ -68,8 +68,17 @@ module.exports = [
     }
 
     save () {
-        const blob = new Blob([this.getValue()], {type: 'application/javascript;charset=utf-8'});
-        FileSaver.saveAs(blob, 'tests.js');
+        if ((this.getValue().includes('"Static":') && this.getValue().includes('"Dynamic":')) ||
+            (this.getValue().includes('Network') && this.getValue().includes('Nodes'))) {
+            const parsed = JSON.parse(this.getValue());
+            const staticBlob = new Blob([parsed.Static], {type: 'application/javascript;charset=utf-8'});
+            FileSaver.saveAs(staticBlob, 'static.js');
+            const dynamicBlob = new Blob([JSON.stringify(parsed.Dynamic)], {type: 'application/json;charset=utf-8'});
+            FileSaver.saveAs(dynamicBlob, 'dynamic.json');
+        } else {
+            const blob = new Blob([this.getValue()], {type: 'application/javascript;charset=utf-8'});
+            FileSaver.saveAs(blob, 'tests.js');
+        }
     }
 }
 

@@ -8,20 +8,17 @@ class WaitingPromise {
     constructor (callback, resolve, reject) {
 
         /**
-         * The function this is a wrapper for.
-         * @type Function
+         * @type Function The function this is a wrapper for.
          */
         this.callback = callback;
 
         /**
-         * The resolve function of the {@link Promise}.
-         * @type {Function}
+         * @type {Function} The resolve function of the {@link Promise}.
          */
         this.resolve = resolve;
 
         /**
-         * The reject function of the {@link Promise}.
-         * @type {Function}
+         * @type {Function} The reject function of the {@link Promise}.
          */
         this.reject = reject;
     }
@@ -35,22 +32,19 @@ class Stepper {
     constructor (stepTime) {
 
         /**
-         * The time between callbacks.
-         * @type {number}
+         * @type {number} The time between callbacks.
          * @private
          */
         this._stepTime = stepTime;
 
         /**
-         * Queue of {@link WaitingPromise WaitingPromises} to be executed.
-         * @type {WaitingPromise[]}
+         * @type {WaitingPromise[]} Queue of {@link WaitingPromise WaitingPromises} to be executed.
          * @private
          */
         this._queue = [];
 
         /**
-         * The interval used for setInterval() and clearInterval().
-         * @type {?number}
+         * @type {?number} The interval used for setInterval() and clearInterval().
          * @private
          */
         this._interval = null;
@@ -103,6 +97,10 @@ class Stepper {
         return promise;
     }
 
+    /**
+     * Sets the time interval between callbacks.
+     * @param stepTime The time in steps.
+     */
     setStepTime (stepTime) {
         this._stepTime = stepTime;
         if (this._interval) {

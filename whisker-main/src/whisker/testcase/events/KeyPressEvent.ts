@@ -21,6 +21,9 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
+import {ParameterType} from "./ParameterType";
+import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
+import {Randomness} from "../../utils/Randomness";
 
 export class KeyPressEvent extends ScratchEvent {
 
@@ -35,51 +38,64 @@ export class KeyPressEvent extends ScratchEvent {
 
     async apply(): Promise<void> {
         // Press the specified key
-        Container.testDriver.inputImmediate({
-            device: 'keyboard',
-            key: this._keyOption,
-            isDown: true
-        });
-
-        // Keep the key pressed for this._steps steps.
-        await new WaitEvent(this._steps).apply();
-
-        // Release the key
-        Container.testDriver.inputImmediate({
-            device: 'keyboard',
-            key: this._keyOption,
-            isDown: false
-        });
+        Container.testDriver.keyPress(this._keyOption, this._steps);
+        // Wait for the key to be released again if we use a codon based test generator.
+        if(!Container.isNeuroevolution) {
+            await new WaitEvent(this._steps).apply();
+        }
     }
 
     public toJavaScript(): string {
-        return '' +
-`t.inputImmediate({
-    device: 'keyboard',
-    key: '${this._keyOption}',
-    isDown: 'true'
-});`+ `\n`+
-new WaitEvent(this._steps).toJavaScript() + `\n` +
-`t.inputImmediate({
-    device: 'keyboard',
-    key: '${this._keyOption}',
-    isDown: 'false'
-});`
+        const keyName = this._keyOption.replace(/'/g, "\\'");
+        return `t.keyPress('${keyName}', ${this._steps});\n  ${new WaitEvent(this._steps).toJavaScript()}`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`type`] = `KeyPressEvent`;
+        event[`args`] = {"key": this._keyOption, "steps": this._steps};
+        return event;
     }
 
     public toString(): string {
         return "KeyPress " + this._keyOption + ": " + this._steps;
     }
 
-    getNumParameters(): number {
+    numSearchParameter(): number {
         return 1;
     }
 
-    getParameter(): number[] {
+    getParameters(): [string, number] {
+        return [this._keyOption, this._steps];
+    }
+
+    getSearchParameterNames(): [string] {
+        return ["Steps"];
+    }
+
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
+        switch (testExecutor){
+            case "random":
+                this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
+                break;
+            case "codon":
+                this._steps = args[0];
+                break;
+            case "activation":
+                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getPressDurationUpperBound());
+                break;
+        }
+        if(!Container.isNeuroevolution) {
+            this._steps %= Container.config.getPressDurationUpperBound();
+        }
+        // If the event has been selected ensure that it is executed for at least one step.
+        if(this._steps < 1){
+            this._steps = 1;
+        }
         return [this._steps];
     }
 
-    setParameter(args: number[]): void {
-        this._steps = args[0] % Container.config.getPressDurationUpperBound();
+    stringIdentifier(): string {
+        return `KeyPressEvent-${this._keyOption}`;
     }
 }

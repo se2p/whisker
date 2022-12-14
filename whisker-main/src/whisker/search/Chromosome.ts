@@ -18,11 +18,10 @@
  *
  */
 
-import {FitnessFunction} from "./FitnessFunction"
-import {Pair} from "../utils/Pair"
-import {Mutation} from "./Mutation"
-import {Crossover} from "./Crossover"
-import {List} from "../utils/List";
+import {FitnessFunction} from "./FitnessFunction";
+import {Pair} from "../utils/Pair";
+import {Mutation} from "./Mutation";
+import {Crossover} from "./Crossover";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -31,6 +30,46 @@ import {List} from "../utils/List";
  * @author Sophia Geserer
  */
 export abstract class Chromosome {
+
+    // TODO: If mutation based on lastImprovedFitness turns out to work well, we should think about subclassing this
+    //  into something like SingleObjectiveChromosome. For now its placed here to reduce the amount of casts...
+    /**
+     * The position in the codon list after which no additional fitness improvement regarding the specified
+     * targetFitness has been seen.
+     */
+    private _lastImprovedFitnessCodon: number;
+
+    /**
+     * The fitnessFunction this chromosome is optimising for. Only applicable for single-objective focused algorithms
+     * like MIO.
+     */
+    private _targetFitness: FitnessFunction<Chromosome>;
+
+    /**
+     * Caches fitnessValues to avoid calculating the same fitness multiple times.
+     */
+    protected _fitnessCache = new Map<FitnessFunction<Chromosome>, number>();
+
+    /**
+     * Saves the number of statements that were covered by this chromosome.
+     */
+    private _coveredStatements: number;
+
+    get lastImprovedFitnessCodon(): number {
+        return this._lastImprovedFitnessCodon;
+    }
+
+    set lastImprovedFitnessCodon(value: number) {
+        this._lastImprovedFitnessCodon = value;
+    }
+
+    get targetFitness(): FitnessFunction<Chromosome> {
+        return this._targetFitness;
+    }
+
+    set targetFitness(value: FitnessFunction<Chromosome>) {
+        this._targetFitness = value;
+    }
 
     /**
      * Retrieve the crossover operator to apply
@@ -66,11 +105,52 @@ export abstract class Chromosome {
      * @returns the fitness of this chromosome
      */
     getFitness(fitnessFunction: FitnessFunction<this>): number {
-        return fitnessFunction.getFitness(this);
+        if (this._fitnessCache.has(fitnessFunction)) {
+            return this._fitnessCache.get(fitnessFunction);
+        } else {
+            const fitness = fitnessFunction.getFitness(this);
+            this._fitnessCache.set(fitnessFunction, fitness);
+            return fitness;
+        }
     }
 
-    async evaluate(): Promise<void> {
+    /**
+     * Deletes a specific entry from the cache in order to enforce its fitness calculation.
+     * @param fitnessFunction the fitnessFunction that should be erased from the map.
+     * @returns boolean set to true if the fitnessFunction was found and deleted from the map.
+     */
+    public deleteCacheEntry(fitnessFunction: FitnessFunction<this>): boolean {
+        return this._fitnessCache.delete(fitnessFunction);
+    }
+
+    /**
+     * Flushes the fitness cache to enforce a recalculation of the fitness values.
+     */
+    public flushFitnessCache(): void {
+        this._fitnessCache.clear();
+    }
+
+    /**
+     * Determines whether codons or a saved execution trace should be exectued.
+     * @param executeCodons if true the saved codons will be exectued instead of the execution code originating from
+     * a previous test execution.
+     */
+    async evaluate(executeCodons: boolean): Promise<void> {
         // No-op
+    }
+
+    /**
+     * Determines the number of fitness objectives covered by a given test.
+     * @param fitnessFunctions the fitness objectives.
+     */
+    public determineCoveredObjectives(fitnessFunctions: FitnessFunction<Chromosome>[]): void {
+        let coverageCount = 0;
+        for (const fitnessFunction of fitnessFunctions) {
+            if (fitnessFunction.isCovered(this)) {
+                coverageCount++;
+            }
+        }
+        this._coveredStatements = coverageCount;
     }
 
     /**
@@ -82,10 +162,14 @@ export abstract class Chromosome {
      * Creates a clone of the current chromosome with new genes.
      * @param newGenes
      */
-    abstract cloneWith(newGenes: List<any>): Chromosome;
+    abstract cloneWith(newGenes: any[]): Chromosome;
 
     /**
      * Creates a clone of the current chromosome.
      */
     abstract clone(): Chromosome;
+
+    get coveredStatements(): number {
+        return this._coveredStatements;
+    }
 }

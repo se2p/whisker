@@ -19,7 +19,6 @@
  */
 
 import { Chromosome } from "./Chromosome";
-import { List } from "../utils/List";
 import {FitnessFunction} from "./FitnessFunction";
 
 /**
@@ -34,8 +33,9 @@ export interface Selection<C extends Chromosome> {
     /**
      * Selects a chromosome from the given population and returns the result.
      * @param population the population of chromosomes from which to select
+     * @param fitnessFunction the fitness function on which the selection is based
      * @returns the selected chromosome
      */
-    apply(population: List<C>, fitnessFunction?: FitnessFunction<C>): C;
+    apply(population: C[], fitnessFunction?: FitnessFunction<C>): C;
 
 }

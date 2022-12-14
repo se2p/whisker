@@ -19,20 +19,17 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {SimpleGA} from "../../../../src/whisker/search/algorithms/SimpleGA";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {TournamentSelection} from "../../../../src/whisker/search/operators/TournamentSelection";
-import {List} from "../../../../src/whisker/utils/List";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 
@@ -40,54 +37,68 @@ describe('SimpleGA', () => {
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
-        mock.init()
+        mock.init();
         // @ts-ignore
         Container.vmWrapper = mock;
+
+        Container.debugLog = () => { /* suppress output */
+        };
     });
 
     test('Trivial bitstring with SimpleGA', async () => {
+        const properties = {
+            populationSize: 50,
+            chromosomeLength: 10,
+            stoppingCondition: new OneOfStoppingCondition(
+                new FixedIterationsStoppingCondition(1000),
+                new OptimalSolutionStoppingCondition()),
+            mutationProbability: 0.2,
+            crossoverProbability: 0.8,
+            testGenerator: undefined,
+            integerRange: undefined,
+            reservedCodons: undefined
+        };
 
-        const n = 10;
-        const properties = new SearchAlgorithmProperties(50, n);
-        const fitnessFunction = new OneMaxFitnessFunction(n);
-        properties.setStoppingCondition(new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition()));
-        properties.setMutationProbablity(0.2);
-        properties.setCrossoverProbability(0.8);
+        const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
-        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.SIMPLEGA)
+        const builder = new SearchAlgorithmBuilder('simpleGA')
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
             .addSelectionOperator(new RankSelection())
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, new List());
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, properties.chromosomeLength, []);
 
 
         const search = builder.buildSearchAlgorithm();
         const solutions = await search.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(await firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(await firstSolution.getFitness(fitnessFunction)).toBe(properties.chromosomeLength);
     });
 
 
     test('Setter', () => {
-        const n = 10;
-        const properties = new SearchAlgorithmProperties(1, n);
-        const fitnessFunction = new OneMaxFitnessFunction(n);
+        const properties = {
+            populationSize: 1,
+            chromosomeLength: 10,
+            stoppingCondition: new OneOfStoppingCondition(
+                new FixedIterationsStoppingCondition(1000), // Plenty time...
+                new OptimalSolutionStoppingCondition()
+            ),
+            testGenerator: undefined,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            integerRange: undefined,
+            reservedCodons: undefined
+        };
+        const fitnessFunction = new OneMaxFitnessFunction(properties.populationSize);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
-        const stoppingCondition = new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000), // Plenty time...
-            new OptimalSolutionStoppingCondition()
-        );
         const selectionFunction = new TournamentSelection(5);
-        properties.setStoppingCondition(stoppingCondition);
         const search = new SimpleGA();
 
         search.setProperties(properties);
         expect(search["_properties"]).toBe(properties);
-        expect(search["_stoppingCondition"]).toBe(stoppingCondition);
+        expect(search["_stoppingCondition"]).toBe(properties.stoppingCondition);
 
         search.setChromosomeGenerator(chromosomeGenerator);
         expect(search["_chromosomeGenerator"]).toBe(chromosomeGenerator);

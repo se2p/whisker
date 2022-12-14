@@ -20,6 +20,9 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import {ParameterType} from "./ParameterType";
+import {Randomness} from "../../utils/Randomness";
+
 
 export class MouseMoveEvent extends ScratchEvent {
 
@@ -33,37 +36,65 @@ export class MouseMoveEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            x: Math.trunc(this._x),
-            y: Math.trunc(this._y)
-        });
+        Container.testDriver.mouseMove(this._x, this._y);
     }
 
     public toJavaScript(): string {
-        return '' +
-`t.inputImmediate({
-    device: 'mouse',
-    x: ${Math.trunc(this._x)},
-    y: ${Math.trunc(this._y)}
-});`
+        return `t.mouseMove(${Math.trunc(this._x)}, ${Math.trunc(this._y)});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`type`] = `MouseMoveEvent`;
+        event[`args`] = {"x": this._x, "y": this._y};
+        return event;
     }
 
     public toString(): string {
         return "MouseMove " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
-    getNumParameters(): number {
+    numSearchParameter(): number {
         return 2; // x and y?
     }
 
-    getParameter(): number[] {
+    getParameters(): [number, number] {
         return [this._x, this._y];
     }
 
-    setParameter(args:number[]): void {
-        const fittedCoordinates = this.fitCoordinates(args[0], args[1])
-        this._x = fittedCoordinates.x;
-        this._y = fittedCoordinates.y;
+    getSearchParameterNames(): [string, string] {
+        return ["X", "Y"];
+    }
+
+    setParameter(args: number[], argType: ParameterType): [number, number] {
+        switch (argType) {
+            case "random": {
+                const random = Randomness.getInstance();
+                const stageBounds = Container.vmWrapper.getStageSize();
+                const signedWidth = stageBounds.width / 2;
+                const signedHeight = stageBounds.height / 2;
+                this._x = random.nextInt(-signedWidth, signedWidth + 1);
+                this._y = random.nextInt(-signedHeight, signedHeight + 1);
+                break;
+            }
+            case "codon": {
+                const {x, y} = this.fitCoordinates({x: args[0], y: args[1]});
+                this._x = x;
+                this._y = y;
+                break;
+            }
+            case "activation": {
+                // Multiply with 0.2 to stretch the tanh function to focus around the center of the screen. If not
+                // stretched networks tends to move the mouse to the border of the screen.
+                this._x = Math.tanh(0.5 * args[0]) * 240;
+                this._y = Math.tanh(0.5 * args[1]) * 180;
+                break;
+            }
+        }
+        return [this._x, this._y];
+    }
+
+    stringIdentifier(): string {
+        return "MouseMoveEvent";
     }
 }

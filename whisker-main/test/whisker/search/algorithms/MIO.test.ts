@@ -19,22 +19,20 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
-import {List} from "../../../../src/whisker/utils/List";
 import {MIO} from "../../../../src/whisker/search/algorithms/MIO";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import Arrays from "../../../../src/whisker/utils/Arrays";
 
 describe('MIO', () => {
 
@@ -43,40 +41,42 @@ describe('MIO', () => {
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
-        mock.init()
+        mock.init();
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
+        Container.debugLog = () => { /* suppress output */
+        };
 
-        const chromosomeLength = 10;
-        const populationSize = null;
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mio');
 
-        const startFocusedPhase = 0.5;
-        const randomSelectionProbabilityStart = 0.5;
-        const randomSelectionProbabilityFocusedPhase = 0;
-        const maxArchiveSizeStart = 10;
-        const maxArchiveSizeFocusedPhase = 1;
-        const maxMutationCountStart = 0;
-        const maxMutationCountFocusedPhase = 10;
-
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
-        properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
-        properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
-        properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
-        properties.setStoppingCondition(new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations), new OptimalSolutionStoppingCondition()));
-        properties.setStartOfFocusedPhase(startFocusedPhase);
+        const properties = {
+            populationSize: null,
+            chromosomeLength: 10,
+            selectionProbability: {start: 0.5, focusedPhase: 0},
+            maxArchiveSize: {start: 10, focusedPhase: 1},
+            maxMutationCount: {start: 0, focusedPhase: 10},
+            stoppingCondition: new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations),
+                new OptimalSolutionStoppingCondition()),
+            startOfFocusedPhase: 0.5,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined,
+            reservedCodons: undefined
+        };
 
         searchAlgorithm = builder
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List())
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, properties.chromosomeLength, [])
             .buildSearchAlgorithm();
     });
 
     test('Find optimal solution', async () => {
-        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        const archive = await searchAlgorithm.findSolution();
+        const solutions = Arrays.distinct(archive.values());
 
         const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
         for (const fitnessFunction of fitnessFunctions.values()) {
@@ -92,41 +92,43 @@ describe('MIO', () => {
     });
 
     test('Get current solution', async () => {
-        expect(searchAlgorithm.getCurrentSolution()).toBeUndefined();
-        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        expect(searchAlgorithm.getCurrentSolution().length).toBe(0);
+        const archive = await searchAlgorithm.findSolution();
+        const solutions = Arrays.distinct(archive.values());
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
     });
 
     test('Get number of iterations', async () => {
-        expect(searchAlgorithm.getNumberOfIterations()).toBeUndefined();
+        expect(searchAlgorithm.getNumberOfIterations()).toBe(0);
         await searchAlgorithm.findSolution();
         expect(searchAlgorithm.getNumberOfIterations()).toBeGreaterThan(0);
         expect(searchAlgorithm.getNumberOfIterations()).toBeLessThanOrEqual(iterations);
     });
 
     test('Setter', () => {
-        const chromosomeLength = 10;
-        const populationSize = 50;
-        const iterations = 100;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
-        const startOfFocusPhase = 0.4;
         const start = 0.4;
         const focusedPhase = 0.1;
+        const chromosomeLength = 10;
+        const stoppingCondition = new FixedIterationsStoppingCondition(100);
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
-        properties.setCrossoverProbability(crossoverProbability);
-        properties.setMutationProbablity(mutationProbability);
-        properties.setStartOfFocusedPhase(startOfFocusPhase);
-        properties.setSelectionProbabilities(start, focusedPhase);
-        properties.setMaxArchiveSizes(start, focusedPhase);
-        properties.setMaxMutationCounter(start, focusedPhase);
-        const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
-        properties.setStoppingCondition(stoppingCondition);
+        const properties = {
+            populationSize: 50,
+            chromosomeLength,
+            crossoverProbability: 1,
+            mutationProbability: 1,
+            startOfFocusedPhase: start,
+            selectionProbability: {start, focusedPhase},
+            maxArchiveSize: {start, focusedPhase},
+            maxMutationCount: {start, focusedPhase},
+            stoppingCondition,
+            testGenerator: undefined,
+            integerRange: undefined,
+            reservedCodons: undefined
+        };
 
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
-        const heuristicFunctions = new Map<number, Function>();
+        const heuristicFunctions = new Map<number, (number) => number>();
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
             heuristicFunctions.set(i, v => v / chromosomeLength);

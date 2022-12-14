@@ -18,49 +18,49 @@
  *
  */
 
-
-import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
-import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {FixedTimeStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedTimeStoppingCondition";
+import {Container} from "../../../../src/whisker/utils/Container";
+import {StatisticsCollector} from "../../../../src/whisker/utils/StatisticsCollector";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
-    setTimeElapsed(time:number) {
+    setTimeElapsed(time: number) {
         this._startTime = Date.now() - time;
+        StatisticsCollector.getInstance().startTime = this._startTime;
     }
 }
 
 describe('FixedTimeStoppingCondition', () => {
 
     test('Max reached', async () => {
-        const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         const maxTime = 11;
         algorithm.setTimeElapsed(maxTime);
-        const stoppingCondition = new FixedTimeStoppingCondition(maxTime-1);
+        Container.acceleration = 1;
+        const stoppingCondition = new FixedTimeStoppingCondition(maxTime - 1);
 
-        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished()).toBeTruthy();
     });
 
     test('Max not reached', async () => {
-        const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         const maxTime = 100;
         algorithm.setTimeElapsed(0);
+        Container.acceleration = 1;
         const stoppingCondition = new FixedTimeStoppingCondition(maxTime);
 
-        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished()).toBeFalsy();
     });
 
     test('Progress of 0.5', async () => {
-        const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         const maxTime = 100;
         algorithm.setTimeElapsed(50);
+        Container.acceleration = 1;
         const stoppingCondition = new FixedTimeStoppingCondition(maxTime);
 
-        expect(await stoppingCondition.getProgress(algorithm)).toBeGreaterThanOrEqual(0.5);
+        expect(await stoppingCondition.getProgress()).toBeGreaterThanOrEqual(0.5);
     });
 
 });

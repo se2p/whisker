@@ -1,15 +1,16 @@
 {
     "name": "scratch-analysis",
-    "version": "0.1.0",
+    "version": "0.8.0",
     "main": "index.js",
     "license": "GPL-3.0-only",
     "scripts": {
-        "build": "webpack --progress --colors --bail",
+        "build": "webpack --color --bail",
+        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
         "test": "jest --forceExit --coverage --verbose",
         "test:coverage": "yarn test -- --coverage"
     },
     "devDependencies": {
-        "eslint": "^7.24.0",
+        "eslint": "^7.32.0",
         "eslint-config-scratch": "^7.0.0"
     }
 }

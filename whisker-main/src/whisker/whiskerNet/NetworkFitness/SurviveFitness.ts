@@ -1,53 +1,26 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Container} from "../../utils/Container";
-import {NetworkExecutor} from "../NetworkExecutor";
+import {NetworkExecutor} from "../Misc/NetworkExecutor";
+import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * Calculates the survived time.
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
+     * Calculates how long a network has survived within a game.
+     * @param network the network that should be evaluated.
+     * @param timeout the timeout defining how long a network is allowed to play the game.
+     * @param eventSelection defines how the networks select events.
+     * @returns Promise<number> the survived time in seconds.
      */
-    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
         const start = Date.now();
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
-        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
-        network.networkFitness = surviveTime;
+        // Calculate time survived, transform it into seconds and include acceleration.
+        const surviveTime = Math.trunc((Date.now() - start)) / 1000 * Container.acceleration;
+        network.fitness = surviveTime;
+        executor.resetState();
         return surviveTime;
-    }
-
-    /**
-     * Calculates the survived time of a random event selection playthrough
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     */
-    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
-        const start = Date.now();
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        await executor.executeRandom(network);
-        // Round due to small variances in runtime
-        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
-        network.networkFitness = surviveTime;
-        return surviveTime;
-    }
-
-    /**
-     * Used for CombinedNetworkFitness.
-     * Value is calculated within CombinedNetworkFitness, hence returns 0.0
-     */
-    getFitnessWithoutPlaying(): number {
-        return 0.0;
-    }
-
-    /**
-     * Compares two fitness values -> Higher values are better.
-     * @param value1 first fitness value
-     * @param value2 second fitness value
-     */
-    compare(value1: number, value2: number): number {
-        return value2 - value1;
     }
 }

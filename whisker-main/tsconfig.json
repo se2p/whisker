@@ -4,7 +4,8 @@
         //"rootDir": "src",
         "outDir": "dist",
         "esModuleInterop": true,
-        "allowJs": true
+        "allowJs": true,
+        "resolveJsonModule": true   // Allows importing modules with a ‘.json’ extension
     },
     "include": [
         "src/**/*",

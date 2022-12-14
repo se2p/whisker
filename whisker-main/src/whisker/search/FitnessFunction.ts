@@ -18,7 +18,7 @@
  *
  */
 
-import { Chromosome } from "./Chromosome"
+import { Chromosome } from "./Chromosome";
 
 /**
  * A fitness function maps a given chromosome onto a numeric value that represents the goodness of
@@ -53,18 +53,24 @@ export interface FitnessFunction<C extends Chromosome> {
     /**
      * Computes and returns the CFG Distance value for the given chromosome.
      * @param chromosome the chromosome to rate
+     * @param hasUnexecutedCdgPredecessor
      * @returns the CFG distance value of the specified chromosome
      */
-    getCFGDistance(chromosome: C): number;
+    getCFGDistance(chromosome: C, hasUnexecutedCdgPredecessor: boolean): number;
+
+    /**
+     * @returns the nesting depth of the fitness function itself
+     */
+    getCDGDepth(): number;
 
     /**
      * Comparator for two fitness values:
      *
      * We are sorting ascending, from bad fitness to better fitness
      *
-     * Return greater than 0 if value2 is better than value1
+     * Return greater than 0 if value1 is better than value2
      * Return 0 if value1 equals value2
-     * Return less than 0 if value2 is worse than value1
+     * Return less than 0 if value1 is worse than value2
      *
      * @param value1 first fitness value
      * @param value2 second fitness value

@@ -19,16 +19,15 @@
  */
 
 import {Mutation} from '../search/Mutation';
-import {List} from '../utils/List';
 import {Randomness} from '../utils/Randomness';
 import {IntegerListChromosome} from './IntegerListChromosome';
 
 
 export class IntegerListMutation implements Mutation<IntegerListChromosome> {
 
-    private _min: number;
+    private readonly _min: number;
 
-    private _max: number;
+    private readonly _max: number;
 
     constructor(min: number, max: number) {
         this._min = min;
@@ -37,15 +36,15 @@ export class IntegerListMutation implements Mutation<IntegerListChromosome> {
 
     apply (chromosome: IntegerListChromosome): IntegerListChromosome {
         const oldCodons = chromosome.getGenes(); // TODO: Immutable list?
-        const newCodons = new List<number>();
-        const mutationProbability = 1.0 / oldCodons.size();
+        const newCodons: number[] = [];
+        const mutationProbability = 1.0 / oldCodons.length;
 
         for (const codon of oldCodons) {
             if (Randomness.getInstance().nextDouble() < mutationProbability) {
-                newCodons.add(Randomness.getInstance().nextInt(this._min, this._max));
+                newCodons.push(Randomness.getInstance().nextInt(this._min, this._max));
                 // TODO: Gaussian noise might be a better solution
             } else {
-                newCodons.add(codon);
+                newCodons.push(codon);
             }
         }
 

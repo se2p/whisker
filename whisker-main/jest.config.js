@@ -1,8 +1,11 @@
 module.exports = {
     globals: {
         'ts-jest': {
-            tsConfig: 'tsconfig.json',
+            tsconfig: 'tsconfig.json',
         },
+        // Required for the ntc node package
+        'ndf2':null,
+        'ndf':null
     },
     moduleFileExtensions: ['ts', 'js'],
     transform: {
@@ -14,6 +17,10 @@ module.exports = {
     ],
 
     testMatch: ['**/test/**/*.test.(ts|js)'],
+    testPathIgnorePatterns: [
+        "/node_modules/",
+        "/dist/"
+    ],
     testEnvironment: 'node',
     collectCoverage: true
-}
+};

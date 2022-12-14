@@ -19,60 +19,95 @@
  */
 
 import {TestGenerator} from './TestGenerator';
-import {ScratchProject} from '../scratch/ScratchProject';
-import {List} from '../utils/List';
-import {WhiskerTest} from './WhiskerTest';
-import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {TestChromosome} from "../testcase/TestChromosome";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
-import {Selection} from "../search/Selection";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
+import {Randomness} from "../utils/Randomness";
+import {Container} from "../utils/Container";
+import {TestExecutor} from "../testcase/TestExecutor";
+import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import Arrays from "../utils/Arrays";
 
 /**
- * A naive approach to generating tests is to simply
- * use the chromosome factory and generate completely
- * random tests.
+ * A naive approach to generating tests by always selecting a random event from the set of available events
+ * determined by the ScratchEventSelector.
  */
 export class RandomTestGenerator extends TestGenerator implements SearchAlgorithm<TestChromosome> {
 
+    /**
+     * Saves the starting time of the Algorithm.
+     */
     private _startTime: number;
 
-    private _iterations = 0;
+    /**
+     * Saves the number of Generations.
+     */
+    private _iterations: number;
 
-    private _tests = new List<TestChromosome>();
+    /**
+     * Saves the best performing chromosomes seen so far.
+     */
+    private _tests: TestChromosome[] = [];
 
+    /**
+     * Maps to each FitnessFunction a Chromosome covering the given FitnessFunction.
+     */
     private _archive = new Map<number, TestChromosome>();
 
-    async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary>{
+    /**
+     * Boolean determining if we have reached full test coverage.
+     */
+    protected _fullCoverageReached = false;
+
+    /**
+     * The minimum number of randomly selected events.
+     */
+    private readonly minSize: number
+
+    /**
+     * The maximum number of randomly selected events.
+     */
+    private readonly maxSize: number
+
+    constructor(configuration: WhiskerSearchConfiguration, minSize: number, maxSize: number) {
+        super(configuration);
+        this.minSize = minSize;
+        this.maxSize = maxSize;
+    }
+
+    /**
+     * Generate tests by randomly sending events to the Scratch-VM.
+     * After each Iteration the archive is updated with the trace of executed events.
+     */
+    async generateTests(): Promise<WhiskerTestListWithSummary> {
+        this._iterations = 0;
+        this._startTime = Date.now();
+        StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
-        let fullCoverageReached = false;
+        const stoppingCondition = this._config.searchAlgorithmProperties.stoppingCondition;
 
-        const chromosomeGenerator = this._config.getChromosomeGenerator();
-        const stoppingCondition = this._config.getSearchAlgorithmProperties().getStoppingCondition();
+        const eventExtractor = this._config.getEventExtractor();
+        const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
 
         while (!(stoppingCondition.isFinished(this))) {
-            console.log("Iteration " + this._iterations
-                + ", covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
+            console.log(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
+            const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
+            const randomEventChromosome = new TestChromosome([], undefined, undefined);
+            await randomTestExecutor.executeRandomEvents(randomEventChromosome, numberOfEvents);
+            this.updateArchive(randomEventChromosome);
             this._iterations++;
-            StatisticsCollector.getInstance().incrementIterationCount();
-            const testChromosome = chromosomeGenerator.get();
-            await testChromosome.evaluate();
-            this.updateArchive(testChromosome);
-            if(this._archive.size == this._fitnessFunctions.size && !fullCoverageReached) {
-                fullCoverageReached = true;
-                StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
-                StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
-            }
+            this.updateStatistics();
         }
         const testSuite = await this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);
-        return new WhiskerTestListWithSummary(testSuite, this.summarizeSolution());
+        return new WhiskerTestListWithSummary(testSuite, this.summarizeSolution(this._archive));
     }
 
     private updateArchive(chromosome: TestChromosome): void {
@@ -81,21 +116,38 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(chromosome);
+            const candidateFitness = chromosome.getFitness(fitnessFunction);
             const candidateLength = chromosome.getLength();
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 }
                 this._archive.set(fitnessFunctionKey, chromosome);
-                this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
-                console.log("Found test for goal: " + fitnessFunction);
+                this._tests = Arrays.distinct(this._archive.values());
+                console.log(`Found test for goal: ${fitnessFunction}`);
             }
         }
     }
 
-    getCurrentSolution(): List<TestChromosome> {
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - iterationCount
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
+     */
+    protected updateStatistics(): void {
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._tests.length;
+        StatisticsCollector.getInstance().incrementIterationCount();
+        if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+        }
+    }
+
+    getCurrentSolution(): TestChromosome[] {
         return this._tests;
     }
 
@@ -111,80 +163,35 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         return this._startTime;
     }
 
-    async findSolution(): Promise<List<TestChromosome>> {
+    async findSolution(): Promise<Map<number, TestChromosome>> {
         throw new NotSupportedFunctionException();
     }
 
-/**
- * Summarize the solutions saved in the archive.
- * @returns: For each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- */
-summarizeSolution(): string {
-    const summary = [];
-    for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-        const curSummary = {};
-        if (!this._archive.has(fitnessFunctionKey)) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            curSummary['block'] = fitnessFunction.toString();
-            let fitness = Number.MAX_VALUE;
-            let approachLevel = Number.MAX_VALUE;
-            let branchDistance = Number.MAX_VALUE;
-            let CFGDistance = Number.MAX_VALUE;
-            const bestIndividuals = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
-            for (const chromosome of bestIndividuals) {
-                const curFitness = fitnessFunction.getFitness(chromosome);
-                if (curFitness < fitness) {
-                    fitness = curFitness;
-                    approachLevel = fitnessFunction.getApproachLevel(chromosome);
-                    branchDistance = fitnessFunction.getBranchDistance(chromosome);
-                    if (approachLevel === 0 && branchDistance === 0) {
-                        CFGDistance = fitnessFunction.getCFGDistance(chromosome);
-                    }
-                    else {
-                        CFGDistance = Number.MAX_VALUE;
-                        //this means that it was unnecessary to calculate cfg distance, since
-                        //approach level or branch distance was not 0;
-                    }
-                }
-            }
-            curSummary['ApproachLevel'] = approachLevel;
-            curSummary['BranchDistance'] = branchDistance;
-            curSummary['CFGDistance'] = CFGDistance;
-            curSummary['Fitness'] = fitness;
-            if (Object.keys(curSummary).length > 0){
-                summary.push(curSummary);
-            }
-        }
-
-    }
-    return JSON.stringify({'uncoveredBlocks': summary});
-}
-    setChromosomeGenerator(generator: ChromosomeGenerator<TestChromosome>): void {
+    setChromosomeGenerator(): void {
         throw new NotSupportedFunctionException();
     }
 
-    setFitnessFunction(fitnessFunction: FitnessFunction<TestChromosome>): void {
+    setFitnessFunction(): void {
         throw new NotSupportedFunctionException();
     }
 
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<TestChromosome>>): void {
+    setFitnessFunctions(): void {
         throw new NotSupportedFunctionException();
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void {
+    setHeuristicFunctions(): void {
         throw new NotSupportedFunctionException();
     }
 
-    setProperties(properties: SearchAlgorithmProperties<TestChromosome>): void {
+    setProperties(): void {
         throw new NotSupportedFunctionException();
     }
 
-    setSelectionOperator(selectionOperator: Selection<TestChromosome>): void {
+    setSelectionOperator(): void {
+        throw new NotSupportedFunctionException();
+    }
+
+    setLocalSearchOperators(): void {
         throw new NotSupportedFunctionException();
     }
 }

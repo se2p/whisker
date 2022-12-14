@@ -20,7 +20,6 @@
 
 import {Chromosome} from "../Chromosome";
 import {Selection} from "../Selection";
-import {List} from "../../utils/List";
 import {Randomness} from "../../utils/Randomness";
 import {FitnessFunction} from "../FitnessFunction";
 import {Preconditions} from "../../utils/Preconditions";
@@ -32,26 +31,27 @@ import {Preconditions} from "../../utils/Preconditions";
  */
 export class TournamentSelection<C extends Chromosome> implements Selection<C> {
 
-    private readonly _tournamentSize = 2;
+    private readonly _tournamentSize;
 
-    constructor(tournamentSize) {
+    constructor(tournamentSize: number) {
         this._tournamentSize = tournamentSize;
     }
 
     /**
      * Selects a chromosome from the given population and returns the result.
      *
-     * @param population The population of chromosomes from which to select, sorted in ascending order.
+     * @param population the population of chromosomes from which to select, sorted in ascending order.
+     * @param fitnessFunction the fitness function on which the selection is based
      * @returns the selected chromosome.
      */
-    apply(population: List<C>, fitnessFunction: FitnessFunction<C>): C {
+    apply(population: C[], fitnessFunction: FitnessFunction<C>): C {
         Preconditions.checkNotUndefined(fitnessFunction);
         let iteration = 0;
-        let winner = Randomness.getInstance().pickRandomElementFromList(population);
-        let bestFitness = fitnessFunction.getFitness(winner);
+        let winner = Randomness.getInstance().pick(population);
+        let bestFitness = winner.getFitness(fitnessFunction);
         while (iteration < this._tournamentSize) {
-            const candidate = Randomness.getInstance().pickRandomElementFromList(population);
-            const candidateFitness = fitnessFunction.getFitness(candidate);
+            const candidate = Randomness.getInstance().pick(population);
+            const candidateFitness = candidate.getFitness(fitnessFunction);
 
             if (fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
                 (fitnessFunction.compare(candidateFitness, bestFitness) == 0 && candidate.getLength() < winner.getLength())) {

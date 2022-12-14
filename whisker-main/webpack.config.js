@@ -18,7 +18,8 @@ module.exports = [
             library: 'Whisker',
             filename: '[name].js',
             libraryTarget: 'umd',
-            path: path.resolve('dist', 'web')
+            path: path.resolve('dist', 'web'),
+            clean: true,
         },
         module: {
             rules: [
@@ -42,7 +43,8 @@ module.exports = [
                 }
             ]
         },
-        devtool: 'source-map'
+        devtool: 'source-map',
+        stats: 'errors-warnings',
     },
 
     /* Node */
@@ -56,10 +58,17 @@ module.exports = [
             library: 'Whisker',
             filename: '[name].js',
             libraryTarget: 'commonjs2',
-            path: path.resolve('dist', 'node')
+            path: path.resolve('dist', 'node'),
+            clean: true
         },
         resolve: {
-            extensions: ['.tsx', '.ts', '.js']
+            extensions: ['.tsx', '.ts', '.js'],
+
+            // Polyfills for Node.JS core modules
+            // https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-nodejs-polyfills-removed
+            fallback: {
+                "assert": require.resolve("assert/")
+            }
         },
 
         module: {
@@ -76,7 +85,8 @@ module.exports = [
                 }
             ]
         },
-        devtool: 'source-map'
+        devtool: 'source-map',
+        stats: 'errors-warnings',
     }
 
 ];

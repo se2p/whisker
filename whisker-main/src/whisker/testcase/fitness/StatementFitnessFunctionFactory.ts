@@ -1,12 +1,11 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {generateCFG, generateCDG, ControlFlowGraph, ControlDependenceGraph} from 'scratch-analysis'
-import {List} from "../../utils/List";
-import {StatementCoverageFitness} from "./StatementFitnessFunction";
+import {generateCFG, generateCDG, ControlFlowGraph, ControlDependenceGraph} from 'scratch-analysis';
+import {StatementFitnessFunction} from "./StatementFitnessFunction";
 
 export class StatementFitnessFunctionFactory {
 
-    extractFitnessFunctions(vm: VirtualMachine, targets: List<string>): List<StatementCoverageFitness> {
-        const fitnessFunctions: List<StatementCoverageFitness> = new List()
+    extractFitnessFunctions(vm: VirtualMachine, targets: string[]): StatementFitnessFunction[] {
+        const fitnessFunctions: StatementFitnessFunction[] = [];
 
         if (!(vm === undefined || vm === null)) {
             const cfg: ControlFlowGraph = generateCFG(vm);
@@ -23,19 +22,19 @@ export class StatementFitnessFunctionFactory {
 
                 if (node.hasOwnProperty("userEvent") || node.hasOwnProperty("event")) {
                     // we not need to cover nodes that are not real blocks
-                    continue
+                    continue;
                 }
 
                 // Check if explicit targets are specified
-                if (targets && !targets.isEmpty()) {
-                    if (!targets.contains(node.id)) {
+                if (targets && targets.length !== 0) {
+                    if (!targets.includes(node.id)) {
                         // A target list is specified and the node is not in that target list
                         continue;
                     }
                 }
 
-                const statementCoverageFitness = new StatementCoverageFitness(node, cdg, cfg);
-                fitnessFunctions.add(statementCoverageFitness)
+                const statementCoverageFitness = new StatementFitnessFunction(node, cdg, cfg);
+                fitnessFunctions.push(statementCoverageFitness);
 
             }
         }

@@ -1,0 +1,67 @@
+{
+    "testGenerator": "manyObjective",
+    "algorithm": "mosa",
+    "extractor": "dynamic",
+    "eventSelector": "interleaving",
+    "populationSize": 30,
+    "chromosome": {
+        "type": "variableLengthTest",
+        "minSampleLength": 2,
+        "maxSampleLength": 20,
+        "maxLength": 20
+    },
+    "mutation": {
+        "operator": "variableLength",
+        "probability": 1,
+        "gaussianMutationPower": 5
+    },
+    "crossover": {
+        "operator": "singlePointRelative",
+        "probability": 0.7
+    },
+    "localSearch": [
+        {
+            "type": "Extension",
+            "probability": 0.3,
+            "newEventProbability": 0.5
+        },
+        {
+            "type": "Reduction",
+            "probability": 0.3
+        }
+
+    ],
+    "selection": {
+        "operator": "rank"
+    },
+    "fitnessFunction": {
+        "type": "statement",
+        "targets": []
+    },
+    "stoppingCondition": {
+        "type": "combined",
+        "conditions": [
+            {
+                "type": "fixedTime",
+                "duration": 6000000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "integerRange": {
+        "min": 0,
+        "max": 480
+    },
+    "durations": {
+        "waitStepUpperBound": 100,
+        "clickDuration": 1,
+        "pressDuration": 5,
+        "soundDuration": 1
+    },
+    "debugLogging": true,
+    "minimize": true,
+    "assertions": true,
+    "minimizeAssertions": true
+}

@@ -18,14 +18,17 @@
  *
  */
 
-import {List} from "../../utils/List";
-import {Chromosome} from "./../Chromosome";
-import {SearchAlgorithmProperties} from "./../SearchAlgorithmProperties";
-import {ChromosomeGenerator} from "./../ChromosomeGenerator";
-import {FitnessFunction} from "./../FitnessFunction";
-import {Selection} from "./../Selection";
+import {Chromosome} from "../Chromosome";
+import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
+import {ChromosomeGenerator} from "../ChromosomeGenerator";
+import {FitnessFunction} from "../FitnessFunction";
+import {Selection} from "../Selection";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {StoppingCondition} from "../StoppingCondition";
+import {TestChromosome} from "../../testcase/TestChromosome";
+import Arrays from "../../utils/Arrays";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -35,67 +38,136 @@ import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedF
  */
 export abstract class SearchAlgorithmDefault<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    async findSolution(): Promise<List<C>> {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Defines SearchParameters set within the config file.
+     */
+    protected _properties: SearchAlgorithmProperties<C>;
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
-    summarizeSolution(): string {
-        return '';
-    }
+    /**
+     * Generator responsible for generating initial Chromosome.
+     */
+    protected _chromosomeGenerator: ChromosomeGenerator<C>;
 
-    setProperties(properties: SearchAlgorithmProperties<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Defines the stopping condition of the SearchAlgorithm.
+     */
+    protected _stoppingCondition: StoppingCondition<C>;
 
-    setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Archive mapping to each fitnessFunction the Chromosome solving it.
+     */
+    protected _archive = new Map<number, C>();
 
-    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * List of best performing Chromosomes.
+     */
+    protected _bestIndividuals: C[] = [];
 
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * FitnessFunction the concrete SearchAlgorithm is optimizing for.
+     */
+    protected _fitnessFunction: FitnessFunction<C>;
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Maps each FitnessFunction to a unique identifier.
+     */
+    protected _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
-    setSelectionOperator(selectionOperator: Selection<C>): void {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Boolean determining if we have reached full test coverage.
+     */
+    protected _fullCoverageReached = false;
 
-    getNumberOfIterations(): number {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Saves the number of generations.
+     */
+    protected _iterations = 0;
 
-    getCurrentSolution(): List<C> {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Starting time of the algorithm.
+     */
+    protected _startTime: number;
 
-    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        throw new NotSupportedFunctionException();
-    }
+    abstract findSolution(): Promise<Map<number, C>>;
 
-    getStartTime(): number {
-        throw new NotSupportedFunctionException();
-    }
+    abstract setProperties(properties: SearchAlgorithmProperties<C>): void;
 
-    async evaluatePopulation(population: List<C>) : Promise<void> {
+    abstract setChromosomeGenerator(generator: ChromosomeGenerator<C>): void;
+
+    abstract setFitnessFunction(fitnessFunction: FitnessFunction<C>): void;
+
+    abstract setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
+
+    abstract setSelectionOperator(selectionOperator: Selection<C>): void;
+
+    abstract setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void;
+
+    abstract getNumberOfIterations(): number;
+
+    abstract getCurrentSolution(): C[];
+
+    abstract getFitnessFunctions(): Iterable<FitnessFunction<C>>;
+
+    abstract getStartTime(): number;
+
+    /**
+     * Evaluates the current Population of Chromosomes and stops as soon as we have reached a stopping criterion.
+     * @param population the population to evaluate.
+     */
+    protected async evaluatePopulation(population: C[]): Promise<void> {
         for (const chromosome of population) {
-            await chromosome.evaluate();
+            // Check if we have already reached our stopping condition; if so stop and exclude non-executed chromosomes
+            if (this._stoppingCondition.isFinished(this)) {
+                const executedChromosomes = population.filter(chromosome => (chromosome as unknown as TestChromosome).trace);
+                Arrays.clear(population);
+                population.push(...executedChromosomes);
+                return;
+            } else {
+                await chromosome.evaluate(true);
+                this.updateArchive(chromosome);
+            }
+        }
+    }
+
+    /**
+     * Updates the archive of best chromosomes.
+     *
+     * @param candidateChromosome The candidate chromosome for the archive.
+     */
+    protected updateArchive(candidateChromosome: C): void {
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestLength = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).getLength()
+                : Number.MAX_SAFE_INTEGER;
+            const candidateFitness = candidateChromosome.getFitness(fitnessFunction);
+            const candidateLength = candidateChromosome.getLength();
+            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                bestLength = candidateLength;
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                }
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
+            }
+        }
+        this._bestIndividuals = Arrays.distinct(this._archive.values());
+    }
+
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - iterationCount
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
+     */
+    protected updateStatistics(): void {
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
+        StatisticsCollector.getInstance().incrementIterationCount();
+        if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
+                (this._iterations + 1) * this._properties['populationSize']; // FIXME: unsafe access
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }
 }

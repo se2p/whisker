@@ -2,6 +2,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = [
 
@@ -14,12 +15,13 @@ module.exports = [
                 require.resolve('codemirror/lib/codemirror.css'),
                 require.resolve('bootstrap/dist/css/bootstrap.css'),
                 require.resolve('bootstrap/dist/css/bootstrap-grid.css'),
+                require.resolve('bootstrap-slider/dist/css/bootstrap-slider.css'),
                 require.resolve('datatables.net-bs4/css/dataTables.bootstrap4.css'),
                 path.resolve(__dirname, 'src/index.css')
             ]
         },
         output: {
-            path: path.resolve(__dirname, 'dist')
+            path: path.resolve(__dirname, 'dist'),
         },
         module: {
             rules: [
@@ -73,7 +75,8 @@ module.exports = [
             minimizer: [
                 new OptimizeCssAssetsPlugin()
             ]
-        }
+        },
+        stats: 'errors-warnings',
     },
 
     /* JS */
@@ -85,7 +88,7 @@ module.exports = [
         },
         output: {
             path: path.resolve(__dirname, 'dist'),
-            filename: '[name].js'
+            filename: '[name].js',
         },
         module: {
             rules: [
@@ -110,8 +113,26 @@ module.exports = [
             ]
         },
         resolve: {
-            extensions: ['.ts', '.js']
+            extensions: ['.ts', '.js'],
+
+            // Polyfills for Node.JS core modules
+            // https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-nodejs-polyfills-removed
+            fallback: {
+                url: require.resolve("url/"),
+                stream: require.resolve("stream-browserify"),
+            }
         },
-        devtool: 'source-map'
+        plugins: [
+            // Required because 'process' and 'Buffer' are no longer poly-filled automatically.
+            // See https://stackoverflow.com/a/65018686 and https://stackoverflow.com/a/68723223
+            new webpack.ProvidePlugin({
+                process: 'process/browser',
+            }),
+            new webpack.ProvidePlugin({
+                Buffer: ['buffer', 'Buffer'],
+            }),
+        ],
+        devtool: 'source-map',
+        stats: 'errors-warnings',
     }
 ];

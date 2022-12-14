@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from "../../../../src/whisker/utils/List";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
@@ -31,16 +30,16 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
         super(size);
     }
 
-    getFitness(chromosome: BitstringChromosome): number {
+    override getFitness(chromosome: BitstringChromosome): number {
         return this._size - (super.getFitness(chromosome));
     }
 
-    compare (value1: number, value2: number): number {
+    override compare (value1: number, value2: number): number {
         // Smaller fitness values are better
-        return value1 - value2;
+        return value2 - value1;
     }
 
-    isOptimal(fitnessValue: number): boolean {
+    override isOptimal(fitnessValue: number): boolean {
         return fitnessValue == 0;
     }
 }
@@ -48,50 +47,38 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
 describe('TournamentSelection', () => {
 
     test('Select best for maximizing fitness function', async () => {
-        const goodBits = new List<boolean>();
-        goodBits.add(true);
-        goodBits.add(true);
+        const goodBits = [true, true];
         const betterChromosome = new BitstringChromosome(goodBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const worseBits = new List<boolean>();
-        worseBits.add(false);
-        worseBits.add(false);
+        const worseBits = [false, false];
         const worseChromosome = new BitstringChromosome(worseBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const population = new List<BitstringChromosome>();
-        population.add(betterChromosome);
-        population.add(worseChromosome);
+        const population = [betterChromosome, worseChromosome];
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const selection = new TournamentSelection<BitstringChromosome>(20);
         const winner = await selection.apply(population, fitnessFunction);
 
-        expect(await fitnessFunction.getFitness(winner)).toBe(2);
+        expect(winner.getFitness(fitnessFunction)).toBe(2);
     });
 
     test('Select best for minimizing fitness function', async () => {
-        const goodBits = new List<boolean>();
-        goodBits.add(true);
-        goodBits.add(true);
+        const goodBits = [true, true];
         const betterChromosome = new BitstringChromosome(goodBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const worseBits = new List<boolean>();
-        worseBits.add(false);
-        worseBits.add(false);
-        const worseChromosome = new BitstringChromosome(goodBits,
+        const worseBits = [false, false];
+        const worseChromosome = new BitstringChromosome(worseBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const population = new List<BitstringChromosome>();
-        population.add(betterChromosome);
-        population.add(worseChromosome);
+        const population = [betterChromosome, worseChromosome];
 
         const fitnessFunction = new InverseOneMaxFitnessFunction(2);
         const selection = new TournamentSelection<BitstringChromosome>(20);
         const winner = await selection.apply(population, fitnessFunction);
 
-        expect(await fitnessFunction.getFitness(winner)).toBe(0);
+        expect(winner.getFitness(fitnessFunction)).toBe(0);
     });
 });

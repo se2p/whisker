@@ -19,7 +19,6 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
@@ -27,31 +26,29 @@ import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringCh
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
-import {List} from "../../../../src/whisker/utils/List";
 
 describe('BuillderBitstringChromosome', () => {
 
     test('Build MOSA', () => {
-        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mosa');
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build MIO', () => {
-        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mio');
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build Random', () => {
-        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('random');
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build OnePlusOne', () => {
-        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.ONE_PLUS_ONE);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('onePlusOne');
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
@@ -59,32 +56,39 @@ describe('BuillderBitstringChromosome', () => {
         const chromosomeLength = 10;
         const populationSize = 50;
         const iterations = 100;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
+        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        const properties = {
+            populationSize,
+            chromosomeLength,
+            stoppingCondition,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined,
+            reservedCodons: undefined
+        };
+
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties,
             new BitflipMutation(), new SinglePointCrossover());
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
-        properties.setStoppingCondition(stoppingCondition);
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
         }
         const selectionOp = new RankSelection();
 
-        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
+        const builder = new SearchAlgorithmBuilder('mosa');
         builder.addProperties(properties);
         expect(builder["_properties"]).toBe(properties);
 
         builder.addChromosomeGenerator(chromosomeGenerator);
         expect(builder["_chromosomeGenerator"]).toBe(chromosomeGenerator);
 
-        builder.initializeFitnessFunction(FitnessFunctionType.ONE_MAX, chromosomeLength, new List());
+        builder.initializeFitnessFunction(FitnessFunctionType.ONE_MAX, chromosomeLength, []);
         expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
         expect(builder["_fitnessFunction"]).not.toBeNull();
 
-        builder.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
+        builder.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, []);
         expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
         expect(builder["_fitnessFunction"]).not.toBeNull();
 

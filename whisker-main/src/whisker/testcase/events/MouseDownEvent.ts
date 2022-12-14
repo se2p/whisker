@@ -31,34 +31,42 @@ export class MouseDownEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            isDown: this._value
-        });
+        Container.testDriver.mouseDown(this._value);
     }
 
     public toJavaScript(): string {
-        return '' +
-`t.inputImmediate({
-    device: 'mouse',
-    isDown: ${this._value}
-});`;
+        return `t.mouseDown(${this._value});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`type`] = `MouseDownEvent`;
+        event[`args`] = {"value": this._value};
+        return event;
     }
 
     public toString = () : string => {
         return "MouseDown " + this._value;
     }
 
-    getNumParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
-    getParameter(): number[] {
+    getParameters(): [number] {
         // 0 returns False in JS/TS
         return [this._value ? 1 : 0];
     }
 
-    setParameter(): void {
-        return;
+    getSearchParameterNames(): [] {
+        return [];
+    }
+
+    setParameter(): [] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return "MouseDownEvent";
     }
 }

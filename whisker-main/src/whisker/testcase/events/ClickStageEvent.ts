@@ -30,22 +30,38 @@ export class ClickStageEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return 't.clickStage()';
+        return 't.clickStage();';
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`Type`] = `ClickStageEvent`;
+        return event;
     }
 
     public toString(): string {
-        return "ClickStage"
+        return "ClickStage";
     }
 
-    getNumParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
-    setParameter(): void {
-        return;
-    }
-
-    getParameter(): [] {
+    setParameter(): [] {
         return [];
     }
+
+    getParameters(): [] {
+        return [];
+    }
+
+    getSearchParameterNames(): [] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return "ClickStageEvent";
+    }
+
+
 }

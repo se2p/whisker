@@ -70,7 +70,7 @@ class GraphNode {
 
     toString () {
         if (this.block && this.block.opcode) {
-            return `${this.block.opcode}:${this.id.substring(0, 2)}`;
+            return `${this.block.opcode}:${this.id.substring(0, 2)}-${this.block.target}`;
         } else { // eslint-disable-line no-else-return
             return this.id;
         }
@@ -105,6 +105,10 @@ class Graph {
 
     addNode (node) {
         this._nodes[node.id] = node;
+    }
+
+    removeNode(node){
+        delete this._nodes[node.id];
     }
 
     addEdge (node, successor) {
@@ -212,6 +216,28 @@ class Graph {
         const renderedEdges = edges.join('\n');
 
         const result = `digraph ScratchProgram {\n${renderedEdges}\n}`;
+
+        this.dot = result;
+        return result;
+    }
+
+    toCoverageDot (uncoveredKeys) {
+        const edges = [];
+        const nodes = [];
+        for (const node of this.getAllNodes()) {
+            if (uncoveredKeys.includes(node.id)) {
+                nodes.push(`\t"${node.toString()}" [style=filled,fillcolor=\"red\",fontcolor=\"white\"];`);
+            } else {
+                nodes.push(`\t"${node.toString()}" [style=filled,fillcolor=\"darkgreen\",fontcolor=\"white\"];`);
+            }
+            for (const succ of this.successors(node.id)) {
+                edges.push(`\t"${node.toString()}" -> "${succ.toString()}";`);
+            }
+        }
+        const renderedEdges = edges.join('\n');
+        const renderedNodes = nodes.join('\n');
+
+        const result = `digraph ScratchProgram {\n${renderedNodes}\n${renderedEdges}\n}`;
 
         this.dot = result;
         return result;

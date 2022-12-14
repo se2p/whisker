@@ -19,15 +19,13 @@
  */
 
 import {BitstringChromosome} from '../../../src/whisker/bitstring/BitstringChromosome';
-import {List} from '../../../src/whisker/utils/List';
 import {BitflipMutation} from "../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
 
 describe('BitflipMutation', () => {
 
     test('False to true', () => {
-        const originalBits = new List<Boolean>();
-        originalBits.add(false);
+        const originalBits = [false];
         const chromosome = new BitstringChromosome(originalBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
@@ -35,13 +33,12 @@ describe('BitflipMutation', () => {
         const offspring = mutation.apply(chromosome);
         const mutatedBits = offspring.getGenes();
 
-        expect(mutatedBits.size()).toBe(originalBits.size());
-        expect(mutatedBits.get(0)).toBe(true);
+        expect(mutatedBits.length).toBe(originalBits.length);
+        expect(mutatedBits[0]).toBe(true);
     });
 
     test('True to false', () => {
-        const originalBits = new List<Boolean>();
-        originalBits.add(true);
+        const originalBits = [true];
         const chromosome = new BitstringChromosome(originalBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
@@ -49,7 +46,7 @@ describe('BitflipMutation', () => {
         const offspring = mutation.apply(chromosome);
         const mutatedBits = offspring.getGenes();
 
-        expect(mutatedBits.size()).toBe(originalBits.size());
-        expect(mutatedBits.get(0)).toBe(false);
+        expect(mutatedBits.length).toBe(originalBits.length);
+        expect(mutatedBits[0]).toBe(false);
     });
 });

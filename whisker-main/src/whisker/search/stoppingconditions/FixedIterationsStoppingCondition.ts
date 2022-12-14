@@ -20,7 +20,7 @@
 
 import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
-import {SearchAlgorithm} from "../SearchAlgorithm";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class FixedIterationsStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
@@ -30,11 +30,15 @@ export class FixedIterationsStoppingCondition<T extends Chromosome> implements S
         this._maxIterations = iterationLimit;
     }
 
-    isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        return algorithm.getNumberOfIterations() >= this._maxIterations;
+    isFinished(): boolean {
+        return StatisticsCollector.getInstance().iterationCount >= this._maxIterations;
     }
 
-    getProgress(algorithm: SearchAlgorithm<T>): number {
-        return algorithm.getNumberOfIterations() / this._maxIterations;
+    getProgress(): number {
+        return StatisticsCollector.getInstance().iterationCount / this._maxIterations;
+    }
+
+    get maxIterations(): number {
+        return this._maxIterations;
     }
 }

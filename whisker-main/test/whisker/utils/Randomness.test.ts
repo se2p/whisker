@@ -19,9 +19,41 @@
  */
 
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {List} from "../../../src/whisker/utils/List";
 
 describe("Randomness", () => {
+
+    test("Set initial seed as number type", () =>{
+        const seed = 5;
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBe(seed);
+    });
+
+    test("Set initial seed as string type", () =>{
+        const seed = "5";
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBe(5);
+        expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
+    });
+
+    test("Set initial seed as string", () =>{
+        const seed = "whisker";
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBeGreaterThan(0);
+        expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
+    });
+
+    test("Set initial seed as empty string", () =>{
+        const seed = "";
+        Randomness.setInitialSeeds(seed);
+        expect(Date.now() - Randomness.getInitialRNGSeed()).toBeLessThan(1000);
+        expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
+    });
+
+    test("Same Seed same result", () =>{
+        const seed = 5;
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBe(seed);
+    });
 
     test("Create an integer from a range", () => {
 
@@ -29,7 +61,7 @@ describe("Randomness", () => {
         const num = random.nextInt(0, 10);
 
         expect(num).toBeGreaterThanOrEqual(0);
-        expect(num).toBeLessThanOrEqual(10);
+        expect(num).toBeLessThan(10);
     });
 
     test("Create a float in [0,1]", () => {
@@ -61,9 +93,9 @@ describe("Randomness", () => {
         }
     });
 
-    test("Pick a random element from a collection", () => {
+    test("Pick a random element from an array", () => {
         const random = Randomness.getInstance();
-        const list: number[] = [1, 2, 3];
+        const list = [1,2,3];
         const num = random.pick(list);
 
         expect(list).toContain(num);
@@ -72,12 +104,12 @@ describe("Randomness", () => {
     test("Different seed, different sequence", () => {
 
         const random = Randomness.getInstance();
-        Randomness.setInitialSeed(0);
+        Randomness.setInitialSeeds(0);
         const sequence1 = [];
         for (let i = 0; i < 100; i++) {
             sequence1.push(random.nextInt(0, 100));
         }
-        Randomness.setInitialSeed(42);
+        Randomness.setInitialSeeds(42);
         const sequence2 = [];
         for (let i = 0; i < 100; i++) {
             sequence2.push(random.nextInt(0, 100));
@@ -87,23 +119,23 @@ describe("Randomness", () => {
 
     test("Pick number from GaussianDistribution", () =>{
         const random = Randomness.getInstance();
-        const sampledValues = []
+        const sampledValues = [];
         for (let i = 0; i < 10000; i++) {
-            sampledValues.push(random.nextGaussian(100,2))
+            sampledValues.push(random.nextGaussian(100,2));
         }
         const average = sampledValues.reduce((a, b) => a + b) / sampledValues.length;
-        expect(average).toBeGreaterThan(99)
-        expect(average).toBeLessThan(101)
-    })
+        expect(average).toBeGreaterThan(99);
+        expect(average).toBeLessThan(101);
+    });
 
     test("Pick integer from GaussianDistribution", () =>{
         const random = Randomness.getInstance();
-        const sampledValues = []
+        const sampledValues = [];
         for (let i = 0; i < 10000; i++) {
-            sampledValues.push(random.nextGaussianInt(100,2))
+            sampledValues.push(random.nextGaussianInt(100,2));
         }
         const average = sampledValues.reduce((a, b) => a + b) / sampledValues.length;
-        expect(average).toBeGreaterThan(99)
-        expect(average).toBeLessThan(101)
-    })
+        expect(average).toBeGreaterThan(99);
+        expect(average).toBeLessThan(101);
+    });
 });

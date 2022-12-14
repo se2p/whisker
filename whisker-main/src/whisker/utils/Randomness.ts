@@ -18,7 +18,9 @@
  *
  */
 
-import {List} from "./List";
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import seed from 'seed-random';
+
 
 /**
  * Seeded singleton random number generator
@@ -27,24 +29,36 @@ import {List} from "./List";
  */
 export class Randomness {
 
+    /**
+     * Holds the Randomness instance created by the private constructor
+     */
     private static _instance: Randomness;
 
-    private static _initialSeed: number;
+    /**
+     * Initial seed for the random number generator
+     */
+    private static _initialRNGSeed: number;
 
-    private _seed: number;
+    /**
+     * Current random number generator seed
+     */
+    private _RNGSeed: number;
+
+    /**
+     * Seed for the Scratch-VM. Initial value set to 0 to ensure that tests, generated using Whisker's TestGenerator,
+     * will produce the same results if no seed is set.
+     */
+    private static _scratchSeed = 0;
 
     /**
      * Private constructor to prevent construction with new
-     *
-     * @param seed -- seed to initialize with
      */
     private constructor() {
-        if(Randomness._initialSeed) {
-            this._seed = Randomness._initialSeed;
+        if (Randomness._initialRNGSeed) {
+            this._RNGSeed = Randomness._initialRNGSeed;
         } else {
-            this._seed = Date.now();
+            this._RNGSeed = Date.now();
         }
-        console.log("Using random seed ",this._seed);
     }
 
     /**
@@ -59,33 +73,91 @@ export class Randomness {
     }
 
     /**
-     * Set the initial seed.
-     * Does nothing if random number generator has already been initialized.
-     *
-     * @param seed the initial seed
+     * Sets the seed for the RNG and the Scratch-VM
+     * @param seed the seed to which the RNG and the Scratch-VM should be set to.
      */
-    public static setInitialSeed(seed: number) {
-        Randomness._initialSeed = seed;
+    public static setInitialSeeds(seed: (number | string)): void {
+        Randomness.setInitialRNGSeed(seed);
+        // Only set the seed if one has been specified
+        if (seed !== "") {
+            Randomness.setScratchSeed(seed);
+        }
     }
 
-    public static getInitialSeed() {
-        return Randomness._initialSeed;
+    /**
+     * Set the initial random number generator seed and the current RNG seed.
+     * @param seed the random number generator.
+     */
+    public static setInitialRNGSeed(seed: (number | string)): void {
+        const convertedSeed = this.convertSeed(seed);
+        console.log(`Seeding the RNG to ${convertedSeed}`);
+        Randomness._initialRNGSeed = convertedSeed;
+        Randomness.getInstance()._RNGSeed = Randomness._initialRNGSeed; // In case the class instance already exists
     }
 
+    /**
+     * Set the seed for the Scratch-VM.
+     * @param seed the Scratch-VM seed.
+     * @param silence determines whether we want to log the modified seed.
+     */
+    public static setScratchSeed(seed: (number | string), silence = false): void {
+        const convertedSeed = this.convertSeed(seed);
+        if (!silence) {
+            console.log(`Seeding the Scratch-VM to ${convertedSeed}`);
+        }
+        Randomness._scratchSeed = convertedSeed;
+    }
+
+    /**
+     * Converts a string to a number. If the seed is already of type number, the number is simply returned.
+     * @param seed the seed which should be transformed into a number type.
+     * @returns number representing the seed
+     */
+    private static convertSeed(seed: (number | string)): number {
+        // No need to convert if we already have a number
+        if (typeof seed === "number") {
+            return seed;
+        } else if (seed !== "") {
+            // If the string represents a number but has typeof string parse it into a number
+            let parsedSeed = parseInt(seed, 10);
+            // If the seed does not represent a number ( e.g "whisker") sum up the UTF-16 code units
+            if (isNaN(parsedSeed)) {
+                parsedSeed = [...seed].map(char => char.charCodeAt(0)).reduce((current, previous) => previous + current);
+            }
+            return parsedSeed;
+        } else {
+            return Date.now();
+        }
+    }
+
+    /**
+     * Returns the initial random number generator seed.
+     * @returns number representing the random number generator seed.
+     */
+    public static getInitialRNGSeed(): number {
+        return Randomness._initialRNGSeed;
+    }
+
+    /**
+     * Helper function to return a number between min and max.
+     * @param min lower bound inclusive
+     * @param max upper bound exclusive
+     * @return number between min and max
+     */
     private next(min: number, max: number): number {
         max = max || 0;
         min = min || 0;
 
-        this._seed = (this._seed * 9301 + 49297) % 233280;
-        const rnd = this._seed / 233280;
+        this._RNGSeed = (this._RNGSeed * 9301 + 49297) % 233280;
+        const rnd = this._RNGSeed / 233280;
 
         return min + rnd * (max - min);
     }
 
     /**
      * Pick a random integer from a range
-     * @param min Lower bound of range
-     * @param max Upper bound of range
+     * @param min Lower bound of range inclusive
+     * @param max Upper bound of range exclusive
      */
     public nextInt(min: number, max: number): number {
         return Math.floor(this.next(min, max));
@@ -115,21 +187,12 @@ export class Randomness {
     }
 
     /**
-     * Pick a random item from a collection
+     * Pick a random item from an array
      *
-     * @param collection from which to pick an item
+     * @param array from which to pick an item
      */
-    public pick(collection: any[]): any {
-        return collection[this.nextInt(0, collection.length)];
-    }
-
-    /**
-     * Pick a random item from a List
-     *
-     * @param list from which to pick an item
-     */
-    public pickRandomElementFromList<C>(list: List<C>): C {
-        return list.get(this.nextInt(0, list.size()));
+    public pick<T>(array: T[]): T {
+        return array[this.nextInt(0, array.length)];
     }
 
     /**
@@ -140,8 +203,8 @@ export class Randomness {
     public nextGaussian(mean: number, std: number): number {
         let x, y, s;
         do {
-            x = Math.random() * 2 - 1;
-            y = Math.random() * 2 - 1;
+            x = this.nextDouble() * 2 - 1;
+            y = this.nextDouble() * 2 - 1;
             s = x * x + y * y;
         } while (s >= 1 || s == 0);
         s = Math.sqrt(-2.0 * Math.log(s) / s);
@@ -154,7 +217,24 @@ export class Randomness {
      * @param std the std of the gaussian distribution
      */
     public nextGaussianInt(mean: number, std: number): number {
-        return Math.round(this.nextGaussian(mean,std))
+        return Math.round(this.nextGaussian(mean, std));
     }
 
+    /**
+     * Sets a seed for the Scratch-VM to enable reproduction of scratch project execution.
+     * @param vm the Scratch-VM
+     */
+    public static seedScratch(vm: VirtualMachine): void {
+        if (vm.seed) {
+            // Seed the debugger's Scratch-VM, do not seed globally.
+            // Global seeding would lead to different random values, because Scratch-GUI also calls Math.random during test execution.
+            vm.seed(Randomness._scratchSeed);
+        } else {
+            seed(Randomness._scratchSeed, {global: true});
+        }
+    }
+
+    static get scratchSeed(): number {
+        return this._scratchSeed;
+    }
 }

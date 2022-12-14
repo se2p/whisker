@@ -1,0 +1,41 @@
+{
+    "testGenerator": "manyObjective",
+    "algorithm": "random",
+    "extractor": "dynamic",
+    "eventSelector": "interleaving",
+    "chromosome": {
+        "type": "variableLengthTest",
+        "minSampleLength": 2,
+        "maxSampleLength": 20
+    },
+    "fitnessFunction": {
+        "type": "statement",
+        "targets": []
+    },
+    "stoppingCondition": {
+        "type": "combined",
+        "conditions": [
+            {
+                "type": "fixedTime",
+                "duration": 6000000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "integerRange": {
+        "min": 0,
+        "max": 480
+    },
+    "durations": {
+        "waitStepUpperBound": 100,
+        "clickDuration": 1,
+        "pressDuration": 5,
+        "soundDuration": 1
+    },
+    "debugLogging": true,
+    "minimize": true,
+    "assertions": true,
+    "minimizeAssertions": true
+}

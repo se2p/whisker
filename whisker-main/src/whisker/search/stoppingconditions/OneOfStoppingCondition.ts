@@ -21,42 +21,53 @@
 import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {List} from "../../utils/List";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingCondition";
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _conditions = new List<StoppingCondition<T>>();
+    private _conditions: StoppingCondition<T>[] = [];
 
-    constructor(...stoppingCondition: StoppingCondition<T>[]) {
-        this._conditions.addAll(stoppingCondition);
+    constructor(...stoppingConditions: StoppingCondition<T>[]) {
+        // Immediately flatten nested OneOfStoppingConditions.
+        this._conditions = this._flatten(stoppingConditions);
+    }
+
+    private _flatten(stoppingConditions: StoppingCondition<T>[]): StoppingCondition<T>[] {
+        const flattened = [];
+        for (const stoppingCondition of stoppingConditions) {
+            if (stoppingCondition instanceof OneOfStoppingCondition) {
+                flattened.push(...this._flatten(stoppingCondition.conditions));
+            } else {
+                flattened.push(stoppingCondition);
+            }
+        }
+        return flattened;
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        // TODO: This could be written in a single line by extending the List class?
-        for (const stoppingCondition of this._conditions) {
-            if (stoppingCondition.isFinished(algorithm)) {
-                return true;
-            }
-        }
-        return false;
+        return this.conditions.some(condition => condition.isFinished(algorithm));
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        for (const stoppingCondition of this._conditions){
-            try {
-                return stoppingCondition.getProgress(algorithm);
-            }
-            catch(e) {
-                // It is fine if not all conditions implement this
-            }
-        }
-
-        // If none of the conditions implements getProgress, there's a problem
-        throw new NotYetImplementedException();
+        /*
+         * We distinguish between stopping conditions tracking (A) how close we are to fulfilling an objective, vs.
+         * (B) how much resources have been used. For measuring search progress, we are interested only in (B).
+         * This filtering step is important and can impact the behavior of search algorithms. In particular, MIO
+         * uses getProgress to decide if it should enter its "focused phase". The majority of Scratch programs are
+         * very simple and we reach very high coverage almost instantly, meaning that MIO would immediately enter
+         * its focused phase, unless we specifically filter out OptimalSolutionStoppingCondition here.
+         */
+        const resourceConditions = this.conditions.filter(condition =>
+            !(condition instanceof OptimalSolutionStoppingCondition));
+        const progress = resourceConditions.map(condition => condition.getProgress(algorithm));
+        return Math.max(...progress);
     }
 
-    get conditions(): List<StoppingCondition<T>> {
+    get conditions(): StoppingCondition<T>[] {
         return this._conditions;
+    }
+
+    set conditions(value: StoppingCondition<T>[]) {
+        this._conditions = value;
     }
 }

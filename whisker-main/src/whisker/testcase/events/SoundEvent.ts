@@ -19,33 +19,57 @@
  */
 
 import {ScratchEvent} from "./ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {Container} from "../../utils/Container";
 
 export class SoundEvent extends ScratchEvent {
 
-    private _volume:number;
+    /**
+     * Constructor for SoundEvents
+     * @param _volume the initialVolume; we use 10 since Scratch registers a volume of 10 as "loud".
+     * @param _steps defines how long the volume should be sent to the Scratch-VM
+     */
+    constructor(private readonly _volume = 10, private readonly _steps = 1) {
+        super();
+        this._volume = _volume;
+        this._steps = Container.config.getSoundDuration();
+    }
 
     async apply(): Promise<void> {
-        throw new NotYetImplementedException();
+        Container.testDriver.sendSound(this._volume, this._steps);
     }
 
     public toJavaScript(): string {
-        throw new NotYetImplementedException();
+        return `t.sendSound(${this._volume}, ${this._steps});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`type`] = `SoundEvent`;
+        event[`args`] = {"volume": this._volume};
+        return event;
     }
 
     public toString(): string {
-        throw new NotYetImplementedException();
+        return `SoundEvent ${this._volume} for ${this._steps} steps`;
     }
 
-    getNumParameters(): number {
-        return 1;
+    numSearchParameter(): number {
+        return 0;
     }
 
-    getParameter(): number[] {
-        return [this._volume];
+    getParameters(): [number, number] {
+        return [this._volume, this._steps];
     }
 
-    setParameter(args:number[]): void {
-        this._volume = args[0];
+    getSearchParameterNames(): [] {
+        return [];
+    }
+
+    setParameter(): [] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return `SoundEvent-${this._volume}`;
     }
 }

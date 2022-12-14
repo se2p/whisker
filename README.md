@@ -1,4 +1,4 @@
-![Whisker Logo](https://raw.githubusercontent.com/se2p/whisker-main/master/logos/whisker-text-logo.jpg)
+![Whisker Logo](logos/whisker-text-logo.png)
 
 Whisker is an automated testing framework for [Scratch](https://scratch.mit.edu/) projects.
 
@@ -42,50 +42,67 @@ After building Whisker, simply open 'whisker-web/dist/index.html' in your browse
 firefox whisker-web/dist/index.html
 ```
 
-The Servant is a wrapper around the web client, allowing to run tests automatically in a headless environment (via chrome-headless / [puppeteer](https://github.com/puppeteer/puppeteer)). It is called the Servant as in "Cats don't have owners they have servants".
+The Servant is a wrapper around the web client, allowing to run tests automatically in a headless environment
+(via chrome-headless / [puppeteer](https://github.com/puppeteer/puppeteer)). It is called the Servant as in
+"Cats don't have owners they have servants".
 
 To use Whisker on the command line, you can use the Servant node frontend as follows:
 
 ```bash
-cd servant && node servant.js -s <Scratch project file> -t <test file>
+node servant run -s <Scratch project file> -t <test file>
 ```
 
-The full list of options is provided using `node servant/servant.js -h`:
+An overview of options is provided using `node servant help`:
 
 ```bash
-Usage: servant [options]
+Usage: node servant [options] [command]
+
+A Testing Utility for Scratch 3.0
 
 Options:
-  -u, --whiskerURL <URL>              File URL of the Whisker instance to run the tests (default:
-                                      "../whisker-web/dist/index.html")
-  -s, --scratchPath <Path>            Scratch application to run, or directory containing results (default:
-                                      false)
-  -t, --testPath <Path>               Tests to run (default: false)
-  -w, --errorWitnessPath <Path>       A JSON error witness to replay (default: false)
-  -z, --isGenerateWitnessTestOnly     Generate test file with error witness replay without executing it
-                                      (default: false)
-  -r, --addRandomInputs [Integer]     If random inputs should be added to the test and if so, how many seconds
-                                      to wait for its completion (default: false)
-  -a, --accelerationFactor <Integer>  Acceleration factor (default: "1")
-  -v, --csvFile <Path>                Name of CSV File to put output into (default: false)
-  -c, --configPath <Path>             Path to a configuration file (default:
-                                      "../config/default.json")
-  -d, --isHeadless                    If should run headless (d like in decapitated)
-  -p, --numberOfTabs <Integer>        The number of tabs to execute the tests in (default: 1)
-  -k, --isConsoleForwarded            If the browser's console output should be forwarded (default: false)
-  -o, --isLiveOutputCoverage          If new output of the coverage should be printed regularly (default: false)
-  -l, --isLiveLogEnabled              If the new output of the log should be printed regularly (default: false)
-  -g, --isGeneticSearch               If new tests should be generated via genetic search (default: false)
-  -x, --isExecutionTraceSaved         If the execution trace should be saved at the end of the testing (default: false)
+  -h, --help                display help for command
+  -V, --version             output the version number
+
+Commands:
+  dynamic [options]         dynamic test suites using Neuroevolution
+  generate [options]        generate Whisker test suites
+  help [options] [command]  display help for command
+  model [options]           test with model
+  run [options]             run Whisker tests
+  witness [options]         generate and replay error witnesses
+```
+To show further help, additionally pass the name of the command you are interested in, e.g.,
+the `run` command: `node servant help run`.
+```bash
+Usage: node servant run [options]
+
+run Whisker tests
+
+Options:
+  -a, --acceleration <Integer>        acceleration factor (default: 1)
+  -d, --headless                      run headless ("d" like in "decapitated") (default: false)
+  -e, --mutants-download-path <Path>  where generated mutants should be saved
   -h, --help                          display help for command
+  -j, --number-of-jobs <Integer>      number of jobs (Chromium tabs) for test execution (default: 1)
+  -k, --console-forwarded             forward browser console output
+  -l, --live-log                      print new log output regularly
+  -m, --mutators <String...>          mutation operators to apply
+  -o, --live-output-coverage          print new coverage output regularly
+  -s, --scratch-path <Path>           path to file (".sb3") or folder with scratch application(s)
+  -t, --test-path <Path>              path to Whisker tests to run (".js")
+  -v, --csv-file <Path>               create CSV file with results
+  -z, --seed <String>                 custom seed for Scratch-VM
+  -x, --isExecutionTraceSaved         If the execution trace should be saved at the end of the testing (default: false)
 ```
 
-To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
+To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
+acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
 
-For example, the following command runs tests with a 10 fold speedup and two parallel executions in a headless chrome instance:
+For example, the following command runs tests with a 10-fold speedup and two parallel executions in a headless chrome
+instance:
 
 ```bash
-node servant.js -s project.sb3 -t tests.js -a 10 -d -p 2
+node servant run -s project.sb3 -t tests.js -a 10 -d -j 2
 ```
 
 ## Using Docker (Headless Mode)
@@ -104,6 +121,15 @@ The main entry point to the container is the wrapper script `whisker-docker.sh`,
 headless mode (using the flags `-d`, `-k` and `-l`, among others.) Any `<additional arguments>` given by the user will
 be forwarded by the script to the servant.
 
+In case you want to copy the artefacts created by Whisker (including redirection of stdout and stderr) to files in a
+writable bind mount, you can achieve this for example as follows:
+```bash
+docker run -v "/on/the/host:/inside/the/container" whisker /inside/the/container -- <Whikser arguments>
+```
+This will mount the directory `/on/the/host` as `/inside/the/container`, instruct Whisker to copy its output (such as
+generated test files and log messages) to files in `/inside/the/container`, and make them accessible to you in the
+directory `/on/the/host`.
+
 ## Writing Tests
 
 Details on writing Whisker tests in JavaScript can be found
@@ -111,7 +137,9 @@ Details on writing Whisker tests in JavaScript can be found
 
 ## Generating Tests Automatically
 
-The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate search configuration (examples can be found in the `config` directory), and click `Test Generation`. Warning: This may take a while! Once the search has completed, the generated tests are loaded into the editor window.
+The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate
+search configuration (examples can be found in the `config` directory), and click `Test Generation`. Warning: This may
+take a while! Once the search has completed, the generated tests are loaded into the editor window.
 
 If you run test generation with Servant (command line option `-g`), at the end of the search a file called `tests.js`
 is created in the current directory which contains the tests. These can now be loaded into Whisker.
@@ -125,12 +153,18 @@ of  the [University of Passau](https://www.uni-passau.de).
 Contributors:
 
 Adina Deiner\
+Patric Feldmeier\
 Christoph Frädrich\
 Gordon Fraser\
 Sophia Geserer\
+Katharina Götz\
 Eva Gründinger\
+Nina Körber\
 Marvin Kreis\
+Sebastian Schweikl\
 Andreas Stahlbauer\
+Emma Wang\
+Phil Werli\
 Nik Zantner
 
 
@@ -164,5 +198,36 @@ Whisker is supported by the project FR 2955/3-1 funded by the
   pages     = {58--72},
   publisher = {Springer},
   year      = {2020},
+}
+```
+
+```
+@misc{götz2022modelbased,
+      title={Model-based Testing of Scratch Programs},
+      author={Katharina Götz and Patric Feldmeier and Gordon Fraser},
+      year={2022},
+      eprint={2202.06271},
+      archivePrefix={arXiv},
+      primaryClass={cs.SE}
+}
+```
+
+```
+@misc{deiner2022automated,
+      title={Automated Test Generation for Scratch Programs},
+      author={Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
+      year={2022},
+      eprint={2202.06274},
+      archivePrefix={arXiv},
+      primaryClass={cs.SE}
+}
+```
+
+```
+@article{feldmeier2022neuroevolution,
+  title={Neuroevolution-Based Generation of Tests and Oracles for Games},
+  author={Feldmeier, Patric and Fraser, Gordon},
+  journal={arXiv preprint arXiv:2208.13632},
+  year={2022}
 }
 ```

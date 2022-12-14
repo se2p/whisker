@@ -1,95 +1,123 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 30000 : 20000;
+// FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
+const URL = "dist/index.html";
 
-async function loadProject (scratchPath) {
+const timeout = 20000;
+const ACCELERATION = 10;
+
+async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    await (await page.$('#toggle-advanced')).click();
-    await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, ACCELERATION);
+    const toggle = await page.$('#toggle-advanced');
+    await toggle.evaluate(t => t.click());
+    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
 }
-
-async function waitForSearchCompletion () {
-    const coverageOutput = await page.$('#output-run .output-content');
-
-    while (true) {
-        const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-        if (currentCoverageLog.includes('summary')) {
-            break;
-        }
-    }
-}
-
-/**
- * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
- * run is over.
- */
-async function readCoverageOutput () {
-    const coverageOutput = await page.$('#output-run .output-content');
-    let coverageLog = '';
-
-    while (true) {
-        const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-        coverageLog = currentCoverageLog;
-
-        if (currentCoverageLog.includes("combined: NaN (0/0)")) {
-            return "1.00"; // TODO: How much coverage should there be if there are no blocks?
-        }
-
-        if (currentCoverageLog.includes('combined:')) {
-            var re = /combined: (\d+\.\d+)/i;
-            var matches_array = currentCoverageLog.match(re);
-            return matches_array[1];
-        }
-        if (currentCoverageLog.includes('summary')) {
-            break;
-        }
-
-        await page.waitForTimeout(1000);
-    }
-
-    return coverageLog;
-}
-
 
 /**
  * Reads the distances of fitness, approach level, and branch distance from #output-log
  */
-async function readFitnessLog () {
+async function readFitnessLog() {
     const output = await page.$('#output-log .output-content');
     while (true) {
-        const log = await (await output.getProperty('innerHTML')).jsonValue();
+        const outputContent = await output.getProperty('innerHTML');
+        const log = await outputContent.jsonValue();
         if (log.includes('uncoveredBlocks')) {
-            return JSON.parse(log);
+            const csvHeaderIndex = log.split('\n').findIndex(logLine => logLine.includes('projectName'));
+            const uncoveredBlocksLog = log.split('\n').slice(0, csvHeaderIndex).join('\n');
+            return JSON.parse(uncoveredBlocksLog);
         }
     }
 }
 
-beforeEach(async() => {
+/**
+ * Checks approachLevel, branchDistance and CFG-Distance for executionHaltingBlocks.
+ * @returns {Promise<void>}
+ */
+async function checkFitnessValuesForExecutionHaltingBlocks() {
+    const startSearchButton = await page.$('#run-search');
+    await startSearchButton.click();
+    let log = await readFitnessLog();
+    while (log.uncoveredBlocks[0] === undefined) {
+        log = await readFitnessLog();
+    }
+    const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
+    await expect(approachLevel).toBe(0);
+    const branchDistance = log.uncoveredBlocks[0].BranchDistance;
+    await expect(branchDistance).toBeLessThanOrEqual(1);
+    await expect(branchDistance).toBeGreaterThan(0);
+    const CFGDistance = log.uncoveredBlocks[0].CFGDistance;
+    await expect(CFGDistance).toBe(Number.MAX_VALUE);
+}
+
+beforeEach(async () => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtestFitness.json");
+    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/fitnessTests.json");
 });
 
 
-describe('Fitness tests',  ()=>{
+describe('Fitness tests', () => {
     test('Test touching color branch distance', async () => {
         await loadProject('test/integration/branchDistance/TouchingColorDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
         const longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;
         const shorterDistanceBranchDistance = log.uncoveredBlocks[1].BranchDistance;
         await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+
+        const stageDiameter = Math.hypot(360, 480);
+
+        // The smallest distance between the two sprites is 41 pixels, the biggest distance is 156 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(shorterDistanceBranchDistance).toBeGreaterThanOrEqual(41 / stageDiameter);
+        await expect(shorterDistanceBranchDistance).toBeLessThanOrEqual(156 / stageDiameter);
+
+        // The smallest distance between the two sprites is 120 pixels, the biggest distance is 411 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(longerDistanceBranchDistance).toBeGreaterThanOrEqual(120 / stageDiameter);
+        await expect(longerDistanceBranchDistance).toBeLessThanOrEqual(411 / stageDiameter);
+    }, timeout);
+
+    test('Test color touching color branch distance', async () => {
+        await loadProject('test/integration/branchDistance/ColorTouchingColorDistance.sb3')
+        await (await page.$('#run-search')).click();
+        const {uncoveredBlocks} = await readFitnessLog();
+
+        // The distance between the purple and red rectangle (longer, they do not touch), and
+        // the distance between the purple and green rectangle (shorter, they do not touch).
+        const longerDistanceBranchDistance = uncoveredBlocks[0].BranchDistance;
+        const shorterDistanceBranchDistance = uncoveredBlocks[1].BranchDistance;
+        await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+
+        const stageDiameter = Math.hypot(360, 480);
+
+        // The smallest distance between the two sprites is 41 pixels, the biggest distance is 156 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(shorterDistanceBranchDistance).toBeGreaterThanOrEqual(41 / stageDiameter);
+        await expect(shorterDistanceBranchDistance).toBeLessThanOrEqual(156 / stageDiameter);
+
+        // The smallest distance between the two sprites is 120 pixels, the biggest distance is 411 pixels.
+        // Branch distance should be somewhere in between.
+        await expect(longerDistanceBranchDistance).toBeGreaterThanOrEqual(120 / stageDiameter);
+        await expect(longerDistanceBranchDistance).toBeLessThanOrEqual(411 / stageDiameter);
+
+        // The purple and yellow rectangle do touch, but the purple rectangle does not contain the color red. So this
+        // block always returns false, and the true distance is always 1.
+        const trueDistance = uncoveredBlocks[2].BranchDistance;
+        await expect(trueDistance).toBe(1);
+
+        // The purple and yellow rectangle already touch, the false distance must always be 1.
+        const falseDistance = uncoveredBlocks[3].BranchDistance;
+        await expect(falseDistance).toBe(1);
     }, timeout);
 
     test('Test edge touching branch distance', async () => {
         await loadProject('test/integration/branchDistance/TouchingEdgeDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
         await expect(log.uncoveredBlocks.length === 2);
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;
         const shorterDistanceBranchDistance = log.uncoveredBlocks[1].BranchDistance;
@@ -101,9 +129,8 @@ describe('Fitness tests',  ()=>{
     test('Test if then distance', async () => {
         await loadProject('test/integration/branchDistance/IfThenDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(42);
@@ -112,9 +139,8 @@ describe('Fitness tests',  ()=>{
     test('Test if else distance', async () => {
         await loadProject('test/integration/branchDistance/IfElseDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(42);
@@ -123,9 +149,8 @@ describe('Fitness tests',  ()=>{
     test('Test if then else distance', async () => {
         await loadProject('test/integration/branchDistance/IfThenElseDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(42);
@@ -134,9 +159,8 @@ describe('Fitness tests',  ()=>{
     test('Test wait until distance', async () => {
         await loadProject('test/integration/branchDistance/WaitUntilDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(42);
@@ -145,9 +169,8 @@ describe('Fitness tests',  ()=>{
     test('Test repeat until distance', async () => {
         await loadProject('test/integration/branchDistance/RepeatUntilDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(42);
@@ -156,9 +179,8 @@ describe('Fitness tests',  ()=>{
     test('Test repeat until distance', async () => {
         await loadProject('test/integration/branchDistance/RepeatUntilTrueDistance.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(1);
@@ -167,9 +189,8 @@ describe('Fitness tests',  ()=>{
     test('Test repeat until distance with multiple loop iterations', async () => {
         await loadProject('test/integration/branchDistance/BranchDistanceLoopIterations.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(10);
@@ -178,9 +199,8 @@ describe('Fitness tests',  ()=>{
     test('Test repeat until distance with multiple loop iterations, with increasing distances', async () => {
         await loadProject('test/integration/branchDistance/BranchDistanceLoopIterations_Increasing.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(10);
@@ -189,14 +209,13 @@ describe('Fitness tests',  ()=>{
     test('Test repeat until distance for approach level', async () => {
         await loadProject('test/integration/branchDistance/RepeatUntilApproachLevel1.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
         await expect(log.uncoveredBlocks.length).toBe(2);
         let blockNum = 1;
         if (log.uncoveredBlocks[0].block.startsWith("{o`8=`86ZNH.D7Lu(*GS")) {
             blockNum = 0;
         }
-        const approachLevel  = log.uncoveredBlocks[blockNum].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[blockNum].ApproachLevel;
         await expect(approachLevel).toBe(1);
         const branchDistance = log.uncoveredBlocks[blockNum].BranchDistance;
         await expect(branchDistance).toBe(1);
@@ -206,9 +225,8 @@ describe('Fitness tests',  ()=>{
     test('Test nested if approach level', async () => {
         await loadProject('test/integration/branchDistance/NestedIf.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(1);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(42);
@@ -217,9 +235,8 @@ describe('Fitness tests',  ()=>{
     test('Test impossible repeat', async () => {
         await loadProject('test/integration/branchDistance/ImpossibleRepeatTimes.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
         await expect(branchDistance).toBe(1);
@@ -228,21 +245,70 @@ describe('Fitness tests',  ()=>{
     test('Test impossible to leave repeat', async () => {
         await loadProject('test/integration/branchDistance/ImpossibleRepeatTimes_False.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
-        await expect(branchDistance).toBe(10);
+        await expect(branchDistance).toBe(9);
     }, timeout);
 
-    test('Test CFG distance', async () => {
-        await loadProject('test/integration/cfgDistance/MoveWithConditions.sb3')
+    test('Test CFG distance when branch distance !== 0', async () => {
+        await loadProject('test/integration/cfgDistance/NestedConditions.sb3')
         await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const cfg1 = log.uncoveredBlocks[0].CFGDistance;
-        const cfg2 = log.uncoveredBlocks[1].CFGDistance;
-        await expect(cfg1).toBe(Number.MAX_VALUE) && expect(cfg2).toBe(Number.MAX_VALUE);
+        const [controlWaitBlock1, controlWaitBlock2] = log.uncoveredBlocks.filter(b => b.block.endsWith("control_wait"));
+        const controlStopBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_stop"))[0];
+        const controlIfBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_if"))[0];
+        await expect(controlWaitBlock1.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlWaitBlock2.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlStopBlock.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlIfBlock.CFGDistance).toBe(Number.MAX_VALUE);
+    }, timeout);
+
+    test('Test CFG distance when branch distance == 0', async () => {
+        await loadProject('test/integration/cfgDistance/CFGDistanceWithDefineHack.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await readFitnessLog();
+        const moveStepsBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_movesteps"))[0];
+        expect(moveStepsBlock.CFGDistance).toBe(1);
+        const looksSayBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("looks_say"))[0];
+        expect(looksSayBlock.CFGDistance).toBe(2);
+        const motionTurnLeftBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_turnleft"))[0];
+        expect(motionTurnLeftBlock.CFGDistance).toBe(3);
+    }, timeout);
+
+    test('Test branchDistance for execution halting wait', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-Wait.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting say for seconds blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-SayForSeconds.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for seconds blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-ThinkForSeconds.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting glide to (x,y) blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideToXY.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting glide to blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideTo.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution play sound until done blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting text2speech blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-Text2Speech.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 });

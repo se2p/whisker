@@ -20,37 +20,72 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import {ParameterType} from "./ParameterType";
+import {Randomness} from "../../utils/Randomness";
+import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 
 export class WaitEvent extends ScratchEvent {
 
-    private steps: number;
-
-    constructor(steps = 1) {
+    constructor(private _steps = 1) {
         super();
-        this.steps = steps;
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.runForSteps(this.steps);
+        await Container.testDriver.runForSteps(this._steps);
     }
 
     public toJavaScript(): string {
-        return `await t.runForSteps(${this.steps});`;
+        return `await t.runForSteps(${this._steps});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`type`] = `WaitEvent`;
+        event[`args`] = {"steps": this._steps};
+        return event;
     }
 
     public toString(): string {
-        return "Wait for " + this.steps + " steps";
+        return "Wait for " + this._steps + " steps";
     }
 
-    getNumParameters(): number {
+    numSearchParameter(): number {
         return 1;
     }
 
-    getParameter(): number[] {
-        return [this.steps];
+    getParameters(): [number] {
+        return [this._steps];
     }
 
-    setParameter(args: number[]): void {
-        this.steps = args[0] % Container.config.getWaitStepUpperBound();
+    getSearchParameterNames(): [string] {
+        return ["Duration"];
+    }
+
+    setParameter(args: number[], testExecutor: ParameterType): [number] {
+        switch (testExecutor) {
+            case "random":
+                this._steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
+                break;
+            case "codon":
+                this._steps = args[0];
+                break;
+            case "activation":
+                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getWaitStepUpperBound());
+                break;
+        }
+
+        // Only enforce the UpperBound range if we do not use Neuroevolution and if the codon value is likely to not
+        // stem from ExtensionLocalSearch as otherwise the local search operator would only reach wait dependent
+        // statements once.
+        if(!Container.isNeuroevolution &&
+            this._steps % Container.config.getWaitStepUpperBound() !== 0 &&
+            this._steps !== Container.config.searchAlgorithmProperties['integerRange'].max) {
+            this._steps %= Container.config.getWaitStepUpperBound();
+        }
+        return [this._steps];
+    }
+
+    stringIdentifier(): string {
+        return "WaitEvent";
     }
 }

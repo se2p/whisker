@@ -34,35 +34,41 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            x: Math.trunc(this.x),
-            y: Math.trunc(this.y)
-        });
+        Container.testDriver.mouseMove(this.x, this.y);
     }
 
     public toJavaScript(): string {
-        return '' +
-`t.inputImmediate({
-    device: 'mouse',
-    x: ${Math.trunc(this.x)},
-    y: ${Math.trunc(this.y)}
-});`
+        return `t.mouseMove(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`type`] = `MouseMoveToEvent`;
+        event[`args`] = {"x": this.x, "y": this.y};
+        return event;
     }
 
     public toString(): string {
-        return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
+        return "MouseMoveToEvent " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 
-    getNumParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
-    getParameter(): number[] {
+    getParameters(): [number, number] {
         return [this.x, this.y];
     }
 
-    setParameter(): void {
-        return;
+    getSearchParameterNames(): [] {
+        return [];
+    }
+
+    setParameter(): [] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return `MouseMoveToEvent-${this.x}-${this.y}`;
     }
 }

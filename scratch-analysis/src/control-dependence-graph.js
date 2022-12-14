@@ -1,6 +1,6 @@
-import {Edge, Graph, GraphNode, reverseGraph, cloneGraph} from './graph-utils';
+import {cloneGraph, Edge, Graph, GraphNode, reverseGraph} from './graph-utils';
 import {computePostDominatedTree, PostDominatorTree} from './post-dominator-tree'; // eslint-disable-line no-unused-vars
-import {ControlFlowGraph} from './control-flow-graph'; // eslint-disable-line no-unused-vars
+import {ControlFlowGraph} from './control-flow-graph';
 
 class ControlDependenceGraph extends Graph {
 }

@@ -43,6 +43,9 @@ const LooksFilter = {
         block.opcode === 'looks_nextbackdrop' ||
         block.opcode === 'looks_switchbackdropto',
 
+    nextBackdrop: block =>
+        block.opcode === 'looks_nextbackdrop',
+
     backdropSet: block =>
         block.opcode === 'looks_switchbackdroptoandwait' ||
         block.opcode === 'looks_switchbackdropto',
@@ -73,6 +76,9 @@ const LooksFilter = {
         block.opcode === 'looks_think' ||
         block.opcode === 'looks_thinkforsecs',
 
+    backdropBlock: block =>
+        block.opcode === 'looks_backdrops',
+
     looksBlock: block =>
         block.opcode.startsWith('looks_') &&
         !block.opcode.endsWith('_menu') && !(
@@ -99,7 +105,8 @@ const EventFilter = {
         block.opcode === 'event_whenflagclicked' ||
         block.opcode === 'event_whenthisspriteclicked' ||
         block.opcode === 'event_whenstageclicked' ||
-        block.opcode === 'event_whenkeypressed',
+        block.opcode === 'event_whenkeypressed' ||
+        block.opcode === 'event_whengreaterthan',
 
     greenFlag: block =>
         block.opcode === 'event_whenflagclicked',
@@ -110,6 +117,7 @@ const EventFilter = {
         block.opcode === 'event_whenstageclicked' ||
         block.opcode === 'event_whenbackdropswitchesto' ||
         block.opcode === 'event_whengreaterthan' ||
+        block.opcode === 'event_whenbroadcastreceived' ||
         block.opcode === 'event_whenkeypressed',
 
     broadcastSend: block =>
@@ -119,11 +127,23 @@ const EventFilter = {
     broadcastReceive: block =>
         block.opcode === 'event_whenbroadcastreceived',
 
+    broadcastMenu: block =>
+        block.opcode === 'event_broadcast_menu',
+
     cloneCreate: block =>
         block.opcode === 'control_create_clone_of',
 
     cloneStart: block =>
         block.opcode === 'control_start_as_clone',
+
+    cloneMenu: block =>
+        block.opcode === "control_create_clone_of_menu",
+
+    backdropStart: block =>
+        block.opcode === 'event_whenbackdropswitchesto',
+
+    backdropChange: block =>
+        block.opcode === 'looks_switchbackdropto',
 
     eventSend: block =>
         EventFilter.broadcastSend(block) ||
@@ -142,7 +162,32 @@ const EventFilter = {
 const ControlFilter = {
     controlBlock: block =>
         block.opcode.startsWith('control_') &&
-        !block.opcode.endsWith('_menu')
+        !block.opcode.endsWith('_menu'),
+
+    singleBranch: block =>
+        block.opcode === 'control_if' ||
+        block.opcode === 'control_repeat' ||
+        block.opcode === 'control_repeat_until' ||
+        block.opcode === 'control_forever' ||
+        block.opcode === 'control_wait_until',
+
+    doubleBranch: block =>
+        block.opcode === 'control_if_else',
+
+    branch: block =>
+        ControlFilter.singleBranch(block) || ControlFilter.doubleBranch(block),
+
+    hatBlock: block =>
+        EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone',
+
+    executionHaltingBlock: block =>
+        block.opcode === 'control_wait' ||
+        block.opcode === 'looks_thinkforsecs' ||
+        block.opcode === 'looks_sayforsecs' ||
+        block.opcode === 'motion_glidesecstoxy' ||
+        block.opcode === 'motion_glideto' ||
+        block.opcode === 'sound_playuntildone' ||
+        block.opcode === 'text2speech_speakAndWait'
 };
 
 const SensingFilter = {
@@ -166,6 +211,34 @@ const VariableFilter = {
         block.opcode === 'data_showvariable' ||
         block.opcode === 'data_hidevariable'
 };
+
+const OperatorFilter = {
+    arithmetic: block =>
+        block.opcode === 'operator_add' ||
+        block.opcode === 'operator_subtract' ||
+        block.opcode === 'operator_multiply' ||
+        block.opcode === 'operator_divide',
+
+    relational: block =>
+        block.opcode === 'operator_equals' ||
+        block.opcode === 'operator_lt' ||
+        block.opcode === 'operator_gt',
+
+    logical: block =>
+        block.opcode === 'operator_and' ||
+        block.opcode === 'operator_or',
+
+    negatable: block =>
+        block.opcode === 'sensing_touchingobject' ||
+        block.opcode === 'sensing_touchingcolor' ||
+        block.opcode === 'sensing_coloristouchingcolor' ||
+        block.opcode === 'sensing_keypressed' ||
+        block.opcode === 'sensing_mousedown' ||
+        block.opcode === 'operator_contains' ||
+        block.opcode === 'operator_not' ||
+        OperatorFilter.logical(block) ||
+        OperatorFilter.relational(block)
+}
 
 const ListFilter = {
     update: block =>
@@ -200,10 +273,18 @@ const PenFilter = {
         block.opcode.startsWith('pen_')
 }
 
+const Text2SpeechFilter = {
+    text2speechBlock: block =>
+        block.opcode.startsWith('text2speech_')
+}
+
 const StatementFilter = {
     isStatementBlock: block => {
-        if (block.topLevel) {
-            return true;
+        if (block.topLevel && !EventFilter.eventBlock(block) &&
+            !EventFilter.cloneStart(block) &&
+            !CustomFilter.customBlock(block)) {
+            // loose blocks
+            return false;
         }
         if (block.opcode.endsWith('_menu')) {
             return false;
@@ -218,7 +299,8 @@ const StatementFilter = {
             VariableFilter.variableBlock(block) ||
             MusicFilter.musicBlock(block) ||
             CustomFilter.customBlock(block) ||
-            PenFilter.penBlock(block);
+            PenFilter.penBlock(block) ||
+            Text2SpeechFilter.text2speechBlock(block);
     }
 };
 
@@ -229,10 +311,12 @@ export {
     SoundFilter,
     EventFilter,
     VariableFilter,
+    OperatorFilter,
     ListFilter,
     SensingFilter,
     StatementFilter,
     MusicFilter,
     CustomFilter,
-    PenFilter
+    PenFilter,
+    Text2SpeechFilter
 };

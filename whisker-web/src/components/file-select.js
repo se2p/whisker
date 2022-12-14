@@ -1,6 +1,6 @@
 const {$} = require('../web-libs');
 
-const standardConfig = require('../../../config/default.json');
+const standardConfig = require('../../../config/mio.json');
 
 /**
  * <label></label>
@@ -73,8 +73,7 @@ class FileSelect {
         } else {
             arrayBuffer = await this.loadAsArrayBuffer(index);
         }
-
-        return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
+        return new TextDecoder('utf-8').decode(new Uint8Array(arrayBuffer));
     }
 }
 

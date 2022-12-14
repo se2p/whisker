@@ -26,7 +26,7 @@ const _containsAll = (firstSet, secondSet) => {
  * Computes and returns a mapping of nodes to their dominating nodes.
  *
  * @param {ControlFlowGraph} cfg - the control flow graph.
- * @returns {Map<GraphNode, Set<GraphNode>>} - mapping from nodes to dominating nodes.
+ * @returns {Map<string, Set<GraphNode>>} - mapping from node-ids to dominating nodes.
  * @private
  */
 const _getDominators = cfg => {
@@ -34,19 +34,19 @@ const _getDominators = cfg => {
     const allNodes = new Set(cfg.getAllNodes());
     const dominanceMap = new Map();
 
-    dominanceMap.set(entry, new Set([entry]));
+    dominanceMap.set(entry.id, new Set([entry]));
 
     const nodesWithoutEntry = new Set(cfg.getAllNodes());
     nodesWithoutEntry.delete(entry);
 
     for (const node of nodesWithoutEntry) {
-        dominanceMap.set(node, new Set(allNodes));
+        dominanceMap.set(node.id, new Set(allNodes));
     }
     let changed = true;
     while (changed) {
         changed = false;
         for (const node of nodesWithoutEntry) {
-            const currentDominators = dominanceMap.get(node);
+            const currentDominators = dominanceMap.get(node.id);
 
             const newDominators = new Set();
             newDominators.add(node);
@@ -67,10 +67,10 @@ const _getDominators = cfg => {
             }
 
             const firstPred = Array.from(predecessors)[0];
-            const predDominators = new Set(dominanceMap.get(firstPred));
+            const predDominators = new Set(dominanceMap.get(firstPred.id));
             predecessors.delete(firstPred);
             for (const predecessor of predecessors) {
-                const currentPredDominators = dominanceMap.get(predecessor);
+                const currentPredDominators = dominanceMap.get(predecessor.id);
                 // predDominators.intersect(currentPredDominators);
                 for (const predDom of predDominators) {
                     if (!currentPredDominators.has(predDom)) {
@@ -84,7 +84,7 @@ const _getDominators = cfg => {
             }
 
             if (!_containsAll(currentDominators, newDominators) || !_containsAll(newDominators, currentDominators)) {
-                dominanceMap.set(node, newDominators);
+                dominanceMap.set(node.id, newDominators);
                 changed = true;
             }
         }
@@ -97,7 +97,7 @@ const _getDominators = cfg => {
  * Constructs a dominance tree for a given CFG and map of dominating nodes.
  *
  * @param {ControlFlowGraph} cfg - the control flow graph.
- * @param {Map<GraphNode, Set<GraphNode>>} dominanceMap - the mapping from node to dominating nodes.
+ * @param {Map<string, Set<GraphNode>>} dominanceMap - the mapping from node-id to dominating nodes.
  * @returns {PostDominatorTree} - the constructed dominance tree.
  * @private
  */
@@ -110,13 +110,13 @@ const _buildDominanceTree = (cfg, dominanceMap) => {
     for (const node of allNodes) {
         dominanceTree.addNode(node);
 
-        dominanceMap.get(node).delete(node);
+        dominanceMap.get(node.id).delete(node);
     }
 
     while (q.length) {
         const m = q.shift();
         for (const node of allNodes) {
-            const dominators = dominanceMap.get(node);
+            const dominators = dominanceMap.get(node.id);
             if (dominators.size && dominators.has(m)) {
                 dominators.delete(m);
                 if (!dominators.size) {

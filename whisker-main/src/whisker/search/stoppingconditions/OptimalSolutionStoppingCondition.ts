@@ -20,9 +20,7 @@
 
 import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
-import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class OptimalSolutionStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
@@ -50,6 +48,17 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        throw new NotYetImplementedException();
+        let coveredFitnessFunctions = 0;
+        let totalFitnessFunctions = 0;
+        for (const f of algorithm.getFitnessFunctions()) {
+            totalFitnessFunctions++;
+            for (const solution of algorithm.getCurrentSolution()) {
+                if (f.isOptimal(solution.getFitness(f))) {
+                    coveredFitnessFunctions++;
+                    break;
+                }
+            }
+        }
+        return coveredFitnessFunctions / totalFitnessFunctions;
     }
 }

@@ -23,4 +23,6 @@ import {ScratchEvent} from "./events/ScratchEvent";
 
 export interface EventObserver {
     update(event: ScratchEvent, args: number[]): void;
+
+    updateAfter(event: ScratchEvent, args: number[]): void;
 }

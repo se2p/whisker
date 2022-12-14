@@ -1,0 +1,57 @@
+{
+    "testGenerator": "manyObjective",
+    "algorithm": "mio",
+    "extractor": "dynamic",
+    "eventSelector": "interleaving",
+    "startOfFocusedPhase": 0.5,
+    "chromosome": {
+        "type": "variableLengthTest",
+        "minSampleLength": 5,
+        "maxSampleLength": 40,
+        "maxLength": 40
+    },
+    "mutation": {
+        "operator": "variableLength",
+        "gaussianMutationPower": 10,
+        "maxMutationCountStart": 0,
+        "maxMutationCountFocusedPhase": 10
+    },
+    "selection": {
+        "randomSelectionProbabilityStart": 0.5,
+        "randomSelectionProbabilityFocusedPhase": 0
+    },
+    "fitnessFunction": {
+        "type": "statement",
+        "targets": []
+    },
+    "stoppingCondition": {
+        "type": "combined",
+        "conditions": [
+            {
+                "type": "fixedTime",
+                "duration": 20000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "archive": {
+        "maxArchiveSizeStart": 10,
+        "maxArchiveSizeFocusedPhase": 1
+    },
+    "integerRange": {
+        "min": 0,
+        "max": 480
+    },
+    "durations": {
+        "waitStepUpperBound": 100,
+        "clickDuration": 3,
+        "pressDuration": 10,
+        "soundDuration": 10
+    },
+    "debugLogging": false,
+    "minimize": false,
+    "assertions": false,
+    "minimizeAssertions": false
+}

@@ -23,7 +23,18 @@ class TestResult {
          * @type {any[]}
          */
         this.log = [];
+
+        /**
+         * @type {ModelResult}
+         */
+        this.modelResult = null;
+
+        /**
+         * @type {Set<string>}
+         */
+        this.covered = new Set();
     }
 }
+
 
 module.exports = TestResult;

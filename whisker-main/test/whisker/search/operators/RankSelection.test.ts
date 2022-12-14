@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from "../../../../src/whisker/utils/List";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
@@ -29,20 +28,20 @@ describe('RankSelection', () => {
 
     test('Distribution of the selection', async () => {
         const selection = new RankSelection();
-        const population = new List<BitstringChromosome>();
+        const population = [];
         const populationSize = 5;
         const selectionCount = new Map<Chromosome, number>();
         for (let i = 0; i < populationSize; i++) {
-            const chromosome = new BitstringChromosome(new List<boolean>([]), new BitflipMutation(), new SinglePointCrossover())
-            population.add(chromosome);
-            selectionCount.set(chromosome, 0)
+            const chromosome = new BitstringChromosome([], new BitflipMutation(), new SinglePointCrossover());
+            population.push(chromosome);
+            selectionCount.set(chromosome, 0);
         }
         for (let i = 0; i < 1000; i++) {
             const selected = await selection.apply(population);
             selectionCount.set(selected, selectionCount.get(selected) + 1);
         }
         for (let i = 0; i < populationSize - 1; i++) {
-            expect(selectionCount.get(population.get(i)) < selectionCount.get(population.get(i + 1))).toBeTruthy();
+            expect(selectionCount.get(population[i])).toBeLessThanOrEqual(selectionCount.get(population[i + 1]));
         }
     });
 });

@@ -31,33 +31,43 @@ export class TypeTextEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'text',
-            answer: this._text
-        });
+        Container.testDriver.typeText(this._text);
     }
 
     public toJavaScript(): string {
-        return '' +
-`t.inputImmediate({
-    device: 'text',
-    answer: '${this._text}'
-  });`
+        // https://stackoverflow.com/a/15087766
+        const escaped = this._text.replace(/'/g, "\\'");
+        return `t.typeText('${escaped}');`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {};
+        event[`type`] = `TypeTextEvent`;
+        event[`args`] = {"text": this._text};
+        return event;
     }
 
     public toString(): string {
-        return `TypeText '${this._text}'`
+        return `TypeText '${this._text}'`;
     }
 
-    getNumParameters(): number {
+    numSearchParameter(): number {
         return 0; // Text
     }
 
-    getParameter(): string[] {
+    getParameters(): [string] {
         return [this._text];
     }
 
-    setParameter(): void {
-        return;
+    getSearchParameterNames(): [] {
+        return [];
+    }
+
+    setParameter(): [] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return `TypeTextEvent-${this._text}`;
     }
 }
