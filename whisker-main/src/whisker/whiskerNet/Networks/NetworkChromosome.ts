@@ -13,8 +13,6 @@ import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
-import {BiasNode} from "../NetworkComponents/BiasNode";
-import {Container} from "../../utils/Container";
 import assert from "assert";
 import {InputFeatures} from "../Misc/InputExtraction";
 
@@ -33,12 +31,7 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Maps sprites and their respective features to the corresponding input node.
      */
-    private readonly _inputNodes = new Map<string, Map<string, InputNode>>();
-
-    /**
-     * Holds all output nodes of a network.
-     */
-    protected readonly _outputNodes: NodeGene[] = [];
+    private readonly _inputNodes = new Map<string, Map<string, InputNode>>()
 
     /**
      * Maps events to the corresponding classification node.
@@ -49,11 +42,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Maps events which take at least one parameter as input to the corresponding regression nodes.
      */
     protected readonly _regressionNodes = new Map<string, RegressionNode[]>();
-
-    /**
-     * True if this network implements at least one recurrent connection
-     */
-    private _isRecurrent = false;
 
     /**
      * Reference activation trace serving as the ground truth.
@@ -133,16 +121,16 @@ export abstract class NetworkChromosome extends Chromosome {
 
     /**
      * Constructs a new NetworkChromosome.
-     * @param _allNodes all nodes of a network.
-     * @param _connections the connections between the Nodes.
+     * @param _layers the networks {@link NetworkLayer}s.
+     * @param _connections the connections of the network.
      * @param _inputConnectionMethod determines how novel nodes are being connected to the input layer.
      * @param _activationFunction the activation function that will be used for hidden nodes.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
-    protected constructor(protected readonly _allNodes: NodeGene[],
+    protected constructor(protected _layers: NetworkLayer,
                           protected readonly _connections: ConnectionGene[],
                           protected readonly _inputConnectionMethod: InputConnectionMethod,
-                          protected readonly _activationFunction = ActivationFunction.TANH,
+                          protected readonly _activationFunction = ActivationFunction.RELU,
                           incrementID = true) {
         super();
         this._uID = NetworkChromosome._uIDCounter;
@@ -188,7 +176,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const iNode = new InputNode(id, spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
-                    this._allNodes.push(iNode);
+                    this._layers.get(0).push(iNode);
                 });
                 this.inputNodes.set(spriteKey, spriteNodes);
             } else {
@@ -202,7 +190,7 @@ export abstract class NetworkChromosome extends Chromosome {
                         const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                         const iNode = new InputNode(id, spriteKey, featureKey);
                         savedSpriteMap.set(featureKey, iNode);
-                        this._allNodes.push(iNode);
+                        this._layers.get(0).push(iNode);
                     }
                 });
             }
@@ -226,8 +214,8 @@ export abstract class NetworkChromosome extends Chromosome {
                 const featureID = `C:${event.stringIdentifier()}`;
                 const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                 const classificationNode = new ClassificationNode(id, event, ActivationFunction.NONE);
-                this._allNodes.push(classificationNode);
-                this.connectNodeToInputLayer([classificationNode], this.inputNodes, this._inputConnectionMethod);
+                this._layers.get(1).push(classificationNode);
+                this.connectNodeToInputLayer([classificationNode], this._inputConnectionMethod);
             }
             // Check if we also have to add regression nodes.
             if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
@@ -236,8 +224,8 @@ export abstract class NetworkChromosome extends Chromosome {
                     const featureID = `R:${event.stringIdentifier()}-${parameter}`;
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
-                    this._allNodes.push(regressionNode);
-                    this.connectNodeToInputLayer([regressionNode], this.inputNodes, this._inputConnectionMethod);
+                    this._layers.get(1).push(regressionNode);
+                    this.connectNodeToInputLayer([regressionNode], this._inputConnectionMethod);
                 }
             }
         }
@@ -250,12 +238,9 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Connects nodes to the specified input nodes using defined mode to connect the nodes.
      * @param nodesToConnect the nodes that should be connected to the input layer.
-     * @param inputNodes defines the input nodes that should be connected to the node.
      * @param mode determines how the input layer should be connected to the given nodes.
      */
-    public abstract connectNodeToInputLayer(nodesToConnect: NodeGene[],
-                                            inputNodes: Readonly<Map<string, Map<string, InputNode | BiasNode>>>,
-                                            mode: InputConnectionMethod): void;
+    public abstract connectNodeToInputLayer(nodesToConnect: NodeGene[], mode: InputConnectionMethod): void;
 
     /**
      * Fetches the ID of a functional Node, i.e. a non-Hidden node.
@@ -278,11 +263,8 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     public generateNetwork(): void {
         this.sortConnections();
-        this.sortNodes();
-        // Place the input, regression and output nodes into the corresponding Map/List.
-        for (const node of this._allNodes) {
-
-            // Add input nodes to the InputNode-Map.
+        // Add input nodes to the InputNode-Map.
+        for (const node of this._layers.get(0)) {
             if (node instanceof InputNode) {
                 if (!this.inputNodes.has(node.sprite)) {
                     const newSpriteMap = new Map<string, InputNode>();
@@ -291,7 +273,10 @@ export abstract class NetworkChromosome extends Chromosome {
                 } else if (!this.inputNodes.get(node.sprite).has(node.feature))
                     this.inputNodes.get(node.sprite).set(node.feature, node);
             }
+        }
 
+        // Add output nodes to the corresponding maps.
+        for (const node of this._layers.get(1)) {
             // Add classification nodes to the ClassificationNode-Map.
             if (node instanceof ClassificationNode) {
                 if (!this.classificationNodes.has(node.event.stringIdentifier())) {
@@ -308,11 +293,6 @@ export abstract class NetworkChromosome extends Chromosome {
                 } else if (!this.regressionNodes.get(node.event.stringIdentifier()).includes(node))
                     this.regressionNodes.get(node.event.stringIdentifier()).push(node);
             }
-
-            // Add output nodes to the OutputNode-Map.
-            if (node.type === NodeType.OUTPUT && !this.outputNodes.includes(node)) {
-                this.outputNodes.push(node);
-            }
         }
 
         // Go through each connection and set up the incoming connections of each node.
@@ -328,86 +308,73 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Activates the network to get an output based on to the fed inputs.
      * @param inputs consisting of the extracted features from the current Scratch state.
-     * @returns true if the network generated an appropriate and false if the network is defect,
-     *          e.g. due to a missing path from input nodes to output nodes.
      */
     public activateNetwork(inputs: InputFeatures): boolean {
         // Generate the network and load the inputs
-        this.generateNetwork();
+        this.sortLayer();
         this.setUpInputs(inputs);
-        let activationCount = 0;
-        let incomingValue = 0;
-        this.outputNodes.forEach(node => node.activatedFlag = false);
 
-        // Repeatedly send the input signals through the network until at least one output node gets activated.
-        while (this.outputsOff() || activationCount < 0) {
-            activationCount++;
+        for(const [layer, nodes] of this.layers.entries()){
 
-            // We may have a defect network if none of the activated input nodes has a valid path to an output node.
-            if (activationCount == 20) {
-                Container.debugLog("Defect network");
-                return false;
+            // In the first layer we set up our inputs.
+            if (layer === 0){
+                this.setUpInputs(inputs);
             }
 
-            // For each node compute the sum of its incoming connections.
-            for (const node of this._allNodes) {
-                if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
-
-                    // Reset the activation Flag and the node value.
-                    node.nodeValue = 0.0;
-                    node.activatedFlag = false;
-
-                    for (const connection of node.incomingConnections) {
-
-                        // Do not include disabled connections or connections coming from deactivated inputs.
-                        if (!connection.isEnabled || (connection.source.type === NodeType.INPUT && !connection.source.activatedFlag)) {
-                            continue;
-                        }
-
-                        // Handle time delayed connections.
-                        if (connection.isRecurrent) {
-                            incomingValue = connection.weight * connection.source.lastActivationValue;
-                            node.nodeValue += incomingValue;
-                        } else {
-                            incomingValue = connection.weight * connection.source.activationValue;
-                            if (connection.source.activatedFlag) {
-                                node.activatedFlag = true;
-                            }
-                            node.nodeValue += incomingValue;
-                        }
-                    }
+            // Hidden nodes
+            else if (layer < 1){
+                // For each node fetch the incoming connections, calculate the node value and activate the node using
+                // the defined activation function.
+                for(const node of nodes){
+                    this._calculateNodeValue(node);
+                    node.lastActivationValue = node.activationValue;        // Store for recurrent connections.
+                    node.activationValue = node.activate();
                 }
             }
 
-            // Activate all the non-input nodes based on their incoming activations   .
-            for (const node of this._allNodes) {
-                if (node.type !== NodeType.INPUT) {
-                    // Only activate if we received some input
+            // For output nodes calculate the node values first since we require them for the softmax function within
+            // the classification nodes.
+            else {
+                for(const node of nodes){
+                    this._calculateNodeValue(node);
+                }
+
+                // Check if at least one classification node has received an input. If not we have a defect network.
+                if ([...this.classificationNodes.values()].every(node => !node.activatedFlag)){
+                    return false;
+                }
+
+                // Calculate softmax denominator
+                let denominator = 0;
+                for (const node of this.classificationNodes.values()) {
                     if (node.activatedFlag) {
-                        // Keep track of previous activations
-                        node.lastActivationValue = node.activationValue;
+                        denominator += Math.exp(node.nodeValue);
+                    }
+                }
+
+                // Activate the classification nodes using softmax and
+                // the regression nodes with their specified activation function.
+                for(const node of nodes){
+                    node.lastActivationValue = node.activationValue;
+                    if (node instanceof ClassificationNode){
+                        node.activationValue = node.activate(denominator);
+                    }
+                    else{
                         node.activationValue = node.activate();
-                        node.activationCount++;
                     }
                 }
             }
         }
-        this.applySoftMax();
         return true;
     }
 
-    private applySoftMax(){
-        // Calculate denominator
-        let denominator = 0;
-        for(const node of this.classificationNodes.values()){
-            if (node.activatedFlag) {
-                denominator += Math.exp(node.nodeValue);
-            }
-        }
-
-        // Calculate activation value for each classification node
-        for(const node of this.classificationNodes.values()){
-            node.activationValue = Math.exp(node.nodeValue) / denominator;
+    private _calculateNodeValue(node:NodeGene):void{
+        node.nodeValue = 0;
+        for(const inConnection of node.incomingConnections){
+            const sourceNode = inConnection.source;
+            const inValue = inConnection.isRecurrent ? sourceNode.lastActivationValue : sourceNode.activationValue;
+            node.nodeValue += (inConnection.weight * inValue);
+            node.activatedFlag = true;
         }
     }
 
@@ -442,64 +409,9 @@ export abstract class NetworkChromosome extends Chromosome {
      * Flushes all saved node and activation values from the nodes of the network.
      */
     flushNodeValues(): void {
-        for (const node of this._allNodes) {
+        for (const node of this.getAllNodes()) {
             node.reset();
         }
-    }
-
-    /**
-     * Checks if at least one output node has been activated.
-     * @return true if not a single output node has been activated at least once.
-     */
-    private outputsOff(): boolean {
-        return this.outputNodes.every(node => !node.activatedFlag);
-    }
-
-    /**
-     * Checks if the network is a recurrent network and if the given path has some recurrency in it.
-     * @param node1 the source node of the path.
-     * @param node2 the target node of the path.
-     * @param level the depth of the recursion.
-     * @param threshold after which depth we stop the recursion check.
-     * @return true if the path is a recurrent one.
-     */
-    public isRecurrentPath(node1: NodeGene, node2: NodeGene, level: number, threshold: number): boolean {
-        this.generateNetwork();
-
-        if (level === 0) {
-            // Reset the traverse flag
-            for (const node of this._allNodes)
-                node.traversed = false;
-        }
-
-        // If the source node is in the output layer it has to be a recurrent connection!
-        if (node1.type === NodeType.OUTPUT) {
-            return true;
-        }
-
-        level++;
-
-        if (level > threshold) {
-            return false;
-        }
-
-        // If we end up in node1 again we found a recurrent path.
-        if (node1 === node2) {
-            return true;
-        }
-
-        for (const inConnection of node1.incomingConnections) {
-            if (!inConnection.isRecurrent) {
-                if (!inConnection.source.traversed) {
-                    inConnection.source.traversed = true;
-                    if (this.isRecurrentPath(inConnection.source, node2, level, threshold)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        node1.traversed = true;
-        return false;
     }
 
     /**
@@ -520,16 +432,9 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Sorts the nodes of this network according to their types and uIDs in increasing order.
-     */
-    private sortNodes(): void {
-        this._allNodes.sort((a, b) => a.type - b.type || a.uID - b.uID);
-    }
-
-    /**
      * Sorts the connections of this network according to their innovation numbers in increasing order.
      */
-    private sortConnections(): void {
+    public sortConnections(): void {
         this._connections.sort((a, b) => a.innovation - b.innovation);
     }
 
@@ -550,8 +455,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param step the previously performed step whose ActivationTrace should be recorded.
      */
     public updateActivationTrace(step: number): void {
-        this.sortNodes();
-        const tracedNodes = this._allNodes.filter(node => node.type === NodeType.HIDDEN);
+        const tracedNodes = this.getAllNodes().filter(node => node.type === NodeType.HIDDEN);
 
         if (this.testActivationTrace === undefined) {
             this.testActivationTrace = new ActivationTrace(tracedNodes);
@@ -587,7 +491,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 .replace(/ /g, '');
         };
 
-        for (const node of this._allNodes) {
+        for (const node of this.getAllNodes()) {
             if (node.type === NodeType.INPUT || node.type === NodeType.BIAS) {
                 minNodes.push(convertIdentifier(node.identifier()));
             } else if (node.type === NodeType.OUTPUT) {
@@ -632,6 +536,84 @@ export abstract class NetworkChromosome extends Chromosome {
         }
     }
 
+    /**
+     * Returns all nodes of the Network.
+     * @returns all nodes of the network.
+     */
+    public getAllNodes(): NodeGene[] {
+        return [...this._layers.values()].flat();
+    }
+
+    /**
+     * Returns the number of nodes hosted by the network.
+     * @returns number of nodes hosted by the network.
+     */
+    public getNumNodes(): number {
+        return this.getAllNodes().length;
+    }
+
+    /**
+     * Fetches the depth of the provided node.
+     * @param node the node whose depth is to be determined.
+     * @returns the depth of the node or undefined if the node was not found.
+     */
+    public getDepthOfNode(node: NodeGene): number | undefined {
+        for (const [layer, nodes] of this._layers.entries()) {
+            if (nodes.includes(node)) {
+                return layer;
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Determines the depth of a node given its input and output nodes.
+     * @param inNode the source node of the node whose depth is to be determined.
+     * @param outNode the target node of the node whose depth is to be determined.
+     * @returns depth of the node whose input and output nodes are provided.
+     */
+    public getDepthOfNewNode(inNode: NodeGene, outNode: NodeGene): number {
+        return (this.getDepthOfNode(inNode) + this.getDepthOfNode(outNode)) / 2;
+    }
+
+    /**
+     * Adds a new node to the network.
+     * @param newNode the node to be added.
+     * @param sourceNode the source node with a connection into the new node.
+     * @param targetNode the target node to which the new node has an outgoing connection.
+     */
+    public addNode(newNode: NodeGene, sourceNode: NodeGene, targetNode: NodeGene): void {
+        const depth = this.getDepthOfNewNode(sourceNode, targetNode);
+        if (!this._layers.get(depth)) {
+            this._layers.set(depth, []);
+        }
+        this._layers.get(depth).push(newNode);
+    }
+
+    /**
+     * Creates a deep clone of the network layer by deep cloning each node.
+     * @returns the deep cloned NetworkLayer.
+     */
+    public cloneLayer(): NetworkLayer {
+        this.sortLayer();
+        const layerClone: NetworkLayer = new Map<number, NodeGene[]>();
+        for (const [layer, nodes] of this._layers.entries()) {
+            const layerNodeClones: NodeGene[] = [];
+            for (const node of nodes) {
+                layerNodeClones.push(node.clone());
+            }
+            layerClone.set(layer, layerNodeClones);
+        }
+        return layerClone;
+    }
+
+    /**
+     * Sorts the layer map by increasing keys.
+     */
+    public sortLayer():void{
+        this._layers = new Map([...this.layers.entries()].sort());
+    }
+
     get uID(): number {
         return this._uID;
     }
@@ -640,8 +622,8 @@ export abstract class NetworkChromosome extends Chromosome {
         this._uID = value;
     }
 
-    get allNodes(): NodeGene[] {
-        return this._allNodes;
+    get layers(): NetworkLayer {
+        return this._layers;
     }
 
     get connections(): ConnectionGene[] {
@@ -658,10 +640,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     get inputNodes(): Map<string, Map<string, InputNode>> {
         return this._inputNodes;
-    }
-
-    get outputNodes(): NodeGene[] {
-        return this._outputNodes;
     }
 
     get classificationNodes(): Map<string, ClassificationNode> {
@@ -776,14 +754,6 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons;
     }
 
-    get isRecurrent(): boolean {
-        return this._isRecurrent;
-    }
-
-    set isRecurrent(value: boolean) {
-        this._isRecurrent = value;
-    }
-
     get openStatementTargets(): Map<FitnessFunction<NetworkChromosome>, number> {
         return this._openStatementTargets;
     }
@@ -797,3 +767,9 @@ export type InputConnectionMethod =
     | 'fully'
     | 'fullyHidden'
     | 'sparse'
+
+/**
+ * Maps a network layer to the list of nodes residing at the corresponding network depth. The value range of the keys
+ * is restricted to [0,1] with 0 and 1 representing the input and output layer, respectively.
+ */
+export type NetworkLayer = Map<number, NodeGene[]>;

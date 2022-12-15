@@ -22,7 +22,7 @@ export class InputNode extends NodeGene {
      * @param feature the feature of the given sprite this InputNode is connected to.
      */
     constructor(uID: number, sprite: string, feature: string) {
-        super(uID, ActivationFunction.NONE, NodeType.INPUT);
+        super(uID,0, ActivationFunction.NONE, NodeType.INPUT);
         this._sprite = sprite;
         this._feature = feature;
     }

@@ -6,11 +6,12 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {InputConnectionMethod} from "../Networks/NetworkChromosome";
+import {InputConnectionMethod, NetworkLayer} from "../Networks/NetworkChromosome";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {InputFeatures} from "../Misc/InputExtraction";
+import {Randomness} from "../../utils/Randomness";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
@@ -26,12 +27,12 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * connection method is being used.
      */
     public constructor(private readonly _inputSpace: InputFeatures,
-                          private readonly _outputSpace: ScratchEvent[],
-                          protected readonly _inputConnectionMethod: InputConnectionMethod,
-                          protected readonly _activationFunction: ActivationFunction,
-                          private _mutationOperator: NeatMutation,
-                          private _crossoverOperator: NeatCrossover,
-                          private _inputRate = 0.3) {
+                       private readonly _outputSpace: ScratchEvent[],
+                       protected readonly _inputConnectionMethod: InputConnectionMethod,
+                       protected readonly _activationFunction: ActivationFunction,
+                       private _mutationOperator: NeatMutation,
+                       private _crossoverOperator: NeatCrossover,
+                       private _inputRate = 0.3) {
     }
 
     /**
@@ -41,66 +42,63 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
     get():
         NeatChromosome {
         NodeGene._uIDCounter = 0;
-        const allNodes: NodeGene[] = [];
+        const layer: NetworkLayer = new Map<number, NodeGene[]>();
+        layer.set(0, []);
 
         // Create the Input Nodes
-        const inputNodes = new Map<string, Map<string, InputNode | BiasNode>>();
+        let numNodes = 0;
         for (const [sprite, featureMap] of this._inputSpace) {
             const spriteFeatureMap = new Map<string, InputNode>();
             for (const feature of featureMap.keys()) {
-                const featureInputNode = new InputNode(allNodes.length, sprite, feature);
-                allNodes.push(featureInputNode);
+                const featureInputNode = new InputNode(numNodes++, sprite, feature);
+                layer.get(0).push(featureInputNode);
                 spriteFeatureMap.set(feature, featureInputNode);
             }
-            inputNodes.set(sprite, spriteFeatureMap);
         }
 
         // Add the Bias
-        const biasNode = new BiasNode(allNodes.length);
-        const biasMap = new Map<string, BiasNode>();
-        allNodes.push(biasNode);
-        biasMap.set("Bias", biasNode);
-        inputNodes.set("Bias", biasMap);
+        const biasNode = new BiasNode(numNodes++);
+        layer.get(0).push(biasNode);
 
         // Create the classification output nodes and add them to the nodes list
+        layer.set(1, []);
         for (const event of this._outputSpace) {
-            const classificationNode = new ClassificationNode(allNodes.length, event, ActivationFunction.NONE);
-            allNodes.push(classificationNode);
+            const classificationNode = new ClassificationNode(numNodes++, event, ActivationFunction.NONE);
+            layer.get(1).push(classificationNode);
         }
 
         // Add regression nodes for each parameter of each parameterized Event
         const parameterizedEvents = this._outputSpace.filter(event => event.numSearchParameter() > 0);
         if (parameterizedEvents.length !== 0) {
-            this.addRegressionNodes(allNodes, parameterizedEvents);
+            this.addRegressionNodes(numNodes, layer, parameterizedEvents);
         }
 
         // Create connections between input and output nodes
-        const chromosome = new NeatChromosome(allNodes, [], this._mutationOperator, this._crossoverOperator,
+        const chromosome = new NeatChromosome(layer, [], this._mutationOperator, this._crossoverOperator,
             this._inputConnectionMethod, this._activationFunction);
-        const outputNodes = chromosome.allNodes.filter(
-            node => node instanceof ClassificationNode || node instanceof RegressionNode);
-            chromosome.connectNodeToInputLayer(outputNodes, inputNodes, this._inputConnectionMethod);
+        const outputNodes = [...chromosome.layers.get(1).values()];
+        chromosome.connectNodeToInputLayer(outputNodes, this._inputConnectionMethod, this._inputRate);
 
-        // Mutate weights to randomise initial weight configuration
-        const mutationOperator = chromosome.getMutationOperator();
-        if (mutationOperator instanceof NeatMutation) {
-            mutationOperator.mutateWeight(chromosome, 1);
+        // Assign randomised weights.
+        const connections = chromosome.connections;
+        for (const connection of connections) {
+            connection.weight = Randomness.getInstance().nextDoubleMinMax(-1, 1);
         }
-        chromosome.generateNetwork();
         return chromosome;
     }
 
     /**
      * Adds regression nodes to the network.
-     * @param allNodes contains all nodes of the generated network.
+     * @param nodeId the id that will be assigned to the regression node.
+     * @param layer the map of layers to which the node will be added.
      * @param parameterizedEvents contains all parameterized Events of the given Scratch-Project.
      */
-    protected addRegressionNodes(allNodes: NodeGene[], parameterizedEvents: ScratchEvent[]): void {
+    protected addRegressionNodes(nodeId: number, layer: NetworkLayer, parameterizedEvents: ScratchEvent[]): void {
         for (const event of parameterizedEvents) {
             for (const parameter of event.getSearchParameterNames()) {
                 // Create the regression Node and add it to the NodeList
-                const regressionNode = new RegressionNode(allNodes.length, event, parameter, ActivationFunction.NONE);
-                allNodes.push(regressionNode);
+                const regressionNode = new RegressionNode(nodeId++, event, parameter, ActivationFunction.NONE);
+                layer.get(1).push(regressionNode);
             }
         }
     }

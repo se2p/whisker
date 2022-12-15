@@ -24,7 +24,7 @@ export class RegressionNode extends NodeGene {
      * @param activationFunction the activation function of the regression node.
      */
     constructor(uID: number, event: ScratchEvent, eventParameter: string, activationFunction = ActivationFunction.NONE) {
-        super(uID, activationFunction, NodeType.OUTPUT);
+        super(uID, 1, activationFunction, NodeType.OUTPUT);
         this._event = event;
         this._eventParameter = eventParameter;
     }

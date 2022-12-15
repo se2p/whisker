@@ -3,7 +3,6 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComp
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
-import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStageEvent";
 
@@ -66,34 +65,6 @@ describe("classificationNode Tests", () => {
         expect(clone.uID).toBe(classificationNode.uID);
         expect(clone.equals(classificationNode)).toBe(true);
         expect(clone === classificationNode).toBe(false);
-    });
-
-    test("getActivationValue Test", () => {
-        classificationNode.nodeValue = 1;
-        classificationNode.activatedFlag = true;
-        expect(classificationNode.activate()).toBe(classificationNode.nodeValue);
-        expect(classificationNode.activationValue).toBe(classificationNode.nodeValue);
-        classificationNode.reset();
-        expect(classificationNode.activate()).toBe(0);
-        expect(classificationNode.activationValue).toBe(0);
-
-        const classificationNode2 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.NONE);
-        classificationNode2.nodeValue = 5;
-        classificationNode2.activatedFlag = true;
-        expect(classificationNode2.activate()).toBe(5);
-        expect(classificationNode2.activationValue).toBe(5);
-        classificationNode2.reset();
-        expect(classificationNode2.activate()).toBe(0);
-        expect(classificationNode2.activationValue).toBe(0);
-
-        const classificationNode3 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.TANH);
-        classificationNode3.nodeValue = -1;
-        classificationNode3.activatedFlag = true;
-        expect(classificationNode3.activate()).toBe(-1);
-        expect(classificationNode3.activationValue).toBe(-1);
-        classificationNode3.reset();
-        expect(classificationNode3.activate()).toBe(0);
-        expect(classificationNode3.activationValue).toBe(0);
     });
 
     test("Identifier", () =>{

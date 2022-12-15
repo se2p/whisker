@@ -11,11 +11,6 @@ export abstract class NodeGene {
     public static _uIDCounter = 0;
 
     /**
-     * The unique identifier of a node.
-     */
-    private readonly _uID: number
-
-    /**
      * The value of a node, which is defined to be the sum of all incoming connections.
      */
     private _nodeValue = 0;
@@ -62,12 +57,12 @@ export abstract class NodeGene {
 
     /**
      * Creates a new node.
-     * @param uID the unique identifier of this node in the network.
+     * @param _uID the unique identifier of this node in the network.
+     * @param _depth the depth of the node within the network.
      * @param activationFunction the activation function of the node
      * @param type the type of the node (Input | Hidden | Output)
      */
-    protected constructor(uID: number, activationFunction: ActivationFunction, type: NodeType) {
-        this._uID = uID;
+    protected constructor(private readonly _uID: number, private readonly _depth:number, activationFunction: ActivationFunction, type: NodeType) {
         this._activationFunction = activationFunction;
         this._type = type;
         if (NeatPopulation.highestNodeId < this.uID) {
@@ -77,9 +72,10 @@ export abstract class NodeGene {
 
     /**
      * Calculates the activation value of the node based on the node value and the activation function.
+     * @params arguments required for specific activation functions
      * @returns number activation value of the given node.
      */
-    public abstract activate(): number
+    public abstract activate(...args:number[]): number
 
     /**
      * Resets the node's attributes.
@@ -122,6 +118,10 @@ export abstract class NodeGene {
 
     get uID(): number {
         return this._uID;
+    }
+
+    get depth(): number {
+        return this._depth;
     }
 
     get nodeValue(): number {

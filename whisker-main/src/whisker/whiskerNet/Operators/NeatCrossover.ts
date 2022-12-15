@@ -1,10 +1,10 @@
 import {Pair} from "../../utils/Pair";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NodeGene} from "../NetworkComponents/NodeGene";
-import {NodeType} from "../NetworkComponents/NodeType";
 import {Randomness} from "../../utils/Randomness";
 import {NetworkCrossover} from "./NetworkCrossover";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {NetworkLayer} from "../Networks/NetworkChromosome";
 
 
 export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
@@ -37,8 +37,8 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
         const parent1Clone = parent1.clone() as NeatChromosome;
         const parent2Clone = parent2.clone() as NeatChromosome;
 
-        parent1Clone.generateNetwork();
-        parent2Clone.generateNetwork();
+        parent1Clone.sortConnections();
+        parent2Clone.sortConnections();
 
         // Decide if we want to inherit the weight of one parent or
         // the average of both parents when we have a matching connection
@@ -67,7 +67,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
     private multipointCrossover(parent1: NeatChromosome, parent2: NeatChromosome, avgWeights) {
 
         // Check which parent has the higher non-adjusted fitness value
-        // The worse parent should not add additional connections
+        // The worst performing parent should not add additional connections
         // If they have the same fitness value, take the smaller ones excess and disjoint connections only
         let p1Better = false;
         const parent1Size = parent1.connections.length;
@@ -81,22 +81,9 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
             }
         }
 
-        // Create Lists for the new Connections and Nodes
+        // Create Lists for the new Connections and the layer map that includes the new nodes.
         const newConnections: ConnectionGene[] = [];
-        const newNodes: NodeGene[] = [];
-
-        // Create another List for saving disabled connections to check if we accidentally destroyed the
-        // network by disabling some connections.
-        const disabledConnections: ConnectionGene[] = [];
-
-        // Search through all input/output nodes and add them to the newNodes List
-        // This is necessary since we would otherwise lose nodes without a connection
-        for (const node of parent1.allNodes) {
-            const currentNode = node.clone();
-            if (node.type === NodeType.INPUT || node.type === NodeType.BIAS || node.type === NodeType.OUTPUT) {
-                newNodes.push(currentNode);
-            }
-        }
+        const newLayers: NetworkLayer = new Map<number, NodeGene[]>();
 
         // Iterators for the connections of both parents
         let i1 = 0;
@@ -111,7 +98,6 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
 
         // Here we save the chosen connection for each iteration of the while loop and if it's a recurrent one.
         let currentConnection: ConnectionGene;
-        let recurrent = false;
 
         while (i1 < parent1Size || i2 < parent2Size) {
 
@@ -186,81 +172,44 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
             // Now add the new Connection if we found a valid one.
             if (!skip) {
                 // Check for the nodes and add them if they are not already in the new Nodes List
-                const fromNode = currentConnection.source;
-                const toNode = currentConnection.target;
-                let found: boolean;
-                let newFromNode: NodeGene;
-                let newOutNode: NodeGene;
+                const sourceNode = currentConnection.source;
+                const targetNode = currentConnection.target;
 
-                // Search for the fromNode
-                for (const iNode of newNodes) {
-                    if (iNode.equals(fromNode)) {
-                        found = true;
-                        newFromNode = iNode;
+                // Clone and add the sourceNode to the new layer map.
+                let newSourceNode = [...newLayers.values()].flat().find(node => node.uID === sourceNode.uID);
+                if (!newSourceNode) {
+                    newSourceNode = sourceNode.clone();
+                    if (!newLayers.has(newSourceNode.depth)) {
+                        newLayers.set(newSourceNode.depth, []);
                     }
+                    newLayers.get(newSourceNode.depth).push(newSourceNode);
                 }
 
-                if (!found) {
-                    newFromNode = fromNode.clone();
-                    newNodes.push(newFromNode);
-                }
-
-                // Search for the outNode
-                found = false;
-                for (const oNode of newNodes) {
-                    if (oNode.equals(toNode)) {
-                        found = true;
-                        newOutNode = oNode;
+                // Clone and add the targetNode to the new layer map.
+                let newTargetNode = [...newLayers.values()].flat().find(node => node.uID === targetNode.uID);
+                if (!newTargetNode) {
+                    newTargetNode = targetNode.clone();
+                    if (!newLayers.has(newTargetNode.depth)) {
+                        newLayers.set(newTargetNode.depth, []);
                     }
-                }
-
-                if (!found) {
-                    newOutNode = toNode.clone();
-                    newNodes.push(newOutNode);
+                    newLayers.get(newTargetNode.depth).push(newTargetNode);
                 }
 
                 // Now add the new Connection
-                const newConnection = new ConnectionGene(newFromNode, newOutNode, currentConnection.weight, !disable, currentConnection.innovation,
+                const newConnection = new ConnectionGene(newSourceNode, newTargetNode, currentConnection.weight, !disable, currentConnection.innovation,
                     currentConnection.isRecurrent);
-
-                // Set the isRecurrent flag if we added a isRecurrent connection
-                if (newConnection.isRecurrent) {
-                    recurrent = true;
-                }
-
-                // Collect the disabled Connections -> if we produce a defect network we sequentially enable the
-                // connections stored here until we found a path from input to output, i.e. repaired the network
-                if (disable) {
-                    disabledConnections.push(newConnection);
-                }
 
                 // Average the weight if we calculated a value for matching genes.
                 if (avgWeight) {
                     newConnection.weight = avgWeight;
                 }
 
-                disable = false;
                 newConnections.push(newConnection);
             }
         }
 
         // Finally, create the child with the selected Connections and Nodes
-        const child = new NeatChromosome(newNodes, newConnections, parent1.getMutationOperator(),
+        return new NeatChromosome(newLayers, newConnections, parent1.getMutationOperator(),
             parent1.getCrossoverOperator(), parent1.inputConnectionMethod, parent1.activationFunction);
-        child.generateNetwork();
-
-        // Check if everything went fine and enable some connections to fix a defect network if necessary
-        let i = 0;
-        const inputs = child.generateDummyInputs();
-        while (!child.activateNetwork(inputs) && i < disabledConnections.length) {
-            disabledConnections[i].isEnabled = true;
-            child.generateNetwork();
-            i++;
-        }
-
-        if (recurrent) {
-            child.isRecurrent = true;
-        }
-        return child;
     }
 }

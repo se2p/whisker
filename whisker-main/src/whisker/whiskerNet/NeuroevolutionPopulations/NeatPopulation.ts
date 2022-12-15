@@ -299,11 +299,15 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             network.species = newSpecies;
         }
 
-            // If we already have some species find a compatible one or create a new species for the network if the network
+        // If we already have some species find a compatible one or create a new species for the network if the network
         // is not compatible enough with any existent species.
         else {
             let foundSpecies = false;
             for (const specie of this.species) {
+                // Skip empty species
+                if(specie.networks.length == 0){
+                    continue;
+                }
                 // Get a representative of the specie and calculate the compatibility distance.
                 const representative = specie.networks[0];
                 const compatDistance = this.compatibilityDistance(network, representative);
@@ -344,8 +348,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Generate the networks and by that sort the connections according to their innovation numbers.
-        network1.generateNetwork();
-        network2.generateNetwork();
+        network1.sortConnections();
+        network2.sortConnections();
 
         // Counters for excess, disjoint and matching innovations & the weight difference.
         let excess = 0;

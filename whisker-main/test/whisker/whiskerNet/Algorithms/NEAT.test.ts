@@ -18,6 +18,9 @@ import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/Networ
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {ParameterType} from "../../../../src/whisker/testcase/events/ParameterType";
 
 export const generateInputs = (): InputFeatures => {
     const genInputs: InputFeatures = new Map<string, Map<string, number>>();
@@ -113,19 +116,18 @@ describe('Test NEAT', () => {
             expect(searchAlgorithm.getNumberOfIterations()).toBe(20);
         });
     });
-});
-/*
-//Commented out since it greatly increases the CI-Pipeline duration. However, very useful for sanity checking.
     test("XOR Sanity Test", () => {
         const inputMap = new Map<string, Map<string, number>>();
         inputMap.set("Test", new Map<string, number>());
+        const mutation = new NeatMutation(mutationConfig);
+        const crossover = new NeatCrossover(crossoverConfig);
 
         inputMap.get("Test").set("Gate1", 0);
         inputMap.get("Test").set("Gate2", 0);
 
         const events = [new XOR()];
 
-        const generator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, inputMap, events);
+        const generator = new NeatChromosomeGenerator(inputMap, events, "fully", ActivationFunction.RELU, mutation, crossover);
         const population = new NeatPopulation(generator, properties);
         population.generatePopulation();
 
@@ -138,10 +140,7 @@ describe('Test NEAT', () => {
                     inputMap.get("Test").set("Gate1", i);
                     for (let k = 0; k < 2; k++) {
                         inputMap.get("Test").set("Gate2", k);
-                        network.updateStabiliseCount(20);
-                        for (let j = 0; j < network.stabiliseCount; j++) {
-                            network.activateNetwork(inputMap)
-                        }
+                        network.activateNetwork(inputMap);
 
                         let output: number;
                         if (network.regressionNodes.get('XOR')[0].nodeValue > 1)
@@ -163,10 +162,16 @@ describe('Test NEAT', () => {
                 if (fitness === 4)
                     found = true;
             }
+            let fitness = 0;
+            for(const net of population.networks){
+                if (net.fitness > fitness){
+                    fitness = net.fitness;
+                }
+            }
             population.updatePopulationStatistics();
             population.evolve();
         }
-        expect(population.populationChampion.fitness).toBe(4)
+        expect(population.populationChampion.fitness).toBe(4);
     });
 
 
@@ -178,10 +183,6 @@ describe('Test NEAT', () => {
 
         getSearchParameterNames(): string[] {
             return ['GateInput'];
-        }
-
-        setParameter(): void {
-            throw new Error("Method not implemented.");
         }
 
         getParameters(): unknown[] {
@@ -207,7 +208,9 @@ describe('Test NEAT', () => {
         numSearchParameter(): number {
             return 1;
         }
-    }
-})
 
- */
+        setParameter(args: number[], argType: ParameterType): number[] {
+            throw new Error("Method not implemented");
+        }
+    }
+});

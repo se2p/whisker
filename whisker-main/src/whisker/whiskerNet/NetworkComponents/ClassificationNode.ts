@@ -1,7 +1,6 @@
 import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {NeuroevolutionUtil} from "../Misc/NeuroevolutionUtil";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 
 export class ClassificationNode extends NodeGene {
@@ -18,7 +17,7 @@ export class ClassificationNode extends NodeGene {
      * @param event the ScratchEvent this Classification node is representing.
      */
     constructor(uID: number, event: ScratchEvent, activationFunction: ActivationFunction) {
-        super(uID, activationFunction, NodeType.OUTPUT);
+        super(uID, 1, activationFunction, NodeType.OUTPUT);
         this._event = event;
     }
 
@@ -43,13 +42,13 @@ export class ClassificationNode extends NodeGene {
     }
 
     /**
-     * On classification nodes we apply softmax after the network activation.
-     * Hence, we refer from using another activation function here.
-     * @returns node value of the classification node.
+     * On classification nodes we apply softmax activation.
+     * @params softmaxDenominator the denominator required for the softmax function.
+     * @returns softmax activation based on the given node value and the supplied denominator.
      */
-    activate(): number {
-        this.activationValue = this.nodeValue;
-        return this.nodeValue;
+    activate(softMaxDenominator:number): number {
+        return Math.exp(this.nodeValue) / softMaxDenominator;
+        //return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
     }
 
     /**

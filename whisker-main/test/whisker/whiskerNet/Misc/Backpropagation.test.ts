@@ -1,6 +1,59 @@
 import groundTruth from "./GroundTruth.json";
 import {Backpropagation} from "../../../../src/whisker/whiskerNet/Misc/Backpropagation";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
+import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {expect} from "@jest/globals";
+import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
+import {FeatureGroup, InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
+import {NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 
+const generateNetwork = () => {
+    const i1 = new InputNode(3, "i", "1");
+    const i2 = new InputNode(4, "i", "2");
+    const bias = new BiasNode(2);
+    const h1 = new HiddenNode(1, 0.5, ActivationFunction.SIGMOID);
+    const h2 = new HiddenNode(2, 0.5, ActivationFunction.SIGMOID);
+    const o1 = new ClassificationNode(5, new WaitEvent(), ActivationFunction.SIGMOID);
+    const o2 = new ClassificationNode(6, new KeyPressEvent("k"), ActivationFunction.SIGMOID);
+    const layer: NetworkLayer = new Map<number, NodeGene[]>();
+    layer.set(0, [i1, i2, bias]);
+    layer.set(0.5, [h1, h2]);
+    layer.set(1, [o1, o2]);
+
+    const c1 = new ConnectionGene(i1, h1, 0.15, true, 0, false);
+    const c2 = new ConnectionGene(i1, h2, 0.3, true, 1, false);
+    const c3 = new ConnectionGene(i2, h1, 0.20, true, 2, false);
+    const c4 = new ConnectionGene(i2, h2, 0.25, true, 3, false);
+    const c5 = new ConnectionGene(bias, h1, 0.35, true, 6, false);
+    const c6 = new ConnectionGene(bias, h2, 0.35, true, 7, false);
+
+    const c7 = new ConnectionGene(h1, o1, 0.4, true, 8, false);
+    const c8 = new ConnectionGene(h1, o2, 0.5, true, 9, false);
+    const c9 = new ConnectionGene(h2, o1, 0.45, true, 10, false);
+    const c10 = new ConnectionGene(h2, o2, 0.55, true, 11, false);
+    const c11 = new ConnectionGene(bias, o1, 0.60, true, 12, false);
+    const c12 = new ConnectionGene(bias, o2, 0.60, true, 13, false);
+
+    const cons = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12];
+
+    return new NeatChromosome(layer, cons, undefined, undefined, undefined);
+};
+
+const generateInputs = (): InputFeatures => {
+    const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
+    const featureGroup: FeatureGroup = new Map<string, number>();
+    featureGroup.set("1", 0.05);
+    featureGroup.set("2", 0.1);
+    inputFeatures.set("i", featureGroup);
+    return inputFeatures;
+};
 
 describe('Test Backpropagation', () => {
     let backpropagation: Backpropagation;
@@ -28,5 +81,12 @@ describe('Test Backpropagation', () => {
         const actionString1 = [...backpropagation._organiseData(statement).values()].toString();
         const actionString2 = [...backpropagation2._organiseData(statement).values()].toString();
         expect(actionString1).not.toEqual(actionString2);
+    });
+
+    test("Forward Pass", () => {
+        const net = generateNetwork();
+        const inputs = generateInputs();
+        net.activateNetwork(inputs);
+        console.log(net.toString());
     });
 });

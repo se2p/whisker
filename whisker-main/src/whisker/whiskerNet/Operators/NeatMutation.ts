@@ -95,7 +95,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 }
             }
 
-            // If we don't have a population Champion apply either structural mutation or non-structural mutation but
+                // If we don't have a population Champion apply either structural mutation or non-structural mutation but
             // not both!
             else {
                 // Structural mutation
@@ -138,7 +138,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         let node2: NodeGene;
 
         // Collect all nodes to which a new connection can point -> all nodes except the input and bias nodes
-        const targetNodes = chromosome.allNodes.filter(node =>
+        const targetNodes = chromosome.getAllNodes().filter(node =>
             node.type !== NodeType.INPUT && node.type !== NodeType.BIAS);
 
         // Decide if we want a recurrent Connection
@@ -162,7 +162,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                     node1 = this._random.pick(targetNodes);
                     node2 = node1;
                 }
-                // Normal Recurrency: Y -> X
+                // Normal recurrent connection: Y -> X
                 else {
                     node1 = this._random.pick(targetNodes);
                     node2 = this._random.pick(targetNodes);
@@ -171,7 +171,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
 
             // No recurrent connection
             else {
-                node1 = this._random.pick(chromosome.allNodes);
+                node1 = this._random.pick(chromosome.getAllNodes());
                 node2 = this._random.pick(targetNodes);
             }
 
@@ -201,8 +201,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             // We found a valid connection to add
             if (!skip) {
                 // Verify if we got a recurrent connection if we wanted a recurrent one and vice versa
-                const threshold = chromosome.allNodes.length * chromosome.allNodes.length;
-                const isRecurrent = chromosome.isRecurrentPath(node1, node2, 0, threshold);
+                const isRecurrent = chromosome.getDepthOfNode(node1) >= chromosome.getDepthOfNode(node2);
                 if (isRecurrent === recurrentConnection) {
                     rounds = tries;
                     foundConnection = true;
@@ -293,14 +292,6 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             } else
                 chosenConnection.isEnabled = true;
         }
-
-        // Finally, check if we changed the isRecurrent state by disabling or enabling a recurrent connection.
-        chromosome.isRecurrent = false;
-        for (const connection of chromosome.connections)
-            if (connection.isEnabled && connection.isRecurrent) {
-                chromosome.isRecurrent = true;
-                break;
-            }
     }
 
     /**
@@ -311,9 +302,6 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         for (const connection of chromosome.connections) {
             if (!connection.isEnabled) {
                 connection.isEnabled = true;
-                if (connection.isRecurrent) {
-                    chromosome.isRecurrent = true;
-                }
                 break;
             }
         }

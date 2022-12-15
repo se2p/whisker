@@ -9,7 +9,7 @@ export class BiasNode extends NodeGene {
      * @param uID the unique identifier of this node in the network.
      */
     constructor(uID: number) {
-        super(uID, ActivationFunction.NONE, NodeType.BIAS);
+        super(uID, 0, ActivationFunction.NONE, NodeType.BIAS);
         this.nodeValue = 1;
         this.lastActivationValue = 1;
         this.activationValue = 1;

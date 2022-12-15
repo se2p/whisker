@@ -8,10 +8,11 @@ export class HiddenNode extends NodeGene {
     /**
      * Constructs a new HiddenNode.
      * @param activationFunction the activation function used within this node gene.
+     * @param depth the depth of the node within the network.
      * @param uID the unique identifier of this node in the network.
      */
-    constructor(uID: number, activationFunction: ActivationFunction) {
-        super(uID, activationFunction, NodeType.HIDDEN);
+    constructor(uID: number, depth:number, activationFunction: ActivationFunction) {
+        super(uID, depth, activationFunction, NodeType.HIDDEN);
     }
 
     /**
@@ -25,7 +26,7 @@ export class HiddenNode extends NodeGene {
     }
 
     clone(): HiddenNode {
-        const clone = new HiddenNode(this.uID, this.activationFunction);
+        const clone = new HiddenNode(this.uID, this.depth, this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -79,6 +80,7 @@ export class HiddenNode extends NodeGene {
         node['id'] = this.uID;
         node['t'] = "H";
         node['aF'] = ActivationFunction[this.activationFunction];
+        node['d'] = this.depth;
         return node;
     }
 

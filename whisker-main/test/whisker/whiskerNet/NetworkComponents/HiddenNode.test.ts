@@ -4,17 +4,19 @@ import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/Nod
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
+import exp from "constants";
 
 
 describe("hiddenNode Tests", () => {
     let hiddenNode: NodeGene;
 
     beforeEach(() => {
-        hiddenNode = new HiddenNode(1, ActivationFunction.SIGMOID);
+        hiddenNode = new HiddenNode(1, 0.5, ActivationFunction.SIGMOID);
     });
 
     test("Constructor Test", () => {
-        const hiddenNode = new HiddenNode(10, ActivationFunction.SIGMOID);
+        const hiddenNode = new HiddenNode(10, 0.5,ActivationFunction.SIGMOID);
+        expect(hiddenNode.depth).toEqual(0.5);
         expect(hiddenNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(hiddenNode.type).toBe(NodeType.HIDDEN);
         expect(hiddenNode.nodeValue).toBe(0);
@@ -44,10 +46,10 @@ describe("hiddenNode Tests", () => {
     });
 
     test("Equals Test", () => {
-        const hiddenNode2 = new HiddenNode(1, ActivationFunction.SIGMOID);
+        const hiddenNode2 = new HiddenNode(1, 0.5, ActivationFunction.SIGMOID);
         expect(hiddenNode2.equals(hiddenNode)).toBe(true);
 
-        const hiddenNode3 = new HiddenNode(2, ActivationFunction.SIGMOID);
+        const hiddenNode3 = new HiddenNode(2, 0.5, ActivationFunction.SIGMOID);
         expect(hiddenNode3.equals(hiddenNode)).toBe(false);
 
         const biasNode = new BiasNode(1);
@@ -71,7 +73,7 @@ describe("hiddenNode Tests", () => {
         expect(hiddenNode.activate()).toBe(0);
         expect(hiddenNode.activationValue).toBe(0);
 
-        const hiddenNode2 = new HiddenNode(2, ActivationFunction.NONE);
+        const hiddenNode2 = new HiddenNode(2, 0.5, ActivationFunction.NONE);
         hiddenNode2.nodeValue = 5;
         hiddenNode2.activatedFlag = true;
         expect(hiddenNode2.activate()).toBe(5);
@@ -80,7 +82,7 @@ describe("hiddenNode Tests", () => {
         expect(hiddenNode2.activate()).toBe(0);
         expect(hiddenNode2.activationValue).toBe(0);
 
-        const hiddenNode3 = new HiddenNode(2, ActivationFunction.TANH);
+        const hiddenNode3 = new HiddenNode(2, 0.5, ActivationFunction.TANH);
         hiddenNode3.nodeValue = -1;
         hiddenNode3.activatedFlag = true;
         const tanhResult = Math.tanh(-1);
@@ -109,6 +111,7 @@ describe("hiddenNode Tests", () => {
             't': "H",
             'id' : hiddenNode.uID,
             'aF' : "SIGMOID",
+            'd': 0.5
         };
         expect(json).toEqual(expected);
     });
