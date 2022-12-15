@@ -9,7 +9,7 @@
     "ageSignificance": 1.0,
     "switchTargetCount": 5,
     "extractor": "neuroevolution",
-    "aTRepetitions": 100,
+    "aTRepetitions": 0,
     "chromosome": {
         "type": "neatChromosome",
         "activationFunction": "RELU",
