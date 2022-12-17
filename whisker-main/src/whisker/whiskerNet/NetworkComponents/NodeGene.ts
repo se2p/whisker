@@ -36,6 +36,11 @@ export abstract class NodeGene {
     private _activationCount = 0;
 
     /**
+     * The delta value obtained from backpropagation.
+     */
+    private _delta = 0;
+
+    /**
      * True if the node has been activated at least once within one network activation.
      */
     private _activatedFlag = false;
@@ -174,6 +179,14 @@ export abstract class NodeGene {
 
     set lastActivationValue(value: number) {
         this._lastActivationValue = value;
+    }
+
+    get delta(): number {
+        return this._delta;
+    }
+
+    set delta(value: number) {
+        this._delta = value;
     }
 
     get traversed(): boolean {

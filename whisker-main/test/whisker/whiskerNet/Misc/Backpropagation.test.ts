@@ -1,5 +1,6 @@
 import groundTruth from "./GroundTruth.json";
-import {Backpropagation} from "../../../../src/whisker/whiskerNet/Misc/Backpropagation";
+import network from "./fruitCatchingNetwork.json";
+import {Backpropagation, LossFunction} from "../../../../src/whisker/whiskerNet/Misc/Backpropagation";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
@@ -8,11 +9,12 @@ import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComp
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
-import {expect} from "@jest/globals";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {FeatureGroup, InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
-import {NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
+import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkLoader";
+
 
 const generateNetwork = () => {
     const i1 = new InputNode(3, "i", "1");
@@ -46,6 +48,12 @@ const generateNetwork = () => {
     return new NeatChromosome(layer, cons, undefined, undefined, undefined);
 };
 
+const loadFruitCatchingNetwork = (): NetworkChromosome => {
+    const networkJSON = network as any;
+    const networkLoader = new NetworkLoader(networkJSON, [new WaitEvent(), new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow')]);
+    return networkLoader.loadNetworks()[0];
+};
+
 const generateInputs = (): InputFeatures => {
     const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
     const featureGroup: FeatureGroup = new Map<string, number>();
@@ -60,7 +68,7 @@ describe('Test Backpropagation', () => {
     const statement = "}Gp_.7).xv-]IUt.!E1/-Bowl"; // Catching the apple for 30 seconds.
 
     beforeEach(() => {
-        backpropagation = new Backpropagation(groundTruth as any);
+        backpropagation = new Backpropagation(groundTruth as any, LossFunction.SQUARED_ERROR, 0.01);
     });
 
     test("Check number of recordings after initialisation", () => {
@@ -77,7 +85,7 @@ describe('Test Backpropagation', () => {
     });
 
     test("Check shuffle during initialisation", () => {
-        const backpropagation2 = new Backpropagation(groundTruth as any);
+        const backpropagation2 = new Backpropagation(groundTruth as any, LossFunction.SQUARED_ERROR, 0.1);
         const actionString1 = [...backpropagation._organiseData(statement).values()].toString();
         const actionString2 = [...backpropagation2._organiseData(statement).values()].toString();
         expect(actionString1).not.toEqual(actionString2);
@@ -86,7 +94,45 @@ describe('Test Backpropagation', () => {
     test("Forward Pass", () => {
         const net = generateNetwork();
         const inputs = generateInputs();
-        net.activateNetwork(inputs);
-        console.log(net.toString());
+        const labelMap = new Map<string, number>();
+        labelMap.set("WaitEvent", 0.01);
+        labelMap.set("KeyPressEvent-k", 0.99);
+        const loss = backpropagation._forwardPass(net, inputs, labelMap);
+        expect(Math.round(loss * 1000) / 1000).toEqual(0.298);
     });
+
+    test("Backward Pass", () => {
+        const net = generateNetwork();
+        const inputs = generateInputs();
+        const labelMap = new Map<string, number>();
+        labelMap.set("WaitEvent", 0.01);
+        labelMap.set("KeyPressEvent-k", 0.99);
+        const startLoss = backpropagation._forwardPass(net, inputs, labelMap);
+        backpropagation._backwardPass(net, labelMap);
+        backpropagation._adjustWeights(net, 0.5);
+        const connectionWeights = net.connections.filter(connection => !(connection.source instanceof BiasNode)).map(conn => Math.round(conn.weight * 1000)/ 1000).sort();
+        expect(Math.round(startLoss * 1000) / 1000).toEqual(0.298);
+        expect(connectionWeights.sort()).toEqual([0.15, 0.2, 0.25,0.3, 0.359, 0.409, 0.511, 0.561]);
+
+        for (let i = 0; i < 10000; i++) {
+        backpropagation._forwardPass(net, inputs, labelMap);
+        backpropagation._backwardPass(net, labelMap);
+        backpropagation._adjustWeights(net, 0.5);
+        }
+        const finalLoss = backpropagation._forwardPass(net, inputs, labelMap);
+        expect(finalLoss).toBeLessThan(0.00001);
+    });
+
+    test("Optimise Network", () => {
+        const backpropagation = new Backpropagation(groundTruth, LossFunction.CATEGORICAL_CROSS_ENTROPY, 0.5);
+        const net = loadFruitCatchingNetwork();
+        const startingLoss = backpropagation.optimiseWeights(net, statement);
+        let finalLoss = 0;
+        for (let i = 0; i < 1000; i++) {
+        finalLoss = backpropagation.optimiseWeights(net, statement);
+        }
+        backpropagation.optimiseWeights(net, statement);
+        expect(finalLoss).toBeLessThan(startingLoss);
+    });
+
 });

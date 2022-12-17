@@ -2,6 +2,7 @@ import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
+import {NeuroevolutionUtil} from "../Misc/NeuroevolutionUtil";
 
 export class ClassificationNode extends NodeGene {
 

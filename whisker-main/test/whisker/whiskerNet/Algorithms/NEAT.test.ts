@@ -116,6 +116,7 @@ describe('Test NEAT', () => {
             expect(searchAlgorithm.getNumberOfIterations()).toBe(20);
         });
     });
+
     test("XOR Sanity Test", () => {
         const inputMap = new Map<string, Map<string, number>>();
         inputMap.set("Test", new Map<string, number>());

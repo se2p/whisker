@@ -17,6 +17,12 @@ export class ConnectionGene {
     private _weight: number;
 
     /**
+     * The delta value defined by the backward pass and used to update the weight of the connection based on the given
+     * learning rate.
+     */
+    private _delta = 0;
+
+    /**
      * Defines whether the connection is enabled.
      */
     private _isEnabled: boolean;
@@ -120,6 +126,14 @@ export class ConnectionGene {
 
     set weight(value: number) {
         this._weight = value;
+    }
+
+    get delta(): number {
+        return this._delta;
+    }
+
+    set delta(value: number) {
+        this._delta = value;
     }
 
     get isEnabled(): boolean {
