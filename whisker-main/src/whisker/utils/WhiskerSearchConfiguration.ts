@@ -268,6 +268,13 @@ export class WhiskerSearchConfiguration {
                     properties.randomFraction = 1;
                 }
             }
+
+            // Check whether we will apply stochasticGradientDescent.
+            if ('stochasticGradientDescent' in this._config){
+                properties.applyStochasticGradientDescent = true;
+                properties.learningRate = this._config['stochasticGradientDescent']['learningRate'];
+                properties.epochs = this._config['stochasticGradientDescent']['epochs'];
+            }
         }
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);

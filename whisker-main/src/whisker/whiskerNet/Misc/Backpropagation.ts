@@ -1,9 +1,10 @@
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {FeatureGroup, InputFeatures} from "./InputExtraction";
-import {Randomness} from "../../utils/Randomness";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {NodeGene} from "../NetworkComponents/NodeGene";
+import Arrays from "../../utils/Arrays";
+import {Container} from "../../utils/Container";
 
 export class Backpropagation {
 
@@ -23,36 +24,53 @@ export class Backpropagation {
     } as const;
 
 
-    constructor(private readonly _groundTruth: Record<string, unknown>,
-                private readonly _lossFunction: LossFunction,
-                private readonly _learningRate: number) {
+    constructor(private readonly _groundTruth: Record<string, unknown>) {
     }
 
     /**
      * Optimises the network weights using true stochastic gradient descent backpropagation.
      * @param network the network to be optimised.
      * @param statement the statement for which we are optimising the network.
+     * @param epochs defines how often SGD is to be performed on the whole dataset.
+     * @param learningRate the learning based on which the network weights will be updated.
+     * @returns training loss normalised by the number of training examples and executed epochs.
      */
-    public optimiseWeights(network: NetworkChromosome, statement: string): number {
-        let loss = 0;
+    public stochasticGradientDescent(network: NetworkChromosome, statement: string, epochs: number,
+                                     learningRate: number): number {
+        let totalLoss = 0;
         const dataSamples = this._organiseData(statement);
-        for (const [input, label] of dataSamples.entries()) {
-            const inputFeatures = this._objectToInputFeature(input);
-            // One-hot encoded label vector.
-            const labelVector = new Map<string, number>();
-            for (const event of network.classificationNodes.keys()) {
-                if (event === label) {
-                    labelVector.set(event, 1);
-                } else {
-                    labelVector.set(event, 0);
-                }
-            }
+        for (let i = 0; i < epochs; i++) {
+            // Shuffle the training data
+            let epochLoss = 0;
+            const trainingInputs = [...dataSamples.keys()];
+            Arrays.shuffle(trainingInputs);
 
-            loss += this._forwardPass(network, inputFeatures, labelVector);
-            this._backwardPass(network, labelVector);
-            this._adjustWeights(network, this._learningRate);
+            // Iterate over each training example and apply gradient descent.
+            for (const input of trainingInputs) {
+                const inputFeatures = this._objectToInputFeature(input);
+
+                // One-hot encoded label vector.
+                const label = dataSamples.get(input);
+                const labelVector = new Map<string, number>();
+                for (const event of network.classificationNodes.keys()) {
+                    if (event === label) {
+                        labelVector.set(event, 1);
+                    } else {
+                        labelVector.set(event, 0);
+                    }
+                }
+
+                // Compute the loss -> gradients of weights -> update the weights.
+                epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.CATEGORICAL_CROSS_ENTROPY);
+                this._backwardPass(network, labelVector);
+                this._adjustWeights(network, learningRate);
+            }
+            if(i% 20 === 0) {
+                Container.debugLog(`Loss of epoch ${i}: ${epochLoss / [...dataSamples.keys()].length}`);
+            }
+            totalLoss = epochLoss / [...dataSamples.keys()].length;
         }
-        return loss / [...dataSamples.keys()].length;
+        return totalLoss;
     }
 
     /**
@@ -61,19 +79,18 @@ export class Backpropagation {
      * @param network the network to be trained.
      * @param inputs the provided input features
      * @param labelVector the provided label vector corresponding to the input features.
+     * @param lossFunction the loss function to be used to calculate the training error.
      * @returns the loss for the given inputs and labels.
      */
-    public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>): number {
+    public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>,
+                        lossFunction:LossFunction): number {
         network.activateNetwork(inputs);
         const predictions = new Map<string, number>();
         for (const [event, node] of network.classificationNodes.entries()) {
-            if (event === "WaitEvent") {
-                continue;
-            }
             predictions.set(event, node.activationValue);
         }
         let loss = 0;
-        switch (this._lossFunction) {
+        switch (lossFunction) {
             case LossFunction.SQUARED_ERROR:
                 loss = this._squaredLoss(predictions, labelVector);
                 break;
@@ -82,6 +99,37 @@ export class Backpropagation {
                 break;
         }
         return loss;
+    }
+
+    /**
+     * Calculates the squared loss function.
+     * @param prediction the predictions made by the network.
+     * @param labels the true target labels
+     * @returns squared loss of the prediction and label vector.
+     */
+    private _squaredLoss(prediction: Map<string, number>, labels: Map<string, number>): number {
+        let loss = 0;
+        for (const [event, predictionValue] of prediction.entries()) {
+            const trueValue = labels.get(event);
+            const node_error = 0.5 * Math.pow(trueValue - predictionValue, 2);
+            loss += node_error;
+        }
+        return loss;
+    }
+
+    /**
+     * Calculates the categorical cross entropy loss function.
+     * @param prediction the predictions made by the network.
+     * @param labels the true target labels
+     * @returns categorical cross entropy of the prediction and label vector.
+     */
+    private _categoricalCrossEntropyLoss(prediction: Map<string, number>, labels: Map<string, number>): number {
+        for (const [event, trueValue] of labels.entries()) {
+            if (trueValue === 1) {
+                return -Math.log(prediction.get(event));
+            }
+        }
+        throw "Prediction does not contain required target node in categorical cross entropy";
     }
 
     /**
@@ -155,10 +203,10 @@ export class Backpropagation {
     }
 
     /**
-     * Restructures and shuffles the data obtained from the .json file such that it only includes records that
+     * Restructures the data obtained from the .json file such that it only includes records that
      * correspond to the current statement target.
      * @param statement the target for which the networks should be optimised.
-     * @returns structured and shuffled input-label data for the backpropagation process.
+     * @returns structured data for the backpropagation process.
      */
     public _organiseData(statement: string): StateActionRecord {
         // We may have multiple recordings within one file. Collect all recordings that covered the current target in
@@ -176,21 +224,14 @@ export class Backpropagation {
             }
         }
 
-        // Randomly pick one label (action) and corresponding input vector after another and add it to the structured
-        // groundTruth map that maps input vector to output label.
-        const random = Randomness.getInstance();
-        const shuffledGroundTruth: StateActionRecord = new Map<objectInputFeatures, string>();
-        while ([...actionStateRecord.keys()].length > 0) {
-            const nextAction = random.pick([...actionStateRecord.keys()]);
-            const featureArray = actionStateRecord.get(nextAction);
-            const randomFeatureIndex = random.nextInt(0, featureArray.length);
-            shuffledGroundTruth.set(featureArray[randomFeatureIndex], nextAction);
-            featureArray.splice(randomFeatureIndex, 1);
-            if (featureArray.length == 0) {
-                actionStateRecord.delete(nextAction);
+        // Restructure the data to obtain a state action record.
+        const stateActionRecord: StateActionRecord = new Map<objectInputFeatures, string>();
+        for (const [action, featureArray] of actionStateRecord) {
+            for (const feature of featureArray) {
+                stateActionRecord.set(feature, action);
             }
         }
-        return shuffledGroundTruth;
+        return stateActionRecord;
     }
 
     /**
@@ -208,37 +249,6 @@ export class Backpropagation {
             inputFeatures.set(sprite, featureGroupMap);
         }
         return inputFeatures;
-    }
-
-    /**
-     * Calculates the squared loss function.
-     * @param prediction the predictions made by the network.
-     * @param labels the true target labels
-     * @returns squared loss of the prediction and label vector.
-     */
-    private _squaredLoss(prediction: Map<string, number>, labels: Map<string, number>): number {
-        let loss = 0;
-        for (const [event, predictionValue] of prediction.entries()) {
-            const trueValue = labels.get(event);
-            const node_error = 0.5 * Math.pow(trueValue - predictionValue, 2);
-            loss += node_error;
-        }
-        return loss;
-    }
-
-    /**
-     * Calculates the categorical cross entropy loss function.
-     * @param prediction the predictions made by the network.
-     * @param labels the true target labels
-     * @returns categorical cross entropy of the prediction and label vector.
-     */
-    private _categoricalCrossEntropyLoss(prediction: Map<string, number>, labels: Map<string, number>): number {
-        for (const [event, trueValue] of labels.entries()) {
-            if (trueValue === 1) {
-                return -Math.log(prediction.get(event));
-            }
-        }
-        throw "Prediction does not contain required target node in categorical cross entropy";
     }
 
     /**
@@ -269,6 +279,7 @@ export type objectInputFeatures = Record<string, Record<string, number>>;
 
 export enum LossFunction {
     SQUARED_ERROR,
-    CATEGORICAL_CROSS_ENTROPY
+    CATEGORICAL_CROSS_ENTROPY,
+    SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED
 
 }

@@ -14,6 +14,7 @@ import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNe
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkLoader";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {Container} from "../../../../src/whisker/utils/Container";
 
 
 const generateNetwork = () => {
@@ -66,9 +67,11 @@ const generateInputs = (): InputFeatures => {
 describe('Test Backpropagation', () => {
     let backpropagation: Backpropagation;
     const statement = "}Gp_.7).xv-]IUt.!E1/-Bowl"; // Catching the apple for 30 seconds.
+    Container.debugLog = () => { /* suppress output */
+    };
 
     beforeEach(() => {
-        backpropagation = new Backpropagation(groundTruth as any, LossFunction.SQUARED_ERROR, 0.01);
+        backpropagation = new Backpropagation(groundTruth as any);
     });
 
     test("Check number of recordings after initialisation", () => {
@@ -84,30 +87,25 @@ describe('Test Backpropagation', () => {
         expect([...backpropagation._organiseData(statement).keys()].length).toBe(featureRecordings);
     });
 
-    test("Check shuffle during initialisation", () => {
-        const backpropagation2 = new Backpropagation(groundTruth as any, LossFunction.SQUARED_ERROR, 0.1);
-        const actionString1 = [...backpropagation._organiseData(statement).values()].toString();
-        const actionString2 = [...backpropagation2._organiseData(statement).values()].toString();
-        expect(actionString1).not.toEqual(actionString2);
-    });
-
     test("Forward Pass", () => {
+        // Example from https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
         const net = generateNetwork();
         const inputs = generateInputs();
         const labelMap = new Map<string, number>();
         labelMap.set("KeyPressEvent-j", 0.01);
         labelMap.set("KeyPressEvent-k", 0.99);
-        const loss = backpropagation._forwardPass(net, inputs, labelMap);
+        const loss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
         expect(Math.round(loss * 1000) / 1000).toEqual(0.298);
     });
 
-    test("Backward Pass", () => {
+    test("Backward Pass and adjust weights", () => {
+        // Example from https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
         const net = generateNetwork();
         const inputs = generateInputs();
         const labelMap = new Map<string, number>();
         labelMap.set("KeyPressEvent-j", 0.01);
         labelMap.set("KeyPressEvent-k", 0.99);
-        const startLoss = backpropagation._forwardPass(net, inputs, labelMap);
+        const startLoss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
         backpropagation._backwardPass(net, labelMap);
         backpropagation._adjustWeights(net, 0.5);
         const connectionWeights = net.connections.filter(connection => !(connection.source instanceof BiasNode)).map(conn => Math.round(conn.weight * 1000)/ 1000).sort();
@@ -115,23 +113,20 @@ describe('Test Backpropagation', () => {
         expect(connectionWeights.sort()).toEqual([0.15, 0.2, 0.25,0.3, 0.359, 0.409, 0.511, 0.561]);
 
         for (let i = 0; i < 10000; i++) {
-        backpropagation._forwardPass(net, inputs, labelMap);
+        backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
         backpropagation._backwardPass(net, labelMap);
         backpropagation._adjustWeights(net, 0.5);
         }
-        const finalLoss = backpropagation._forwardPass(net, inputs, labelMap);
+        const finalLoss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
         expect(finalLoss).toBeLessThan(0.00001);
     });
 
     test("Optimise Network", () => {
-        const backpropagation = new Backpropagation(groundTruth, LossFunction.CATEGORICAL_CROSS_ENTROPY, 0.5);
+        const backpropagation = new Backpropagation(groundTruth);
         const net = loadFruitCatchingNetwork();
-        const startingLoss = backpropagation.optimiseWeights(net, statement);
-        let finalLoss = 0;
-        for (let i = 0; i < 1000; i++) {
-        finalLoss = backpropagation.optimiseWeights(net, statement);
-        }
-        backpropagation.optimiseWeights(net, statement);
+        const learningRate = 0.1;
+        const startingLoss = backpropagation.stochasticGradientDescent(net, statement, 1, learningRate);
+        const finalLoss = backpropagation.stochasticGradientDescent(net, statement, 100, learningRate);
         expect(finalLoss).toBeLessThan(startingLoss);
     });
 

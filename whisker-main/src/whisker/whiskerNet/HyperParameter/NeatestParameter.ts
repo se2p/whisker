@@ -22,6 +22,25 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
      */
     private _randomFraction: number;
 
+
+    // Stochastic Gradient Descent.
+
+    /**
+     * Whether to use SGD for network training.
+     */
+    private _applyStochasticGradientDescent = false;
+
+    /**
+     * The learning rate for gradient descent.
+     */
+    private _learningRate = 0.1
+
+    /**
+     * The number of training iterations.
+     */
+    private _epochs = 100;
+
+
     get switchTargetCount(): number {
         return this._switchTargetCount;
     }
@@ -53,6 +72,30 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
 
     set randomFraction(value: number) {
         this._randomFraction = value;
+    }
+
+    get applyStochasticGradientDescent(): boolean {
+        return this._applyStochasticGradientDescent;
+    }
+
+    set applyStochasticGradientDescent(value: boolean) {
+        this._applyStochasticGradientDescent = value;
+    }
+
+    get learningRate(): number {
+        return this._learningRate;
+    }
+
+    set learningRate(value: number) {
+        this._learningRate = value;
+    }
+
+    get epochs(): number {
+        return this._epochs;
+    }
+
+    set epochs(value: number) {
+        this._epochs = value;
     }
 }
 
