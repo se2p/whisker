@@ -8,6 +8,7 @@ import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMut
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 import {generateInputs} from "../Algorithms/NEAT.test";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 
 describe("NeuroevolutionUtil Tests", () => {
 
@@ -49,7 +50,7 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
-        events = [new MouseMoveEvent()];
+        events = [new MouseMoveEvent(), new WaitEvent()];
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
     });
@@ -57,9 +58,6 @@ describe("NeuroevolutionUtil Tests", () => {
     test("Test Softmax calculation", () => {
         const chromosome = generator.get();
         chromosome.activateNetwork(chromosome.generateDummyInputs());
-        for (let i = 0; i < 10; i++) {
-            chromosome.activateNetwork(genInputs);
-        }
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);
         expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toBe(1);
     });

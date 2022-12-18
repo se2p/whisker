@@ -25,7 +25,7 @@ import {EventAndParameters, ExecutionTrace} from "../../../../src/whisker/testca
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 import {generateInputs} from "../Algorithms/NEAT.test";
 
-describe('Test NetworkChromosome', () => {
+describe('Test NeatChromosome', () => {
     let mutationOp: NeatMutation;
     let mutationConfig: Record<string, (string | number)>;
     let crossoverConfig: Record<string, (string | number)>;
@@ -47,8 +47,8 @@ describe('Test NetworkChromosome', () => {
         layer.set(0, [iNode1, iNode2, iNode3, bias]);
 
         // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
-        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SOFTMAX);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SOFTMAX);
         const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
         const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
         layer.set(1, [classificationNode1, classificationNode2, regressionNode1, regressionNode2]);

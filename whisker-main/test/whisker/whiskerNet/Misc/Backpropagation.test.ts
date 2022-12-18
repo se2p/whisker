@@ -6,7 +6,6 @@ import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/Bia
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
-import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
@@ -14,6 +13,7 @@ import {FeatureGroup, InputFeatures} from "../../../../src/whisker/whiskerNet/Mi
 import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkLoader";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 
 
 const generateNetwork = () => {
@@ -22,7 +22,7 @@ const generateNetwork = () => {
     const bias = new BiasNode(2);
     const h1 = new HiddenNode(1, 0.5, ActivationFunction.SIGMOID);
     const h2 = new HiddenNode(2, 0.5, ActivationFunction.SIGMOID);
-    const o1 = new ClassificationNode(5, new WaitEvent(), ActivationFunction.SIGMOID);
+    const o1 = new ClassificationNode(5, new KeyPressEvent('j'), ActivationFunction.SIGMOID);
     const o2 = new ClassificationNode(6, new KeyPressEvent("k"), ActivationFunction.SIGMOID);
     const layer: NetworkLayer = new Map<number, NodeGene[]>();
     layer.set(0, [i1, i2, bias]);
@@ -95,7 +95,7 @@ describe('Test Backpropagation', () => {
         const net = generateNetwork();
         const inputs = generateInputs();
         const labelMap = new Map<string, number>();
-        labelMap.set("WaitEvent", 0.01);
+        labelMap.set("KeyPressEvent-j", 0.01);
         labelMap.set("KeyPressEvent-k", 0.99);
         const loss = backpropagation._forwardPass(net, inputs, labelMap);
         expect(Math.round(loss * 1000) / 1000).toEqual(0.298);
@@ -105,7 +105,7 @@ describe('Test Backpropagation', () => {
         const net = generateNetwork();
         const inputs = generateInputs();
         const labelMap = new Map<string, number>();
-        labelMap.set("WaitEvent", 0.01);
+        labelMap.set("KeyPressEvent-j", 0.01);
         labelMap.set("KeyPressEvent-k", 0.99);
         const startLoss = backpropagation._forwardPass(net, inputs, labelMap);
         backpropagation._backwardPass(net, labelMap);

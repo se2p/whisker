@@ -17,10 +17,10 @@ export class ConnectionGene {
     private _weight: number;
 
     /**
-     * The delta value defined by the backward pass and used to update the weight of the connection based on the given
-     * learning rate.
+     * The gradient value defined by the backward pass and used to update the weight of the connection based on the
+     * given learning rate.
      */
-    private _delta = 0;
+    private _gradient = 0;
 
     /**
      * Defines whether the connection is enabled.
@@ -128,12 +128,12 @@ export class ConnectionGene {
         this._weight = value;
     }
 
-    get delta(): number {
-        return this._delta;
+    get gradient(): number {
+        return this._gradient;
     }
 
-    set delta(value: number) {
-        this._delta = value;
+    set gradient(value: number) {
+        this._gradient = value;
     }
 
     get isEnabled(): boolean {

@@ -36,9 +36,9 @@ export abstract class NodeGene {
     private _activationCount = 0;
 
     /**
-     * The delta value obtained from backpropagation.
+     * The gradient value for this node obtained from the backpropagation procedure.
      */
-    private _delta = 0;
+    private _gradient = 0;
 
     /**
      * True if the node has been activated at least once within one network activation.
@@ -181,12 +181,12 @@ export abstract class NodeGene {
         this._lastActivationValue = value;
     }
 
-    get delta(): number {
-        return this._delta;
+    get gradient(): number {
+        return this._gradient;
     }
 
-    set delta(value: number) {
-        this._delta = value;
+    set gradient(value: number) {
+        this._gradient = value;
     }
 
     get traversed(): boolean {

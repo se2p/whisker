@@ -48,8 +48,13 @@ export class ClassificationNode extends NodeGene {
      * @returns softmax activation based on the given node value and the supplied denominator.
      */
     activate(softMaxDenominator:number): number {
-        return Math.exp(this.nodeValue) / softMaxDenominator;
-        //return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
+        switch (this.activationFunction){
+            case ActivationFunction.SIGMOID:
+                return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
+            case ActivationFunction.SOFTMAX:
+            default:
+                return Math.exp(this.nodeValue) / softMaxDenominator;
+        }
     }
 
     /**
