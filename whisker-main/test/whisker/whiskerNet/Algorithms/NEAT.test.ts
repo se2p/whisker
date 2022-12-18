@@ -117,6 +117,7 @@ describe('Test NEAT', () => {
         });
     });
 
+    /* Exclude due to long runtime
     test("XOR Sanity Test", () => {
         const inputMap = new Map<string, Map<string, number>>();
         inputMap.set("Test", new Map<string, number>());
@@ -214,4 +215,6 @@ describe('Test NEAT', () => {
             throw new Error("Method not implemented");
         }
     }
+
+     */
 });
