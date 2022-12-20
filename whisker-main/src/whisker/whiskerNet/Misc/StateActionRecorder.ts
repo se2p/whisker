@@ -4,11 +4,12 @@ import {InputExtraction, InputFeatures} from "./InputExtraction";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {Container} from "../../utils/Container";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
-import {ScratchEventExtractor} from "../../testcase/ScratchEventExtractor";
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
 import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
+import VMWrapper from "../../../vm/vm-wrapper";
+import {WaitEvent} from "../../testcase/events/WaitEvent";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -16,15 +17,17 @@ export class StateActionRecorder extends EventEmitter {
 
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
-    private readonly _eventExtractor: ScratchEventExtractor;
+    private readonly _eventExtractor: NeuroevolutionScratchEventExtractor;
     private _statements: string[];
 
     private readonly _fullRecordings: Recording[];
-    private _actionRecords: StateActionRecord[]
+    private _actionRecords: ActionRecord[]
 
     private _isRecording: boolean;
     private _lastActionStep: number;
     private _checkForWaitInterval: number;
+    private _pressedKeys: Map<string, number>;
+    private _stateAtAction: Map<string, InputFeatures>;
 
     private readonly _onRunStart: () => void;
     private readonly _onRunStop: () => void;
@@ -36,10 +39,13 @@ export class StateActionRecorder extends EventEmitter {
         this._scratch = scratch;
         this._vm = scratch.vm;
         Container.vm = this._vm;
+        Container.vmWrapper = new VMWrapper(this._vm, this._scratch);
 
         this._actionRecords = [];
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm);
         this._fullRecordings = [];
+        this._pressedKeys = new Map<string, number>();
+        this._stateAtAction = new Map<string, InputFeatures>();
 
         this._onRunStart = this.onGreenFlag.bind(this);
         this._onRunStop = this.onStopAll.bind(this);
@@ -55,7 +61,6 @@ export class StateActionRecorder extends EventEmitter {
         this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this._vm.on(Runtime.Project_STOP_ALL, this._onRunStop);
         this._isRecording = true;
-
         this._statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(this._vm, []).map(stat => stat.getNodeId());
     }
 
@@ -66,6 +71,7 @@ export class StateActionRecorder extends EventEmitter {
         this._scratch.on(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
         this._checkForWaitInterval = window.setInterval(this._checkForWaitCallBack, 500);
         this._lastActionStep = this._getCurrentStepCount();
+        this._stateAtAction.set("WaitEvent", InputExtraction.extractFeatures(this._vm));
     }
 
     /**
@@ -97,10 +103,9 @@ export class StateActionRecorder extends EventEmitter {
     private handleInput(actionData): void {
         const event = this._inputToEvent(actionData);
         if (event) {
-            const action = event.stringIdentifier();
-            const availableActions = this._eventExtractor.extractEvents(this._vm).map(event => event.stringIdentifier());
-            if (availableActions.indexOf(action) >= 0) {
-                this._recordAction(action);
+            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
+            if (availableActions.indexOf(event.stringIdentifier()) >= 0) {
+                this._recordAction(event);
             }
         }
     }
@@ -130,7 +135,21 @@ export class StateActionRecorder extends EventEmitter {
     private _handleKeyBoardInput(actionData): ScratchEvent {
         if (actionData.isDown && actionData.key !== null) {
             const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(actionData.key);
-            return new KeyPressEvent(key);
+
+            // Long key-presses account for multiple isDown actions leading to the replacement of the first press.
+            // Hence, we only set a counter if the key is not registered yet.
+            if(!this._pressedKeys.has(key)) {
+                this._pressedKeys.set(key, this._getCurrentStepCount());
+                this._stateAtAction.set(new KeyPressEvent(key).stringIdentifier(), InputExtraction.extractFeatures(this._vm));
+            }
+        }
+        else if (!actionData.isDown && actionData.key !== null) {
+            const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(actionData.key);
+            if(this._pressedKeys.has(key)) {
+                const steps = this._getCurrentStepCount() - this._pressedKeys.get(key);
+                this._pressedKeys.delete(key);
+                return new KeyPressEvent(key, steps);
+            }
         }
         return undefined;
     }
@@ -141,23 +160,41 @@ export class StateActionRecorder extends EventEmitter {
     private _checkForWait(): void {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         const acceleration = Container.acceleration != undefined ? Container.acceleration : 1;
-        if (stepsSinceLastAction > (50 / acceleration)) {
-            this._recordAction('WaitEvent');
+        const waitThreshold = 20;
+        if (stepsSinceLastAction > (waitThreshold / acceleration)) {
+            this._recordAction(new WaitEvent(waitThreshold));
         }
     }
 
     /**
      * Records an observed action including the corresponding state by adding it to the actionRecords array.
-     * @param action the observed action.
+     * @param event the observed action/event.
      */
-    private _recordAction(action: string): void {
-        const stateFeatures = InputExtraction.extractFeatures(this._vm);
-        const record: StateActionRecord = {
+    private _recordAction(event: ScratchEvent): void {
+        const action = event.stringIdentifier();
+        const stateFeatures = this._stateAtAction.get(action);
+        console.log("StateFeatures:  ", stateFeatures);
+        console.log("StateAction: ", this._stateAtAction);
+        let parameter: Record<string, number>;
+        switch (event.toJSON()['type']){
+            case "WaitEvent":
+                parameter = {'Duration': event.getParameters().pop()};     // Wait duration
+                break;
+            case "KeyPressEvent":
+                parameter = {'Steps': event.getParameters()[1]};
+        }
+
+        const record: ActionRecord = {
             state: stateFeatures,
-            action: action
+            action: action,
+            actionParameter: parameter
         };
         this._actionRecords.push(record);
         this._lastActionStep = this._getCurrentStepCount();
+
+        // Fetch state BEFORE we add a wait since the state at this point is the interesting one,
+        // NOT when the action gets added.
+        this._stateAtAction.set("WaitEvent", InputExtraction.extractFeatures(this._vm));
     }
 
     /**
@@ -169,7 +206,7 @@ export class StateActionRecorder extends EventEmitter {
     }
 
     /**
-     * Adds an {@link StateActionRecord} to the global {@link Recording}.
+     * Adds an {@link ActionRecord} to the global {@link Recording}.
      */
     public addStateActionRecordsToRecording(id: number, coverage: Set<string>): void {
         const filteredCoverage = [...coverage.values()].filter(value => this._statements.includes(value));
@@ -193,7 +230,7 @@ export class StateActionRecorder extends EventEmitter {
         // Remove empty records.
         const json = {};
         for (let i = 0; i < this._fullRecordings.length; i++) {
-            const stateActionRecords = {};
+            const stateActionRecordJSON = {};
             for (const stateActionRecord of this._fullRecordings[i].recordings) {
                 const spriteFeatures = {};
                 for (const [sprite, features] of stateActionRecord.state.entries()) {
@@ -203,13 +240,15 @@ export class StateActionRecorder extends EventEmitter {
                     }
                     spriteFeatures[sprite] = featureJSON;
                 }
-                if (!(stateActionRecord.action in stateActionRecords)) {
-                    stateActionRecords[stateActionRecord.action] = [];
-                }
-                stateActionRecords[stateActionRecord.action].push(spriteFeatures);
+                const keyNumber = Object.keys(stateActionRecordJSON).length;
+                stateActionRecordJSON[keyNumber] = {
+                    'features': spriteFeatures,
+                    'action': stateActionRecord.action,
+                    'parameter': stateActionRecord.actionParameter
+                };
             }
-            stateActionRecords['coverage'] = this._fullRecordings[i].coverage;
-            json[Object.keys(json).length] = stateActionRecords;
+            stateActionRecordJSON['coverage'] = this._fullRecordings[i].coverage;
+            json[Object.keys(json).length] = stateActionRecordJSON;
         }
         return json;
     }
@@ -218,15 +257,16 @@ export class StateActionRecorder extends EventEmitter {
 /**
  * StateAction record of a single action.
  */
-export interface StateActionRecord {
+export interface ActionRecord {
     state: InputFeatures
     action: string
+    actionParameter?: Record<string, number>
 }
 
 /**
- * Collection of {@link StateActionRecord}s of an entire recording procedure combined with the achieved coverage.
+ * Collection of {@link ActionRecord}s of an entire recording procedure combined with the achieved coverage.
  */
 export interface Recording {
-    recordings: StateActionRecord[],
+    recordings: ActionRecord[],
     coverage: string[]
 }
