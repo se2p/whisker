@@ -16,7 +16,7 @@
         "inputConnectionMethod": "fullyHidden"
     },
     "stochasticGradientDescent": {
-        "learningRate": 0.1,
+        "learningRate": 0.01,
         "epochs": 100
     },
     "crossover": {

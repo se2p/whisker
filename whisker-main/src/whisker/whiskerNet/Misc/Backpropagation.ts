@@ -14,11 +14,11 @@ export class Backpropagation {
     private static derivatives = {
         // Loss functions
         "SQUARED_ERROR": (prediction: number, label: number): number => -(label - prediction),
-        "CATEGORICAL_CROSS_ENTROPY": (prediction): number => -1 / prediction,
+        "CATEGORICAL_CROSS_ENTROPY": (prediction: number, label: number): number => prediction === 0 ? 0 : -label / prediction,
 
         // Activation functions
         "SIGMOID": (prediction: number): number => prediction * (1 - prediction),
-        "SOFTMAX": (prediction: number): number => prediction * (1 - prediction),
+        "SOFTMAX": (predictionLabelNode: number, predictionGradientNode: number): number => predictionLabelNode === predictionGradientNode ? predictionLabelNode * (1 - predictionLabelNode) : -predictionLabelNode * predictionGradientNode,
         "RELU": (prediction: number): number => prediction > 0 ? 1 : 0,
         "NONE": (prediction: number): number => prediction >= 0 ? 1 : -1
     } as const;
@@ -39,7 +39,10 @@ export class Backpropagation {
                                      learningRate: number): number {
         let totalLoss = 0;
         const dataSamples = this._organiseData(statement);
-        if(dataSamples.size <= 0){
+        let bestEpochLoss = Number.MAX_VALUE;
+        let bestWeights = network.connections.map(conn => conn.weight);
+        let bestEpoch = 0;
+        if (dataSamples.size <= 0) {
             console.log(`No data for statement: ${statement}`);
             return NaN;
         }
@@ -66,13 +69,24 @@ export class Backpropagation {
 
                 // Compute the loss -> gradients of weights -> update the weights.
                 epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.CATEGORICAL_CROSS_ENTROPY);
-                this._backwardPass(network, labelVector);
+                this._backwardPass(network, labelVector, label);
                 this._adjustWeights(network, learningRate);
             }
-            if(i% 20 === 0) {
+            if (i % 20 === 0) {
                 Container.debugLog(`Loss of epoch ${i}: ${epochLoss / [...dataSamples.keys()].length}`);
             }
             totalLoss = epochLoss / [...dataSamples.keys()].length;
+
+            if (totalLoss < bestEpochLoss) {
+                bestWeights = network.connections.map(conn => conn.weight);
+                bestEpochLoss = totalLoss;
+                bestEpoch = i;
+            }
+
+        }
+        console.log(`Setting weights to best epoch ${bestEpochLoss} of iteration ${bestEpoch}`);
+        for (let j = 0; j < network.connections.length; j++) {
+            network.connections[j].weight = bestWeights[j];
         }
         return totalLoss;
     }
@@ -87,7 +101,7 @@ export class Backpropagation {
      * @returns the loss for the given inputs and labels.
      */
     public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>,
-                        lossFunction:LossFunction): number {
+                        lossFunction: LossFunction): number {
         network.activateNetwork(inputs);
         const predictions = new Map<string, number>();
         for (const [event, node] of network.classificationNodes.entries()) {
@@ -128,20 +142,22 @@ export class Backpropagation {
      * @returns categorical cross entropy of the prediction and label vector.
      */
     private _categoricalCrossEntropyLoss(prediction: Map<string, number>, labels: Map<string, number>): number {
-        for (const [event, trueValue] of labels.entries()) {
-            if (trueValue === 1) {
-                return -Math.log(prediction.get(event));
-            }
+        let loss = 0;
+        for (const [event, predictionValue] of prediction.entries()) {
+            const trueValue = labels.get(event);
+            const node_error = trueValue * Math.log(predictionValue);
+            loss += node_error;
         }
-        throw "Prediction does not contain required target node in categorical cross entropy";
+        return -loss;
     }
 
     /**
      * The backward pass calculates the gradient for each connection weight based on the previously executed forward pass.
      * @param network the network for whose connections the gradient should be calculated.
-     * @param labels the true label represented as a map mapping an event id to the corresponding label value.
+     * @param labelVector the true label represented as a map mapping an event id to the corresponding label value.
+     * @param trueLabel the name of the true label.
      */
-    public _backwardPass(network: NetworkChromosome, labels: Map<string, number>): void {
+    public _backwardPass(network: NetworkChromosome, labelVector: Map<string, number>, trueLabel: string): void {
         // Traverse the network from the back to the front
         const layersInverted = [...network.layers.keys()].sort((a, b) => b - a);
         for (const layer of layersInverted) {
@@ -149,10 +165,11 @@ export class Backpropagation {
             // Calculate the gradients and update the weights for each connection going into the output layer.
             if (layer == 1) {
                 const classificationNodes: ClassificationNode[] = [...network.layers.get(layer)].filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+                const labelNodeActivation = classificationNodes.find(node => node.event.stringIdentifier() == trueLabel).activationValue;
                 for (const node of classificationNodes) {
-                    const label = labels.get(node.event.stringIdentifier());
-                    node.gradient = this._getOutputNodeGradient(node.activationValue, label,
-                        ActivationFunction.SIGMOID, LossFunction.SQUARED_ERROR);
+                    const label = labelVector.get(node.event.stringIdentifier());
+                    node.gradient = this._getOutputNodeGradient(node.activationValue, label, labelNodeActivation,
+                        ActivationFunction.SOFTMAX, LossFunction.CATEGORICAL_CROSS_ENTROPY);
                     for (const connection of node.incomingConnections) {
                         connection.gradient = node.gradient * connection.source.activationValue;
                     }
@@ -255,16 +272,17 @@ export class Backpropagation {
      * Calculates the gradient for an output node based on the contributed loss of the node and its activation function.
      * @param prediction activation value of the node.
      * @param label true target label of the node.
+     * @param labelNodeActivation the activation function of the node corresponding to the true label.
      * @param activationFunction the used activation function whose derivative will be calculated.
      * @param loss the used loss function whose derivative will be calculated.
      */
-    private _getOutputNodeGradient(prediction: number, label: number, activationFunction: ActivationFunction,
-                                   loss: LossFunction): number {
+    private _getOutputNodeGradient(prediction: number, label: number, labelNodeActivation: number,
+                                   activationFunction: ActivationFunction, loss: LossFunction): number {
         const lossName = LossFunction[loss];
         const activationFunctionName = ActivationFunction[activationFunction];
         const loss_derivative: (prediction: number, label: number) => number = Backpropagation.derivatives[lossName];
-        const activationDerivative: (prediction: number) => number = Backpropagation.derivatives[activationFunctionName];
-        return loss_derivative(prediction, label) * activationDerivative(prediction);
+        const activationDerivative: (prediction: number, labelNodeActivation: number) => number = Backpropagation.derivatives[activationFunctionName];
+        return loss_derivative(prediction, label) * activationDerivative(prediction, labelNodeActivation);
     }
 
 }
