@@ -77,13 +77,11 @@ describe('Test Backpropagation', () => {
     test("Check number of recordings after initialisation", () => {
         let featureRecordings = 0;
         for (const recordings of Object.values(groundTruth)) {
-            for (const [key, featureArray] of Object.entries(recordings)) {
-                if (key === 'coverage' || !recordings['coverage'].includes(statement)) {
+                if (!recordings['coverage'].includes(statement)) {
                     continue;
                 }
-                featureRecordings += featureArray.length;
+                featureRecordings += Object.keys(recordings).length - 1;
             }
-        }
         expect([...backpropagation._organiseData(statement).keys()].length).toBe(featureRecordings);
     });
 

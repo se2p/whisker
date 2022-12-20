@@ -39,6 +39,10 @@ export class Backpropagation {
                                      learningRate: number): number {
         let totalLoss = 0;
         const dataSamples = this._organiseData(statement);
+        if(dataSamples.size <= 0){
+            console.log(`No data for statement: ${statement}`);
+            return NaN;
+        }
         for (let i = 0; i < epochs; i++) {
             // Shuffle the training data
             let epochLoss = 0;
@@ -50,7 +54,7 @@ export class Backpropagation {
                 const inputFeatures = this._objectToInputFeature(input);
 
                 // One-hot encoded label vector.
-                const label = dataSamples.get(input);
+                const label = dataSamples.get(input).event;
                 const labelVector = new Map<string, number>();
                 for (const event of network.classificationNodes.keys()) {
                     if (event === label) {
@@ -211,24 +215,20 @@ export class Backpropagation {
     public _organiseData(statement: string): StateActionRecord {
         // We may have multiple recordings within one file. Collect all recordings that covered the current target in
         // an action to feature map.
-        const actionStateRecord = new Map<string, objectInputFeatures[]>();
+        const stateActionRecord: StateActionRecord = new Map<objectInputFeatures, eventAndParameters>();
         for (const recording of Object.values(this._groundTruth)) {
-            for (const [action, feature] of Object.entries(recording)) {
-                if (action === 'coverage' || !(recording['coverage'].includes(statement))) {
-                    continue;
-                }
-                if (!actionStateRecord.has(action)) {
-                    actionStateRecord.set(action, []);
-                }
-                actionStateRecord.get(action).push(...feature);
+            if (!(recording['coverage'].includes(statement))) {
+                continue;
             }
-        }
+            for (const record of Object.values(recording)) {
+                const eventAndParams: eventAndParameters = {
+                    event: record['action'],
+                    parameter: record['parameter']
+                };
 
-        // Restructure the data to obtain a state action record.
-        const stateActionRecord: StateActionRecord = new Map<objectInputFeatures, string>();
-        for (const [action, featureArray] of actionStateRecord) {
-            for (const feature of featureArray) {
-                stateActionRecord.set(feature, action);
+                if (record['features'] !== undefined) {
+                    stateActionRecord.set(record['features'], eventAndParams);
+                }
             }
         }
         return stateActionRecord;
@@ -272,10 +272,14 @@ export class Backpropagation {
 /**
  * Maps training data in the form of inputFeatures to the corresponding event string.
  */
-export type StateActionRecord = Map<objectInputFeatures, string>;
+export type StateActionRecord = Map<objectInputFeatures, eventAndParameters>;
 
 export type objectInputFeatures = Record<string, Record<string, number>>;
 
+export interface eventAndParameters {
+    event: string,
+    parameter: Record<string, number>
+}
 
 export enum LossFunction {
     SQUARED_ERROR,

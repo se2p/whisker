@@ -27,7 +27,7 @@ export class StateActionRecorder extends EventEmitter {
     private _lastActionStep: number;
     private _checkForWaitInterval: number;
     private _pressedKeys: Map<string, number>;
-    private _stateAtAction: Map<string, InputFeatures>;
+    private readonly _stateAtAction: Map<string, InputFeatures>;
 
     private readonly _onRunStart: () => void;
     private readonly _onRunStop: () => void;
@@ -160,7 +160,7 @@ export class StateActionRecorder extends EventEmitter {
     private _checkForWait(): void {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         const acceleration = Container.acceleration != undefined ? Container.acceleration : 1;
-        const waitThreshold = 20;
+        const waitThreshold = 50;
         if (stepsSinceLastAction > (waitThreshold / acceleration)) {
             this._recordAction(new WaitEvent(waitThreshold));
         }
@@ -173,8 +173,6 @@ export class StateActionRecorder extends EventEmitter {
     private _recordAction(event: ScratchEvent): void {
         const action = event.stringIdentifier();
         const stateFeatures = this._stateAtAction.get(action);
-        console.log("StateFeatures:  ", stateFeatures);
-        console.log("StateAction: ", this._stateAtAction);
         let parameter: Record<string, number>;
         switch (event.toJSON()['type']){
             case "WaitEvent":
