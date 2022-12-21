@@ -14,11 +14,9 @@ export class Backpropagation {
     private static derivatives = {
         // Loss functions
         "SQUARED_ERROR": (prediction: number, label: number): number => -(label - prediction),
-        "CATEGORICAL_CROSS_ENTROPY": (prediction: number, label: number): number => prediction === 0 ? 0 : -label / prediction,
 
         // Activation functions
         "SIGMOID": (prediction: number): number => prediction * (1 - prediction),
-        "SOFTMAX": (predictionLabelNode: number, predictionGradientNode: number): number => predictionLabelNode === predictionGradientNode ? predictionLabelNode * (1 - predictionLabelNode) : -predictionLabelNode * predictionGradientNode,
         "RELU": (prediction: number): number => prediction > 0 ? 1 : 0,
         "NONE": (prediction: number): number => prediction >= 0 ? 1 : -1
     } as const;
@@ -69,7 +67,7 @@ export class Backpropagation {
 
                 // Compute the loss -> gradients of weights -> update the weights.
                 epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.CATEGORICAL_CROSS_ENTROPY);
-                this._backwardPass(network, labelVector, label);
+                this._backwardPass(network, labelVector);
                 this._adjustWeights(network, learningRate);
             }
             if (i % 20 === 0) {
@@ -88,7 +86,7 @@ export class Backpropagation {
         for (let j = 0; j < network.connections.length; j++) {
             network.connections[j].weight = bestWeights[j];
         }
-        return totalLoss;
+        return bestEpochLoss;
     }
 
     /**
@@ -155,22 +153,21 @@ export class Backpropagation {
      * The backward pass calculates the gradient for each connection weight based on the previously executed forward pass.
      * @param network the network for whose connections the gradient should be calculated.
      * @param labelVector the true label represented as a map mapping an event id to the corresponding label value.
-     * @param trueLabel the name of the true label.
      */
-    public _backwardPass(network: NetworkChromosome, labelVector: Map<string, number>, trueLabel: string): void {
+    public _backwardPass(network: NetworkChromosome, labelVector: Map<string, number>): void {
         // Traverse the network from the back to the front
         const layersInverted = [...network.layers.keys()].sort((a, b) => b - a);
         for (const layer of layersInverted) {
 
             // Calculate the gradients and update the weights for each connection going into the output layer.
             if (layer == 1) {
-                const classificationNodes: ClassificationNode[] = [...network.layers.get(layer)].filter(node => node instanceof ClassificationNode) as ClassificationNode[];
-                const labelNodeActivation = classificationNodes.find(node => node.event.stringIdentifier() == trueLabel).activationValue;
-                for (const node of classificationNodes) {
-                    const label = labelVector.get(node.event.stringIdentifier());
-                    node.gradient = node.activationValue - label;
-                    for (const connection of node.incomingConnections) {
-                        connection.gradient = node.gradient * connection.source.activationValue;
+                for(const node of network.layers.get(layer)) {
+                    if (node instanceof ClassificationNode) {
+                        const label = labelVector.get(node.event.stringIdentifier());
+                        node.gradient = node.activationValue - label;
+                        for (const connection of node.incomingConnections) {
+                            connection.gradient = node.gradient * connection.source.activationValue;
+                        }
                     }
                 }
             }
@@ -202,7 +199,7 @@ export class Backpropagation {
         const weights = [];
         for (const connection of network.connections) {
             if (connection.source === node) {
-                gradients.push(connection.source.gradient);
+                gradients.push(connection.target.gradient);
                 weights.push(connection.weight);
             }
         }
