@@ -109,7 +109,7 @@ export class NetworkExecutor {
             network.activateNetwork(spriteFeatures);
 
             // Select the next event and execute it if we did not decide to wait
-            if (this._waitDuration == 0) {
+            if (this._waitDuration <= 0) {
                 let eventIndex = this.selectNextEvent(network, isGreenFlag);
                 let nextEvent = this.availableEvents[eventIndex];
 

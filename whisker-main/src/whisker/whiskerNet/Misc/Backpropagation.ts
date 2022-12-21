@@ -168,8 +168,7 @@ export class Backpropagation {
                 const labelNodeActivation = classificationNodes.find(node => node.event.stringIdentifier() == trueLabel).activationValue;
                 for (const node of classificationNodes) {
                     const label = labelVector.get(node.event.stringIdentifier());
-                    node.gradient = this._getOutputNodeGradient(node.activationValue, label, labelNodeActivation,
-                        ActivationFunction.SOFTMAX, LossFunction.CATEGORICAL_CROSS_ENTROPY);
+                    node.gradient = node.activationValue - label;
                     for (const connection of node.incomingConnections) {
                         connection.gradient = node.gradient * connection.source.activationValue;
                     }

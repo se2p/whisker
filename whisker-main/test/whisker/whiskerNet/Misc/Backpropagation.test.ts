@@ -15,6 +15,7 @@ import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/Nod
 import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkLoader";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {Container} from "../../../../src/whisker/utils/Container";
+import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
 
 
 const generateNetwork = () => {
@@ -23,8 +24,8 @@ const generateNetwork = () => {
     const bias = new BiasNode(2);
     const h1 = new HiddenNode(1, 0.5, ActivationFunction.SIGMOID);
     const h2 = new HiddenNode(2, 0.5, ActivationFunction.SIGMOID);
-    const o1 = new ClassificationNode(5, new KeyPressEvent('j'), ActivationFunction.SIGMOID);
-    const o2 = new ClassificationNode(6, new KeyPressEvent("k"), ActivationFunction.SIGMOID);
+    const o1 = new RegressionNode(5, new WaitEvent(),"Duration", ActivationFunction.SIGMOID);
+    const o2 = new RegressionNode(6, new KeyPressEvent("k"), "Steps", ActivationFunction.SIGMOID);
     const layer: NetworkLayer = new Map<number, NodeGene[]>();
     layer.set(0, [i1, i2, bias]);
     layer.set(0.5, [h1, h2]);
