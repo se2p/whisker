@@ -23,8 +23,8 @@ const generateNetwork = () => {
     const bias = new BiasNode(2);
     const h1 = new HiddenNode(1, 0.5, ActivationFunction.SIGMOID);
     const h2 = new HiddenNode(2, 0.5, ActivationFunction.SIGMOID);
-    const o1 = new RegressionNode(5, new WaitEvent(),"Duration", ActivationFunction.SIGMOID);
-    const o2 = new RegressionNode(6, new KeyPressEvent("k"), "Steps", ActivationFunction.SIGMOID);
+    const o1 = new RegressionNode(5, new WaitEvent(), "Duration");
+    const o2 = new RegressionNode(6, new KeyPressEvent("k"), "Steps");
     const layer: NetworkLayer = new Map<number, NodeGene[]>();
     layer.set(0, [i1, i2, bias]);
     layer.set(0.5, [h1, h2]);
@@ -77,11 +77,11 @@ describe('Test Backpropagation', () => {
     test("Check number of recordings after initialisation", () => {
         let featureRecordings = 0;
         for (const recordings of Object.values(groundTruth)) {
-                if (!recordings['coverage'].includes(statement)) {
-                    continue;
-                }
-                featureRecordings += Object.keys(recordings).length - 1;
+            if (!recordings['coverage'].includes(statement)) {
+                continue;
             }
+            featureRecordings += Object.keys(recordings).length - 1;
+        }
         expect([...backpropagation._organiseData(statement).keys()].length).toBe(featureRecordings);
     });
 
@@ -90,8 +90,8 @@ describe('Test Backpropagation', () => {
         const net = generateNetwork();
         const inputs = generateInputs();
         const labelMap = new Map<string, number>();
-        labelMap.set("KeyPressEvent-j", 0.01);
-        labelMap.set("KeyPressEvent-k", 0.99);
+        labelMap.set("WaitEvent-Duration", 0.01);
+        labelMap.set("KeyPressEvent-k-Steps", 0.99);
         const loss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
         expect(Math.round(loss * 1000) / 1000).toEqual(0.298);
     });
@@ -101,19 +101,19 @@ describe('Test Backpropagation', () => {
         const net = generateNetwork();
         const inputs = generateInputs();
         const labelMap = new Map<string, number>();
-        labelMap.set("KeyPressEvent-j", 0.01);
-        labelMap.set("KeyPressEvent-k", 0.99);
+        labelMap.set("WaitEvent-Duration", 0.01);
+        labelMap.set("KeyPressEvent-k-Steps", 0.99);
         const startLoss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
         backpropagation._backwardPass(net, labelMap);
         backpropagation._adjustWeights(net, 0.5);
-        const connectionWeights = net.connections.filter(connection => !(connection.source instanceof BiasNode)).map(conn => Math.round(conn.weight * 1000)/ 1000).sort();
+        const connectionWeights = net.connections.filter(connection => !(connection.source instanceof BiasNode)).map(conn => Math.round(conn.weight * 1000) / 1000).sort();
         expect(Math.round(startLoss * 1000) / 1000).toEqual(0.298);
-        expect(connectionWeights.sort()).toEqual([0.15, 0.2, 0.25,0.3, 0.359, 0.409, 0.511, 0.561]);
+        expect(connectionWeights.sort()).toEqual([0.15, 0.2, 0.25, 0.3, 0.359, 0.409, 0.511, 0.561]);
 
         for (let i = 0; i < 10000; i++) {
-        backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
+            backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
             backpropagation._backwardPass(net, labelMap);
-        backpropagation._adjustWeights(net, 0.5);
+            backpropagation._adjustWeights(net, 0.5);
         }
         const finalLoss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
         expect(finalLoss).toBeLessThan(0.00001);
@@ -122,9 +122,9 @@ describe('Test Backpropagation', () => {
     test("Optimise Network", () => {
         const backpropagation = new Backpropagation(groundTruth);
         const net = loadFruitCatchingNetwork();
-        const learningRate = 0.001;
+        const learningRate = 0.01;
         const startingLoss = backpropagation.stochasticGradientDescent(net, statement, 1, learningRate);
-        const finalLoss = backpropagation.stochasticGradientDescent(net, statement, 1000, learningRate);
+        const finalLoss = backpropagation.stochasticGradientDescent(net, statement, 100, learningRate);
         expect(finalLoss).toBeLessThan(startingLoss);
     });
 

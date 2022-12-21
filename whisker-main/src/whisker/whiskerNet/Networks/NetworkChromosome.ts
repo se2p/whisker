@@ -224,7 +224,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 for (const parameter of event.getSearchParameterNames()) {
                     const featureID = `R:${event.stringIdentifier()}-${parameter}`;
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
-                    const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
+                    const regressionNode = new RegressionNode(id, event, parameter);
                     this._layers.get(1).push(regressionNode);
                     this.connectNodeToInputLayer([regressionNode], this._inputConnectionMethod);
                 }
@@ -341,8 +341,8 @@ export abstract class NetworkChromosome extends Chromosome {
                     this._calculateNodeValue(node);
                 }
 
-                // Check if at least one classification node has received an input. If not we have a defect network.
-                if ([...this.classificationNodes.values()].every(node => !node.activatedFlag)){
+                // Check if at least one output node has received an input. If not we have a defect network.
+                if (this.layers.get(1).every(node => !node.activatedFlag)){
                     Container.debugLog("Defect network!");
                     return false;
                 }
@@ -362,7 +362,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     if (node instanceof ClassificationNode){
                         node.activationValue = node.activate(denominator);
                     }
-                    else{
+                    else if (node instanceof RegressionNode){
                         node.activationValue = node.activate();
                     }
                 }

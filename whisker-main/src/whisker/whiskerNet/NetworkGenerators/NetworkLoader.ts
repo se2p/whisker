@@ -71,7 +71,7 @@ export class NetworkLoader {
                         const activationFunction = savedNode['aF'] as string;
                         const depth = savedNode['d'] as number;
                         const hiddenNode = new HiddenNode(savedNode['id'], depth, ActivationFunction[activationFunction]);
-                        if(!layers.has(depth)){
+                        if (!layers.has(depth)) {
                             layers.set(depth, []);
                         }
                         layers.get(depth).push(hiddenNode);
@@ -89,8 +89,7 @@ export class NetworkLoader {
                     case "R": {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
                         if (event) {
-                            const regressionNode = new RegressionNode(savedNode['id'], event, savedNode['eventP'],
-                                ActivationFunction.NONE);
+                            const regressionNode = new RegressionNode(savedNode['id'], event, savedNode['eventP']);
                             layers.get(1).push(regressionNode);
                         }
                         break;
@@ -126,7 +125,7 @@ export class NetworkLoader {
             }
 
             // Load the saved AT if there is one.
-            if(savedNetwork['AT'] !== undefined) {
+            if (savedNetwork['AT'] !== undefined) {
                 NetworkLoader.loadActivationTrace(network, savedNetwork['AT']);
             }
             networks.push(network);
@@ -140,7 +139,7 @@ export class NetworkLoader {
      * @param savedTrace the trace that should be loaded into the network.
      */
     private static loadActivationTrace(network: NeatChromosome,
-                                      savedTrace: Record<string, Record<string, number[]>>): void {
+                                       savedTrace: Record<string, Record<string, number[]>>): void {
         network.referenceActivationTrace = new ActivationTrace(network.getAllNodes().filter(node => node.type === NodeType.HIDDEN));
         for (const [step, nodeTraces] of Object.entries(savedTrace)) {
             const nodeStepTraces = new Map<string, number[]>();

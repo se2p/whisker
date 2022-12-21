@@ -6,6 +6,7 @@ import {NodeGene} from "../NetworkComponents/NodeGene";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
+import * as net from "net";
 
 export class Backpropagation {
 
@@ -18,7 +19,7 @@ export class Backpropagation {
 
         // Activation functions
         "SIGMOID": (prediction: number): number => prediction * (1 - prediction),
-        "TANH": (prediction:number):number => 1 - Math.pow(Math.tanh(prediction),2),
+        "TANH": (prediction: number): number => 1 - Math.pow(Math.tanh(prediction), 2),
         "RELU": (prediction: number): number => prediction > 0 ? 1 : 0,
         "NONE": (prediction: number): number => prediction >= 0 ? 1 : -1
     } as const;
@@ -57,18 +58,22 @@ export class Backpropagation {
                 const inputFeatures = this._objectToInputFeature(input);
 
                 // One-hot encoded label vector.
-                const label = dataSamples.get(input).event;
+                const eventLabel = dataSamples.get(input).event;
                 const labelVector = new Map<string, number>();
                 for (const event of network.classificationNodes.keys()) {
-                    if (event === label) {
+                    if (event === eventLabel) {
                         labelVector.set(event, 1);
                     } else {
                         labelVector.set(event, 0);
                     }
                 }
+                for (const regNode of network.regressionNodes.get(eventLabel)) {
+                    const trueValue = dataSamples.get(input).parameter[regNode.eventParameter];
+                    labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
+                }
 
                 // Compute the loss -> gradients of weights -> update the weights.
-                epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.CATEGORICAL_CROSS_ENTROPY);
+                epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
                 this._backwardPass(network, labelVector);
                 this._adjustWeights(network, learningRate);
             }
@@ -103,20 +108,29 @@ export class Backpropagation {
     public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>,
                         lossFunction: LossFunction): number {
         network.activateNetwork(inputs);
-        const predictions = new Map<string, number>();
-        for (const [event, node] of network.classificationNodes.entries()) {
-            predictions.set(event, node.activationValue);
-        }
         let loss = 0;
         switch (lossFunction) {
-            case LossFunction.SQUARED_ERROR:
-                loss = this._squaredLoss(predictions, labelVector);
+            case LossFunction.SQUARED_ERROR: {
+                const regressionNodes = network.layers.get(1).filter(node => node instanceof RegressionNode) as RegressionNode[];
+                loss = this._squaredLoss(regressionNodes, labelVector);
                 break;
-            case LossFunction.CATEGORICAL_CROSS_ENTROPY:
-                loss = this._categoricalCrossEntropyLoss(predictions, labelVector);
+            }
+            case LossFunction.CATEGORICAL_CROSS_ENTROPY: {
+                const classificationNodes = network.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+                loss = this._categoricalCrossEntropyLoss(classificationNodes, labelVector);
                 break;
+            }
+            case LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED:{
+                const regressionNodes = network.layers.get(1).filter(node => node instanceof RegressionNode) as RegressionNode[];
+                const classificationNodes = network.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+                loss = this._squaredLoss(regressionNodes, labelVector) + this._categoricalCrossEntropyLoss(classificationNodes, labelVector);
+            }
         }
         return loss;
+    }
+
+    private _regressionNodeIdentifier(node: RegressionNode) {
+        return `${node.event.stringIdentifier()}-${node.eventParameter}`;
     }
 
     /**
@@ -125,12 +139,14 @@ export class Backpropagation {
      * @param labels the true target labels
      * @returns squared loss of the prediction and label vector.
      */
-    private _squaredLoss(prediction: Map<string, number>, labels: Map<string, number>): number {
+    private _squaredLoss(nodes: RegressionNode[], labels: Map<string, number>): number {
         let loss = 0;
-        for (const [event, predictionValue] of prediction.entries()) {
-            const trueValue = labels.get(event);
-            const node_error = 0.5 * Math.pow(trueValue - predictionValue, 2);
-            loss += node_error;
+        for (const node of nodes) {
+            const trueValue = labels.get(this._regressionNodeIdentifier(node));
+            if (!isNaN(trueValue)) {
+                const node_error = 0.5 * Math.pow(trueValue - node.activationValue, 2);
+                loss += node_error;
+            }
         }
         return loss;
     }
@@ -141,11 +157,11 @@ export class Backpropagation {
      * @param labels the true target labels
      * @returns categorical cross entropy of the prediction and label vector.
      */
-    private _categoricalCrossEntropyLoss(prediction: Map<string, number>, labels: Map<string, number>): number {
+    private _categoricalCrossEntropyLoss(nodes: ClassificationNode[], labels: Map<string, number>): number {
         let loss = 0;
-        for (const [event, predictionValue] of prediction.entries()) {
-            const trueValue = labels.get(event);
-            const node_error = trueValue * Math.log(predictionValue);
+        for (const node of nodes) {
+            const trueValue = labels.get(node.event.stringIdentifier());
+            const node_error = trueValue * Math.log(node.activationValue);
             loss += node_error;
         }
         return -loss;
@@ -163,13 +179,28 @@ export class Backpropagation {
 
             // Calculate the gradients and update the weights for each connection going into the output layer.
             if (layer == 1) {
-                for(const node of network.layers.get(layer)) {
+                for (const node of network.layers.get(layer)) {
+
+                    // Calculate gradient for classification nodes.
                     if (node instanceof ClassificationNode) {
                         const label = labelVector.get(node.event.stringIdentifier());
-                        node.gradient = node.activationValue - label;
-                        for (const connection of node.incomingConnections) {
-                            connection.gradient = node.gradient * connection.source.activationValue;
+                        node.gradient = node.activationValue - label;  // Combined gradient for SoftMax + Cross-Entropy
+                    }
+
+                    // Calculate gradient for regression nodes.
+                    if (node instanceof RegressionNode) {
+                        const label = labelVector.get(`${node.event.stringIdentifier()}-${node.eventParameter}`);
+                        if(label === undefined){
+                            continue;
                         }
+                        const lossGradient = Backpropagation.derivatives[LossFunction[LossFunction.SQUARED_ERROR]];
+                        const activationFunctionGradient = Backpropagation.derivatives[ActivationFunction[node.activationFunction]];
+                        node.gradient = lossGradient(node.activationValue, label) * activationFunctionGradient(node.activationValue);
+                    }
+
+                    // Calculate gradients for incoming connections of output nodes.
+                    for (const connection of node.incomingConnections) {
+                        connection.gradient = node.gradient * connection.source.activationValue;
                     }
                 }
             }
@@ -261,24 +292,6 @@ export class Backpropagation {
         }
         return inputFeatures;
     }
-
-    /**
-     * Calculates the gradient for an output node based on the contributed loss of the node and its activation function.
-     * @param prediction activation value of the node.
-     * @param label true target label of the node.
-     * @param labelNodeActivation the activation function of the node corresponding to the true label.
-     * @param activationFunction the used activation function whose derivative will be calculated.
-     * @param loss the used loss function whose derivative will be calculated.
-     */
-    private _getOutputNodeGradient(prediction: number, label: number, labelNodeActivation: number,
-                                   activationFunction: ActivationFunction, loss: LossFunction): number {
-        const lossName = LossFunction[loss];
-        const activationFunctionName = ActivationFunction[activationFunction];
-        const loss_derivative: (prediction: number, label: number) => number = Backpropagation.derivatives[lossName];
-        const activationDerivative: (prediction: number, labelNodeActivation: number) => number = Backpropagation.derivatives[activationFunctionName];
-        return loss_derivative(prediction, label) * activationDerivative(prediction, labelNodeActivation);
-    }
-
 }
 
 /**

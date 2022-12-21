@@ -10,6 +10,8 @@ import Runtime from "scratch-vm/src/engine/runtime";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
+import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
+import config from "../../../../../config/Neuroevolution/neatestBackprop.json";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -40,6 +42,7 @@ export class StateActionRecorder extends EventEmitter {
         this._vm = scratch.vm;
         Container.vm = this._vm;
         Container.vmWrapper = new VMWrapper(this._vm, this._scratch);
+        Container.config = new WhiskerSearchConfiguration(config as any);
 
         this._actionRecords = [];
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm);
@@ -138,14 +141,13 @@ export class StateActionRecorder extends EventEmitter {
 
             // Long key-presses account for multiple isDown actions leading to the replacement of the first press.
             // Hence, we only set a counter if the key is not registered yet.
-            if(!this._pressedKeys.has(key)) {
+            if (!this._pressedKeys.has(key)) {
                 this._pressedKeys.set(key, this._getCurrentStepCount());
                 this._stateAtAction.set(new KeyPressEvent(key).stringIdentifier(), InputExtraction.extractFeatures(this._vm));
             }
-        }
-        else if (!actionData.isDown && actionData.key !== null) {
+        } else if (!actionData.isDown && actionData.key !== null) {
             const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(actionData.key);
-            if(this._pressedKeys.has(key)) {
+            if (this._pressedKeys.has(key)) {
                 const steps = this._getCurrentStepCount() - this._pressedKeys.get(key);
                 this._pressedKeys.delete(key);
                 return new KeyPressEvent(key, steps);
@@ -174,12 +176,13 @@ export class StateActionRecorder extends EventEmitter {
         const action = event.stringIdentifier();
         const stateFeatures = this._stateAtAction.get(action);
         let parameter: Record<string, number>;
-        switch (event.toJSON()['type']){
+        switch (event.toJSON()['type']) {
             case "WaitEvent":
-                parameter = {'Duration': event.getParameters().pop()};     // Wait duration
+                parameter = {'Duration': Math.min(event.getParameters().pop() / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
                 break;
             case "KeyPressEvent":
-                parameter = {'Steps': event.getParameters()[1]};
+                parameter = {'Steps': Math.min(event.getParameters()[1] / Container.config.getPressDurationUpperBound(), 1)};
+                break;
         }
 
         const record: ActionRecord = {

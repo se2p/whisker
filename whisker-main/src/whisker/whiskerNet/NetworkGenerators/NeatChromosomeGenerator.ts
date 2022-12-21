@@ -97,7 +97,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         for (const event of parameterizedEvents) {
             for (const parameter of event.getSearchParameterNames()) {
                 // Create the regression Node and add it to the NodeList
-                const regressionNode = new RegressionNode(nodeId++, event, parameter, ActivationFunction.NONE);
+                const regressionNode = new RegressionNode(nodeId++, event, parameter);
                 layer.get(1).push(regressionNode);
             }
         }

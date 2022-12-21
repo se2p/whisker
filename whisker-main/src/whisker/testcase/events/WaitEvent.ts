@@ -70,7 +70,7 @@ export class WaitEvent extends ScratchEvent {
                 this._steps = args[0];
                 break;
             case "activation":
-                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getWaitStepUpperBound());
+                this._steps = args[0] * Container.config.getWaitStepUpperBound();
                 break;
         }
 

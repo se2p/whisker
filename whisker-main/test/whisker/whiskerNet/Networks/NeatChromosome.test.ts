@@ -49,8 +49,8 @@ describe('Test NeatChromosome', () => {
         // Create classification and Regression Output Nodes
         const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SOFTMAX);
         const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SOFTMAX);
-        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
+        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration");
+        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X");
         layer.set(1, [classificationNode1, classificationNode2, regressionNode1, regressionNode2]);
 
         // Create Connections

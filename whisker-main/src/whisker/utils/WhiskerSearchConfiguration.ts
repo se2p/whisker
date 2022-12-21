@@ -630,8 +630,8 @@ export class WhiskerSearchConfiguration {
     }
 
     public getPressDurationUpperBound(): number {
-        if (this._config['durations']['pressDurationUpperBound']) {
-            return this._config['durations']['pressDurationUpperBound'];
+        if (this._config['durations']['pressDuration']) {
+            return this._config['durations']['pressDuration'];
         } else {
             return 10;
         }
