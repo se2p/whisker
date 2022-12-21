@@ -5,6 +5,7 @@ import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
+import {RegressionNode} from "../NetworkComponents/RegressionNode";
 
 export class Backpropagation {
 
@@ -176,13 +177,11 @@ export class Backpropagation {
             // Calculate the gradients and update the weights for each connection going into hidden layers.
             else if (layer > 0) {
                 for (const node of network.layers.get(layer)) {
-                    const gradientPairs = this._outgoingGradientWeightPairs(network, node);
-                    for (let i = 0; i < gradientPairs[0].length; i++) {
-                        node.gradient += gradientPairs[0][i] * gradientPairs[1][i];
-                    }
+                    const incomingGradient = this._incomingGradientHiddenNode(network, node);
+                    const activationDerivative = Backpropagation.derivatives[ActivationFunction[node.activationFunction]];
+                    node.gradient = incomingGradient * activationDerivative(node.activationValue);
                     for (const connection of node.incomingConnections) {
-                        const activationDerivative = Backpropagation.derivatives[ActivationFunction[node.activationFunction]];
-                        connection.gradient = node.gradient * connection.source.activationValue * activationDerivative(node.activationValue);
+                        connection.gradient = node.gradient * connection.source.activationValue;
                     }
                 }
             }
@@ -190,22 +189,20 @@ export class Backpropagation {
     }
 
     /**
-     * Calculates the gradients of outgoing connections, which is required to calculate the gradient for the supplied
-     * node.
+     * Summarises the gradients of nodes from outgoing connections. Based on this summation we can then calculate the
+     * gradient of the source node.
      * @param network the network hosting the node for which the gradient should be calculated.
      * @param node the node whose gradient is to be determined.
      */
-    private _outgoingGradientWeightPairs(network: NetworkChromosome, node: NodeGene): [number[], number[]] {
-        const gradients = [];
-        const weights = [];
+    private _incomingGradientHiddenNode(network: NetworkChromosome, node: NodeGene): number {
+        let gradient = 0;
         for (const connection of network.connections) {
             if (connection.source === node) {
-                gradients.push(connection.target.gradient);
-                weights.push(connection.weight);
+                gradient += (connection.target.gradient * connection.weight);
             }
         }
 
-        return [gradients, weights];
+        return gradient;
     }
 
     /**

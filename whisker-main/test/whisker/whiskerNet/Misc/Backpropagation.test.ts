@@ -124,7 +124,7 @@ describe('Test Backpropagation', () => {
         const net = loadFruitCatchingNetwork();
         const learningRate = 0.001;
         const startingLoss = backpropagation.stochasticGradientDescent(net, statement, 1, learningRate);
-        const finalLoss = backpropagation.stochasticGradientDescent(net, statement, 100, learningRate);
+        const finalLoss = backpropagation.stochasticGradientDescent(net, statement, 1000, learningRate);
         expect(finalLoss).toBeLessThan(startingLoss);
     });
 
