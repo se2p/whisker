@@ -10,8 +10,6 @@ import Runtime from "scratch-vm/src/engine/runtime";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
-import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
-import config from "../../../../../config/Neuroevolution/neatestBackprop.json";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -42,7 +40,6 @@ export class StateActionRecorder extends EventEmitter {
         this._vm = scratch.vm;
         Container.vm = this._vm;
         Container.vmWrapper = new VMWrapper(this._vm, this._scratch);
-        Container.config = new WhiskerSearchConfiguration(config as any);
 
         this._actionRecords = [];
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm);
@@ -178,10 +175,10 @@ export class StateActionRecorder extends EventEmitter {
         let parameter: Record<string, number>;
         switch (event.toJSON()['type']) {
             case "WaitEvent":
-                parameter = {'Duration': Math.min(event.getParameters().pop() / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
+                parameter = {'Duration': Math.min(event.getParameters().pop() / 100, 1)};     // Wait duration
                 break;
             case "KeyPressEvent":
-                parameter = {'Steps': Math.min(event.getParameters()[1] / Container.config.getPressDurationUpperBound(), 1)};
+                parameter = {'Steps': Math.min(event.getParameters()[1] / 30, 1)};
                 break;
         }
 

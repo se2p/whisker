@@ -6,7 +6,6 @@ import {NodeGene} from "../NetworkComponents/NodeGene";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
-import * as net from "net";
 
 export class Backpropagation {
 
@@ -135,13 +134,13 @@ export class Backpropagation {
 
     /**
      * Calculates the squared loss function.
-     * @param prediction the predictions made by the network.
-     * @param labels the true target labels
+     * @param regNodes the regression nodes on which the squared loss will be computed.
+     * @param labels the true target labels.
      * @returns squared loss of the prediction and label vector.
      */
-    private _squaredLoss(nodes: RegressionNode[], labels: Map<string, number>): number {
+    private _squaredLoss(regNodes: RegressionNode[], labels: Map<string, number>): number {
         let loss = 0;
-        for (const node of nodes) {
+        for (const node of regNodes) {
             const trueValue = labels.get(this._regressionNodeIdentifier(node));
             if (!isNaN(trueValue)) {
                 const node_error = 0.5 * Math.pow(trueValue - node.activationValue, 2);
@@ -153,13 +152,13 @@ export class Backpropagation {
 
     /**
      * Calculates the categorical cross entropy loss function.
-     * @param prediction the predictions made by the network.
-     * @param labels the true target labels
+     * @param classNodes the classification nodes on which the cross entropy loss will be computed.
+     * @param labels the true target labels.
      * @returns categorical cross entropy of the prediction and label vector.
      */
-    private _categoricalCrossEntropyLoss(nodes: ClassificationNode[], labels: Map<string, number>): number {
+    private _categoricalCrossEntropyLoss(classNodes: ClassificationNode[], labels: Map<string, number>): number {
         let loss = 0;
-        for (const node of nodes) {
+        for (const node of classNodes) {
             const trueValue = labels.get(node.event.stringIdentifier());
             const node_error = trueValue * Math.log(node.activationValue);
             loss += node_error;
