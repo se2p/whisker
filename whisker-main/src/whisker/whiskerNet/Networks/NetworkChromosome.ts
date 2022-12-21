@@ -15,6 +15,7 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import assert from "assert";
 import {InputFeatures} from "../Misc/InputExtraction";
+import {Container} from "../../utils/Container";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -342,6 +343,7 @@ export abstract class NetworkChromosome extends Chromosome {
 
                 // Check if at least one classification node has received an input. If not we have a defect network.
                 if ([...this.classificationNodes.values()].every(node => !node.activatedFlag)){
+                    Container.debugLog("Defect network!");
                     return false;
                 }
 

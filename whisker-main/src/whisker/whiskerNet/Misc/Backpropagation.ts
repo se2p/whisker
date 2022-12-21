@@ -17,6 +17,7 @@ export class Backpropagation {
 
         // Activation functions
         "SIGMOID": (prediction: number): number => prediction * (1 - prediction),
+        "TANH": (prediction:number):number => 1 - Math.pow(Math.tanh(prediction),2),
         "RELU": (prediction: number): number => prediction > 0 ? 1 : 0,
         "NONE": (prediction: number): number => prediction >= 0 ? 1 : -1
     } as const;
