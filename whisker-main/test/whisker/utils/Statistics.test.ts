@@ -71,7 +71,7 @@ describe("Distributions", () => {
     });
 
     test("Silverman's rule of thumb", () => {
-        expect(Statistics.silvermanRuleOfThumb([0,1,2,3,4,5]).toFixed(1)).toBe("1.1");
+        expect(Statistics.silvermanRuleOfThumb([0, 1, 2, 3, 4, 5]).toFixed(1)).toBe("1.1");
     });
 
     test("Levenshtein Distance Trivial Case", () => {
@@ -120,5 +120,42 @@ describe("Distributions", () => {
         const rightSide = Statistics.levenshteinDistanceEventsChunks(source, third, 2) +
             Statistics.levenshteinDistanceEventsChunks(target, third, 2);
         expect(leftSide).toBeLessThanOrEqual(rightSide);
+    });
+});
+
+describe('Levenshtein distance', () => {
+    it('is 0 for equal words', () => {
+        const word = 'hello, world!';
+        expect(Statistics.levenshteinDistance(word, word)).toStrictEqual(0);
+    });
+
+    it('is the difference in length for a string and a substring', () => {
+        const s1 = 'substring';
+        const s2 = 'string';
+        expect(Statistics.levenshteinDistance(s1, s2)).toStrictEqual(s1.length - s2.length);
+    });
+
+    it('is the length of the non-empty string given the empty string', () => {
+        const s1 = '';
+        const s2 = 'Ski Ba Bop Ba Dop Bop';
+        expect(Statistics.levenshteinDistance(s1, s2)).toStrictEqual(s2.length);
+    });
+
+    it('at most the length of the longer string', () => {
+        const s1 = 'yes';
+        const s2 = 'no';
+        expect(Statistics.levenshteinDistance(s1, s2)).toStrictEqual(Math.max(s1.length, s2.length));
+    });
+
+    const table = [
+        [1, "test", "jest"],      // replace
+        [4, "test", "nesting"],   // replace + insert
+        [1, "test", "est"],       // delete
+        [2, "test", "est."],      // delete + insert
+        [3, "test", "tbd"],       // delete + replace
+    ];
+
+    it.each(table)('is %d for "%s" and "%s"', (len: number, s1: string, s2: string) => {
+        expect(Statistics.levenshteinDistance(s1, s2)).toStrictEqual(len);
     });
 });
