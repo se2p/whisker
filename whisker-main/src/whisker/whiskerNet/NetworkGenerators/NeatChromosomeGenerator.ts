@@ -41,18 +41,15 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      */
     get():
         NeatChromosome {
-        NodeGene._uIDCounter = 0;
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, []);
 
         // Create the Input Nodes
         let numNodes = 0;
         for (const [sprite, featureMap] of this._inputSpace) {
-            const spriteFeatureMap = new Map<string, InputNode>();
             for (const feature of featureMap.keys()) {
                 const featureInputNode = new InputNode(numNodes++, sprite, feature);
                 layer.get(0).push(featureInputNode);
-                spriteFeatureMap.set(feature, featureInputNode);
             }
         }
 

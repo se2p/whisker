@@ -6,11 +6,6 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 export abstract class NodeGene {
 
     /**
-     * Counter used for assigning the unique identifier.
-     */
-    public static _uIDCounter = 0;
-
-    /**
      * The value of a node, which is defined to be the sum of all incoming connections.
      */
     private _nodeValue = 0;
