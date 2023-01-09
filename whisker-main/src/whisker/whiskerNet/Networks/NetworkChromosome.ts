@@ -313,7 +313,6 @@ export abstract class NetworkChromosome extends Chromosome {
     public activateNetwork(inputs: InputFeatures): boolean {
         // Generate the network and load the inputs
         const layers = [...this._layers.keys()].sort();
-        this.setUpInputs(inputs);
 
         for(const layer of layers){
             const nodes = this.layers.get(layer);

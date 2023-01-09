@@ -178,7 +178,7 @@ export class StateActionRecorder extends EventEmitter {
                 parameter = {'Duration': Math.min(event.getParameters().pop() / 100, 1)};     // Wait duration
                 break;
             case "KeyPressEvent":
-                parameter = {'Steps': Math.min(event.getParameters()[1] / 30, 1)};
+                parameter = {'Steps': Math.min(event.getParameters()[1] / 30, 1)};      // Press duration
                 break;
         }
 
