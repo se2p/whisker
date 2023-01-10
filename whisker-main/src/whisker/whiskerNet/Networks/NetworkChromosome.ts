@@ -603,11 +603,11 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons.length;
     }
 
-    override async getFitnessAsync(fitnessFunction: FitnessFunction<this>): Promise<number> {
+    override async getFitness(fitnessFunction: FitnessFunction<this>): Promise<number> {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {
-            const fitness = await fitnessFunction.getFitnessAsync(this);
+            const fitness = await fitnessFunction.getFitness(this);
             this._fitnessCache.set(fitnessFunction, fitness);
             return fitness;
         }

@@ -102,7 +102,7 @@ export class TestExecutor {
             if (testChromosome.targetFitness) {
                 // Enforce the recalculation of the fitness value by deleting the cached value.
                 testChromosome.deleteCacheEntry(testChromosome.targetFitness);
-                const currentFitness = await testChromosome.getFitnessAsync(testChromosome.targetFitness);
+                const currentFitness = await testChromosome.getFitness(testChromosome.targetFitness);
                 if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
                     testChromosome.lastImprovedFitnessCodon = numCodon;
@@ -113,9 +113,9 @@ export class TestExecutor {
             if (TestExecutor.doRequireLastImprovedCodon(testChromosome)) {
                 // If this was the first executed event we have to set up the reference fitnessValues first.
                 if (!fitnessValues) {
-                    fitnessValues = await TestExecutor.calculateUncoveredFitnessValuesAsync(testChromosome);
+                    fitnessValues = await TestExecutor.calculateUncoveredFitnessValues(testChromosome);
                 }
-                const newFitnessValues = await TestExecutor.calculateUncoveredFitnessValuesAsync(testChromosome);
+                const newFitnessValues = await TestExecutor.calculateUncoveredFitnessValues(testChromosome);
 
 
                 // Check if the latest execution of the given event has improved overall fitness.
@@ -343,15 +343,15 @@ export class TestExecutor {
      * @param chromosome the chromosome carrying the block trace used to calculate the fitness values.
      * @return number[] representing the array of fitness values for uncovered blocks only.
      */
-    public static async calculateUncoveredFitnessValuesAsync(chromosome: TestChromosome): Promise<number[]> {
+    public static async calculateUncoveredFitnessValues(chromosome: TestChromosome): Promise<number[]> {
         // Flush fitnessCache to enforce a recalculation of the fitness values.
         chromosome.flushFitnessCache();
         const fitnessValues: number[] = [];
         for (const fitnessFunction of Container.statementFitnessFunctions) {
             // Only look at fitnessValues originating from uncovered blocks.
-            const fitness = await chromosome.getFitnessAsync(fitnessFunction);
-            if (!await fitnessFunction.isOptimalAsync(fitness)) {
-                fitnessValues.push(await chromosome.getFitnessAsync(fitnessFunction));
+            const fitness = await chromosome.getFitness(fitnessFunction);
+            if (!await fitnessFunction.isOptimal(fitness)) {
+                fitnessValues.push(await chromosome.getFitness(fitnessFunction));
             }
         }
         return fitnessValues;

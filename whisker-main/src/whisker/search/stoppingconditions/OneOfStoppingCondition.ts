@@ -44,13 +44,13 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
         return flattened;
     }
 
-    async isFinishedAsync(algorithm: SearchAlgorithm<T>): Promise<boolean> {
-        const promises = this._conditions.map((condition) => condition.isFinishedAsync(algorithm));
+    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
+        const promises = this._conditions.map((condition) => condition.isFinished(algorithm));
         const finished = await Promise.all(promises);
         return finished.includes(true);
     }
 
-    async getProgressAsync(algorithm: SearchAlgorithm<T>): Promise<number> {
+    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
         /*
          * We distinguish between stopping conditions tracking (A) how close we are to fulfilling an objective, vs.
          * (B) how much resources have been used. For measuring search progress, we are interested only in (B).
@@ -61,7 +61,7 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
          */
         const resourceConditions = this.conditions.filter(condition =>
             !(condition instanceof OptimalSolutionStoppingCondition));
-        const progress = await Promise.all(resourceConditions.map(async (condition) => await condition.getProgressAsync(algorithm)));
+        const progress = await Promise.all(resourceConditions.map(async (condition) => await condition.getProgress(algorithm)));
         return Math.max(...progress);
     }
 

@@ -87,7 +87,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         const testChromosomes = Arrays.distinct(this._archive.values());
         const testSuite = await this.getTestSuite(testChromosomes);
         await this.collectStatistics(testSuite);
-        const summary = await this.summarizeSolutionAsync(this._archive);
+        const summary = await this.summarizeSolution(this._archive);
         return new WhiskerTestListWithSummary(testSuite, summary);
     }
 
@@ -101,8 +101,8 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             this._fitnessFunctions.forEach(async (fitnessFunction, fitnessKey) => {
                 const bestLength = this._archive.has(fitnessKey) ?
                     this._archive.get(fitnessKey).getLength() : Number.MAX_SAFE_INTEGER;
-                const candidateFitness = await candidate.getFitnessAsync(fitnessFunction);
-                if (await fitnessFunction.isOptimalAsync(candidateFitness) && candidate.getLength() < bestLength) {
+                const candidateFitness = await candidate.getFitness(fitnessFunction);
+                if (await fitnessFunction.isOptimal(candidateFitness) && candidate.getLength() < bestLength) {
                     if(!this._archive.has(fitnessKey)){
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                     }

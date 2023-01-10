@@ -24,7 +24,7 @@ import {SearchAlgorithm} from "../SearchAlgorithm";
 
 export class OptimalSolutionStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    async isFinishedAsync(algorithm: SearchAlgorithm<T>): Promise<boolean> {
+    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
         const solutions = algorithm.getCurrentSolution();
         const fitnessFunctions = algorithm.getFitnessFunctions();
 
@@ -32,8 +32,8 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
         for (const f of fitnessFunctions) {
             let fitnessCovered = false;
             for (const solution of solutions) {
-                const fitness = await solution.getFitnessAsync(f);
-                if (await f.isOptimalAsync(fitness)) {
+                const fitness = await solution.getFitness(f);
+                if (await f.isOptimal(fitness)) {
                     fitnessCovered = true;
                     break;
                 }
@@ -47,13 +47,13 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
         return true;
     }
 
-    async getProgressAsync(algorithm: SearchAlgorithm<T>): Promise<number> {
+    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
         let coveredFitnessFunctions = 0;
         let totalFitnessFunctions = 0;
         for (const f of algorithm.getFitnessFunctions()) {
             totalFitnessFunctions++;
             for (const solution of algorithm.getCurrentSolution()) {
-                if (await f.isOptimalAsync(await solution.getFitnessAsync(f))) {
+                if (await f.isOptimal(await solution.getFitness(f))) {
                     coveredFitnessFunctions++;
                     break;
                 }

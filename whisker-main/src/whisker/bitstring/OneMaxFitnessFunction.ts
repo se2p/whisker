@@ -31,7 +31,7 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
         this._size = size;
     }
 
-    async getFitnessAsync (chromosome: BitstringChromosome): Promise<number> {
+    async getFitness (chromosome: BitstringChromosome): Promise<number> {
         const bits = chromosome.getGenes();
         Preconditions.checkListSize(bits, this._size);
 
@@ -70,11 +70,11 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
         return value1 - value2;
     }
 
-    async isOptimalAsync(fitnessValue: number): Promise<boolean> {
+    async isOptimal(fitnessValue: number): Promise<boolean> {
         return fitnessValue == this._size;
     }
 
-    async isCoveredAsync(chromosome: BitstringChromosome): Promise<boolean> {
-        return this.isOptimalAsync(await this.getFitnessAsync(chromosome));
+    async isCovered(chromosome: BitstringChromosome): Promise<boolean> {
+        return this.isOptimal(await this.getFitness(chromosome));
     }
 }

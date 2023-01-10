@@ -77,7 +77,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private async generateInitialPopulation(): Promise<C[]> {
         const population: C[] = [];
         for (let i = 0; i < this._properties.populationSize; i++) {
-            if (await this._stoppingCondition.isFinishedAsync(this)) {
+            if (await this._stoppingCondition.isFinished(this)) {
                 break;
             }
             population.push(this._chromosomeGenerator.get());
@@ -105,16 +105,16 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         await this.evaluatePopulation(population);
 
         // Evaluate population, but before check if we have already reached our stopping condition
-        if (!(await this._stoppingCondition.isFinishedAsync(this))) {
+        if (!(await this._stoppingCondition.isFinished(this))) {
             await this.evaluateAndSortPopulation(population);
         }
 
-        while (!(await this._stoppingCondition.isFinishedAsync(this))) {
+        while (!(await this._stoppingCondition.isFinished(this))) {
             Container.debugLog(`Iteration ${this._iterations}, best fitness: ${this._bestFitness}`);
 
             const nextGeneration = await this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
-            if (!(await this._stoppingCondition.isFinishedAsync(this))) {
+            if (!(await this._stoppingCondition.isFinished(this))) {
                 await this.evaluateAndSortPopulation(nextGeneration);
             }
             population = nextGeneration;
@@ -136,7 +136,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         const fitnesses = new Map();
 
         for (const c of population) {
-            const fitness = await c.getFitnessAsync(this._fitnessFunction);
+            const fitness = await c.getFitness(this._fitnessFunction);
             fitnesses.set(c, fitness);
         }
 
@@ -152,12 +152,12 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         });
 
         const bestIndividual = population[population.length - 1];
-        const candidateFitness = await bestIndividual.getFitnessAsync(this._fitnessFunction);
+        const candidateFitness = await bestIndividual.getFitness(this._fitnessFunction);
         const candidateLength = bestIndividual.getLength();
         if (this._bestIndividuals.length === 0 ||
             this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||
             (this._fitnessFunction.compare(candidateFitness, this._bestFitness) == 0 && candidateLength < this._bestLength)) {
-            if (await this._fitnessFunction.isOptimalAsync(candidateFitness) && !await this._fitnessFunction.isOptimalAsync(this._bestFitness)) {
+            if (await this._fitnessFunction.isOptimal(candidateFitness) && !await this._fitnessFunction.isOptimal(this._bestFitness)) {
                 StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
                     (this._iterations + 1) * this._properties.populationSize;
@@ -188,8 +188,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         offspringPopulation.push(parentPopulation[parentPopulation.length - 1]);
 
         while (offspringPopulation.length < parentPopulation.length) {
-            const parent1 = await this._selectionOperator.applyAsync(parentPopulation, this._fitnessFunction);
-            const parent2 = await this._selectionOperator.applyAsync(parentPopulation, this._fitnessFunction);
+            const parent1 = await this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
+            const parent2 = await this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
 
             let child1 = parent1;
             let child2 = parent2;

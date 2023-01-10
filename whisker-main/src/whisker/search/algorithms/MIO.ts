@@ -198,14 +198,14 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     async findSolution(): Promise<Map<number, C>> {
         await this.setStartValues();
         let mutationCounter = 0;
-        while (!(await this._stoppingCondition.isFinishedAsync(this))) {
+        while (!(await this._stoppingCondition.isFinished(this))) {
             // If we have no chromosomes saved in our archives so far or if randomness tells us to do so
             // we sample a new chromosome randomly.
             if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0) || this._maxMutationCount === 0
                 || this._random.nextDouble() < this._randomSelectionProbability) {
                 const chromosome = this._chromosomeGenerator.get();
                 await chromosome.evaluate(true);
-                await this.updateArchiveAsync(chromosome);
+                await this.updateArchive(chromosome);
                 // By chance apply LocalSearch to the randomly generated chromosome.
                 await this.applyLocalSearch(chromosome);
                 this._iterations++;
@@ -229,7 +229,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     const mutant = chromosome.mutate();
                     mutant.targetFitness = fitnessFunction;
                     await mutant.evaluate(true);
-                    await this.updateArchiveAsync(mutant);
+                    await this.updateArchive(mutant);
                     const mutantHeuristic = await this.getHeuristicValue(mutant, fitnessFunctionKey);
                     // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome
                     if (currentHeuristic <= mutantHeuristic) {
@@ -261,9 +261,9 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
      */
     private async applyLocalSearch(chromosome: C): Promise<void> {
         for (const localSearch of this._localSearchOperators) {
-            if (await localSearch.isApplicableAsync(chromosome) && this._random.nextDouble() < localSearch.getProbability()) {
+            if (await localSearch.isApplicable(chromosome) && this._random.nextDouble() < localSearch.getProbability()) {
                 const modifiedChromosome = await localSearch.apply(chromosome);
-                await this.updateArchiveAsync(modifiedChromosome);
+                await this.updateArchive(modifiedChromosome);
             }
         }
     }
@@ -317,7 +317,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
      *
      * @param chromosome The candidate chromosome for the archive.
      */
-    protected override async updateArchiveAsync(chromosome: C): Promise<void> {
+    protected override async updateArchive(chromosome: C): Promise<void> {
         await this.updateCoveredArchive(chromosome);
         await this.updateUncoveredArchive(chromosome);
     }
@@ -486,7 +486,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
      */
     private async getHeuristicValue(chromosome: C, fitnessFunctionKey: number): Promise<number> {
         const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-        const fitnessValue = await chromosome.getFitnessAsync(fitnessFunction);
+        const fitnessValue = await chromosome.getFitness(fitnessFunction);
         return this._heuristicFunctions.get(fitnessFunctionKey)(fitnessValue);
     }
 
@@ -507,7 +507,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
      * of the search and the start of the focused phase.
      */
     private async updateParameters(): Promise<void> {
-        const overallProgress = await this._stoppingCondition.getProgressAsync(this);
+        const overallProgress = await this._stoppingCondition.getProgress(this);
         const progressUntilFocusedPhaseReached = overallProgress / this._properties.startOfFocusedPhase;
         const previousMaxArchiveSize = this._maxArchiveSize;
         if (progressUntilFocusedPhaseReached >= 1) {

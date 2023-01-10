@@ -117,14 +117,14 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     protected async evaluatePopulation(population: C[]): Promise<void> {
         for (const chromosome of population) {
             // Check if we have already reached our stopping condition; if so stop and exclude non-executed chromosomes
-            if (await this._stoppingCondition.isFinishedAsync(this)) {
+            if (await this._stoppingCondition.isFinished(this)) {
                 const executedChromosomes = population.filter(chromosome => (chromosome as unknown as TestChromosome).trace);
                 Arrays.clear(population);
                 population.push(...executedChromosomes);
                 return;
             } else {
                 await chromosome.evaluate(true);
-                await this.updateArchiveAsync(chromosome);
+                await this.updateArchive(chromosome);
             }
         }
     }
@@ -134,15 +134,15 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
      *
      * @param candidateChromosome The candidate chromosome for the archive.
      */
-    protected async updateArchiveAsync(candidateChromosome: C): Promise<void> {
+    protected async updateArchive(candidateChromosome: C): Promise<void> {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = await candidateChromosome.getFitnessAsync(fitnessFunction);
+            const candidateFitness = await candidateChromosome.getFitness(fitnessFunction);
             const candidateLength = candidateChromosome.getLength();
-            if (await fitnessFunction.isOptimalAsync(candidateFitness) && candidateLength < bestLength) {
+            if (await fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);

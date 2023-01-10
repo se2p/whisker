@@ -48,7 +48,7 @@ describe('OptimalSolutionStoppingCondition', () => {
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
-        expect(await stoppingCondition.isFinishedAsync(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
     test('Non-Optimal value', async () => {
@@ -62,7 +62,7 @@ describe('OptimalSolutionStoppingCondition', () => {
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
-        expect(await stoppingCondition.isFinishedAsync(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 
 
@@ -75,6 +75,6 @@ describe('OptimalSolutionStoppingCondition', () => {
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
-        expect(await stoppingCondition.isFinishedAsync(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 });

@@ -44,14 +44,14 @@ export class TournamentSelection<C extends Chromosome> implements Selection<C> {
      * @param fitnessFunction the fitness function on which the selection is based
      * @returns the selected chromosome.
      */
-    async applyAsync(population: C[], fitnessFunction: FitnessFunction<C>): Promise<C> {
+    async apply(population: C[], fitnessFunction: FitnessFunction<C>): Promise<C> {
         Preconditions.checkNotUndefined(fitnessFunction);
         let iteration = 0;
         let winner = Randomness.getInstance().pick(population);
-        let bestFitness = await winner.getFitnessAsync(fitnessFunction);
+        let bestFitness = await winner.getFitness(fitnessFunction);
         while (iteration < this._tournamentSize) {
             const candidate = Randomness.getInstance().pick(population);
-            const candidateFitness = await candidate.getFitnessAsync(fitnessFunction);
+            const candidateFitness = await candidate.getFitness(fitnessFunction);
 
             if (fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
                 (fitnessFunction.compare(candidateFitness, bestFitness) == 0 && candidate.getLength() < winner.getLength())) {

@@ -31,11 +31,11 @@ export class FixedTimeStoppingCondition<T extends Chromosome> implements Stoppin
         this._maxTime = maxTime;
     }
 
-    async isFinishedAsync(): Promise<boolean> {
+    async isFinished(): Promise<boolean> {
         return (Date.now() - StatisticsCollector.getInstance().startTime) > this.maxTime;
     }
 
-    async getProgressAsync(): Promise<number> {
+    async getProgress(): Promise<number> {
         return (Date.now() - StatisticsCollector.getInstance().startTime) / this.maxTime;
     }
 

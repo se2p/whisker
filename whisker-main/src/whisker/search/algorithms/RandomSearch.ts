@@ -62,14 +62,14 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
 
-        while (!(await this._stoppingCondition.isFinishedAsync(this))) {
+        while (!(await this._stoppingCondition.isFinished(this))) {
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate(true);
-            await this.updateArchiveAsync(candidateChromosome);
+            await this.updateArchive(candidateChromosome);
 
             // Update the best performing chromosome if we have a single targeted fitness function.
             if (this._fitnessFunction !== undefined) {
-                const candidateFitness = await candidateChromosome.getFitnessAsync(this._fitnessFunction);
+                const candidateFitness = await candidateChromosome.getFitness(this._fitnessFunction);
                 if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                     bestFitness = candidateFitness;
                     bestIndividual = candidateChromosome;

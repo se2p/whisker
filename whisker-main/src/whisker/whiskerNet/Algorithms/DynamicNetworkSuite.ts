@@ -100,7 +100,7 @@ export class DynamicNetworkSuite {
         test.recordNetworkStatistics = true;
         await this.executor.execute(test);
         if (recordExecution) {
-            await this.updateArchiveAsync(test);
+            await this.updateArchive(test);
             NetworkAnalysis.analyseNetwork(test);
         }
         test.recordNetworkStatistics = false;
@@ -272,7 +272,7 @@ export class DynamicNetworkSuite {
         Container.debugLog("Minimising Test Suite....");
         for (const test of this.testCases) {
             await this.executeTestCase(test, false);
-            await test.determineCoveredObjectivesAsync([...this.statementMap.values()]);
+            await test.determineCoveredObjectives([...this.statementMap.values()]);
         }
         this.testCases.sort((a, b) => b.coveredStatements - a.coveredStatements);
         let coverage = 0;
@@ -281,7 +281,7 @@ export class DynamicNetworkSuite {
             await this.executeTestCase(test, false);
             test.testActivationTrace = undefined;
             test.testUncertainty = new Map<number, number>();
-            await this.updateArchiveAsync(test);
+            await this.updateArchive(test);
             if ([...this.archive.keys()].length > coverage) {
                 coverage = [...this.archive.keys()].length;
                 shortenedTestCases.push(test);
@@ -299,11 +299,11 @@ export class DynamicNetworkSuite {
      * Updates the archive of covered fitness functions.
      * @param network the network with which the archive should be updated.
      */
-    protected async updateArchiveAsync(network: NeatChromosome): Promise<void> {
+    protected async updateArchive(network: NeatChromosome): Promise<void> {
         for (const statementKey of this.statementMap.keys()) {
             const fitnessFunction = this.statementMap.get(statementKey);
-            const statementFitness = await fitnessFunction.getFitnessAsync(network);
-            if (await fitnessFunction.isOptimalAsync(statementFitness) && !this.archive.has(statementKey)) {
+            const statementFitness = await fitnessFunction.getFitness(network);
+            if (await fitnessFunction.isOptimal(statementFitness) && !this.archive.has(statementKey)) {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this.archive.set(statementKey, network);
             }
@@ -320,7 +320,7 @@ export class DynamicNetworkSuite {
                                    testName: Readonly<string>): Promise<void> {
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
-            await test.determineCoveredObjectivesAsync([...this.statementMap.values()]);
+            await test.determineCoveredObjectives([...this.statementMap.values()]);
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);

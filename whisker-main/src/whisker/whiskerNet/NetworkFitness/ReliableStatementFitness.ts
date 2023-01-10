@@ -29,7 +29,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
         await executor.execute(network);
         network.initialiseOpenStatements([...network.openStatementTargets.keys()]);
-        const fitness = await network.targetFitness.getFitnessAsync(network);
+        const fitness = await network.targetFitness.getFitness(network);
         await ReliableStatementFitness.updateUncoveredMap(network);
         executor.resetState();
 
@@ -76,8 +76,8 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             executor.resetState();
 
             // Stop if we failed to cover our target statement.
-            if(!await network.targetFitness.isCoveredAsync(network)){
-                network.fitness += (1 / await network.targetFitness.getFitnessAsync(network));
+            if(!await network.targetFitness.isCovered(network)){
+                network.fitness += (1 / await network.targetFitness.getFitness(network));
                 break;
             }
         }
@@ -99,7 +99,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     private static async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
         for (const [statement, coverCount] of network.openStatementTargets.entries()) {
-            if (await statement.isCoveredAsync(network)) {
+            if (await statement.isCovered(network)) {
                 network.openStatementTargets.set(statement, coverCount + 1);
                 if (statement === network.targetFitness) {
                     network.fitness++;

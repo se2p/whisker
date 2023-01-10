@@ -83,7 +83,7 @@ describe('MIO', () => {
         for (const fitnessFunction of fitnessFunctions.values()) {
             let optimal = false;
             for (const solution of solutions) {
-                if (await fitnessFunction.isOptimalAsync(await fitnessFunction.getFitnessAsync(solution))) {
+                if (await fitnessFunction.isOptimal(await fitnessFunction.getFitness(solution))) {
                     optimal = true;
                     break;
                 }

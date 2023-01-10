@@ -60,7 +60,7 @@ describe('OneOfStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(await stoppingCondition.isFinishedAsync(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 
     test('Both conditions true', async () => {
@@ -80,7 +80,7 @@ describe('OneOfStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(await stoppingCondition.isFinishedAsync(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
     test('First condition true only', async () => {
@@ -100,7 +100,7 @@ describe('OneOfStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(await stoppingCondition.isFinishedAsync(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
     test('Second condition true only', async () => {
@@ -120,7 +120,7 @@ describe('OneOfStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(await stoppingCondition.isFinishedAsync(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
     test('Nested OneOfStoppingConditions must be flattened', () => {

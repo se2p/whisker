@@ -96,7 +96,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         const eventExtractor = this._config.getEventExtractor();
         const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
 
-        while (!(await stoppingCondition.isFinishedAsync(this))) {
+        while (!(await stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
             const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
             const randomEventChromosome = new TestChromosome([], undefined, undefined);
@@ -107,7 +107,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         }
         const testSuite = await this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);
-        return new WhiskerTestListWithSummary(testSuite, await this.summarizeSolutionAsync(this._archive));
+        return new WhiskerTestListWithSummary(testSuite, await this.summarizeSolution(this._archive));
     }
 
     private async updateArchive(chromosome: TestChromosome): Promise<void> {
@@ -116,9 +116,9 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = await chromosome.getFitnessAsync(fitnessFunction);
+            const candidateFitness = await chromosome.getFitness(fitnessFunction);
             const candidateLength = chromosome.getLength();
-            if (await fitnessFunction.isOptimalAsync(candidateFitness) && candidateLength < bestLength) {
+            if (await fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);

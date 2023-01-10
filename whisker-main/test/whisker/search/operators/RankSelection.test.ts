@@ -37,7 +37,7 @@ describe('RankSelection', () => {
             selectionCount.set(chromosome, 0);
         }
         for (let i = 0; i < 1000; i++) {
-            const selected = await selection.applyAsync(population);
+            const selected = await selection.apply(population);
             selectionCount.set(selected, selectionCount.get(selected) + 1);
         }
         for (let i = 0; i < populationSize - 1; i++) {
