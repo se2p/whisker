@@ -100,7 +100,7 @@ export class DynamicNetworkSuite {
         test.recordNetworkStatistics = true;
         await this.executor.execute(test);
         if (recordExecution) {
-            this.updateArchive(test);
+            await this.updateArchiveAsync(test);
             NetworkAnalysis.analyseNetwork(test);
         }
         test.recordNetworkStatistics = false;
@@ -116,7 +116,7 @@ export class DynamicNetworkSuite {
             Container.debugLog(`Executing test ${i}`);
             await this.executeTestCase(this.testCases[i], true);
         }
-        this.updateTestStatistics(this.testCases, this.projectName, this.testName);
+        await this.updateTestStatistics(this.testCases, this.projectName, this.testName);
     }
 
     /**
@@ -145,7 +145,7 @@ export class DynamicNetworkSuite {
                     break;
                 }
             }
-            this.updateTestStatistics(executedTests, projectMutation, this.testName);
+            await this.updateTestStatistics(executedTests, projectMutation, this.testName);
             i++;
         }
         return [];
@@ -272,7 +272,7 @@ export class DynamicNetworkSuite {
         Container.debugLog("Minimising Test Suite....");
         for (const test of this.testCases) {
             await this.executeTestCase(test, false);
-            test.determineCoveredObjectives([...this.statementMap.values()]);
+            await test.determineCoveredObjectivesAsync([...this.statementMap.values()]);
         }
         this.testCases.sort((a, b) => b.coveredStatements - a.coveredStatements);
         let coverage = 0;
@@ -281,7 +281,7 @@ export class DynamicNetworkSuite {
             await this.executeTestCase(test, false);
             test.testActivationTrace = undefined;
             test.testUncertainty = new Map<number, number>();
-            this.updateArchive(test);
+            await this.updateArchiveAsync(test);
             if ([...this.archive.keys()].length > coverage) {
                 coverage = [...this.archive.keys()].length;
                 shortenedTestCases.push(test);
@@ -299,11 +299,11 @@ export class DynamicNetworkSuite {
      * Updates the archive of covered fitness functions.
      * @param network the network with which the archive should be updated.
      */
-    protected updateArchive(network: NeatChromosome): void {
+    protected async updateArchiveAsync(network: NeatChromosome): Promise<void> {
         for (const statementKey of this.statementMap.keys()) {
             const fitnessFunction = this.statementMap.get(statementKey);
-            const statementFitness = fitnessFunction.getFitness(network);
-            if (fitnessFunction.isOptimal(statementFitness) && !this.archive.has(statementKey)) {
+            const statementFitness = await fitnessFunction.getFitnessAsync(network);
+            if (await fitnessFunction.isOptimalAsync(statementFitness) && !this.archive.has(statementKey)) {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this.archive.set(statementKey, network);
             }
@@ -316,11 +316,11 @@ export class DynamicNetworkSuite {
      * @param projectName the name of the executed project.
      * @param testName the name of the executed test file.
      */
-    protected updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
-                                   testName: Readonly<string>): void {
+    protected async updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
+                                   testName: Readonly<string>): Promise<void> {
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
-            test.determineCoveredObjectives([...this.statementMap.values()]);
+            await test.determineCoveredObjectivesAsync([...this.statementMap.values()]);
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);

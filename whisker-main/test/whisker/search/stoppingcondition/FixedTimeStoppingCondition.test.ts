@@ -40,7 +40,7 @@ describe('FixedTimeStoppingCondition', () => {
         Container.acceleration = 1;
         const stoppingCondition = new FixedTimeStoppingCondition(maxTime - 1);
 
-        expect(await stoppingCondition.isFinished()).toBeTruthy();
+        expect(await stoppingCondition.isFinishedAsync()).toBeTruthy();
     });
 
     test('Max not reached', async () => {
@@ -50,7 +50,7 @@ describe('FixedTimeStoppingCondition', () => {
         Container.acceleration = 1;
         const stoppingCondition = new FixedTimeStoppingCondition(maxTime);
 
-        expect(await stoppingCondition.isFinished()).toBeFalsy();
+        expect(await stoppingCondition.isFinishedAsync()).toBeFalsy();
     });
 
     test('Progress of 0.5', async () => {
@@ -60,7 +60,7 @@ describe('FixedTimeStoppingCondition', () => {
         Container.acceleration = 1;
         const stoppingCondition = new FixedTimeStoppingCondition(maxTime);
 
-        expect(await stoppingCondition.getProgress()).toBeGreaterThanOrEqual(0.5);
+        expect(await stoppingCondition.getProgressAsync()).toBeGreaterThanOrEqual(0.5);
     });
 
 });

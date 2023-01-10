@@ -89,7 +89,7 @@ describe('MOSA', () => {
         for (const fitnessFunction of fitnessFunctions.values()) {
             let optimal = false;
             for (const solution of solutions) {
-                if (fitnessFunction.isOptimal(await fitnessFunction.getFitness(solution))) {
+                if (fitnessFunction.isOptimalAsync(await fitnessFunction.getFitnessAsync(solution))) {
                     optimal = true;
                     break;
                 }

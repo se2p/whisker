@@ -71,7 +71,7 @@ export abstract class LocalSearch<C extends Chromosome> {
      * @param chromosome the chromosome LocalSearch should be applied to.
      * @return boolean determining whether the LocalSearch operator can be applied to the given chromosome.
      */
-    abstract isApplicable(chromosome: C): boolean;
+    abstract isApplicableAsync(chromosome: C): Promise<boolean>;
 
     /**
      * Determines whether the LocalSearch operator improved the original chromosome.

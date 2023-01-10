@@ -32,7 +32,7 @@ describe('OneMaxFitnessFunction', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(await fitnessFunction.getFitness(chromosome)).toBe(0);
+        expect(await fitnessFunction.getFitnessAsync(chromosome)).toBe(0);
     });
 
     test('All true', async () => {
@@ -42,7 +42,7 @@ describe('OneMaxFitnessFunction', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(await fitnessFunction.getFitness(chromosome)).toBe(2);
+        expect(await fitnessFunction.getFitnessAsync(chromosome)).toBe(2);
     });
 
     test('Mixed', async () => {
@@ -52,15 +52,15 @@ describe('OneMaxFitnessFunction', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(await fitnessFunction.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunction.getFitnessAsync(chromosome)).toBe(1);
     });
 
-    test('Check optimality', () => {
+    test('Check optimality', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(fitnessFunction.isOptimal(0)).toBeFalsy();
-        expect(fitnessFunction.isOptimal(1)).toBeFalsy();
-        expect(fitnessFunction.isOptimal(2)).toBeTruthy();
+        expect(await fitnessFunction.isOptimalAsync(0)).toBeFalsy();
+        expect(await fitnessFunction.isOptimalAsync(1)).toBeFalsy();
+        expect(await fitnessFunction.isOptimalAsync(2)).toBeTruthy();
     });
 
     test('Check comparison', () => {

@@ -70,7 +70,7 @@ describe('OnePlusOneEa', () => {
         const solutions = await search.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(await firstSolution.getFitness(fitnessFunction)).toBe(properties.chromosomeLength);
+        expect(await firstSolution.getFitnessAsync(fitnessFunction)).toBe(properties.chromosomeLength);
     });
 
     test('Setter', () => {

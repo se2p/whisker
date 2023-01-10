@@ -33,10 +33,11 @@ import {Container} from "../../../../src/whisker/utils/Container";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import Arrays from "../../../../src/whisker/utils/Arrays";
+import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 
 describe('MIO', () => {
 
-    let searchAlgorithm;
+    let searchAlgorithm: SearchAlgorithm<any>;
     const iterations = 10000;
 
     beforeEach(() => {
@@ -78,11 +79,11 @@ describe('MIO', () => {
         const archive = await searchAlgorithm.findSolution();
         const solutions = Arrays.distinct(archive.values());
 
-        const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
+        const fitnessFunctions: Array<FitnessFunction<any>> = searchAlgorithm["_fitnessFunctions"];
         for (const fitnessFunction of fitnessFunctions.values()) {
             let optimal = false;
             for (const solution of solutions) {
-                if (fitnessFunction.isOptimal(await fitnessFunction.getFitness(solution))) {
+                if (await fitnessFunction.isOptimalAsync(await fitnessFunction.getFitnessAsync(solution))) {
                     optimal = true;
                     break;
                 }

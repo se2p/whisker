@@ -74,9 +74,9 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @param chromosome the chromosome local search should be applied to
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
-    isApplicable(chromosome: TestChromosome): boolean {
+    async isApplicableAsync(chromosome: TestChromosome): Promise<boolean> {
         return chromosome.getGenes().length < Container.config.searchAlgorithmProperties['chromosomeLength'] && // // FIXME: unsafe access
-            this._originalChromosomes.indexOf(chromosome) < 0 && TestExecutor.calculateUncoveredFitnessValues(chromosome).length > 0;
+            this._originalChromosomes.indexOf(chromosome) < 0 && (await TestExecutor.calculateUncoveredFitnessValuesAsync(chromosome)).length > 0;
     }
 
     /**
@@ -153,7 +153,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
         const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
         const eventSelector = Container.config.getEventSelector();
-        let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
+        let fitnessValues = await TestExecutor.calculateUncoveredFitnessValuesAsync(chromosome);
         let lastImprovedCodon = chromosome.lastImprovedCodon;
         let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
 
@@ -276,7 +276,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, events);
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-            const newFitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
+            const newFitnessValues = await TestExecutor.calculateUncoveredFitnessValuesAsync(chromosome);
 
             // Check if the latest event has improved the fitness, if yes update properties and keep extending the
             // codons.

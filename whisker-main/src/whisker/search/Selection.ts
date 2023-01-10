@@ -36,6 +36,6 @@ export interface Selection<C extends Chromosome> {
      * @param fitnessFunction the fitness function on which the selection is based
      * @returns the selected chromosome
      */
-    apply(population: C[], fitnessFunction?: FitnessFunction<C>): C;
+    applyAsync(population: C[], fitnessFunction?: FitnessFunction<C>): Promise<C>;
 
 }

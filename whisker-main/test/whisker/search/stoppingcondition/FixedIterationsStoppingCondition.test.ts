@@ -39,7 +39,7 @@ describe('FixedIterationsStoppingCondition', () => {
         algorithm.setIterations(maxIterations);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(await stoppingCondition.isFinished()).toBeTruthy();
+        expect(await stoppingCondition.isFinishedAsync()).toBeTruthy();
     });
 
     test('Max not reached', async () => {
@@ -48,7 +48,7 @@ describe('FixedIterationsStoppingCondition', () => {
         algorithm.setIterations(5);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(await stoppingCondition.isFinished()).toBeFalsy();
+        expect(await stoppingCondition.isFinishedAsync()).toBeFalsy();
     });
 
     test('Progress of 0.5', async () => {
@@ -57,7 +57,7 @@ describe('FixedIterationsStoppingCondition', () => {
         algorithm.setIterations(5);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(await stoppingCondition.getProgress()).toBe(0.5);
+        expect(await stoppingCondition.getProgressAsync()).toBe(0.5);
     });
 
 });

@@ -39,7 +39,7 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
         const testSuite = await this.getTestSuite(testChromosomes);
 
         await this.collectStatistics(testSuite);
-        const summary = this.summarizeSolution(archive);
+        const summary = await this.summarizeSolutionAsync(archive);
 
         return new WhiskerTestListWithSummary(testSuite, summary);
     }

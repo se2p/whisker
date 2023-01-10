@@ -39,7 +39,7 @@ export class TestMinimizer {
     public async minimize(test: TestChromosome, timeBudget: number): Promise<TestChromosome> {
 
         let changed = true;
-        let oldFitness = this._fitnessFunction.getFitness(test);
+        let oldFitness = await this._fitnessFunction.getFitnessAsync(test);
 
         let newTest = test.cloneWith(test.getGenes());
         newTest.trace = test.trace;
@@ -62,7 +62,7 @@ export class TestMinimizer {
                 newChromosome.trace = new ExecutionTrace([], newEvents);
                 await newChromosome.evaluate(false);
 
-                const fitness = this._fitnessFunction.getFitness(newChromosome);
+                const fitness = await this._fitnessFunction.getFitnessAsync(newChromosome);
                 if (this._fitnessFunction.compare(fitness, oldFitness) >= 0) {
                     changed = true;
                     newTest = newChromosome;

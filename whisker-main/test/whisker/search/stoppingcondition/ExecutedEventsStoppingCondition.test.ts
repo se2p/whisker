@@ -7,14 +7,14 @@ describe('Test ExecutedEventsStoppingCondition', () => {
         const maxEvents = 100;
         StatisticsCollector.getInstance().eventsCount = 101;
         const stoppingCondition = new ExecutedEventsStoppingCondition(maxEvents);
-        expect(await stoppingCondition.isFinished()).toBeTruthy();
+        expect(await stoppingCondition.isFinishedAsync()).toBeTruthy();
     });
 
     test('Stopping condition not reached', async () => {
         const maxEvents = 200;
         StatisticsCollector.getInstance().eventsCount = 101;
         const stoppingCondition = new ExecutedEventsStoppingCondition(maxEvents);
-        expect(await stoppingCondition.isFinished()).toBeFalsy();
+        expect(await stoppingCondition.isFinishedAsync()).toBeFalsy();
     });
 
     test('Test progress of stopping condition', async () => {
@@ -22,6 +22,6 @@ describe('Test ExecutedEventsStoppingCondition', () => {
         StatisticsCollector.getInstance().eventsCount = 101;
         const progress = 101 / 200;
         const stoppingCondition = new ExecutedEventsStoppingCondition(maxEvents);
-        expect(await stoppingCondition.getProgress()).toBe(progress);
+        expect(await stoppingCondition.getProgressAsync()).toBe(progress);
     });
 });

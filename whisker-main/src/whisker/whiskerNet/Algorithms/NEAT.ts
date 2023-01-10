@@ -31,8 +31,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             // Evaluate the networks by letting them play the game.
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout, this._neuroevolutionProperties.eventSelection);
             // Update the archive and stop in the middle of the evaluation if we already cover all statements.
-            this.updateArchive(network);
-            if ((this._stoppingCondition.isFinished(this))) {
+            await this.updateArchiveAsync(network);
+            if ((await this._stoppingCondition.isFinishedAsync(this))) {
                 return;
             }
         }
@@ -48,7 +48,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         this._iterations = 0;
         this._startTime = Date.now();
 
-        while (!(this._stoppingCondition.isFinished(this))) {
+        while (!(await this._stoppingCondition.isFinishedAsync(this))) {
             await this.evaluateNetworks(population.networks);
             population.updatePopulationStatistics();
             this.reportOfCurrentIteration(population);
@@ -64,11 +64,11 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Additionally, we save the best performing chromosome regarding the achieved network fitness.
      * @param candidateChromosome The candidate chromosome to update the archive with.
      */
-    protected override updateArchive(candidateChromosome: NeatChromosome): void {
+    protected override async updateArchiveAsync(candidateChromosome: NeatChromosome): Promise<void> {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            const statementFitness = fitnessFunction.getFitness(candidateChromosome);
-            if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey)) {
+            const statementFitness = await fitnessFunction.getFitnessAsync(candidateChromosome);
+            if (await fitnessFunction.isOptimalAsync(statementFitness) && !this._archive.has(fitnessFunctionKey)) {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, candidateChromosome);
             }

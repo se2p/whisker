@@ -10,7 +10,7 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      * @param chromosome the chromosome ReductionLocalSearch should be applied to
      * @return boolean determining whether ReductionLocalSearch can be applied to the given chromosome.
      */
-    isApplicable(chromosome: TestChromosome): boolean {
+    async isApplicableAsync(chromosome: TestChromosome): Promise<boolean> {
         return chromosome.getGenes().length > 1 && chromosome.getGenes().length > chromosome.lastImprovedCodon &&
             chromosome.lastImprovedTrace !== undefined;
     }

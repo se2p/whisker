@@ -67,23 +67,23 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         let bestIndividual = this._chromosomeGenerator.get();
         await bestIndividual.evaluate(true);
-        this.updateArchive(bestIndividual);
+        await this.updateArchiveAsync(bestIndividual);
         this._bestIndividual = bestIndividual;
-        let bestFitness = bestIndividual.getFitness(this._fitnessFunction);
+        let bestFitness = await bestIndividual.getFitnessAsync(this._fitnessFunction);
 
-        if (this._stoppingCondition.isFinished(this)) {
+        if (await this._stoppingCondition.isFinishedAsync(this)) {
             this.updateStatisticsAtEnd();
         }
 
-        while (!(this._stoppingCondition.isFinished(this))) {
+        while (!(await this._stoppingCondition.isFinishedAsync(this))) {
             const candidateChromosome = bestIndividual.mutate();
             await candidateChromosome.evaluate(true);
-            this.updateArchive(candidateChromosome);
-            const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
+            await this.updateArchiveAsync(candidateChromosome);
+            const candidateFitness = await candidateChromosome.getFitnessAsync(this._fitnessFunction);
             Container.debugLog(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
 ${bestIndividual.toString()}`);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
-                if (this._fitnessFunction.isOptimal(candidateFitness)) {
+                if (await this._fitnessFunction.isOptimalAsync(candidateFitness)) {
                     this.updateStatisticsAtEnd();
                 }
                 bestFitness = candidateFitness;

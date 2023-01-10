@@ -40,7 +40,7 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
         this._bitPosition = bitPosition;
     }
 
-    getFitness(chromosome: BitstringChromosome): number {
+    async getFitnessAsync(chromosome: BitstringChromosome): Promise<number> {
         const bits = chromosome.getGenes();
         Preconditions.checkListSize(bits, this._size);
         let fitness = 0;
@@ -76,11 +76,11 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
         return value1 - value2;
     }
 
-    isOptimal(fitnessValue: number): boolean {
+    async isOptimalAsync(fitnessValue: number): Promise<boolean> {
         return fitnessValue === this._size;
     }
 
-    isCovered(chromosome: BitstringChromosome): boolean {
-        return this.isOptimal(this.getFitness(chromosome));
+    async isCoveredAsync(chromosome: BitstringChromosome): Promise<boolean> {
+        return this.isOptimalAsync(await this.getFitnessAsync(chromosome));
     }
 }

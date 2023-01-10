@@ -33,8 +33,8 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(await fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
-        expect(await fitnessFunctionPosition1.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition0.getFitnessAsync(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition1.getFitnessAsync(chromosome)).toBe(1);
     });
 
     test('All true', async () => {
@@ -45,8 +45,8 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(await fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
-        expect(await fitnessFunctionPosition1.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition0.getFitnessAsync(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition1.getFitnessAsync(chromosome)).toBe(1);
     });
 
     test('Mixed', async () => {
@@ -57,15 +57,15 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(await fitnessFunctionPosition0.getFitness(chromosome)).toBe(2);
-        expect(await fitnessFunctionPosition1.getFitness(chromosome)).toBe(0);
+        expect(await fitnessFunctionPosition0.getFitnessAsync(chromosome)).toBe(2);
+        expect(await fitnessFunctionPosition1.getFitnessAsync(chromosome)).toBe(0);
     });
 
-    test('Check optimality', () => {
+    test('Check optimality', async () => {
         const fitnessFunction = new SingleBitFitnessFunction(2, 0);
 
-        expect(fitnessFunction.isOptimal(0)).toBeFalsy();
-        expect(fitnessFunction.isOptimal(2)).toBeTruthy();
+        expect(await fitnessFunction.isOptimalAsync(0)).toBeFalsy();
+        expect(await fitnessFunction.isOptimalAsync(2)).toBeTruthy();
     });
 
     test('Check comparison', () => {

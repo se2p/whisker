@@ -73,11 +73,11 @@ export class TestChromosome extends IntegerListChromosome {
         assert(this.trace != null);
     }
 
-    override getFitness(fitnessFunction: FitnessFunction<this>): number {
+    override async getFitnessAsync(fitnessFunction: FitnessFunction<this>): Promise<number> {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {
-            const fitness = fitnessFunction.getFitness(this);
+            const fitness = await fitnessFunction.getFitnessAsync(this);
             this._fitnessCache.set(fitnessFunction, fitness);
             return fitness;
         }
