@@ -10,6 +10,7 @@ import Runtime from "scratch-vm/src/engine/runtime";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
+import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -55,11 +56,13 @@ export class StateActionRecorder extends EventEmitter {
 
     /**
      * Starts the recording procedure by setting listeners for the start and end of Scratch runs.
+     * @param config: contains settings that are important during test generation such as the click duration.
      */
-    public startRecording(): void {
+    public startRecording(config: string): void {
         this._vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
         this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this._vm.on(Runtime.Project_STOP_ALL, this._onRunStop);
+        Container.config = new WhiskerSearchConfiguration(JSON.parse(config));
         this._isRecording = true;
         this._statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(this._vm, []).map(stat => stat.getNodeId());
     }

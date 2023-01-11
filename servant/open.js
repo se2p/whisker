@@ -3,7 +3,8 @@ const {
     scratchPath,
     acceleration,
     seed,
-    stateActionRecorder
+    stateActionRecorder,
+    configPath,
 } = require("./cli").opts;
 
 
@@ -13,8 +14,7 @@ async function open(openNewPage){
     if(scratchPath) {
         await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
     }
-
-
+    await (await page.$('#fileselect-config')).uploadFile(configPath);
     await switchToProjectTab(page, true);
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
     await page.evaluate(s => document.querySelector('#seed').value = s, seed);

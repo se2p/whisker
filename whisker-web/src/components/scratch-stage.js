@@ -19,12 +19,15 @@ class Scratch extends EventEmitter {
         this.vm = Scratch.prepareVM(this.canvas);
         this.project = null;
         this.inputEnabled = false;
+        this.keyPresses = [];
 
         this._onMouseMove = this.onMouseMove.bind(this);
         this._onMouseDown = this.onMouseDown.bind(this);
         this._onMouseUp = this.onMouseUp.bind(this);
         this._onKeyDown = this.onKeyDown.bind(this);
         this._onKeyUp = this.onKeyUp.bind(this);
+        this._onQuestion = this.onQuestion.bind(this);
+        this._registerKeyPress = this.registerKeyPress.bind(this);
     }
 
     async loadProject (project) {
@@ -69,6 +72,7 @@ class Scratch extends EventEmitter {
         this.canvas.addEventListener('mouseup', this._onMouseUp);
         this.canvas.addEventListener('keydown', this._onKeyDown);
         this.canvas.addEventListener('keyup', this._onKeyUp);
+        this.vm.runtime.on('QUESTION', this._onQuestion);
         this.inputEnabled = true;
     }
 
@@ -78,6 +82,7 @@ class Scratch extends EventEmitter {
         this.canvas.removeEventListener('mouseup', this._onMouseUp);
         this.canvas.removeEventListener('keydown', this._onKeyDown);
         this.canvas.removeEventListener('keyup', this._onKeyUp);
+        this.vm.runtime.removeListener('QUESTION', this._onQuestion);
         this.inputEnabled = false;
     }
 
@@ -188,6 +193,24 @@ class Scratch extends EventEmitter {
         };
         this.vm.postIOData('keyboard', data);
         this.emit('input', {device: 'keyboard', ...data});
+    }
+
+    onQuestion () {
+        this.keyPresses = [];
+        this.canvas.addEventListener('keydown', this._registerKeyPress);
+    }
+
+    registerKeyPress (e) {
+        if (e.key === 'Backspace') {
+            this.keyPresses.pop();
+        } else if (e.key === 'Enter') {
+            const textInput = this.keyPresses.join('');
+            this.vm.runtime.emit('ANSWER', textInput);
+            this.keyPresses = [];
+            this.canvas.removeEventListener('keydown', this._registerKeyPress);
+        } else {
+            this.keyPresses.push(e.key);
+        }
     }
 }
 

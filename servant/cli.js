@@ -121,6 +121,15 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionConfigPath() {
+        return this.option(
+            '-c, --config-path <Path>',
+            'path to a configuration file (".json")',
+            (configPath) => util.processFilePathExists(configPath, '.json'),
+            relativeToServantDir('../config/Neuroevolution/neatestBackprop.json')
+        );
+    }
+
     requireConfigPath() {
         return this.requiredOption(
             '-c, --config-path <Path>',
@@ -239,6 +248,7 @@ const subCommands = [
     newSubCommand('open')
         .description('Open the Whisker web page with the specified parameters')
         .optionScratchPath()
+        .optionConfigPath()
         .optionStateActionRecorder(),
 
 

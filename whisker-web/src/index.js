@@ -471,7 +471,7 @@ const initEvents = function () {
                 FileSaver.saveAs(blob, `Recording-${Whisker.projectFileSelect.getName()}.json`);
             } else {
                 Whisker.inputRecorder.emit('startRecording');
-                Whisker.stateActionRecorder.startRecording();
+                Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
                 Whisker.scratch.enableInput();
             }
         } else if (Whisker.inputRecorder.isRecording()) {
