@@ -37,7 +37,7 @@ import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 
 describe('MIO', () => {
 
-    let searchAlgorithm: SearchAlgorithm<any>;
+    let searchAlgorithm: SearchAlgorithm<BitstringChromosome>;
     const iterations = 10000;
 
     beforeEach(() => {
@@ -79,7 +79,7 @@ describe('MIO', () => {
         const archive = await searchAlgorithm.findSolution();
         const solutions = Arrays.distinct(archive.values());
 
-        const fitnessFunctions: Array<FitnessFunction<any>> = searchAlgorithm["_fitnessFunctions"];
+        const fitnessFunctions: Array<FitnessFunction<BitstringChromosome>> = searchAlgorithm["_fitnessFunctions"];
         for (const fitnessFunction of fitnessFunctions.values()) {
             let optimal = false;
             for (const solution of solutions) {
