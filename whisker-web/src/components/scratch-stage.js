@@ -13,6 +13,9 @@ const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
  * <canvas></canvas>
  */
 class Scratch extends EventEmitter {
+
+    static INPUT_LISTENER_KEY = 'input';
+
     constructor (canvas) {
         super();
         this.canvas = canvas;
@@ -141,7 +144,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit('input', {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
     onMouseDown (e) {
@@ -156,7 +159,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit('input', {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
     onMouseUp (e) {
@@ -171,7 +174,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit('input', {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
     onKeyDown (e) {
@@ -182,7 +185,7 @@ class Scratch extends EventEmitter {
             isDown: true
         };
         this.vm.postIOData('keyboard', data);
-        this.emit('input', {device: 'keyboard', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
     }
 
     onKeyUp (e) {
@@ -192,7 +195,7 @@ class Scratch extends EventEmitter {
             isDown: false
         };
         this.vm.postIOData('keyboard', data);
-        this.emit('input', {device: 'keyboard', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
     }
 
     onQuestion () {
@@ -206,6 +209,7 @@ class Scratch extends EventEmitter {
         } else if (e.key === 'Enter') {
             const textInput = this.keyPresses.join('');
             this.vm.runtime.emit('ANSWER', textInput);
+            this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'text', text: textInput});
             this.keyPresses = [];
             this.canvas.removeEventListener('keydown', this._registerKeyPress);
         } else {

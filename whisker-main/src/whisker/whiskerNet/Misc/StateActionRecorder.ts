@@ -11,11 +11,10 @@ import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementF
 import VMWrapper from "../../../vm/vm-wrapper";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
+import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 
 
 export class StateActionRecorder extends EventEmitter {
-    private static INPUT_EVENT_NAME = 'input';
-
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
     private readonly _eventExtractor: NeuroevolutionScratchEventExtractor;
@@ -71,7 +70,7 @@ export class StateActionRecorder extends EventEmitter {
      * Starts recording scratch input actions and sets an interval for wait event checks when a Scratch run has started.
      */
     private onGreenFlag(): void {
-        this._scratch.on(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
+        this._scratch.on(Scratch.INPUT_LISTENER_KEY, this._onInput);
         this._checkForWaitInterval = window.setInterval(this._checkForWaitCallBack, 500);
         this._lastActionStep = this._getCurrentStepCount();
         this._stateAtAction.set("WaitEvent", InputExtraction.extractFeatures(this._vm));
@@ -81,7 +80,7 @@ export class StateActionRecorder extends EventEmitter {
      * Stops the recording of scratch input actions and clears the wait event check interval when the Scratch run stops.
      */
     private onStopAll(): void {
-        this._scratch.off(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
+        this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
         clearInterval(this._checkForWaitInterval);
         this.addStateActionRecordsToRecording(this._fullRecordings.length, this._vm.runtime.traceInfo.tracer.coverage as Set<string>);
     }
@@ -90,7 +89,7 @@ export class StateActionRecorder extends EventEmitter {
      * Stops the recording by clearing listeners.
      */
     public stopRecording(): void {
-        this._scratch.off(StateActionRecorder.INPUT_EVENT_NAME, this._onInput);
+        this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
         clearInterval(this._checkForWaitInterval);
         this._vm.off(Runtime.PROJECT_RUN_START, this._onRunStart);
         this._vm.off(Runtime.PROJECT_RUN_STOP, this._onRunStop);
@@ -106,8 +105,11 @@ export class StateActionRecorder extends EventEmitter {
     private handleInput(actionData): void {
         const event = this._inputToEvent(actionData);
         if (event) {
-            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
-            if (availableActions.indexOf(event.stringIdentifier()) >= 0) {
+            const availableActions = this._eventExtractor.extractEvents(this._vm).map(event => event.stringIdentifier());
+
+            // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
+            // question was asked.
+            if (availableActions.indexOf(event.stringIdentifier()) >= 0 || event instanceof TypeTextEvent) {
                 this._recordAction(event);
             }
         }
@@ -123,6 +125,9 @@ export class StateActionRecorder extends EventEmitter {
         switch (actionData.device) {
             case 'keyboard':
                 event = this._handleKeyBoardInput(actionData);
+                break;
+            case 'text':
+                event = new TypeTextEvent(actionData.text);
                 break;
             default:
                 event = undefined;
@@ -174,7 +179,7 @@ export class StateActionRecorder extends EventEmitter {
      */
     private _recordAction(event: ScratchEvent): void {
         const action = event.stringIdentifier();
-        const stateFeatures = this._stateAtAction.get(action);
+        const stateFeatures = this._stateAtAction.get(action) || InputExtraction.extractFeatures(this._vm);
         let parameter: Record<string, number>;
         switch (event.toJSON()['type']) {
             case "WaitEvent":
@@ -182,6 +187,9 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             case "KeyPressEvent":
                 parameter = {'Steps': Math.min(event.getParameters()[1] / 30, 1)};      // Press duration
+                break;
+            case "TypeTextEvent":
+                parameter = {};
                 break;
         }
 
