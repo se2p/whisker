@@ -4,6 +4,11 @@ import {NodeType} from "../NetworkComponents/NodeType";
 import {Randomness} from "../../utils/Randomness";
 import {NetworkMutation} from "./NetworkMutation";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {Container} from "../../utils/Container";
+import {NeatestParameter} from "../HyperParameter/NeatestParameter";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
+import {Backpropagation} from "../Misc/Backpropagation";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 
 
 export class NeatMutation implements NetworkMutation<NeatChromosome> {
@@ -63,8 +68,33 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      */
     private readonly _mutateEnableConnection: number;
 
+    /**
+     * Defines whether stochastic gradient descent should be applied.
+     */
+    private readonly _sgdEnabled: boolean = false;
 
-    constructor(mutationConfig: Record<string, (string | number)>) {
+    /**
+     * Probability of applying SGD instead of default weight mutation.
+     */
+    private readonly _sgdProbability: number;
+
+    /**
+     * Learning rate of SGD.
+     */
+    private readonly _learningRate: number;
+
+    /**
+     * Number of executed epochs during SGD.
+     */
+    private readonly _epochs: number;
+
+    /**
+     * Constructs an instance of the NeatMutation class containing various mutation methods.
+     * @param mutationConfig the supplied json mutation configs.
+     * @param neuroevolutionParameter additional neuroevolution parameter.
+     */
+    constructor(mutationConfig: Record<string, (string | number)>,
+                neuroevolutionParameter?: NeuroevolutionTestGenerationParameter) {
         this._mutationAddConnection = mutationConfig.mutationAddConnection as number;
         this._recurrentConnection = mutationConfig.recurrentConnection as number;
         this._addConnectionTries = mutationConfig.addConnectionTries as number;
@@ -75,6 +105,13 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         this._mutateToggleEnableConnection = mutationConfig.mutateToggleEnableConnection as number;
         this._toggleEnableConnectionTimes = mutationConfig.toggleEnableConnectionTimes as number;
         this._mutateEnableConnection = mutationConfig.mutateEnableConnection as number;
+
+        if (neuroevolutionParameter !== undefined && neuroevolutionParameter instanceof NeatestParameter) {
+            this._sgdEnabled = neuroevolutionParameter.applyStochasticGradientDescent;
+            this._sgdProbability = neuroevolutionParameter.sgdProbability;
+            this._learningRate = neuroevolutionParameter.learningRate;
+            this._epochs = neuroevolutionParameter.epochs;
+        }
     }
 
     /**
@@ -111,7 +148,23 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 else {
                     if (this._random.nextDouble() < this._mutateWeights) {
                         mutated = true;
-                        this.mutateWeight(mutant, this._perturbationPower);
+
+                        // Determine whether we mutate weights genetically, or apply SGD.
+                        let appliedSGD = false;
+                        if (this._sgdEnabled && this._random.nextDouble() < this._sgdProbability) {
+                            const loss = this.applyStochasticGradientDescent(mutant);
+
+                            // If there are no training examples, we get NaN as a return loss from SGD and apply default
+                            // weight mutation.
+                            if (!isNaN(loss)) {
+                                appliedSGD = true;
+                            }
+                        }
+
+                        // Apply weight mutation if we didn't apply SGD or if there weren't any training examples.
+                        if (!appliedSGD) {
+                            this.mutateWeight(mutant, this._perturbationPower);
+                        }
                     }
                     if (this._random.nextDouble() < this._mutateToggleEnableConnection) {
                         mutated = true;
@@ -264,6 +317,17 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 connection.weight = this._random.nextGaussian(connection.weight, power);
             }
         }
+    }
+
+    /**
+     * Optimises the weights of a network using stochastic gradient descent.
+     * @param network the network to be trained.
+     * @returns training loss.
+     */
+    private applyStochasticGradientDescent(network: NetworkChromosome): number {
+        const backpropagation = new Backpropagation(Container.backpropagationData);
+        return backpropagation.stochasticGradientDescent(network, Container.neatestTargetId, this._epochs,
+            this._learningRate);
     }
 
     /**

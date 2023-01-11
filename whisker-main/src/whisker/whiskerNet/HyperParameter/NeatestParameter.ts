@@ -31,6 +31,11 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     private _applyStochasticGradientDescent = false;
 
     /**
+     * Probability of applying SGD instead of genetic weight mutation.
+     */
+    private _sgdProbability = 0.5
+
+    /**
      * The learning rate for gradient descent.
      */
     private _learningRate = 0.1
@@ -65,7 +70,6 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         this._populationGeneration = value;
     }
 
-
     get randomFraction(): number {
         return this._randomFraction;
     }
@@ -80,6 +84,14 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
 
     set applyStochasticGradientDescent(value: boolean) {
         this._applyStochasticGradientDescent = value;
+    }
+
+    get sgdProbability(): number {
+        return this._sgdProbability;
+    }
+
+    set sgdProbability(value: number) {
+        this._sgdProbability = value;
     }
 
     get learningRate(): number {

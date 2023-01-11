@@ -274,6 +274,7 @@ export class WhiskerSearchConfiguration {
                 properties.applyStochasticGradientDescent = true;
                 properties.learningRate = this._config['stochasticGradientDescent']['learningRate'];
                 properties.epochs = this._config['stochasticGradientDescent']['epochs'];
+                properties.sgdProbability = this._config['stochasticGradientDescent']['probability'];
             }
         }
 
@@ -362,7 +363,7 @@ export class WhiskerSearchConfiguration {
                     this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
-                return new NeatMutation(this._config['mutation']);
+                return new NeatMutation(this._config['mutation'], this.neuroevolutionProperties);
             case 'integerList':
                 return new IntegerListMutation(this._config['integerRange']['min'], this._config['integerRange']['max']);
             default:

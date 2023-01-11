@@ -43,7 +43,7 @@ export class Backpropagation {
         let bestWeights = network.connections.map(conn => conn.weight);
         let bestEpoch = 0;
         if (dataSamples.size <= 0) {
-            console.log(`No data for statement: ${statement}`);
+            Container.debugLog(`No data for statement: ${statement}`);
             return NaN;
         }
         for (let i = 0; i < epochs; i++) {
@@ -88,7 +88,7 @@ export class Backpropagation {
             }
 
         }
-        console.log(`Setting weights to best epoch ${bestEpochLoss} of iteration ${bestEpoch}`);
+        Container.debugLog(`Setting weights to best epoch ${bestEpochLoss} of iteration ${bestEpoch}`);
         for (let j = 0; j < network.connections.length; j++) {
             network.connections[j].weight = bestWeights[j];
         }
@@ -119,7 +119,7 @@ export class Backpropagation {
                 loss = this._categoricalCrossEntropyLoss(classificationNodes, labelVector);
                 break;
             }
-            case LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED:{
+            case LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED: {
                 const regressionNodes = network.layers.get(1).filter(node => node instanceof RegressionNode) as RegressionNode[];
                 const classificationNodes = network.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
                 loss = this._squaredLoss(regressionNodes, labelVector) + this._categoricalCrossEntropyLoss(classificationNodes, labelVector);
@@ -189,7 +189,7 @@ export class Backpropagation {
                     // Calculate gradient for regression nodes.
                     if (node instanceof RegressionNode) {
                         const label = labelVector.get(`${node.event.stringIdentifier()}-${node.eventParameter}`);
-                        if(label === undefined){
+                        if (label === undefined) {
                             continue;
                         }
                         const lossGradient = Backpropagation.derivatives[LossFunction[LossFunction.SQUARED_ERROR]];

@@ -16,4 +16,5 @@ export class Container {
     static debugLog: typeof console.log;
     static statementFitnessFunctions: StatementFitnessFunction[];
     static backpropagationData: Record<string, unknown>;
+    static neatestTargetId: string
 }

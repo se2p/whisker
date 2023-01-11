@@ -192,6 +192,7 @@ export class Neatest extends NEAT {
             nextTarget = Randomness.getInstance().pick(Array.from(potentialTargets));
         }
         this._targetKey = this.mapStatementToKey(nextTarget);
+        Container.neatestTargetId = this._getIdOfCurrentStatement();
         return nextTarget;
     }
 
@@ -230,9 +231,6 @@ export class Neatest extends NEAT {
      */
     protected override async evaluateNetworks(): Promise<void> {
         for (const network of this._population.networks) {
-            if(this._neuroevolutionProperties.applyStochasticGradientDescent) {
-                this.applyStochasticGradientDescent(network);
-            }
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout,
                 this._neuroevolutionProperties.eventSelection);
             this.updateArchive(network);
@@ -266,18 +264,6 @@ export class Neatest extends NEAT {
                 return;
             }
         }
-    }
-
-    /**
-     * Optimises the weights of a network using stochastic gradient descent.
-     * @param network the network to be trained.
-     * @returns training loss.
-     */
-    private applyStochasticGradientDescent(network: NetworkChromosome): number {
-        const backpropagation = new Backpropagation(Container.backpropagationData);
-        const learningRate = this._neuroevolutionProperties.learningRate;
-        const epochs = this._neuroevolutionProperties.epochs;
-        return backpropagation.stochasticGradientDescent(network, this._getIdOfCurrentStatement(), epochs, learningRate);
     }
 
     /**
