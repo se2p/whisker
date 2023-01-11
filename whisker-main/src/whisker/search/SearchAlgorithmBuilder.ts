@@ -147,9 +147,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param generator the generator to use
      * @returns the search builder with the applied chromosome generator
      */
-    addChromosomeGenerator(generator: ChromosomeGenerator<C>): SearchAlgorithmBuilder<C> {
+    addChromosomeGenerator(generator: ChromosomeGenerator<C>): this {
         this._chromosomeGenerator = generator;
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
@@ -158,7 +158,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param length the length of the chromosome
      * @param targets specific lines that should be covered
      */
-    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: string[]): SearchAlgorithmBuilder<C> {
+    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: string[]): this {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
         this._heuristicFunctions = new Map<number, (number) => number>();
 
@@ -174,7 +174,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 this._initializeStatementFitness(targets);
                 break;
         }
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
@@ -182,9 +182,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param properties the properties to use
      * @returns the search builder with the applied properties
      */
-    addProperties(properties: SearchAlgorithmProperties<C>): SearchAlgorithmBuilder<C> {
+    addProperties(properties: SearchAlgorithmProperties<C>): this {
         this._properties = properties;
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
@@ -192,17 +192,16 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param selectionOp the selection operator to use
      * @returns the search builder with the applied selection operation
      */
-    addSelectionOperator(selectionOp: Selection<C>): SearchAlgorithmBuilder<C> {
+    addSelectionOperator(selectionOp: Selection<C>): this {
         this._selectionOperator = selectionOp;
-
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
      * Adds the LocalSearch operators callable by the given search algorithm
      * @param localSearchOperators the LocalSearch operators to be used by the algorithm
      */
-    addLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): SearchAlgorithmBuilder<C> {
+    addLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): this {
         this._localSearchOperators = localSearchOperators;
         return this;
     }
