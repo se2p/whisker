@@ -177,7 +177,7 @@ export class NeatChromosome extends NetworkChromosome {
     private connectNodeFully(nodesToConnect: NodeGene[]) {
         for (const inputNode of this.layers.get(0)) {
             for (const nodeToConnect of nodesToConnect) {
-                const newConnection = new ConnectionGene(inputNode, nodeToConnect, 0, true, 0, false);
+                const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
                 this.addConnection(newConnection);
             }
         }
@@ -204,11 +204,11 @@ export class NeatChromosome extends NetworkChromosome {
             const hiddenNode = new HiddenNode(this.getNumNodes(), depth, this.activationFunction);
             this.addNode(hiddenNode, [...featureMap.values()][0], minDepthNode);
             for (const inputNode of featureMap.values()) {
-                const inputHiddenConnection = new ConnectionGene(inputNode, hiddenNode, 0, true, 0, false);
+                const inputHiddenConnection = new ConnectionGene(inputNode, hiddenNode, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
                 this.addConnection(inputHiddenConnection);
             }
             for (const nodeToConnect of nodesToConnect) {
-                const hiddenOutputConnection = new ConnectionGene(hiddenNode, nodeToConnect, 0, true, 0, false);
+                const hiddenOutputConnection = new ConnectionGene(hiddenNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
                 this.addConnection(hiddenOutputConnection);
             }
         }
@@ -226,7 +226,7 @@ export class NeatChromosome extends NetworkChromosome {
         const connections: ConnectionGene[] = [];
         const biasNode = this.layers.get(0).find(node => node instanceof BiasNode);
         for (const nodeToConnect of nodesToConnect) {
-            const newConnection = new ConnectionGene(biasNode, nodeToConnect, 0, true, 0, false);
+            const newConnection = new ConnectionGene(biasNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
             this.addConnection(newConnection);
         }
 
@@ -239,7 +239,7 @@ export class NeatChromosome extends NetworkChromosome {
             // For each input node of the Sprite create a connection to each Output-Node.
             for (const inputNode of this.inputNodes.get(spriteToConnect).values()) {
                 for (const nodeToConnect of nodesToConnect) {
-                    const newConnection = new ConnectionGene(inputNode, nodeToConnect, 0, true, 0, false);
+                    const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
                     this.addConnection(newConnection);
                 }
             }

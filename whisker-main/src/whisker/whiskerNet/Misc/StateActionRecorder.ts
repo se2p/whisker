@@ -12,6 +12,7 @@ import VMWrapper from "../../../vm/vm-wrapper";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
+import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -111,7 +112,8 @@ export class StateActionRecorder extends EventEmitter {
 
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
-            if (availableActions.indexOf(event.stringIdentifier()) >= 0 || event instanceof TypeTextEvent) {
+            if (availableActions.indexOf(event.stringIdentifier()) >= 0 ||
+                event instanceof TypeTextEvent || event instanceof TypeNumberEvent) {
                 this._recordAction(event);
             }
         }
@@ -129,7 +131,7 @@ export class StateActionRecorder extends EventEmitter {
                 event = this._handleKeyBoardInput(actionData);
                 break;
             case 'text':
-                event = new TypeTextEvent(actionData.text);
+                event = this._handleTextInput(actionData);
                 break;
             default:
                 event = undefined;
@@ -164,6 +166,20 @@ export class StateActionRecorder extends EventEmitter {
     }
 
     /**
+     * Handles text input of an asked question.
+     * @param actionData the action data object containing the answer as string.
+     * @returns {@link TypeNumberEvent} if the obtained text is a number and {@link TypeTextEvent} otherwise.
+     */
+    private _handleTextInput(actionData): ScratchEvent {
+        const text = actionData.text;
+        if (isNaN(text)) {
+            return new TypeTextEvent(text);
+        } else {
+            return new TypeNumberEvent(text);
+        }
+    }
+
+    /**
      * Adds a {@link WaitEvent} if no action has been executed for a set number of steps.
      */
     private _checkForWait(): void {
@@ -191,6 +207,9 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             case "TypeTextEvent":
                 parameter = {};
+                break;
+            case "TypeNumberEvent":
+                parameter = {"Number": event.getParameters().pop()};   // Number
                 break;
         }
 

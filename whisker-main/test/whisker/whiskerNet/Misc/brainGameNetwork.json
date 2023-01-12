@@ -1,313 +1,9 @@
 {
     "Network 0": {
-        "id": 0,
+        "id": 601,
         "aF": "RELU",
         "cM": "fullyHidden",
-        "tf": "_g]bUx_)fX#|IqWMs9I8-Stage",
-        "Nodes": {
-            "Node 0": {
-                "id": 0,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Stage",
-                "feature": "VARnumber 1"
-            },
-            "Node 1": {
-                "id": 1,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Stage",
-                "feature": "VARnumber 2"
-            },
-            "Node 2": {
-                "id": 2,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Stage",
-                "feature": "VARtime"
-            },
-            "Node 3": {
-                "id": 3,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Stage",
-                "feature": "VARscore"
-            },
-            "Node 4": {
-                "id": 4,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Play",
-                "feature": "X"
-            },
-            "Node 5": {
-                "id": 5,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Play",
-                "feature": "Y"
-            },
-            "Node 6": {
-                "id": 6,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Play",
-                "feature": "Dir"
-            },
-            "Node 7": {
-                "id": 7,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Play",
-                "feature": "Size"
-            },
-            "Node 8": {
-                "id": 8,
-                "t": "B",
-                "aF": "NONE"
-            },
-            "Node 9": {
-                "id": 16,
-                "t": "H",
-                "aF": "RELU",
-                "d": 0.5
-            },
-            "Node 10": {
-                "id": 17,
-                "t": "H",
-                "aF": "RELU",
-                "d": 0.5
-            },
-            "Node 11": {
-                "id": 9,
-                "t": "C",
-                "aF": "NONE",
-                "event": "ClickSpriteEvent-Play"
-            },
-            "Node 12": {
-                "id": 10,
-                "t": "C",
-                "aF": "NONE",
-                "event": "MouseMoveToEvent--1-0"
-            },
-            "Node 13": {
-                "id": 11,
-                "t": "C",
-                "aF": "NONE",
-                "event": "MouseMoveEvent"
-            },
-            "Node 14": {
-                "id": 12,
-                "t": "C",
-                "aF": "NONE",
-                "event": "WaitEvent"
-            },
-            "Node 15": {
-                "id": 13,
-                "t": "R",
-                "aF": "SIGMOID",
-                "event": "MouseMoveEvent",
-                "eventP": "X"
-            },
-            "Node 16": {
-                "id": 14,
-                "t": "R",
-                "aF": "SIGMOID",
-                "event": "MouseMoveEvent",
-                "eventP": "Y"
-            },
-            "Node 17": {
-                "id": 15,
-                "t": "R",
-                "aF": "SIGMOID",
-                "event": "WaitEvent",
-                "eventP": "Duration"
-            }
-        },
-        "Cons": {
-            "Con 0": {
-                "s": 0,
-                "t": 16,
-                "w": 0.66838,
-                "e": true,
-                "i": 0,
-                "r": false
-            },
-            "Con 1": {
-                "s": 1,
-                "t": 16,
-                "w": -0.96247,
-                "e": true,
-                "i": 1,
-                "r": false
-            },
-            "Con 2": {
-                "s": 2,
-                "t": 16,
-                "w": 0.44937,
-                "e": true,
-                "i": 2,
-                "r": false
-            },
-            "Con 3": {
-                "s": 3,
-                "t": 16,
-                "w": -0.0282,
-                "e": true,
-                "i": 3,
-                "r": false
-            },
-            "Con 4": {
-                "s": 16,
-                "t": 9,
-                "w": 0.15422,
-                "e": true,
-                "i": 4,
-                "r": false
-            },
-            "Con 5": {
-                "s": 16,
-                "t": 10,
-                "w": 0.80526,
-                "e": true,
-                "i": 5,
-                "r": false
-            },
-            "Con 6": {
-                "s": 16,
-                "t": 11,
-                "w": 0.10393,
-                "e": true,
-                "i": 6,
-                "r": false
-            },
-            "Con 7": {
-                "s": 16,
-                "t": 12,
-                "w": -0.95594,
-                "e": true,
-                "i": 7,
-                "r": false
-            },
-            "Con 8": {
-                "s": 16,
-                "t": 13,
-                "w": -0.78793,
-                "e": true,
-                "i": 8,
-                "r": false
-            },
-            "Con 9": {
-                "s": 16,
-                "t": 14,
-                "w": -0.10191,
-                "e": true,
-                "i": 9,
-                "r": false
-            },
-            "Con 10": {
-                "s": 16,
-                "t": 15,
-                "w": 0.54038,
-                "e": true,
-                "i": 10,
-                "r": false
-            },
-            "Con 11": {
-                "s": 4,
-                "t": 17,
-                "w": 0.50315,
-                "e": true,
-                "i": 11,
-                "r": false
-            },
-            "Con 12": {
-                "s": 5,
-                "t": 17,
-                "w": 0.18762,
-                "e": true,
-                "i": 12,
-                "r": false
-            },
-            "Con 13": {
-                "s": 6,
-                "t": 17,
-                "w": -0.52348,
-                "e": true,
-                "i": 13,
-                "r": false
-            },
-            "Con 14": {
-                "s": 7,
-                "t": 17,
-                "w": -0.48819,
-                "e": true,
-                "i": 14,
-                "r": false
-            },
-            "Con 15": {
-                "s": 17,
-                "t": 9,
-                "w": -0.19414,
-                "e": true,
-                "i": 15,
-                "r": false
-            },
-            "Con 16": {
-                "s": 17,
-                "t": 10,
-                "w": 0.6858,
-                "e": true,
-                "i": 16,
-                "r": false
-            },
-            "Con 17": {
-                "s": 17,
-                "t": 11,
-                "w": -0.92859,
-                "e": true,
-                "i": 17,
-                "r": false
-            },
-            "Con 18": {
-                "s": 17,
-                "t": 12,
-                "w": -0.41387,
-                "e": true,
-                "i": 18,
-                "r": false
-            },
-            "Con 19": {
-                "s": 17,
-                "t": 13,
-                "w": -0.99843,
-                "e": true,
-                "i": 19,
-                "r": false
-            },
-            "Con 20": {
-                "s": 17,
-                "t": 14,
-                "w": 0.01526,
-                "e": true,
-                "i": 20,
-                "r": false
-            },
-            "Con 21": {
-                "s": 17,
-                "t": 15,
-                "w": 0.36177,
-                "e": true,
-                "i": 21,
-                "r": false
-            }
-        }
-    },
-    "Network 1": {
-        "id": 600,
-        "aF": "RELU",
-        "cM": "fullyHidden",
-        "tf": "6~wseMb,5t=}gM,R#jBS-Stage",
+        "tf": "gzW-OBp:b4f_,Hxltlce-Giga",
         "Nodes": {
             "Node 0": {
                 "id": 0,
@@ -406,212 +102,177 @@
                 "feature": "Costume"
             },
             "Node 14": {
-                "id": 47,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Result",
-                "feature": "X"
-            },
-            "Node 15": {
-                "id": 48,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Result",
-                "feature": "Y"
-            },
-            "Node 16": {
-                "id": 49,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Result",
-                "feature": "Dir"
-            },
-            "Node 17": {
-                "id": 50,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Result",
-                "feature": "Size"
-            },
-            "Node 18": {
-                "id": 51,
-                "t": "I",
-                "aF": "NONE",
-                "sprite": "Result",
-                "feature": "Costume"
-            },
-            "Node 19": {
                 "id": 16,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 20": {
+            "Node 15": {
                 "id": 17,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 21": {
+            "Node 16": {
                 "id": 19,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 22": {
+            "Node 17": {
                 "id": 20,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 23": {
+            "Node 18": {
                 "id": 22,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 24": {
+            "Node 19": {
                 "id": 23,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 25": {
+            "Node 20": {
                 "id": 25,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 26": {
+            "Node 21": {
                 "id": 26,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 27": {
+            "Node 22": {
                 "id": 28,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 28": {
+            "Node 23": {
                 "id": 29,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 29": {
+            "Node 24": {
                 "id": 31,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 30": {
+            "Node 25": {
                 "id": 32,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 31": {
+            "Node 26": {
                 "id": 34,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 32": {
+            "Node 27": {
                 "id": 35,
                 "t": "H",
                 "aF": "RELU",
                 "d": 0.5
             },
-            "Node 33": {
+            "Node 28": {
                 "id": 9,
                 "t": "C",
                 "aF": "NONE",
                 "event": "ClickSpriteEvent-Play"
             },
-            "Node 34": {
+            "Node 29": {
                 "id": 10,
                 "t": "C",
                 "aF": "NONE",
                 "event": "MouseMoveToEvent--1-0"
             },
-            "Node 35": {
+            "Node 30": {
                 "id": 11,
                 "t": "C",
                 "aF": "NONE",
                 "event": "MouseMoveEvent"
             },
-            "Node 36": {
+            "Node 31": {
                 "id": 12,
                 "t": "C",
                 "aF": "NONE",
                 "event": "WaitEvent"
             },
-            "Node 37": {
+            "Node 32": {
                 "id": 13,
                 "t": "R",
-                "aF": "SIGMOID",
+                "aF": "NONE",
                 "event": "MouseMoveEvent",
                 "eventP": "X"
             },
-            "Node 38": {
+            "Node 33": {
                 "id": 14,
                 "t": "R",
-                "aF": "SIGMOID",
+                "aF": "NONE",
                 "event": "MouseMoveEvent",
                 "eventP": "Y"
             },
-            "Node 39": {
+            "Node 34": {
                 "id": 15,
                 "t": "R",
                 "aF": "SIGMOID",
                 "event": "WaitEvent",
                 "eventP": "Duration"
             },
-            "Node 40": {
+            "Node 35": {
                 "id": 36,
                 "t": "C",
                 "aF": "NONE",
                 "event": "TypeNumberEvent"
             },
-            "Node 41": {
+            "Node 36": {
                 "id": 37,
                 "t": "R",
-                "aF": "SIGMOID",
+                "aF": "NONE",
                 "event": "TypeNumberEvent",
                 "eventP": "Number"
             },
-            "Node 42": {
+            "Node 37": {
                 "id": 38,
                 "t": "C",
                 "aF": "NONE",
                 "event": "TypeTextEvent-0"
             },
-            "Node 43": {
+            "Node 38": {
                 "id": 39,
                 "t": "C",
                 "aF": "NONE",
                 "event": "TypeTextEvent-10"
             },
-            "Node 44": {
+            "Node 39": {
                 "id": 40,
                 "t": "C",
                 "aF": "NONE",
                 "event": "TypeTextEvent-Hello"
             },
-            "Node 45": {
+            "Node 40": {
                 "id": 41,
                 "t": "C",
                 "aF": "NONE",
-                "event": "TypeTextEvent-CIK"
+                "event": "TypeTextEvent-u3G"
             }
         },
         "Cons": {
             "Con 0": {
                 "s": 0,
                 "t": 16,
-                "w": 0.66838,
+                "w": 0.16307,
                 "e": true,
                 "i": 0,
                 "r": false
@@ -619,7 +280,7 @@
             "Con 1": {
                 "s": 1,
                 "t": 16,
-                "w": -0.96247,
+                "w": -0.90195,
                 "e": true,
                 "i": 1,
                 "r": false
@@ -627,7 +288,7 @@
             "Con 2": {
                 "s": 2,
                 "t": 16,
-                "w": 0.44937,
+                "w": -0.57858,
                 "e": true,
                 "i": 2,
                 "r": false
@@ -635,7 +296,7 @@
             "Con 3": {
                 "s": 3,
                 "t": 16,
-                "w": -0.0282,
+                "w": -0.98413,
                 "e": true,
                 "i": 3,
                 "r": false
@@ -643,7 +304,7 @@
             "Con 4": {
                 "s": 16,
                 "t": 9,
-                "w": 0.15422,
+                "w": -0.97661,
                 "e": true,
                 "i": 4,
                 "r": false
@@ -651,7 +312,7 @@
             "Con 5": {
                 "s": 16,
                 "t": 10,
-                "w": 0.80526,
+                "w": 0.95632,
                 "e": true,
                 "i": 5,
                 "r": false
@@ -659,7 +320,7 @@
             "Con 6": {
                 "s": 16,
                 "t": 11,
-                "w": 0.10393,
+                "w": -0.85818,
                 "e": true,
                 "i": 6,
                 "r": false
@@ -667,7 +328,7 @@
             "Con 7": {
                 "s": 16,
                 "t": 12,
-                "w": -0.95594,
+                "w": 0.49965,
                 "e": true,
                 "i": 7,
                 "r": false
@@ -675,7 +336,7 @@
             "Con 8": {
                 "s": 16,
                 "t": 13,
-                "w": -0.78793,
+                "w": -0.34674,
                 "e": true,
                 "i": 8,
                 "r": false
@@ -683,7 +344,7 @@
             "Con 9": {
                 "s": 16,
                 "t": 14,
-                "w": -0.10191,
+                "w": -0.62575,
                 "e": true,
                 "i": 9,
                 "r": false
@@ -691,7 +352,7 @@
             "Con 10": {
                 "s": 16,
                 "t": 15,
-                "w": 0.54038,
+                "w": 0.36017,
                 "e": true,
                 "i": 10,
                 "r": false
@@ -699,7 +360,7 @@
             "Con 11": {
                 "s": 4,
                 "t": 17,
-                "w": 0.50315,
+                "w": 0.34557,
                 "e": true,
                 "i": 11,
                 "r": false
@@ -707,7 +368,7 @@
             "Con 12": {
                 "s": 5,
                 "t": 17,
-                "w": 0.18762,
+                "w": 0.5465,
                 "e": true,
                 "i": 12,
                 "r": false
@@ -715,7 +376,7 @@
             "Con 13": {
                 "s": 6,
                 "t": 17,
-                "w": -0.52348,
+                "w": -0.56172,
                 "e": true,
                 "i": 13,
                 "r": false
@@ -723,7 +384,7 @@
             "Con 14": {
                 "s": 7,
                 "t": 17,
-                "w": -0.48819,
+                "w": -0.13342,
                 "e": true,
                 "i": 14,
                 "r": false
@@ -731,7 +392,7 @@
             "Con 15": {
                 "s": 17,
                 "t": 9,
-                "w": -0.19414,
+                "w": -0.5081,
                 "e": true,
                 "i": 15,
                 "r": false
@@ -739,7 +400,7 @@
             "Con 16": {
                 "s": 17,
                 "t": 10,
-                "w": 0.6858,
+                "w": 0.56732,
                 "e": true,
                 "i": 16,
                 "r": false
@@ -747,7 +408,7 @@
             "Con 17": {
                 "s": 17,
                 "t": 11,
-                "w": -0.92859,
+                "w": -0.95037,
                 "e": true,
                 "i": 17,
                 "r": false
@@ -755,7 +416,7 @@
             "Con 18": {
                 "s": 17,
                 "t": 12,
-                "w": -0.41387,
+                "w": -0.95622,
                 "e": true,
                 "i": 18,
                 "r": false
@@ -763,7 +424,7 @@
             "Con 19": {
                 "s": 17,
                 "t": 13,
-                "w": -0.99843,
+                "w": 0.58062,
                 "e": true,
                 "i": 19,
                 "r": false
@@ -771,7 +432,7 @@
             "Con 20": {
                 "s": 17,
                 "t": 14,
-                "w": 0.01526,
+                "w": 0.72805,
                 "e": true,
                 "i": 20,
                 "r": false
@@ -779,7 +440,7 @@
             "Con 21": {
                 "s": 17,
                 "t": 15,
-                "w": 0.36177,
+                "w": 0.03547,
                 "e": true,
                 "i": 21,
                 "r": false
@@ -787,481 +448,481 @@
             "Con 22": {
                 "s": 0,
                 "t": 19,
-                "w": 0,
+                "w": 0.86499,
                 "e": true,
-                "i": 99,
+                "i": 97,
                 "r": false
             },
             "Con 23": {
                 "s": 1,
                 "t": 19,
-                "w": 0,
+                "w": -0.2602,
                 "e": true,
-                "i": 100,
+                "i": 98,
                 "r": false
             },
             "Con 24": {
                 "s": 2,
                 "t": 19,
-                "w": 0,
+                "w": 0.28075,
                 "e": true,
-                "i": 101,
+                "i": 99,
                 "r": false
             },
             "Con 25": {
                 "s": 3,
                 "t": 19,
-                "w": 0,
+                "w": -0.29609,
                 "e": true,
-                "i": 102,
+                "i": 100,
                 "r": false
             },
             "Con 26": {
                 "s": 19,
                 "t": 36,
-                "w": 0,
+                "w": 0.48458,
                 "e": true,
-                "i": 103,
+                "i": 101,
                 "r": false
             },
             "Con 27": {
                 "s": 4,
                 "t": 20,
-                "w": 0,
+                "w": -0.53157,
                 "e": true,
-                "i": 104,
+                "i": 102,
                 "r": false
             },
             "Con 28": {
                 "s": 5,
                 "t": 20,
-                "w": 0,
+                "w": 0.31597,
                 "e": true,
-                "i": 105,
+                "i": 103,
                 "r": false
             },
             "Con 29": {
                 "s": 6,
                 "t": 20,
-                "w": 0,
+                "w": -0.71972,
                 "e": true,
-                "i": 106,
+                "i": 104,
                 "r": false
             },
             "Con 30": {
                 "s": 7,
                 "t": 20,
-                "w": 0,
+                "w": 0.31815,
                 "e": true,
-                "i": 107,
+                "i": 105,
                 "r": false
             },
             "Con 31": {
                 "s": 20,
                 "t": 36,
-                "w": 0,
+                "w": -0.46548,
                 "e": true,
-                "i": 108,
+                "i": 106,
                 "r": false
             },
             "Con 32": {
                 "s": 0,
                 "t": 22,
-                "w": 0,
+                "w": 0.96025,
                 "e": true,
-                "i": 109,
+                "i": 107,
                 "r": false
             },
             "Con 33": {
                 "s": 1,
                 "t": 22,
-                "w": 0,
+                "w": -0.33676,
                 "e": true,
-                "i": 110,
+                "i": 108,
                 "r": false
             },
             "Con 34": {
                 "s": 2,
                 "t": 22,
-                "w": 0,
+                "w": 0.19288,
                 "e": true,
-                "i": 111,
+                "i": 109,
                 "r": false
             },
             "Con 35": {
                 "s": 3,
                 "t": 22,
-                "w": 0,
+                "w": 0.3578,
                 "e": true,
-                "i": 112,
+                "i": 110,
                 "r": false
             },
             "Con 36": {
                 "s": 22,
                 "t": 37,
-                "w": 0,
+                "w": 0.33703,
                 "e": true,
-                "i": 113,
+                "i": 111,
                 "r": false
             },
             "Con 37": {
                 "s": 4,
                 "t": 23,
-                "w": 0,
+                "w": -0.87562,
                 "e": true,
-                "i": 114,
+                "i": 112,
                 "r": false
             },
             "Con 38": {
                 "s": 5,
                 "t": 23,
-                "w": 0,
+                "w": 0.30628,
                 "e": true,
-                "i": 115,
+                "i": 113,
                 "r": false
             },
             "Con 39": {
                 "s": 6,
                 "t": 23,
-                "w": 0,
+                "w": -0.82714,
                 "e": true,
-                "i": 116,
+                "i": 114,
                 "r": false
             },
             "Con 40": {
                 "s": 7,
                 "t": 23,
-                "w": 0,
+                "w": -0.83763,
                 "e": true,
-                "i": 117,
+                "i": 115,
                 "r": false
             },
             "Con 41": {
                 "s": 23,
                 "t": 37,
-                "w": 0,
+                "w": -0.36097,
                 "e": true,
-                "i": 118,
+                "i": 116,
                 "r": false
             },
             "Con 42": {
                 "s": 0,
                 "t": 25,
-                "w": 0,
+                "w": -0.99594,
                 "e": true,
-                "i": 119,
+                "i": 117,
                 "r": false
             },
             "Con 43": {
                 "s": 1,
                 "t": 25,
-                "w": 0,
+                "w": -0.85983,
                 "e": true,
-                "i": 120,
+                "i": 118,
                 "r": false
             },
             "Con 44": {
                 "s": 2,
                 "t": 25,
-                "w": 0,
+                "w": -0.81064,
                 "e": true,
-                "i": 121,
+                "i": 119,
                 "r": false
             },
             "Con 45": {
                 "s": 3,
                 "t": 25,
-                "w": 0,
+                "w": 0.66396,
                 "e": true,
-                "i": 122,
+                "i": 120,
                 "r": false
             },
             "Con 46": {
                 "s": 25,
                 "t": 38,
-                "w": 0,
+                "w": -0.10887,
                 "e": true,
-                "i": 123,
+                "i": 121,
                 "r": false
             },
             "Con 47": {
                 "s": 4,
                 "t": 26,
-                "w": 0,
+                "w": -0.20938,
                 "e": true,
-                "i": 124,
+                "i": 122,
                 "r": false
             },
             "Con 48": {
                 "s": 5,
                 "t": 26,
-                "w": 0,
+                "w": 0.9859,
                 "e": true,
-                "i": 125,
+                "i": 123,
                 "r": false
             },
             "Con 49": {
                 "s": 6,
                 "t": 26,
-                "w": 0,
+                "w": 0.24856,
                 "e": true,
-                "i": 126,
+                "i": 124,
                 "r": false
             },
             "Con 50": {
                 "s": 7,
                 "t": 26,
-                "w": 0,
+                "w": 0.27614,
                 "e": true,
-                "i": 127,
+                "i": 125,
                 "r": false
             },
             "Con 51": {
                 "s": 26,
                 "t": 38,
-                "w": 0,
+                "w": 0.80321,
                 "e": true,
-                "i": 128,
+                "i": 126,
                 "r": false
             },
             "Con 52": {
                 "s": 0,
                 "t": 28,
-                "w": 0,
+                "w": -0.95419,
                 "e": true,
-                "i": 129,
+                "i": 127,
                 "r": false
             },
             "Con 53": {
                 "s": 1,
                 "t": 28,
-                "w": 0,
+                "w": -0.52075,
                 "e": true,
-                "i": 130,
+                "i": 128,
                 "r": false
             },
             "Con 54": {
                 "s": 2,
                 "t": 28,
-                "w": 0,
+                "w": 0.94922,
                 "e": true,
-                "i": 131,
+                "i": 129,
                 "r": false
             },
             "Con 55": {
                 "s": 3,
                 "t": 28,
-                "w": 0,
+                "w": -0.8838,
                 "e": true,
-                "i": 132,
+                "i": 130,
                 "r": false
             },
             "Con 56": {
                 "s": 28,
                 "t": 39,
-                "w": 0,
+                "w": 0.23329,
                 "e": true,
-                "i": 133,
+                "i": 131,
                 "r": false
             },
             "Con 57": {
                 "s": 4,
                 "t": 29,
-                "w": 0,
+                "w": 0.25727,
                 "e": true,
-                "i": 134,
+                "i": 132,
                 "r": false
             },
             "Con 58": {
                 "s": 5,
                 "t": 29,
-                "w": 0,
+                "w": -0.70692,
                 "e": true,
-                "i": 135,
+                "i": 133,
                 "r": false
             },
             "Con 59": {
                 "s": 6,
                 "t": 29,
-                "w": 0,
+                "w": -0.62841,
                 "e": true,
-                "i": 136,
+                "i": 134,
                 "r": false
             },
             "Con 60": {
                 "s": 7,
                 "t": 29,
-                "w": 0,
+                "w": -0.43931,
                 "e": true,
-                "i": 137,
+                "i": 135,
                 "r": false
             },
             "Con 61": {
                 "s": 29,
                 "t": 39,
-                "w": 0,
+                "w": 0.40977,
                 "e": true,
-                "i": 138,
+                "i": 136,
                 "r": false
             },
             "Con 62": {
                 "s": 0,
                 "t": 31,
-                "w": 0,
+                "w": -0.27252,
                 "e": true,
-                "i": 139,
+                "i": 137,
                 "r": false
             },
             "Con 63": {
                 "s": 1,
                 "t": 31,
-                "w": 0,
+                "w": -0.30718,
                 "e": true,
-                "i": 140,
+                "i": 138,
                 "r": false
             },
             "Con 64": {
                 "s": 2,
                 "t": 31,
-                "w": 0,
+                "w": -0.70039,
                 "e": true,
-                "i": 141,
+                "i": 139,
                 "r": false
             },
             "Con 65": {
                 "s": 3,
                 "t": 31,
-                "w": 0,
+                "w": 0.13429,
                 "e": true,
-                "i": 142,
+                "i": 140,
                 "r": false
             },
             "Con 66": {
                 "s": 31,
                 "t": 40,
-                "w": 0,
+                "w": -0.51302,
                 "e": true,
-                "i": 143,
+                "i": 141,
                 "r": false
             },
             "Con 67": {
                 "s": 4,
                 "t": 32,
-                "w": 0,
+                "w": 0.79594,
                 "e": true,
-                "i": 144,
+                "i": 142,
                 "r": false
             },
             "Con 68": {
                 "s": 5,
                 "t": 32,
-                "w": 0,
+                "w": -0.57463,
                 "e": true,
-                "i": 145,
+                "i": 143,
                 "r": false
             },
             "Con 69": {
                 "s": 6,
                 "t": 32,
-                "w": 0,
+                "w": -0.22349,
                 "e": true,
-                "i": 146,
+                "i": 144,
                 "r": false
             },
             "Con 70": {
                 "s": 7,
                 "t": 32,
-                "w": 0,
+                "w": -0.26793,
                 "e": true,
-                "i": 147,
+                "i": 145,
                 "r": false
             },
             "Con 71": {
                 "s": 32,
                 "t": 40,
-                "w": 0,
+                "w": 0.43404,
                 "e": true,
-                "i": 148,
+                "i": 146,
                 "r": false
             },
             "Con 72": {
                 "s": 0,
                 "t": 34,
-                "w": 0,
+                "w": -0.60526,
                 "e": true,
-                "i": 149,
+                "i": 147,
                 "r": false
             },
             "Con 73": {
                 "s": 1,
                 "t": 34,
-                "w": 0,
+                "w": 0.94136,
                 "e": true,
-                "i": 150,
+                "i": 148,
                 "r": false
             },
             "Con 74": {
                 "s": 2,
                 "t": 34,
-                "w": 0,
+                "w": -0.00637,
                 "e": true,
-                "i": 151,
+                "i": 149,
                 "r": false
             },
             "Con 75": {
                 "s": 3,
                 "t": 34,
-                "w": 0,
+                "w": -0.82498,
                 "e": true,
-                "i": 152,
+                "i": 150,
                 "r": false
             },
             "Con 76": {
                 "s": 34,
                 "t": 41,
-                "w": 0,
+                "w": -0.74288,
                 "e": true,
-                "i": 153,
+                "i": 151,
                 "r": false
             },
             "Con 77": {
                 "s": 4,
                 "t": 35,
-                "w": 0,
+                "w": 0.93748,
                 "e": true,
-                "i": 154,
+                "i": 152,
                 "r": false
             },
             "Con 78": {
                 "s": 5,
                 "t": 35,
-                "w": 0,
+                "w": -0.04934,
                 "e": true,
-                "i": 155,
+                "i": 153,
                 "r": false
             },
             "Con 79": {
                 "s": 6,
                 "t": 35,
-                "w": 0,
+                "w": -0.48729,
                 "e": true,
-                "i": 156,
+                "i": 154,
                 "r": false
             },
             "Con 80": {
                 "s": 7,
                 "t": 35,
-                "w": 0,
+                "w": 0.09893,
                 "e": true,
-                "i": 157,
+                "i": 155,
                 "r": false
             },
             "Con 81": {
                 "s": 35,
                 "t": 41,
-                "w": 0,
+                "w": 0.55501,
                 "e": true,
-                "i": 158,
+                "i": 156,
                 "r": false
             }
         }

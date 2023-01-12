@@ -17,6 +17,7 @@ import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerator
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
+import {TypeNumberEvent} from "../../../../src/whisker/testcase/events/TypeNumberEvent";
 
 
 const generateNetwork = () => {
@@ -52,7 +53,7 @@ const generateNetwork = () => {
 };
 
 const loadNetwork = (networkJSON: any): NetworkChromosome => {
-    const networkLoader = new NetworkLoader(networkJSON, [new WaitEvent(), new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow')]);
+    const networkLoader = new NetworkLoader(networkJSON, [new WaitEvent(), new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow'), new TypeNumberEvent()]);
     return networkLoader.loadNetworks()[0];
 };
 
@@ -128,9 +129,9 @@ describe('Test Backpropagation', () => {
         expect(finalLoss).toBeLessThan(startingLoss);
     });
 
-    test("Optimise Network without Regression Nodes", () => {
+    test("Optimise Network with textInput Events", () => {
         const backpropagation = new Backpropagation(groundTruthBrainGame);
-        const brainGameStatement = "eO])M=pEH7z-mk2rC?H^-Giga";
+        const brainGameStatement = ";/6q6yS-wKEraM79`q[H-Result";
         const net = loadNetwork(brainGameNetwork);
         const learningRate = 0.01;
         const startingLoss = backpropagation.stochasticGradientDescent(net, brainGameStatement, 1, learningRate);

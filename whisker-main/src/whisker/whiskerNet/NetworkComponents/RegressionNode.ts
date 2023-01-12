@@ -29,8 +29,10 @@ export class RegressionNode extends NodeGene {
         switch (event.toJSON()['type']) {
             case "WaitEvent":
             case "KeyPressEvent":
-            default:
                 activationFunction = ActivationFunction.SIGMOID;
+                break;
+            default:
+                activationFunction = ActivationFunction.NONE;
         }
 
         super(uID, 1, activationFunction, NodeType.OUTPUT);
