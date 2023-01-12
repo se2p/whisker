@@ -88,7 +88,7 @@ export class Backpropagation {
             }
 
         }
-        //Container.debugLog(`Setting weights to the best epoch ${bestEpochLoss} of iteration ${bestEpoch}`);
+        // Container.debugLog(`Loss ${bestEpochLoss}`);
         for (let j = 0; j < network.connections.length; j++) {
             network.connections[j].weight = bestWeights[j];
         }

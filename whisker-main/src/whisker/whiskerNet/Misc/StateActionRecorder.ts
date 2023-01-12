@@ -15,6 +15,8 @@ import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 
 
 export class StateActionRecorder extends EventEmitter {
+    private readonly WAIT_THRESHOLD = Infinity;
+
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
     private readonly _eventExtractor: NeuroevolutionScratchEventExtractor;
@@ -167,9 +169,8 @@ export class StateActionRecorder extends EventEmitter {
     private _checkForWait(): void {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         const acceleration = Container.acceleration != undefined ? Container.acceleration : 1;
-        const waitThreshold = 50;
-        if (stepsSinceLastAction > (waitThreshold / acceleration)) {
-            this._recordAction(new WaitEvent(waitThreshold));
+        if (stepsSinceLastAction > (this.WAIT_THRESHOLD / acceleration)) {
+            this._recordAction(new WaitEvent(this.WAIT_THRESHOLD));
         }
     }
 
