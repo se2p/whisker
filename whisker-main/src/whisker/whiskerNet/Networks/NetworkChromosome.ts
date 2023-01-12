@@ -342,7 +342,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
                 // Check if at least one output node has received an input. If not we have a defect network.
                 if (this.layers.get(1).every(node => !node.activatedFlag)){
-                    Container.debugLog("Defect network!");
                     return false;
                 }
 

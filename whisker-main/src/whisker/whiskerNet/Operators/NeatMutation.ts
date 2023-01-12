@@ -128,11 +128,11 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
                     this.mutateAddConnection(mutant, this._addConnectionTries);
                 } else {
-                    this.mutateWeight(mutant, this._perturbationPower);
+                    this.adjustWeights(mutant);
                 }
             }
 
-                // If we don't have a population Champion apply either structural mutation or non-structural mutation but
+            // If we don't have a population Champion apply either structural mutation or non-structural mutation but
             // not both!
             else {
                 // Structural mutation
@@ -147,24 +147,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 // Non structural mutation
                 else {
                     if (this._random.nextDouble() < this._mutateWeights) {
-                        mutated = true;
-
-                        // Determine whether we mutate weights genetically, or apply SGD.
-                        let appliedSGD = false;
-                        if (this._sgdEnabled && this._random.nextDouble() < this._sgdProbability) {
-                            const loss = this.applyStochasticGradientDescent(mutant);
-
-                            // If there are no training examples, we get NaN as a return loss from SGD and apply default
-                            // weight mutation.
-                            if (!isNaN(loss)) {
-                                appliedSGD = true;
-                            }
-                        }
-
-                        // Apply weight mutation if we didn't apply SGD or if there weren't any training examples.
-                        if (!appliedSGD) {
-                            this.mutateWeight(mutant, this._perturbationPower);
-                        }
+                        this.adjustWeights(mutant);
                     }
                     if (this._random.nextDouble() < this._mutateToggleEnableConnection) {
                         mutated = true;
@@ -277,6 +260,29 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     }
 
     /**
+     * Adjust the weights by applying SGD or weight mutation.
+     * @param mutant the mutant whose weights will be adjusted.
+     */
+    adjustWeights(mutant: NeatChromosome): void {
+        // Determine whether we mutate weights genetically, or apply SGD.
+        let appliedSGD = false;
+        if (this._sgdEnabled && this._random.nextDouble() < this._sgdProbability) {
+            const loss = this.applyStochasticGradientDescent(mutant);
+
+            // If there are no training examples, we get NaN as a return loss from SGD and apply default
+            // weight mutation.
+            if (!isNaN(loss)) {
+                appliedSGD = true;
+            }
+        }
+
+        // Apply weight mutation if we didn't apply SGD or if there weren't any training examples.
+        if (!appliedSGD) {
+            this.mutateWeight(mutant, this._perturbationPower);
+        }
+    }
+
+    /**
      * Adds a new node to the network.
      * @param chromosome the chromosome to mutate.
      */
@@ -337,24 +343,9 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      */
     mutateToggleEnableConnection(chromosome: NeatChromosome, times: number): void {
         for (let count = 0; count <= times; count++) {
-            // Pick a random connection
+            // Pick a random connection and switch its enable state
             const chosenConnection = this._random.pick(chromosome.connections);
-
-            // If we disable a connection, we have to make sure that another connection links out of the in-node
-            // in order to not lose a bigger section of the network
-            if (chosenConnection.isEnabled) {
-                let save = false;
-                for (const otherConnection of chromosome.connections) {
-                    if (((otherConnection.source.equals(chosenConnection.source)) && (otherConnection.isEnabled) &&
-                        (chosenConnection.innovation !== otherConnection.innovation)) || chosenConnection.isRecurrent) {
-                        save = true;
-                        break;
-                    }
-                }
-                if (save)
-                    chosenConnection.isEnabled = false;
-            } else
-                chosenConnection.isEnabled = true;
+            chosenConnection.isEnabled = !chosenConnection.isEnabled;
         }
     }
 

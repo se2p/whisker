@@ -106,7 +106,13 @@ export class NetworkExecutor {
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
             network.updateOutputNodes(this.availableEvents);
-            network.activateNetwork(spriteFeatures);
+            const defect = !network.activateNetwork(spriteFeatures);
+
+            // Stop if our network is defect.
+            if(defect){
+                console.log("Defect network:", network.toString());
+                break;
+            }
 
             // Select the next event and execute it if we did not decide to wait
             if (this._waitDuration <= 0) {

@@ -94,7 +94,6 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
 
         // Booleans for deciding if we inherit a connection and if we enable the new Connection.
         let skip = false;
-        let disable = false;
 
         // Here we save the chosen connection for each iteration of the while loop and if it's a recurrent one.
         let currentConnection: ConnectionGene;
@@ -143,12 +142,6 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
                         avgWeight = (parent1Connection.weight + parent2Connection.weight) / 2.0;
                     }
 
-                    // If one of both is disabled the new Connection is likely to be disabled as well
-                    if (!parent1Connection.isEnabled || !parent2Connection.isEnabled) {
-                        if (this.random.nextDouble() < 0.75) {
-                            disable = true;
-                        }
-                    }
                     i1++;
                     i2++;
                 }
@@ -196,7 +189,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
                 }
 
                 // Now add the new Connection
-                const newConnection = new ConnectionGene(newSourceNode, newTargetNode, currentConnection.weight, !disable, currentConnection.innovation,
+                const newConnection = new ConnectionGene(newSourceNode, newTargetNode, currentConnection.weight, currentConnection.isEnabled, currentConnection.innovation,
                     currentConnection.isRecurrent);
 
                 // Average the weight if we calculated a value for matching genes.
