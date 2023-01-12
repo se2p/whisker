@@ -41,7 +41,6 @@ export class Backpropagation {
         const dataSamples = this._organiseData(statement);
         let bestEpochLoss = Number.MAX_VALUE;
         let bestWeights = network.connections.map(conn => conn.weight);
-        let bestEpoch = 0;
         if (dataSamples.size <= 0) {
             Container.debugLog(`No data for statement: ${statement}`);
             return NaN;
@@ -80,19 +79,16 @@ export class Backpropagation {
                 this._backwardPass(network, labelVector);
                 this._adjustWeights(network, learningRate);
             }
-            if (i % 20 === 0) {
-                Container.debugLog(`Loss of epoch ${i}: ${epochLoss / [...dataSamples.keys()].length}`);
-            }
+
             totalLoss = epochLoss / [...dataSamples.keys()].length;
 
             if (totalLoss < bestEpochLoss) {
                 bestWeights = network.connections.map(conn => conn.weight);
                 bestEpochLoss = totalLoss;
-                bestEpoch = i;
             }
 
         }
-        Container.debugLog(`Setting weights to best epoch ${bestEpochLoss} of iteration ${bestEpoch}`);
+        //Container.debugLog(`Setting weights to the best epoch ${bestEpochLoss} of iteration ${bestEpoch}`);
         for (let j = 0; j < network.connections.length; j++) {
             network.connections[j].weight = bestWeights[j];
         }
