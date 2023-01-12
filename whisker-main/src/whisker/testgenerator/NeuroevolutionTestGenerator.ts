@@ -30,7 +30,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
 
         const testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
         await this.collectStatistics(testSuite);
-        const summary = this.summarizeSolution(archive);
+        const summary = await this.summarizeSolution(archive);
         return new WhiskerTestListWithSummary(testSuite, summary);
     }
 

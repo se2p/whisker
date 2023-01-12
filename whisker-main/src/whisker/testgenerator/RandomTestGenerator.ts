@@ -96,29 +96,29 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         const eventExtractor = this._config.getEventExtractor();
         const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
 
-        while (!(stoppingCondition.isFinished(this))) {
+        while (!(await stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
             const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
             const randomEventChromosome = new TestChromosome([], undefined, undefined);
             await randomTestExecutor.executeRandomEvents(randomEventChromosome, numberOfEvents);
-            this.updateArchive(randomEventChromosome);
+            await this.updateArchive(randomEventChromosome);
             this._iterations++;
             this.updateStatistics();
         }
         const testSuite = await this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);
-        return new WhiskerTestListWithSummary(testSuite, this.summarizeSolution(this._archive));
+        return new WhiskerTestListWithSummary(testSuite, await this.summarizeSolution(this._archive));
     }
 
-    private updateArchive(chromosome: TestChromosome): void {
+    private async updateArchive(chromosome: TestChromosome): Promise<void> {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = chromosome.getFitness(fitnessFunction);
+            const candidateFitness = await chromosome.getFitness(fitnessFunction);
             const candidateLength = chromosome.getLength();
-            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+            if (await fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);

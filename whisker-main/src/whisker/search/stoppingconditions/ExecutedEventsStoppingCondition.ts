@@ -13,11 +13,11 @@ export class ExecutedEventsStoppingCondition<T extends Chromosome> implements St
         this._maxEvents = maxEvents;
     }
 
-    getProgress(): number {
+    async getProgress(): Promise<number> {
         return StatisticsCollector.getInstance().eventsCount / this._maxEvents;
     }
 
-    isFinished(): boolean {
+    async isFinished(): Promise<boolean> {
         return StatisticsCollector.getInstance().eventsCount >= this._maxEvents;
     }
 }

@@ -64,13 +64,13 @@ export class Neatest extends NEAT {
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialise();
         const totalGoals = this._fitnessFunctions.size;
-        while (this._archive.size != totalGoals && !(this._stoppingCondition.isFinished(this))) {
+        while (this._archive.size != totalGoals && !(await this._stoppingCondition.isFinished(this))) {
             const currentTarget = this.setNextGoal();
             Container.debugLog(`Next goal ${this._archive.size}/${totalGoals}:${currentTarget}`);
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
-            while (!this._stoppingCondition.isFinished(this)) {
+            while (!(await this._stoppingCondition.isFinished(this))) {
                 await this.evaluateNetworks();
                 this.updateBestIndividualAndStatistics();
 
@@ -229,7 +229,7 @@ export class Neatest extends NEAT {
         for (const network of this._population.networks) {
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout,
                 this._neuroevolutionProperties.eventSelection);
-            this.updateArchive(network);
+            await this.updateArchive(network);
 
             // Check if we just covered the greenFlag event, and if so save the number of blocks that are covered
             // by only clicking on the greenFlag. This is ensured since we stop the execution as soon as we covered
@@ -256,7 +256,7 @@ export class Neatest extends NEAT {
             }
 
             // Stop if we covered the targeted statement or depleted the search budget.
-            if (this._archive.has(this._targetKey) || this._stoppingCondition.isFinished(this)) {
+            if (this._archive.has(this._targetKey) || await this._stoppingCondition.isFinished(this)) {
                 return;
             }
         }
@@ -281,12 +281,12 @@ export class Neatest extends NEAT {
      * Updates the archive of covered block statements. Each chromosome is mapped to the block it covers.
      * @param network The candidate network to update the archive with.
      */
-    protected override updateArchive(network: NeatChromosome): void {
+    protected override async updateArchive(network: NeatChromosome): Promise<void> {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
 
             // If we covered a statement update the archive, statistics and the map of open target statements.
-            if (this.isCovered(fitnessFunctionKey, network)) {
+            if (await this.isCovered(fitnessFunctionKey, network)) {
                 Container.debugLog(`Covered Statement ${fitnessFunctionKey}:${fitnessFunction}`);
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, network);
@@ -307,14 +307,14 @@ export class Neatest extends NEAT {
      * @param network the chromosome that is evaluated whether it covers the given statement.
      * @returns boolean which is true if the statement was covered.
      */
-    private isCovered(fitnessFunctionKey: number, network: NeatChromosome): boolean {
+    private async isCovered(fitnessFunctionKey: number, network: NeatChromosome): Promise<boolean> {
         const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
         const coverageStableCount = network.openStatementTargets.get(fitnessFunction);
-        const statementFitness = fitnessFunction.getFitness(network);
+        const statementFitness = await fitnessFunction.getFitness(network);
         return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount &&
                 !this._archive.has(fitnessFunctionKey)) ||
             (this._neuroevolutionProperties.coverageStableCount == 0 &&
-                fitnessFunction.isOptimal(statementFitness) &&
+                await fitnessFunction.isOptimal(statementFitness) &&
                 !this._archive.has(fitnessFunctionKey));
     }
 

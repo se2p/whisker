@@ -29,8 +29,8 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
         await executor.execute(network);
         network.initialiseOpenStatements([...network.openStatementTargets.keys()]);
-        const fitness = network.targetFitness.getFitness(network);
-        ReliableStatementFitness.updateUncoveredMap(network);
+        const fitness = await network.targetFitness.getFitness(network);
+        await ReliableStatementFitness.updateUncoveredMap(network);
         executor.resetState();
 
         if (fitness > 0) {
@@ -72,12 +72,12 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 await executor.execute(network);
             }
             executor.resetState();
-            ReliableStatementFitness.updateUncoveredMap(network);
+            await ReliableStatementFitness.updateUncoveredMap(network);
             executor.resetState();
 
             // Stop if we failed to cover our target statement.
-            if(!network.targetFitness.isCovered(network)){
-                network.fitness += (1 / network.targetFitness.getFitness(network));
+            if(!await network.targetFitness.isCovered(network)){
+                network.fitness += (1 / await network.targetFitness.getFitness(network));
                 break;
             }
         }
@@ -96,10 +96,10 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * target.
      * @param network the network chromosome that has finished its playthrough.
      */
-    private static updateUncoveredMap(network: NetworkChromosome): void {
+    private static async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
         for (const [statement, coverCount] of network.openStatementTargets.entries()) {
-            if (statement.isCovered(network)) {
+            if (await statement.isCovered(network)) {
                 network.openStatementTargets.set(statement, coverCount + 1);
                 if (statement === network.targetFitness) {
                     network.fitness++;
