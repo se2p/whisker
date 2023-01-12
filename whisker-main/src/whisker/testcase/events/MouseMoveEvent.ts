@@ -84,10 +84,9 @@ export class MouseMoveEvent extends ScratchEvent {
                 break;
             }
             case "activation": {
-                // Multiply with 0.2 to stretch the tanh function to focus around the center of the screen. If not
-                // stretched networks tends to move the mouse to the border of the screen.
-                this._x = Math.tanh(0.5 * args[0]) * 240;
-                this._y = Math.tanh(0.5 * args[1]) * 180;
+                // Clamp into coordinates.
+                this._x = Math.min(240, Math.max(-240, args[0]));
+                this._y = Math.min(180, Math.max(-180, args[0]));
                 break;
             }
         }

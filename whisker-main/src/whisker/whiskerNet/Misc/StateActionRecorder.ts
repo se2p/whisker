@@ -13,10 +13,17 @@ import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
+import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
+import {Util} from "../../../index";
+import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
+import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
+import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 
 
 export class StateActionRecorder extends EventEmitter {
     private readonly WAIT_THRESHOLD = Infinity;
+    private readonly MOUSE_MOVE_THRESHOLD = 10;
+    private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMove'
 
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
@@ -28,14 +35,18 @@ export class StateActionRecorder extends EventEmitter {
 
     private _isRecording: boolean;
     private _lastActionStep: number;
+    private _lastMouseMoveStep: number;
     private _checkForWaitInterval: number;
+    private _checkForMouseMoveInterval: number;
     private _pressedKeys: Map<string, number>;
     private readonly _stateAtAction: Map<string, InputFeatures>;
+    private _mouseCoordinates: [number, number];
 
     private readonly _onRunStart: () => void;
     private readonly _onRunStop: () => void;
     private readonly _onInput: () => void;
     private readonly _checkForWaitCallBack: () => void;
+    private readonly _checkForMouseMoveCallBack: () => void;
 
     constructor(scratch: Scratch) {
         super();
@@ -54,6 +65,7 @@ export class StateActionRecorder extends EventEmitter {
         this._onRunStop = this.onStopAll.bind(this);
         this._onInput = this.handleInput.bind(this);
         this._checkForWaitCallBack = this._checkForWait.bind(this);
+        this._checkForMouseMoveCallBack = this._checkForMouseMove.bind(this);
     }
 
     /**
@@ -108,7 +120,7 @@ export class StateActionRecorder extends EventEmitter {
     private handleInput(actionData): void {
         const event = this._inputToEvent(actionData);
         if (event) {
-            const availableActions = this._eventExtractor.extractEvents(this._vm).map(event => event.stringIdentifier());
+            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
 
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
@@ -132,6 +144,9 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             case 'text':
                 event = this._handleTextInput(actionData);
+                break;
+            case 'mouse':
+                event = this._handleMouseInput(actionData);
                 break;
             default:
                 event = undefined;
@@ -180,6 +195,60 @@ export class StateActionRecorder extends EventEmitter {
     }
 
     /**
+     * Handles mouse input.
+     * @param actionData the action data object containing mouse parameter.
+     * @returns a mouse click event if the mouse has been clicked and triggers the callback for mouse move events
+     * if the mouse has been moved.
+     */
+    private _handleMouseInput(actionData): ScratchEvent {
+        const scratchMouse = this._vm.runtime.ioDevices['mouse'];
+        this._mouseCoordinates = [scratchMouse.getScratchX(), scratchMouse.getScratchY()];
+        this._lastMouseMoveStep = this._getCurrentStepCount();
+
+        // Trigger callback for mouse move if there was no click event.
+        if (!this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) && !('isDown' in actionData)) {
+            this._checkForMouseMoveInterval = window.setInterval(this._checkForMouseMoveCallBack, 500);
+            this._stateAtAction.set(this.MOUSE_MOVE_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
+        }
+
+        // Creates a ClickEvent if a mouse button has been pressed.
+        if (actionData.isDown) {
+            const clickTarget = Util.getTargetSprite(this._vm);
+            let event: ScratchEvent;
+            if (clickTarget.isStage) {
+                event = new ClickStageEvent();
+            } else {
+                event = new ClickSpriteEvent(clickTarget);
+            }
+
+            clearInterval(this._checkForMouseMoveInterval);
+            this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
+            return event;
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Adds a {@link MouseMoveEvent} if the mouse has not been moved for some time. We wait with registering mouse
+     * movements to avoid an explosion of mouse movements when the mouse is moved from one place to another.
+     */
+    private _checkForMouseMove(): void {
+        const stepsSinceLastMouseMove = this._getCurrentStepCount() - this._lastMouseMoveStep;
+        if (this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) &&
+            stepsSinceLastMouseMove > this.MOUSE_MOVE_THRESHOLD) {
+            const clickTarget = Util.getTargetSprite(this._vm);
+            if (clickTarget.isStage) {
+                this._recordAction(new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]));
+            } else {
+                this._recordAction(new MouseMoveToEvent(clickTarget.x, clickTarget.y));
+            }
+            clearInterval(this._checkForWaitInterval);
+            this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
+        }
+    }
+
+    /**
      * Adds a {@link WaitEvent} if no action has been executed for a set number of steps.
      */
     private _checkForWait(): void {
@@ -211,6 +280,9 @@ export class StateActionRecorder extends EventEmitter {
             case "TypeNumberEvent":
                 parameter = {"Number": event.getParameters().pop()};   // Number
                 break;
+            case "MouseMoveEvent":
+                parameter = {"X": event.getParameters()[0], "Y": event.getParameters()[1]}; // Coordinates.
+                break;
         }
 
         const record: ActionRecord = {
@@ -218,6 +290,8 @@ export class StateActionRecorder extends EventEmitter {
             action: action,
             actionParameter: parameter
         };
+
+
         this._actionRecords.push(record);
         this._lastActionStep = this._getCurrentStepCount();
 
