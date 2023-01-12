@@ -66,9 +66,13 @@ export class Backpropagation {
                         labelVector.set(event, 0);
                     }
                 }
-                for (const regNode of network.regressionNodes.get(eventLabel)) {
-                    const trueValue = dataSamples.get(input).parameter[regNode.eventParameter];
-                    labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
+
+                // Evaluate regression nodes if we have some for the target event.
+                if(network.regressionNodes.has(eventLabel)) {
+                    for (const regNode of network.regressionNodes.get(eventLabel)) {
+                        const trueValue = dataSamples.get(input).parameter[regNode.eventParameter];
+                        labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
+                    }
                 }
 
                 // Compute the loss -> gradients of weights -> update the weights.

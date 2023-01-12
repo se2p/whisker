@@ -1,5 +1,7 @@
-import groundTruth from "./GroundTruth.json";
-import network from "./fruitCatchingNetwork.json";
+import groundTruthFruitCatching from "./GroundTruthFruitCatching.json";
+import groundTruthBrainGame from "./GroundTruthBrainGame.json";
+import fruitCatchingNetwork from "./fruitCatchingNetwork.json";
+import brainGameNetwork from "./brainGameNetwork.json";
 import {Backpropagation, LossFunction} from "../../../../src/whisker/whiskerNet/Misc/Backpropagation";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
@@ -49,8 +51,7 @@ const generateNetwork = () => {
     return new NeatChromosome(layer, cons, undefined, undefined, undefined);
 };
 
-const loadFruitCatchingNetwork = (): NetworkChromosome => {
-    const networkJSON = network as any;
+const loadNetwork = (networkJSON: any): NetworkChromosome => {
     const networkLoader = new NetworkLoader(networkJSON, [new WaitEvent(), new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow')]);
     return networkLoader.loadNetworks()[0];
 };
@@ -71,12 +72,12 @@ describe('Test Backpropagation', () => {
     };
 
     beforeEach(() => {
-        backpropagation = new Backpropagation(groundTruth as any);
+        backpropagation = new Backpropagation(groundTruthFruitCatching as any);
     });
 
     test("Check number of recordings after initialisation", () => {
         let featureRecordings = 0;
-        for (const recordings of Object.values(groundTruth)) {
+        for (const recordings of Object.values(groundTruthFruitCatching)) {
             if (!recordings['coverage'].includes(statement)) {
                 continue;
             }
@@ -119,12 +120,21 @@ describe('Test Backpropagation', () => {
         expect(finalLoss).toBeLessThan(0.00001);
     });
 
-    test("Optimise Network", () => {
-        const backpropagation = new Backpropagation(groundTruth);
-        const net = loadFruitCatchingNetwork();
+    test("Optimise Network with Regression Nodes", () => {
+        const net = loadNetwork(fruitCatchingNetwork);
         const learningRate = 0.01;
         const startingLoss = backpropagation.stochasticGradientDescent(net, statement, 1, learningRate);
         const finalLoss = backpropagation.stochasticGradientDescent(net, statement, 100, learningRate);
+        expect(finalLoss).toBeLessThan(startingLoss);
+    });
+
+    test("Optimise Network without Regression Nodes", () => {
+        const backpropagation = new Backpropagation(groundTruthBrainGame);
+        const brainGameStatement = "eO])M=pEH7z-mk2rC?H^-Giga";
+        const net = loadNetwork(brainGameNetwork);
+        const learningRate = 0.01;
+        const startingLoss = backpropagation.stochasticGradientDescent(net, brainGameStatement, 1, learningRate);
+        const finalLoss = backpropagation.stochasticGradientDescent(net, brainGameStatement, 100, learningRate);
         expect(finalLoss).toBeLessThan(startingLoss);
     });
 
