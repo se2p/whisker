@@ -15,6 +15,7 @@
     },
     "scripts": {
         "build": "webpack --color --bail",
+        "build:watch": "webpack --color --watch",
         "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail"
     },
     "author": "",

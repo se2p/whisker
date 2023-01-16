@@ -19,6 +19,7 @@
     },
     "scripts": {
         "build": "yarn --cwd scratch-analysis build && yarn --cwd whisker-main build && yarn --cwd whisker-web build",
+        "build:watch": "concurrently --names \"scratch-analysis,whisker-main,whisker-web\" \"yarn --cwd scratch-analysis build:watch\" \"yarn --cwd whisker-main build:watch\" \"yarn --cwd whisker-web build:watch\"",
         "build:clean": "yarn --cwd scratch-analysis build:clean && yarn --cwd whisker-main build:clean && yarn --cwd whisker-web build:clean",
         "build-main": "yarn --cwd whisker-main build",
         "build-web": "yarn --cwd whisker-web build",
@@ -38,6 +39,7 @@
         "babel-jest": "^28.1.3",
         "babel-loader": "^8.2.2",
         "babel-preset-minify": "^0.5.1",
+        "concurrently": "^7.6.0",
         "copy-webpack-plugin": "^6.3.2",
         "css-loader": "^5.0.1",
         "eslint": "^7.32.0",
