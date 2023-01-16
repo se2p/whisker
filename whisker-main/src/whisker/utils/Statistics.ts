@@ -157,7 +157,7 @@ export default class Statistics {
         // Fill in the rest of the matrix
         for (let i = 1; i <= b.length; i++) {
             for (let j = 1; j <= a.length; j++) {
-                if (b[i - 1] == a[j - 1]) {
+                if (b[i - 1] === a[j - 1]) {
                     matrix[i][j] = matrix[i - 1][j - 1];    // no operation required
                 } else {
                     matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution operation
