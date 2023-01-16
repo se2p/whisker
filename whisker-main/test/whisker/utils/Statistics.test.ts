@@ -4,7 +4,7 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 
-describe("Distributions", () => {
+describe("Statistics", () => {
 
     let equalValues;
     let differentValues;
