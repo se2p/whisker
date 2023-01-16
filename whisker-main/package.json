@@ -12,7 +12,7 @@
     "main": "./src/index.js",
     "scripts": {
         "build": "tsc --incremental && webpack --color --bail",
-        "build:watch": "tsc-watch",
+        "build:watch": "tsc-watch --onFirstSuccess \"webpack --color --watch\"",
         "build:prod": "NODE_ENV=production webpack --color --bail",
         "build:clean": "if [ -d dist ]; then rm -rf dist; fi && tsc --incremental && webpack --color --bail",
         "test": "jest --forceExit --coverage --verbose",
