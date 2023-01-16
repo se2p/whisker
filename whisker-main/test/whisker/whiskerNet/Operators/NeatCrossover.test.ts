@@ -62,12 +62,12 @@ describe("Test NeatCrossover", () => {
 
         // Create Connections of first parent
         parent1Connections = [];
-        parent1Connections.push(new ConnectionGene(iNode1, hiddenNode1, 1, true, 1, false));
-        parent1Connections.push(new ConnectionGene(iNode2, hiddenNode1, 2, true, 2, false));
-        parent1Connections.push(new ConnectionGene(iNode2, oNode1, 3, false, 4, false));
-        parent1Connections.push(new ConnectionGene(iNode3, oNode1, 4, true, 5, false));
-        parent1Connections.push(new ConnectionGene(hiddenNode1, oNode1, 5, true, 6, false));
-        parent1Connections.push(new ConnectionGene(hiddenNode1, hiddenNode1, 0.1, true, 7, true));
+        parent1Connections.push(new ConnectionGene(iNode1, hiddenNode1, 1, true, 1));
+        parent1Connections.push(new ConnectionGene(iNode2, hiddenNode1, 2, true, 2));
+        parent1Connections.push(new ConnectionGene(iNode2, oNode1, 3, false, 4));
+        parent1Connections.push(new ConnectionGene(iNode3, oNode1, 4, true, 5));
+        parent1Connections.push(new ConnectionGene(hiddenNode1, oNode1, 5, true, 6));
+        parent1Connections.push(new ConnectionGene(hiddenNode1, hiddenNode1, 0.1, true, 7));
 
         // Create Nodes of second network
         const iNode4 = iNode1.clone();
@@ -84,13 +84,13 @@ describe("Test NeatCrossover", () => {
 
         // Create Connections of second parent
         parent2Connections = [];
-        parent2Connections.push(new ConnectionGene(iNode5, oNode2, 9, false, 4, false));
-        parent2Connections.push(new ConnectionGene(hiddenNode3, hiddenNode2, 12, true, 8, false));
-        parent2Connections.push(new ConnectionGene(iNode4, hiddenNode2, 6, false, 1, false));
-        parent2Connections.push(new ConnectionGene(iNode5, hiddenNode2, 7, true, 2, false));
-        parent2Connections.push(new ConnectionGene(iNode6, hiddenNode2, 8, true, 3, false));
-        parent2Connections.push(new ConnectionGene(hiddenNode2, oNode2, 10, true, 6, false));
-        parent2Connections.push(new ConnectionGene(iNode4, hiddenNode3, 11, true, 9, false));
+        parent2Connections.push(new ConnectionGene(iNode5, oNode2, 9, false, 4));
+        parent2Connections.push(new ConnectionGene(hiddenNode3, hiddenNode2, 12, true, 8));
+        parent2Connections.push(new ConnectionGene(iNode4, hiddenNode2, 6, false, 1));
+        parent2Connections.push(new ConnectionGene(iNode5, hiddenNode2, 7, true, 2));
+        parent2Connections.push(new ConnectionGene(iNode6, hiddenNode2, 8, true, 3));
+        parent2Connections.push(new ConnectionGene(hiddenNode2, oNode2, 10, true, 6));
+        parent2Connections.push(new ConnectionGene(iNode4, hiddenNode3, 11, true, 9));
     });
 
 
@@ -159,7 +159,7 @@ describe("Test NeatCrossover", () => {
         layer1.set(1, [oNode1]);
 
         // Create Connections of first parent
-        parent1Connections = [new ConnectionGene(iNode1, oNode1, 1, true, 1, false)];
+        parent1Connections = [new ConnectionGene(iNode1, oNode1, 1, true, 1)];
 
         // Create Nodes of second network
         const iNode2 = iNode1.clone();

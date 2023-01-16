@@ -189,8 +189,8 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
                 }
 
                 // Now add the new Connection
-                const newConnection = new ConnectionGene(newSourceNode, newTargetNode, currentConnection.weight, currentConnection.isEnabled, currentConnection.innovation,
-                    currentConnection.isRecurrent);
+                const newConnection = new ConnectionGene(newSourceNode, newTargetNode, currentConnection.weight,
+                    currentConnection.isEnabled, currentConnection.innovation);
 
                 // Average the weight if we calculated a value for matching genes.
                 if (avgWeight) {

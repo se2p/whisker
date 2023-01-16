@@ -237,7 +237,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             // We found a valid connection to add
             if (!skip) {
                 // Verify if we got a recurrent connection if we wanted a recurrent one and vice versa
-                const isRecurrent = chromosome.getDepthOfNode(node1) >= chromosome.getDepthOfNode(node2);
+                const isRecurrent = node1.depth >= node2.depth;
                 if (isRecurrent === recurrentConnection) {
                     rounds = tries;
                     foundConnection = true;
@@ -254,7 +254,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         if (foundConnection) {
             const posNeg = this._random.randomBoolean() ? +1 : -1;
             const weight = posNeg * this._random.nextDouble() * this._perturbationPower;
-            const newConnection = new ConnectionGene(node1, node2, weight, true, 0, recurrentConnection);
+            const newConnection = new ConnectionGene(node1, node2, weight, true, 0);
             chromosome.addConnection(newConnection);
         }
     }

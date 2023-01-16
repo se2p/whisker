@@ -2,7 +2,7 @@
     "testGenerator": "neuroevolution",
     "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 100,
+    "populationSize": 300,
     "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,

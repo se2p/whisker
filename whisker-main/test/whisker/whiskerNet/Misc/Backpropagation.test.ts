@@ -33,19 +33,19 @@ const generateNetwork = () => {
     layer.set(0.5, [h1, h2]);
     layer.set(1, [o1, o2]);
 
-    const c1 = new ConnectionGene(i1, h1, 0.15, true, 0, false);
-    const c2 = new ConnectionGene(i1, h2, 0.3, true, 1, false);
-    const c3 = new ConnectionGene(i2, h1, 0.20, true, 2, false);
-    const c4 = new ConnectionGene(i2, h2, 0.25, true, 3, false);
-    const c5 = new ConnectionGene(bias, h1, 0.35, true, 6, false);
-    const c6 = new ConnectionGene(bias, h2, 0.35, true, 7, false);
+    const c1 = new ConnectionGene(i1, h1, 0.15, true, 0);
+    const c2 = new ConnectionGene(i1, h2, 0.3, true, 1);
+    const c3 = new ConnectionGene(i2, h1, 0.20, true, 2);
+    const c4 = new ConnectionGene(i2, h2, 0.25, true, 3);
+    const c5 = new ConnectionGene(bias, h1, 0.35, true, 6);
+    const c6 = new ConnectionGene(bias, h2, 0.35, true, 7);
 
-    const c7 = new ConnectionGene(h1, o1, 0.4, true, 8, false);
-    const c8 = new ConnectionGene(h1, o2, 0.5, true, 9, false);
-    const c9 = new ConnectionGene(h2, o1, 0.45, true, 10, false);
-    const c10 = new ConnectionGene(h2, o2, 0.55, true, 11, false);
-    const c11 = new ConnectionGene(bias, o1, 0.60, true, 12, false);
-    const c12 = new ConnectionGene(bias, o2, 0.60, true, 13, false);
+    const c7 = new ConnectionGene(h1, o1, 0.4, true, 8);
+    const c8 = new ConnectionGene(h1, o2, 0.5, true, 9);
+    const c9 = new ConnectionGene(h2, o1, 0.45, true, 10);
+    const c10 = new ConnectionGene(h2, o2, 0.55, true, 11);
+    const c11 = new ConnectionGene(bias, o1, 0.60, true, 12);
+    const c12 = new ConnectionGene(bias, o2, 0.60, true, 13);
 
     const cons = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12];
 

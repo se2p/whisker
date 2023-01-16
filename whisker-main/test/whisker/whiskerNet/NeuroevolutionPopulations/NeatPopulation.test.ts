@@ -223,8 +223,8 @@ describe("Test NeatPopulation", () => {
         layer.set(1, [outputNode]);
 
 
-        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
-        const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1, false);
+        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0);
+        const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1);
 
         const connections1: ConnectionGene[] = [];
         connections1.push(connection1);
@@ -248,8 +248,8 @@ describe("Test NeatPopulation", () => {
         layer.set(0, [inputNode1, inputNode2]);
         layer.set(1, [outputNode]);
 
-        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
-        const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1, false);
+        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0);
+        const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1);
 
         const connections1: ConnectionGene[] = [];
         connections1.push(connection1);
@@ -270,7 +270,7 @@ describe("Test NeatPopulation", () => {
 
         const node1 = chromosome1.inputNodes.get("Sprite1").get("X-Position");
         const node2 = chromosome1.layers.get(1)[1];
-        chromosome2.connections.push(new ConnectionGene(node1, node2, 1, true, 1000, false));
+        chromosome2.connections.push(new ConnectionGene(node1, node2, 1, true, 1000));
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(1);
     });
@@ -284,8 +284,8 @@ describe("Test NeatPopulation", () => {
         layer.set(0, [inputNode1, inputNode2]);
         layer.set(1, [outputNode]);
 
-        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
-        const connection2 = new ConnectionGene(inputNode1, outputNode, 0.5, true, 0, false);
+        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0);
+        const connection2 = new ConnectionGene(inputNode1, outputNode, 0.5, true, 0);
 
         const connections1: ConnectionGene[] = [];
         connections1.push(connection1);

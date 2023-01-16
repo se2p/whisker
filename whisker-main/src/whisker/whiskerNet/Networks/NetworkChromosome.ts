@@ -15,7 +15,6 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import assert from "assert";
 import {InputFeatures} from "../Misc/InputExtraction";
-import {Container} from "../../utils/Container";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -314,6 +313,10 @@ export abstract class NetworkChromosome extends Chromosome {
         // Generate the network and load the inputs
         const layers = [...this._layers.keys()].sort();
 
+        for(const node of this.getAllNodes()) {
+            node.lastActivationValue = node.activationValue;
+        }
+
         for(const layer of layers){
             const nodes = this.layers.get(layer);
 
@@ -328,7 +331,6 @@ export abstract class NetworkChromosome extends Chromosome {
                 // the defined activation function.
                 for(const node of nodes){
                     this._calculateNodeValue(node);
-                    node.lastActivationValue = node.activationValue;        // Store for recurrent connections.
                     node.activationValue = node.activate();
                 }
             }
@@ -356,7 +358,6 @@ export abstract class NetworkChromosome extends Chromosome {
                 // Activate the classification nodes using softmax and
                 // the regression nodes with their specified activation function.
                 for(const node of nodes){
-                    node.lastActivationValue = node.activationValue;
                     if (node instanceof ClassificationNode){
                         node.activationValue = node.activate(denominator);
                     }
@@ -554,27 +555,13 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Fetches the depth of the provided node.
-     * @param node the node whose depth is to be determined.
-     * @returns the depth of the node or undefined if the node was not found.
-     */
-    public getDepthOfNode(node: NodeGene): number | undefined {
-        for (const [layer, nodes] of this._layers.entries()) {
-            if (nodes.includes(node)) {
-                return layer;
-            }
-        }
-        return undefined;
-    }
-
-    /**
      * Determines the depth of a node given its input and output nodes.
      * @param inNode the source node of the node whose depth is to be determined.
      * @param outNode the target node of the node whose depth is to be determined.
      * @returns depth of the node whose input and output nodes are provided.
      */
     public getDepthOfNewNode(inNode: NodeGene, outNode: NodeGene): number {
-        return (this.getDepthOfNode(inNode) + this.getDepthOfNode(outNode)) / 2;
+        return (inNode.depth + outNode.depth) / 2;
     }
 
     /**

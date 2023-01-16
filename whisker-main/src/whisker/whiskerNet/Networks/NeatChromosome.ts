@@ -177,7 +177,7 @@ export class NeatChromosome extends NetworkChromosome {
     private connectNodeFully(nodesToConnect: NodeGene[]) {
         for (const inputNode of this.layers.get(0)) {
             for (const nodeToConnect of nodesToConnect) {
-                const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
+                const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
                 this.addConnection(newConnection);
             }
         }
@@ -193,9 +193,8 @@ export class NeatChromosome extends NetworkChromosome {
         let minDepth = 1;
         let minDepthNode = nodesToConnect[0];
         for(const node of nodesToConnect){
-            const depth = this.getDepthOfNode(node);
-            if(depth < minDepth){
-                minDepth = depth;
+            if(node.depth < minDepth){
+                minDepth = node.depth;
                 minDepthNode = node;
             }
         }
@@ -204,11 +203,11 @@ export class NeatChromosome extends NetworkChromosome {
             const hiddenNode = new HiddenNode(this.getNumNodes(), depth, this.activationFunction);
             this.addNode(hiddenNode, [...featureMap.values()][0], minDepthNode);
             for (const inputNode of featureMap.values()) {
-                const inputHiddenConnection = new ConnectionGene(inputNode, hiddenNode, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
+                const inputHiddenConnection = new ConnectionGene(inputNode, hiddenNode, this._random.nextDoubleMinMax(-1, 1), true, 0);
                 this.addConnection(inputHiddenConnection);
             }
             for (const nodeToConnect of nodesToConnect) {
-                const hiddenOutputConnection = new ConnectionGene(hiddenNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
+                const hiddenOutputConnection = new ConnectionGene(hiddenNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
                 this.addConnection(hiddenOutputConnection);
             }
         }
@@ -226,7 +225,7 @@ export class NeatChromosome extends NetworkChromosome {
         const connections: ConnectionGene[] = [];
         const biasNode = this.layers.get(0).find(node => node instanceof BiasNode);
         for (const nodeToConnect of nodesToConnect) {
-            const newConnection = new ConnectionGene(biasNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
+            const newConnection = new ConnectionGene(biasNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
             this.addConnection(newConnection);
         }
 
@@ -239,7 +238,7 @@ export class NeatChromosome extends NetworkChromosome {
             // For each input node of the Sprite create a connection to each Output-Node.
             for (const inputNode of this.inputNodes.get(spriteToConnect).values()) {
                 for (const nodeToConnect of nodesToConnect) {
-                    const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0, false);
+                    const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
                     this.addConnection(newConnection);
                 }
             }
@@ -297,8 +296,8 @@ export class NeatChromosome extends NetworkChromosome {
         const depth = this.getDepthOfNewNode(sourceNode, targetNode);
         if (innovation && innovation.type === 'addNodeSplitConnection') {
             newNode = new HiddenNode(innovation.idNewNode, depth, activationFunction);
-            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
-            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber, false);
+            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber);
+            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber);
         } else {
             const nextNodeId = NeatPopulation.highestNodeId + 1;
             newNode = new HiddenNode(nextNodeId, depth, activationFunction);
@@ -313,8 +312,8 @@ export class NeatChromosome extends NetworkChromosome {
                 splitInnovation: splitConnection.innovation
             };
             NeatPopulation.innovations.push(newInnovation);
-            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, newInnovation.firstInnovationNumber, splitConnection.isRecurrent);
-            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, newInnovation.secondInnovationNumber, splitConnection.isRecurrent);
+            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, newInnovation.firstInnovationNumber);
+            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, newInnovation.secondInnovationNumber);
         }
 
         // We do not use the addConnection method here since we have already assigned innovation numbers to the

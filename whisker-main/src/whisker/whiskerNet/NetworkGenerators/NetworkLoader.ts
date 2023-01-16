@@ -100,10 +100,9 @@ export class NetworkLoader {
             for (const savedConnection of Object.values(savedNetwork['Cons'])) {
                 const sourceNode = [...layers.values()].flat().find(node => node.uID === savedConnection['s']);
                 const targetNode = [...layers.values()].flat().find(node => node.uID === savedConnection['t']);
-                const recurrent = savedConnection['r'] === `true`;
                 if (sourceNode && targetNode) {
                     allConnections.push(new ConnectionGene(sourceNode, targetNode, savedConnection['w'],
-                        savedConnection['e'], savedConnection['i'], recurrent));
+                        savedConnection['e'], savedConnection['i']));
                 }
             }
 

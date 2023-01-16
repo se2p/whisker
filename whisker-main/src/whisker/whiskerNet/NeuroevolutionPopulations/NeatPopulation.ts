@@ -170,7 +170,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             else if (this.species.length > this.numberOfSpeciesTargeted)
                 this.compatibilityThreshold += compatibilityModifier;
 
-            // Let it now fall below 1 though!
+            // Let it not fall below 1 though!
             if (this.compatibilityThreshold < 1) {
                 this.compatibilityThreshold = 1;
             }

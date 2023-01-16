@@ -55,16 +55,16 @@ describe('Test NeatChromosome', () => {
 
         // Create Connections
         const connections: ConnectionGene[] = [];
-        connections.push(new ConnectionGene(iNode1, classificationNode1, 0.1, true, 1, false));
-        connections.push(new ConnectionGene(iNode1, classificationNode2, 0.2, true, 1, false));
-        connections.push(new ConnectionGene(iNode2, classificationNode1, 0.3, false, 1, false));
-        connections.push(new ConnectionGene(iNode2, classificationNode2, 0.4, false, 1, false));
-        connections.push(new ConnectionGene(bias, classificationNode1, 0.5, true, 1, false));
-        connections.push(new ConnectionGene(bias, classificationNode2, 0.6, false, 1, false));
-        connections.push(new ConnectionGene(iNode1, regressionNode1, 0.7, true, 1, false));
-        connections.push(new ConnectionGene(iNode1, regressionNode2, 0.8, true, 1, false));
-        connections.push(new ConnectionGene(iNode2, regressionNode1, 0.9, false, 1, false));
-        connections.push(new ConnectionGene(iNode2, regressionNode2, 1, true, 1, false));
+        connections.push(new ConnectionGene(iNode1, classificationNode1, 0.1, true, 1));
+        connections.push(new ConnectionGene(iNode1, classificationNode2, 0.2, true, 1));
+        connections.push(new ConnectionGene(iNode2, classificationNode1, 0.3, false, 1));
+        connections.push(new ConnectionGene(iNode2, classificationNode2, 0.4, false, 1));
+        connections.push(new ConnectionGene(bias, classificationNode1, 0.5, true, 1));
+        connections.push(new ConnectionGene(bias, classificationNode2, 0.6, false, 1));
+        connections.push(new ConnectionGene(iNode1, regressionNode1, 0.7, true, 1));
+        connections.push(new ConnectionGene(iNode1, regressionNode2, 0.8, true, 1));
+        connections.push(new ConnectionGene(iNode2, regressionNode1, 0.9, false, 1));
+        connections.push(new ConnectionGene(iNode2, regressionNode2, 1, true, 1));
         return new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully');
     };
 
@@ -255,10 +255,10 @@ describe('Test NeatChromosome', () => {
         const deepHiddenNode = new HiddenNode(8, 0.5, ActivationFunction.SIGMOID);
         chromosome.addNode(hiddenNode, inputNode, outputNode);
         chromosome.addNode(deepHiddenNode, hiddenNode, outputNode);
-        chromosome.connections.push(new ConnectionGene(inputNode, hiddenNode, 0.5, true, 7, false));
-        chromosome.connections.push(new ConnectionGene(hiddenNode, outputNode, 0, true, 8, false));
-        chromosome.connections.push(new ConnectionGene(hiddenNode, deepHiddenNode, 1, true, 9, false));
-        chromosome.connections.push(new ConnectionGene(deepHiddenNode, outputNode, 0.2, true, 10, false));
+        chromosome.connections.push(new ConnectionGene(inputNode, hiddenNode, 0.5, true, 7));
+        chromosome.connections.push(new ConnectionGene(hiddenNode, outputNode, 0, true, 8));
+        chromosome.connections.push(new ConnectionGene(hiddenNode, deepHiddenNode, 1, true, 9));
+        chromosome.connections.push(new ConnectionGene(deepHiddenNode, outputNode, 0.2, true, 10));
         chromosome.generateNetwork();
         // InputNodes + Bias + hiddenNodes + classificationNodes + RegressionNodes
         expect(chromosome.getNumNodes()).toEqual(9 + 1 + 2 + 4 + 5);
@@ -281,7 +281,7 @@ describe('Test NeatChromosome', () => {
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [iNode]);
         layer.set(1, [oNode]);
-        const connections = [new ConnectionGene(iNode, oNode, 1, false, 0, false)];
+        const connections = [new ConnectionGene(iNode, oNode, 1, false, 0)];
 
         chromosome = new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully');
         const inputs: InputFeatures = new Map<string, Map<string, number>>();
@@ -346,9 +346,9 @@ describe('Test NeatChromosome', () => {
         const chromosome = getSampleNetwork();
         const hiddenNode = new HiddenNode(101, 0.5, ActivationFunction.SIGMOID);
         chromosome.addNode(hiddenNode, chromosome.layers.get(0)[0], chromosome.layers.get(1)[1]);
-        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[0], hiddenNode, 1.1, true, 121, false));
-        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[1], hiddenNode, 1.2, true, 123, false));
-        chromosome.connections.push(new ConnectionGene(hiddenNode, chromosome.layers.get(1)[0], 1.3, true, 123, false));
+        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[0], hiddenNode, 1.1, true, 121));
+        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[1], hiddenNode, 1.2, true, 123));
+        chromosome.connections.push(new ConnectionGene(hiddenNode, chromosome.layers.get(1)[0], 1.3, true, 123));
         const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -376,10 +376,10 @@ describe('Test NeatChromosome', () => {
         const chromosome = getSampleNetwork();
         const hiddenNode = new HiddenNode(101, 0.5, ActivationFunction.SIGMOID);
         chromosome.addNode(hiddenNode, chromosome.layers.get(0)[0], chromosome.layers.get(1)[1]);
-        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[0], hiddenNode, 1.1, true, 121, false));
-        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[1], hiddenNode, 1.2, true, 123, false));
-        chromosome.connections.push(new ConnectionGene(hiddenNode, chromosome.layers.get(1)[0], 1.3, true, 123, false));
-        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(1)[0], hiddenNode, 1.4, true, 123, false));
+        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[0], hiddenNode, 1.1, true, 121));
+        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[1], hiddenNode, 1.2, true, 123));
+        chromosome.connections.push(new ConnectionGene(hiddenNode, chromosome.layers.get(1)[0], 1.3, true, 123));
+        chromosome.connections.push(new ConnectionGene(chromosome.layers.get(1)[0], hiddenNode, 1.4, true, 123));
         const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -502,7 +502,7 @@ describe('Test NeatChromosome', () => {
     test("Add Connection", () => {
         const iNode = chromosome.inputNodes.get("Sprite1").get("X-Position");
         const oNode = chromosome.layers.get(1)[0];
-        const connection = new ConnectionGene(oNode, iNode, 0, true, 0, true);
+        const connection = new ConnectionGene(oNode, iNode, 0, true, 0);
         const clone = chromosome.cloneStructure(true);
         const connectionSizeBefore = chromosome.connections.length;
         const nodeSizeBefore = chromosome.getNumNodes();
