@@ -85,8 +85,8 @@ export class MouseMoveEvent extends ScratchEvent {
             }
             case "activation": {
                 // Clamp into coordinates.
-                this._x = Math.min(240, Math.max(-240, args[0]));
-                this._y = Math.min(180, Math.max(-180, args[0]));
+                this._x = args[0] * 240;
+                this._y = args[1] * 180;
                 break;
             }
         }

@@ -31,6 +31,9 @@ export class RegressionNode extends NodeGene {
             case "KeyPressEvent":
                 activationFunction = ActivationFunction.SIGMOID;
                 break;
+            case "MouseMoveEvent":
+                activationFunction = ActivationFunction.TANH;
+                break;
             default:
                 activationFunction = ActivationFunction.NONE;
         }
@@ -72,6 +75,8 @@ export class RegressionNode extends NodeGene {
                     return NeuroevolutionUtil.relu(this.nodeValue);
                 case ActivationFunction.NONE:
                     return this.nodeValue;
+                case ActivationFunction.TANH:
+                    return Math.tanh(this.nodeValue);
                 case ActivationFunction.SIGMOID:
                 default:
                     return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);

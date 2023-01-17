@@ -281,7 +281,7 @@ export class StateActionRecorder extends EventEmitter {
                 parameter = {"Number": event.getParameters().pop()};   // Number
                 break;
             case "MouseMoveEvent":
-                parameter = {"X": event.getParameters()[0], "Y": event.getParameters()[1]}; // Coordinates.
+                parameter = {"X": event.getParameters()[0] / 240, "Y": event.getParameters()[1] / 180}; // Coordinates.
                 break;
         }
 
@@ -290,7 +290,6 @@ export class StateActionRecorder extends EventEmitter {
             action: action,
             actionParameter: parameter
         };
-
 
         this._actionRecords.push(record);
         this._lastActionStep = this._getCurrentStepCount();

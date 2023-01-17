@@ -5,6 +5,7 @@ import {Container} from "../../utils/Container";
 import {Pair} from "../../utils/Pair";
 import * as twgl from 'twgl.js';
 import VirtualMachine from "scratch-vm/src/virtual-machine";
+import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 
 
 export class InputExtraction {
@@ -24,7 +25,7 @@ export class InputExtraction {
         for (const target of vm.runtime.targets) {
             if ('blocks' in target && target.visible) {
                 if (target.isStage) {
-                    const stageFeatures = this._extractStageFeatures(target);
+                    const stageFeatures = this._extractStageFeatures(vm, target);
                     if (stageFeatures.size > 0) {
                         inputFeatures.set("Stage", stageFeatures);
                     }
@@ -63,14 +64,75 @@ export class InputExtraction {
      * Extracts Stage and general features shared across the whole Scratch program and normalises them into the
      * range[-1, 1].
      * @param target the Scratch Stage.
+     * @param vm the Scratch-VM describing the Scratch state.
      * @returns Mapping of feature to normalised value.
      */
-    private static _extractStageFeatures(target: RenderedTarget): FeatureGroup {
+    private static _extractStageFeatures(vm: VirtualMachine, target: RenderedTarget): FeatureGroup {
         const stageFeatures = new Map<string, number>();
         for (const variable of Object.values(target.variables)) {
             if (typeof variable['value'] === 'number') {
                 stageFeatures.set(`VAR${variable['name']}`, InputExtraction._normaliseUnknownBounds(variable['value'], 10));
             }
+        }
+
+        // Check if we add the mouse position to our input features.
+        let mouse = false;
+        for (const t of vm.runtime.targets) {
+            for (const blockId of Object.keys(t.blocks._blocks)) {
+                const block = t.blocks.getBlock(blockId);
+                switch (t.blocks.getOpcode(block)) {
+                    case 'sensing_mousex':
+                    case 'sensing_mousey':
+                    case 'pen_down':
+                        mouse = true;
+                        break;
+                    case 'sensing_touchingobject': {
+                        const touchingMenuBlock = t.blocks.getBlock(block['inputs'].TOUCHINGOBJECTMENU.block);
+                        const field = t.blocks.getFields(touchingMenuBlock);
+                        const value = field.VARIABLE ? field.VARIABLE.value : field.TOUCHINGOBJECTMENU.value;
+
+                        // Target senses Mouse
+                        if (value == "_mouse_") {
+                            mouse = true;
+                        }
+                        break;
+                    }
+                    case 'motion_goto': {
+                        // GoTo MousePointer block
+                        const goToMenu = t.blocks.getBlock(block['inputs'].TO.block);
+                        if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
+                            mouse = true;
+                        }
+                        break;
+                    }
+                    case 'sensing_distanceto': {
+                        const distanceMenuBlock = t.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
+                        const field = t.blocks.getFields(distanceMenuBlock);
+                        const value = field.DISTANCETOMENU.value;
+                        if (value == "_mouse_") {
+                            mouse = true;
+                        }
+                        break;
+                    }
+
+                    case 'motion_pointtowards': {
+                        const towards = t.blocks.getBlock(block.inputs.TOWARDS.block);
+                        if (towards.fields.TOWARDS && towards.fields.TOWARDS.value === '_mouse_')
+                            mouse = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (mouse) {
+            const [stageWidth, stageHeight] = vm.runtime.renderer.getNativeSize();
+            const scratchX = vm.runtime.ioDevices.mouse.getScratchX();
+            const scratchY = vm.runtime.ioDevices.mouse.getScratchY();
+            const x = this.mapValueIntoRange(scratchX, -stageWidth / 2, stageWidth / 2);
+            const y = this.mapValueIntoRange(scratchY, -stageHeight / 2, stageHeight / 2);
+            stageFeatures.set("Mouse-X", x);
+            stageFeatures.set('Mouse-Y', y);
         }
         return stageFeatures;
     }
