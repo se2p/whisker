@@ -128,7 +128,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
                     this.mutateAddConnection(mutant, this._addConnectionTries);
                 } else {
-                    this.adjustWeights(mutant);
+                    this.adjustWeights(mutant, parent);
                 }
             }
 
@@ -155,7 +155,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                         this.mutateConnectionReenable(mutant);
                     }
                     if (this._random.nextDouble() < this._mutateWeights) {
-                        this.adjustWeights(mutant);
+                        this.adjustWeights(mutant, parent);
                         mutated = true;
                     }
                 }
@@ -263,17 +263,19 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     /**
      * Adjust the weights by applying SGD or weight mutation.
      * @param mutant the mutant whose weights will be adjusted.
+     * @param parent the parent of the mutant.
      */
-    adjustWeights(mutant: NeatChromosome): void {
+    adjustWeights(mutant: NeatChromosome, parent:NeatChromosome): void {
         // Determine whether we mutate weights genetically, or apply SGD.
         let appliedSGD = false;
-        if (this._sgdEnabled && this._random.nextDouble() < this._sgdProbability) {
+        if (this._sgdEnabled && !parent.hasSGDChild && this._random.nextDouble() < this._sgdProbability) {
             const loss = this.applyStochasticGradientDescent(mutant);
 
             // If there are no training examples, we get NaN as a return loss from SGD and apply default
             // weight mutation.
             if (!isNaN(loss)) {
                 appliedSGD = true;
+                parent.hasSGDChild = true;
             }
         }
 

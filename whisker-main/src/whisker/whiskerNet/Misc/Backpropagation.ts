@@ -12,7 +12,7 @@ export class Backpropagation {
     /**
      * Number of epochs without improvements after which the SGD algorithm stops.
      */
-    private static EARLY_STOPPING_THRESHOLD = 10;
+    private static EARLY_STOPPING_THRESHOLD = 20;
 
     /**
      * Provides derivatives for various loss and activation functions.

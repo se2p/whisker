@@ -349,6 +349,11 @@ export class StateActionRecorder extends EventEmitter {
                     'parameter': stateActionRecord.actionParameter
                 };
             }
+
+            // Skip empty recordings
+            if (Object.keys(stateActionRecordJSON).length <= 0){
+                continue;
+            }
             stateActionRecordJSON['coverage'] = this._fullRecordings[i].coverage;
             json[Object.keys(json).length] = stateActionRecordJSON;
         }

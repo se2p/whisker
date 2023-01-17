@@ -99,6 +99,12 @@ export abstract class NetworkChromosome extends Chromosome {
     private _playTime = 0;
 
     /**
+     * Determined whether on a child with equivalent network structure, SGD has already been applied. There is no sense
+     * in applying SGD on similar networks.
+     */
+    private _hasSGDChild = false;
+
+    /**
      * Saves the execution trace during the playthrough.
      */
     private _trace: ExecutionTrace;
@@ -660,6 +666,14 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set playTime(value: number) {
         this._playTime = value;
+    }
+
+    get hasSGDChild(): boolean {
+        return this._hasSGDChild;
+    }
+
+    set hasSGDChild(value: boolean) {
+        this._hasSGDChild = value;
     }
 
     get testActivationTrace(): ActivationTrace {

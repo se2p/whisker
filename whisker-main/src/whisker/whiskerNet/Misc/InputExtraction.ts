@@ -5,7 +5,6 @@ import {Container} from "../../utils/Container";
 import {Pair} from "../../utils/Pair";
 import * as twgl from 'twgl.js';
 import VirtualMachine from "scratch-vm/src/virtual-machine";
-import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 
 
 export class InputExtraction {
