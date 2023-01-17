@@ -59,7 +59,7 @@
     },
     "population": {
         "strategy": "global_solutions",
-        "randomFraction": 0.1
+        "randomFraction": 0.5
     },
     "stoppingCondition": {
         "type": "combined",

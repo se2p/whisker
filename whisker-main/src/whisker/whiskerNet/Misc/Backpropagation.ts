@@ -10,6 +10,11 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 export class Backpropagation {
 
     /**
+     * Number of epochs without improvements after which the SGD algorithm stops.
+     */
+    private static EARLY_STOPPING_THRESHOLD = 10;
+
+    /**
      * Provides derivatives for various loss and activation functions.
      */
     private static derivatives = {
@@ -41,6 +46,7 @@ export class Backpropagation {
         const dataSamples = this._organiseData(statement);
         let bestEpochLoss = Number.MAX_VALUE;
         let bestWeights = network.connections.map(conn => conn.weight);
+        let epochsWithoutImprovement = 0;
         if (dataSamples.size <= 0) {
             Container.debugLog(`No data for statement: ${statement}`);
             return NaN;
@@ -67,7 +73,7 @@ export class Backpropagation {
                 }
 
                 // Evaluate regression nodes if we have some for the target event.
-                if(network.regressionNodes.has(eventLabel)) {
+                if (network.regressionNodes.has(eventLabel)) {
                     for (const regNode of network.regressionNodes.get(eventLabel)) {
                         const trueValue = dataSamples.get(input).parameter[regNode.eventParameter];
                         labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
@@ -82,9 +88,17 @@ export class Backpropagation {
 
             totalLoss = epochLoss / [...dataSamples.keys()].length;
 
+            // Early stopping.
             if (totalLoss < bestEpochLoss) {
                 bestWeights = network.connections.map(conn => conn.weight);
                 bestEpochLoss = totalLoss;
+                epochsWithoutImprovement = 0;
+            } else {
+                epochsWithoutImprovement++;
+            }
+
+            if (epochsWithoutImprovement >= Backpropagation.EARLY_STOPPING_THRESHOLD) {
+                break;
             }
 
         }
@@ -92,6 +106,7 @@ export class Backpropagation {
         for (let j = 0; j < network.connections.length; j++) {
             network.connections[j].weight = bestWeights[j];
         }
+
         return bestEpochLoss;
     }
 
@@ -106,6 +121,7 @@ export class Backpropagation {
      */
     public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>,
                         lossFunction: LossFunction): number {
+        network.flushNodeValues();
         network.activateNetwork(inputs);
         let loss = 0;
         switch (lossFunction) {

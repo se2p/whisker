@@ -146,9 +146,6 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
 
                 // Non structural mutation
                 else {
-                    if (this._random.nextDouble() < this._mutateWeights) {
-                        this.adjustWeights(mutant);
-                    }
                     if (this._random.nextDouble() < this._mutateToggleEnableConnection) {
                         mutated = true;
                         this.mutateToggleEnableConnection(mutant, this._toggleEnableConnectionTimes);
@@ -156,6 +153,10 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                     if (this._random.nextDouble() < this._mutateEnableConnection) {
                         mutated = true;
                         this.mutateConnectionReenable(mutant);
+                    }
+                    if (this._random.nextDouble() < this._mutateWeights) {
+                        this.adjustWeights(mutant);
+                        mutated = true;
                     }
                 }
             }
