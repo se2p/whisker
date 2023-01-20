@@ -120,7 +120,8 @@ export class Backpropagation {
             }
 
         }
-        // Container.debugLog(`Loss ${bestEpochLoss}`);
+
+        // Reset weights to the ones that obtained the best training loss.
         for (let j = 0; j < network.connections.length; j++) {
             network.connections[j].weight = bestWeights[j];
         }
@@ -335,6 +336,12 @@ export class Backpropagation {
      */
     public _augmentData(data: StateActionRecord): StateActionRecord {
         const keys = [...data.keys()];
+
+        // We cannot augment an empty dataset.
+        if (keys.length == 0) {
+            return data;
+        }
+
         const random = Randomness.getInstance();
         for (let i = 0; i < this._augmentationParameter.numAugments; i++) {
             const randomState = random.pick(keys);
