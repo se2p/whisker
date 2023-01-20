@@ -287,6 +287,13 @@ export class WhiskerSearchConfiguration {
                         disturbStatePower: augmentationProperties['disturbStatePower']
                     };
                 }
+
+                // Check for Peer-To-Peer sharing.
+                if (sgdProperties['peerToPeerSharing']){
+                    Container.peerToPeerSharing = true;
+                }
+
+                console.log("Sharing?: ", sgdProperties['peerToPeerSharing']);
             }
         }
 

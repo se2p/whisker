@@ -3,7 +3,7 @@ import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {FitnessFunction} from "../../search/FitnessFunction";
-import {ExecutionTrace} from "../../testcase/ExecutionTrace";
+import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {Randomness} from "../../utils/Randomness";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
@@ -15,6 +15,7 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import assert from "assert";
 import {InputFeatures} from "../Misc/InputExtraction";
+import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/Backpropagation";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -119,6 +120,11 @@ export abstract class NetworkChromosome extends Chromosome {
      * Used for transforming the network into a TestChromosome for evaluating its StatementFitness.
      */
     private _codons: number[] = [];
+
+    /**
+     * Records the network behaviour during its execution by mapping input states to the executed actions.
+     */
+    private _stateActionPairs: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
 
     /**
      * Random number generator.
@@ -319,23 +325,23 @@ export abstract class NetworkChromosome extends Chromosome {
         // Generate the network and load the inputs
         const layers = [...this._layers.keys()].sort();
 
-        for(const node of this.getAllNodes()) {
+        for (const node of this.getAllNodes()) {
             node.lastActivationValue = node.activationValue;
         }
 
-        for(const layer of layers){
+        for (const layer of layers) {
             const nodes = this.layers.get(layer);
 
             // In the first layer we set up our inputs.
-            if (layer === 0){
+            if (layer === 0) {
                 this.setUpInputs(inputs);
             }
 
             // Hidden nodes
-            else if (layer < 1){
+            else if (layer < 1) {
                 // For each node fetch the incoming connections, calculate the node value and activate the node using
                 // the defined activation function.
-                for(const node of nodes){
+                for (const node of nodes) {
                     this._calculateNodeValue(node);
                     node.activationValue = node.activate();
                 }
@@ -344,12 +350,12 @@ export abstract class NetworkChromosome extends Chromosome {
             // For output nodes calculate the node values first since we require them for the softmax function within
             // the classification nodes.
             else {
-                for(const node of nodes){
+                for (const node of nodes) {
                     this._calculateNodeValue(node);
                 }
 
                 // Check if at least one output node has received an input. If not we have a defect network.
-                if (this.layers.get(1).every(node => !node.activatedFlag)){
+                if (this.layers.get(1).every(node => !node.activatedFlag)) {
                     return false;
                 }
 
@@ -363,11 +369,10 @@ export abstract class NetworkChromosome extends Chromosome {
 
                 // Activate the classification nodes using softmax and
                 // the regression nodes with their specified activation function.
-                for(const node of nodes){
-                    if (node instanceof ClassificationNode){
+                for (const node of nodes) {
+                    if (node instanceof ClassificationNode) {
                         node.activationValue = node.activate(denominator);
-                    }
-                    else if (node instanceof RegressionNode){
+                    } else if (node instanceof RegressionNode) {
                         node.activationValue = node.activate();
                     }
                 }
@@ -376,9 +381,9 @@ export abstract class NetworkChromosome extends Chromosome {
         return true;
     }
 
-    private _calculateNodeValue(node:NodeGene):void{
+    private _calculateNodeValue(node: NodeGene): void {
         node.nodeValue = 0;
-        for(const inConnection of node.incomingConnections){
+        for (const inConnection of node.incomingConnections) {
             const sourceNode = inConnection.source;
             const inValue = inConnection.isRecurrent ? sourceNode.lastActivationValue : sourceNode.activationValue;
             node.nodeValue += (inConnection.weight * inValue);
@@ -604,8 +609,34 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Sorts the layer map by increasing keys.
      */
-    public sortLayer():void{
+    public sortLayer(): void {
         this._layers = new Map([...this.layers.entries()].sort());
+    }
+
+    /**
+     * Updates the record of encountered state and executed actions.
+     * @param state the encountered state.
+     * @param action the executed action for the encountered state.
+     */
+    public updateStateActionPair(state: InputFeatures, action: EventAndParameters): void {
+
+        // Convert inputFeatures to ObjectInputFeatures for SGD.
+        const objectInputFeatures: ObjectInputFeatures = {};
+        for (const [sprite, featureGroups] of state.entries()) {
+            objectInputFeatures[sprite] = Object.fromEntries(featureGroups);
+        }
+
+        // Convert action to eventAndParametersObject for SGD
+        const parameterNames = action.event.getSearchParameterNames();
+        const parameter = {};
+        for (let i = 0; i < parameterNames.length; i++) {
+            parameter[parameterNames[i]] = action.parameters[i];
+        }
+        const eventObject: eventAndParametersObject = {
+            event: action.event.stringIdentifier(),
+            parameter: parameter
+        };
+        this._stateActionPairs.set(objectInputFeatures, eventObject);
     }
 
     get uID(): number {
@@ -762,6 +793,10 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set openStatementTargets(value: Map<FitnessFunction<NetworkChromosome>, number>) {
         this._openStatementTargets = value;
+    }
+
+    get stateActionPairs(): StateActionRecord {
+        return this._stateActionPairs;
     }
 }
 

@@ -119,6 +119,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
 
             if (this._sgdEnabled && this._sgdProbability > 0) {
                 this._backpropagation = new Backpropagation(Container.backpropagationData, neuroevolutionParameter.dataAugmentation);
+                Container.backpropagationInstance = this._backpropagation;
             }
         }
     }

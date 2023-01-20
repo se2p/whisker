@@ -109,7 +109,7 @@ export class NetworkExecutor {
             const defect = !network.activateNetwork(spriteFeatures);
 
             // Stop if our network is defect.
-            if(defect){
+            if (defect) {
                 console.log("Defect network:", network.toString());
                 break;
             }
@@ -134,6 +134,11 @@ export class NetworkExecutor {
                 }
                 network.codons.push(eventIndex);
                 await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
+
+                // Record the state action pair:
+                if (Container.peerToPeerSharing && !(nextEvent instanceof WaitEvent)) {
+                    network.updateStateActionPair(spriteFeatures, events[events.length - 1]);
+                }
             }
 
             // Otherwise, we just Wait...

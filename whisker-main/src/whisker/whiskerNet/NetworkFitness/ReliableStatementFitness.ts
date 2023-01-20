@@ -36,6 +36,11 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         if (fitness > 0) {
             network.fitness = 1 / fitness;
         } else {
+
+            // If Peer-To-Peer Sharing is activated, add collected state-action trace to sgd ground truth data.
+            if (Container.backpropagationInstance && Container.peerToPeerSharing) {
+                this._peerToPeerSharing(network);
+            }
             // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
             await this.checkStableCoverage(network, timeout, eventSelection);
@@ -76,9 +81,15 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             executor.resetState();
 
             // Stop if we failed to cover our target statement.
-            if(!network.targetFitness.isCovered(network)){
+            if (!network.targetFitness.isCovered(network)) {
                 network.fitness += (1 / network.targetFitness.getFitness(network));
                 break;
+            }
+
+            // At this point we know that we have covered the statement again.
+            // If Peer-To-Peer Sharing is activated, add collected state-action trace to sgd ground truth data.
+            if (Container.backpropagationInstance && Container.peerToPeerSharing) {
+                this._peerToPeerSharing(network);
             }
         }
         // Reset to the old Scratch seed and network attributes.
@@ -110,5 +121,16 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
     get stableCount(): number {
         return this._stableCount;
+    }
+
+    /**
+     * Adds the collected state-action trace to the SGD ground truth data.
+     * @param network the network in which the state-action trace is saved.
+     */
+    private _peerToPeerSharing(network: NetworkChromosome): void {
+        for (const [state, action] of network.stateActionPairs.entries()) {
+            Container.backpropagationInstance.target_data.set(state, action);
+        }
+        network.stateActionPairs.clear();
     }
 }

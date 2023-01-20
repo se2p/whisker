@@ -34,12 +34,12 @@ export class Backpropagation {
     /**
      * The ground truth data corresponding to a given target.
      */
-    private _target_data: StateActionRecord
+    private _target_data: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
 
     /**
      * The current target statement. If changed new ground truth data for the new target must be selected.
      */
-    private current_target: string
+    private _current_target: string
 
 
     constructor(private readonly _groundTruth: Record<string, unknown>,
@@ -57,10 +57,11 @@ export class Backpropagation {
     public stochasticGradientDescent(network: NetworkChromosome, statement: string, epochs: number,
                                      learningRate: number): number {
         let totalLoss = 0;
-        if (this.current_target != statement) {
-            Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`)
+        if (this._current_target != statement) {
+            Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
             this._target_data = this._extractDataForStatement(statement);
-            this.current_target = statement;
+            Container.debugLog(`Starting with ${this.target_data.size} recordings.`);
+            this._current_target = statement;
         }
         let bestEpochLoss = Number.MAX_VALUE;
         let bestWeights = network.connections.map(conn => conn.weight);
@@ -291,13 +292,13 @@ export class Backpropagation {
     public _extractDataForStatement(statement: string): StateActionRecord {
         // We may have multiple recordings within one file. Collect all recordings that covered the current target in
         // an action to feature map.
-        const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParameters>();
+        const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
         for (const recording of Object.values(this._groundTruth)) {
             if (!(recording['coverage'].includes(statement))) {
                 continue;
             }
             for (const record of Object.values(recording)) {
-                const eventAndParams: eventAndParameters = {
+                const eventAndParams: eventAndParametersObject = {
                     event: record['action'],
                     parameter: record['parameter']
                 };
@@ -367,16 +368,20 @@ export class Backpropagation {
         }
         return data;
     }
+
+    get target_data(): StateActionRecord {
+        return this._target_data;
+    }
 }
 
 /**
  * Maps training data in the form of inputFeatures to the corresponding event string.
  */
-export type StateActionRecord = Map<ObjectInputFeatures, eventAndParameters>;
+export type StateActionRecord = Map<ObjectInputFeatures, eventAndParametersObject>;
 
 export type ObjectInputFeatures = Record<string, Record<string, number>>;
 
-export interface eventAndParameters {
+export interface eventAndParametersObject {
     event: string,
     parameter: Record<string, number>
 }
