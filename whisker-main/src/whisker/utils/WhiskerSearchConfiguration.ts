@@ -269,12 +269,24 @@ export class WhiskerSearchConfiguration {
                 }
             }
 
-            // Check whether we will apply stochasticGradientDescent.
-            if ('stochasticGradientDescent' in this._config){
+            // Check whether we will apply stochastic gradient descent.
+            if ('stochasticGradientDescent' in this._config) {
+                const sgdProperties = this._config['stochasticGradientDescent'];
                 properties.applyStochasticGradientDescent = true;
-                properties.learningRate = this._config['stochasticGradientDescent']['learningRate'];
-                properties.epochs = this._config['stochasticGradientDescent']['epochs'];
-                properties.sgdProbability = this._config['stochasticGradientDescent']['probability'];
+                properties.learningRate = sgdProperties['learningRate'];
+                properties.epochs = sgdProperties['epochs'];
+                properties.sgdProbability = sgdProperties['probability'];
+
+                // Check for data augmentation.
+                if ('dataAugmentation' in sgdProperties) {
+                    const augmentationProperties = sgdProperties['dataAugmentation'];
+                    properties.dataAugmentation = {
+                        doAugment: augmentationProperties['doAugment'],
+                        numAugments: augmentationProperties['numAugments'],
+                        disturbStateProb: augmentationProperties['disturbStateProb'],
+                        disturbStatePower: augmentationProperties['disturbStatePower']
+                    };
+                }
             }
         }
 

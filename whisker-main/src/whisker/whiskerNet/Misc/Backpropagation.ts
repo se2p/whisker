@@ -6,6 +6,9 @@ import {NodeGene} from "../NetworkComponents/NodeGene";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
+import {Randomness} from "../../utils/Randomness";
+
+import lodashClonedeep from 'lodash.clonedeep';
 
 export class Backpropagation {
 
@@ -17,7 +20,7 @@ export class Backpropagation {
     /**
      * Provides derivatives for various loss and activation functions.
      */
-    private static derivatives = {
+    private static DERIVATIVES = {
         // Loss functions
         "SQUARED_ERROR": (prediction: number, label: number): number => -(label - prediction),
 
@@ -28,8 +31,19 @@ export class Backpropagation {
         "NONE": (prediction: number): number => prediction >= 0 ? 1 : -1
     } as const;
 
+    /**
+     * The ground truth data corresponding to a given target.
+     */
+    private _target_data: StateActionRecord
 
-    constructor(private readonly _groundTruth: Record<string, unknown>) {
+    /**
+     * The current target statement. If changed new ground truth data for the new target must be selected.
+     */
+    private current_target: string
+
+
+    constructor(private readonly _groundTruth: Record<string, unknown>,
+                private readonly _augmentationParameter: augmentationParameter) {
     }
 
     /**
@@ -43,18 +57,22 @@ export class Backpropagation {
     public stochasticGradientDescent(network: NetworkChromosome, statement: string, epochs: number,
                                      learningRate: number): number {
         let totalLoss = 0;
-        const dataSamples = this._organiseData(statement);
+        if (this.current_target != statement) {
+            Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`)
+            this._target_data = this._extractDataForStatement(statement);
+            this.current_target = statement;
+        }
         let bestEpochLoss = Number.MAX_VALUE;
         let bestWeights = network.connections.map(conn => conn.weight);
         let epochsWithoutImprovement = 0;
-        if (dataSamples.size <= 0) {
+        if (this._target_data.size <= 0) {
             Container.debugLog(`No data for statement: ${statement}`);
             return NaN;
         }
         for (let i = 0; i < epochs; i++) {
             // Shuffle the training data
             let epochLoss = 0;
-            const trainingInputs = [...dataSamples.keys()];
+            const trainingInputs = [...this._target_data.keys()];
             Arrays.shuffle(trainingInputs);
 
             // Iterate over each training example and apply gradient descent.
@@ -62,7 +80,7 @@ export class Backpropagation {
                 const inputFeatures = this._objectToInputFeature(input);
 
                 // One-hot encoded label vector.
-                const eventLabel = dataSamples.get(input).event;
+                const eventLabel = this._target_data.get(input).event;
                 const labelVector = new Map<string, number>();
                 for (const event of network.classificationNodes.keys()) {
                     if (event === eventLabel) {
@@ -75,7 +93,7 @@ export class Backpropagation {
                 // Evaluate regression nodes if we have some for the target event.
                 if (network.regressionNodes.has(eventLabel)) {
                     for (const regNode of network.regressionNodes.get(eventLabel)) {
-                        const trueValue = dataSamples.get(input).parameter[regNode.eventParameter];
+                        const trueValue = this._target_data.get(input).parameter[regNode.eventParameter];
                         labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
                     }
                 }
@@ -86,7 +104,7 @@ export class Backpropagation {
                 this._adjustWeights(network, learningRate);
             }
 
-            totalLoss = epochLoss / [...dataSamples.keys()].length;
+            totalLoss = epochLoss / [...this._target_data.keys()].length;
 
             // Early stopping.
             if (totalLoss < bestEpochLoss) {
@@ -208,8 +226,8 @@ export class Backpropagation {
                         if (label === undefined) {
                             continue;
                         }
-                        const lossGradient = Backpropagation.derivatives[LossFunction[LossFunction.SQUARED_ERROR]];
-                        const activationFunctionGradient = Backpropagation.derivatives[ActivationFunction[node.activationFunction]];
+                        const lossGradient = Backpropagation.DERIVATIVES[LossFunction[LossFunction.SQUARED_ERROR]];
+                        const activationFunctionGradient = Backpropagation.DERIVATIVES[ActivationFunction[node.activationFunction]];
                         node.gradient = lossGradient(node.activationValue, label) * activationFunctionGradient(node.activationValue);
                     }
 
@@ -224,7 +242,7 @@ export class Backpropagation {
             else if (layer > 0) {
                 for (const node of network.layers.get(layer)) {
                     const incomingGradient = this._incomingGradientHiddenNode(network, node);
-                    const activationDerivative = Backpropagation.derivatives[ActivationFunction[node.activationFunction]];
+                    const activationDerivative = Backpropagation.DERIVATIVES[ActivationFunction[node.activationFunction]];
                     node.gradient = incomingGradient * activationDerivative(node.activationValue);
                     for (const connection of node.incomingConnections) {
                         connection.gradient = node.gradient * connection.source.activationValue;
@@ -269,10 +287,10 @@ export class Backpropagation {
      * @param statement the target for which the networks should be optimised.
      * @returns structured data for the backpropagation process.
      */
-    public _organiseData(statement: string): StateActionRecord {
+    public _extractDataForStatement(statement: string): StateActionRecord {
         // We may have multiple recordings within one file. Collect all recordings that covered the current target in
         // an action to feature map.
-        const stateActionRecord: StateActionRecord = new Map<objectInputFeatures, eventAndParameters>();
+        const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParameters>();
         for (const recording of Object.values(this._groundTruth)) {
             if (!(recording['coverage'].includes(statement))) {
                 continue;
@@ -288,7 +306,9 @@ export class Backpropagation {
                 }
             }
         }
-        return stateActionRecord;
+
+        // Return the collected data or augment it to increase the dataset size.
+        return this._augmentationParameter.doAugment ? this._augmentData(stateActionRecord) : stateActionRecord;
     }
 
     /**
@@ -307,14 +327,47 @@ export class Backpropagation {
         }
         return inputFeatures;
     }
+
+
+    /**
+     * Increases the ground truth data size used by the SGD algorithm by introducing slight mutations to state variables.
+     * @param data the ground truth recordings that will be extended via data augmentation.
+     */
+    public _augmentData(data: StateActionRecord): StateActionRecord {
+        const keys = [...data.keys()];
+        const random = Randomness.getInstance();
+        for (let i = 0; i < this._augmentationParameter.numAugments; i++) {
+            const randomState = random.pick(keys);
+            const stateClone = lodashClonedeep(randomState) as ObjectInputFeatures;
+
+            // Cycle through all state variables until we made at least one change.
+            let changed = false;
+            while (!changed) {
+                for (const sprite of Object.values(stateClone)) {
+                    for (const [feature, value] of Object.entries(sprite)) {
+
+                        // Disturb values probabilistically.
+                        if (random.nextDouble() < this._augmentationParameter.disturbStateProb) {
+                            sprite[feature] = random.nextGaussian(value, this._augmentationParameter.disturbStatePower);
+                            changed = true;
+                        }
+                    }
+                }
+            }
+
+            // Add augment to dataset.
+            data.set(stateClone, data.get(randomState));
+        }
+        return data;
+    }
 }
 
 /**
  * Maps training data in the form of inputFeatures to the corresponding event string.
  */
-export type StateActionRecord = Map<objectInputFeatures, eventAndParameters>;
+export type StateActionRecord = Map<ObjectInputFeatures, eventAndParameters>;
 
-export type objectInputFeatures = Record<string, Record<string, number>>;
+export type ObjectInputFeatures = Record<string, Record<string, number>>;
 
 export interface eventAndParameters {
     event: string,
@@ -325,5 +378,11 @@ export enum LossFunction {
     SQUARED_ERROR,
     CATEGORICAL_CROSS_ENTROPY,
     SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED
+}
 
+export interface augmentationParameter {
+    doAugment: boolean,
+    numAugments: number,
+    disturbStateProb: number,
+    disturbStatePower: number
 }

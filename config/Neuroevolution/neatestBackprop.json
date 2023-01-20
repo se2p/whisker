@@ -2,7 +2,7 @@
     "testGenerator": "neuroevolution",
     "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 300,
+    "populationSize": 50,
     "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -18,7 +18,14 @@
     "stochasticGradientDescent": {
         "learningRate": 0.01,
         "epochs": 100,
-        "probability": 0.5
+        "probability": 0.5,
+
+        "dataAugmentation": {
+            "doAugment": true,
+            "numAugments": 10000,
+            "disturbStateProb": 0.1,
+            "disturbStatePower": 0.01
+        }
     },
     "crossover": {
         "operator": "neatCrossover",

@@ -74,6 +74,11 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     private readonly _sgdEnabled: boolean = false;
 
     /**
+     * Instance of the backpropagation algorithm.
+     */
+    private readonly _backpropagation: Backpropagation
+
+    /**
      * Probability of applying SGD instead of default weight mutation.
      */
     private readonly _sgdProbability: number;
@@ -111,6 +116,10 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             this._sgdProbability = neuroevolutionParameter.sgdProbability;
             this._learningRate = neuroevolutionParameter.learningRate;
             this._epochs = neuroevolutionParameter.epochs;
+
+            if (this._sgdEnabled && this._sgdProbability > 0) {
+                this._backpropagation = new Backpropagation(Container.backpropagationData, neuroevolutionParameter.dataAugmentation);
+            }
         }
     }
 
@@ -265,7 +274,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * @param mutant the mutant whose weights will be adjusted.
      * @param parent the parent of the mutant.
      */
-    adjustWeights(mutant: NeatChromosome, parent:NeatChromosome): void {
+    adjustWeights(mutant: NeatChromosome, parent: NeatChromosome): void {
         // Determine whether we mutate weights genetically, or apply SGD.
         let appliedSGD = false;
         if (this._sgdEnabled && !parent.hasSGDChild && this._random.nextDouble() < this._sgdProbability) {
@@ -334,8 +343,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * @returns training loss.
      */
     private applyStochasticGradientDescent(network: NetworkChromosome): number {
-        const backpropagation = new Backpropagation(Container.backpropagationData);
-        return backpropagation.stochasticGradientDescent(network, Container.neatestTargetId, this._epochs,
+        return this._backpropagation.stochasticGradientDescent(network, Container.neatestTargetId, this._epochs,
             this._learningRate);
     }
 

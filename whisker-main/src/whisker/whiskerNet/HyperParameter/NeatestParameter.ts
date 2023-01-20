@@ -1,4 +1,5 @@
 import {NeuroevolutionTestGenerationParameter} from "./NeuroevolutionTestGenerationParameter";
+import {augmentationParameter} from "../Misc/Backpropagation";
 
 export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     /**
@@ -44,6 +45,16 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
      * The number of training iterations.
      */
     private _epochs = 100;
+
+    /**
+     * Parameter for augmenting gradient descent ground truth data.
+     */
+    private _dataAugmentation: augmentationParameter = {
+        doAugment: false,
+        numAugments: 0,
+        disturbStateProb: 0,
+        disturbStatePower: 0
+    };
 
 
     get switchTargetCount(): number {
@@ -108,6 +119,14 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
 
     set epochs(value: number) {
         this._epochs = value;
+    }
+
+    get dataAugmentation(): augmentationParameter {
+        return this._dataAugmentation;
+    }
+
+    set dataAugmentation(value: augmentationParameter) {
+        this._dataAugmentation = value;
     }
 }
 
