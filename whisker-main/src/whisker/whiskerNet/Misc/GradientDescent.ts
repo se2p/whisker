@@ -139,6 +139,7 @@ export class GradientDescent {
             network.connections[j].weight = bestWeights[j];
         }
 
+        Container.debugLog(`EpochLoss: ${bestEpochLoss}`)
         return bestEpochLoss;
     }
 

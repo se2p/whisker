@@ -149,6 +149,7 @@ export class StateActionRecorder extends EventEmitter {
                 event = this._handleMouseInput(actionData);
                 break;
             default:
+                console.log("Unknown event: ", actionData);
                 event = undefined;
         }
         return event;
