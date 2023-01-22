@@ -293,8 +293,6 @@ export class WhiskerSearchConfiguration {
                 if (gradientDescent['peerToPeerSharing']){
                     Container.peerToPeerSharing = true;
                 }
-
-                console.log("Sharing?: ", gradientDescent['peerToPeerSharing']);
             }
         }
 

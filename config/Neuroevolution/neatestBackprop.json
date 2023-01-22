@@ -18,13 +18,13 @@
     "gradientDescent": {
         "learningRate": 0.001,
         "epochs": 100,
-        "batchSize": "Infinity",
+        "batchSize": 32,
         "probability": 1,
         "peerToPeerSharing": false,
 
         "dataAugmentation": {
             "doAugment": false,
-            "numAugments": 10000,
+            "numAugments": 1000,
             "disturbStateProb": 0.1,
             "disturbStatePower": 0.01
         }
