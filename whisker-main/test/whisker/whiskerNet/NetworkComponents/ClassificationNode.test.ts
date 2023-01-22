@@ -20,7 +20,6 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(classificationNode.type).toBe(NodeType.OUTPUT);
         expect(classificationNode.nodeValue).toBe(0);
-        expect(classificationNode.lastActivationValue).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.activationCount).toBe(0);
@@ -33,14 +32,12 @@ describe("classificationNode Tests", () => {
         classificationNode.activationCount = 10;
         classificationNode.activationValue = 2;
         classificationNode.nodeValue = 10;
-        classificationNode.lastActivationValue = 2;
         classificationNode.activatedFlag = true;
         classificationNode.traversed = true;
         classificationNode.reset();
         expect(classificationNode.activationCount).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
         expect(classificationNode.nodeValue).toBe(0);
-        expect(classificationNode.lastActivationValue).toBe(0);
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.traversed).toBeFalsy();
 

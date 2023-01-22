@@ -21,11 +21,6 @@ export abstract class NodeGene {
     private _activationValue = 0;
 
     /**
-     * Activation value of the previous time step.
-     */
-    private _lastActivationValue = 0;
-
-    /**
      * Counts how often this node has been activated.
      */
     private _activationCount = 0;
@@ -62,7 +57,7 @@ export abstract class NodeGene {
      * @param activationFunction the activation function of the node
      * @param type the type of the node (Input | Hidden | Output)
      */
-    protected constructor(private readonly _uID: number, private readonly _depth:number, activationFunction: ActivationFunction, type: NodeType) {
+    protected constructor(private readonly _uID: number, private readonly _depth: number, activationFunction: ActivationFunction, type: NodeType) {
         this._activationFunction = activationFunction;
         this._type = type;
         if (NeatPopulation.highestNodeId < this.uID) {
@@ -75,7 +70,7 @@ export abstract class NodeGene {
      * @params arguments required for specific activation functions
      * @returns number activation value of the given node.
      */
-    public abstract activate(...args:number[]): number
+    public abstract activate(...args: number[]): number
 
     /**
      * Resets the node's attributes.
@@ -84,7 +79,6 @@ export abstract class NodeGene {
         this.activationCount = 0;
         this.activationValue = 0;
         this.nodeValue = 0;
-        this.lastActivationValue = 0;
         this.activatedFlag = false;
         this.traversed = false;
     }
@@ -166,14 +160,6 @@ export abstract class NodeGene {
 
     get activationFunction(): number {
         return this._activationFunction;
-    }
-
-    get lastActivationValue(): number {
-        return this._lastActivationValue;
-    }
-
-    set lastActivationValue(value: number) {
-        this._lastActivationValue = value;
     }
 
     get gradient(): number {

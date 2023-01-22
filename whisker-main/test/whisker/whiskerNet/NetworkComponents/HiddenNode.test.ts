@@ -4,7 +4,6 @@ import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/Nod
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
-import exp from "constants";
 
 
 describe("hiddenNode Tests", () => {
@@ -20,7 +19,6 @@ describe("hiddenNode Tests", () => {
         expect(hiddenNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(hiddenNode.type).toBe(NodeType.HIDDEN);
         expect(hiddenNode.nodeValue).toBe(0);
-        expect(hiddenNode.lastActivationValue).toBe(0);
         expect(hiddenNode.activationValue).toBe(0);
         expect(hiddenNode.activatedFlag).toBe(false);
         expect(hiddenNode.activationCount).toBe(0);
@@ -32,14 +30,12 @@ describe("hiddenNode Tests", () => {
         hiddenNode.activationCount = 10;
         hiddenNode.activationValue = 2;
         hiddenNode.nodeValue = 10;
-        hiddenNode.lastActivationValue = 2;
         hiddenNode.activatedFlag = true;
         hiddenNode.traversed = true;
         hiddenNode.reset();
         expect(hiddenNode.activationCount).toBe(0);
         expect(hiddenNode.activationValue).toBe(0);
         expect(hiddenNode.nodeValue).toBe(0);
-        expect(hiddenNode.lastActivationValue).toBe(0);
         expect(hiddenNode.activatedFlag).toBe(false);
         expect(hiddenNode.traversed).toBe(false);
 

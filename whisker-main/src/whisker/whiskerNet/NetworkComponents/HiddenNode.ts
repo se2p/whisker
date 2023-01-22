@@ -29,7 +29,6 @@ export class HiddenNode extends NodeGene {
         const clone = new HiddenNode(this.uID, this.depth, this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;

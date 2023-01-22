@@ -16,6 +16,7 @@ import {name} from "ntc";
 import assert from "assert";
 import {InputFeatures} from "../Misc/InputExtraction";
 import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
+import {BiasNode} from "../NetworkComponents/BiasNode";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -322,13 +323,24 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param inputs consisting of the extracted features from the current Scratch state.
      */
     public activateNetwork(inputs: InputFeatures): boolean {
-        // Generate the network and load the inputs
-        const layers = [...this._layers.keys()].sort();
-
+        // Reset the node value of all nodes but pay attention to recurrent connections.
         for (const node of this.getAllNodes()) {
-            node.lastActivationValue = node.activationValue;
+            node.nodeValue = 0;
+            for (const inConnection of node.incomingConnections) {
+                if (inConnection.isRecurrent) {
+                    node.nodeValue += inConnection.weight * inConnection.source.activationValue;
+                }
+            }
         }
 
+        // After we looked at potential recurrent connections we can reset the activation value.
+        for(const node of this.getAllNodes()){
+            if (!(node instanceof BiasNode)){
+                node.activationValue = 0;
+            }
+        }
+
+        const layers = [...this._layers.keys()].sort();
         for (const layer of layers) {
             const nodes = this.layers.get(layer);
 
@@ -347,7 +359,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
             }
 
-            // For output nodes calculate the node values first since we require them for the softmax function within
+                // For output nodes calculate the node values first since we require them for the softmax function within
             // the classification nodes.
             else {
                 for (const node of nodes) {
@@ -381,12 +393,16 @@ export abstract class NetworkChromosome extends Chromosome {
         return true;
     }
 
+    /**
+     * Computes the node value of a given node gene by calculating the weighted sum.
+     * @param node whose node value will be calculated.
+     */
     private _calculateNodeValue(node: NodeGene): void {
-        node.nodeValue = 0;
         for (const inConnection of node.incomingConnections) {
             const sourceNode = inConnection.source;
-            const inValue = inConnection.isRecurrent ? sourceNode.lastActivationValue : sourceNode.activationValue;
-            node.nodeValue += (inConnection.weight * inValue);
+            if (!inConnection.isRecurrent) {
+                node.nodeValue += (inConnection.weight * sourceNode.activationValue);
+            }
             node.activatedFlag = true;
         }
     }
@@ -408,7 +424,6 @@ export abstract class NetworkChromosome extends Chromosome {
             spriteValue.forEach((featureValue, featureKey) => {
                 const iNode = this.inputNodes.get(spriteKey).get(featureKey);
                 if (iNode) {
-                    iNode.lastActivationValue = iNode.activationValue;
                     iNode.activationCount++;
                     iNode.activatedFlag = true;
                     iNode.nodeValue = featureValue;
@@ -416,15 +431,6 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
             });
         });
-    }
-
-    /**
-     * Flushes all saved node and activation values from the nodes of the network.
-     */
-    flushNodeValues(): void {
-        for (const node of this.getAllNodes()) {
-            node.reset();
-        }
     }
 
     /**

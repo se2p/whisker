@@ -153,7 +153,6 @@ export class GradientDescent {
      */
     public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>,
                         lossFunction: LossFunction): number {
-        network.flushNodeValues();
         network.activateNetwork(inputs);
         let loss = 0;
         switch (lossFunction) {

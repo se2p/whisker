@@ -57,7 +57,6 @@ export class RegressionNode extends NodeGene {
         const clone = new RegressionNode(this.uID, this.event, this.eventParameter);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;

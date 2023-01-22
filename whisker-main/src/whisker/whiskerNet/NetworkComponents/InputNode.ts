@@ -36,7 +36,6 @@ export class InputNode extends NodeGene {
         const clone = new InputNode(this.uID, this.sprite, this.feature);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;

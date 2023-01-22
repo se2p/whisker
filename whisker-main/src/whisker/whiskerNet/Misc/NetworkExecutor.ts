@@ -83,7 +83,6 @@ export class NetworkExecutor {
 
         // Initialise required variables.
         network.codons = [];
-        network.flushNodeValues();
         let stepCount = 0;
 
         // Play the game until we reach a GameOver state or the timeout.

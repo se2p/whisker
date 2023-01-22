@@ -19,7 +19,6 @@ describe("BiasNode Tests", () => {
         expect(biasNode.activationFunction).toEqual(ActivationFunction.NONE);
         expect(biasNode.type).toEqual(NodeType.BIAS);
         expect(biasNode.nodeValue).toEqual(1);
-        expect(biasNode.lastActivationValue).toEqual(1);
         expect(biasNode.activationValue).toEqual(1);
         expect(biasNode.activatedFlag).toBeTruthy();
         expect(biasNode.activationCount).toEqual(1);
@@ -32,7 +31,6 @@ describe("BiasNode Tests", () => {
         expect(biasNode.activationCount).toEqual(1);
         expect(biasNode.activationValue).toEqual(1);
         expect(biasNode.nodeValue).toEqual(1);
-        expect(biasNode.lastActivationValue).toEqual(1);
         expect(biasNode.activatedFlag).toBeTruthy();
         expect(biasNode.traversed).toBeFalsy();
 

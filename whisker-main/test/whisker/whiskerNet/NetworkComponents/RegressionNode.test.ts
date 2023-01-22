@@ -22,7 +22,6 @@ describe("regressionNode Tests", () => {
         expect(regressionNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(regressionNode.type).toBe(NodeType.OUTPUT);
         expect(regressionNode.nodeValue).toBe(0);
-        expect(regressionNode.lastActivationValue).toBe(0);
         expect(regressionNode.activationValue).toBe(0);
         expect(regressionNode.activatedFlag).toBe(false);
         expect(regressionNode.activationCount).toBe(0);
@@ -35,14 +34,12 @@ describe("regressionNode Tests", () => {
         regressionNode.activationCount = 10;
         regressionNode.activationValue = 2;
         regressionNode.nodeValue = 10;
-        regressionNode.lastActivationValue = 2;
         regressionNode.activatedFlag = true;
         regressionNode.traversed = true;
         regressionNode.reset();
         expect(regressionNode.activationCount).toBe(0);
         expect(regressionNode.activationValue).toBe(0);
         expect(regressionNode.nodeValue).toBe(0);
-        expect(regressionNode.lastActivationValue).toBe(0);
         expect(regressionNode.activatedFlag).toBe(false);
         expect(regressionNode.traversed).toBe(false);
     });

@@ -35,7 +35,6 @@ export class ClassificationNode extends NodeGene {
         const clone = new ClassificationNode(this.uID, this.event, this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
