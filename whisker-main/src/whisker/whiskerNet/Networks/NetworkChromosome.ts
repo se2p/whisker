@@ -15,7 +15,7 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import assert from "assert";
 import {InputFeatures} from "../Misc/InputExtraction";
-import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/Backpropagation";
+import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -100,10 +100,10 @@ export abstract class NetworkChromosome extends Chromosome {
     private _playTime = 0;
 
     /**
-     * Determined whether on a child with equivalent network structure, SGD has already been applied. There is no sense
-     * in applying SGD on similar networks.
+     * Determined whether on a child with equivalent network structure, gradient descent has already been applied.
+     * There is no reason in applying gradient descent on the same parent twice.
      */
-    private _hasSGDChild = false;
+    private _gradientDescentChild = false;
 
     /**
      * Saves the execution trace during the playthrough.
@@ -620,13 +620,13 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     public updateStateActionPair(state: InputFeatures, action: EventAndParameters): void {
 
-        // Convert inputFeatures to ObjectInputFeatures for SGD.
+        // Convert inputFeatures to ObjectInputFeatures for gradient descent.
         const objectInputFeatures: ObjectInputFeatures = {};
         for (const [sprite, featureGroups] of state.entries()) {
             objectInputFeatures[sprite] = Object.fromEntries(featureGroups);
         }
 
-        // Convert action to eventAndParametersObject for SGD
+        // Convert action to eventAndParametersObject for gradient descent
         const parameterNames = action.event.getSearchParameterNames();
         const parameter = {};
         for (let i = 0; i < parameterNames.length; i++) {
@@ -699,12 +699,12 @@ export abstract class NetworkChromosome extends Chromosome {
         this._playTime = value;
     }
 
-    get hasSGDChild(): boolean {
-        return this._hasSGDChild;
+    get gradientDescentChild(): boolean {
+        return this._gradientDescentChild;
     }
 
-    set hasSGDChild(value: boolean) {
-        this._hasSGDChild = value;
+    set gradientDescentChild(value: boolean) {
+        this._gradientDescentChild = value;
     }
 
     get testActivationTrace(): ActivationTrace {

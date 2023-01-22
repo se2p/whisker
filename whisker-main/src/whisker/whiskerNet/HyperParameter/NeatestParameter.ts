@@ -1,5 +1,5 @@
 import {NeuroevolutionTestGenerationParameter} from "./NeuroevolutionTestGenerationParameter";
-import {augmentationParameter} from "../Misc/Backpropagation";
+import {augmentationParameter} from "../Misc/GradientDescent";
 
 export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     /**
@@ -24,17 +24,17 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     private _randomFraction: number;
 
 
-    // Stochastic Gradient Descent.
+    // Gradient Descent.
 
     /**
-     * Whether to use SGD for network training.
+     * Whether to use gradient descent for network training.
      */
-    private _applyStochasticGradientDescent = false;
+    private _applyGradientDescent = false;
 
     /**
-     * Probability of applying SGD instead of genetic weight mutation.
+     * Probability of applying gradient descent instead of genetic weight mutation.
      */
-    private _sgdProbability = 0.5
+    private _gradientDescent = 0.5
 
     /**
      * The learning rate for gradient descent.
@@ -45,6 +45,11 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
      * The number of training iterations.
      */
     private _epochs = 100;
+
+    /**
+     * The batch size used by the gradient descent algorithm.
+     */
+    private _batchSize = 32;
 
     /**
      * Parameter for augmenting gradient descent ground truth data.
@@ -89,20 +94,20 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         this._randomFraction = value;
     }
 
-    get applyStochasticGradientDescent(): boolean {
-        return this._applyStochasticGradientDescent;
+    get applyGradientDescent(): boolean {
+        return this._applyGradientDescent;
     }
 
-    set applyStochasticGradientDescent(value: boolean) {
-        this._applyStochasticGradientDescent = value;
+    set applyGradientDescent(value: boolean) {
+        this._applyGradientDescent = value;
     }
 
-    get sgdProbability(): number {
-        return this._sgdProbability;
+    get gradientDescent(): number {
+        return this._gradientDescent;
     }
 
-    set sgdProbability(value: number) {
-        this._sgdProbability = value;
+    set gradientDescent(value: number) {
+        this._gradientDescent = value;
     }
 
     get learningRate(): number {
@@ -127,6 +132,14 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
 
     set dataAugmentation(value: augmentationParameter) {
         this._dataAugmentation = value;
+    }
+
+    get batchSize(): number {
+        return this._batchSize;
+    }
+
+    set batchSize(value: number) {
+        this._batchSize = value;
     }
 }
 

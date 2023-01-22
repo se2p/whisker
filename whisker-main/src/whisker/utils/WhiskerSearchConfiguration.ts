@@ -269,17 +269,18 @@ export class WhiskerSearchConfiguration {
                 }
             }
 
-            // Check whether we will apply stochastic gradient descent.
-            if ('stochasticGradientDescent' in this._config) {
-                const sgdProperties = this._config['stochasticGradientDescent'];
-                properties.applyStochasticGradientDescent = true;
-                properties.learningRate = sgdProperties['learningRate'];
-                properties.epochs = sgdProperties['epochs'];
-                properties.sgdProbability = sgdProperties['probability'];
+            // Check whether we will apply gradient descent.
+            if ('gradientDescent' in this._config) {
+                const gradientDescent = this._config['gradientDescent'];
+                properties.applyGradientDescent = true;
+                properties.learningRate = gradientDescent['learningRate'];
+                properties.epochs = gradientDescent['epochs'];
+                properties.gradientDescent = gradientDescent['probability'];
+                properties.batchSize = gradientDescent['batchSize'];
 
                 // Check for data augmentation.
-                if ('dataAugmentation' in sgdProperties) {
-                    const augmentationProperties = sgdProperties['dataAugmentation'];
+                if ('dataAugmentation' in gradientDescent) {
+                    const augmentationProperties = gradientDescent['dataAugmentation'];
                     properties.dataAugmentation = {
                         doAugment: augmentationProperties['doAugment'],
                         numAugments: augmentationProperties['numAugments'],
@@ -289,11 +290,11 @@ export class WhiskerSearchConfiguration {
                 }
 
                 // Check for Peer-To-Peer sharing.
-                if (sgdProperties['peerToPeerSharing']){
+                if (gradientDescent['peerToPeerSharing']){
                     Container.peerToPeerSharing = true;
                 }
 
-                console.log("Sharing?: ", sgdProperties['peerToPeerSharing']);
+                console.log("Sharing?: ", gradientDescent['peerToPeerSharing']);
             }
         }
 

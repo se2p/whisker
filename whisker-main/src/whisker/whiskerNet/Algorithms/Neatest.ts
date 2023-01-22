@@ -13,7 +13,7 @@ import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {UserEventNode} from "scratch-analysis/src/control-flow-graph";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {Backpropagation} from "../Misc/Backpropagation";
+import {GradientDescent} from "../Misc/GradientDescent";
 
 export class Neatest extends NEAT {
 

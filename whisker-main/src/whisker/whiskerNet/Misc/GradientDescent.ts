@@ -9,11 +9,12 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {Randomness} from "../../utils/Randomness";
 
 import lodashClonedeep from 'lodash.clonedeep';
+import * as net from "net";
 
-export class Backpropagation {
+export class GradientDescent {
 
     /**
-     * Number of epochs without improvements after which the SGD algorithm stops.
+     * Number of epochs without improvements after which the gradient descent algorithm stops.
      */
     private static EARLY_STOPPING_THRESHOLD = 20;
 
@@ -34,7 +35,7 @@ export class Backpropagation {
     /**
      * The ground truth data corresponding to a given target.
      */
-    private _target_data: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+    private _training_data: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
 
     /**
      * The current target statement. If changed new ground truth data for the new target must be selected.
@@ -43,69 +44,80 @@ export class Backpropagation {
 
 
     constructor(private readonly _groundTruth: Record<string, unknown>,
-                private readonly _augmentationParameter: augmentationParameter) {
+                private readonly _augmentationParameter: augmentationParameter,
+                private readonly _batchSize: number) {
     }
 
     /**
-     * Optimises the network weights using true stochastic gradient descent backpropagation.
+     * Optimises the network weights using gradient descent.
      * @param network the network to be optimised.
      * @param statement the statement for which we are optimising the network.
-     * @param epochs defines how often SGD is to be performed on the whole dataset.
+     * @param epochs defines how often gradient descent is to be performed on the whole dataset.
      * @param learningRate the learning based on which the network weights will be updated.
      * @returns training loss normalised by the number of training examples and executed epochs.
      */
-    public stochasticGradientDescent(network: NetworkChromosome, statement: string, epochs: number,
-                                     learningRate: number): number {
-        let totalLoss = 0;
+    public gradientDescent(network: NetworkChromosome, statement: string, epochs: number,
+                           learningRate: number): number {
+
+        // If necessary, update the prepared ground truth data for the given statement.
         if (this._current_target != statement) {
             Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
-            this._target_data = this._extractDataForStatement(statement);
-            Container.debugLog(`Starting with ${this.target_data.size} recordings.`);
+            this._training_data = this._extractDataForStatement(statement);
+            Container.debugLog(`Starting with ${this.training_data.size} recordings.`);
             this._current_target = statement;
         }
-        let bestEpochLoss = Number.MAX_VALUE;
-        let bestWeights = network.connections.map(conn => conn.weight);
-        let epochsWithoutImprovement = 0;
-        if (this._target_data.size <= 0) {
+
+        // Check if we have some ground truth data available for the current target statement.
+        if (this._training_data.size <= 0) {
             Container.debugLog(`No data for statement: ${statement}`);
             return NaN;
         }
+
+        // Variables for calculating the training progress and for the early stopping approach.
+        let totalLoss = 0;
+        let bestEpochLoss = Number.MAX_VALUE;
+        let bestWeights = network.connections.map(conn => conn.weight);
+        let epochsWithoutImprovement = 0;
+
+        const batches = this._extractBatches(this._batchSize);
+        Arrays.shuffle(batches);
         for (let i = 0; i < epochs; i++) {
-            // Shuffle the training data
             let epochLoss = 0;
-            const trainingInputs = [...this._target_data.keys()];
-            Arrays.shuffle(trainingInputs);
+            for (const batch of batches) {
+                // Shuffle the training data
+                const trainingInputs = [...batch.keys()];
+                Arrays.shuffle(trainingInputs);
 
-            // Iterate over each training example and apply gradient descent.
-            for (const input of trainingInputs) {
-                const inputFeatures = this._objectToInputFeature(input);
+                // Iterate over each training example and apply gradient descent.
+                for (const input of trainingInputs) {
+                    const inputFeatures = this._objectToInputFeature(input);
 
-                // One-hot encoded label vector.
-                const eventLabel = this._target_data.get(input).event;
-                const labelVector = new Map<string, number>();
-                for (const event of network.classificationNodes.keys()) {
-                    if (event === eventLabel) {
-                        labelVector.set(event, 1);
-                    } else {
-                        labelVector.set(event, 0);
+                    // One-hot encoded label vector.
+                    const eventLabel = batch.get(input).event;
+                    const labelVector = new Map<string, number>();
+                    for (const event of network.classificationNodes.keys()) {
+                        if (event === eventLabel) {
+                            labelVector.set(event, 1);
+                        } else {
+                            labelVector.set(event, 0);
+                        }
                     }
-                }
 
-                // Evaluate regression nodes if we have some for the target event.
-                if (network.regressionNodes.has(eventLabel)) {
-                    for (const regNode of network.regressionNodes.get(eventLabel)) {
-                        const trueValue = this._target_data.get(input).parameter[regNode.eventParameter];
-                        labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
+                    // Evaluate regression nodes if we have some for the target event.
+                    if (network.regressionNodes.has(eventLabel)) {
+                        for (const regNode of network.regressionNodes.get(eventLabel)) {
+                            const trueValue = batch.get(input).parameter[regNode.eventParameter];
+                            labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
+                        }
                     }
-                }
 
-                // Compute the loss -> gradients of weights -> update the weights.
-                epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
-                this._backwardPass(network, labelVector);
+                    // Compute the loss -> gradients of weights -> update the weights.
+                    epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
+                    this._backwardPass(network, labelVector);
+                }
                 this._adjustWeights(network, learningRate);
             }
-
-            totalLoss = epochLoss / [...this._target_data.keys()].length;
+            totalLoss = epochLoss / [...this._training_data.keys()].length;
 
             // Early stopping.
             if (totalLoss < bestEpochLoss) {
@@ -116,7 +128,7 @@ export class Backpropagation {
                 epochsWithoutImprovement++;
             }
 
-            if (epochsWithoutImprovement >= Backpropagation.EARLY_STOPPING_THRESHOLD) {
+            if (epochsWithoutImprovement >= GradientDescent.EARLY_STOPPING_THRESHOLD) {
                 break;
             }
 
@@ -212,14 +224,14 @@ export class Backpropagation {
         const layersInverted = [...network.layers.keys()].sort((a, b) => b - a);
         for (const layer of layersInverted) {
 
-            // Calculate the gradients and update the weights for each connection going into the output layer.
+            // Calculate the gradients for each connection going into the output layer.
             if (layer == 1) {
                 for (const node of network.layers.get(layer)) {
 
                     // Calculate gradient for classification nodes.
                     if (node instanceof ClassificationNode) {
                         const label = labelVector.get(node.event.stringIdentifier());
-                        node.gradient = node.activationValue - label;  // Combined gradient for SoftMax + Cross-Entropy
+                        node.gradient += node.activationValue - label;  // Combined gradient for SoftMax + Cross-Entropy
                     }
 
                     // Calculate gradient for regression nodes.
@@ -228,14 +240,14 @@ export class Backpropagation {
                         if (label === undefined) {
                             continue;
                         }
-                        const lossGradient = Backpropagation.DERIVATIVES[LossFunction[LossFunction.SQUARED_ERROR]];
-                        const activationFunctionGradient = Backpropagation.DERIVATIVES[ActivationFunction[node.activationFunction]];
-                        node.gradient = lossGradient(node.activationValue, label) * activationFunctionGradient(node.activationValue);
+                        const lossGradient = GradientDescent.DERIVATIVES[LossFunction[LossFunction.SQUARED_ERROR]];
+                        const activationFunctionGradient = GradientDescent.DERIVATIVES[ActivationFunction[node.activationFunction]];
+                        node.gradient += lossGradient(node.activationValue, label) * activationFunctionGradient(node.activationValue);
                     }
 
                     // Calculate gradients for incoming connections of output nodes.
                     for (const connection of node.incomingConnections) {
-                        connection.gradient = node.gradient * connection.source.activationValue;
+                        connection.gradient += node.gradient * connection.source.activationValue;
                     }
                 }
             }
@@ -244,10 +256,10 @@ export class Backpropagation {
             else if (layer > 0) {
                 for (const node of network.layers.get(layer)) {
                     const incomingGradient = this._incomingGradientHiddenNode(network, node);
-                    const activationDerivative = Backpropagation.DERIVATIVES[ActivationFunction[node.activationFunction]];
-                    node.gradient = incomingGradient * activationDerivative(node.activationValue);
+                    const activationDerivative = GradientDescent.DERIVATIVES[ActivationFunction[node.activationFunction]];
+                    node.gradient += incomingGradient * activationDerivative(node.activationValue);
                     for (const connection of node.incomingConnections) {
-                        connection.gradient = node.gradient * connection.source.activationValue;
+                        connection.gradient += node.gradient * connection.source.activationValue;
                     }
                 }
             }
@@ -277,10 +289,17 @@ export class Backpropagation {
      * @param learningRate determines how much the weights are to be shifted towards the negative gradient.
      */
     public _adjustWeights(network: NetworkChromosome, learningRate: number): void {
+        // Average last layer over batch size.
+        network.getAllNodes().forEach(node => node.gradient /= this._batchSize);
+        network.connections.forEach(con => con.gradient /= this._batchSize);
+
         for (const connection of network.connections) {
             connection.weight -= learningRate * connection.gradient;
             connection.gradient = 0;
         }
+
+        // Reset intermediate gradients in neurons.
+        network.getAllNodes().forEach(node => node.gradient = 0);
     }
 
     /**
@@ -314,6 +333,35 @@ export class Backpropagation {
     }
 
     /**
+     * Extracts batches having the supplied number of elements from the training data of a given statement.
+     * @param batchSize the desired size of each batch. 1 corresponds to true stochastic gradient descent
+     *                  and Infinity to full batch gradient descent.
+     * @return the training data split in batches.
+     */
+    private _extractBatches(batchSize: number): StateActionRecord[] {
+
+        // Batch gradient descent
+        if (batchSize === Infinity) {
+            return [this._training_data];
+        }
+
+        const batches: StateActionRecord[] = [];
+        const keys = [...this._training_data.keys()];
+        const random = Randomness.getInstance();
+        Arrays.shuffle(keys);
+        while (keys.length > 0) {
+            const batch: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+            while (batch.size < batchSize && keys.length > 0) {
+                const ranDataSample = random.pick(keys);
+                batch.set(ranDataSample, this.training_data.get(ranDataSample));
+                keys.splice(keys.indexOf(ranDataSample), 1);
+            }
+            batches.push(batch);
+        }
+        return batches;
+    }
+
+    /**
      * Maps objects to input features.
      * @param object the object that should be mapped to an input feature.
      * returns the input feature corresponding to the supplied object.
@@ -332,7 +380,8 @@ export class Backpropagation {
 
 
     /**
-     * Increases the ground truth data size used by the SGD algorithm by introducing slight mutations to state variables.
+     * Increases the ground truth data size used by the gradient descent algorithm by introducing slight mutations
+     * to state variables.
      * @param data the ground truth recordings that will be extended via data augmentation.
      */
     public _augmentData(data: StateActionRecord): StateActionRecord {
@@ -369,8 +418,8 @@ export class Backpropagation {
         return data;
     }
 
-    get target_data(): StateActionRecord {
-        return this._target_data;
+    get training_data(): StateActionRecord {
+        return this._training_data;
     }
 }
 

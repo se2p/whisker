@@ -37,7 +37,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             network.fitness = 1 / fitness;
         } else {
 
-            // If Peer-To-Peer Sharing is activated, add collected state-action trace to sgd ground truth data.
+            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent training data.
             if (Container.backpropagationInstance && Container.peerToPeerSharing) {
                 this._peerToPeerSharing(network);
             }
@@ -87,7 +87,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             }
 
             // At this point we know that we have covered the statement again.
-            // If Peer-To-Peer Sharing is activated, add collected state-action trace to sgd ground truth data.
+            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth data.
             if (Container.backpropagationInstance && Container.peerToPeerSharing) {
                 this._peerToPeerSharing(network);
             }
@@ -124,13 +124,14 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     }
 
     /**
-     * Adds the collected state-action trace to the SGD ground truth data.
+     * Adds the collected state-action trace to the gradient descent ground truth data.
      * @param network the network in which the state-action trace is saved.
      */
     private _peerToPeerSharing(network: NetworkChromosome): void {
         for (const [state, action] of network.stateActionPairs.entries()) {
-            Container.backpropagationInstance.target_data.set(state, action);
+            Container.backpropagationInstance.training_data.set(state, action);
         }
+        Container.debugLog(`Increased Dataset size to ${Container.backpropagationInstance.training_data.size}`);
         network.stateActionPairs.clear();
     }
 }

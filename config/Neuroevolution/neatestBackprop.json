@@ -15,11 +15,12 @@
         "activationFunction": "RELU",
         "inputConnectionMethod": "fullyHidden"
     },
-    "stochasticGradientDescent": {
-        "learningRate": 0.01,
+    "gradientDescent": {
+        "learningRate": 0.001,
         "epochs": 100,
-        "probability": 0.5,
-        "peerToPeerSharing": true,
+        "batchSize": "Infinity",
+        "probability": 1,
+        "peerToPeerSharing": false,
 
         "dataAugmentation": {
             "doAugment": false,

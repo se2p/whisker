@@ -4,7 +4,7 @@ import VMWrapper from "../../vm/vm-wrapper";
 import TestDriver from "../../test/test-driver.js";
 import {ScratchPosition} from "../scratch/ScratchPosition";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
-import {Backpropagation} from "../whiskerNet/Misc/Backpropagation";
+import {GradientDescent} from "../whiskerNet/Misc/GradientDescent";
 
 export class Container {
     static config: WhiskerSearchConfiguration;
@@ -17,7 +17,7 @@ export class Container {
     static debugLog: typeof console.log;
     static statementFitnessFunctions: StatementFitnessFunction[];
     static backpropagationData: Record<string, unknown>;
-    static backpropagationInstance: Backpropagation;
+    static backpropagationInstance: GradientDescent;
     static neatestTargetId: string
     static peerToPeerSharing: boolean;
 }
