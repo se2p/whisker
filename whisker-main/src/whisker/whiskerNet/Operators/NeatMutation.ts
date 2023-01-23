@@ -84,16 +84,6 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     private readonly _gradientDescentProbability: number;
 
     /**
-     * Learning rate of gradient descent.
-     */
-    private readonly _learningRate: number;
-
-    /**
-     * Number of executed epochs during gradient descent.
-     */
-    private readonly _epochs: number;
-
-    /**
      * Constructs an instance of the NeatMutation class containing various mutation methods.
      * @param mutationConfig the supplied json mutation configs.
      * @param neuroevolutionParameter additional neuroevolution parameter.
@@ -114,12 +104,10 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         if (neuroevolutionParameter !== undefined && neuroevolutionParameter instanceof NeatestParameter) {
             this._gradientDescentEnabled = neuroevolutionParameter.applyGradientDescent;
             this._gradientDescentProbability = neuroevolutionParameter.gradientDescent;
-            this._learningRate = neuroevolutionParameter.learningRate;
-            this._epochs = neuroevolutionParameter.epochs;
 
             if (this._gradientDescentEnabled && this._gradientDescentProbability > 0) {
                 this._backpropagation = new GradientDescent(Container.backpropagationData,
-                    neuroevolutionParameter.dataAugmentation, neuroevolutionParameter.batchSize);
+                    neuroevolutionParameter.gradientDescentParameter, neuroevolutionParameter.dataAugmentation);
                 Container.backpropagationInstance = this._backpropagation;
             }
         }
@@ -143,7 +131,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 }
             }
 
-            // If we don't have a population Champion apply either structural mutation or non-structural mutation but
+                // If we don't have a population Champion apply either structural mutation or non-structural mutation but
             // not both!
             else {
                 // Structural mutation
@@ -344,8 +332,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * @returns training loss.
      */
     private applyGradientDescent(network: NetworkChromosome): number | undefined {
-        return this._backpropagation.gradientDescent(network, Container.neatestTargetId, this._epochs,
-            this._learningRate);
+        return this._backpropagation.gradientDescent(network, Container.neatestTargetId);
     }
 
     /**

@@ -1,5 +1,5 @@
 import {NeuroevolutionTestGenerationParameter} from "./NeuroevolutionTestGenerationParameter";
-import {augmentationParameter} from "../Misc/GradientDescent";
+import {augmentationParameter, gradientDescentParameter} from "../Misc/GradientDescent";
 
 export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     /**
@@ -37,19 +37,14 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     private _gradientDescent = 0.5
 
     /**
-     * The learning rate for gradient descent.
+     * Parameter for the gradient descent algorithm.
      */
-    private _learningRate = 0.1
-
-    /**
-     * The number of training iterations.
-     */
-    private _epochs = 100;
-
-    /**
-     * The batch size used by the gradient descent algorithm.
-     */
-    private _batchSize = 32;
+    private _gradientDescentParameter: gradientDescentParameter = {
+        learningRate: 0.001,
+        learningRateAlgorithm: 'None',
+        epochs: 100,
+        batchSize: 32
+    };
 
     /**
      * Parameter for augmenting gradient descent ground truth data.
@@ -110,20 +105,12 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         this._gradientDescent = value;
     }
 
-    get learningRate(): number {
-        return this._learningRate;
+    get gradientDescentParameter(): gradientDescentParameter {
+        return this._gradientDescentParameter;
     }
 
-    set learningRate(value: number) {
-        this._learningRate = value;
-    }
-
-    get epochs(): number {
-        return this._epochs;
-    }
-
-    set epochs(value: number) {
-        this._epochs = value;
+    set gradientDescentParameter(value: gradientDescentParameter) {
+        this._gradientDescentParameter = value;
     }
 
     get dataAugmentation(): augmentationParameter {
@@ -134,13 +121,6 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         this._dataAugmentation = value;
     }
 
-    get batchSize(): number {
-        return this._batchSize;
-    }
-
-    set batchSize(value: number) {
-        this._batchSize = value;
-    }
 }
 
 export type PopulationGeneration = 'random' | 'direct_parent' | 'global_solutions';

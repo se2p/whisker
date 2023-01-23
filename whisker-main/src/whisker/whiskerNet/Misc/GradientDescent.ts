@@ -48,20 +48,17 @@ export class GradientDescent {
 
 
     constructor(private readonly _groundTruth: Record<string, unknown>,
-                private readonly _augmentationParameter: augmentationParameter,
-                private readonly _batchSize: number) {
+                private readonly _parameter: gradientDescentParameter,
+                private readonly _augmentationParameter: augmentationParameter) {
     }
 
     /**
      * Optimises the network weights using gradient descent.
      * @param network the network to be optimised.
      * @param statement the statement for which we are optimising the network.
-     * @param epochs defines how often gradient descent is to be performed on the whole dataset.
-     * @param learningRate the learning based on which the network weights will be updated.
      * @returns training loss normalised by the number of training examples and executed epochs.
      */
-    public gradientDescent(network: NetworkChromosome, statement: string, epochs: number,
-                           learningRate: number): number | undefined {
+    public gradientDescent(network: NetworkChromosome, statement: string): number | undefined {
 
         // If necessary, update the prepared ground truth data for the given statement.
         if (this._current_target !== statement) {
@@ -82,11 +79,11 @@ export class GradientDescent {
         let bestWeights = network.connections.map(conn => conn.weight);
         let epochsWithoutImprovement = 0;
 
-        const batches = this._extractBatches(this._batchSize);
+        const batches = this._extractBatches();
         Arrays.shuffle(batches);
         const [trainingSet, validationSet] = this._validationSetSplit(batches);
-        for (let i = 0; i < epochs; i++) {
-            this._trainingEpoch(network, trainingSet, learningRate);  // Train
+        for (let i = 0; i < this._parameter.epochs; i++) {
+            this._trainingEpoch(network, trainingSet, i);  // Train
             const currentValidationLoss = (this._validationEpoch(network, validationSet));   // Validate
 
             // Early stopping; Stop after a few rounds without improvement and reset weights to that point in time.
@@ -150,10 +147,10 @@ export class GradientDescent {
      * descent after the whole training batch has been processed.
      * @param network that will be optimised.
      * @param trainData records of states and the corresponding action + parameter.
-     * @param learningRate defines the gradient descent step size.
+     * @param iteration number of epochs executed.
      * @returns training loss normalised over number of training examples.
      */
-    private _trainingEpoch(network: NetworkChromosome, trainData: StateActionRecord[], learningRate: number): number {
+    private _trainingEpoch(network: NetworkChromosome, trainData: StateActionRecord[], iteration: number): number {
         let trainingLoss = 0;
         let numTrainingExamples = 0;
         for (const trainingBatch of trainData) {
@@ -172,7 +169,7 @@ export class GradientDescent {
                 this._backwardPass(network, labelVector);
                 numTrainingExamples++;
             }
-            this._adjustWeights(network, learningRate);
+            this._adjustWeights(network, iteration);
         }
 
         // Normalise by the total number of data points.
@@ -351,12 +348,15 @@ export class GradientDescent {
     /**
      * Shifts the weights using gradient descent based on a pre-defined learning rate.
      * @param network the network whose weights are to be updated.
-     * @param learningRate determines how much the weights are to be shifted towards the negative gradient.
+     * @param iteration number of epochs executed.
      */
-    public _adjustWeights(network: NetworkChromosome, learningRate: number): void {
+    public _adjustWeights(network: NetworkChromosome, iteration: number): void {
+        // Fetch learning rate.
+        const learningRate = this._getLearningRate(iteration);
+
         // Average last layer over batch size.
-        network.getAllNodes().forEach(node => node.gradient /= this._batchSize);
-        network.connections.forEach(con => con.gradient /= this._batchSize);
+        network.getAllNodes().forEach(node => node.gradient /= this._parameter.batchSize);
+        network.connections.forEach(con => con.gradient /= this._parameter.batchSize);
 
         for (const connection of network.connections) {
             connection.weight -= learningRate * connection.gradient;
@@ -399,14 +399,12 @@ export class GradientDescent {
 
     /**
      * Extracts batches having the supplied number of elements from the training data of a given statement.
-     * @param batchSize the desired size of each batch. 1 corresponds to true stochastic gradient descent
-     *                  and Infinity to full batch gradient descent.
      * @return the training data split in batches.
      */
-    private _extractBatches(batchSize: number): StateActionRecord[] {
+    private _extractBatches(): StateActionRecord[] {
 
         // Batch gradient descent
-        if (batchSize === Infinity) {
+        if (this._parameter.batchSize === Infinity) {
             return [this._training_data];
         }
 
@@ -416,7 +414,7 @@ export class GradientDescent {
         Arrays.shuffle(keys);
         while (keys.length > 0) {
             const batch: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
-            while (batch.size < batchSize && keys.length > 0) {
+            while (batch.size < this._parameter.batchSize && keys.length > 0) {
                 const ranDataSample = random.pick(keys);
                 batch.set(ranDataSample, this.training_data.get(ranDataSample));
                 keys.splice(keys.indexOf(ranDataSample), 1);
@@ -497,6 +495,36 @@ export class GradientDescent {
         return data;
     }
 
+    /**
+     * Returns the adapted learning rate based on the defined learning rate algorithm.
+     * @param iteration number of epochs executed.
+     * @returns adapted learning rate.
+     */
+    private _getLearningRate(iteration: number): number {
+        switch (this._parameter.learningRateAlgorithm) {
+            case "None":
+                return this._parameter.learningRate;
+            case "Gradual":
+                return this._gradualDeceasingLearningRate(iteration);
+        }
+    }
+
+    /**
+     * Decreases learning rate gradually based on the number of executed epochs. The intuition of this approach is to
+     * start with high learning rates to explore various local loss minima, and then converge within the lowest minima.
+     * @param iteration number of executed epochs.
+     * @return gradually decreased learning rate.
+     */
+    private _gradualDeceasingLearningRate(iteration: number): number {
+        const minLearningRate = 0.01 * this._parameter.learningRate;
+        const pointAtNoDecrease = 0.8 * this._parameter.epochs;
+        let alpha = 1;
+        if (iteration < pointAtNoDecrease){
+            alpha = iteration / (0.8 * this._parameter.epochs);
+        }
+        return (1 - alpha) * this._parameter.learningRate + alpha * minLearningRate;
+    }
+
     get training_data(): StateActionRecord {
         return this._training_data;
     }
@@ -520,9 +548,18 @@ export enum LossFunction {
     SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED
 }
 
+export interface gradientDescentParameter {
+    learningRate: number,
+    learningRateAlgorithm: learningRateAlgorithm,
+    epochs: number,
+    batchSize: number
+}
+
 export interface augmentationParameter {
     doAugment: boolean,
     numAugments: number,
     disturbStateProb: number,
     disturbStatePower: number
 }
+
+export type learningRateAlgorithm = 'None' | 'Gradual' // TODO AdaGrad, RMSProp, Adam, momentum

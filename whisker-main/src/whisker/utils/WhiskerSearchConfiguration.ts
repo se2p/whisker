@@ -273,10 +273,12 @@ export class WhiskerSearchConfiguration {
             if ('gradientDescent' in this._config) {
                 const gradientDescent = this._config['gradientDescent'];
                 properties.applyGradientDescent = true;
-                properties.learningRate = gradientDescent['learningRate'];
-                properties.epochs = gradientDescent['epochs'];
-                properties.gradientDescent = gradientDescent['probability'];
-                properties.batchSize = gradientDescent['batchSize'];
+                properties.gradientDescentParameter = {
+                    learningRate: gradientDescent['learningRate'],
+                    learningRateAlgorithm: gradientDescent['learningRateAlgorithm'],
+                    epochs: gradientDescent['epochs'],
+                    batchSize: gradientDescent['batchSize']
+                };
 
                 // Check for data augmentation.
                 if ('dataAugmentation' in gradientDescent) {
@@ -290,7 +292,7 @@ export class WhiskerSearchConfiguration {
                 }
 
                 // Check for Peer-To-Peer sharing.
-                if (gradientDescent['peerToPeerSharing']){
+                if (gradientDescent['peerToPeerSharing']) {
                     Container.peerToPeerSharing = true;
                 }
             }

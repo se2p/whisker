@@ -17,6 +17,7 @@
     },
     "gradientDescent": {
         "learningRate": 0.001,
+        "learningRateAlgorithm": "None",
         "epochs": 100,
         "batchSize": 32,
         "probability": 1,
