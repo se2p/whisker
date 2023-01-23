@@ -92,14 +92,16 @@ describe('Test Gradient Descent', () => {
             learningRate: 0,
             learningRateAlgorithm: 'None',
             epochs: 1,
-            batchSize: 1
+            batchSize: 1,
+            labelSmoothing: 0
         };
 
         gradientDescentLearning = {
             learningRate: 0.001,
             learningRateAlgorithm: 'None',
             epochs: 500,
-            batchSize: 32
+            batchSize: 32,
+            labelSmoothing: 0
         };
         backpropagation_1 = new GradientDescent(groundTruthFruitCatching as any, gradientDescentForward, augmentationParameter);
         backpropagation_2 = new GradientDescent(groundTruthFruitCatching as any, gradientDescentLearning, augmentationParameter);
@@ -132,7 +134,8 @@ describe('Test Gradient Descent', () => {
             learningRate: 0.5,
             learningRateAlgorithm: 'None',
             epochs: 1,
-            batchSize: 1
+            batchSize: 1,
+            labelSmoothing: 0
         };
         // Example from https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
         const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
@@ -171,7 +174,8 @@ describe('Test Gradient Descent', () => {
             learningRate: 0.1,
             learningRateAlgorithm: 'Gradual',
             epochs: 500,
-            batchSize: 16
+            batchSize: 16,
+            labelSmoothing: 0
         };
         const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
@@ -184,7 +188,8 @@ describe('Test Gradient Descent', () => {
             learningRate: 0,
             learningRateAlgorithm: 'None',
             epochs: 1,
-            batchSize: 1
+            batchSize: 1,
+            labelSmoothing: 0
         };
         let backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const startingLoss = backpropagation.gradientDescent(net, statement);
@@ -202,7 +207,8 @@ describe('Test Gradient Descent', () => {
             learningRate: 0.001,
             learningRateAlgorithm: 'None',
             epochs: 1,
-            batchSize: Infinity
+            batchSize: Infinity,
+            labelSmoothing: 0
         };
         let backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const startingLoss = backpropagation.gradientDescent(net, statement);
@@ -226,6 +232,16 @@ describe('Test Gradient Descent', () => {
         const startingLoss = backpropagation.gradientDescent(net, statement);
 
         backpropagation = new GradientDescent(groundTruthFruitCatching, gradientDescentLearning, augmentationParameter);
+        const finalLoss = backpropagation.gradientDescent(net, statement);
+        expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
+    });
+
+    test("Mini-Batch Gradient descent with label smoothing", () => {
+        const net = loadNetwork(fruitCatchingNetwork);
+        const startingLoss = backpropagation_1.gradientDescent(net, statement);
+
+        gradientDescentLearning.labelSmoothing = 0.1;
+        const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentLearning, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
     });

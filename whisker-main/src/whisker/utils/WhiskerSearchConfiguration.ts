@@ -277,7 +277,8 @@ export class WhiskerSearchConfiguration {
                     learningRate: gradientDescent['learningRate'],
                     learningRateAlgorithm: gradientDescent['learningRateAlgorithm'],
                     epochs: gradientDescent['epochs'],
-                    batchSize: gradientDescent['batchSize']
+                    batchSize: gradientDescent['batchSize'],
+                    labelSmoothing: gradientDescent['labelSmoothing']
                 };
 
                 // Check for data augmentation.

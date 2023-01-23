@@ -43,7 +43,8 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         learningRate: 0.001,
         learningRateAlgorithm: 'None',
         epochs: 100,
-        batchSize: 32
+        batchSize: 32,
+        labelSmoothing: 0
     };
 
     /**

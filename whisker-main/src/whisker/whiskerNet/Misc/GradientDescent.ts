@@ -131,6 +131,17 @@ export class GradientDescent {
             }
         }
 
+        // Label Smoothing
+        if (this._parameter.labelSmoothing > 0) {
+            for (const event of labelVector.keys()) {
+                if (labelVector.get(event) === 1) {
+                    labelVector.set(event, 1 - this._parameter.labelSmoothing);
+                } else {
+                    labelVector.set(event, this._parameter.labelSmoothing / (labelVector.size - 1));
+                }
+            }
+        }
+
         // Evaluate regression nodes if we have some for the target event.
         if (network.regressionNodes.has(eventLabel)) {
             for (const regNode of network.regressionNodes.get(eventLabel)) {
@@ -519,7 +530,7 @@ export class GradientDescent {
         const minLearningRate = 0.01 * this._parameter.learningRate;
         const pointAtNoDecrease = 0.8 * this._parameter.epochs;
         let alpha = 1;
-        if (iteration < pointAtNoDecrease){
+        if (iteration < pointAtNoDecrease) {
             alpha = iteration / (0.8 * this._parameter.epochs);
         }
         return (1 - alpha) * this._parameter.learningRate + alpha * minLearningRate;
@@ -552,7 +563,8 @@ export interface gradientDescentParameter {
     learningRate: number,
     learningRateAlgorithm: learningRateAlgorithm,
     epochs: number,
-    batchSize: number
+    batchSize: number,
+    labelSmoothing: number
 }
 
 export interface augmentationParameter {
