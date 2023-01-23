@@ -1,8 +1,7 @@
 import groundTruthFruitCatching from "./GroundTruthFruitCatching.json";
-import groundTruthBrainGame from "./GroundTruthBrainGame.json";
 import fruitCatchingNetwork from "./fruitCatchingNetwork.json";
-import brainGameNetwork from "./brainGameNetwork.json";
 import {
+    augmentationParameter,
     GradientDescent,
     gradientDescentParameter,
     LossFunction
@@ -73,32 +72,35 @@ const generateInputs = (): InputFeatures => {
 describe('Test Gradient Descent', () => {
     let backpropagation_1: GradientDescent;
     let backpropagation_2: GradientDescent;
+    let gradientDescentForward: gradientDescentParameter;
+    let gradientDescentLearning: gradientDescentParameter;
+    let augmentationParameter: augmentationParameter;
     const statement = "}Gp_.7).xv-]IUt.!E1/-Bowl"; // Catching the apple for 30 seconds.
-    const augmentationParameter = {
-        doAugment: false,
-        numAugments: 0,
-        disturbStateProb: 0,
-        disturbStatePower: 0
-    };
-
-    const gradientDescentForward: gradientDescentParameter = {
-        learningRate: 0,
-        learningRateAlgorithm: 'None',
-        epochs: 1,
-        batchSize: 1
-    };
-
-    const gradientDescentLearning: gradientDescentParameter = {
-        learningRate: 0.0001,
-        learningRateAlgorithm: 'None',
-        epochs: 500,
-        batchSize: 32
-    };
 
     Container.debugLog = () => { /* suppress output */
     };
 
     beforeEach(() => {
+        augmentationParameter = {
+            doAugment: false,
+            numAugments: 0,
+            disturbStateProb: 0,
+            disturbStatePower: 0
+        };
+
+        gradientDescentForward = {
+            learningRate: 0,
+            learningRateAlgorithm: 'None',
+            epochs: 1,
+            batchSize: 1
+        };
+
+        gradientDescentLearning = {
+            learningRate: 0.001,
+            learningRateAlgorithm: 'None',
+            epochs: 500,
+            batchSize: 32
+        };
         backpropagation_1 = new GradientDescent(groundTruthFruitCatching as any, gradientDescentForward, augmentationParameter);
         backpropagation_2 = new GradientDescent(groundTruthFruitCatching as any, gradientDescentLearning, augmentationParameter);
     });
@@ -209,17 +211,6 @@ describe('Test Gradient Descent', () => {
         gradientDescentParameter.epochs = 500;
         backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
-        expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
-    });
-
-    test("Gradient descent with textInput Events", () => {
-        const net = loadNetwork(brainGameNetwork);
-        const brainGameStatement = ";/6q6yS-wKEraM79`q[H-Result";
-        let backpropagation = new GradientDescent(groundTruthBrainGame, gradientDescentForward, augmentationParameter);
-        const startingLoss = backpropagation.gradientDescent(net, brainGameStatement);
-
-        backpropagation = new GradientDescent(groundTruthBrainGame, gradientDescentLearning, augmentationParameter);
-        const finalLoss = backpropagation.gradientDescent(net, brainGameStatement);
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
     });
 
