@@ -282,9 +282,8 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         if (this._gradientDescentEnabled && !parent.gradientDescentChild && this._random.nextDouble() < this._gradientDescentProbability) {
             const loss = this.applyGradientDescent(mutant);
 
-            // If there are no training examples, we get NaN as a return loss from gradient descent and apply default
-            // weight mutation.
-            if (!isNaN(loss)) {
+            // If there are no training examples, gradient descent returns undefined.
+            if (loss) {
                 gradientDescentApplied = true;
                 parent.gradientDescentChild = true;
             }
@@ -344,7 +343,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * @param network the network to be trained.
      * @returns training loss.
      */
-    private applyGradientDescent(network: NetworkChromosome): number {
+    private applyGradientDescent(network: NetworkChromosome): number | undefined {
         return this._backpropagation.gradientDescent(network, Container.neatestTargetId, this._epochs,
             this._learningRate);
     }

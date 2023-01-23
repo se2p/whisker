@@ -9,7 +9,6 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {Randomness} from "../../utils/Randomness";
 
 import lodashClonedeep from 'lodash.clonedeep';
-import * as net from "net";
 
 export class GradientDescent {
 
@@ -17,6 +16,11 @@ export class GradientDescent {
      * Number of epochs without improvements after which the gradient descent algorithm stops.
      */
     private static EARLY_STOPPING_THRESHOLD = 20;
+
+    /**
+     * Size of the validation set used for measuring generalisation performance.
+     */
+    private static VALIDATION_SET_SIZE = 0.1;
 
     /**
      * Provides derivatives for various loss and activation functions.
@@ -57,10 +61,10 @@ export class GradientDescent {
      * @returns training loss normalised by the number of training examples and executed epochs.
      */
     public gradientDescent(network: NetworkChromosome, statement: string, epochs: number,
-                           learningRate: number): number {
+                           learningRate: number): number | undefined {
 
         // If necessary, update the prepared ground truth data for the given statement.
-        if (this._current_target != statement) {
+        if (this._current_target !== statement) {
             Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
             this._training_data = this._extractDataForStatement(statement);
             Container.debugLog(`Starting with ${this.training_data.size} recordings.`);
@@ -70,65 +74,32 @@ export class GradientDescent {
         // Check if we have some ground truth data available for the current target statement.
         if (this._training_data.size <= 0) {
             Container.debugLog(`No data for statement: ${statement}`);
-            return NaN;
+            return undefined;
         }
 
         // Variables for calculating the training progress and for the early stopping approach.
-        let totalLoss = 0;
-        let bestEpochLoss = Number.MAX_VALUE;
+        let bestValidationLoss = Number.MAX_VALUE;
         let bestWeights = network.connections.map(conn => conn.weight);
         let epochsWithoutImprovement = 0;
 
         const batches = this._extractBatches(this._batchSize);
         Arrays.shuffle(batches);
+        const [trainingSet, validationSet] = this._validationSetSplit(batches);
         for (let i = 0; i < epochs; i++) {
-            let epochLoss = 0;
-            for (const batch of batches) {
-                // Shuffle the training data
-                const trainingInputs = [...batch.keys()];
-                Arrays.shuffle(trainingInputs);
+            this._trainingEpoch(network, trainingSet, learningRate);  // Train
+            const currentValidationLoss = (this._validationEpoch(network, validationSet));   // Validate
 
-                // Iterate over each training example and apply gradient descent.
-                for (const input of trainingInputs) {
-                    const inputFeatures = this._objectToInputFeature(input);
-
-                    // One-hot encoded label vector.
-                    const eventLabel = batch.get(input).event;
-                    const labelVector = new Map<string, number>();
-                    for (const event of network.classificationNodes.keys()) {
-                        if (event === eventLabel) {
-                            labelVector.set(event, 1);
-                        } else {
-                            labelVector.set(event, 0);
-                        }
-                    }
-
-                    // Evaluate regression nodes if we have some for the target event.
-                    if (network.regressionNodes.has(eventLabel)) {
-                        for (const regNode of network.regressionNodes.get(eventLabel)) {
-                            const trueValue = batch.get(input).parameter[regNode.eventParameter];
-                            labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
-                        }
-                    }
-
-                    // Compute the loss -> gradients of weights -> update the weights.
-                    epochLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
-                    this._backwardPass(network, labelVector);
-                }
-                this._adjustWeights(network, learningRate);
-            }
-            totalLoss = epochLoss / [...this._training_data.keys()].length;
-
-            // Early stopping.
-            if (totalLoss < bestEpochLoss) {
+            // Early stopping; Stop after a few rounds without improvement and reset weights to that point in time.
+            if (currentValidationLoss < bestValidationLoss) {
                 bestWeights = network.connections.map(conn => conn.weight);
-                bestEpochLoss = totalLoss;
+                bestValidationLoss = currentValidationLoss;
                 epochsWithoutImprovement = 0;
             } else {
                 epochsWithoutImprovement++;
             }
 
             if (epochsWithoutImprovement >= GradientDescent.EARLY_STOPPING_THRESHOLD) {
+                Container.debugLog(`Early stopping at epoch ${i}`);
                 break;
             }
 
@@ -139,8 +110,102 @@ export class GradientDescent {
             network.connections[j].weight = bestWeights[j];
         }
 
-        Container.debugLog(`EpochLoss: ${bestEpochLoss}`)
-        return bestEpochLoss;
+        Container.debugLog(`ValidationLoss: ${bestValidationLoss}`);
+        return bestValidationLoss;
+    }
+
+    /**
+     * Assembles the labels of classification and regression nodes in a label to value map.
+     * @param network whose classification and regression neuron outputs are compared to the labels.
+     * @param batch the whole data batch hosting the label values.
+     * @param example the data sample that will be used next in the forward pass.
+     * @returns mapping of label to values.
+     */
+    private _prepareLabels(network: NetworkChromosome, batch: StateActionRecord, example: ObjectInputFeatures) {
+
+        // One-hot encoded label vector.
+        const eventLabel = batch.get(example).event;
+        const labelVector = new Map<string, number>();
+        for (const event of network.classificationNodes.keys()) {
+            if (event === eventLabel) {
+                labelVector.set(event, 1);
+            } else {
+                labelVector.set(event, 0);
+            }
+        }
+
+        // Evaluate regression nodes if we have some for the target event.
+        if (network.regressionNodes.has(eventLabel)) {
+            for (const regNode of network.regressionNodes.get(eventLabel)) {
+                const trueValue = batch.get(example).parameter[regNode.eventParameter];
+                labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
+            }
+        }
+
+        return labelVector;
+    }
+
+    /**
+     * Executes a training epoch by executing the forward/backward pass for each training example and applying gradient
+     * descent after the whole training batch has been processed.
+     * @param network that will be optimised.
+     * @param trainData records of states and the corresponding action + parameter.
+     * @param learningRate defines the gradient descent step size.
+     * @returns training loss normalised over number of training examples.
+     */
+    private _trainingEpoch(network: NetworkChromosome, trainData: StateActionRecord[], learningRate: number): number {
+        let trainingLoss = 0;
+        let numTrainingExamples = 0;
+        for (const trainingBatch of trainData) {
+            // Shuffle the training data
+            const trainingInputs = [...trainingBatch.keys()];
+            Arrays.shuffle(trainingInputs);
+
+            // Iterate over each training example and apply gradient descent.
+            for (const trainingExample of trainingInputs) {
+                const inputFeatures = this._objectToInputFeature(trainingExample);
+
+                const labelVector = this._prepareLabels(network, trainingBatch, trainingExample);
+
+                // Compute the loss -> gradients of weights -> update the weights.
+                trainingLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
+                this._backwardPass(network, labelVector);
+                numTrainingExamples++;
+            }
+            this._adjustWeights(network, learningRate);
+        }
+
+        // Normalise by the total number of data points.
+        return trainingLoss / numTrainingExamples;
+    }
+
+    /**
+     * Executes a validation epoch by computing the mean validation loss over all validation set samples.
+     * @param network that will be optimised.
+     * @param validationSet records of states and the corresponding actions + parameter.
+     * @returns validation loss normalised over number of training examples.
+     */
+    private _validationEpoch(network: NetworkChromosome, validationSet: StateActionRecord[]): number {
+        let validationLoss = 0;
+        let numValidationExamples = 0;
+        for (const validationBatch of validationSet) {
+            // Shuffle the training data
+            const validationInputs = [...validationBatch.keys()];
+            Arrays.shuffle(validationInputs);
+
+            // Iterate over each training example and apply gradient descent.
+            for (const trainingExample of validationInputs) {
+                const inputFeatures = this._objectToInputFeature(trainingExample);
+                const labelVector = this._prepareLabels(network, validationBatch, trainingExample);
+
+                // Compute the loss -> gradients of weights -> update the weights.
+                validationLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
+                numValidationExamples++;
+            }
+        }
+
+        // Normalise by the total number of data points.
+        return validationLoss / numValidationExamples;
     }
 
     /**
@@ -359,6 +424,20 @@ export class GradientDescent {
             batches.push(batch);
         }
         return batches;
+    }
+
+    private _validationSetSplit(batches: StateActionRecord[]): [StateActionRecord[], StateActionRecord[]] {
+        const desiredValidationSize = Math.ceil(batches.length * GradientDescent.VALIDATION_SET_SIZE);
+        const validationSet = batches.slice(0, desiredValidationSize);
+        const trainingSet = batches.slice(desiredValidationSize);
+
+        // Check if dataset is big enough...
+        if (trainingSet.length <= 0) {
+            trainingSet.push(...validationSet.splice(
+                0, Math.floor(validationSet.length * (1 - GradientDescent.VALIDATION_SET_SIZE))));
+        }
+
+        return [trainingSet, validationSet];
     }
 
     /**
