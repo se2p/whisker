@@ -3,6 +3,7 @@ import {AssertionFactory} from "./AssertionFactory";
 //import Variable from "../scratch-vm/@types/scratch-vm/engine/variable";
 import Variable from 'scratch-vm/src/engine/variable.js';
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class VariableAssertion extends WhiskerAssertion {
 
@@ -10,15 +11,15 @@ export class VariableAssertion extends WhiskerAssertion {
     private readonly _variableName: string;
     private readonly _variableValue: string;
 
-    constructor(target: RenderedTarget, variableID: string, variableName: string, variableValue: any) {
+    constructor(target: RenderedTarget, variableID: string, variableName: string, variableValue: string) {
         super(target);
         this._variableID = variableID;
         this._variableName = variableName;
         this._variableValue = variableValue;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return `${targetState.variables[this._variableID].value}` == `${this._variableValue}`;
             }
@@ -45,7 +46,7 @@ export class VariableAssertion extends WhiskerAssertion {
 
     static createFactory(): AssertionFactory<VariableAssertion> {
         return new (class implements AssertionFactory<VariableAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): VariableAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): VariableAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (targetState.clone) {

@@ -1,6 +1,7 @@
 import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class VisibilityAssertion extends WhiskerAssertion {
 
@@ -11,8 +12,8 @@ export class VisibilityAssertion extends WhiskerAssertion {
         this._visibility = visibility;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return targetState.visible == this._visibility;
             }
@@ -38,7 +39,7 @@ export class VisibilityAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<VisibilityAssertion>{
         return new (class implements AssertionFactory<VisibilityAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): VisibilityAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): VisibilityAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (targetState.target.isStage) {

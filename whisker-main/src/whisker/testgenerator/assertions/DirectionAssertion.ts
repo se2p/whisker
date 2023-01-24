@@ -1,6 +1,7 @@
 import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class DirectionAssertion extends WhiskerAssertion {
 
@@ -11,8 +12,8 @@ export class DirectionAssertion extends WhiskerAssertion {
         this._direction = direction;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return targetState.direction == this._direction;
             }
@@ -30,7 +31,7 @@ export class DirectionAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<DirectionAssertion>{
         return new (class implements AssertionFactory<DirectionAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): DirectionAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): DirectionAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (targetState.target.isStage) {

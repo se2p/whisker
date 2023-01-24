@@ -82,10 +82,8 @@ export class JavaScriptConverter {
         let footer = "";
         const type = Container.isNeuroevolution ? 'neuroevolution' : 'standard';
         for (const test of tests) {
-            text += "const test" + i + " = async function (t) {\n";
-            for (const {event} of test.chromosome.trace.events) {
-                text += "  " + event.toJavaScript() + "\n";
-            }
+            text += `const test${i} = async function (t) {\n`;
+            text += this.getTestBody(test);
             text += "}\n";
 
             footer += "  {\n";

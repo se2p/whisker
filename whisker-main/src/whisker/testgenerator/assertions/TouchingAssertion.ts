@@ -1,7 +1,7 @@
 import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
-import {Container} from "../../utils/Container";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class TouchingAssertion extends WhiskerAssertion {
 
@@ -14,8 +14,8 @@ export class TouchingAssertion extends WhiskerAssertion {
         this._touching    = touching;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return targetState.touching[this._otherTarget] === this._touching;
             }
@@ -41,7 +41,7 @@ export class TouchingAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<TouchingAssertion>{
         return new (class implements AssertionFactory<TouchingAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): TouchingAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): TouchingAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
