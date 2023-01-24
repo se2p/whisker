@@ -133,9 +133,15 @@ export default class Statistics {
      * @returns number representing the Levenshtein distance between the input arrays.
      */
     public static levenshteinDistanceEvents(a: ScratchEvent[], b: ScratchEvent[]): number {
+        const aStr = a?.map((event) => event.toJavaScript());
+        const bStr = b?.map((event) => event.toJavaScript());
+        return Statistics.levenshteinDistance(aStr, bStr);
+    }
+
+    public static levenshteinDistance<T extends string | string[]>(a: T, b: T): number {
         // Trivial case: If either one of both strings has a length of 0 return the length of the other string.
-        if (a === undefined || a.length == 0) return b.length;
-        if (b === undefined || b.length == 0) return a.length;
+        if (!a || a.length === 0) return b.length;
+        if (!b || b.length === 0) return a.length;
 
         // Saves a matrix of required operations between substrings having a length of the given row/column indices.
         const matrix = [];
@@ -151,7 +157,7 @@ export default class Statistics {
         // Fill in the rest of the matrix
         for (let i = 1; i <= b.length; i++) {
             for (let j = 1; j <= a.length; j++) {
-                if (b[i - 1].toJavaScript() == a[j - 1].toJavaScript()) {
+                if (b[i - 1] === a[j - 1]) {
                     matrix[i][j] = matrix[i - 1][j - 1];    // no operation required
                 } else {
                     matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution operation

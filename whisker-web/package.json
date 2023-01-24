@@ -1,6 +1,6 @@
 {
     "name": "whisker-web",
-    "version": "0.6.0",
+    "version": "0.8.0",
     "description": "A Web GUI for Whisker - A Testing Utility for Scratch 3.0",
     "author": "Marvin Kreis",
     "license": "GPL-3.0-only",
@@ -12,7 +12,9 @@
     "browser": "./index.html",
     "scripts": {
         "build": "webpack --color --bail",
-        "build:prod": "if [ -d dist ]; then rm -rf dist; fi && NODE_ENV=production webpack --color --bail",
+        "build:watch": "webpack --color --watch",
+        "build:prod": "NODE_ENV=production webpack --color --bail",
+        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
         "test": "jest --forceExit --verbose --runInBand",
         "lint": "eslint . && format-message lint src/**/*.js",
         "lint:fix": "eslint . --fix"
@@ -49,6 +51,6 @@
         "vis-data": "^7.0.0",
         "vis-network": "^9.0.4",
         "vis-util": "^5.0.2",
-        "whisker-main": "0.6.0"
+        "whisker-main": "0.8.0"
     }
 }

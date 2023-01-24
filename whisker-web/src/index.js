@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicNetworkSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite";
+import {FileSaver} from "./web-libs";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -164,6 +165,16 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', true);
         $('#record').prop('disabled', true);
 
+        // Activate listener for execution trace record at the end of a test run.
+        const traceExecution = document.querySelector('#container').executionTrace;
+        if (traceExecution) {
+            Whisker.testRunner.on(TestRunner.RUN_END, () => {
+                const blob = new Blob([JSON.stringify(Whisker.testRunner.executionTrace)],
+                    {type: 'application/json;charset=utf-8'});
+                FileSaver.saveAs(blob, `ExecutionTrace-${Whisker.projectFileSelect.getName()}.json`);
+            });
+        }
+
         let summary;
         let csvResults;
         let mutantPrograms;
@@ -186,7 +197,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         try {
             await Whisker.scratch.vm.loadProject(project);
-            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, traceExecution);
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
@@ -266,7 +277,7 @@ const runTests = async function (tests) {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
 };
 
 const runAllTests = async function () {
@@ -290,7 +301,7 @@ const runAllTests = async function () {
         let coverage;
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
-            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, false);
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
@@ -354,8 +365,9 @@ const initScratch = function () {
 
 const initComponents = function () {
     Whisker.outputRun = new Output($('#output-run')[0]);
+    Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
-    
+    Whisker.outputLog.hide();
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
     Whisker.testEditor.show();
@@ -372,6 +384,8 @@ const initComponents = function () {
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
+
+
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
     Whisker.testTable = new TestTable($('#test-table')[0], runTests, Whisker.testRunner);

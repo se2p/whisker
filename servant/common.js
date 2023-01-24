@@ -26,6 +26,7 @@ const {
     scratchPath,
     mutationBudget,
     maxMutants,
+    executionTrace
 } = require("./cli").opts;
 const {subcommand} = require("./cli");
 
@@ -99,6 +100,7 @@ async function runTests(path, openNewPage, index, targetProject) {
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
+        await page.evaluate(e => document.querySelector('#container').executionTrace = e, executionTrace);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (path) {
             await (await page.$('#fileselect-tests')).uploadFile(path);

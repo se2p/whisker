@@ -104,11 +104,11 @@ export abstract class Chromosome {
      *                        chromosome
      * @returns the fitness of this chromosome
      */
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
+    async getFitness(fitnessFunction: FitnessFunction<this>): Promise<number> {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {
-            const fitness = fitnessFunction.getFitness(this);
+            const fitness = await fitnessFunction.getFitness(this);
             this._fitnessCache.set(fitnessFunction, fitness);
             return fitness;
         }
@@ -143,10 +143,10 @@ export abstract class Chromosome {
      * Determines the number of fitness objectives covered by a given test.
      * @param fitnessFunctions the fitness objectives.
      */
-    public determineCoveredObjectives(fitnessFunctions: FitnessFunction<Chromosome>[]): void {
+    public async determineCoveredObjectives(fitnessFunctions: FitnessFunction<Chromosome>[]): Promise<void> {
         let coverageCount = 0;
         for (const fitnessFunction of fitnessFunctions) {
-            if (fitnessFunction.isCovered(this)) {
+            if (await fitnessFunction.isCovered(this)) {
                 coverageCount++;
             }
         }

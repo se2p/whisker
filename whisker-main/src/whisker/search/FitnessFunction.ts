@@ -34,7 +34,7 @@ export interface FitnessFunction<C extends Chromosome> {
      * @param chromosome the chromosome to rate
      * @returns the fitness value of the specified chromosome
      */
-    getFitness(chromosome: C): number;
+    getFitness(chromosome: C): Promise<number>;
 
     /**
      * Computes and returns the branch distance value for the given chromosome.
@@ -82,12 +82,12 @@ export interface FitnessFunction<C extends Chromosome> {
      *
      * @param fitnessValue to check
      */
-    isOptimal(fitnessValue: number): boolean;
+    isOptimal(fitnessValue: number): Promise<boolean>;
 
     /**
      * Confirm whether the fitness function achieves an optimal value for the given chromosome
      *
      * @param chromosome to check the fitness function with
      */
-    isCovered(chromosome: Chromosome): boolean;
+    isCovered(chromosome: Chromosome): Promise<boolean>;
 }

@@ -1,10 +1,12 @@
 {
     "name": "scratch-analysis",
-    "version": "0.6.0",
+    "version": "0.8.0",
     "main": "index.js",
     "license": "GPL-3.0-only",
     "scripts": {
         "build": "webpack --color --bail",
+        "build:watch": "webpack --color --watch",
+        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
         "test": "jest --forceExit --coverage --verbose",
         "test:coverage": "yarn test -- --coverage"
     },
