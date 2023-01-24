@@ -15,7 +15,7 @@ export class GradientDescent {
     /**
      * Number of epochs without improvements after which the gradient descent algorithm stops.
      */
-    private static EARLY_STOPPING_THRESHOLD = 20;
+    private static EARLY_STOPPING_THRESHOLD = 30;
 
     /**
      * Size of the validation set used for measuring generalisation performance.
@@ -528,10 +528,15 @@ export class GradientDescent {
      */
     private _gradualDeceasingLearningRate(iteration: number): number {
         const minLearningRate = 0.01 * this._parameter.learningRate;
-        const pointAtNoDecrease = 0.8 * this._parameter.epochs;
+        let pointAtNoDecrease: number;
+        if (this._parameter.epochs >= 300) {
+            pointAtNoDecrease = 200;
+        } else {
+            pointAtNoDecrease = 0.5 * this._parameter.epochs;
+        }
         let alpha = 1;
         if (iteration < pointAtNoDecrease) {
-            alpha = iteration / (0.8 * this._parameter.epochs);
+            alpha = iteration / pointAtNoDecrease;
         }
         return (1 - alpha) * this._parameter.learningRate + alpha * minLearningRate;
     }

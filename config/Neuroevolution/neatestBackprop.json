@@ -18,8 +18,8 @@
     "gradientDescent": {
         "learningRate": 0.001,
         "learningRateAlgorithm": "None",
-        "epochs": 100,
-        "batchSize": 32,
+        "epochs": 500,
+        "batchSize": 1,
         "labelSmoothing": 0,
         "probability": 0.5,
         "peerToPeerSharing": false,
@@ -70,7 +70,7 @@
     },
     "population": {
         "strategy": "global_solutions",
-        "randomFraction": 0.5
+        "randomFraction": 0.3
     },
     "stoppingCondition": {
         "type": "combined",
