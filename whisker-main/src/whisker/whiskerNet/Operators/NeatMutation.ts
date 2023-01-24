@@ -103,7 +103,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
 
         if (neuroevolutionParameter !== undefined && neuroevolutionParameter instanceof NeatestParameter) {
             this._gradientDescentEnabled = neuroevolutionParameter.applyGradientDescent;
-            this._gradientDescentProbability = neuroevolutionParameter.gradientDescent;
+            this._gradientDescentProbability = neuroevolutionParameter.gradientDescentProb;
 
             if (this._gradientDescentEnabled && this._gradientDescentProbability > 0) {
                 this._backpropagation = new GradientDescent(Container.backpropagationData,
@@ -267,7 +267,9 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     adjustWeights(mutant: NeatChromosome, parent: NeatChromosome): void {
         // Determine whether we mutate weights genetically, or apply gradient descent.
         let gradientDescentApplied = false;
-        if (this._gradientDescentEnabled && !parent.gradientDescentChild && this._random.nextDouble() < this._gradientDescentProbability) {
+        if (this._gradientDescentEnabled &&
+            !parent.gradientDescentChild &&
+            this._random.nextDouble() < this._gradientDescentProbability) {
             const loss = this.applyGradientDescent(mutant);
 
             // If there are no training examples, gradient descent returns undefined.

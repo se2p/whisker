@@ -34,7 +34,7 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     /**
      * Probability of applying gradient descent instead of genetic weight mutation.
      */
-    private _gradientDescent = 0.5
+    private _gradientDescentProb = 0.5
 
     /**
      * Parameter for the gradient descent algorithm.
@@ -98,12 +98,12 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         this._applyGradientDescent = value;
     }
 
-    get gradientDescent(): number {
-        return this._gradientDescent;
+    get gradientDescentProb(): number {
+        return this._gradientDescentProb;
     }
 
-    set gradientDescent(value: number) {
-        this._gradientDescent = value;
+    set gradientDescentProb(value: number) {
+        this._gradientDescentProb = value;
     }
 
     get gradientDescentParameter(): gradientDescentParameter {

@@ -273,6 +273,7 @@ export class WhiskerSearchConfiguration {
             if ('gradientDescent' in this._config) {
                 const gradientDescent = this._config['gradientDescent'];
                 properties.applyGradientDescent = true;
+                properties.gradientDescentProb = gradientDescent['probability'];
                 properties.gradientDescentParameter = {
                     learningRate: gradientDescent['learningRate'],
                     learningRateAlgorithm: gradientDescent['learningRateAlgorithm'],
