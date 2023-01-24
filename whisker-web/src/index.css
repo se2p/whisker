@@ -1412,7 +1412,7 @@ label {
 #main-functionality {
     position: fixed;
     z-index: 1000;
-    bottom: 40%;
+    top: 30%;
     display: grid;
     left: 6vw;
 }
