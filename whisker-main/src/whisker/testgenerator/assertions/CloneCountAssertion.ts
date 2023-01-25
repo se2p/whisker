@@ -1,6 +1,7 @@
 import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class CloneCountAssertion extends WhiskerAssertion {
 
@@ -11,8 +12,8 @@ export class CloneCountAssertion extends WhiskerAssertion {
         this._count = count;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target && !targetState.clone) {
                 return targetState.cloneCount == this._count;
             }
@@ -30,7 +31,7 @@ export class CloneCountAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<CloneCountAssertion>{
         return new (class implements AssertionFactory<CloneCountAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): CloneCountAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): CloneCountAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (targetState.target.isStage) {
