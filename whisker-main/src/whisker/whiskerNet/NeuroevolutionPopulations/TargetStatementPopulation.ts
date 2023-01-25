@@ -1,5 +1,4 @@
 import {NeatPopulation} from "./NeatPopulation";
-import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {FitnessFunction} from "../../search/FitnessFunction";
@@ -7,6 +6,8 @@ import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {Container} from "../../utils/Container";
 import {Randomness} from "../../utils/Randomness";
+import {NeatestParameter} from "../HyperParameter/NeatestParameter";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 
 export class TargetStatementPopulation extends NeatPopulation {
 
@@ -45,6 +46,7 @@ export class TargetStatementPopulation extends NeatPopulation {
 
             // Then, we fill our population with new networks based on the supplied randomFraction.
             const newNetworksSize = Math.floor(this._randomFraction * this.hyperParameter.populationSize);
+            const random = Randomness.getInstance();
             for (let i = 0; i < newNetworksSize; i++) {
                 // Stop if we already hit the population boundary.
                 if (this.networks.length >= this.hyperParameter.populationSize) {
@@ -52,8 +54,9 @@ export class TargetStatementPopulation extends NeatPopulation {
                 }
                 const network = this.generator.get();
 
-                // With a small probability apply gradient descent if enabled
-                if (Container.backpropagationInstance && Randomness.getInstance().nextDouble() <= 0.3) {
+                // With the given probability apply gradient descent if enabled
+                if (Container.backpropagationInstance &&
+                    random.nextDouble() <= (this.hyperParameter as NeatestParameter).gradientDescentProb) {
                     Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
                 }
 
