@@ -73,9 +73,8 @@ export class StateActionRecorder extends EventEmitter {
      * @param config: contains settings that are important during test generation such as the click duration.
      */
     public startRecording(config: string): void {
-        this._vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
-        this._vm.on(Runtime.Project_STOP_ALL, this._onRunStop);
+        this._vm.on(Runtime.PROJECT_START, this._onRunStart);
+        this._vm.on(Runtime.PROJECT_STOP_ALL, this._onRunStop);
         Container.config = new WhiskerSearchConfiguration(JSON.parse(config));
         this._isRecording = true;
         this._statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(this._vm, []).map(stat => stat.getNodeId());
@@ -94,7 +93,7 @@ export class StateActionRecorder extends EventEmitter {
     /**
      * Stops the recording of scratch input actions and clears the wait event check interval when the Scratch run stops.
      */
-    private onStopAll(): void {
+    public onStopAll(): void {
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
         clearInterval(this._checkForWaitInterval);
         this.addStateActionRecordsToRecording(this._fullRecordings.length, this._vm.runtime.traceInfo.tracer.coverage as Set<string>);
@@ -106,8 +105,8 @@ export class StateActionRecorder extends EventEmitter {
     public stopRecording(): void {
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
         clearInterval(this._checkForWaitInterval);
-        this._vm.off(Runtime.PROJECT_RUN_START, this._onRunStart);
-        this._vm.off(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this._vm.off(Runtime.PROJECT_START, this._onRunStart);
+        this._vm.off(Runtime.PROJECT_STOP_ALL, this._onRunStop);
         this._isRecording = false;
     }
 

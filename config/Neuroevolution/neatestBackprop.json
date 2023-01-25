@@ -54,7 +54,7 @@
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 3.0,
+        "distanceThreshold": 1.0,
         "disjointCoefficient": 0.5,
         "excessCoefficient": 0.5,
         "weightCoefficient": 0.1
@@ -65,7 +65,7 @@
     },
     "networkFitness": {
         "type": "reliableStatement",
-        "timeout": 30000,
+        "timeout": 20000,
         "stableCount": 10
     },
     "population": {

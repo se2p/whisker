@@ -433,6 +433,9 @@ const initEvents = function () {
         if (Whisker.inputRecorder.isRecording()) {
             Whisker.inputRecorder.stop();
         }
+        if (Whisker.stateActionRecorder.isRecording){
+            Whisker.stateActionRecorder.onStopAll();
+        }
     });
     $('#reset').on('click', () => {
         $('#reset').tooltip('hide');
