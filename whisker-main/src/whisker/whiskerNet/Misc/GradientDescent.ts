@@ -15,7 +15,7 @@ export class GradientDescent {
     /**
      * Number of epochs without improvements after which the gradient descent algorithm stops.
      */
-    private static EARLY_STOPPING_THRESHOLD = 30;
+    private static EARLY_STOPPING_THRESHOLD = 10;
 
     /**
      * Size of the validation set used for measuring generalisation performance.
@@ -85,6 +85,11 @@ export class GradientDescent {
         for (let i = 0; i < this._parameter.epochs; i++) {
             this._trainingEpoch(network, trainingSet, i);  // Train
             const currentValidationLoss = (this._validationEpoch(network, validationSet));   // Validate
+
+            if (!currentValidationLoss) {
+                Container.debugLog("Classification Node missing; Falling back to weight mutation");
+                return undefined;
+            }
 
             // Early stopping; Stop after a few rounds without improvement and reset weights to that point in time.
             if (currentValidationLoss < bestValidationLoss) {
@@ -196,20 +201,33 @@ export class GradientDescent {
     private _validationEpoch(network: NetworkChromosome, validationSet: StateActionRecord[]): number {
         let validationLoss = 0;
         let numValidationExamples = 0;
+        let successfulValidation = false;
         for (const validationBatch of validationSet) {
             // Shuffle the training data
             const validationInputs = [...validationBatch.keys()];
             Arrays.shuffle(validationInputs);
 
             // Iterate over each training example and apply gradient descent.
-            for (const trainingExample of validationInputs) {
-                const inputFeatures = this._objectToInputFeature(trainingExample);
-                const labelVector = this._prepareLabels(network, validationBatch, trainingExample);
+            for (const validationExample of validationInputs) {
+                const inputFeatures = this._objectToInputFeature(validationExample);
+                const labelVector = this._prepareLabels(network, validationBatch, validationExample);
+
+                // Check if the required classification neurons are present in the network.
+                if ([...labelVector.values()].every(value => value == 0)) {
+                    continue;
+                } else {
+                    successfulValidation = true;
+                }
 
                 // Compute the loss -> gradients of weights -> update the weights.
                 validationLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
                 numValidationExamples++;
             }
+        }
+
+        // If the network misses classification neuron for every input example, we can stop.
+        if (!successfulValidation) {
+            return undefined;
         }
 
         // Normalise by the total number of data points.

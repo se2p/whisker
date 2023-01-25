@@ -5,6 +5,8 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
+import {Container} from "../../utils/Container";
+import {Randomness} from "../../utils/Randomness";
 
 export class TargetStatementPopulation extends NeatPopulation {
 
@@ -49,6 +51,12 @@ export class TargetStatementPopulation extends NeatPopulation {
                     break;
                 }
                 const network = this.generator.get();
+
+                // With a small probability apply gradient descent if enabled
+                if (Container.backpropagationInstance && Randomness.getInstance().nextDouble() <= 0.3) {
+                    Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
+                }
+
                 this.networks.push(network);
             }
 

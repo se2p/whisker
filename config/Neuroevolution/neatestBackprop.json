@@ -18,7 +18,7 @@
     "gradientDescent": {
         "learningRate": 0.01,
         "learningRateAlgorithm": "None",
-        "epochs": 500,
+        "epochs": 1000,
         "batchSize": 1,
         "labelSmoothing": 0,
         "probability": 0.5,
@@ -65,7 +65,7 @@
     },
     "networkFitness": {
         "type": "reliableStatement",
-        "timeout": 10000,
+        "timeout": 30000,
         "stableCount": 10
     },
     "population": {

@@ -264,7 +264,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * @param mutant the mutant whose weights will be adjusted.
      * @param parent the parent of the mutant.
      */
-    adjustWeights(mutant: NeatChromosome, parent: NeatChromosome): void {
+    public adjustWeights(mutant: NeatChromosome, parent: NeatChromosome): void {
         // Determine whether we mutate weights genetically, or apply gradient descent.
         let gradientDescentApplied = false;
         if (this._gradientDescentEnabled &&
