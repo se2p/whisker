@@ -16,7 +16,7 @@
         "inputConnectionMethod": "fullyHidden"
     },
     "gradientDescent": {
-        "learningRate": 0.001,
+        "learningRate": 0.01,
         "learningRateAlgorithm": "None",
         "epochs": 500,
         "batchSize": 1,
@@ -55,9 +55,9 @@
     },
     "compatibility": {
         "distanceThreshold": 3.0,
-        "disjointCoefficient": 1,
-        "excessCoefficient": 1,
-        "weightCoefficient": 0.5
+        "disjointCoefficient": 0.5,
+        "excessCoefficient": 0.5,
+        "weightCoefficient": 0.1
     },
     "fitnessFunction": {
         "type": "statement",
