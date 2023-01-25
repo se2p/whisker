@@ -87,7 +87,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return approachLevels;
     }
 
-    getFitness(chromosome: TestChromosome): number {
+    async getFitness(chromosome: TestChromosome): Promise<number> {
         if (chromosome.trace == null) {
             throw Error("Test case not executed");
         }
@@ -115,13 +115,13 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return value2 - value1;
     }
 
-    isOptimal(fitnessValue: number): boolean {
+    async isOptimal(fitnessValue: number): Promise<boolean> {
         // Covered if distance is 0
         return fitnessValue === 0.0;
     }
 
-    isCovered(chromosome: TestChromosome): boolean {
-        return this.isOptimal(this.getFitness(chromosome));
+    async isCovered(chromosome: TestChromosome): Promise<boolean> {
+        return this.isOptimal(await this.getFitness(chromosome));
     }
 
     getCDGDepth(): number {

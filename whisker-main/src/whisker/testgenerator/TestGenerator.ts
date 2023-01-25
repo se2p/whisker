@@ -92,7 +92,7 @@ export abstract class TestGenerator {
         if (this._config.isMinimizationActive()) {
             whiskerTests = await this.getMinimizedTestSuite(tests);
         } else {
-            whiskerTests = this.getCoveringTestSuite(tests);
+            whiskerTests = await this.getCoveringTestSuite(tests);
         }
 
         if (this._config.isAssertionGenerationActive()) {
@@ -127,7 +127,7 @@ export abstract class TestGenerator {
         for (const [objective, fitnessFunction] of sortedFitnessFunctions.entries()) {
             fitnessMap.set(objective, []);
             for (const test of tests) {
-                if (fitnessFunction.isCovered(test)) {
+                if (await fitnessFunction.isCovered(test)) {
                     fitnessMap.get(objective).push(test);
                 }
             }
@@ -154,7 +154,7 @@ export abstract class TestGenerator {
                     test = testToMinimize;
                 }
                 minimizedSuite.push(new WhiskerTest(test));
-                this.updateCoveredObjectives(coveredObjectives, test);
+                await this.updateCoveredObjectives(coveredObjectives, test);
             }
         }
 
@@ -163,9 +163,9 @@ export abstract class TestGenerator {
         return minimizedSuite;
     }
 
-    protected getCoveringTestSuite(tests: TestChromosome[]): WhiskerTest[] {
+    protected async getCoveringTestSuite(tests: TestChromosome[]): Promise<WhiskerTest[]> {
         const testSuite: WhiskerTest[] = [];
-        const coveringTestsPerObjective = this.getCoveringTestsPerObjective(tests);
+        const coveringTestsPerObjective = await this.getCoveringTestsPerObjective(tests);
         const coveredObjectives = new Set<number>();
 
         // For each uncovered objective with a single covering test: Add the test
@@ -173,7 +173,7 @@ export abstract class TestGenerator {
             if (!coveredObjectives.has(objective) && coveringTestsPerObjective.get(objective).length === 1) {
                 const [test] = coveringTestsPerObjective.get(objective);
                 testSuite.push(new WhiskerTest(test));
-                this.updateCoveredObjectives(coveredObjectives, test);
+                await this.updateCoveredObjectives(coveredObjectives, test);
             }
         }
 
@@ -187,20 +187,20 @@ export abstract class TestGenerator {
                     }
                 }
                 testSuite.push(new WhiskerTest(shortestTest));
-                this.updateCoveredObjectives(coveredObjectives, shortestTest);
+                await this.updateCoveredObjectives(coveredObjectives, shortestTest);
             }
         }
 
         return testSuite;
     }
 
-    private getCoveringTestsPerObjective(tests: TestChromosome[]): Map<number, TestChromosome[]> {
+    private async getCoveringTestsPerObjective(tests: TestChromosome[]): Promise<Map<number, TestChromosome[]>> {
         const coveringTestsPerObjective = new Map<number, TestChromosome[]>();
         for (const objective of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(objective);
             const coveringTests: TestChromosome[] = [];
             for (const test of tests) {
-                if (fitnessFunction.isCovered(test)) {
+                if (await fitnessFunction.isCovered(test)) {
                     coveringTests.push(test);
                 }
             }
@@ -211,9 +211,9 @@ export abstract class TestGenerator {
         return coveringTestsPerObjective;
     }
 
-    private updateCoveredObjectives(coveredObjectives: Set<number>, test: TestChromosome): void {
+    private async updateCoveredObjectives(coveredObjectives: Set<number>, test: TestChromosome): Promise<void> {
         for (const objective of this._fitnessFunctions.keys()) {
-            if (this._fitnessFunctions.get(objective).isCovered(test)) {
+            if (await this._fitnessFunctions.get(objective).isCovered(test)) {
                 coveredObjectives.add(objective);
             }
         }
@@ -226,7 +226,7 @@ export abstract class TestGenerator {
      *   - Fitness
      * @returns string in JSON format
      */
-    public summarizeSolution(archive: Map<number, TestChromosome>): string {
+    public async summarizeSolution(archive: Map<number, TestChromosome>): Promise<string> {
         const summary = [];
         const bestIndividuals = Arrays.distinct(archive.values());
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
@@ -239,7 +239,7 @@ export abstract class TestGenerator {
                 let branchDistance = Number.MAX_VALUE;
                 let CFGDistance = Number.MAX_VALUE;
                 for (const chromosome of bestIndividuals) {
-                    const curFitness = chromosome.getFitness(fitnessFunction);
+                    const curFitness = await chromosome.getFitness(fitnessFunction);
                     if (curFitness < fitness) {
                         fitness = curFitness;
                         approachLevel = fitnessFunction.getApproachLevel(chromosome);

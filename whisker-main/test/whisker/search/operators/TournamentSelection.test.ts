@@ -30,8 +30,8 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
         super(size);
     }
 
-    override getFitness(chromosome: BitstringChromosome): number {
-        return this._size - (super.getFitness(chromosome));
+    override async getFitness(chromosome: BitstringChromosome): Promise<number> {
+        return this._size - (await super.getFitness(chromosome));
     }
 
     override compare (value1: number, value2: number): number {
@@ -39,7 +39,7 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
         return value2 - value1;
     }
 
-    override isOptimal(fitnessValue: number): boolean {
+    override async isOptimal(fitnessValue: number): Promise<boolean> {
         return fitnessValue == 0;
     }
 }
@@ -61,7 +61,7 @@ describe('TournamentSelection', () => {
         const selection = new TournamentSelection<BitstringChromosome>(20);
         const winner = await selection.apply(population, fitnessFunction);
 
-        expect(winner.getFitness(fitnessFunction)).toBe(2);
+        expect(await winner.getFitness(fitnessFunction)).toBe(2);
     });
 
     test('Select best for minimizing fitness function', async () => {
@@ -79,6 +79,6 @@ describe('TournamentSelection', () => {
         const selection = new TournamentSelection<BitstringChromosome>(20);
         const winner = await selection.apply(population, fitnessFunction);
 
-        expect(winner.getFitness(fitnessFunction)).toBe(0);
+        expect(await winner.getFitness(fitnessFunction)).toBe(0);
     });
 });
