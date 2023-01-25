@@ -1,6 +1,7 @@
 import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class VolumeAssertion extends WhiskerAssertion {
 
@@ -11,8 +12,8 @@ export class VolumeAssertion extends WhiskerAssertion {
         this._volume = volume;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return targetState.volume == this._volume;
             }
@@ -30,7 +31,7 @@ export class VolumeAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<VolumeAssertion>{
         return new (class implements AssertionFactory<VolumeAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): VolumeAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): VolumeAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     assertions.push(new VolumeAssertion(targetState.target, targetState.volume, targetState.cloneIndex));

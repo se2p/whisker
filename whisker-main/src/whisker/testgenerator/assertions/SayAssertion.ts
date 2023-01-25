@@ -1,6 +1,7 @@
 import {escaped, js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class SayAssertion extends WhiskerAssertion {
 
@@ -11,8 +12,8 @@ export class SayAssertion extends WhiskerAssertion {
         this._text = text;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return targetState.bubbleState === this._text;
             }
@@ -42,7 +43,7 @@ export class SayAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<SayAssertion>{
         return new (class implements AssertionFactory<SayAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): SayAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): SayAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (targetState.target.isStage) {

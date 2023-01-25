@@ -6,6 +6,7 @@
         "esModuleInterop": true,
         "allowJs": true,
         "resolveJsonModule": true   // Allows importing modules with a ‘.json’ extension
+        //"sourceMap": true               // Helps debugging by mapping ts positions to compiled js code
     },
     "include": [
         "src/**/*",
