@@ -15,15 +15,17 @@ import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {Util} from "../../../index";
-import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
+import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
+import WhiskerUtil from "../../../test/whisker-util";
 
 
 export class StateActionRecorder extends EventEmitter {
     private readonly WAIT_THRESHOLD = Infinity;
     private readonly MOUSE_MOVE_THRESHOLD = 10;
-    private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMove'
+    private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveEvent'
+    private readonly MOUSE_DOWN_ACTION_KEY = 'MouseDownForStepsEvent'
 
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
@@ -36,6 +38,7 @@ export class StateActionRecorder extends EventEmitter {
     private _isRecording: boolean;
     private _lastActionStep: number;
     private _lastMouseMoveStep: number;
+    private _mousePressedStep: number;
     private _checkForWaitInterval: number;
     private _checkForMouseMoveInterval: number;
     private _pressedKeys: Map<string, number>;
@@ -52,8 +55,10 @@ export class StateActionRecorder extends EventEmitter {
         super();
         this._scratch = scratch;
         this._vm = scratch.vm;
+        const util = new WhiskerUtil(scratch.vm, scratch.project);
         Container.vm = this._vm;
         Container.vmWrapper = new VMWrapper(this._vm, this._scratch);
+        Container.testDriver = util.getTestDriver({});
 
         this._actionRecords = [];
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm);
@@ -119,7 +124,7 @@ export class StateActionRecorder extends EventEmitter {
     private handleInput(actionData): void {
         const event = this._inputToEvent(actionData);
         if (event) {
-            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
+            const availableActions = this._eventExtractor.extractEvents(this._vm).map(event => event.stringIdentifier());
 
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
@@ -148,7 +153,6 @@ export class StateActionRecorder extends EventEmitter {
                 event = this._handleMouseInput(actionData);
                 break;
             default:
-                console.log("Unknown event: ", actionData);
                 event = undefined;
         }
         return event;
@@ -212,18 +216,26 @@ export class StateActionRecorder extends EventEmitter {
         }
 
         // Creates a ClickEvent if a mouse button has been pressed.
-        if (actionData.isDown) {
-            const clickTarget = Util.getTargetSprite(this._vm);
-            let event: ScratchEvent;
-            if (clickTarget.isStage) {
-                event = new ClickStageEvent();
-            } else {
-                event = new ClickSpriteEvent(clickTarget);
-            }
+        if ('isDown' in actionData) {
+            // Events for actively pressing the mouse button
+            if (actionData.isDown) {
+                const clickTarget = Util.getTargetSprite(this._vm);
+                let event: ScratchEvent;
+                if (clickTarget.isStage) {
+                    // Register mouse down Event and
+                    // save current step count to compute the number of steps the mouse has been pressed.
+                    this._stateAtAction.set(this.MOUSE_DOWN_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
+                    this._mousePressedStep = this._getCurrentStepCount();
+                } else {
+                    clearInterval(this._checkForMouseMoveInterval);
+                    this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
+                    event = new ClickSpriteEvent(clickTarget);
+                }
 
-            clearInterval(this._checkForMouseMoveInterval);
-            this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
-            return event;
+                return event;
+            } else {
+                return new MouseDownForStepsEvent(this._getCurrentStepCount() - this._mousePressedStep);
+            }
         }
 
         return undefined;
@@ -269,10 +281,10 @@ export class StateActionRecorder extends EventEmitter {
         let parameter: Record<string, number>;
         switch (event.toJSON()['type']) {
             case "WaitEvent":
-                parameter = {'Duration': Math.min(event.getParameters().pop() / 100, 1)};     // Wait duration
+                parameter = {'Duration': Math.min(event.getParameters().pop() / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
                 break;
             case "KeyPressEvent":
-                parameter = {'Steps': Math.min(event.getParameters()[1] / 30, 1)};      // Press duration
+                parameter = {'Steps': Math.min(event.getParameters()[1] / Container.config.getPressDurationUpperBound(), 1)};      // Press duration
                 break;
             case "TypeTextEvent":
                 parameter = {};
@@ -283,6 +295,11 @@ export class StateActionRecorder extends EventEmitter {
             case "MouseMoveEvent":
                 parameter = {"X": event.getParameters()[0] / 240, "Y": event.getParameters()[1] / 180}; // Coordinates.
                 break;
+            case "MouseDownForStepsEvent":
+                parameter = {"Steps": Math.min(event.getParameters().pop() / Container.config.getPressDurationUpperBound(), 1)}; // Steps;
+                break;
+            default:
+                console.log("Missing event handler: ", event);
         }
 
         const record: ActionRecord = {
@@ -351,7 +368,7 @@ export class StateActionRecorder extends EventEmitter {
             }
 
             // Skip empty recordings
-            if (Object.keys(stateActionRecordJSON).length <= 0){
+            if (Object.keys(stateActionRecordJSON).length <= 0) {
                 continue;
             }
             stateActionRecordJSON['coverage'] = this._fullRecordings[i].coverage;

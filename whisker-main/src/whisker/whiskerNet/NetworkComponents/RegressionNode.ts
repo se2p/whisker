@@ -29,6 +29,7 @@ export class RegressionNode extends NodeGene {
         switch (event.toJSON()['type']) {
             case "WaitEvent":
             case "KeyPressEvent":
+            case "MouseDownForStepsEvent":
                 activationFunction = ActivationFunction.SIGMOID;
                 break;
             case "MouseMoveEvent":
