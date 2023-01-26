@@ -5,6 +5,7 @@ import {Container} from "../../utils/Container";
 import {Pair} from "../../utils/Pair";
 import * as twgl from 'twgl.js';
 import VirtualMachine from "scratch-vm/src/virtual-machine";
+import {ScratchPosition} from "../../scratch/ScratchPosition";
 
 
 export class InputExtraction {
@@ -208,13 +209,16 @@ export class InputExtraction {
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                    // Only active nodes whose rangeFinder sensed something.
-                    const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
-                    for (const direction in distances) {
-                        spriteFeatures.set(`DIST${direction}${sensedColor}`, distances[direction]);
+                    const sourcePosition = new ScratchPosition(target.x, target.y);
+                    const stageDiameter = ScratchInterface.getStageDiameter();
+                    const colorPosition = ScratchInterface.findColorWithinRadius(sensedColor, 5,
+                        stageDiameter, sourcePosition);
+                    if (colorPosition) {
+                        const distance = sourcePosition.distanceTo(colorPosition) / stageDiameter;
+                        spriteFeatures.set(`DIST${sensedColor}`, distance);
                     }
-                }
                     break;
+                }
 
                 // Check if the target is capable of switching his costume.
                 case "looks_switchcostumeto": {

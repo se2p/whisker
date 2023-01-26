@@ -77,7 +77,7 @@ export class ScratchInterface {
     }
 
     public static findColorWithinRadius(color: string, samplingResolution = 5, maxRadius = 600,
-                                        startingPoint = new ScratchPosition(0, 0)): ScratchPosition {
+                                        startingPoint = new ScratchPosition(0, 0)): ScratchPosition | undefined {
         const targetColor = this.getColorFromHex(color);
         let radius = 1;
         const searchAngles = Arrays.range(0, 360, 10);
@@ -103,6 +103,21 @@ export class ScratchInterface {
     public static isPointWithinCanvas(point: ScratchPosition): boolean {
         const [stageWidth, stageHeight] = Container.vm.runtime.renderer.getNativeSize();
         return Math.abs(point.x) < stageWidth / 2 && Math.abs(point.y) < stageHeight / 2;
+    }
+
+    public static getStageBounds(): { "left": number, "right": number, "top": number, "bottom": number } {
+        const renderer = Container.vm.runtime.renderer;
+        return {
+            right: renderer._xRight,
+            left: renderer._xLeft,
+            top: renderer._yTop,
+            bottom: renderer._yBottom
+        };
+    }
+
+    public static getStageDiameter(): number{
+        const bounds = this.getStageBounds();
+        return Math.hypot(bounds.top - bounds.bottom, bounds.right - bounds.left);
     }
 }
 

@@ -168,8 +168,8 @@ export class NetworkExecutor {
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // Stop VM and remove listeners.
-        this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_STOP_ALL, _onRunStop);
+        this._vmWrapper.end();
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
@@ -232,8 +232,8 @@ export class NetworkExecutor {
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // Stop VM and remove listeners.
-        this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_STOP_ALL, _onRunStop);
+        this._vmWrapper.end();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
     }

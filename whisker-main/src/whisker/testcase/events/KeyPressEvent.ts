@@ -22,7 +22,6 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
 import {ParameterType} from "./ParameterType";
-import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
 
 export class KeyPressEvent extends ScratchEvent {
