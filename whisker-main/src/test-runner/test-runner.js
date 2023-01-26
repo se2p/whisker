@@ -198,7 +198,7 @@ class TestRunner extends EventEmitter {
     _setRNGSeeds(seed, test, vm) {
 
         // Prioritise seeds set using the CLI.
-        if (seed !== 'undefined' && seed !== "") {
+        if (seed !== undefined && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
         }
 
