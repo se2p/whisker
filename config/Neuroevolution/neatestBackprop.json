@@ -2,8 +2,8 @@
     "testGenerator": "neuroevolution",
     "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 100,
-    "numberOfSpecies": 5,
+    "populationSize": 50,
+    "numberOfSpecies": 3,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
@@ -16,9 +16,9 @@
         "inputConnectionMethod": "fullyHidden"
     },
     "gradientDescent": {
-        "learningRate": 0.01,
+        "learningRate": 0.1,
         "learningRateAlgorithm": "None",
-        "epochs": 1000,
+        "epochs": 500,
         "batchSize": 1,
         "labelSmoothing": 0,
         "probability": 0.5,
@@ -54,10 +54,10 @@
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 1.0,
-        "disjointCoefficient": 0.5,
-        "excessCoefficient": 0.5,
-        "weightCoefficient": 0.1
+        "distanceThreshold": 3.0,
+        "disjointCoefficient": 1,
+        "excessCoefficient": 1,
+        "weightCoefficient": 0
     },
     "fitnessFunction": {
         "type": "statement",
@@ -65,7 +65,7 @@
     },
     "networkFitness": {
         "type": "reliableStatement",
-        "timeout": 15000,
+        "timeout": 20000,
         "stableCount": 10
     },
     "population": {
