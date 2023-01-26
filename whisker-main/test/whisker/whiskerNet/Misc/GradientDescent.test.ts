@@ -1,11 +1,6 @@
 import groundTruthFruitCatching from "./GroundTruthFruitCatching.json";
 import fruitCatchingNetwork from "./fruitCatchingNetwork.json";
-import {
-    augmentationParameter,
-    GradientDescent,
-    gradientDescentParameter,
-    LossFunction
-} from "../../../../src/whisker/whiskerNet/Misc/GradientDescent";
+import {augmentationParameter, GradientDescent, gradientDescentParameter, LossFunction} from "../../../../src/whisker/whiskerNet/Misc/GradientDescent";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";

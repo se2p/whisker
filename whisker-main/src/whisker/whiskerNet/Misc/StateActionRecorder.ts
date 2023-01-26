@@ -129,7 +129,7 @@ export class StateActionRecorder extends EventEmitter {
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
             if (availableActions.indexOf(event.stringIdentifier()) >= 0 ||
-                event instanceof TypeTextEvent || event instanceof TypeNumberEvent) {
+                event instanceof TypeTextEvent || event instanceof TypeNumberEvent || event instanceof ClickSpriteEvent) {
                 this._recordAction(event);
             }
         }
@@ -297,6 +297,12 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             case "MouseDownForStepsEvent":
                 parameter = {"Steps": Math.min(event.getParameters().pop() / Container.config.getPressDurationUpperBound(), 1)}; // Steps;
+                break;
+            case "ClickSpriteEvent":
+                parameter = {};
+                break;
+            case "MouseMoveToEvent":
+                parameter = {};
                 break;
             default:
                 console.log("Missing event handler: ", event);
