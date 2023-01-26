@@ -169,7 +169,7 @@ export class NetworkExecutor {
 
         // Stop VM and remove listeners.
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vm.removeListener(Runtime.PROJECT_STOP_ALL, _onRunStop);
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
@@ -190,12 +190,12 @@ export class NetworkExecutor {
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
 
         const eventTrace = network.trace.events;
         const statementTarget = network.targetFitness as StatementFitnessFunction;
+        this._vm.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {
 
@@ -233,7 +233,7 @@ export class NetworkExecutor {
 
         // Stop VM and remove listeners.
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._vm.removeListener(Runtime.PROJECT_STOP_ALL, _onRunStop);
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
     }
