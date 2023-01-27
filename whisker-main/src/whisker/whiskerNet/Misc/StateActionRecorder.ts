@@ -22,7 +22,7 @@ import WhiskerUtil from "../../../test/whisker-util";
 
 
 export class StateActionRecorder extends EventEmitter {
-    private readonly WAIT_THRESHOLD = Infinity;
+    private readonly WAIT_THRESHOLD = 10;
     private readonly MOUSE_MOVE_THRESHOLD = 10;
     private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveEvent'
     private readonly MOUSE_DOWN_ACTION_KEY = 'MouseDownForStepsEvent'
@@ -80,6 +80,7 @@ export class StateActionRecorder extends EventEmitter {
     public startRecording(config: string): void {
         this._vm.on(Runtime.PROJECT_START, this._onRunStart);
         this._vm.on(Runtime.PROJECT_STOP_ALL, this._onRunStop);
+        this._vm.runtime.on(Runtime.PROJECT_STOP_ALL, this._onRunStop);
         Container.config = new WhiskerSearchConfiguration(JSON.parse(config));
         this._isRecording = true;
         this._statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(this._vm, []).map(stat => stat.getNodeId());
@@ -100,7 +101,15 @@ export class StateActionRecorder extends EventEmitter {
      */
     public onStopAll(): void {
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
+
+        // Clean state.
         clearInterval(this._checkForWaitInterval);
+        clearInterval(this._checkForMouseMoveInterval);
+        this._lastActionStep = 0;
+        this._lastMouseMoveStep = 0;
+        this._mousePressedStep = 0;
+        this._pressedKeys.clear();
+        this._stateAtAction.clear();
         this.addStateActionRecordsToRecording(this._fullRecordings.length, this._vm.runtime.traceInfo.tracer.coverage as Set<string>);
     }
 
@@ -112,6 +121,7 @@ export class StateActionRecorder extends EventEmitter {
         clearInterval(this._checkForWaitInterval);
         this._vm.off(Runtime.PROJECT_START, this._onRunStart);
         this._vm.off(Runtime.PROJECT_STOP_ALL, this._onRunStop);
+        this._vm.runtime.off(Runtime.PROJECT_STOP_ALL, this._onRunStop);
         this._isRecording = false;
     }
 
@@ -208,9 +218,11 @@ export class StateActionRecorder extends EventEmitter {
         const scratchMouse = this._vm.runtime.ioDevices['mouse'];
         this._mouseCoordinates = [scratchMouse.getScratchX(), scratchMouse.getScratchY()];
         this._lastMouseMoveStep = this._getCurrentStepCount();
+        const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
 
         // Trigger callback for mouse move if there was no click event.
-        if (!this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) && !('isDown' in actionData)) {
+        if (!this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) && !('isDown' in actionData) &&
+            availableActions.includes(this.MOUSE_MOVE_ACTION_KEY)) {
             this._checkForMouseMoveInterval = window.setInterval(this._checkForMouseMoveCallBack, 500);
             this._stateAtAction.set(this.MOUSE_MOVE_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
         }
@@ -221,7 +233,7 @@ export class StateActionRecorder extends EventEmitter {
             if (actionData.isDown) {
                 const clickTarget = Util.getTargetSprite(this._vm);
                 let event: ScratchEvent;
-                if (clickTarget.isStage) {
+                if (clickTarget.isStage && availableActions.includes(this.MOUSE_DOWN_ACTION_KEY)) {
                     // Register mouse down Event and
                     // save current step count to compute the number of steps the mouse has been pressed.
                     this._stateAtAction.set(this.MOUSE_DOWN_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
@@ -261,7 +273,7 @@ export class StateActionRecorder extends EventEmitter {
             if (availableActions.indexOf(event.stringIdentifier()) >= 0) {
                 this._recordAction(event);
             }
-            clearInterval(this._checkForWaitInterval);
+            clearInterval(this._checkForMouseMoveInterval);
             this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
         }
     }
@@ -271,9 +283,11 @@ export class StateActionRecorder extends EventEmitter {
      */
     private _checkForWait(): void {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
-        const acceleration = Container.acceleration != undefined ? Container.acceleration : 1;
-        if (stepsSinceLastAction > (this.WAIT_THRESHOLD / acceleration)) {
-            this._recordAction(new WaitEvent(this.WAIT_THRESHOLD));
+        if (stepsSinceLastAction > this.WAIT_THRESHOLD) {
+            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
+            if (availableActions.length <= 2 && availableActions.includes("WaitEvent") && this._stateAtAction.size <= 1) {
+                this._recordAction(new WaitEvent(this.WAIT_THRESHOLD));
+            }
         }
     }
 
@@ -283,7 +297,13 @@ export class StateActionRecorder extends EventEmitter {
      */
     private _recordAction(event: ScratchEvent): void {
         const action = event.stringIdentifier();
-        const stateFeatures = this._stateAtAction.get(action) || InputExtraction.extractFeatures(this._vm);
+        let stateFeatures: InputFeatures;
+        if (this._stateAtAction.has(action)) {
+            stateFeatures = this._stateAtAction.get(action);
+            this._stateAtAction.delete(action);
+        } else {
+            stateFeatures = InputExtraction.extractFeatures(this._vm);
+        }
         let parameter: Record<string, number>;
         switch (event.toJSON()['type']) {
             case "WaitEvent":
