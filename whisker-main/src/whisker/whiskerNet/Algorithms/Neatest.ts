@@ -73,6 +73,7 @@ export class Neatest extends NEAT {
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
+            this._switchToEasierTarget = false;
             while (!(await this._stoppingCondition.isFinished(this))) {
                 await this.evaluateNetworks();
                 this.updateBestIndividualAndStatistics();
@@ -85,7 +86,6 @@ export class Neatest extends NEAT {
 
                 // Switch target if other statements than the currently selected one are easier to cover.
                 if (this._switchToEasierTarget) {
-                    this._switchToEasierTarget = false;
                     Container.debugLog("Switch to easier Target");
                     break;
                 }
@@ -384,7 +384,7 @@ export class Neatest extends NEAT {
         const allStatements = [...this._fitnessFunctions.values()];
         const currentTarget = this._fitnessFunctionMap.get(this._targetKey);
         return new TargetStatementPopulation(this._chromosomeGenerator, this._neuroevolutionProperties, allStatements,
-            currentTarget, startingNetworks, this._neuroevolutionProperties.randomFraction);
+            currentTarget, startingNetworks, this._switchToEasierTarget, this._neuroevolutionProperties.randomFraction);
     }
 
     /**

@@ -23,7 +23,7 @@ import WhiskerUtil from "../../../test/whisker-util";
 
 export class StateActionRecorder extends EventEmitter {
     private readonly WAIT_THRESHOLD = 10;
-    private readonly MOUSE_MOVE_THRESHOLD = 10;
+    private readonly MOUSE_MOVE_THRESHOLD = 5;
     private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveEvent'
     private readonly MOUSE_DOWN_ACTION_KEY = 'MouseDownForStepsEvent'
 

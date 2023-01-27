@@ -2,13 +2,17 @@ import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionP
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {
+    NeuroevolutionTestGenerationParameter
+} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {TargetStatementPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/TargetStatementPopulation";
+import {
+    TargetStatementPopulation
+} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/TargetStatementPopulation";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 
 describe("Test TargetStatementPopulation", () => {
@@ -58,7 +62,8 @@ describe("Test TargetStatementPopulation", () => {
     });
 
     test("Generate population without starting networks", () => {
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, [], 0);
+        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+            undefined, [], false, 0);
         population.generatePopulation();
         expect(population.networks.length).toBe(size);
     });
@@ -68,7 +73,8 @@ describe("Test TargetStatementPopulation", () => {
         for (let i = 0; i < 5; i++) {
             networks.push(chromosomeGenerator.get());
         }
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, networks, 0.1);
+        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+            undefined, networks, false, 0.1);
         const innovations = NeatPopulation.innovations.length;
         population.generatePopulation();
         expect(population.networks.length).toBe(size);
@@ -80,7 +86,8 @@ describe("Test TargetStatementPopulation", () => {
         for (let i = 0; i < 5; i++) {
             networks.push(chromosomeGenerator.get());
         }
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [], undefined, networks, 1);
+        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+            undefined, networks, false, 1);
         const innovations = NeatPopulation.innovations.length;
         population.generatePopulation();
         expect(population.networks.length).toBe(size);

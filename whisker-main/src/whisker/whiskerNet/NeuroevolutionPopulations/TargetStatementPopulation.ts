@@ -8,6 +8,7 @@ import {Container} from "../../utils/Container";
 import {Randomness} from "../../utils/Randomness";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 
 export class TargetStatementPopulation extends NeatPopulation {
 
@@ -15,6 +16,7 @@ export class TargetStatementPopulation extends NeatPopulation {
                 private readonly _allStatements: FitnessFunction<NetworkChromosome>[],
                 private readonly _targetStatementFitness: StatementFitnessFunction,
                 private readonly _startingNetworks: NeatChromosome[],
+                private readonly _switchedToEasierTarget: boolean,
                 private readonly _randomFraction: number) {
         super(generator, hyperParameter);
     }
@@ -47,15 +49,25 @@ export class TargetStatementPopulation extends NeatPopulation {
             // Then, we fill our population with new networks based on the supplied randomFraction.
             const newNetworksSize = Math.floor(this._randomFraction * this.hyperParameter.populationSize);
             const random = Randomness.getInstance();
+
+            // Collect discovered events to update novel networks with them as it is likely they are required to
+            // advance in the game.
+            const discoveredEvents = new Map<string, ScratchEvent>();
+            for (const network of this._startingNetworks) {
+                for (const event of [...network.classificationNodes.values()].map(node => node.event)) {
+                    discoveredEvents.set(event.stringIdentifier(), event);
+                }
+            }
             for (let i = 0; i < newNetworksSize; i++) {
                 // Stop if we already hit the population boundary.
                 if (this.networks.length >= this.hyperParameter.populationSize) {
                     break;
                 }
                 const network = this.generator.get();
+                network.updateOutputNodes([...discoveredEvents.values()]);
 
                 // With the given probability apply gradient descent if enabled
-                if (Container.backpropagationInstance &&
+                if (Container.backpropagationInstance && !this._switchedToEasierTarget &&
                     random.nextDouble() <= (this.hyperParameter as NeatestParameter).gradientDescentProb) {
                     Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
                 }

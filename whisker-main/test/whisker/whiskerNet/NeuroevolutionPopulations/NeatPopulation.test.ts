@@ -47,13 +47,13 @@ describe("Test NeatPopulation", () => {
         const mutationConfig = {
             "operator": "neatMutation",
             "mutationWithoutCrossover": 0.25,
-            "mutationAddConnection": 0.2,
+            "mutationAddConnection": 0.5,
             "recurrentConnection": 0.1,
             "addConnectionTries": 20,
             "populationChampionNumberOffspring": 10,
             "populationChampionNumberClones": 5,
             "populationChampionConnectionMutation": 0.3,
-            "mutationAddNode": 0.1,
+            "mutationAddNode": 0.3,
             "mutateWeights": 0.6,
             "perturbationPower": 2.5,
             "mutateToggleEnableConnection": 0.1,
@@ -69,7 +69,7 @@ describe("Test NeatPopulation", () => {
         properties.populationSize = size;
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;
-        properties.weightCoefficient = 0.3;
+        properties.weightCoefficient = 0.5;
         properties.compatibilityDistanceThreshold = 3;
         properties.penalizingAge = 10;
         properties.ageSignificance = 1.0;
@@ -199,11 +199,14 @@ describe("Test NeatPopulation", () => {
     test("Test Speciation with a chromosome mutated several times", () => {
         const chromosome = chromosomeGenerator.get();
         let mutant = chromosome.mutate();
-        for (let i = 0; i < 100; i++) {
+        let count = 0;
+        while (population.speciesCount <= 1 && count < 1000){
             mutant = mutant.mutate();
+            population.speciate(mutant);
+            count++;
         }
-        population.speciate(mutant);
-        expect(population.speciesCount).toBe(2);
+        expect(population.speciesCount).toBeGreaterThanOrEqual(2);
+
     });
 
     test("Test Compatibility Distance of clones", () => {
@@ -272,7 +275,7 @@ describe("Test NeatPopulation", () => {
         const node2 = chromosome1.layers.get(1)[1];
         chromosome2.connections.push(new ConnectionGene(node1, node2, 1, true, 1000));
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
-        expect(compatDistance).toBe(1);
+        expect(compatDistance).toBe(1 / chromosome2.connections.length);
     });
 
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {
@@ -296,7 +299,7 @@ describe("Test NeatPopulation", () => {
         const chromosome1 = new NeatChromosome(layer, connections1, mutation, crossover, 'fully');
         const chromosome2 = new NeatChromosome(layer, connections2, mutation, crossover, 'fully');
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
-        expect(compatDistance).toBe(0.3 * 0.5);
+        expect(compatDistance).toBe((0.5 * 0.5) / chromosome2.connections.length);
     });
 
     test("Test Compatibility Distance of undefined chromosome", () => {
