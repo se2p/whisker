@@ -299,13 +299,13 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             network.species = newSpecies;
         }
 
-        // If we already have some species find a compatible one or create a new species for the network if the network
+            // If we already have some species find a compatible one or create a new species for the network if the network
         // is not compatible enough with any existent species.
         else {
             let foundSpecies = false;
             for (const specie of this.species) {
                 // Skip empty species
-                if(specie.networks.length == 0){
+                if (specie.networks.length == 0) {
                     continue;
                 }
                 // Get a representative of the specie and calculate the compatibility distance.
@@ -406,14 +406,13 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Calculate the compatibility distance according to the number of matching, excess and disjoint genes.
-        const disjointCoefficient = this.hyperParameter.disjointCoefficient;
-        const excessCoefficient = this.hyperParameter.excessCoefficient;
+        const disjointFactor = (disjoint * this.hyperParameter.disjointCoefficient) / maxSize;
+        const excessFactor = (excess * this.hyperParameter.excessCoefficient) / maxSize;
         const weightCoefficient = this.hyperParameter.weightCoefficient;
         if (matching === 0) {
-            return disjointCoefficient * disjoint + excessCoefficient * excess;
+            return disjointFactor + excessFactor;
         } else {
-            return disjointCoefficient * disjoint + excessCoefficient * excess
-                + weightCoefficient * (weight_diff / matching);
+            return disjointFactor + excessFactor + weightCoefficient * (weight_diff / matching);
         }
     }
 
@@ -530,7 +529,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 }
 
-export type Innovation  = AddConnectionInnovation | AddNodeSplitConnectionInnovation;
+export type Innovation = AddConnectionInnovation | AddNodeSplitConnectionInnovation;
 
 export interface AddConnectionInnovation {
     type: 'addConnection';

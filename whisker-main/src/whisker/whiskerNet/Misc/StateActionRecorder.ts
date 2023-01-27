@@ -124,12 +124,12 @@ export class StateActionRecorder extends EventEmitter {
     private handleInput(actionData): void {
         const event = this._inputToEvent(actionData);
         if (event) {
-            const availableActions = this._eventExtractor.extractEvents(this._vm).map(event => event.stringIdentifier());
+            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
 
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
             if (availableActions.indexOf(event.stringIdentifier()) >= 0 ||
-                event instanceof TypeTextEvent || event instanceof TypeNumberEvent || event instanceof ClickSpriteEvent) {
+                event instanceof TypeTextEvent || event instanceof TypeNumberEvent) {
                 this._recordAction(event);
             }
         }
@@ -250,10 +250,16 @@ export class StateActionRecorder extends EventEmitter {
         if (this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) &&
             stepsSinceLastMouseMove > this.MOUSE_MOVE_THRESHOLD) {
             const clickTarget = Util.getTargetSprite(this._vm);
+            let event: ScratchEvent;
             if (clickTarget.isStage) {
-                this._recordAction(new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]));
+                event = new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]);
             } else {
-                this._recordAction(new MouseMoveToEvent(clickTarget.x, clickTarget.y));
+                event = new MouseMoveToEvent(clickTarget.x, clickTarget.y);
+            }
+
+            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
+            if (availableActions.indexOf(event.stringIdentifier()) >= 0) {
+                this._recordAction(event);
             }
             clearInterval(this._checkForWaitInterval);
             this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);

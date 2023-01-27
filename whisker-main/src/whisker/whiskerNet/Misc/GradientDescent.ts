@@ -84,7 +84,7 @@ export class GradientDescent {
         const [trainingSet, validationSet] = this._validationSetSplit(batches);
         for (let i = 0; i < this._parameter.epochs; i++) {
             this._trainingEpoch(network, trainingSet, i);  // Train
-            const currentValidationLoss = (this._validationEpoch(network, validationSet));   // Validate
+            const currentValidationLoss = this._validationEpoch(network, validationSet);   // Validate
 
             if (!currentValidationLoss) {
                 Container.debugLog("Classification Node missing; Falling back to weight mutation");

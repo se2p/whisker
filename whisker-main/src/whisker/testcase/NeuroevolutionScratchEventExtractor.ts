@@ -2,7 +2,6 @@ import {ScratchBlocks} from "./ScratchEventExtractor";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "./events/ScratchEvent";
 import {DragSpriteEvent} from "./events/DragSpriteEvent";
-import {StaticScratchEventExtractor} from "./StaticScratchEventExtractor";
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {Container} from "../utils/Container";
@@ -29,7 +28,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
      * @param vm the state of the Scratch-Project from which events will be extracted.
      */
     public extractStaticEvents(vm: VirtualMachine): ScratchEvent[] {
-        const scratchEvents = new StaticScratchEventExtractor(vm).extractEvents(vm);
+        const scratchEvents = super.extractEvents(vm);
         return scratchEvents.filter((event) => !(event instanceof DragSpriteEvent));
     }
 

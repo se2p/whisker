@@ -150,8 +150,10 @@ export class NetworkExecutor {
             this.recordActivationTrace(network, stepCount, spriteFeatures);
             stepCount++;
 
-            // Check if we have reached our selected target and stop if this is the case.
-            if (this._stopEarly && statementTarget !== undefined) {
+            // Check if we have reached our selected target and stop if it's not the green flag this is the case.
+            // Keep executing when green flag was covered to cover all easy target at once and avoid repeated executions
+            // for trivial targets.
+            if (this._stopEarly && statementTarget !== undefined && statementTarget.getCDGDepth() > 1) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
                 if (currentCoverage.has(statementTarget.getTargetNode().id)) {
                     break;
