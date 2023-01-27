@@ -233,15 +233,15 @@ export class StateActionRecorder extends EventEmitter {
             if (actionData.isDown) {
                 const clickTarget = Util.getTargetSprite(this._vm);
                 let event: ScratchEvent;
-                if (clickTarget.isStage && availableActions.includes(this.MOUSE_DOWN_ACTION_KEY)) {
+                if (availableActions.includes(new ClickSpriteEvent(clickTarget).stringIdentifier())) {
+                    clearInterval(this._checkForMouseMoveInterval);
+                    this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
+                    event = new ClickSpriteEvent(clickTarget);
+                } else {
                     // Register mouse down Event and
                     // save current step count to compute the number of steps the mouse has been pressed.
                     this._stateAtAction.set(this.MOUSE_DOWN_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
                     this._mousePressedStep = this._getCurrentStepCount();
-                } else {
-                    clearInterval(this._checkForMouseMoveInterval);
-                    this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
-                    event = new ClickSpriteEvent(clickTarget);
                 }
 
                 return event;
@@ -256,20 +256,21 @@ export class StateActionRecorder extends EventEmitter {
     /**
      * Adds a {@link MouseMoveEvent} if the mouse has not been moved for some time. We wait with registering mouse
      * movements to avoid an explosion of mouse movements when the mouse is moved from one place to another.
+     * @param mouseDownNoticed if a {@link MouseDownForStepsEvent} has been recognised we also record mouse movement.
      */
-    private _checkForMouseMove(): void {
+    private _checkForMouseMove(mouseDownNoticed = false): void {
         const stepsSinceLastMouseMove = this._getCurrentStepCount() - this._lastMouseMoveStep;
+        const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
         if (this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) &&
-            stepsSinceLastMouseMove > this.MOUSE_MOVE_THRESHOLD) {
+            (stepsSinceLastMouseMove > this.MOUSE_MOVE_THRESHOLD || mouseDownNoticed)) {
             const clickTarget = Util.getTargetSprite(this._vm);
             let event: ScratchEvent;
-            if (clickTarget.isStage) {
-                event = new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]);
-            } else {
+            if (availableActions.includes(new MouseMoveToEvent(clickTarget.x, clickTarget.y).stringIdentifier())) {
                 event = new MouseMoveToEvent(clickTarget.x, clickTarget.y);
+            } else {
+                event = new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]);
             }
 
-            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
             if (availableActions.indexOf(event.stringIdentifier()) >= 0) {
                 this._recordAction(event);
             }
@@ -323,6 +324,7 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             case "MouseDownForStepsEvent":
                 parameter = {"Steps": Math.min(event.getParameters().pop() / Container.config.getPressDurationUpperBound(), 1)}; // Steps;
+                this._checkForMouseMove(true);
                 break;
             case "ClickSpriteEvent":
                 parameter = {};
