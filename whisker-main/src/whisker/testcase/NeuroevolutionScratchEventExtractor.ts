@@ -13,10 +13,17 @@ import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
 import {MouseDownForStepsEvent} from "./events/MouseDownForStepsEvent";
 import {TypeNumberEvent} from "./events/TypeNumberEvent";
+import {WaitEvent} from "./events/WaitEvent";
+import Arrays from "../utils/Arrays";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
     private static CLONE_THRESHOLD = 3;
+
+    /**
+     * Whether events should be extracted statically, ignoring if a sprite is invisible or not.
+     */
+    private _staticMode = false;
 
     constructor(vm: VirtualMachine) {
         super(vm);
@@ -28,8 +35,24 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
      * @param vm the state of the Scratch-Project from which events will be extracted.
      */
     public extractStaticEvents(vm: VirtualMachine): ScratchEvent[] {
-        const scratchEvents = super.extractEvents(vm);
-        return scratchEvents.filter((event) => !(event instanceof DragSpriteEvent));
+        this._staticMode = true;
+        const eventList: ScratchEvent[] = [];
+
+        // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
+        // of the procedure definition script.
+        for (const target of vm.runtime.targets) {
+            for (const scriptId of target.sprite.blocks.getScripts()) {
+                const hatBlock = target.blocks.getBlock(scriptId);
+                eventList.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
+                this.traverseBlocks(target, hatBlock, eventList);
+            }
+        }
+
+        eventList.push(new WaitEvent());
+
+        const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        this._staticMode = false;
+        return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 
     /**
@@ -121,7 +144,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
             }
             case 'sensing_askandwait':
                 // Type text
-                if (Container.vmWrapper.isQuestionAsked()) {
+                if (this._staticMode || Container.vmWrapper.isQuestionAsked()) {
                     if (this.potentiallyComparesNumbers) {
                         eventList.push(new TypeNumberEvent());
                     }
@@ -130,12 +153,12 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                if (target.visible && target.isOriginal) {
+                if ((target.visible || this._staticMode) && target.isOriginal) {
                     eventList.push(new ClickSpriteEvent(target));
                 }
 
                 // Do not allow too many clones to avoid an explosion of output nodes.
-                else if (target.visible) {
+                else if (this._staticMode || target.visible) {
                     const spriteName = target.sprite.name;
                     if (!this.currentClickClones.has(spriteName) ||
                         this.currentClickClones.get(spriteName) < NeuroevolutionScratchEventExtractor.CLONE_THRESHOLD) {
