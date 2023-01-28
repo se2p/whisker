@@ -37,7 +37,6 @@ export class StateActionRecorder extends EventEmitter {
     private _lastActionStep: number;
     private _lastMouseMoveStep: number;
     private _mousePressedStep: number;
-    private _checkForWaitInterval: number;
     private _checkForMouseMoveInterval: number;
     private _pressedKeys: Map<string, number>;
     private readonly _stateAtAction: Map<string, InputFeatures>;
@@ -46,7 +45,6 @@ export class StateActionRecorder extends EventEmitter {
     private readonly _onRunStart: () => void;
     private readonly _onRunStop: () => void;
     private readonly _onInput: () => void;
-    private readonly _checkForWaitCallBack: () => void;
     private readonly _checkForMouseMoveCallBack: () => void;
 
     constructor(scratch: Scratch) {
@@ -67,7 +65,6 @@ export class StateActionRecorder extends EventEmitter {
         this._onRunStart = this.onGreenFlag.bind(this);
         this._onRunStop = this.onStopAll.bind(this);
         this._onInput = this.handleInput.bind(this);
-        this._checkForWaitCallBack = this._checkForWait.bind(this);
         this._checkForMouseMoveCallBack = this._checkForMouseMove.bind(this);
     }
 
@@ -88,9 +85,14 @@ export class StateActionRecorder extends EventEmitter {
      */
     private onGreenFlag(): void {
         this._scratch.on(Scratch.INPUT_LISTENER_KEY, this._onInput);
-        this._checkForWaitInterval = window.setInterval(this._checkForWaitCallBack, 500);
         this._lastActionStep = this._getCurrentStepCount();
-        this._stateAtAction.set("WaitEvent", InputExtraction.extractFeatures(this._vm));
+
+        // Start with clean state.
+        this._lastActionStep = 0;
+        this._lastMouseMoveStep = 0;
+        this._mousePressedStep = 0;
+        this._pressedKeys.clear();
+        this._stateAtAction.clear();
     }
 
     /**
@@ -105,13 +107,7 @@ export class StateActionRecorder extends EventEmitter {
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
 
         // Clean state.
-        clearInterval(this._checkForWaitInterval);
         clearInterval(this._checkForMouseMoveInterval);
-        this._lastActionStep = 0;
-        this._lastMouseMoveStep = 0;
-        this._mousePressedStep = 0;
-        this._pressedKeys.clear();
-        this._stateAtAction.clear();
     }
 
     /**
@@ -119,7 +115,6 @@ export class StateActionRecorder extends EventEmitter {
      */
     public stopRecording(): void {
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
-        clearInterval(this._checkForWaitInterval);
         this._vm.off(Runtime.PROJECT_START, this._onRunStart);
         this._vm.off(Runtime.PROJECT_STOP_ALL, this._onRunStop);
         this._vm.runtime.off(Runtime.PROJECT_STOP_ALL, this._onRunStop);
@@ -287,8 +282,12 @@ export class StateActionRecorder extends EventEmitter {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         if (stepsSinceLastAction > this.WAIT_THRESHOLD) {
             const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
-            if (availableActions.length <= 2 && availableActions.includes("WaitEvent") && this._stateAtAction.size <= 1) {
-                this._recordAction(new WaitEvent(this.WAIT_THRESHOLD));
+            // Add a Wait if
+            //              1. We have only two events available of which one is a WaitEvent.
+            //              2. We are not waiting for another event to finish, e.g. a KeyPress to be released
+            if (availableActions.length <= 2 && availableActions.includes("WaitEvent")
+                && this._stateAtAction.size <= 1 && this._pressedKeys.size == 0) {
+                this._recordAction(new WaitEvent(stepsSinceLastAction));
             }
         }
     }
@@ -335,6 +334,10 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             default:
                 console.log("Missing event handler: ", event);
+        }
+
+        if (action !== "WaitEvent"){
+            this._checkForWait();
         }
 
         const record: ActionRecord = {

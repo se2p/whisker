@@ -16,6 +16,7 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
 import {TypeNumberEvent} from "../../../../src/whisker/testcase/events/TypeNumberEvent";
+import {Randomness} from "../../../../src/whisker/utils/Randomness";
 
 
 const generateNetwork = () => {
@@ -52,7 +53,10 @@ const generateNetwork = () => {
 
 const loadNetwork = (networkJSON: any): NetworkChromosome => {
     const networkLoader = new NetworkLoader(networkJSON, [new WaitEvent(), new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow'), new TypeNumberEvent()]);
-    return networkLoader.loadNetworks()[0];
+    const net =  networkLoader.loadNetworks()[0];
+    const random = Randomness.getInstance();
+    net.connections.forEach(connection => connection.weight = random.nextDouble());
+    return net;
 };
 
 const generateInputs = (): InputFeatures => {
