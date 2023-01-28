@@ -14,7 +14,7 @@ import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import assert from "assert";
-import {InputFeatures} from "../Misc/InputExtraction";
+import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
 import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 
@@ -29,6 +29,8 @@ export abstract class NetworkChromosome extends Chromosome {
      * Unique identifier.
      */
     private _uID: number;
+
+    public origin: string;
 
     /**
      * Maps sprites and their respective features to the corresponding input node.
@@ -176,7 +178,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * Adds additional input Nodes if we have encountered new input features during the playthrough.
      * @param features a map which maps each sprite to its input feature vector.
      */
-    private updateInputNodes(features: InputFeatures): void {
+    public updateInputNodes(features: InputFeatures): void {
         let updated = false;
         features.forEach((spriteFeatures, spriteKey) => {
 
@@ -334,8 +336,8 @@ export abstract class NetworkChromosome extends Chromosome {
         }
 
         // After we looked at potential recurrent connections we can reset the activation value.
-        for(const node of this.getAllNodes()){
-            if (!(node instanceof BiasNode)){
+        for (const node of this.getAllNodes()) {
+            if (!(node instanceof BiasNode)) {
                 node.activationValue = 0;
             }
         }
@@ -617,6 +619,34 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     public sortLayer(): void {
         this._layers = new Map([...this.layers.entries()].sort());
+    }
+
+    /**
+     * Extracts the {@link InputFeatures} from the input neurons.
+     * @return InputFeatures loaded in the input layer.
+     */
+    public extractInputFeatures(): InputFeatures {
+        const features: InputFeatures = new Map<string, FeatureGroup>();
+        for (const [sprite, spriteFeatures] of this.inputNodes.entries()) {
+            const featureGroup: FeatureGroup = new Map<string, number>();
+            for (const features of spriteFeatures.keys()) {
+                featureGroup.set(features, 0);
+            }
+            features.set(sprite, featureGroup);
+        }
+        return features;
+    }
+
+    /**
+     * Extracts the supported output features of this node from the output nodes.
+     * @returns mapping of event identifier to found {@link ScratchEvent} in output nodes.
+     */
+    public extractOutputFeatures(): Map<string, ScratchEvent>{
+        const outputFeatures = new Map<string, ScratchEvent>();
+        for (const event of [...this.classificationNodes.values()].map(node => node.event)) {
+            outputFeatures.set(event.stringIdentifier(), event);
+        }
+        return outputFeatures;
     }
 
     /**

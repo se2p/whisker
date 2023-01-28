@@ -18,9 +18,6 @@ import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/Networ
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
-import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
-import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {ParameterType} from "../../../../src/whisker/testcase/events/ParameterType";
 
 export const generateInputs = (): InputFeatures => {
     const genInputs: InputFeatures = new Map<string, Map<string, number>>();

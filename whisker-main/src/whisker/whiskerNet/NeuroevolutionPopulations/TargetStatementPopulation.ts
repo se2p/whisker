@@ -9,6 +9,7 @@ import {Randomness} from "../../utils/Randomness";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
+import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
 
 export class TargetStatementPopulation extends NeatPopulation {
 
@@ -33,9 +34,13 @@ export class TargetStatementPopulation extends NeatPopulation {
         if (this._startingNetworks.length === 0) {
             while (this.networks.length < this.populationSize) {
                 const network = this.generator.get();
+                network.origin = "fresh";
                 this.networks.push(network);
             }
         } else {
+
+            const discoveredInputs = this._fetchDiscoveredInputStates();
+            const discoveredEvents = this._fetchDiscoveredOutputEvents();
 
             // Otherwise, we start with cloning all starting networks.
             for (const network of this._startingNetworks) {
@@ -43,28 +48,23 @@ export class TargetStatementPopulation extends NeatPopulation {
                 if (this.networks.length >= this.hyperParameter.populationSize) {
                     break;
                 }
-                this.networks.push(network.cloneStructure(true));
+                const clone = network.cloneStructure(true);
+                clone.origin = "PARENT CLONE";
+                this._updateInOutLayer(network, discoveredInputs, discoveredEvents);
+                this.networks.push(clone);
             }
 
             // Then, we fill our population with new networks based on the supplied randomFraction.
             const newNetworksSize = Math.floor(this._randomFraction * this.hyperParameter.populationSize);
             const random = Randomness.getInstance();
 
-            // Collect discovered events to update novel networks with them as it is likely they are required to
-            // advance in the game.
-            const discoveredEvents = new Map<string, ScratchEvent>();
-            for (const network of this._startingNetworks) {
-                for (const event of [...network.classificationNodes.values()].map(node => node.event)) {
-                    discoveredEvents.set(event.stringIdentifier(), event);
-                }
-            }
             for (let i = 0; i < newNetworksSize; i++) {
                 // Stop if we already hit the population boundary.
                 if (this.networks.length >= this.hyperParameter.populationSize) {
                     break;
                 }
                 const network = this.generator.get();
-                network.updateOutputNodes([...discoveredEvents.values()]);
+                this._updateInOutLayer(network, discoveredInputs, discoveredEvents);
 
                 // With the given probability apply gradient descent if enabled
                 if (Container.backpropagationInstance && !this._switchedToEasierTarget &&
@@ -72,6 +72,7 @@ export class TargetStatementPopulation extends NeatPopulation {
                     Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
                 }
 
+                network.origin = "NEW RANDOM";
                 this.networks.push(network);
             }
 
@@ -82,6 +83,8 @@ export class TargetStatementPopulation extends NeatPopulation {
             while (this.networks.length < this.hyperParameter.populationSize) {
                 const parent = this._startingNetworks[i % this._startingNetworks.length];
                 const mutant = parent.mutate();
+                this._updateInOutLayer(mutant, discoveredInputs, discoveredEvents);
+                mutant.origin = "MUTANT PRIOR";
                 this.networks.push(mutant);
                 i++;
             }
@@ -94,5 +97,48 @@ export class TargetStatementPopulation extends NeatPopulation {
             network.targetFitness = this._targetStatementFitness;
             this.speciate(network);
         }
+    }
+
+
+    /**
+     * Ponders through the provided starting networks and collects all input states discovered so far.
+     * @returns mapping of sprite names to corresponding sprite features.
+     */
+    private _fetchDiscoveredInputStates(): InputFeatures {
+        const inputs: InputFeatures = new Map<string, FeatureGroup>();
+        for (const network of this._startingNetworks) {
+            const networkFeatures = network.extractInputFeatures();
+            for (const [sprite, features] of networkFeatures.entries()) {
+                inputs.set(sprite, features);
+            }
+        }
+        return inputs;
+    }
+
+    /**
+     * Ponders through the provided starting networks and collects all supported output events so far.
+     * @returns array of found {@link ScratchEvent}s.
+     */
+    private _fetchDiscoveredOutputEvents(): ScratchEvent[] {
+        const discoveredEvents = new Map<string, ScratchEvent>();
+        for (const network of this._startingNetworks) {
+            const networkOutputs = network.extractOutputFeatures();
+            for (const [identifier, event] of networkOutputs.entries()) {
+                discoveredEvents.set(identifier, event);
+            }
+        }
+        return [...discoveredEvents.values()];
+    }
+
+    /**
+     * Updates a network with the provided in and output features. This is necessary as otherwise speciation fails due
+     * to an explosion of species.
+     * @param network to be updated.
+     * @param inputs that will be used to update the input layer.
+     * @param outputs that will be used to update the output layer.
+     */
+    private _updateInOutLayer(network: NetworkChromosome, inputs: InputFeatures, outputs: ScratchEvent[]): void {
+        network.updateInputNodes(inputs);
+        network.updateOutputNodes(outputs);
     }
 }

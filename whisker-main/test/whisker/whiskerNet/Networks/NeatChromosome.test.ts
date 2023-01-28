@@ -24,6 +24,7 @@ import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {EventAndParameters, ExecutionTrace} from "../../../../src/whisker/testcase/ExecutionTrace";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 import {generateInputs} from "../Algorithms/NEAT.test";
+import {expect} from "@jest/globals";
 
 describe('Test NeatChromosome', () => {
     let mutationOp: NeatMutation;
@@ -563,6 +564,18 @@ describe('Test NeatChromosome', () => {
         ];
         chromosome.trace = new ExecutionTrace(undefined, eventAndParams);
         expect(chromosome.getNumEvents()).toEqual(2);
+    });
+
+    test("Get InputFeatures", () => {
+        const inputs = chromosome.extractInputFeatures();
+        expect(inputs.size).toEqual(2);
+        expect(inputs.get("Sprite1").size).toEqual(5);
+        expect(inputs.get("Sprite2").size).toEqual(4);
+    });
+
+    test("Get OutputFeatures", () => {
+        const outputs = chromosome.extractOutputFeatures();
+        expect(outputs.size).toEqual(4);
     });
 
     test("toJSON", () => {
