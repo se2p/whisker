@@ -30,8 +30,6 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     private _uID: number;
 
-    public origin: string;
-
     /**
      * Maps sprites and their respective features to the corresponding input node.
      */
@@ -641,7 +639,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * Extracts the supported output features of this node from the output nodes.
      * @returns mapping of event identifier to found {@link ScratchEvent} in output nodes.
      */
-    public extractOutputFeatures(): Map<string, ScratchEvent>{
+    public extractOutputFeatures(): Map<string, ScratchEvent> {
         const outputFeatures = new Map<string, ScratchEvent>();
         for (const event of [...this.classificationNodes.values()].map(node => node.event)) {
             outputFeatures.set(event.stringIdentifier(), event);

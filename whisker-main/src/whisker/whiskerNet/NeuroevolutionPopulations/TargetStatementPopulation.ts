@@ -34,7 +34,6 @@ export class TargetStatementPopulation extends NeatPopulation {
         if (this._startingNetworks.length === 0) {
             while (this.networks.length < this.populationSize) {
                 const network = this.generator.get();
-                network.origin = "fresh";
                 this.networks.push(network);
             }
         } else {
@@ -49,7 +48,6 @@ export class TargetStatementPopulation extends NeatPopulation {
                     break;
                 }
                 const clone = network.cloneStructure(true);
-                clone.origin = "PARENT CLONE";
                 this._updateInOutLayer(network, discoveredInputs, discoveredEvents);
                 this.networks.push(clone);
             }
@@ -72,7 +70,6 @@ export class TargetStatementPopulation extends NeatPopulation {
                     Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
                 }
 
-                network.origin = "NEW RANDOM";
                 this.networks.push(network);
             }
 
@@ -84,7 +81,6 @@ export class TargetStatementPopulation extends NeatPopulation {
                 const parent = this._startingNetworks[i % this._startingNetworks.length];
                 const mutant = parent.mutate();
                 this._updateInOutLayer(mutant, discoveredInputs, discoveredEvents);
-                mutant.origin = "MUTANT PRIOR";
                 this.networks.push(mutant);
                 i++;
             }

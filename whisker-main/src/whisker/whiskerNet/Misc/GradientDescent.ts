@@ -83,11 +83,15 @@ export class GradientDescent {
         Arrays.shuffle(batches);
         const [trainingSet, validationSet] = this._validationSetSplit(batches);
         for (let i = 0; i < this._parameter.epochs; i++) {
-            this._trainingEpoch(network, trainingSet, i);  // Train
-            const currentValidationLoss = this._validationEpoch(network, validationSet);   // Validate
+            const trainLoss = this._trainingEpoch(network, trainingSet, i);  // Train
+            if (trainLoss === undefined) {
+                Container.debugLog("Classification node missing in Training; Falling back to weight mutation");
+                return undefined;
+            }
 
+            const currentValidationLoss = this._validationEpoch(network, validationSet);   // Validate
             if (currentValidationLoss === undefined) {
-                Container.debugLog("Classification Node missing; Falling back to weight mutation");
+                Container.debugLog("Classification node missing in Validation; Falling back to weight mutation");
                 return undefined;
             }
 
@@ -181,10 +185,9 @@ export class GradientDescent {
                 const labelVector = this._prepareLabels(network, trainingBatch, trainingExample);
                 // Check if the required classification neurons are present in the network.
                 if ([...labelVector.values()].every(value => value == 0)) {
-                    console.log("SKIPPED Train: ", network.origin);
-                    console.log("NET: ", network.toString());
-                    console.log("Missing: ", trainingBatch.get(trainingExample).event);                    continue;
+                    continue;
                 }
+
 
                 // Compute the loss -> gradients of weights -> update the weights.
                 trainingLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
@@ -192,6 +195,12 @@ export class GradientDescent {
                 numTrainingExamples++;
             }
             this._adjustWeights(network, iteration);
+        }
+
+        // The network may be missing required classification neurons. In this case, we return undefined as an indicator
+        // to stop the network training
+        if (numTrainingExamples == 0) {
+            return undefined;
         }
 
         // Normalise by the total number of data points.
@@ -207,7 +216,6 @@ export class GradientDescent {
     private _validationEpoch(network: NetworkChromosome, validationSet: StateActionRecord[]): number {
         let validationLoss = 0;
         let numValidationExamples = 0;
-        let successfulValidation = false;
         for (const validationBatch of validationSet) {
             // Shuffle the training data
             const validationInputs = [...validationBatch.keys()];
@@ -220,12 +228,7 @@ export class GradientDescent {
 
                 // Check if the required classification neurons are present in the network.
                 if ([...labelVector.values()].every(value => value == 0)) {
-                    console.log("SKIPPED VAL: ", network.origin);
-                    console.log("NET: ", network.toString());
-                    console.log("Missing: ", validationBatch.get(validationExample).event);
                     continue;
-                } else {
-                    successfulValidation = true;
                 }
 
                 // Compute the loss -> gradients of weights -> update the weights.
@@ -234,8 +237,9 @@ export class GradientDescent {
             }
         }
 
-        // If the network misses classification neuron for every input example, we can stop.
-        if (!successfulValidation) {
+        // The network may be missing required classification neurons. In this case, we return undefined as an indicator
+        // to stop the network training
+        if (numValidationExamples === 0) {
             return undefined;
         }
 
