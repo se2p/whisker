@@ -194,13 +194,13 @@ export class GradientDescent {
                 this._backwardPass(network, labelVector);
                 numTrainingExamples++;
             }
-            this._adjustWeights(network, iteration);
-        }
+            // The network may be missing required classification neurons. In this case, we return undefined as an indicator
+            // to stop the network training
+            if (numTrainingExamples == 0) {
+                return undefined;
+            }
 
-        // The network may be missing required classification neurons. In this case, we return undefined as an indicator
-        // to stop the network training
-        if (numTrainingExamples == 0) {
-            return undefined;
+            this._adjustWeights(network, iteration);
         }
 
         // Normalise by the total number of data points.

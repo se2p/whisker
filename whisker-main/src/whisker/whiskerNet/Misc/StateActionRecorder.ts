@@ -7,7 +7,6 @@ import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
 import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
 import Runtime from "scratch-vm/src/engine/runtime";
-import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
@@ -30,7 +29,6 @@ export class StateActionRecorder extends EventEmitter {
     private readonly _scratch: Scratch;
     private readonly _vm: VirtualMachine
     private readonly _eventExtractor: NeuroevolutionScratchEventExtractor;
-    private _statements: string[];
 
     private readonly _fullRecordings: Recording[];
     private _actionRecords: ActionRecord[]
@@ -83,7 +81,6 @@ export class StateActionRecorder extends EventEmitter {
         this._vm.runtime.on(Runtime.PROJECT_STOP_ALL, this._onRunStop);
         Container.config = new WhiskerSearchConfiguration(JSON.parse(config));
         this._isRecording = true;
-        this._statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(this._vm, []).map(stat => stat.getNodeId());
     }
 
     /**
@@ -100,6 +97,11 @@ export class StateActionRecorder extends EventEmitter {
      * Stops the recording of scratch input actions and clears the wait event check interval when the Scratch run stops.
      */
     public onStopAll(): void {
+        // Fetch coverage and add run to recording after a short delay to make sure that the vm finished gracefully.
+        setTimeout(() => {
+            const coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+            this.addStateActionRecordsToRecording(coverage);
+        }, 1000);
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
 
         // Clean state.
@@ -110,7 +112,6 @@ export class StateActionRecorder extends EventEmitter {
         this._mousePressedStep = 0;
         this._pressedKeys.clear();
         this._stateAtAction.clear();
-        this.addStateActionRecordsToRecording(this._fullRecordings.length, this._vm.runtime.traceInfo.tracer.coverage as Set<string>);
     }
 
     /**
@@ -361,11 +362,10 @@ export class StateActionRecorder extends EventEmitter {
     /**
      * Adds an {@link ActionRecord} to the global {@link Recording}.
      */
-    public addStateActionRecordsToRecording(id: number, coverage: Set<string>): void {
-        const filteredCoverage = [...coverage.values()].filter(value => this._statements.includes(value));
+    public addStateActionRecordsToRecording(coverage: Set<string>): void {
         const fullRecord: Recording = {
             recordings: [...this._actionRecords],
-            coverage: filteredCoverage
+            coverage: [...coverage.values()]
         };
         this._fullRecordings.push(fullRecord);
         this._actionRecords = [];

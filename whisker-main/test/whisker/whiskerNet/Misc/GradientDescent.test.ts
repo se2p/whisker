@@ -169,7 +169,7 @@ describe('Test Gradient Descent', () => {
             learningRate: 0.1,
             learningRateAlgorithm: 'Gradual',
             epochs: 500,
-            batchSize: 16,
+            batchSize: 1,
             labelSmoothing: 0
         };
         const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
