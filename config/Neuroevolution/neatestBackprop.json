@@ -21,7 +21,7 @@
         "epochs": 1000,
         "batchSize": 1,
         "labelSmoothing": 0,
-        "probability": 1,
+        "probability": 0.5,
         "peerToPeerSharing": false,
 
         "dataAugmentation": {
@@ -65,7 +65,7 @@
     },
     "networkFitness": {
         "type": "reliableStatement",
-        "timeout": 10000,
+        "timeout": 15000,
         "stableCount": 10
     },
     "population": {
