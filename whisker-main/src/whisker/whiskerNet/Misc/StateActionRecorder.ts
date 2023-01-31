@@ -100,9 +100,8 @@ export class StateActionRecorder extends EventEmitter {
      */
     public onStopAll(): void {
         // Fetch coverage and add run to recording after a short delay to make sure that the vm finished gracefully.
-        setTimeout(() => {
-            const coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-            this.addStateActionRecordsToRecording(coverage);
+        setTimeout(async () => {
+            await this.addStateActionRecordsToRecording();
         }, 1000);
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
 
@@ -365,7 +364,8 @@ export class StateActionRecorder extends EventEmitter {
     /**
      * Adds an {@link ActionRecord} to the global {@link Recording}.
      */
-    public addStateActionRecordsToRecording(coverage: Set<string>): void {
+    public addStateActionRecordsToRecording(): void {
+        const coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
         const fullRecord: Recording = {
             recordings: [...this._actionRecords],
             coverage: [...coverage.values()]
