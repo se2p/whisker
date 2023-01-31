@@ -15,12 +15,12 @@ export class GradientDescent {
     /**
      * Number of epochs without improvements after which the gradient descent algorithm stops.
      */
-    private static EARLY_STOPPING_THRESHOLD = 10;
+    private static EARLY_STOPPING_THRESHOLD = 30;
 
     /**
      * Size of the validation set used for measuring generalisation performance.
      */
-    private static VALIDATION_SET_SIZE = 0.1;
+    private static VALIDATION_SET_SIZE = 0.2;
 
     /**
      * Provides derivatives for various loss and activation functions.
@@ -83,22 +83,25 @@ export class GradientDescent {
         Arrays.shuffle(batches);
         const [trainingSet, validationSet] = this._validationSetSplit(batches);
         for (let i = 0; i < this._parameter.epochs; i++) {
-            const trainLoss = this._trainingEpoch(network, trainingSet, i);  // Train
-            if (trainLoss === undefined) {
+            let loss = this._trainingEpoch(network, trainingSet, i);  // Train
+            if (loss === undefined) {
                 Container.debugLog("Classification node missing in Training; Falling back to weight mutation");
                 return undefined;
             }
 
-            const currentValidationLoss = this._validationEpoch(network, validationSet);   // Validate
-            if (currentValidationLoss === undefined) {
-                Container.debugLog("Classification node missing in Validation; Falling back to weight mutation");
-                return undefined;
+            // Only apply validation if we have enough training data.
+            if (validationSet.length > 0) {
+                loss = this._validationEpoch(network, validationSet);   // Validate
+                if (loss === undefined) {
+                    Container.debugLog("Classification node missing in Validation; Falling back to weight mutation");
+                    return undefined;
+                }
             }
 
             // Early stopping; Stop after a few rounds without improvement and reset weights to that point in time.
-            if (currentValidationLoss < bestValidationLoss) {
+            if (loss < bestValidationLoss) {
                 bestWeights = network.connections.map(conn => conn.weight);
-                bestValidationLoss = currentValidationLoss;
+                bestValidationLoss = loss;
                 epochsWithoutImprovement = 0;
             } else {
                 epochsWithoutImprovement++;
@@ -467,15 +470,14 @@ export class GradientDescent {
     }
 
     private _validationSetSplit(batches: StateActionRecord[]): [StateActionRecord[], StateActionRecord[]] {
+
+        // Only make a split if we have enough data.
+        if (batches.length < 30){
+            return [batches, []];
+        }
         const desiredValidationSize = Math.ceil(batches.length * GradientDescent.VALIDATION_SET_SIZE);
         const validationSet = batches.slice(0, desiredValidationSize);
         const trainingSet = batches.slice(desiredValidationSize);
-
-        // Check if dataset is big enough...
-        if (trainingSet.length <= 0) {
-            trainingSet.push(...validationSet.splice(
-                0, Math.floor(validationSet.length * (1 - GradientDescent.VALIDATION_SET_SIZE))));
-        }
 
         return [trainingSet, validationSet];
     }
