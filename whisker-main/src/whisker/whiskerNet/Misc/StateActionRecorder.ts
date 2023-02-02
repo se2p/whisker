@@ -21,7 +21,7 @@ import WhiskerUtil from "../../../test/whisker-util";
 
 
 export class StateActionRecorder extends EventEmitter {
-    private readonly WAIT_THRESHOLD = 30;
+    private readonly WAIT_THRESHOLD = 20;
     private readonly MOUSE_MOVE_THRESHOLD = 5;
     private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveEvent'
     private readonly MOUSE_DOWN_ACTION_KEY = 'MouseDownForStepsEvent'
@@ -178,6 +178,8 @@ export class StateActionRecorder extends EventEmitter {
             // Long key-presses account for multiple isDown actions leading to the replacement of the first press.
             // Hence, we only set a counter if the key is not registered yet.
             if (!this._pressedKeys.has(key)) {
+                // Check if we had a long period without any actions being executed.
+                this._checkForWait(false);
                 this._pressedKeys.set(key, this._getCurrentStepCount());
                 this._stateAtAction.set(new KeyPressEvent(key).stringIdentifier(), InputExtraction.extractFeatures(this._vm));
             }
@@ -222,6 +224,8 @@ export class StateActionRecorder extends EventEmitter {
         if (!this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) && !('isDown' in actionData) &&
             availableActions.includes(this.MOUSE_MOVE_ACTION_KEY)) {
             this._checkForMouseMoveInterval = window.setInterval(this._checkForMouseMoveCallBack, 500);
+            // Check if we had a long period without any actions being executed.
+            this._checkForWait(false);
             this._stateAtAction.set(this.MOUSE_MOVE_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
         }
 
@@ -235,7 +239,9 @@ export class StateActionRecorder extends EventEmitter {
                     clearInterval(this._checkForMouseMoveInterval);
                     this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
                     event = new ClickSpriteEvent(clickTarget);
-                } else {
+                } else if (availableActions.includes(new MouseDownForStepsEvent().stringIdentifier())){
+                    // Check if we had a long period without any actions being executed.
+                    this._checkForWait(false);
                     // Register mouse down Event and
                     // save current step count to compute the number of steps the mouse has been pressed.
                     this._stateAtAction.set(this.MOUSE_DOWN_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
@@ -286,7 +292,8 @@ export class StateActionRecorder extends EventEmitter {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
         // Only add Waits if the vm permits us to do so and we have a saved state for it.
-        if (availableActions.includes("WaitEvent") && this._stateAtAction.has('WaitEvent')) {
+        // Don't add a Wait if another action is currently being executed.
+        if (availableActions.includes("WaitEvent") && this._stateAtAction.has('WaitEvent') && this._stateAtAction.size == 1) {
             // Add a Wait if the function was called from a periodic check, in which case we only add a WaitEvent
             // if we've exceeded the maximum Wait boundary. Otherwise, we add a Wait if we've exceeded the threshold.
             if ((periodicCheck && stepsSinceLastAction >= Container.config.getWaitStepUpperBound()) ||
@@ -314,6 +321,7 @@ export class StateActionRecorder extends EventEmitter {
         switch (event.toJSON()['type']) {
             case "WaitEvent":
                 parameter = {'Duration': Math.min(event.getParameters().pop() / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
+                console.log(parameter);
                 break;
             case "KeyPressEvent":
                 parameter = {'Steps': Math.min(event.getParameters()[1] / Container.config.getPressDurationUpperBound(), 1)};      // Press duration
@@ -339,10 +347,6 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             default:
                 console.log("Missing event handler: ", event);
-        }
-
-        if (action !== "WaitEvent") {
-            this._checkForWait(false);
         }
 
         const record: ActionRecord = {

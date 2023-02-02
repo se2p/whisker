@@ -47,7 +47,7 @@
         "populationChampionNumberClones": 1,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
-        "mutateWeights": 0.5,
+        "mutateWeights": 0.8,
         "perturbationPower": 1,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
