@@ -21,7 +21,7 @@ import WhiskerUtil from "../../../test/whisker-util";
 
 
 export class StateActionRecorder extends EventEmitter {
-    private readonly WAIT_THRESHOLD = 10;
+    private readonly WAIT_THRESHOLD = 30;
     private readonly MOUSE_MOVE_THRESHOLD = 5;
     private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveEvent'
     private readonly MOUSE_DOWN_ACTION_KEY = 'MouseDownForStepsEvent'
@@ -38,6 +38,7 @@ export class StateActionRecorder extends EventEmitter {
     private _lastMouseMoveStep: number;
     private _mousePressedStep: number;
     private _checkForMouseMoveInterval: number;
+    private _checkForWaitInterval: number;
     private _pressedKeys: Map<string, number>;
     private readonly _stateAtAction: Map<string, InputFeatures>;
     private _mouseCoordinates: [number, number];
@@ -46,6 +47,7 @@ export class StateActionRecorder extends EventEmitter {
     private readonly _onRunStop: () => void;
     private readonly _onInput: () => void;
     private readonly _checkForMouseMoveCallBack: () => void;
+    private readonly _checkForWaitCallBack: () => void;
 
     constructor(scratch: Scratch) {
         super();
@@ -66,6 +68,7 @@ export class StateActionRecorder extends EventEmitter {
         this._onRunStop = this.onStopAll.bind(this);
         this._onInput = this.handleInput.bind(this);
         this._checkForMouseMoveCallBack = this._checkForMouseMove.bind(this);
+        this._checkForWaitCallBack = this._checkForWait.bind(this);
     }
 
     /**
@@ -85,6 +88,7 @@ export class StateActionRecorder extends EventEmitter {
      */
     private onGreenFlag(): void {
         this._scratch.on(Scratch.INPUT_LISTENER_KEY, this._onInput);
+        this._checkForWaitInterval = window.setInterval(this._checkForWaitCallBack, 500);
         this._lastActionStep = this._getCurrentStepCount();
 
         // Start with clean state.
@@ -93,6 +97,7 @@ export class StateActionRecorder extends EventEmitter {
         this._mousePressedStep = 0;
         this._pressedKeys.clear();
         this._stateAtAction.clear();
+        clearInterval(this._checkForMouseMoveInterval);
     }
 
     /**
@@ -104,9 +109,7 @@ export class StateActionRecorder extends EventEmitter {
             await this.addStateActionRecordsToRecording();
         }, 1000);
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
-
-        // Clean state.
-        clearInterval(this._checkForMouseMoveInterval);
+        clearInterval(this._checkForWaitInterval);
     }
 
     /**
@@ -276,20 +279,23 @@ export class StateActionRecorder extends EventEmitter {
 
     /**
      * Adds a {@link WaitEvent} if no action has been executed for a set number of steps.
+     * @param periodicCheck determines whether the function was called from the periodic interval,
+     * or after another action was executed.
      */
-    private _checkForWait(): void {
+    private _checkForWait(periodicCheck = true): void {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
-        if (stepsSinceLastAction > this.WAIT_THRESHOLD) {
-            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
-            // Add a Wait if
-            //              1. We have only two events available of which one is a WaitEvent.
-            //              2. We are not waiting for another event to finish, e.g. a KeyPress to be released
-            if (availableActions.length <= 2 && availableActions.includes("WaitEvent")
-                && this._stateAtAction.size <= 1 && this._pressedKeys.size == 0) {
+        const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
+        // Only add Waits if the vm permits us to do so and we have a saved state for it.
+        if (availableActions.includes("WaitEvent") && this._stateAtAction.has('WaitEvent')) {
+            // Add a Wait if the function was called from a periodic check, in which case we only add a WaitEvent
+            // if we've exceeded the maximum Wait boundary. Otherwise, we add a Wait if we've exceeded the threshold.
+            if ((periodicCheck && stepsSinceLastAction >= Container.config.getWaitStepUpperBound()) ||
+                (!periodicCheck && this._lastActionStep > 0 && stepsSinceLastAction > this.WAIT_THRESHOLD)) {
                 this._recordAction(new WaitEvent(stepsSinceLastAction));
             }
         }
     }
+
 
     /**
      * Records an observed action including the corresponding state by adding it to the actionRecords array.
@@ -335,8 +341,8 @@ export class StateActionRecorder extends EventEmitter {
                 console.log("Missing event handler: ", event);
         }
 
-        if (action !== "WaitEvent"){
-            this._checkForWait();
+        if (action !== "WaitEvent") {
+            this._checkForWait(false);
         }
 
         const record: ActionRecord = {
