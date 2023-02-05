@@ -21,7 +21,7 @@ import WhiskerUtil from "../../../test/whisker-util";
 
 
 export class StateActionRecorder extends EventEmitter {
-    private readonly WAIT_THRESHOLD = 20;
+    private readonly WAIT_THRESHOLD = Infinity;
     private readonly MOUSE_MOVE_THRESHOLD = 5;
     private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveEvent'
     private readonly MOUSE_DOWN_ACTION_KEY = 'MouseDownForStepsEvent'
@@ -296,7 +296,7 @@ export class StateActionRecorder extends EventEmitter {
         if (availableActions.includes("WaitEvent") && this._stateAtAction.has('WaitEvent') && this._stateAtAction.size == 1) {
             // Add a Wait if the function was called from a periodic check, in which case we only add a WaitEvent
             // if we've exceeded the maximum Wait boundary. Otherwise, we add a Wait if we've exceeded the threshold.
-            if ((periodicCheck && stepsSinceLastAction >= Container.config.getWaitStepUpperBound()) ||
+            if ((periodicCheck && stepsSinceLastAction >= Container.config.getWaitStepUpperBound() && stepsSinceLastAction > this.WAIT_THRESHOLD) ||
                 (!periodicCheck && this._lastActionStep > 0 && stepsSinceLastAction > this.WAIT_THRESHOLD)) {
                 this._recordAction(new WaitEvent(stepsSinceLastAction));
             }
