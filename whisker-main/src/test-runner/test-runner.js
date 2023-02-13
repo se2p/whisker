@@ -384,13 +384,13 @@ class TestRunner extends EventEmitter {
      * @param {Test} test .
      * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
-     * @param {number} timeout .
+     * @param {number} defaultTimeoutPerTest .
      *
      * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, project, test, modelTester, props, modelProps, timeout = 0) {
+    async _executeTest(vm, project, test, modelTester, props, modelProps, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
 
         const testDriver = this.util.getTestDriver(
@@ -423,6 +423,8 @@ class TestRunner extends EventEmitter {
 
         if (test) {
             try {
+                // Use the default timeout (given as function parameter), unless the test specifies its own timeout.
+                const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeoutPerTest;
 
                 // A timeout was set to stop the test after the timeout has been reached.
                 if (timeout > 0) {
