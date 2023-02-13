@@ -20,7 +20,7 @@ export class GradientDescent {
     /**
      * Size of the validation set used for measuring generalisation performance.
      */
-    private static VALIDATION_SET_SIZE = 0.2;
+    private static VALIDATION_SET_SIZE = 0.1;
 
     /**
      * Provides derivatives for various loss and activation functions.
@@ -56,7 +56,7 @@ export class GradientDescent {
      * Optimises the network weights using gradient descent.
      * @param network the network to be optimised.
      * @param statement the statement for which we are optimising the network.
-     * @returns training loss normalised by the number of training examples and executed epochs.
+     * @returns training loss normalised by the number of training examples.
      */
     public gradientDescent(network: NetworkChromosome, statement: string): number | undefined {
 
@@ -74,13 +74,13 @@ export class GradientDescent {
             return undefined;
         }
 
-        // Variables for calculating the training progress and for the early stopping approach.
+        // Variables for calculating the training progress and early stopping
         let bestValidationLoss = Number.MAX_VALUE;
-        let bestWeights = network.connections.map(conn => conn.weight);
         let epochsWithoutImprovement = 0;
+        let bestWeights = network.connections.map(conn => conn.weight);
 
+        // Extract the training and validation batches.
         const batches = this._extractBatches();
-        Arrays.shuffle(batches);
         const [trainingSet, validationSet] = this._validationSetSplit(batches);
         for (let i = 0; i < this._parameter.epochs; i++) {
             let loss = this._trainingEpoch(network, trainingSet, i);  // Train
@@ -98,7 +98,7 @@ export class GradientDescent {
                 }
             }
 
-            // Early stopping; Stop after a few rounds without improvement and reset weights to that point in time.
+            // Early stopping: Stop after a few rounds without improvement and reset weights to the best epoch.
             if (loss < bestValidationLoss) {
                 bestWeights = network.connections.map(conn => conn.weight);
                 bestValidationLoss = loss;
@@ -125,12 +125,13 @@ export class GradientDescent {
 
     /**
      * Assembles the labels of classification and regression nodes in a label to value map.
-     * @param network whose classification and regression neuron outputs are compared to the labels.
-     * @param batch the whole data batch hosting the label values.
-     * @param example the data sample that will be used next in the forward pass.
+     * @param network whose classification and regression outputs are compared to the labels.
+     * @param batch the entire data batch hosting the label values.
+     * @param example the data sample that will be used in the forward pass.
      * @returns mapping of label to values.
      */
-    private _prepareLabels(network: NetworkChromosome, batch: StateActionRecord, example: ObjectInputFeatures) {
+    private _prepareLabels(network: NetworkChromosome, batch: StateActionRecord,
+                           example: ObjectInputFeatures): Map<string, number> {
 
         // One-hot encoded label vector.
         const eventLabel = batch.get(example).event;
@@ -143,7 +144,7 @@ export class GradientDescent {
             }
         }
 
-        // Label Smoothing
+        // Label Smoothing Regularisation
         if (this._parameter.labelSmoothing > 0) {
             for (const event of labelVector.keys()) {
                 if (labelVector.get(event) === 1) {
@@ -158,7 +159,7 @@ export class GradientDescent {
         if (network.regressionNodes.has(eventLabel)) {
             for (const regNode of network.regressionNodes.get(eventLabel)) {
                 const trueValue = batch.get(example).parameter[regNode.eventParameter];
-                labelVector.set(`${eventLabel}-${regNode.eventParameter}`, trueValue);
+                labelVector.set(this._regressionNodeIdentifier(regNode), trueValue);
             }
         }
 
@@ -169,14 +170,14 @@ export class GradientDescent {
      * Executes a training epoch by executing the forward/backward pass for each training example and applying gradient
      * descent after the whole training batch has been processed.
      * @param network that will be optimised.
-     * @param trainData records of states and the corresponding action + parameter.
-     * @param iteration number of epochs executed.
+     * @param trainingBatches consisting of records of program states and the corresponding actions and parameters.
+     * @param epoch number of epochs executed.
      * @returns training loss normalised over number of training examples.
      */
-    private _trainingEpoch(network: NetworkChromosome, trainData: StateActionRecord[], iteration: number): number {
+    private _trainingEpoch(network: NetworkChromosome, trainingBatches: StateActionRecord[], epoch: number): number {
         let trainingLoss = 0;
         let numTrainingExamples = 0;
-        for (const trainingBatch of trainData) {
+        for (const trainingBatch of trainingBatches) {
             // Shuffle the training data
             const trainingInputs = [...trainingBatch.keys()];
             Arrays.shuffle(trainingInputs);
@@ -192,18 +193,19 @@ export class GradientDescent {
                 }
 
 
-                // Compute the loss -> gradients of weights -> update the weights.
+                // Compute loss and determine gradients of weights.
                 trainingLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
                 this._backwardPass(network, labelVector);
                 numTrainingExamples++;
             }
-            // The network may be missing required classification neurons. In this case, we return undefined as an indicator
-            // to stop the network training
+            // The network may not have required classification neurons.
+            // In this case, we return undefined as an indicator to stop the network training
             if (numTrainingExamples == 0) {
                 return undefined;
             }
 
-            this._adjustWeights(network, iteration);
+            // Update the weights using gradient descent.
+            this._adjustWeights(network, epoch);
         }
 
         // Normalise by the total number of data points.
@@ -212,14 +214,14 @@ export class GradientDescent {
 
     /**
      * Executes a validation epoch by computing the mean validation loss over all validation set samples.
-     * @param network that will be optimised.
-     * @param validationSet records of states and the corresponding actions + parameter.
+     * @param network that is currently being optimised.
+     * @param validationBatches consisting of records of program states and the corresponding actions and parameters.
      * @returns validation loss normalised over number of training examples.
      */
-    private _validationEpoch(network: NetworkChromosome, validationSet: StateActionRecord[]): number {
+    private _validationEpoch(network: NetworkChromosome, validationBatches: StateActionRecord[]): number {
         let validationLoss = 0;
         let numValidationExamples = 0;
-        for (const validationBatch of validationSet) {
+        for (const validationBatch of validationBatches) {
             // Shuffle the training data
             const validationInputs = [...validationBatch.keys()];
             Arrays.shuffle(validationInputs);
@@ -234,7 +236,7 @@ export class GradientDescent {
                     continue;
                 }
 
-                // Compute the loss -> gradients of weights -> update the weights.
+                // Compute the loss on validation set.
                 validationLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
                 numValidationExamples++;
             }
@@ -251,13 +253,13 @@ export class GradientDescent {
     }
 
     /**
-     * The forward pass propagates the inputs through the network and returns a loss value based
-     * on the specified loss function
+     * The forward pass propagates activates the network based on a supplied input vector
+     * and returns a loss value based on the specified loss function.
      * @param network the network to be trained.
-     * @param inputs the provided input features
+     * @param inputs the provided feature vector.
      * @param labelVector the provided label vector corresponding to the input features.
-     * @param lossFunction the loss function to be used to calculate the training error.
-     * @returns the loss for the given inputs and labels.
+     * @param lossFunction the loss function to be used to calculate the loss value.
+     * @returns the loss value for the given inputs and labels.
      */
     public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>,
                         lossFunction: LossFunction): number {
@@ -283,15 +285,11 @@ export class GradientDescent {
         return loss;
     }
 
-    private _regressionNodeIdentifier(node: RegressionNode) {
-        return `${node.event.stringIdentifier()}-${node.eventParameter}`;
-    }
-
     /**
-     * Calculates the squared loss function.
+     * Calculates the squared loss function between the regression prediction of a node and the true label value.
      * @param regNodes the regression nodes on which the squared loss will be computed.
-     * @param labels the true target labels.
-     * @returns squared loss of the prediction and label vector.
+     * @param labels vector of true target labels.
+     * @returns squared loss between regression prediction and label.
      */
     private _squaredLoss(regNodes: RegressionNode[], labels: Map<string, number>): number {
         let loss = 0;
@@ -306,10 +304,10 @@ export class GradientDescent {
     }
 
     /**
-     * Calculates the categorical cross entropy loss function.
+     * Calculates the categorical cross entropy loss function between a classification prediction and the true label.
      * @param classNodes the classification nodes on which the cross entropy loss will be computed.
-     * @param labels the true target labels.
-     * @returns categorical cross entropy of the prediction and label vector.
+     * @param labels vector of true target labels.
+     * @returns categorical cross entropy loss between classification prediction and label.
      */
     private _categoricalCrossEntropyLoss(classNodes: ClassificationNode[], labels: Map<string, number>): number {
         let loss = 0;
@@ -322,9 +320,9 @@ export class GradientDescent {
     }
 
     /**
-     * The backward pass calculates the gradient for each connection weight based on the previously executed forward pass.
-     * @param network the network for whose connections the gradient should be calculated.
-     * @param labelVector the true label represented as a map mapping an event id to the corresponding label value.
+     * The backward pass determines the gradient for each connection based on the previously computed loss function.
+     * @param network the network hosting the connections for which the gradient should be computed.
+     * @param labelVector the label vector hosting the desired network predictions.
      */
     public _backwardPass(network: NetworkChromosome, labelVector: Map<string, number>): void {
         // Traverse the network from the back to the front
@@ -374,15 +372,15 @@ export class GradientDescent {
     }
 
     /**
-     * Summarises the gradients of nodes from outgoing connections. Based on this summation we can then calculate the
-     * gradient of the source node.
-     * @param network the network hosting the node for which the gradient should be calculated.
-     * @param node the node whose gradient is to be determined.
+     * Computes the gradient for hidden neurons by summarising the gradient of outgoing connections.
+     * @param network the network hosting the neuron for which the gradient should be calculated.
+     * @param neuron the neuron whose gradient is to be determined.
+     * @returns gradient of given neuron.
      */
-    private _incomingGradientHiddenNode(network: NetworkChromosome, node: NodeGene): number {
+    private _incomingGradientHiddenNode(network: NetworkChromosome, neuron: NodeGene): number {
         let gradient = 0;
         for (const connection of network.connections) {
-            if (connection.source === node) {
+            if (connection.source === neuron) {
                 gradient += (connection.target.gradient * connection.weight);
             }
         }
@@ -391,18 +389,15 @@ export class GradientDescent {
     }
 
     /**
-     * Shifts the weights using gradient descent based on a pre-defined learning rate.
+     * Updates the weights of a network by applying a single gradient descent update step.
      * @param network the network whose weights are to be updated.
-     * @param iteration number of epochs executed.
+     * @param epoch number of executed epochs.
      */
-    public _adjustWeights(network: NetworkChromosome, iteration: number): void {
+    public _adjustWeights(network: NetworkChromosome, epoch: number): void {
         // Fetch learning rate.
-        const learningRate = this._getLearningRate(iteration);
+        const learningRate = this._getLearningRate(epoch);
 
-        // Average last layer over batch size.
-        network.getAllNodes().forEach(node => node.gradient /= this._parameter.batchSize);
-        network.connections.forEach(con => con.gradient /= this._parameter.batchSize);
-
+        // Update the weight and reset the gradient value for each connection.
         for (const connection of network.connections) {
             connection.weight -= learningRate * connection.gradient;
             connection.gradient = 0;
@@ -415,17 +410,21 @@ export class GradientDescent {
     /**
      * Restructures the data obtained from the .json file such that it only includes records that
      * correspond to the current statement target.
-     * @param statement the target for which the networks should be optimised.
-     * @returns structured data for the backpropagation process.
+     * @param statement the target statement for which the networks should be optimised.
+     * @returns structured data for the gradient descent process.
      */
     public _extractDataForStatement(statement: string): StateActionRecord {
-        // We may have multiple recordings within one file. Collect all recordings that covered the current target in
-        // an action to feature map.
         const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+
+        // Iterate over each recording in the .json file.
         for (const recording of Object.values(this._groundTruth)) {
+
+            // Exclude recordings that do not include the supplied target statement.
             if (!(recording['coverage'].includes(statement))) {
                 continue;
             }
+
+            // Extract an executed action and the corresponding state from the .json file
             for (const record of Object.values(recording)) {
                 const eventAndParams: eventAndParametersObject = {
                     event: record['action'],
@@ -443,8 +442,8 @@ export class GradientDescent {
     }
 
     /**
-     * Extracts batches having the supplied number of elements from the training data of a given statement.
-     * @return the training data split in batches.
+     * Extracts batches of training samples from the entire training dataset.
+     * @return training dataset split into batches.
      */
     private _extractBatches(): StateActionRecord[] {
 
@@ -457,6 +456,9 @@ export class GradientDescent {
         const keys = [...this._training_data.keys()];
         const random = Randomness.getInstance();
         Arrays.shuffle(keys);
+
+        // Randomly select data points from the training dataset and combine them to form a training batch until all
+        // data points have been distributed.
         while (keys.length > 0) {
             const batch: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
             while (batch.size < this._parameter.batchSize && keys.length > 0) {
@@ -469,10 +471,16 @@ export class GradientDescent {
         return batches;
     }
 
+    /**
+     * Extracts a validation set split from the training dataset organised in batches. The validation split can be used
+     * to measure the generalisation error for a given epoch.
+     * @param batches the entire dataset organised in batches.
+     * @return dataset split into training batch and validation batch.
+     */
     private _validationSetSplit(batches: StateActionRecord[]): [StateActionRecord[], StateActionRecord[]] {
 
         // Only make a split if we have enough data.
-        if (batches.length < 30){
+        if (batches.length < 30) {
             return [batches, []];
         }
         const desiredValidationSize = Math.ceil(batches.length * GradientDescent.VALIDATION_SET_SIZE);
@@ -483,9 +491,9 @@ export class GradientDescent {
     }
 
     /**
-     * Maps objects to input features.
+     * Helper function to map input feature objects to the corresponding {@link InputFeatures} type.
      * @param object the object that should be mapped to an input feature.
-     * returns the input feature corresponding to the supplied object.
+     * @returns the {@link InputFeatures} corresponding to the supplied object.
      */
     private _objectToInputFeature(object: Record<string, Record<string, number>>): InputFeatures {
         const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
@@ -501,9 +509,9 @@ export class GradientDescent {
 
 
     /**
-     * Increases the ground truth data size used by the gradient descent algorithm by introducing slight mutations
-     * to state variables.
-     * @param data the ground truth recordings that will be extended via data augmentation.
+     * Increases the training data size used by the gradient descent algorithm using data augmentation.
+     * @param data the training dataset that will be extended via data augmentation.
+     * @return the augmented training dataset.
      */
     public _augmentData(data: StateActionRecord): StateActionRecord {
         const keys = [...data.keys()];
@@ -540,26 +548,26 @@ export class GradientDescent {
     }
 
     /**
-     * Returns the adapted learning rate based on the defined learning rate algorithm.
-     * @param iteration number of epochs executed.
-     * @returns adapted learning rate.
+     * Returns a learning rate value based on the defined learning rate adaption algorithm.
+     * @param epoch number of epochs executed.
+     * @returns learning rate value.
      */
-    private _getLearningRate(iteration: number): number {
+    private _getLearningRate(epoch: number): number {
         switch (this._parameter.learningRateAlgorithm) {
-            case "None":
+            case "Static":
                 return this._parameter.learningRate;
             case "Gradual":
-                return this._gradualDeceasingLearningRate(iteration);
+                return this._gradualDeceasingLearningRate(epoch);
         }
     }
 
     /**
      * Decreases learning rate gradually based on the number of executed epochs. The intuition of this approach is to
-     * start with high learning rates to explore various local loss minima, and then converge within the lowest minima.
-     * @param iteration number of executed epochs.
-     * @return gradually decreased learning rate.
+     * start with high learning rates to explore minima neighbourhoods, and then converge with a low learning rate.
+     * @param epoch number of executed epochs.
+     * @return learning rate value for a given epoch.
      */
-    private _gradualDeceasingLearningRate(iteration: number): number {
+    private _gradualDeceasingLearningRate(epoch: number): number {
         const minLearningRate = 0.01 * this._parameter.learningRate;
         let pointAtNoDecrease: number;
         if (this._parameter.epochs >= 300) {
@@ -568,10 +576,19 @@ export class GradientDescent {
             pointAtNoDecrease = 0.5 * this._parameter.epochs;
         }
         let alpha = 1;
-        if (iteration < pointAtNoDecrease) {
-            alpha = iteration / pointAtNoDecrease;
+        if (epoch < pointAtNoDecrease) {
+            alpha = epoch / pointAtNoDecrease;
         }
         return (1 - alpha) * this._parameter.learningRate + alpha * minLearningRate;
+    }
+
+    /**
+     * Returns a unique identifier for regression nodes to save and fetch regression labels in the label map.
+     * @param node for which an id should be generated.
+     * @return regression neuron label id
+     */
+    private _regressionNodeIdentifier(node: RegressionNode) {
+        return `${node.event.stringIdentifier()}-${node.eventParameter}`;
     }
 
     get training_data(): StateActionRecord {
@@ -580,23 +597,35 @@ export class GradientDescent {
 }
 
 /**
- * Maps training data in the form of inputFeatures to the corresponding event string.
+ * Maps executed actions to the corresponding input features representing the program state.
  */
 export type StateActionRecord = Map<ObjectInputFeatures, eventAndParametersObject>;
 
+/**
+ * Represents input features via a mapping from sprites to sprite features and their corresponding values.
+ */
 export type ObjectInputFeatures = Record<string, Record<string, number>>;
 
+/**
+ * Represents the structure of Scratch actions.
+ */
 export interface eventAndParametersObject {
     event: string,
     parameter: Record<string, number>
 }
 
+/**
+ * Enumerator for the used loss functions.
+ */
 export enum LossFunction {
     SQUARED_ERROR,
     CATEGORICAL_CROSS_ENTROPY,
     SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED
 }
 
+/**
+ * Defines hyper parameter required for performing gradient descent.
+ */
 export interface gradientDescentParameter {
     learningRate: number,
     learningRateAlgorithm: learningRateAlgorithm,
@@ -605,6 +634,9 @@ export interface gradientDescentParameter {
     labelSmoothing: number
 }
 
+/**
+ * Defines hyper parameter required for data augmentation.
+ */
 export interface augmentationParameter {
     doAugment: boolean,
     numAugments: number,
@@ -612,4 +644,7 @@ export interface augmentationParameter {
     disturbStatePower: number
 }
 
-export type learningRateAlgorithm = 'None' | 'Gradual' // TODO AdaGrad, RMSProp, Adam, momentum
+/**
+ * Defines available learning rate algorithms.
+ */
+export type learningRateAlgorithm = 'Static' | 'Gradual' // TODO AdaGrad, RMSProp, Adam, momentum

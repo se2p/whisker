@@ -17,7 +17,7 @@
     },
     "gradientDescent": {
         "learningRate": 0.1,
-        "learningRateAlgorithm": "None",
+        "learningRateAlgorithm": "Static",
         "epochs": 1000,
         "batchSize": 1,
         "labelSmoothing": 0,

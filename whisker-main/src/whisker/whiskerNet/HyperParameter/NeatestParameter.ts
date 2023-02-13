@@ -14,7 +14,7 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     private _coverageStableCount = 0;
 
     /**
-     * Defines how new population are to be generated.
+     * Defines how new populations will be generated.
      */
     private _populationGeneration: PopulationGeneration;
 
@@ -41,7 +41,7 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
      */
     private _gradientDescentParameter: gradientDescentParameter = {
         learningRate: 0.001,
-        learningRateAlgorithm: 'None',
+        learningRateAlgorithm: 'Static',
         epochs: 100,
         batchSize: 32,
         labelSmoothing: 0
