@@ -21,7 +21,7 @@
         "epochs": 1000,
         "batchSize": 1,
         "labelSmoothing": 0,
-        "probability": 0.5,
+        "probability": 1,
         "peerToPeerSharing": false,
 
         "dataAugmentation": {
