@@ -321,7 +321,6 @@ export class StateActionRecorder extends EventEmitter {
         switch (event.toJSON()['type']) {
             case "WaitEvent":
                 parameter = {'Duration': Math.min(event.getParameters().pop() / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
-                console.log(parameter);
                 break;
             case "KeyPressEvent":
                 parameter = {'Steps': Math.min(event.getParameters()[1] / Container.config.getPressDurationUpperBound(), 1)};      // Press duration

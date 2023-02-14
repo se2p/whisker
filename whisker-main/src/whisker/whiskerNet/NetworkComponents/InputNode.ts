@@ -78,6 +78,7 @@ export class InputNode extends NodeGene {
         node['aF'] = ActivationFunction[this.activationFunction];
         node['sprite'] = this.sprite;
         node['feature'] = this.feature;
+        node['d'] = this.depth;
         return node;
     }
 

@@ -80,6 +80,7 @@ export class ClassificationNode extends NodeGene {
         node['t'] = "C";
         node['aF'] = ActivationFunction[this.activationFunction];
         node['event'] = this.event.stringIdentifier();
+        node['d'] = this.depth;
         return node;
     }
 

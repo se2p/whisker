@@ -17,8 +17,7 @@ export class ConnectionGene {
     private _weight: number;
 
     /**
-     * The gradient value defined by the backward pass and used to update the weight of the connection based on the
-     * given learning rate.
+     * The gradient defined by the backward pass and used to update the connection weight during gradient descent.
      */
     private _gradient = 0;
 

@@ -121,6 +121,7 @@ export class RegressionNode extends NodeGene {
         node['aF'] = ActivationFunction[this.activationFunction];
         node['event'] = this._event.stringIdentifier();
         node['eventP'] = this._eventParameter;
+        node['d'] = this.depth;
         return node;
     }
 

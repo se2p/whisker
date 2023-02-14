@@ -72,6 +72,7 @@ export class BiasNode extends NodeGene {
         node['id'] = this.uID;
         node['t'] = "B";
         node['aF'] = ActivationFunction[this.activationFunction];
+        node['d'] = this.depth;
         return node;
     }
 }
