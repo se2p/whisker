@@ -312,7 +312,8 @@ export class WhiskerSearchConfiguration {
     private setDynamicSuiteParameter(): BasicNeuroevolutionParameter {
         const parameter = new BasicNeuroevolutionParameter();
         parameter.timeout = this._config['timeout'];
-        parameter.networkFitness = new ReliableStatementFitness(1);
+        const earlyStop = this._config['networkFitness']['earlyStop'] !== undefined ? this._config['networkFitness']['earlyStop'] : false;
+        parameter.networkFitness = new ReliableStatementFitness(1, earlyStop);
         return parameter;
     }
 
@@ -567,11 +568,13 @@ export class WhiskerSearchConfiguration {
                 return new SurviveFitness();
             case 'reliableStatement': {
                 const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
-                return new ReliableStatementFitness(stableCount);
+                const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
+                return new ReliableStatementFitness(stableCount, earlyStop);
             }
             case 'noveltyReliableStatement': {
                 const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
-                return new NoveltyReliableStatementFitness(stableCount);
+                const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
+                return new NoveltyReliableStatementFitness(stableCount, earlyStop);
             }
             case 'target':
                 return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],

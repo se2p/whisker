@@ -14,7 +14,8 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      */
     private _random: Randomness
 
-    constructor(private _stableCount: number) {
+    constructor(private _stableCount: number, private _earlyStop: boolean) {
+        console.log("EarlyStop: ", _earlyStop);
         this._random = Randomness.getInstance();
     }
 
@@ -26,7 +27,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * @returns Promise<number> the fitness of the given network based on reliable statement coverage.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
         await executor.execute(network);
         network.initialiseOpenStatements([...network.openStatementTargets.keys()]);
         const fitness = await network.targetFitness.getFitness(network);
@@ -68,7 +69,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Iterate over each seed and calculate the achieved fitness
         for (const seed of repetitionSeeds) {
             Randomness.setScratchSeed(seed, true);
-            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
+            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
             if (eventSelection === 'random') {
                 // Re-execute the saved sequence from the first run
                 await executor.executeSavedTrace(network);

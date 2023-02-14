@@ -89,7 +89,7 @@ describe('Test Gradient Descent', () => {
 
         gradientDescentForward = {
             learningRate: 0,
-            learningRateAlgorithm: 'None',
+            learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
             labelSmoothing: 0
@@ -97,7 +97,7 @@ describe('Test Gradient Descent', () => {
 
         gradientDescentLearning = {
             learningRate: 0.001,
-            learningRateAlgorithm: 'None',
+            learningRateAlgorithm: 'Static',
             epochs: 500,
             batchSize: 32,
             labelSmoothing: 0
@@ -131,7 +131,7 @@ describe('Test Gradient Descent', () => {
     test("Backward Pass and adjust weights", () => {
         const gradientDescentParameter: gradientDescentParameter = {
             learningRate: 0.5,
-            learningRateAlgorithm: 'None',
+            learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
             labelSmoothing: 0
@@ -185,7 +185,7 @@ describe('Test Gradient Descent', () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const gradientDescentParameter: gradientDescentParameter = {
             learningRate: 0,
-            learningRateAlgorithm: 'None',
+            learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
             labelSmoothing: 0
@@ -204,7 +204,7 @@ describe('Test Gradient Descent', () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const gradientDescentParameter: gradientDescentParameter = {
             learningRate: 0.001,
-            learningRateAlgorithm: 'None',
+            learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: Infinity,
             labelSmoothing: 0
