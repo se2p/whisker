@@ -312,8 +312,7 @@ export class WhiskerSearchConfiguration {
     private setDynamicSuiteParameter(): BasicNeuroevolutionParameter {
         const parameter = new BasicNeuroevolutionParameter();
         parameter.timeout = this._config['timeout'];
-        const earlyStop = this._config['networkFitness']['earlyStop'] !== undefined ? this._config['networkFitness']['earlyStop'] : false;
-        parameter.networkFitness = new ReliableStatementFitness(1, earlyStop);
+        parameter.networkFitness = new ReliableStatementFitness(1, false);
         return parameter;
     }
 
