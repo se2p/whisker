@@ -200,10 +200,11 @@ describe('Test Gradient Descent', () => {
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
     });
 
+
     test("Batch Gradient descent", () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const gradientDescentParameter: gradientDescentParameter = {
-            learningRate: 0.001,
+            learningRate: 0,
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: Infinity,
@@ -212,7 +213,7 @@ describe('Test Gradient Descent', () => {
         let backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const startingLoss = backpropagation.gradientDescent(net, statement);
 
-        gradientDescentParameter.learningRate = 0.001;
+        gradientDescentParameter.learningRate = 0.1;
         gradientDescentParameter.epochs = 500;
         backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);

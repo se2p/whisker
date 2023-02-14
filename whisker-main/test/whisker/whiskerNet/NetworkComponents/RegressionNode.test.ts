@@ -122,7 +122,8 @@ describe("regressionNode Tests", () => {
             'id' : regressionNode.uID,
             'aF' : "SIGMOID",
             'event': "WaitEvent",
-            'eventP': "Duration"
+            'eventP': "Duration",
+            'd': 1
         };
         expect(json).toEqual(expected);
     });

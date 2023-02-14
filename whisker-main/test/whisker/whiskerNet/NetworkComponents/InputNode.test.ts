@@ -93,7 +93,8 @@ describe("InputNode Tests", () => {
             'id' : inputNode.uID,
             'aF' : "NONE",
             'sprite': "Sprite1",
-            'feature': "X-Position"
+            'feature': "X-Position",
+            'd': 0
         };
         expect(json).toEqual(expected);
     });

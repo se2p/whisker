@@ -79,6 +79,7 @@ describe("BiasNode Tests", () => {
             't': "B",
             'id' : biasNode.uID,
             'aF' : "NONE",
+            'd': 0
         };
         expect(json).toEqual(expected);
     });

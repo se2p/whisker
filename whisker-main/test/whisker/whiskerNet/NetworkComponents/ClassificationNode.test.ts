@@ -83,7 +83,8 @@ describe("classificationNode Tests", () => {
             't': "C",
             'id' : classificationNode.uID,
             'aF' : "SIGMOID",
-            'event' : "WaitEvent"
+            'event' : "WaitEvent",
+            'd': 1
         };
         expect(json).toEqual(expected);
     });
