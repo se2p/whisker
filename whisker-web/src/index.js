@@ -6,8 +6,12 @@ import {FileSaver} from "./web-libs";
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
-const faqDE = require('./locales/de/faq.json');
-const faqEN = require('./locales/en/faq.json');
+const aboutDE = require('./locales/de/about.json');
+const aboutEN = require('./locales/en/about.json');
+const snippetsDE = require('./locales/de/snippets.json');
+const snippetsEN = require('./locales/en/snippets.json');
+const tutorialDE = require('./locales/de/tutorial.json');
+const tutorialEN = require('./locales/en/tutorial.json');
 const contactDE = require('./locales/de/contact.json');
 const contactEN = require('./locales/en/contact.json');
 const imprintDE = require('./locales/de/imprint.json');
@@ -603,28 +607,21 @@ const loadHeader = function () {
     localize('#header');
     if (window.location.href.includes('/html')) {
         $('#link').attr('href', '../index.html');
+        $('#tutorial').attr('href', 'tutorial.html');
+        $('#contact').attr('href', 'contact.html');
+        $('#about').attr('href', 'about.html');
         $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
-        $('#banner').attr('src', '../assets/banner_slim.jpg');
+        $('#banner').attr('src', '../assets/whiskerHeader.png');
     } else {
         $('#link').attr('href', 'index.html');
+        $('#tutorial').attr('href', 'html/tutorial.html');
+        $('#contact').attr('href', 'html/contact.html');
+        $('#about').attr('href', 'html/about.html');
         $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
-        $('#banner').attr('src', 'assets/banner_slim.jpg');
+        $('#banner').attr('src', 'assets/whiskerHeader.png');
     }
-    /* Add border to header if it sticks to the top */
-    $(() => {
-        const stickyHeader = $('.sticky');
-        const stickyHeaderPosition = stickyHeader.offset().top;
-        $(window).scroll(() => {
-            const scroll = $(window).scrollTop();
-            if (scroll > stickyHeaderPosition + 1) {
-                stickyHeader.addClass('scrolled');
-                $('#small-logo').show();
-            } else {
-                stickyHeader.removeClass('scrolled');
-                $('#small-logo').hide();
-            }
-        });
-    });
+    $('#tutorial').attr('target', '_blank');
+    $('#about').attr('target', '_blank');
     $('#form-lang').on('change', () => {
         $('[data-toggle="tooltip"]').tooltip('dispose');
         const lng = $('#lang-select').val();
@@ -699,7 +696,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
+        ns: ['index', 'about', 'snippets', 'tutorial', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false
@@ -707,7 +704,9 @@ i18next
         resources: {
             de: {
                 index: indexDE,
-                faq: faqDE,
+                about: aboutDE,
+                snippets: snippetsDE,
+                tutorial: tutorialDE,
                 contact: contactDE,
                 imprint: imprintDE,
                 privacy: privacyDE,
@@ -717,7 +716,9 @@ i18next
             },
             en: {
                 index: indexEN,
-                faq: faqEN,
+                about: aboutEN,
+                snippets: snippetsEN,
+                tutorial: tutorialEN,
                 contact: contactEN,
                 imprint: imprintEN,
                 privacy: privacyEN,
@@ -883,22 +884,6 @@ function _updateFilenameLabels () {
         $('#model-label').html(Whisker.modelFileSelect.getName());
     }
 }
-
-/* Add border to header if it sticks to the top */
-$(() => {
-    const stickyHeader = $('.sticky');
-    const stickyHeaderPosition = stickyHeader.offset().top;
-    $(window).scroll(() => {
-        const scroll = $(window).scrollTop();
-        if (scroll > stickyHeaderPosition + 1) {
-            stickyHeader.addClass('scrolled');
-            $('#small-logo').show();
-        } else {
-            stickyHeader.removeClass('scrolled');
-            $('#small-logo').hide();
-        }
-    });
-});
 
 
 export {i18next as i18n};

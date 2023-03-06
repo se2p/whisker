@@ -1,0 +1,8 @@
+{
+    "h2" : "Über Whisker",
+    "h4" : "Was Ihr über das Framework wissen solltet",
+    "description" : "Mit Whisker lassen sich Tests für Scratch-Projekte automatisieren. Insbesondere in Schulklassen oder großen Kursen ist es sehr mühsam, alle Lösungen der einzelnen Teilnehmer zu einer gestellten Aufgabe zu überprüfen.",
+    "example" : "Ein Beispiel: ",
+    "example2" : "Die Kursteilnehmer sollen ein vorhandenes Scratch-Projekt um einige Funktionen erweitern oder Fehler in einem bestehenden Projekt verbessern. Mittels Whisker wird vorab eine Test-Suite erstellt, welche die gesamte Funktionalität des verbesserten oder erweiterten Programms abdeckt. Für jedes vom Kursteilnehmer hinzugefügte Feature werden Tests generiert, die die korrekte Implementierung des Features überprüfen. Mit einem Mausklick können dann nicht nur einzelne eingereichte Projektlösungen sondern die gesamten Lösungen des Kurses überprüft und ausgewertet werden. Whisker liefert detaillierte Ergebnisse, sodass auf etwaige Probleme und Fehler Einzelner gezielt und schnell reagiert werden kann.",
+    "description2" : "Eine Test-Suite zu einer Aufgabe wird einmal erstellt und kann anschließend immer wieder verwendet werden. Zur Erstellung von Whisker-Tests sind Grundkenntnisse in JavaScript vorteilhaft. Mit dem sogenannten Modell-Editor kannst du jedoch auch komplett ohne Programmierkenntnisse Whisker-Tests erstellen und ausführen. Zudem bietet Whisker die Möglichkeit der automatischen, algorithmusbasierten Testgenerierung an."
+}

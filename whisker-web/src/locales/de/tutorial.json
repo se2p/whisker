@@ -1,0 +1,45 @@
+{
+    "h2" : "Einführung in Whisker",
+    "h4" : "Einfache Erstellung einer Test-Suite zu einem Scratch-Projekt",
+    "example" : "Beispiel: ",
+    "download" : "Material: ",
+    "step01-title" : "Scratch-Projekt",
+    "step01-description" : "Lade das Scratch-Projekt auf deinen PC herunter, das du analysieren willst. Es wird als sogenannte *.sb3-Datei abgespeichert. Wähle dazu in der Scratch-IDE den Menüunterpunkt 'Auf deinem Computer speichern' aus.",
+    "step01-example" : "Beispielhaft verwenden wir das Scratch-Projekt 'Fruit-Catching'. Dabei sollen Klone der Sprites 'Apple' und 'Banana' vom Himmel fallen und von der Schale 'Bowl' am Boden, die mit den Pfeiltasten gesteuert werden kann, aufgefangen werden.",
+    
+    "step02-title" : "Projekt zu Whisker hochladen",
+    "step02-description" : "Lade die soeben auf deinem Computer gespeicherte *.sb3-Datei in Whisker im Tab 'Uploads' hoch. Über den Abschnitt 'Deine Testdate' oder 'Dein Modell' (erweiterte Ansicht) brauchst du dir vorerst keinerlei Gedanken machen.",
+    "step02-example" : "Wähle hier die Datei 'FruitCatching.sb3' von deinem PC aus, die du soeben heruntergeladen hast.",
+    
+    "step03-title" : "Mein Projekt",
+    "step03-description" : "Wechsle in den Tab 'Mein Projekt'. Dort siehst du das gerade geladene Scratch-Projekt. Rechts daneben ist eine Liste mit deinen Tests. Diese Liste ist aktuell natürlich noch leer.",
+    "step03-example" : "Hier siehst du die Bühne des 'Fruit-Catching'-Projekts.",
+    
+    "step04-title" : "Meine Tests",
+    "step04-description" : "Klicke nun auf den Tab 'Test Editor'. Im linken Editor-Fenster kannst du JavaScript-Tests schreiben, rechts sind die grundlegenden Codebausteine dargestellt. Jedesmal, wenn eine neue *.sb3-Datei hochgeladen wird, zu der noch keine Testdatei existiert, wird die grundlegende Struktur deines ersten Tests automatisch im Codefenster erzeugt (ggf. musst du einmal mit der Maus hineinklicken, um es zu initialisieren).",
+    "step04-example" : "Diese automatisch generierte Teststruktur sieht bei allen Scratch-Projekten gleich aus.",
+    
+    "step05-title" : "Der erste Test",
+    "step05-description" : "Löschen den Methodenrumpf der autogenerierten Testmethode und benenne sie geeignet um. Vergib anschließend eine aussagekräftige Beschreibung.",
+    "step05-example" : "Benenne den autogenerierten Test in 'testVariableInitialization' um und lösche den Rumpf der Methode mit Ausnahme der letzten Zeile. Damit Whisker deine Testmethode auch ausführt, muss diese unter 'module.exports' aufgeführt werden. Ändere also auch dort den Bezeichner entsprechend ab und gib als Name 'Variable Initialization Test' an. Bei Beschreibung fügen wir folgendes hinzu: 'This method tests the initialization of variable values for time and score. Variable time must start at 30, score must start at 0.'",
+    "step05-code" : "const testVariableInitialization = async function (t) {\n\n\n    t.end();\n}\n\nmodule.exports = [\n    {\n        test: testVariableInitialization,\n        name: 'Variable Initialization Test',\n        description: 'This method tests the initialization of variable \n                      values for time and score. Variable time must start \n                      at 30, score must start at 0.',\n        categories: []\n    }\n];",
+    
+    "step06-title" : "Einfache Tests ausformulieren",
+    "step06-description" : "Orientiere die an den Codesnippets rechts oder den Beispielen, die du am Ende dieser Seite herunterladen kannst, und schreibe deinen ersten eigenen einfachen Test.",
+    "step06-example" : "Um auf eine Variable zugreifen zu können, verwenden wir das Testdriver-Objekt. Variablen können in Scratch für alle Sprites oder nur für ein spezifisches Sprite erstellt werden. Hier greifen wir auf die beiden Variablen des Bühnenbilds zu. Hole dir zuerst die Bühne als Variable und greife anschließend auf deren Variablen zu. Beide Codeschnipsel kannst du rechts aufgelistet finden.",
+    "step06-code" : "const testVariableInitialization = async function (t) {\n    let stage = t.getStage();\n    let time = stage.getVariable('time');\n    let score = stage.getVariable('score');\n    t.end();\n}",
+    
+    "step07-title" : "Bedingungen überprüfen",
+    "step07-description" : "Grundlage eines Tests ist es, zu überprüfen, ob eine gewünschte Bedingung erfüllt wird oder nicht. Dementsprechend schlägt der Test dann fehl oder läuft ohne Fehler durch.",
+    "step07-example" : "In unserem Beispiel wollen wir überprüfen, ob kurz nach dem Start des Spiels, der Countdown auf 30 Sekunden und die Punkezahl auf 0 gesetzt sind. Dafür geben wir dem Spiel zuerst etwas Zeit für die Initialisierung, in diesem Beispiel 500 Millisekunden. Anschließend wird über die 'assert'-Methode des Testdriver-Objekts überprüft, ob die geforderten Bedingungen zum aktuellen Zeitpunkt erfüllt sind. Für nähere Informationen über alle möglichen Aussagen (assertions), die von Whisker getroffen werden können, wähle bitte den entsprechenden Eintrage in den Codeschnipseln rechts aus.",
+    "step07-code" : "const testVariableInitialization = async function (t) {\n    let stage = t.getStage();\n    let time = stage.getVariable('time');\n    let score = stage.getVariable('score');\n    await t.runForTime(500); // short time for game initialization\n    t.assert.ok(time.value == 30 || time.value == 29, 'Time starts at 30s.');\n    t.assert.equal(score.value, 0, 'Score must start at 0.');\n    t.end();\n}",
+    
+    "step08-title" : "Test laden",
+    "step08-description" : "Sobald du einen Test geschrieben hast, kannst du diesen natürlich auch in deine Test-Suite laden und laufen lassen. Klicke dazu auf den Laden-Button in der linken Buttonleiste. Sofern der Test syntaktisch korrekt ist, wird er zu deiner Test-Suite hinzugefügt. Sollte beim Programmieren etwas schief gelaufen sein, wird dir per Popup ein Compilerfehler angezeigt.",
+    
+    "step09-title" : "Test abspielen",
+    "step09-description" : "Nachdem der Test erfolgreich in deine Test-Suite geladen ist, kannst du in den Tab 'Mein Projekt zurückwechseln. Dort siehst du den Test rechts in der Tabelle. Nun kannst du entweder diesen Test einzeln über den Play-Button direkt daneben oder alle Tests aus deiner Suite über den Play-Button ganz links in der Button-Leiste starten. In der Test-Tabelle wird nach dem Durchlauf auch angezeigt, ob der Test erfolgreich war oder fehlgeschlagen ist. Sollte der Test tatsächlich fehlschlagen, kannst du im Tab 'Console-Log' (erweiterte Ansicht) detaillierte Informationen über den Fehler erfahren.",
+    
+    "download-examples" : "Beispielprojekte und zugehörige Tests",
+    "download-examples-description" : "Whisker bietet dir einige Scratch-Projekte und fertige Tests als Orientierungshilfe an. Du kannst sie herunterladen und in Whisker importieren."
+}

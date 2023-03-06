@@ -14,9 +14,6 @@
         "scratch-analysis",
         "servant"
     ],
-    "jest": {
-        "testTimeout": 30000
-    },
     "scripts": {
         "build": "yarn --cwd scratch-analysis build && yarn --cwd whisker-main build && yarn --cwd whisker-web build",
         "build:watch": "concurrently --names \"scratch-analysis,whisker-main,whisker-web\" \"yarn --cwd scratch-analysis build:watch\" \"yarn --cwd whisker-main build:watch\" \"yarn --cwd whisker-web build:watch\"",
