@@ -15,7 +15,6 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     private _random: Randomness
 
     constructor(private _stableCount: number, private _earlyStop: boolean) {
-        console.log("EarlyStop: ", _earlyStop);
         this._random = Randomness.getInstance();
     }
 
