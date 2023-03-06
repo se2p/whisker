@@ -367,8 +367,9 @@ const initScratch = function () {
 
 const initComponents = function () {
     Whisker.outputRun = new Output($('#output-run')[0]);
+    Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
-
+    Whisker.outputLog.hide();
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
     Whisker.testEditor.show();

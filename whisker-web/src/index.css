@@ -29,6 +29,10 @@ body {
     }
 }
 
+.tab-content .active {
+	min-height:270px;
+}
+
 .applyChangesClass {
     animation: glowing 1300ms infinite;
 }
@@ -1408,7 +1412,7 @@ label {
 #main-functionality {
     position: fixed;
     z-index: 1000;
-    bottom: 40%;
+    top: 30%;
     display: grid;
     left: 6vw;
 }
