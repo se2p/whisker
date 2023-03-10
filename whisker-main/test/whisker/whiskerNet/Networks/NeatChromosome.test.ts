@@ -14,7 +14,9 @@ import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveE
 import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStageEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {
+    NeuroevolutionTestGenerationParameter
+} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
@@ -418,6 +420,51 @@ describe('Test NeatChromosome', () => {
         const classificationValues2 = [...chromosome.classificationNodes.values()].map(node => Math.round(node.activationValue * 1000) / 1000);
         expect(classificationValues2).toEqual([0.844, 0.156]);
         expect(Math.round(classificationValues2.reduce((a, b) => a + b))).toEqual(1);
+    });
+
+    test("Network Activation with example network", () => {
+        // https://theneuralblog.com/forward-pass-backpropagation-example/
+        const layer: NetworkLayer = new Map<number, NodeGene[]>();
+        const i1 = new InputNode(0, "Input", "A");
+        const i2 = new InputNode(1, "Input", "B");
+        const bias = new BiasNode(2);
+        layer.set(0, [i1, i2, bias]);
+
+        const h1 = new HiddenNode(3, 0.5, ActivationFunction.SIGMOID);
+        const h2 = new HiddenNode(4, 0.5, ActivationFunction.SIGMOID);
+        layer.set(0.5, [h1, h2]);
+
+        const r1 = new RegressionNode(5, new WaitEvent(), "Duration");
+        const r2 = new RegressionNode(6, new WaitEvent(), "X");
+        layer.set(1, [r1, r2]);
+
+        // Create Connections
+        const connections: ConnectionGene[] = [];
+        connections.push(new ConnectionGene(i1, h1, 0.1, true, 1));
+        connections.push(new ConnectionGene(i1, h2, 0.2, true, 1));
+        connections.push(new ConnectionGene(i2, h1, 0.3, true, 1));
+        connections.push(new ConnectionGene(i2, h2, 0.4, true, 1));
+        connections.push(new ConnectionGene(bias, h1, 0.25, true, 1));
+        connections.push(new ConnectionGene(bias, h2, 0.25, true, 1));
+        connections.push(new ConnectionGene(h1, r1, 0.5, true, 1));
+        connections.push(new ConnectionGene(h1, r2, 0.7, true, 1));
+        connections.push(new ConnectionGene(h2, r1, 0.6, true, 1));
+        connections.push(new ConnectionGene(h2, r2, 0.8, true, 1));
+        connections.push(new ConnectionGene(bias, r1, 0.35, true, 1));
+        connections.push(new ConnectionGene(bias, r2, 0.35, true, 1));
+
+        const network = new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully');
+
+        const genInputs: InputFeatures = new Map<string, Map<string, number>>();
+        const sprite1 = new Map<string, number>();
+        sprite1.set("A", 0.1);
+        sprite1.set("B", 0.5);
+        genInputs.set("Input", sprite1);
+
+        network.activateNetwork(genInputs);
+
+        expect(Math.round(network.layers.get(1)[0].activationValue * 1000) / 1000).toEqual(0.735);
+        expect(Math.round(network.layers.get(1)[1].activationValue * 1000) / 1000).toEqual(0.780);
     });
 
     test("Generate Dummy Inputs", () => {
