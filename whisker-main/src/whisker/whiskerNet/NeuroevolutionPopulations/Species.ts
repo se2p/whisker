@@ -310,7 +310,7 @@ export class Species<C extends NeatChromosome> {
         let parent2: C;
 
         // Pick second parent either from within the species or from another species.
-        if (this._randomness.nextDouble() < this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
+        if (this._randomness.nextDouble() > this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
             parent2 = this._randomness.pick(this.networks);
         }
 
