@@ -20,17 +20,6 @@ const getMessage = function (message) {
     }
 };
 
-/**
- * Returns `true` if the input is neither a number nor something that can
- * be converted a number.
- *
- * @param x the input to check
- * @return {boolean} `true` iff `x` is neither a number nor a numeric string
- */
-const isNotNumeric = function (x) {
-    return Number.isNaN(x);
-};
-
 const assume = {};
 const assert = {};
 
@@ -172,11 +161,11 @@ assert.strictEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.greater = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
@@ -196,11 +185,11 @@ assert.greater = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.greaterOrEqual = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
@@ -220,11 +209,11 @@ assert.greaterOrEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.less = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
@@ -244,11 +233,11 @@ assert.less = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.lessOrEqual = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
@@ -458,11 +447,11 @@ assume.strictEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.greater = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
@@ -482,11 +471,11 @@ assume.greater = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.greaterOrEqual = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
@@ -506,11 +495,11 @@ assume.greaterOrEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.less = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
@@ -530,11 +519,11 @@ assume.less = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.lessOrEqual = function (actual, expected, ...message) {
-    if (isNotNumeric(actual)) {
+    if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    if (isNotNumeric(expected)) {
+    if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
     }
 
