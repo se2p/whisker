@@ -116,10 +116,10 @@ assert.fail = function (...message) {
 assert.equal = function (actual, expected, ...message) {
 
     // Translate NaN to String to avoid type problems.
-    if(isNaN(actual)){
+    if (Number.isNaN(actual)) {
         actual = "NaN";
     }
-    if(isNaN(expected)){
+    if (Number.isNaN(expected)) {
         expected = "NaN";
     }
 
@@ -418,15 +418,15 @@ assume.fail = function (...message) {
  */
 assume.equal = function (actual, expected, ...message) {
     // Translate NaN to String to avoid type problems.
-    if(isNaN(actual)){
+    if (Number.isNaN(actual)) {
         actual = "NaN";
     }
-    if(isNaN(expected)){
+    if (Number.isNaN(expected)) {
         expected = "NaN";
     }
 
     /* eslint-disable-next-line eqeqeq */
-    if (!(actual == expected)) {
+    if ((isNaN(actual) && !isNaN(expected)) || !(actual == expected)) {
         throw new AssumptionError({
             message: getMessage(message),
             actual: actual,
