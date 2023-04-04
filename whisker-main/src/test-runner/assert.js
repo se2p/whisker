@@ -166,9 +166,13 @@ assert.strictEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.greater = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(actual);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
@@ -190,9 +194,13 @@ assert.greater = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.greaterOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
@@ -214,9 +222,13 @@ assert.greaterOrEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.less = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
@@ -238,9 +250,13 @@ assert.less = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.lessOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
@@ -444,9 +460,13 @@ assume.strictEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.greater = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
@@ -468,9 +488,13 @@ assume.greater = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.greaterOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
@@ -492,9 +516,13 @@ assume.greaterOrEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.less = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
@@ -516,9 +544,13 @@ assume.less = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.lessOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
     if (Number.isNaN(actual)) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
+
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
