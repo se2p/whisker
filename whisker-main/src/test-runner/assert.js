@@ -24,6 +24,7 @@ const assume = {};
 const assert = {};
 
 /**
+ * Asserts that the given condition is truthy. Type coercion applies and may lead to surprising results.
  * @param {boolean} condition .
  * @param {...*} message .
  * @deprecated Please use `assert.isTrue` or `assert.isNotEmpty` instead
@@ -39,6 +40,11 @@ assert.ok = function (condition, ...message) {
     }
 };
 
+/**
+ * Asserts that the given condition is `true`.
+ * @param condition
+ * @param message
+ */
 assert.isTrue = function (condition, ...message) {
     if (typeof condition !== 'boolean') {
         throw new TypeError(`"${condition}" is not a boolean`);
@@ -55,6 +61,7 @@ assert.isTrue = function (condition, ...message) {
 };
 
 /**
+ * Asserts that the given condition is falsy. Type coercion applies and may lead to surprising results.
  * @param {boolean} condition .
  * @param {...*} message .
  * @deprecated Please use `assert.isFalse` or `assert.isEmpty`  instead
@@ -70,6 +77,11 @@ assert.not = function (condition, ...message) {
     }
 };
 
+/**
+ * Asserts that the given condition is `false`.
+ * @param condition
+ * @param message
+ */
 assert.isFalse = function (condition, ...message) {
     if (typeof condition !== 'boolean') {
         throw new TypeError(`"${condition}" is not a boolean`);
@@ -98,6 +110,7 @@ assert.fail = function (...message) {
 };
 
 /**
+ * Asserts that the actual value loosely equals the expected value.
  * @param {*} actual .
  * @param {*} expected .
  * @param {...*} message .
@@ -131,6 +144,7 @@ assert.equalDictionaries = function (actual, expected, ...message) {
 };
 
 /**
+ * Asserts that the actual value strictly equals the expected value.
  * @param {*} actual .
  * @param {*} expected .
  * @param {...*} message .
