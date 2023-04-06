@@ -21,6 +21,8 @@
 import {Chromosome} from "../Chromosome";
 import {Selection} from "../Selection";
 import {Randomness} from "../../utils/Randomness";
+import {FitnessFunction} from "../FitnessFunction";
+import {IllegalArgumentException} from "../../core/exceptions/IllegalArgumentException";
 
 /**
  * The rank selection operator.
@@ -31,31 +33,67 @@ import {Randomness} from "../../utils/Randomness";
 export class RankSelection<C extends Chromosome> implements Selection<C> {
 
     /**
-     * Selects a chromosome from the given population and returns the result.
+     * Rank-biased selection of a chromosome in the given population. If also given a fitness function, the population
+     * is sorted in-place according to it. Otherwise, it is assumed the population is already sorted, from the worst
+     * fitness to the best. The optional bias parameter can be used to adjust selective pressure.
      *
-     * @param sortedPopulation The population of chromosomes from which to select, sorted in ascending order.
-     * @returns the selected chromosome.
+     * @param population the population from which to select
+     * @param fitnessFunction the fitness function to sort the population with
+     * @param bias the rank bias to adjust selective pressure
      */
-    async apply(sortedPopulation: C[]): Promise<C> {
-        const upperSelectionBorders = new Map<C, number>();
-        const N = sortedPopulation.length;
-        const c = (2 * N) / (N + 1);
-        let probabilitySum = 0;
-        for (let i = 1; i <= N; i++) {
-            const probability = (1 / N) * (2 - c + 2 * (c - 1) * (i - 1) / (N - 1));
-            probabilitySum += probability;
-            const chromosome = sortedPopulation[i - 1];
-            upperSelectionBorders.set(chromosome, probabilitySum);
+    async apply(population: Array<C>, fitnessFunction?: FitnessFunction<C>, bias?: number): Promise<C> {
+        if (!fitnessFunction) {
+            const index = this._getIndex(population.length, bias);
+            return population[index];
         }
-        let selected = sortedPopulation[N - 1];
-        const random = Randomness.getInstance().nextDouble();
-        for (const chromosome of sortedPopulation) {
-            const upperBorder = upperSelectionBorders.get(chromosome);
-            if (random < upperBorder) {
-                selected = chromosome;
-                break;
+
+        const fitnessValues = await Promise.all(population.map((c) => c.getFitness(fitnessFunction)));
+        const entries = [...fitnessValues.entries()].map(([idx, fitness]) => [fitness, population[idx]] as const);
+        entries.sort((([f1], [f2]) => fitnessFunction.compare(f1, f2)));
+
+        const groupedByFitness = new Map<number, Array<C>>();
+        for (const [f, c] of entries) {
+            if (!groupedByFitness.has(f)) {
+                groupedByFitness.set(f, []);
             }
+            groupedByFitness.get(f).push(c);
         }
-        return selected;
+
+        const index = this._getIndex(groupedByFitness.size, bias);
+        const fitness = [...groupedByFitness.keys()][index];
+        const chromosomes = groupedByFitness.get(fitness);
+        return Randomness.getInstance().pick(chromosomes);
+    }
+
+    /**
+     * Approximates the index of the selected individual in O(1) by transforming an equally distributed random variable
+     * `r`, as described by Whitley in the GENITOR algorithm (1989). For rank biases between 1 and 2, this produces
+     * results almost identical to the text-book implementation of rank selection. If no bias is given, the bias is
+     * computed such that the probability of selecting a chromosome is directly proportionate to its rank. While good
+     * chromosomes are always favored over bad ones, a rank bias close to 1 increases the selection chance of bad
+     * individuals, and a bias close to 2 increases the chance for good individuals.
+     *
+     * @param ranks the number of ranks
+     * @param bias rank selection bias, between 1 and 2
+     * @private
+     */
+    private _getIndex(ranks: number, bias?: number): number {
+        if (ranks === 1) {
+            return 0;
+        }
+
+        if (!bias) {
+            bias = 2.0 * ranks / (ranks + 1.0);
+        } else if (!(1 < bias && bias <= 2)) {
+            throw new IllegalArgumentException(`Invalid rank bias ${bias}, expected 1 < bias <= 2`);
+        }
+
+        // Approximate the index `i`.
+        const r = Randomness.getInstance().nextDouble();
+        const d = (bias - Math.sqrt((bias * bias) - (4.0 * (bias - 1.0) * r))) / 2.0 / (bias - 1.0);
+        const i = Math.floor(ranks * d);
+
+        // Whitley's formula assumes the best individual is assigned the lowest rank. But for us, it's the opposite.
+        return ranks - 1 - i;
     }
 }
