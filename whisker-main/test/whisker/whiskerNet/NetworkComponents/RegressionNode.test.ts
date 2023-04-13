@@ -6,24 +6,22 @@ import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/In
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
+import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
 
 
 describe("regressionNode Tests", () => {
-    let regressionNodeNone: RegressionNode;
-    let regressionNodeRelu: RegressionNode;
+    let regressionNode: RegressionNode;
 
     beforeEach(() => {
-        regressionNodeNone = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNodeRelu = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.RELU);
+        regressionNode = new RegressionNode(1, new WaitEvent(), "Duration");
     });
 
     test("Constructor Test", () => {
-        const regressionNode = new RegressionNode(10, new WaitEvent(), "Duration", ActivationFunction.NONE);
+        const regressionNode = new RegressionNode(10, new WaitEvent(), "Duration");
         expect(regressionNode.uID).toBe(10);
-        expect(regressionNode.activationFunction).toBe(ActivationFunction.NONE);
+        expect(regressionNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(regressionNode.type).toBe(NodeType.OUTPUT);
         expect(regressionNode.nodeValue).toBe(0);
-        expect(regressionNode.lastActivationValue).toBe(0);
         expect(regressionNode.activationValue).toBe(0);
         expect(regressionNode.activatedFlag).toBe(false);
         expect(regressionNode.activationCount).toBe(0);
@@ -33,105 +31,99 @@ describe("regressionNode Tests", () => {
     });
 
     test("Reset Node", () => {
-        regressionNodeNone.activationCount = 10;
-        regressionNodeNone.activationValue = 2;
-        regressionNodeNone.nodeValue = 10;
-        regressionNodeNone.lastActivationValue = 2;
-        regressionNodeNone.activatedFlag = true;
-        regressionNodeNone.traversed = true;
-        regressionNodeNone.reset();
-        expect(regressionNodeNone.activationCount).toBe(0);
-        expect(regressionNodeNone.activationValue).toBe(0);
-        expect(regressionNodeNone.nodeValue).toBe(0);
-        expect(regressionNodeNone.lastActivationValue).toBe(0);
-        expect(regressionNodeNone.activatedFlag).toBe(false);
-        expect(regressionNodeNone.traversed).toBe(false);
+        regressionNode.activationCount = 10;
+        regressionNode.activationValue = 2;
+        regressionNode.nodeValue = 10;
+        regressionNode.activatedFlag = true;
+        regressionNode.traversed = true;
+        regressionNode.reset();
+        expect(regressionNode.activationCount).toBe(0);
+        expect(regressionNode.activationValue).toBe(0);
+        expect(regressionNode.nodeValue).toBe(0);
+        expect(regressionNode.activatedFlag).toBe(false);
+        expect(regressionNode.traversed).toBe(false);
     });
 
     test("Equals Test", () => {
-        const regressionNode2 = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        expect(regressionNode2.equals(regressionNodeNone)).toBeTruthy();
+        const regressionNode2 = new RegressionNode(1, new WaitEvent(), "Duration");
+        expect(regressionNode2.equals(regressionNode)).toBeTruthy();
 
-        const regressionNode3 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        expect(regressionNode3.equals(regressionNodeNone)).toBeTruthy();
+        const regressionNode3 = new RegressionNode(2, new WaitEvent(), "Duration");
+        expect(regressionNode3.equals(regressionNode)).toBeTruthy();
 
-        const regressionNode4 = new RegressionNode(2, new MouseMoveEvent(0, 0), "Duration", ActivationFunction.NONE);
-        expect(regressionNode4.equals(regressionNodeNone)).toBeFalsy();
+        const regressionNode4 = new RegressionNode(2, new MouseMoveEvent(0, 0), "Duration");
+        expect(regressionNode4.equals(regressionNode)).toBeFalsy();
 
-        const regressionNode5 = new RegressionNode(2, new WaitEvent, "Steps", ActivationFunction.NONE);
-        expect(regressionNode5.equals(regressionNodeNone)).toBeFalsy();
+        const regressionNode5 = new RegressionNode(2, new WaitEvent, "Steps");
+        expect(regressionNode5.equals(regressionNode)).toBeFalsy();
 
         const biasNode = new BiasNode(1);
-        expect(regressionNodeNone.equals(biasNode)).toBeFalsy();
+        expect(regressionNode.equals(biasNode)).toBeFalsy();
     });
 
     test("Clone Test", () => {
-        const clone = regressionNodeNone.clone();
-        expect(clone.uID).toEqual(regressionNodeNone.uID);
-        expect(clone.eventParameter).toEqual(regressionNodeNone.eventParameter);
-        expect(clone.activationFunction).toEqual(regressionNodeNone.activationFunction);
-        expect(clone.equals(regressionNodeNone)).toBeTruthy();
-        expect(clone === regressionNodeNone).toBeFalsy();
+        const clone = regressionNode.clone();
+        expect(clone.uID).toEqual(regressionNode.uID);
+        expect(clone.eventParameter).toEqual(regressionNode.eventParameter);
+        expect(clone.activationFunction).toEqual(regressionNode.activationFunction);
+        expect(clone.equals(regressionNode)).toBeTruthy();
+        expect(clone === regressionNode).toBeFalsy();
     });
 
     test("getActivationValue Test", () => {
-        regressionNodeNone.nodeValue = 10;
-        regressionNodeNone.activationCount = 1;
-        regressionNodeNone.activatedFlag = true;
-        regressionNodeRelu.nodeValue = -1;
-        regressionNodeRelu.activationCount = 1;
-        regressionNodeRelu.activatedFlag = true;
-        expect(regressionNodeNone.activate()).toBe(10);
-        expect(regressionNodeNone.activationValue).toBe(10);
-        expect(regressionNodeRelu.activate()).toBe(0);
-        expect(regressionNodeRelu.activationValue).toBe(0);
-        regressionNodeNone.reset();
-        expect(regressionNodeNone.activate()).toBe(0);
-        expect(regressionNodeNone.activationValue).toBe(0);
+        regressionNode.nodeValue = 10;
+        regressionNode.activationCount = 1;
+        regressionNode.activatedFlag = true;
+        regressionNode.activationValue = regressionNode.activate();
+        expect(regressionNode.activationValue).toBe(NeuroevolutionUtil.sigmoid(10, 1));
+        regressionNode.reset();
+        expect(regressionNode.activate()).toBe(0);
+        expect(regressionNode.activationValue).toBe(0);
 
-        const regressionNodeNone2 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNodeNone2.nodeValue = 5;
-        regressionNodeNone2.activationCount = 10;
-        regressionNodeNone2.activatedFlag = true;
-        expect(regressionNodeNone2.activate()).toBe(5);
-        expect(regressionNodeNone2.activationValue).toBe(5);
-        regressionNodeNone2.reset();
-        expect(regressionNodeNone2.activate()).toBe(0);
-        expect(regressionNodeNone2.activationValue).toBe(0);
+        const regressionNode2 = new RegressionNode(2, new WaitEvent(), "Duration");
+        regressionNode2.nodeValue = 5;
+        regressionNode2.activationCount = 10;
+        regressionNode2.activatedFlag = true;
+        regressionNode2.activationValue = regressionNode2.activate();
+        expect(regressionNode2.activationValue).toBe(NeuroevolutionUtil.sigmoid(5, 1));
+        regressionNode2.reset();
+        expect(regressionNode2.activate()).toBe(0);
+        expect(regressionNode2.activationValue).toBe(0);
     });
 
     test("Test getEventName", () => {
-        expect(regressionNodeNone.event).toBeInstanceOf(WaitEvent);
+        expect(regressionNode.event).toBeInstanceOf(WaitEvent);
     });
 
     test("Identifier", () =>{
-        expect(regressionNodeRelu.identifier()).toBe("R:WaitEvent-Duration");
+        expect(regressionNode.identifier()).toBe("R:WaitEvent-Duration");
     });
 
     test("toString Test", () => {
         const inputNode = new InputNode(2, "Sprite1", "Position-X");
-        const connection = new ConnectionGene(inputNode, regressionNodeNone, 2, true, 1, false);
+        const connection = new ConnectionGene(inputNode, regressionNode, 2, true, 1);
         const incomingList: ConnectionGene[] = [];
         incomingList.push(connection);
-        regressionNodeNone.incomingConnections = incomingList;
-        regressionNodeNone.activationValue = 0;
-        const out = regressionNodeNone.toString();
+        regressionNode.incomingConnections = incomingList;
+        regressionNode.activationValue = 0;
+        const out = regressionNode.toString();
         expect(out).toContain(`RegressionNode{ID: 1\
 , Value: 0\
-, ActivationFunction: 0\
+, ActivationFunction: 1\
 , InputConnections: ${connection.toString()}\
 , Event: WaitEvent\
 , Parameter Duration}`);
     });
 
     test("toJSON", () => {
-        const json = regressionNodeNone.toJSON();
+        const json = regressionNode.toJSON();
         const expected = {
             't': "R",
-            'id' : regressionNodeNone.uID,
-            'aF' : "NONE",
+            'id' : regressionNode.uID,
+            'aF' : "SIGMOID",
             'event': "WaitEvent",
-            'eventP': "Duration"
+            'eventP': "Duration",
+            'd': 1
         };
         expect(json).toEqual(expected);
     });

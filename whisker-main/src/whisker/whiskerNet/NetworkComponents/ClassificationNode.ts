@@ -1,8 +1,8 @@
 import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {NeuroevolutionUtil} from "../Misc/NeuroevolutionUtil";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
+import {NeuroevolutionUtil} from "../Misc/NeuroevolutionUtil";
 
 export class ClassificationNode extends NodeGene {
 
@@ -18,7 +18,7 @@ export class ClassificationNode extends NodeGene {
      * @param event the ScratchEvent this Classification node is representing.
      */
     constructor(uID: number, event: ScratchEvent, activationFunction: ActivationFunction) {
-        super(uID, activationFunction, NodeType.OUTPUT);
+        super(uID, 1, activationFunction, NodeType.OUTPUT);
         this._event = event;
     }
 
@@ -35,7 +35,6 @@ export class ClassificationNode extends NodeGene {
         const clone = new ClassificationNode(this.uID, this.event, this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
@@ -43,26 +42,18 @@ export class ClassificationNode extends NodeGene {
     }
 
     /**
-     * Calculates the activation value of the classification node based on the node value and the activation function.
-     * @returns number activation value of the classification node.
+     * On classification nodes we apply softmax activation.
+     * @params softmaxDenominator the denominator required for the softmax function.
+     * @returns softmax activation based on the given node value and the supplied denominator.
      */
-    activate(): number {
-        if (this.activatedFlag) {
-            switch (this.activationFunction) {
-                case ActivationFunction.SIGMOID:
-                    // The specified gain value of -4.9 is based on the original NEAT publication.
-                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
-                    break;
-                case ActivationFunction.TANH:
-                    this.activationValue = Math.tanh(this.nodeValue);
-                    break;
-                default:
-                    this.activationValue = this.nodeValue;
-                    break;
-            }
-            return this.activationValue;
-        } else
-            return 0.0;
+    activate(softMaxDenominator:number): number {
+        switch (this.activationFunction){
+            case ActivationFunction.SIGMOID:
+                return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
+            case ActivationFunction.SOFTMAX:
+            default:
+                return Math.exp(this.nodeValue) / softMaxDenominator;
+        }
     }
 
     /**
@@ -89,6 +80,7 @@ export class ClassificationNode extends NodeGene {
         node['t'] = "C";
         node['aF'] = ActivationFunction[this.activationFunction];
         node['event'] = this.event.stringIdentifier();
+        node['d'] = this.depth;
         return node;
     }
 

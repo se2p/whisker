@@ -10,6 +10,7 @@ import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEve
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {Container} from "../../../../src/whisker/utils/Container";
+import {generateInputs} from "../Algorithms/NEAT.test";
 
 describe("Network Analysis", () => {
 
@@ -44,17 +45,7 @@ describe("Network Analysis", () => {
             }
         }
 
-        const genInputs = new Map<string, Map<string, number>>();
-        const sprite1 = new Map<string, number>();
-        sprite1.set("X-Position", 1);
-        sprite1.set("Y-Position", 2);
-        genInputs.set("Sprite1", sprite1);
-
-        const sprite2 = new Map<string, number>();
-        sprite2.set("X-Position", 6);
-        sprite2.set("Y-Position", 7);
-        genInputs.set("Sprite2", sprite2);
-
+        const genInputs = generateInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         const generator = new NeatChromosomeGenerator(genInputs, events, 'fully',

@@ -354,9 +354,9 @@ export class DynamicNetworkSuite {
     public isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>, printReason = true): boolean {
         // If the network structure has changed within the output nodes, we have found new events suggesting that
         // something has been mutated within the controls of the program.
-        const execClassNodes = executedTest.outputNodes.filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+        const execClassNodes = executedTest.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
         const execEvents = execClassNodes.map(node => node.event.stringIdentifier());
-        const originalClassNodes = originalTest.outputNodes.filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+        const originalClassNodes = originalTest.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
         const originalEvents = originalClassNodes.map(node => node.event.stringIdentifier());
         const newEvents = execEvents.filter(eventString => !originalEvents.includes(eventString));
         if (newEvents.length > 0) {

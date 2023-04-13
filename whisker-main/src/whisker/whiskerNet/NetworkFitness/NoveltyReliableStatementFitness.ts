@@ -16,8 +16,8 @@ export class NoveltyReliableStatementFitness extends ReliableStatementFitness {
      */
     private _largestEventSequence = 0;
 
-    constructor(stableCount: number) {
-        super(stableCount);
+    constructor(stableCount: number, earlyStop:boolean) {
+        super(stableCount, earlyStop);
     }
 
     /**

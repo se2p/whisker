@@ -4,6 +4,11 @@ import {NodeType} from "../NetworkComponents/NodeType";
 import {Randomness} from "../../utils/Randomness";
 import {NetworkMutation} from "./NetworkMutation";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {Container} from "../../utils/Container";
+import {NeatestParameter} from "../HyperParameter/NeatestParameter";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
+import {GradientDescent} from "../Misc/GradientDescent";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 
 
 export class NeatMutation implements NetworkMutation<NeatChromosome> {
@@ -63,8 +68,28 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      */
     private readonly _mutateEnableConnection: number;
 
+    /**
+     * Defines whether gradient descent should be applied.
+     */
+    private readonly _gradientDescentEnabled: boolean = false;
 
-    constructor(mutationConfig: Record<string, (string | number)>) {
+    /**
+     * Instance of the backpropagation algorithm.
+     */
+    private readonly _backpropagation: GradientDescent
+
+    /**
+     * Probability of applying gradient descent instead of default weight mutation.
+     */
+    private readonly _gradientDescentProbability: number;
+
+    /**
+     * Constructs an instance of the NeatMutation class containing various mutation methods.
+     * @param mutationConfig the supplied json mutation configs.
+     * @param neuroevolutionParameter additional neuroevolution parameter.
+     */
+    constructor(mutationConfig: Record<string, (string | number)>,
+                neuroevolutionParameter?: NeuroevolutionTestGenerationParameter) {
         this._mutationAddConnection = mutationConfig.mutationAddConnection as number;
         this._recurrentConnection = mutationConfig.recurrentConnection as number;
         this._addConnectionTries = mutationConfig.addConnectionTries as number;
@@ -75,6 +100,17 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         this._mutateToggleEnableConnection = mutationConfig.mutateToggleEnableConnection as number;
         this._toggleEnableConnectionTimes = mutationConfig.toggleEnableConnectionTimes as number;
         this._mutateEnableConnection = mutationConfig.mutateEnableConnection as number;
+
+        if (neuroevolutionParameter !== undefined && neuroevolutionParameter instanceof NeatestParameter) {
+            this._gradientDescentEnabled = neuroevolutionParameter.applyGradientDescent;
+            this._gradientDescentProbability = neuroevolutionParameter.gradientDescentProb;
+
+            if (this._gradientDescentEnabled && this._gradientDescentProbability > 0) {
+                this._backpropagation = new GradientDescent(Container.backpropagationData,
+                    neuroevolutionParameter.gradientDescentParameter, neuroevolutionParameter.dataAugmentation);
+                Container.backpropagationInstance = this._backpropagation;
+            }
+        }
     }
 
     /**
@@ -91,11 +127,11 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
                     this.mutateAddConnection(mutant, this._addConnectionTries);
                 } else {
-                    this.mutateWeight(mutant, this._perturbationPower);
+                    this.adjustWeights(mutant, parent);
                 }
             }
 
-            // If we don't have a population Champion apply either structural mutation or non-structural mutation but
+                // If we don't have a population Champion apply either structural mutation or non-structural mutation but
             // not both!
             else {
                 // Structural mutation
@@ -109,10 +145,6 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
 
                 // Non structural mutation
                 else {
-                    if (this._random.nextDouble() < this._mutateWeights) {
-                        mutated = true;
-                        this.mutateWeight(mutant, this._perturbationPower);
-                    }
                     if (this._random.nextDouble() < this._mutateToggleEnableConnection) {
                         mutated = true;
                         this.mutateToggleEnableConnection(mutant, this._toggleEnableConnectionTimes);
@@ -120,6 +152,10 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                     if (this._random.nextDouble() < this._mutateEnableConnection) {
                         mutated = true;
                         this.mutateConnectionReenable(mutant);
+                    }
+                    if (this._random.nextDouble() < this._mutateWeights) {
+                        this.adjustWeights(mutant, parent);
+                        mutated = true;
                     }
                 }
             }
@@ -138,7 +174,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         let node2: NodeGene;
 
         // Collect all nodes to which a new connection can point -> all nodes except the input and bias nodes
-        const targetNodes = chromosome.allNodes.filter(node =>
+        const targetNodes = chromosome.getAllNodes().filter(node =>
             node.type !== NodeType.INPUT && node.type !== NodeType.BIAS);
 
         // Decide if we want a recurrent Connection
@@ -162,7 +198,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                     node1 = this._random.pick(targetNodes);
                     node2 = node1;
                 }
-                // Normal Recurrency: Y -> X
+                // Normal recurrent connection: Y -> X
                 else {
                     node1 = this._random.pick(targetNodes);
                     node2 = this._random.pick(targetNodes);
@@ -171,7 +207,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
 
             // No recurrent connection
             else {
-                node1 = this._random.pick(chromosome.allNodes);
+                node1 = this._random.pick(chromosome.getAllNodes());
                 node2 = this._random.pick(targetNodes);
             }
 
@@ -201,8 +237,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             // We found a valid connection to add
             if (!skip) {
                 // Verify if we got a recurrent connection if we wanted a recurrent one and vice versa
-                const threshold = chromosome.allNodes.length * chromosome.allNodes.length;
-                const isRecurrent = chromosome.isRecurrentPath(node1, node2, 0, threshold);
+                const isRecurrent = node1.depth >= node2.depth;
                 if (isRecurrent === recurrentConnection) {
                     rounds = tries;
                     foundConnection = true;
@@ -219,8 +254,34 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         if (foundConnection) {
             const posNeg = this._random.randomBoolean() ? +1 : -1;
             const weight = posNeg * this._random.nextDouble() * this._perturbationPower;
-            const newConnection = new ConnectionGene(node1, node2, weight, true, 0, recurrentConnection);
+            const newConnection = new ConnectionGene(node1, node2, weight, true, 0);
             chromosome.addConnection(newConnection);
+        }
+    }
+
+    /**
+     * Adjust the weights by applying gradient descent or weight mutation.
+     * @param mutant the mutant whose weights will be adjusted.
+     * @param parent the parent of the mutant.
+     */
+    public adjustWeights(mutant: NeatChromosome, parent: NeatChromosome): void {
+        // Determine whether we mutate weights genetically, or apply gradient descent.
+        let gradientDescentApplied = false;
+        if (this._gradientDescentEnabled &&
+            !parent.gradientDescentChild &&
+            this._random.nextDouble() < this._gradientDescentProbability) {
+            const loss = this.applyGradientDescent(mutant);
+
+            // If there are no training examples, gradient descent returns undefined.
+            if (loss) {
+                gradientDescentApplied = true;
+                parent.gradientDescentChild = true;
+            }
+        }
+
+        // Apply weight mutation if we didn't apply gradient descent or if there weren't any training examples.
+        if (!gradientDescentApplied) {
+            this.mutateWeight(mutant, this._perturbationPower);
         }
     }
 
@@ -268,39 +329,25 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     }
 
     /**
+     * Optimises the weights of a network using gradient descent.
+     * @param network the network to be trained.
+     * @returns training loss.
+     */
+    private applyGradientDescent(network: NetworkChromosome): number | undefined {
+        return this._backpropagation.gradientDescent(network, Container.neatestTargetId);
+    }
+
+    /**
      * Toggles the enabled state of times connections of the network
      * @param chromosome the chromosome to mutate
      * @param times defines how many connections are toggled
      */
     mutateToggleEnableConnection(chromosome: NeatChromosome, times: number): void {
         for (let count = 0; count <= times; count++) {
-            // Pick a random connection
+            // Pick a random connection and switch its enable state
             const chosenConnection = this._random.pick(chromosome.connections);
-
-            // If we disable a connection, we have to make sure that another connection links out of the in-node
-            // in order to not lose a bigger section of the network
-            if (chosenConnection.isEnabled) {
-                let save = false;
-                for (const otherConnection of chromosome.connections) {
-                    if (((otherConnection.source.equals(chosenConnection.source)) && (otherConnection.isEnabled) &&
-                        (chosenConnection.innovation !== otherConnection.innovation)) || chosenConnection.isRecurrent) {
-                        save = true;
-                        break;
-                    }
-                }
-                if (save)
-                    chosenConnection.isEnabled = false;
-            } else
-                chosenConnection.isEnabled = true;
+            chosenConnection.isEnabled = !chosenConnection.isEnabled;
         }
-
-        // Finally, check if we changed the isRecurrent state by disabling or enabling a recurrent connection.
-        chromosome.isRecurrent = false;
-        for (const connection of chromosome.connections)
-            if (connection.isEnabled && connection.isRecurrent) {
-                chromosome.isRecurrent = true;
-                break;
-            }
     }
 
     /**
@@ -311,9 +358,6 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         for (const connection of chromosome.connections) {
             if (!connection.isEnabled) {
                 connection.isEnabled = true;
-                if (connection.isRecurrent) {
-                    chromosome.isRecurrent = true;
-                }
                 break;
             }
         }

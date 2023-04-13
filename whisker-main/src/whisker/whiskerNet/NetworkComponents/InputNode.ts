@@ -22,7 +22,7 @@ export class InputNode extends NodeGene {
      * @param feature the feature of the given sprite this InputNode is connected to.
      */
     constructor(uID: number, sprite: string, feature: string) {
-        super(uID, ActivationFunction.NONE, NodeType.INPUT);
+        super(uID,0, ActivationFunction.NONE, NodeType.INPUT);
         this._sprite = sprite;
         this._feature = feature;
     }
@@ -36,7 +36,6 @@ export class InputNode extends NodeGene {
         const clone = new InputNode(this.uID, this.sprite, this.feature);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
@@ -79,6 +78,7 @@ export class InputNode extends NodeGene {
         node['aF'] = ActivationFunction[this.activationFunction];
         node['sprite'] = this.sprite;
         node['feature'] = this.feature;
+        node['d'] = this.depth;
         return node;
     }
 

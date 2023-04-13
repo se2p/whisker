@@ -250,6 +250,54 @@ export class WhiskerSearchConfiguration {
         if (properties instanceof NeatestParameter) {
             properties.coverageStableCount = coverageStableCount;
             properties.switchTargetCount = switchTargetCount;
+            // If no population key is present just set the strategy to random.
+            if (this._config['population'] === undefined) {
+                properties.populationGeneration = 'random';
+                properties.randomFraction = 1;
+            }
+            // At this point we have a population key present. Thus, set the generation strategy and
+            // the random fraction appropriately.
+            else {
+                const populationGeneration = this._config['population']['strategy'] ?
+                    this._config['population']['strategy'] : 'random';
+                properties.populationGeneration = populationGeneration;
+                if (populationGeneration !== 'random') {
+                    properties.randomFraction = this._config['population']['randomFraction'] ?
+                        this._config['population']['randomFraction'] : 0.1;
+                } else {
+                    properties.randomFraction = 1;
+                }
+            }
+
+            // Check whether we will apply gradient descent.
+            if ('gradientDescent' in this._config) {
+                const gradientDescent = this._config['gradientDescent'];
+                properties.applyGradientDescent = true;
+                properties.gradientDescentProb = gradientDescent['probability'];
+                properties.gradientDescentParameter = {
+                    learningRate: gradientDescent['learningRate'],
+                    learningRateAlgorithm: gradientDescent['learningRateAlgorithm'],
+                    epochs: gradientDescent['epochs'],
+                    batchSize: gradientDescent['batchSize'],
+                    labelSmoothing: gradientDescent['labelSmoothing']
+                };
+
+                // Check for data augmentation.
+                if ('dataAugmentation' in gradientDescent) {
+                    const augmentationProperties = gradientDescent['dataAugmentation'];
+                    properties.dataAugmentation = {
+                        doAugment: augmentationProperties['doAugment'],
+                        numAugments: augmentationProperties['numAugments'],
+                        disturbStateProb: augmentationProperties['disturbStateProb'],
+                        disturbStatePower: augmentationProperties['disturbStatePower']
+                    };
+                }
+
+                // Check for Peer-To-Peer sharing.
+                if (gradientDescent['peerToPeerSharing']) {
+                    Container.peerToPeerSharing = true;
+                }
+            }
         }
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
@@ -264,7 +312,7 @@ export class WhiskerSearchConfiguration {
     private setDynamicSuiteParameter(): BasicNeuroevolutionParameter {
         const parameter = new BasicNeuroevolutionParameter();
         parameter.timeout = this._config['timeout'];
-        parameter.networkFitness = new ReliableStatementFitness(1);
+        parameter.networkFitness = new ReliableStatementFitness(1, false);
         return parameter;
     }
 
@@ -337,7 +385,7 @@ export class WhiskerSearchConfiguration {
                     this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
-                return new NeatMutation(this._config['mutation']);
+                return new NeatMutation(this._config['mutation'], this.neuroevolutionProperties);
             case 'integerList':
                 return new IntegerListMutation(this._config['integerRange']['min'], this._config['integerRange']['max']);
             default:
@@ -479,7 +527,7 @@ export class WhiskerSearchConfiguration {
                     throw new ConfigException(`The neatChromosome generator requires a NeatCrossover operator, but  ${typeof crossoverOperator} was specified`);
                 }
                 return new NeatChromosomeGenerator(
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper),
+                    InputExtraction.extractFeatures(Container.vm),
                     eventExtractor.extractEvents(Container.vm),
                     this.getInputConnectionMethod(),
                     this.neuroevolutionProperties.activationFunction,
@@ -519,11 +567,13 @@ export class WhiskerSearchConfiguration {
                 return new SurviveFitness();
             case 'reliableStatement': {
                 const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
-                return new ReliableStatementFitness(stableCount);
+                const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
+                return new ReliableStatementFitness(stableCount, earlyStop);
             }
             case 'noveltyReliableStatement': {
                 const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
-                return new NoveltyReliableStatementFitness(stableCount);
+                const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
+                return new NoveltyReliableStatementFitness(stableCount, earlyStop);
             }
             case 'target':
                 return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
@@ -605,8 +655,8 @@ export class WhiskerSearchConfiguration {
     }
 
     public getPressDurationUpperBound(): number {
-        if (this._config['durations']['pressDurationUpperBound']) {
-            return this._config['durations']['pressDurationUpperBound'];
+        if (this._config['durations']['pressDuration']) {
+            return this._config['durations']['pressDuration'];
         } else {
             return 10;
         }

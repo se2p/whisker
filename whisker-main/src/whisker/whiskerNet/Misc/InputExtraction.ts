@@ -1,10 +1,11 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {ScratchInterface} from "../../scratch/ScratchInterface";
-import VMWrapper from "../../../vm/vm-wrapper";
 import {Container} from "../../utils/Container";
 import {Pair} from "../../utils/Pair";
 import * as twgl from 'twgl.js';
+import VirtualMachine from "scratch-vm/src/virtual-machine";
+import {ScratchPosition} from "../../scratch/ScratchPosition";
 
 
 export class InputExtraction {
@@ -14,41 +15,40 @@ export class InputExtraction {
     private static CLONE_THRESHOLD = 5;
 
     /**
-     * Extracts pieces of information from all Sprites of the given Scratch project.
-     * @param vmWrapper the Scratch VM-Wrapper.
-     * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
+     * Extracts input features from the current Scratch state.
+     * @param vm the Scratch-VM describing the Scratch state.
+     * @returns the extracted input features.
      */
-    static extractSpriteInfo(vmWrapper: VMWrapper): Map<string, Map<string, number>> {
-        // Go through each sprite and collect input features from them.
-        const spriteMap = new Map<string, Map<string, number>>();
-        const cloneRecording = new Map<string, number>();
-        for (const target of vmWrapper.vm.runtime.targets) {
+    static extractFeatures(vm: VirtualMachine): InputFeatures {
+        const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
+        const cloneRecord = new Map<string, number>();
+        for (const target of vm.runtime.targets) {
             if ('blocks' in target && target.visible) {
                 if (target.isStage) {
-                    const stageFeatures = this._extractStageFeatures(target);
+                    const stageFeatures = this._extractStageFeatures(vm, target);
                     if (stageFeatures.size > 0) {
-                        spriteMap.set("Stage", stageFeatures);
+                        inputFeatures.set("Stage", stageFeatures);
                     }
                 } else {
-                    const spriteFeatures = this._extractSpriteFeatures(target, vmWrapper);
+                    const spriteFeatures = this._extractSpriteFeatures(target, vm);
                     if (target.isOriginal) {
-                        spriteMap.set(target.sprite.name, spriteFeatures);
+                        inputFeatures.set(target.sprite.name, spriteFeatures);
                     } else {
                         const cloneID = this.getCloneIdentifier(target);
                         const parentSprite = target.sprite.name;
                         // Only allow a limited number of clones per sprite to avoid input feature explosion.
-                        if (!cloneRecording.has(parentSprite) || cloneRecording.get(parentSprite) < this.CLONE_THRESHOLD) {
-                            spriteMap.set(cloneID, spriteFeatures);
-                            if (!cloneRecording.has(parentSprite)) {
-                                cloneRecording.set(parentSprite, 0);
+                        if (!cloneRecord.has(parentSprite) || cloneRecord.get(parentSprite) < this.CLONE_THRESHOLD) {
+                            inputFeatures.set(cloneID, spriteFeatures);
+                            if (!cloneRecord.has(parentSprite)) {
+                                cloneRecord.set(parentSprite, 0);
                             }
-                            cloneRecording.set(parentSprite, cloneRecording.get(parentSprite) + 1);
+                            cloneRecord.set(parentSprite, cloneRecord.get(parentSprite) + 1);
                         }
                     }
                 }
             }
         }
-        return spriteMap;
+        return inputFeatures;
     }
 
     /**
@@ -64,34 +64,95 @@ export class InputExtraction {
      * Extracts Stage and general features shared across the whole Scratch program and normalises them into the
      * range[-1, 1].
      * @param target the Scratch Stage.
+     * @param vm the Scratch-VM describing the Scratch state.
      * @returns Mapping of feature to normalised value.
      */
-    private static _extractStageFeatures(target: RenderedTarget): Map<string, number> {
+    private static _extractStageFeatures(vm: VirtualMachine, target: RenderedTarget): FeatureGroup {
         const stageFeatures = new Map<string, number>();
         for (const variable of Object.values(target.variables)) {
             if (typeof variable['value'] === 'number') {
-                stageFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value'], 10));
+                stageFeatures.set(`VAR${variable['name']}`, InputExtraction._normaliseUnknownBounds(variable['value'], 10));
             }
+        }
+
+        // Check if we add the mouse position to our input features.
+        let mouse = false;
+        for (const t of vm.runtime.targets) {
+            for (const blockId of Object.keys(t.blocks._blocks)) {
+                const block = t.blocks.getBlock(blockId);
+                switch (t.blocks.getOpcode(block)) {
+                    case 'sensing_mousex':
+                    case 'sensing_mousey':
+                    case 'pen_down':
+                        mouse = true;
+                        break;
+                    case 'sensing_touchingobject': {
+                        const touchingMenuBlock = t.blocks.getBlock(block['inputs'].TOUCHINGOBJECTMENU.block);
+                        const field = t.blocks.getFields(touchingMenuBlock);
+                        const value = field.VARIABLE ? field.VARIABLE.value : field.TOUCHINGOBJECTMENU.value;
+
+                        // Target senses Mouse
+                        if (value == "_mouse_") {
+                            mouse = true;
+                        }
+                        break;
+                    }
+                    case 'motion_goto': {
+                        // GoTo MousePointer block
+                        const goToMenu = t.blocks.getBlock(block['inputs'].TO.block);
+                        if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
+                            mouse = true;
+                        }
+                        break;
+                    }
+                    case 'sensing_distanceto': {
+                        const distanceMenuBlock = t.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
+                        const field = t.blocks.getFields(distanceMenuBlock);
+                        const value = field.DISTANCETOMENU.value;
+                        if (value == "_mouse_") {
+                            mouse = true;
+                        }
+                        break;
+                    }
+
+                    case 'motion_pointtowards': {
+                        const towards = t.blocks.getBlock(block.inputs.TOWARDS.block);
+                        if (towards.fields.TOWARDS && towards.fields.TOWARDS.value === '_mouse_')
+                            mouse = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (mouse) {
+            const [stageWidth, stageHeight] = vm.runtime.renderer.getNativeSize();
+            const scratchX = vm.runtime.ioDevices.mouse.getScratchX();
+            const scratchY = vm.runtime.ioDevices.mouse.getScratchY();
+            const x = this.mapValueIntoRange(scratchX, -stageWidth / 2, stageWidth / 2);
+            const y = this.mapValueIntoRange(scratchY, -stageHeight / 2, stageHeight / 2);
+            stageFeatures.set("Mouse-X", x);
+            stageFeatures.set('Mouse-Y', y);
         }
         return stageFeatures;
     }
 
     /**
      * Extracts sprite features and normalises them into the range [-1, 1].
-     * @param target the RenderTarget object from which information is gathered.
-     * @param vmWrapper of the given Scratch Project.
+     * @param target the RenderTarget object representing the sprite from which features will be extracted.
+     * @param vm describing the current state of the Scratch program.
      * @return Mapping of feature to normalised value.
      */
-    // TODO: Add more input features: effects
-    private static _extractSpriteFeatures(target: RenderedTarget, vmWrapper: VMWrapper): Map<string, number> {
+    // TODO: Only add features that actually change over time ---> Analyse Scratch Code.
+    // TODO: Add effects as features.
+    private static _extractSpriteFeatures(target: RenderedTarget, vm: VirtualMachine): FeatureGroup {
         const spriteFeatures = new Map<string, number>();
-        // Stage Bounds -> (width: 480, height: 360)
-        const stageBounds = vmWrapper.getStageSize();
+        const [stageWidth, stageHeight] = vm.runtime.renderer.getNativeSize();
 
         // Extract Coordinates and normalize
         const spritePosition = ScratchInterface.getPositionOfTarget(target);
-        const x = this.mapValueIntoRange(spritePosition.x, -stageBounds.width / 2, stageBounds.width / 2);
-        const y = this.mapValueIntoRange(spritePosition.y, -stageBounds.height / 2, stageBounds.height / 2);
+        const x = this.mapValueIntoRange(spritePosition.x, -stageWidth / 2, stageWidth / 2);
+        const y = this.mapValueIntoRange(spritePosition.y, -stageHeight / 2, stageHeight / 2);
         spriteFeatures.set("X", x);
         spriteFeatures.set("Y", y);
 
@@ -109,7 +170,7 @@ export class InputExtraction {
         // Extract variables
         for (const variable of Object.values(target.variables)) {
             if (typeof variable['value'] === 'number') {
-                spriteFeatures.set(variable['name'], InputExtraction._normaliseUnknownBounds(variable['value'], 10));
+                spriteFeatures.set(`VAR${variable['name']}`, InputExtraction._normaliseUnknownBounds(variable['value'], 10));
             }
         }
 
@@ -118,8 +179,8 @@ export class InputExtraction {
             const distanceToWaypoint = this.getDistanceToNextWaypoint(5, 75, target);
             // Only add as input if we are close enough to a waypoint and actually have a path to follow.
             if (distanceToWaypoint) {
-                spriteFeatures.set("DistanceToNextWaypoint-X", distanceToWaypoint[0]);
-                spriteFeatures.set("DistanceToNextWaypoint-Y", distanceToWaypoint[1]);
+                spriteFeatures.set("DISTNextWaypointX", distanceToWaypoint[0]);
+                spriteFeatures.set("DISTNextWaypointY", distanceToWaypoint[1]);
             }
         }
 
@@ -130,16 +191,16 @@ export class InputExtraction {
 
                 // Check if the target interacts with another target.
                 case "sensing_touchingobjectmenu":
-                    for (const sensedTarget of vmWrapper.vm.runtime.targets) {
+                    for (const sensedTarget of vm.runtime.targets) {
                         if (sensedTarget.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
                             const distances = this.calculateDistancesSigned(target.x, sensedTarget.x, target.y, sensedTarget.y,
-                                stageBounds.width, stageBounds.height);
+                                stageWidth, stageHeight);
                             if (sensedTarget.isOriginal) {
-                                spriteFeatures.set("Dist" + sensedTarget.sprite.name + "X", distances.dx);
-                                spriteFeatures.set("Dist" + sensedTarget.sprite.name + "Y", distances.dy);
+                                spriteFeatures.set(`DIST${sensedTarget.sprite.name}X`, distances.dx);
+                                spriteFeatures.set(`DIST${sensedTarget.sprite.name}Y`, distances.dy);
                             } else {
-                                spriteFeatures.set("Dist" + this.getCloneIdentifier(sensedTarget), distances.dx);
-                                spriteFeatures.set("Dist" + this.getCloneIdentifier(sensedTarget), distances.dy);
+                                spriteFeatures.set(`DIST${this.getCloneIdentifier(sensedTarget)}X`, distances.dx);
+                                spriteFeatures.set(`DIST${this.getCloneIdentifier(sensedTarget)}Y`, distances.dy);
                             }
                         }
                     }
@@ -148,13 +209,16 @@ export class InputExtraction {
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                    // Only active nodes whose rangeFinder sensed something.
-                    const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
-                    for (const direction in distances) {
-                        spriteFeatures.set(`Dist${direction}${sensedColor}`, distances[direction]);
+                    const sourcePosition = new ScratchPosition(target.x, target.y);
+                    const stageDiameter = ScratchInterface.getStageDiameter();
+                    const colorPosition = ScratchInterface.findColorWithinRadius(sensedColor, 5,
+                        stageDiameter, sourcePosition);
+                    if (colorPosition) {
+                        const distance = sourcePosition.distanceTo(colorPosition) / stageDiameter;
+                        spriteFeatures.set(`DIST${sensedColor}`, distance);
                     }
-                }
                     break;
+                }
 
                 // Check if the target is capable of switching his costume.
                 case "looks_switchcostumeto": {
@@ -407,4 +471,15 @@ export class InputExtraction {
         return [wayPointDistanceX, wayPointDistanceY];
     }
 }
+
+
+/**
+ * A feature group found within a hosting sprite or the stage. Maps feature to the extracted values.
+ */
+export type FeatureGroup = Map<string, number>;
+
+/**
+ * Input features are mapped from the hosting sprite to the extracted {@link FeatureGroup}.
+ */
+export type InputFeatures = Map<string, FeatureGroup>;
 

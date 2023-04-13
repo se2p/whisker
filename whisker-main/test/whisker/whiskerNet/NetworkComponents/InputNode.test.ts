@@ -16,7 +16,6 @@ describe("InputNode Tests", () => {
         expect(inputNode.activationFunction).toEqual(ActivationFunction.NONE);
         expect(inputNode.type).toEqual(NodeType.INPUT);
         expect(inputNode.nodeValue).toEqual(0);
-        expect(inputNode.lastActivationValue).toEqual(0);
         expect(inputNode.activationValue).toEqual(0);
         expect(inputNode.activatedFlag).toBeFalsy();
         expect(inputNode.activationCount).toEqual(0);
@@ -30,14 +29,12 @@ describe("InputNode Tests", () => {
         inputNode.activationCount = 10;
         inputNode.activationValue = 2;
         inputNode.nodeValue = 10;
-        inputNode.lastActivationValue = 2;
         inputNode.activatedFlag = true;
         inputNode.traversed = true;
         inputNode.reset();
         expect(inputNode.activationCount).toEqual(0);
         expect(inputNode.activationValue).toEqual(0);
         expect(inputNode.nodeValue).toEqual(0);
-        expect(inputNode.lastActivationValue).toEqual(0);
         expect(inputNode.activatedFlag).toBeFalsy();
         expect(inputNode.traversed).toBeFalsy();
 
@@ -96,7 +93,8 @@ describe("InputNode Tests", () => {
             'id' : inputNode.uID,
             'aF' : "NONE",
             'sprite': "Sprite1",
-            'feature': "X-Position"
+            'feature': "X-Position",
+            'd': 0
         };
         expect(json).toEqual(expected);
     });

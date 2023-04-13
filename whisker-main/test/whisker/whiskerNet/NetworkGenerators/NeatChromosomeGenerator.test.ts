@@ -9,12 +9,15 @@ import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMut
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
+import {generateInputs} from "../Algorithms/NEAT.test";
+
 
 describe('Test NeatChromosomeGenerator', () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
-    let inputSpace: Map<string, Map<string, number>>;
+    let inputSpace: InputFeatures;
     let outputSpace: ScratchEvent[];
 
     beforeEach(() => {
@@ -44,75 +47,71 @@ describe('Test NeatChromosomeGenerator', () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
         crossoverOp = new NeatCrossover(crossoverConfig);
-        inputSpace = new Map<string, Map<string, number>>();
-
-        const sprite1 = new Map<string, number>();
-        sprite1.set("X-Position", 1);
-        sprite1.set("Y-Position", 2);
-        sprite1.set("Costume", 3);
-        inputSpace.set("Sprite1", sprite1);
-
-        const sprite2 = new Map<string, number>();
-        sprite2.set("X-Position", 6);
-        sprite2.set("Y-Position", 7);
-        inputSpace.set("Sprite2", sprite2);
+        inputSpace = generateInputs();
 
         outputSpace = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
     });
 
     test('Create initial random Chromosome using fully connection mode', () => {
-        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace,'fully',
-            ActivationFunction.TANH,mutationOp, crossoverOp);
+        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fully',
+            ActivationFunction.TANH, mutationOp, crossoverOp);
         const neatChromosome = generator.get();
-        expect(neatChromosome.allNodes.length).toBe(15);
-        expect(neatChromosome.connections.length).toBe(54);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(3);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(2);
-        expect(neatChromosome.allNodes.filter(node => node instanceof HiddenNode).length).toBe(0);
+        expect(neatChromosome.getAllNodes().length).toBe(19);
+        expect(neatChromosome.connections.length).toBe(90);
+        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
+        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
+        expect(neatChromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toBe(0);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
-        expect(neatChromosome.outputNodes.length).toBe(9);
+        expect(neatChromosome.layers.size).toEqual(2);
+        expect(neatChromosome.layers.get(0).length).toEqual(10);
+        expect(neatChromosome.layers.get(1).length).toBe(9);
     });
 
     test('Create initial random Chromosome using fullyHidden connection mode', () => {
-        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace,'fullyHidden',
-            ActivationFunction.TANH,mutationOp, crossoverOp);
+        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fullyHidden',
+            ActivationFunction.TANH, mutationOp, crossoverOp);
         const neatChromosome = generator.get();
-        expect(neatChromosome.allNodes.length).toBe(18);
-        expect(neatChromosome.connections.length).toBe(33);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(3);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(2);
-        expect(neatChromosome.allNodes.filter(node => node instanceof HiddenNode).length).toBe(3);
+        expect(neatChromosome.getAllNodes().length).toBe(21);
+        expect(neatChromosome.connections.length).toBe(27);
+        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
+        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
+        expect(neatChromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toBe(2);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
-        expect(neatChromosome.outputNodes.length).toBe(9);
+        expect(neatChromosome.layers.size).toEqual(3);
+        expect(neatChromosome.layers.get(0).length).toEqual(10);
+        expect(neatChromosome.layers.get(0.5).length).toEqual(2);
+        expect(neatChromosome.layers.get(1).length).toBe(9);
     });
 
     test('Create initial random Chromosome using sparse connection mode', () => {
-        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace,'sparse',
-            ActivationFunction.TANH,mutationOp, crossoverOp);
+        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'sparse',
+            ActivationFunction.TANH, mutationOp, crossoverOp);
         const neatChromosome = generator.get();
-        expect(neatChromosome.allNodes.length).toBeGreaterThanOrEqual(15);
+        expect(neatChromosome.getAllNodes().length).toBeGreaterThanOrEqual(15);
         expect(neatChromosome.connections.length).toBeGreaterThanOrEqual(18);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(3);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(2);
-        expect(neatChromosome.allNodes.filter(node => node instanceof HiddenNode).length).toBe(0);
+        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
+        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
+        expect(neatChromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toBe(0);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
-        expect(neatChromosome.outputNodes.length).toBe(9);
+        expect(neatChromosome.layers.size).toEqual(2);
+        expect(neatChromosome.layers.get(0).length).toEqual(10);
+        expect(neatChromosome.layers.get(1).length).toBe(9);
     });
 
     test('Create two Chromosomes to test if every one of them gets the same innovation numbers', () => {
-        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace,'fully',
-            ActivationFunction.TANH,mutationOp, crossoverOp);
+        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fully',
+            ActivationFunction.TANH, mutationOp, crossoverOp);
         const chromosome1 = generator.get();
         const chromosome2 = generator.get();
-        const randomNodeIndex = Randomness.getInstance().nextInt(0, chromosome1.allNodes.length);
-        expect(chromosome1.allNodes[randomNodeIndex].uID).toBe(chromosome2.allNodes[randomNodeIndex].uID);
+        const randomNodeIndex = Randomness.getInstance().nextInt(0, chromosome1.getAllNodes().length);
+        expect(chromosome1.getAllNodes()[randomNodeIndex].uID).toBe(chromosome2.getAllNodes()[randomNodeIndex].uID);
         expect(chromosome1.inputNodes.get("Sprite1").get("Y-Position").uID).toBe(
             chromosome2.inputNodes.get("Sprite1").get("Y-Position").uID);
-        expect(chromosome1.outputNodes[3].uID).toBe(chromosome2.outputNodes[3].uID);
+        expect(chromosome1.layers.get(1)[3].uID).toBe(chromosome2.layers.get(1)[3].uID);
         expect(chromosome1.connections.length).toBe(chromosome2.connections.length);
         expect(NeatPopulation.innovations.length).toBe(chromosome1.connections.length);
         expect(chromosome1.connections[5].innovation).toBe(chromosome2.connections[5].innovation);

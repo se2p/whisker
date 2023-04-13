@@ -34,12 +34,14 @@
             "Node 4": {
                 "id": 4,
                 "t": "H",
-                "aF": "TANH"
+                "aF": "TANH",
+                "d": 0.5
             },
             "Node 5": {
                 "id": 5,
                 "t": "H",
-                "aF": "TANH"
+                "aF": "TANH",
+                "d": 0.5
             },
             "Node 6": {
                 "id": 6,

@@ -113,6 +113,23 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionGroundTruthPath(){
+        return this.option(
+            '-g, --ground-truth <Path>',
+            'path to GroundTruth data for Neatest + Backpropagation',
+            (groundTruth) => util.processFilePathExists(groundTruth, '.json'),
+        );
+    }
+
+    optionConfigPath() {
+        return this.option(
+            '-c, --config-path <Path>',
+            'path to a configuration file (".json")',
+            (configPath) => util.processFilePathExists(configPath, '.json'),
+            relativeToServantDir('../config/Neuroevolution/neatestBackprop.json')
+        );
+    }
+
     requireConfigPath() {
         return this.requiredOption(
             '-c, --config-path <Path>',
@@ -200,6 +217,11 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionStateActionRecorder(){
+        return this.option('-rec, --state-action-recorder',
+            'records executed scratch events and maps them to the current program state');
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -223,6 +245,13 @@ function newSubCommand(name) {
 
 // noinspection JSUnresolvedFunction
 const subCommands = [
+    newSubCommand('open')
+        .description('Open the Whisker web page with the specified parameters')
+        .optionScratchPath()
+        .optionConfigPath()
+        .optionStateActionRecorder(),
+
+
     newSubCommand('run')
         .description('run Whisker tests')
         .requireScratchPath()
@@ -247,7 +276,8 @@ const subCommands = [
             '-r, --add-random-inputs <Integer>',
             'add random inputs to the test and wait the given number of seconds for its completion',
             (seconds) => util.processPositiveInt(seconds),
-            10),
+            10)
+        .optionGroundTruthPath(),
 
     newSubCommand('dynamic')
         .description('dynamic test suites using Neuroevolution')

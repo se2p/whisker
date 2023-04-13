@@ -219,6 +219,10 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return this._cfg;
     }
 
+    getCDG(): ControlDependenceGraph {
+        return this._cdg;
+    }
+
     public getTargetNode(): GraphNode {
         return this._targetNode;
     }
@@ -564,7 +568,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param allStatements all Scratch statements.
      * @returns Scratch Statement matching to the given CDG node.
      */
-    private static mapNodeToStatement(node: GraphNode, allStatements: StatementFitnessFunction[]): StatementFitnessFunction {
+    public static mapNodeToStatement(node: GraphNode, allStatements: StatementFitnessFunction[]): StatementFitnessFunction {
         for (const statement of allStatements) {
             if (statement.getTargetNode().id === node.id) {
                 return statement;
@@ -574,7 +578,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
     /**
-     * Fetches the parent of the given node.
+     * Fetches the direct node parent of the given node.
      * @param node the node whose parent should be fetched
      * @param cdg the control dependence graph which contains all blocks and hence the parent of node
      * @returns parent of node
@@ -593,7 +597,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param cdg the control dependence graph based on which a direct ancestor should be found.
      * @return parent node of the given child node.
      */
-    private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode[] {
+    public static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode[] {
         const predecessors = Array.from(cdg.predecessors(node.id)) as GraphNode[];
         const flagClickedParent = predecessors.find(node => node.id === 'flagclicked');
 
@@ -675,5 +679,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     public toString = (): string => {
         return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
+    }
+
+    public getNodeId():string {
+        return `${this._targetNode.id}`;
     }
 }

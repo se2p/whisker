@@ -14,7 +14,7 @@ describe("ConnectionGene Test", () => {
     beforeEach(() => {
         sourceNode = new InputNode(0, "Sprite1", "X-Position");
         targetNode = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
-        connection = new ConnectionGene(sourceNode, targetNode, 0.2, true, ConnectionGene.getNextInnovationNumber(), false);
+        connection = new ConnectionGene(sourceNode, targetNode, 0.2, true, ConnectionGene.getNextInnovationNumber());
     });
 
     test("Test Constructor", () => {
@@ -54,7 +54,7 @@ describe("ConnectionGene Test", () => {
         const inNode = new InputNode(1, "Sprite1", "X-Position");
         const outNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
-        const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1, false);
+        const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1);
         expect(connection.equalsByNodes(otherConnection)).toBe(true);
     });
 
@@ -62,7 +62,7 @@ describe("ConnectionGene Test", () => {
         const inNode = new InputNode(2, "Sprite2", "X-Position");
         const outNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
 
-        const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1, false);
+        const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1);
         expect(connection.equalsByNodes(otherConnection)).toBe(false);
     });
 

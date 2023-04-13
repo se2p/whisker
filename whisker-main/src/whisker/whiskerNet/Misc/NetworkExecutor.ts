@@ -6,7 +6,7 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {InputExtraction} from "./InputExtraction";
+import {InputExtraction, InputFeatures} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../../testcase/ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
@@ -76,14 +76,12 @@ export class NetworkExecutor {
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
         this._waitDuration = 0;
 
         // Initialise required variables.
         network.codons = [];
-        network.flushNodeValues();
         let stepCount = 0;
 
         // Play the game until we reach a GameOver state or the timeout.
@@ -91,6 +89,8 @@ export class NetworkExecutor {
         const isGreenFlag = this._stopEarly &&
             statementTarget !== undefined &&
             statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
+
+        this._vm.runtime.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
@@ -101,16 +101,22 @@ export class NetworkExecutor {
             }
 
             // Update input nodes and load inputs into the Network.
-            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
+            const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
             network.updateOutputNodes(this.availableEvents);
-            network.activateNetwork(spriteFeatures);
+            const defect = !network.activateNetwork(spriteFeatures);
+
+            // Stop if our network is defect.
+            if (defect) {
+                console.log("Defect network:", network.toString());
+                break;
+            }
 
             // Select the next event and execute it if we did not decide to wait
-            if (this._waitDuration == 0) {
-                let eventIndex = this.selectNextEvent(network, spriteFeatures, isGreenFlag);
+            if (this._waitDuration <= 0) {
+                let eventIndex = this.selectNextEvent(network, isGreenFlag);
                 let nextEvent = this.availableEvents[eventIndex];
 
                 // If something goes wrong, e.g. we have a defect network due to all active input nodes being
@@ -118,9 +124,21 @@ export class NetworkExecutor {
                 if (nextEvent === undefined) {
                     eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
                     nextEvent = this.availableEvents[eventIndex];
+
+                    // If we still don't have a WaitEvent, we must add it manually. This could happen if we encounter
+                    // type text events.
+                    if (nextEvent === undefined) {
+                        this.availableEvents.push(new WaitEvent());
+                        nextEvent = this.availableEvents[this.availableEvents.length - 1];
+                    }
                 }
                 network.codons.push(eventIndex);
                 await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
+
+                // Record the state action pair:
+                if (Container.peerToPeerSharing && !(nextEvent instanceof WaitEvent)) {
+                    network.updateStateActionPair(spriteFeatures, events[events.length - 1]);
+                }
             }
 
             // Otherwise, we just Wait...
@@ -132,8 +150,10 @@ export class NetworkExecutor {
             this.recordActivationTrace(network, stepCount, spriteFeatures);
             stepCount++;
 
-            // Check if we have reached our selected target and stop if this is the case.
-            if (this._stopEarly && statementTarget !== undefined) {
+            // Check if we have reached our selected target and stop if it's not the green flag this is the case.
+            // Keep executing when green flag was covered to cover all easy target at once and avoid repeated executions
+            // for trivial targets.
+            if (this._stopEarly && statementTarget !== undefined && statementTarget.getCDGDepth() > 1) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
                 if (currentCoverage.has(statementTarget.getTargetNode().id)) {
                     break;
@@ -150,8 +170,8 @@ export class NetworkExecutor {
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // Stop VM and remove listeners.
+        this._vm.runtime.off(Runtime.PROJECT_STOP_ALL, _onRunStop);
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
@@ -172,12 +192,12 @@ export class NetworkExecutor {
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
 
         const eventTrace = network.trace.events;
         const statementTarget = network.targetFitness as StatementFitnessFunction;
+        this._vm.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {
 
@@ -186,7 +206,7 @@ export class NetworkExecutor {
                 break;
             }
             // Load input features into the node to record the AT later.
-            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
+            const spriteFeatures = InputExtraction.extractFeatures(this._vm);
             network.setUpInputs(spriteFeatures);
 
             // Execute the event
@@ -214,23 +234,21 @@ export class NetworkExecutor {
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // Stop VM and remove listeners.
+        this._vm.off(Runtime.PROJECT_STOP_ALL, _onRunStop);
         this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
     }
 
     /**
-     * Selects the next event by 1) Waiting for 1 step if we are currently trying to cover the GreenFlag event
-     *                           2) Selecting a random event if the eventSelection variable is set appropriately
-     *                           3) Querying the network's classification head
-     * @param network the network that will be queried in case of 3)
-     * @param inputFeatures the inputFeatures with which the network will be fed in scenario 3)
-     * @param isGreenFlag boolean determining whether we are currently trying to cover the greenFlagEvent as in 1)
-     * @returns the index of the chosen event parameter based ont the available events set.
+     * Selects the next event by 1) Waiting for 1 step if we are currently trying to cover the GreenFlag event.
+     *                           2) Selecting a random event if the eventSelection variable is set appropriately.
+     *                           3) Querying the network's classification head.
+     * @param network the network that will be queried in case of 3).
+     * @param isGreenFlag boolean determining whether we are currently trying to cover the greenFlagEvent.
+     * @returns the index of the chosen event parameter based on the set of events extracted from the Scratch state.
      */
-    private selectNextEvent(network: NetworkChromosome, inputFeatures: Map<string, Map<string, number>>,
-                            isGreenFlag: boolean): number {
+    private selectNextEvent(network: NetworkChromosome, isGreenFlag: boolean): number {
         // 1) GreenFlag is current target Statement
         if (isGreenFlag) {
             return this.availableEvents.findIndex(event => event instanceof WaitEvent);
@@ -321,9 +339,9 @@ export class NetworkExecutor {
      * we are interested in step 1 as this one reflects initialisation values.
      * @param network the network whose activation trace should be updated.
      * @param step determines whether we want to record the trace at the current step.
-     * @param inputs the inputs from which an activationTrace will be recorded within the input nodes.
+     * @param inputs the inputs based on which an activationTrace will be recorded.
      */
-    private recordActivationTrace(network: NetworkChromosome, step: number, inputs: Map<string, Map<string, number>>) {
+    private recordActivationTrace(network: NetworkChromosome, step: number, inputs: InputFeatures) {
         if (network.recordNetworkStatistics && step > 0 && (step % 5 == 0 || step == 1)) {
             network.setUpInputs(inputs);
             network.updateActivationTrace(step);

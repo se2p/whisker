@@ -9,9 +9,8 @@ export class BiasNode extends NodeGene {
      * @param uID the unique identifier of this node in the network.
      */
     constructor(uID: number) {
-        super(uID, ActivationFunction.NONE, NodeType.BIAS);
+        super(uID, 0, ActivationFunction.NONE, NodeType.BIAS);
         this.nodeValue = 1;
-        this.lastActivationValue = 1;
         this.activationValue = 1;
         this.activatedFlag = true;
         this.activationCount = 1;
@@ -30,7 +29,6 @@ export class BiasNode extends NodeGene {
         const clone = new BiasNode(this.uID);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
@@ -51,7 +49,6 @@ export class BiasNode extends NodeGene {
     public override reset(): void {
         this.nodeValue = 1;
         this.activationValue = 1;
-        this.lastActivationValue = 1;
         this.traversed = false;
         this.activatedFlag = true;
     }
@@ -75,6 +72,7 @@ export class BiasNode extends NodeGene {
         node['id'] = this.uID;
         node['t'] = "B";
         node['aF'] = ActivationFunction[this.activationFunction];
+        node['d'] = this.depth;
         return node;
     }
 }

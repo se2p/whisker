@@ -1,6 +1,6 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
-const Recorder = require("whisker-main/src/vm/recorder");
+const Recorder = require('whisker-main/src/vm/recorder');
 
 /**
  * Enables to record user input for test recordings.
@@ -68,7 +68,7 @@ class InputRecorder extends EventEmitter {
      * @returns {boolean} true if the recorder is active, false otherwise.
      */
     isRecording () {
-        return this.startTime != null;
+        return this.startTime !== null;
     }
 
     /**
@@ -119,7 +119,7 @@ class InputRecorder extends EventEmitter {
      */
     _mouseMove () {
         if (this.mouseMoves.length > 0) {
-            let end = this.mouseMoves[this.mouseMoves.length - 1];
+            const end = this.mouseMoves[this.mouseMoves.length - 1];
             this.events.push(Recorder.mouseMove(end.x, end.y, this.waitSteps));
             this.mouseMoves = [];
             this._wait();
@@ -129,28 +129,29 @@ class InputRecorder extends EventEmitter {
 
     /**
      * Records input data of I/O devices and handles it accordingly.
-     * @param {Object} data The recorded input.
+     * @param {object} data The recorded input.
      */
     onInput (data) {
         switch (data.device) {
-            case 'mouse':
-                this._onMouseInput(data);
-                break;
-            case 'keyboard':
-                this._onKeyboardInput(data);
-                break;
-            case 'text':
-                this._onTextInput(data);
-                break;
-            default:
-                console.error(`Unknown input device: "${data.device}".`);
+        case 'mouse':
+            this._onMouseInput(data);
+            break;
+        case 'keyboard':
+            this._onKeyboardInput(data);
+            break;
+        case 'text':
+            this._onTextInput(data);
+            break;
+        default:
+            console.error(`Unknown input device: "${data.device}".`);
+            return;
         }
     }
 
     /**
      * Divides the input into mouse click and mouse movement events.
      * The wait event and step count are also updated afterwards.
-     * @param data The recorded input.
+     * @param {object} data The recorded input.
      * @private
      */
     _onMouseInput (data) {
@@ -170,7 +171,7 @@ class InputRecorder extends EventEmitter {
      * After checking for mouse movement, stores the corresponding key press event.
      * The keyboard key event has to be converted into a scratch key.
      * The wait event and step count are also updated afterwards.
-     * @param data The recorded input.
+     * @param {object} data The recorded input.
      * @private
      */
     _onKeyboardInput (data) {
@@ -190,7 +191,7 @@ class InputRecorder extends EventEmitter {
     /**
      * After checking for mouse movement, stores the corresponding type text event.
      * The wait event and step count are also updated afterwards.
-     * @param data The recorded input.
+     * @param {object} data The recorded input.
      * @private
      */
     _onTextInput (data) {
@@ -206,13 +207,14 @@ class InputRecorder extends EventEmitter {
      * Displays the recorded test in the {@link TestEditor}.
      */
     showInputs () {
-        if (this.events != null && this.events.length !== 0) {
-            Whisker.testEditor.setValue(this.testBegin + `\n${this.events.join('\n')}` + `\n}` + this.export);
+        if (this.events !== null && this.events.length !== 0) {
+            Whisker.testEditor.setValue(`${this.testBegin}\n${this.events.join('\n')}\n}${this.export}`);
         } else {
             Whisker.testEditor.setValue(this.testBegin + this.testEnd + this.export);
         }
-        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-        location.href = '#test-editor'
+        // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+        location.href = '#';
+        location.href = '#test-editor';
     }
 }
 

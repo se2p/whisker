@@ -3,7 +3,6 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComp
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
-import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStageEvent";
 
@@ -21,7 +20,6 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(classificationNode.type).toBe(NodeType.OUTPUT);
         expect(classificationNode.nodeValue).toBe(0);
-        expect(classificationNode.lastActivationValue).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.activationCount).toBe(0);
@@ -34,14 +32,12 @@ describe("classificationNode Tests", () => {
         classificationNode.activationCount = 10;
         classificationNode.activationValue = 2;
         classificationNode.nodeValue = 10;
-        classificationNode.lastActivationValue = 2;
         classificationNode.activatedFlag = true;
         classificationNode.traversed = true;
         classificationNode.reset();
         expect(classificationNode.activationCount).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
         expect(classificationNode.nodeValue).toBe(0);
-        expect(classificationNode.lastActivationValue).toBe(0);
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.traversed).toBeFalsy();
 
@@ -68,36 +64,6 @@ describe("classificationNode Tests", () => {
         expect(clone === classificationNode).toBe(false);
     });
 
-    test("getActivationValue Test", () => {
-        classificationNode.nodeValue = 1;
-        classificationNode.activatedFlag = true;
-        const sigmoidResult = NeuroevolutionUtil.sigmoid(1, 1);
-        expect(classificationNode.activate()).toBe(sigmoidResult);
-        expect(classificationNode.activationValue).toBe(sigmoidResult);
-        classificationNode.reset();
-        expect(classificationNode.activate()).toBe(0);
-        expect(classificationNode.activationValue).toBe(0);
-
-        const classificationNode2 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.NONE);
-        classificationNode2.nodeValue = 5;
-        classificationNode2.activatedFlag = true;
-        expect(classificationNode2.activate()).toBe(5);
-        expect(classificationNode2.activationValue).toBe(5);
-        classificationNode2.reset();
-        expect(classificationNode2.activate()).toBe(0);
-        expect(classificationNode2.activationValue).toBe(0);
-
-        const classificationNode3 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.TANH);
-        classificationNode3.nodeValue = -1;
-        classificationNode3.activatedFlag = true;
-        const tanhResult = Math.tanh(-1);
-        expect(classificationNode3.activate()).toBe(tanhResult);
-        expect(classificationNode3.activationValue).toBe(tanhResult);
-        classificationNode3.reset();
-        expect(classificationNode3.activate()).toBe(0);
-        expect(classificationNode3.activationValue).toBe(0);
-    });
-
     test("Identifier", () =>{
         expect(classificationNode.identifier()).toBe("C:WaitEvent");
     });
@@ -117,7 +83,8 @@ describe("classificationNode Tests", () => {
             't': "C",
             'id' : classificationNode.uID,
             'aF' : "SIGMOID",
-            'event' : "WaitEvent"
+            'event' : "WaitEvent",
+            'd': 1
         };
         expect(json).toEqual(expected);
     });

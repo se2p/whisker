@@ -9,10 +9,10 @@
     "ageSignificance": 1.0,
     "switchTargetCount": 5,
     "extractor": "neuroevolution",
-    "aTRepetitions": 100,
+    "aTRepetitions": 0,
     "chromosome": {
         "type": "neatChromosome",
-        "activationFunction": "TANH",
+        "activationFunction": "RELU",
         "inputConnectionMethod": "fullyHidden"
     },
     "crossover": {
@@ -50,7 +50,12 @@
     "networkFitness": {
         "type": "reliableStatement",
         "timeout": 10000,
-        "stableCount": 10
+        "stableCount": 10,
+        "earlyStop": true
+    },
+    "population": {
+        "strategy": "global_solutions",
+        "randomFraction": 0.1
     },
     "stoppingCondition": {
         "type": "combined",
