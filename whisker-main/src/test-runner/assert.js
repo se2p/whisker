@@ -172,7 +172,7 @@ assert.greater = function (actual, expected, ...message) {
         throw new TypeError(`Actual value "${actual}" is not a number`);
     }
 
-    expected = Number(actual);
+    expected = Number(expected);
 
     if (Number.isNaN(expected)) {
         throw new TypeError(`Expected value "${expected}" is not a number`);
