@@ -64,6 +64,7 @@ Options:
   -V, --version             output the version number
 
 Commands:
+  open [options]            open the Whisker web interface
   dynamic [options]         dynamic test suites using Neuroevolution
   generate [options]        generate Whisker test suites
   help [options] [command]  display help for command
@@ -93,6 +94,7 @@ Options:
   -v, --csv-file <Path>               create CSV file with results
   -z, --seed <String>                 custom seed for Scratch-VM
   -et, --executionTrace               whether and execution trace should be recorded and downloaded (default: false)
+  -rec, --state-action-recorder       record the program execution as a json file when running with the `open` command
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
@@ -202,32 +204,46 @@ Whisker is supported by the project FR 2955/3-1 funded by the
 ```
 
 ```
-@misc{götz2022modelbased,
-      title={Model-based Testing of Scratch Programs},
-      author={Katharina Götz and Patric Feldmeier and Gordon Fraser},
-      year={2022},
-      eprint={2202.06271},
-      archivePrefix={arXiv},
-      primaryClass={cs.SE}
+@InProceedings{gotz2022model,
+  title 		= {Model-based Testing of Scratch Programs},
+  author 		= {G{\"o}tz, Katharina and Feldmeier, Patric and Fraser, Gordon},
+  booktitle 	= {Proceedings of the International Conference on Software Testing, Verification and Validation (ICST'22)},
+  pages 		= {411--421},
+  year 			= {2022},
+  publsiher     = {IEEE},
+  doi 			= {10.1109/ICST53961.2022.00047}
 }
 ```
 
 ```
 @misc{deiner2022automated,
-      title={Automated Test Generation for Scratch Programs},
-      author={Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
-      year={2022},
-      eprint={2202.06274},
-      archivePrefix={arXiv},
-      primaryClass={cs.SE}
+      title         = {Automated Test Generation for Scratch Programs},
+      author        = {Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
+      year          = {2022},
+      eprint        = {2202.06274},
+      archivePrefix = {arXiv},
+      primaryClass  = {cs.SE}
 }
 ```
 
 ```
-@article{feldmeier2022neuroevolution,
-  title={Neuroevolution-Based Generation of Tests and Oracles for Games},
-  author={Feldmeier, Patric and Fraser, Gordon},
-  journal={arXiv preprint arXiv:2208.13632},
-  year={2022}
+@InProceedings{feldmeier2022neuroevolution,
+	author 		= {Feldmeier, Patric and Fraser, Gordon},
+	booktitle 	= {Proceedings of the International Conference on Automated Software Engineering (ASE'22)},
+	publisher 	= {ACM},
+	title 		= {Neuroevolution-Based Generation of Tests and Oracles for Games},
+	year 		= {2023},
+	doi 		= {10.1145/3551349.3556939},
+	pages 		= {1--13}
+}
+```
+
+```
+@article{feldmeier2023learning,
+  title         = {Learning by Viewing: Generating Test Inputs for Games by Integrating Human Gameplay Traces in Neuroevolution},
+  author        = {Feldmeier, Patric and Fraser, Gordon},
+  journal       = {arXiv preprint arXiv:2304.06413},
+  year          = {2023},
+  doi           = {10.48550/arXiv.2304.06413}
 }
 ```
