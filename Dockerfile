@@ -110,6 +110,11 @@ ENV NODE_ENV=production
 # (devDependencies have already been excluded from the node_modules folder.)
 COPY --from=build /whisker-build /whisker
 
+# Workaround for NPEs caused by prettify.js. The file is also deleted when
+# executing servant/servant.js but this doesn't work for immutable containers
+# (e.g., when using Apptainer).
+RUN rm -f /whisker/whisker-web/dist/includes/prettify.js
+
 # Whisker's servant requires this as working directory, as it uses relative
 # and not absolute paths:
 WORKDIR /whisker/servant/
