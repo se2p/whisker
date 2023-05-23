@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Make sure we're actually inside a Docker or Apptainer/Singularity container before proceeding.
-if [ ! -f /.dockerenv ] || [ ! -f /.singularity.d/Singularity ]; then
+if [ ! -f /.dockerenv ] && [ ! -f /.singularity.d/Singularity ]; then
     echo "This script is only supposed to be run within a Docker or Apptainer/Singularity container."
     echo "You cannot run it as a standalone script."
     exit 1
