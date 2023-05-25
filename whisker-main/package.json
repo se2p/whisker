@@ -29,6 +29,7 @@
         "assert": "^2.0.0",
         "clean-yaml-object": "^0.1.0",
         "js-yaml": "^4.1.0",
+        "lodash.clonedeep": "^4.5.0",
         "lodash.defaults": "^4.2.0",
         "lodash.isequal": "^4.5.0",
         "minilog": "^3.1.0",
