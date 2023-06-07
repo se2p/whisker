@@ -35,8 +35,12 @@ class Variable {
     }
 
     /**
-     * Gives back the value of the scratch variable.
-     * @returns {string|string[]} A string array if the variable is of type list, a single string otherwise.
+     * Returns the current value of this Scratch variable, converted to a string. If the Scratch variable is a list,
+     * its elements are converted to strings before returning the list. In case you know the contents of the variable
+     * are numeric, you might want to use {@link valueAsNumber} instead.
+     *
+     * @returns {null|string|string[]} the value of the variable
+     * @see valueAsNumber
      */
     get value () {
         if (this._variable.type === ScratchVariable.SCALAR_TYPE) {
@@ -44,16 +48,26 @@ class Variable {
         } else if (this._variable.type === ScratchVariable.LIST_TYPE) {
             return this._variable.value.map((v) => String(v));
         }
-        return null;
+        return null; // This should never happen (?)
     }
 
+    /**
+     * Returns the current value of this Scratch variable, converted to a number. If the Scratch variable is a list,
+     * its elements are converted to numbers before returning the list. This getter should only be used if you are
+     * certain this variable is numeric: In these cases, it improves the readability of Whisker tests because manual
+     * type conversions are no longer necessary. In all other cases, it might not be possible to convert the value to
+     * a number, in which case `NaN` (not a number) is returned.
+     *
+     * @returns {*|number|null} The numeric value of the variable
+     * @see value
+     */
     get valueAsNumber () {
         if (this._variable.type === ScratchVariable.SCALAR_TYPE) {
             return Number(this._variable.value);
         } else if (this._variable.type === ScratchVariable.LIST_TYPE) {
             return this._variable.value.map((v) => Number(v));
         }
-        return null;
+        return null; // This should never happen (?)
     }
 
     /**
