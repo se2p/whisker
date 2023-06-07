@@ -23,7 +23,7 @@ class TestRunner extends EventEmitter {
     async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
 
-        if (typeof props === 'undefined' || props === null) {
+        if (props === undefined || typeof props === 'undefined' || props === null) {
             props = {extend: {}};
         } else if (!('extend' in props)) {
             props.extend = {};
@@ -41,6 +41,11 @@ class TestRunner extends EventEmitter {
 
         this._setRNGSeeds(props['seed'], sampleTest, vm);
 
+        // If we use a vm that allows debug tracing, deactivate the functionality for common test executions.
+        if (typeof vm.deactivateDebugTracing === "function") {
+            vm.deactivateDebugTracing();
+        }
+
         // Load project and establish an initial save state
         vm.deactivateDebugTracing();
         this.util = await this._loadProject(vm, project, props);
@@ -54,7 +59,7 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
-        if (props['mutators'][0] !== 'NONE') {
+        if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
             const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER;
 
@@ -198,7 +203,7 @@ class TestRunner extends EventEmitter {
     _setRNGSeeds(seed, test, vm) {
 
         // Prioritise seeds set using the CLI.
-        if (seed !== 'undefined' && seed !== "") {
+        if (seed !== undefined && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
         }
 
@@ -245,7 +250,12 @@ class TestRunner extends EventEmitter {
         const util = new WhiskerUtil(vm, project);
         await util.prepare(props.accelerationFactor || 1);
         this.vmWrapper = util.getVMWrapper();
-        await this.vmWrapper.vm.runtime.translateText2Speech();
+
+        // Check if the given vm has the option to precompute text2speech blocks.
+        if (typeof this.vmWrapper.vm.runtime === "function") {
+            await this.vmWrapper.vm.runtime.translateText2Speech();
+        }
+
         return util;
     }
 
@@ -477,6 +487,11 @@ class TestRunner extends EventEmitter {
                 result.modelResult = modelTester.stopAndGetModelResult(testDriver);
                 result.status = Test.ERROR;
             }
+        }
+
+        // Check if given vm contains the tracer utility.
+        if (this.vmWrapper.vm.runtime.traceInfo !== undefined) {
+            result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
         }
 
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
