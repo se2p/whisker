@@ -47,7 +47,6 @@ class TestRunner extends EventEmitter {
         }
 
         // Load project and establish an initial save state
-        vm.deactivateDebugTracing();
         this.util = await this._loadProject(vm, project, props);
         this.saveState = this.vmWrapper._recordInitialState();
 
@@ -494,7 +493,6 @@ class TestRunner extends EventEmitter {
             result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
         }
 
-        result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
         for (const statement of this.statementMap.keys()){
             if(result.covered.has(statement._targetNode.id)){
                 this.statementMap.set(statement, true);
