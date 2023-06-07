@@ -36,13 +36,22 @@ class Variable {
 
     /**
      * Gives back the value of the scratch variable.
-     * @returns {number|number[]} A number array if the variable is of type list, a single number otherwise.
+     * @returns {string|string[]} A string array if the variable is of type list, a single string otherwise.
      */
     get value () {
         if (this._variable.type === ScratchVariable.SCALAR_TYPE) {
-            return this._variable.value;
+            return String(this._variable.value);
         } else if (this._variable.type === ScratchVariable.LIST_TYPE) {
-            return [...this._variable.value];
+            return this._variable.value.map((v) => String(v));
+        }
+        return null;
+    }
+
+    get valueAsNumber () {
+        if (this._variable.type === ScratchVariable.SCALAR_TYPE) {
+            return Number(this._variable.value);
+        } else if (this._variable.type === ScratchVariable.LIST_TYPE) {
+            return this._variable.value.map((v) => Number(v));
         }
         return null;
     }
