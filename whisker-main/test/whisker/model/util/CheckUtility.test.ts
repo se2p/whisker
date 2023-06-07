@@ -9,25 +9,25 @@ describe('CheckUtility', () => {
         let result = CheckUtility.splitEventString(eventString);
         expect(result.name == CheckName.SpriteColor);
         expect(result.negated == false);
-        expect(result.args == ["255", "0", "0"]);
+        expect(result.args).toEqual(["Sprite1", "255", "0", "0"]);
 
         eventString = "SpriteTouching:Sprite1:Sprite2";
         result = CheckUtility.splitEventString(eventString);
         expect(result.name == CheckName.SpriteTouching);
         expect(result.negated == false);
-        expect(result.args == ["Sprite2"]);
+        expect(result.args).toEqual(["Sprite1", "Sprite2"]);
 
         eventString = "!SpriteTouching:Sprite1:Sprite2";
         result = CheckUtility.splitEventString(eventString);
         expect(result.name == CheckName.SpriteTouching);
         expect(result.negated == true);
-        expect(result.args == ["Sprite2"]);
+        expect(result.args).toEqual(["Sprite1", "Sprite2"]);
 
         eventString = "AttrComp:Sprite1:costume:=:costume2";
         result = CheckUtility.splitEventString(eventString);
         expect(result.name == CheckName.AttrComp);
         expect(result.negated == false);
-        expect(result.args == ["sprite1", "costume", "=", "costume2"]);
+        expect(result.args === ["sprite1", "costume", "=", "costume2"]);
     });
 
     test("get event string", () => {

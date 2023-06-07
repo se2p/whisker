@@ -195,7 +195,7 @@ export class DynamicNetworkSuite {
         }
 
         // Record activation traces
-        if (this.properties.activationTraceRepetitions > 0) {
+        if (Number(this.properties.activationTraceRepetitions) > 0) {
             Container.debugLog("Recording Activation Trace");
             await this.collectActivationTrace();
         }
