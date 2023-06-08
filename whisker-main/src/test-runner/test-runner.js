@@ -247,7 +247,8 @@ class TestRunner extends EventEmitter {
      */
     async _loadProject(vm, project, props) {
         const util = new WhiskerUtil(vm, project);
-        await util.prepare(props.accelerationFactor || 1);
+        const isTutorial = "tutorial" in props && props['tutorial'];
+        await util.prepare(props.accelerationFactor || 1, isTutorial);
         this.vmWrapper = util.getVMWrapper();
 
         // Check if the given vm has the option to precompute text2speech blocks.

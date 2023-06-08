@@ -26,10 +26,11 @@ class WhiskerUtil {
     /**
      * Sets the acceleration factor in the {@link VMWrapper} that is used for testing the project.
      * @param {number} accelerationFactor The selected factor for acceleration.
+     * @param {boolean} isTutorial whether the vm is being prepared for a tutorial execution.
      * @returns {Promise<void>} Promise that resolves after targets are installed.
      */
-    async prepare (accelerationFactor) {
-        await this.vmWrapper.setup(this.project, accelerationFactor);
+    async prepare(accelerationFactor, isTutorial = false) {
+        await this.vmWrapper.setup(this.project, accelerationFactor, isTutorial);
     }
 
     /**
