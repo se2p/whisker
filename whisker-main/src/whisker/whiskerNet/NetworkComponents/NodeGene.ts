@@ -6,16 +6,6 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 export abstract class NodeGene {
 
     /**
-     * Counter used for assigning the unique identifier.
-     */
-    public static _uIDCounter = 0;
-
-    /**
-     * The unique identifier of a node.
-     */
-    private readonly _uID: number
-
-    /**
      * The value of a node, which is defined to be the sum of all incoming connections.
      */
     private _nodeValue = 0;
@@ -31,14 +21,14 @@ export abstract class NodeGene {
     private _activationValue = 0;
 
     /**
-     * Activation value of the previous time step.
-     */
-    private _lastActivationValue = 0;
-
-    /**
      * Counts how often this node has been activated.
      */
     private _activationCount = 0;
+
+    /**
+     * The gradient value for this node obtained from the backpropagation procedure.
+     */
+    private _gradient = 0;
 
     /**
      * True if the node has been activated at least once within one network activation.
@@ -62,12 +52,12 @@ export abstract class NodeGene {
 
     /**
      * Creates a new node.
-     * @param uID the unique identifier of this node in the network.
+     * @param _uID the unique identifier of this node in the network.
+     * @param _depth the depth of the node within the network.
      * @param activationFunction the activation function of the node
      * @param type the type of the node (Input | Hidden | Output)
      */
-    protected constructor(uID: number, activationFunction: ActivationFunction, type: NodeType) {
-        this._uID = uID;
+    protected constructor(private readonly _uID: number, private readonly _depth: number, activationFunction: ActivationFunction, type: NodeType) {
         this._activationFunction = activationFunction;
         this._type = type;
         if (NeatPopulation.highestNodeId < this.uID) {
@@ -77,9 +67,10 @@ export abstract class NodeGene {
 
     /**
      * Calculates the activation value of the node based on the node value and the activation function.
+     * @params arguments required for specific activation functions
      * @returns number activation value of the given node.
      */
-    public abstract activate(): number
+    public abstract activate(...args: number[]): number
 
     /**
      * Resets the node's attributes.
@@ -88,7 +79,6 @@ export abstract class NodeGene {
         this.activationCount = 0;
         this.activationValue = 0;
         this.nodeValue = 0;
-        this.lastActivationValue = 0;
         this.activatedFlag = false;
         this.traversed = false;
     }
@@ -122,6 +112,10 @@ export abstract class NodeGene {
 
     get uID(): number {
         return this._uID;
+    }
+
+    get depth(): number {
+        return this._depth;
     }
 
     get nodeValue(): number {
@@ -168,12 +162,12 @@ export abstract class NodeGene {
         return this._activationFunction;
     }
 
-    get lastActivationValue(): number {
-        return this._lastActivationValue;
+    get gradient(): number {
+        return this._gradient;
     }
 
-    set lastActivationValue(value: number) {
-        this._lastActivationValue = value;
+    set gradient(value: number) {
+        this._gradient = value;
     }
 
     get traversed(): boolean {

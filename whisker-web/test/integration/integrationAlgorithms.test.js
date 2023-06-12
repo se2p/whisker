@@ -1,4 +1,6 @@
 const fileUrl = require('file-url');
+const path = require("path");
+const fs = require("fs");
 
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
@@ -7,9 +9,12 @@ const timeout = 30000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    const toggle = await page.$('#toggle-advanced');
-    await toggle.evaluate(t => t.click());
+    const projectSelection = await page.$('#fileselect-project');
+    await projectSelection.uploadFile(scratchPath);
+    const projectTab = await page.$('#tabProject');
+    await projectTab.evaluate(t => t.click());
+    const toggleExtendedView = await page.$('#extendedView');
+    await toggleExtendedView.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
 }
 
@@ -45,6 +50,14 @@ async function getCoverage() {
 }
 
 beforeEach(async () => {
+    // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
+    // Since this is a purely visual feature and does not harm the test execution in any way,
+    // we simply remove the file when calling the servant.
+    const prettifyPath = path.resolve(__dirname, "../../dist/includes/prettify.js");
+    if (fs.existsSync(prettifyPath)) {
+        fs.unlinkSync(prettifyPath)
+    }
+
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     page.on('error', (msg) => console.error(msg.text()))
@@ -63,8 +76,8 @@ describe('Algorithms', () => {
     test('MIO', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
-        await (await page.$('#run-search')).click();
-        await (await page.$('#run-all-tests')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -72,8 +85,8 @@ describe('Algorithms', () => {
     test('MOSA', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMOSA.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
-        await (await page.$('#run-search')).click();
-        await (await page.$('#run-all-tests')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -81,8 +94,8 @@ describe('Algorithms', () => {
     test('Neatest', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatest.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
-        await (await page.$('#run-search')).click();
-        await (await page.$('#run-all-tests')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const coverage = await getCoverage();
         expect(coverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
@@ -92,18 +105,18 @@ describe('LocalSearch', () => {
     test('Test ExtensionLocalSearch without Branches', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionTest.sb3')
-        await (await page.$('#run-search')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
     test('Test ExtensionLocalSearch with repeat until block', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionRepeatUntilTest.sb3')
-        await (await page.$('#run-search')).click();
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
-        await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 });

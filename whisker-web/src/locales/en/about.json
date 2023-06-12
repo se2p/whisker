@@ -1,0 +1,8 @@
+{
+    "h2" : "About Whisker",
+    "h4" : "What you should know about the framework",
+"description" : "With Whisker it is possible to automize tests for scratch-projects. Especially for school classes or bigger courses it is very laborious, to check all the solutions to one given task of every class member each by its own.",
+    "example" : "For example: ",
+    "example2" : "The participants are supposed to enlargen a given scratch-project with certain functions or they shall correct certain mistakes in it. Using Whisker you can construct a test-suite, which covers the whole functionality of the enlargened or improved program. It generates tests for each feature added by a participant to prove the correct implementation of those features. Like this you can check and analyze all the submitted solutions of the whole class with only one mouse click, without inspecting each by its own. Whisker gives you a very detailled analyze of each member. Like this it's easy to respond individually and quickly to certain problems or mistakes.",
+    "description2" : "This test-suite is constructed only one time for each task and can be used after over and over again. For building up whisker tests it's useful to have basic knowledge about JavaScript. But even without this knowledge it's possible to create and run whisker-test, by using the so called model-editor. Besides all that, whisker also gives you the possibilty to generate tests automatically, just based on algorythms."
+}

@@ -170,9 +170,9 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             else if (this.species.length > this.numberOfSpeciesTargeted)
                 this.compatibilityThreshold += compatibilityModifier;
 
-            // Let it now fall below 1 though!
-            if (this.compatibilityThreshold < 1) {
-                this.compatibilityThreshold = 1;
+            // Let it not fall below 0.1 though!
+            if (this.compatibilityThreshold < 0.1) {
+                this.compatibilityThreshold = 0.1;
             }
         }
     }
@@ -304,6 +304,10 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         else {
             let foundSpecies = false;
             for (const specie of this.species) {
+                // Skip empty species
+                if (specie.networks.length == 0) {
+                    continue;
+                }
                 // Get a representative of the specie and calculate the compatibility distance.
                 const representative = specie.networks[0];
                 const compatDistance = this.compatibilityDistance(network, representative);
@@ -344,8 +348,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Generate the networks and by that sort the connections according to their innovation numbers.
-        network1.generateNetwork();
-        network2.generateNetwork();
+        network1.sortConnections();
+        network2.sortConnections();
 
         // Counters for excess, disjoint and matching innovations & the weight difference.
         let excess = 0;
@@ -402,14 +406,13 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Calculate the compatibility distance according to the number of matching, excess and disjoint genes.
-        const disjointCoefficient = this.hyperParameter.disjointCoefficient;
-        const excessCoefficient = this.hyperParameter.excessCoefficient;
+        const disjointFactor = (disjoint * this.hyperParameter.disjointCoefficient) / maxSize;
+        const excessFactor = (excess * this.hyperParameter.excessCoefficient) / maxSize;
         const weightCoefficient = this.hyperParameter.weightCoefficient;
         if (matching === 0) {
-            return disjointCoefficient * disjoint + excessCoefficient * excess;
+            return disjointFactor + excessFactor;
         } else {
-            return disjointCoefficient * disjoint + excessCoefficient * excess
-                + weightCoefficient * (weight_diff / matching);
+            return disjointFactor + excessFactor + weightCoefficient * (weight_diff / matching);
         }
     }
 
@@ -526,7 +529,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 }
 
-export type Innovation  = AddConnectionInnovation | AddNodeSplitConnectionInnovation;
+export type Innovation = AddConnectionInnovation | AddNodeSplitConnectionInnovation;
 
 export interface AddConnectionInnovation {
     type: 'addConnection';

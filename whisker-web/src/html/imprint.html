@@ -10,6 +10,10 @@
     <link rel="icon" type="image/png" href="../assets/favicon_whisker.png"/>
     <link rel="stylesheet" href="../whisker-gui.css"/>
     <script defer src="../whisker-gui.js"></script>
+    <script type="text/javascript" src="../includes/jquery-1.4.3.min.js"></script>
+    <script type="text/javascript" src="../includes/jquery.fancybox-1.3.4.pack.js"></script>
+    <script type="text/javascript" src="../includes/prettify.js"></script>
+    <link rel="stylesheet" href="../includes/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
 
     <script> // This should be executed before anything else to prevent loading the whole page twice
     const params = new URLSearchParams(window.location.search);
@@ -25,10 +29,12 @@
 <body id="body">
 
     <!-- Header -->
-    <div id="header" role="navigation" class="sticky"></div>
-    <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
-        <img id="banner" class="banner" alt="Scratch Items" src=""/>
-    </a>
+    <div id="header" role="navigation"></div>
+    <div style="width:100%; text-align: center;">
+        <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
+            <img id="banner" style="max-width: 1920px;" class="banner" alt="Scratch Items" src=""/>
+        </a>
+    </div>
 
     <div class="container mt-4">
         <div class="row spacer10">

@@ -237,7 +237,7 @@ export class Species<C extends NeatChromosome> {
 
         // Breed the assigned number of children.
         let champCloned = 0;
-        for (let count = 0; count < this.expectedOffspring; count++) {
+        while (children.length < this.expectedOffspring) {
             let child: C;
 
             // If we have a population Champion in this species apply slight mutation or clone it.
@@ -267,6 +267,11 @@ export class Species<C extends NeatChromosome> {
             // Otherwise, we apply crossover.
             else {
                 child = this.breedCrossover(population, populationSpecies);
+            }
+
+            // Check if we produced a defect network and breed another child if we did so.
+            if (!child.activateNetwork(child.generateDummyInputs())) {
+                continue;
             }
 
             children.push(child);
@@ -305,7 +310,7 @@ export class Species<C extends NeatChromosome> {
         let parent2: C;
 
         // Pick second parent either from within the species or from another species.
-        if (this._randomness.nextDouble() < this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
+        if (this._randomness.nextDouble() > this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
             parent2 = this._randomness.pick(this.networks);
         }
 
@@ -324,6 +329,11 @@ export class Species<C extends NeatChromosome> {
 
         // Apply crossover.
         let child = parent1.crossover(parent2)[0];
+
+        // We may get a defect network. Just return it restart the breeding process for this child.
+        if(!child){
+            return undefined;
+        }
 
         // Decide if we additionally apply mutation, which is done randomly with a user-defined probability or
         // if both parents have a compatibility distance of 0, i.e. they have the same structure and weights.

@@ -22,7 +22,6 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 
 export class TypeNumberEvent extends ScratchEvent {
 
@@ -40,7 +39,7 @@ export class TypeNumberEvent extends ScratchEvent {
 
     public toJSON(): Record<string, any> {
         const event = {};
-        event[`type`] = `TypeTextEvent`;
+        event[`type`] = `TypeNumberEvent`;
         event[`args`] = {"text": this._num};
         return event;
     }
@@ -72,7 +71,7 @@ export class TypeNumberEvent extends ScratchEvent {
                 break;
             }
             case "activation":
-                this._num = Math.round(Math.tanh(args[0]) * 240); // 240 to mirror range value of the codon case
+                this._num = Math.round(args[0]);
                 break;
         }
         return [this._num];

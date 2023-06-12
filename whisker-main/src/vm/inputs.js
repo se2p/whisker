@@ -540,12 +540,12 @@ class Inputs {
      * @param {number} steps defines for how many steps the sound should be sent to the Scratch-VM.
      */
     sendSound(volume, steps = 1){
-        Math.max(Math.min(volume, 100), 0)
+        Math.max(Math.min(volume, 100), 0);
         this.inputImmediate({
             device: 'microphone',
             volume: volume,
             steps: steps
-        })
+        });
     }
 }
 

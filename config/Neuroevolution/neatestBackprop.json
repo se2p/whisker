@@ -1,0 +1,94 @@
+{
+    "testGenerator": "neuroevolution",
+    "algorithm": "neatest",
+    "eventSelection": "activation",
+    "populationSize": 100,
+    "numberOfSpecies": 5,
+    "parentsPerSpecies": 0.20,
+    "penalizingAge": 15,
+    "ageSignificance": 1.0,
+    "switchTargetCount": 10,
+    "extractor": "neuroevolution",
+    "aTRepetitions": 0,
+    "chromosome": {
+        "type": "neatChromosome",
+        "activationFunction": "RELU",
+        "inputConnectionMethod": "fullyHidden"
+    },
+    "gradientDescent": {
+        "learningRate": 0.1,
+        "learningRateAlgorithm": "Static",
+        "epochs": 1000,
+        "batchSize": 1,
+        "labelSmoothing": 0,
+        "probability": 1,
+        "peerToPeerSharing": false,
+
+        "dataAugmentation": {
+            "doAugment": false,
+            "numAugments": 1000,
+            "disturbStateProb": 0.1,
+            "disturbStatePower": 0.01
+        }
+    },
+    "crossover": {
+        "operator": "neatCrossover",
+        "crossoverWithoutMutation": 0.25,
+        "interspeciesRate": 0.001,
+        "weightAverageRate": 0.4
+    },
+    "mutation": {
+        "operator": "neatMutation",
+        "mutationWithoutCrossover": 0.25,
+        "mutationAddConnection": 0.05,
+        "recurrentConnection": 0.1,
+        "addConnectionTries": 50,
+        "populationChampionNumberOffspring": 3,
+        "populationChampionNumberClones": 1,
+        "populationChampionConnectionMutation": 0.3,
+        "mutationAddNode": 0.03,
+        "mutateWeights": 0.8,
+        "perturbationPower": 1,
+        "mutateToggleEnableConnection": 0.1,
+        "toggleEnableConnectionTimes": 3,
+        "mutateEnableConnection": 0.03
+    },
+    "compatibility": {
+        "distanceThreshold": 0.5,
+        "disjointCoefficient": 3,
+        "excessCoefficient": 3,
+        "weightCoefficient": 0
+    },
+    "fitnessFunction": {
+        "type": "statement",
+        "targets": []
+    },
+    "networkFitness": {
+        "type": "reliableStatement",
+        "timeout": 10000,
+        "stableCount": 10,
+        "earlyStop": false
+    },
+    "population": {
+        "strategy": "global_solutions",
+        "randomFraction": 0.3
+    },
+    "stoppingCondition": {
+        "type": "combined",
+        "conditions": [
+            {
+                "type": "optimal"
+            },
+            {
+                "type": "fixedTime",
+                "duration": 828000000
+            }
+        ]
+    },
+    "durations": {
+        "waitStepUpperBound": 100,
+        "clickDuration": 30,
+        "pressDuration": 30
+    },
+    "debugLogging": true
+}

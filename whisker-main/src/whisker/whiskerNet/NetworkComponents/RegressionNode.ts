@@ -21,10 +21,25 @@ export class RegressionNode extends NodeGene {
      * @param uID the unique identifier of this node in the network.
      * @param event the event for which this regression node produces values for.
      * @param eventParameter specifies the parameter of the event this regression node produces values for.
-     * @param activationFunction the activation function of the regression node.
      */
-    constructor(uID: number, event: ScratchEvent, eventParameter: string, activationFunction = ActivationFunction.NONE) {
-        super(uID, activationFunction, NodeType.OUTPUT);
+    constructor(uID: number, event: ScratchEvent, eventParameter: string) {
+
+        // Determine activation function based on the event that will be supplied with parameter.
+        let activationFunction: ActivationFunction;
+        switch (event.toJSON()['type']) {
+            case "WaitEvent":
+            case "KeyPressEvent":
+            case "MouseDownForStepsEvent":
+                activationFunction = ActivationFunction.SIGMOID;
+                break;
+            case "MouseMoveEvent":
+                activationFunction = ActivationFunction.TANH;
+                break;
+            default:
+                activationFunction = ActivationFunction.NONE;
+        }
+
+        super(uID, 1, activationFunction, NodeType.OUTPUT);
         this._event = event;
         this._eventParameter = eventParameter;
     }
@@ -40,11 +55,9 @@ export class RegressionNode extends NodeGene {
     }
 
     clone(): RegressionNode {
-        const clone = new RegressionNode(this.uID, this.event, this.eventParameter,
-            this.activationFunction);
+        const clone = new RegressionNode(this.uID, this.event, this.eventParameter);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
-        clone.lastActivationValue = this.lastActivationValue;
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
@@ -59,13 +72,15 @@ export class RegressionNode extends NodeGene {
         if (this.activatedFlag) {
             switch (this.activationFunction) {
                 case ActivationFunction.RELU:
-                    this.activationValue = NeuroevolutionUtil.relu(this.nodeValue);
-                    break;
+                    return NeuroevolutionUtil.relu(this.nodeValue);
                 case ActivationFunction.NONE:
-                    this.activationValue = this.nodeValue;
-                    break;
+                    return this.nodeValue;
+                case ActivationFunction.TANH:
+                    return Math.tanh(this.nodeValue);
+                case ActivationFunction.SIGMOID:
+                default:
+                    return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
             }
-            return this.activationValue;
         } else
             return 0.0;
     }
@@ -106,6 +121,7 @@ export class RegressionNode extends NodeGene {
         node['aF'] = ActivationFunction[this.activationFunction];
         node['event'] = this._event.stringIdentifier();
         node['eventP'] = this._eventParameter;
+        node['d'] = this.depth;
         return node;
     }
 

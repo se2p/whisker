@@ -11,6 +11,9 @@ import {OneOfStoppingCondition} from "../../search/stoppingconditions/OneOfStopp
 import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
+import {UserEventNode} from "scratch-analysis/src/control-flow-graph";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
+import {GradientDescent} from "../Misc/GradientDescent";
 
 export class Neatest extends NEAT {
 
@@ -70,6 +73,7 @@ export class Neatest extends NEAT {
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
+            this._switchToEasierTarget = false;
             while (!(await this._stoppingCondition.isFinished(this))) {
                 await this.evaluateNetworks();
                 this.updateBestIndividualAndStatistics();
@@ -82,7 +86,6 @@ export class Neatest extends NEAT {
 
                 // Switch target if other statements than the currently selected one are easier to cover.
                 if (this._switchToEasierTarget) {
-                    this._switchToEasierTarget = false;
                     Container.debugLog("Switch to easier Target");
                     break;
                 }
@@ -189,6 +192,7 @@ export class Neatest extends NEAT {
             nextTarget = Randomness.getInstance().pick(Array.from(potentialTargets));
         }
         this._targetKey = this.mapStatementToKey(nextTarget);
+        Container.neatestTargetId = this._getIdOfCurrentStatement();
         return nextTarget;
     }
 
@@ -372,35 +376,65 @@ export class Neatest extends NEAT {
     }
 
     /**
-     * Initialises the population for the current fitness target, by cloning and mutating networks saved in the
-     * archive since these networks proved to work well and may be trained to reach required advanced states.
-     * In case we have not yet covered a single statement, i.e. the archive is empty, we generate a population of
-     * networks by querying the defined NetworkGenerator.
+     * Generates the next population based on the supplied starting Networks.
      * @returns a population of networks.
      */
     protected override getPopulation(): NeatPopulation {
-        let startingNetworks: NeatChromosome[];
-
-        // Trivial case, we have not yet covered anything...
-        if (this._archive.size === 0) {
-            startingNetworks = [];
-        }
-
-        // Use existing networks as starting networks if there are any...
-        else {
-            startingNetworks = Arrays.distinct(this._archive.values());
-        }
+        const startingNetworks = this._getStartingNetworks();
         const allStatements = [...this._fitnessFunctions.values()];
         const currentTarget = this._fitnessFunctionMap.get(this._targetKey);
         return new TargetStatementPopulation(this._chromosomeGenerator, this._neuroevolutionProperties, allStatements,
-            currentTarget, startingNetworks);
+            currentTarget, startingNetworks, this._switchToEasierTarget, this._neuroevolutionProperties.randomFraction);
+    }
+
+    /**
+     * Fetches the required starting networks based ont he supplied {@link PopulationGeneration} strategy.
+     * @returns starting networks for the next population.
+     */
+    private _getStartingNetworks(): NeatChromosome[] {
+        switch (this._neuroevolutionProperties.populationGeneration) {
+            case "global_solutions":
+                return this._archive.size == 0 ? [] : Arrays.distinct(this._archive.values());
+            case "direct_parent": {
+                const currentTarget = this._fitnessFunctionMap.get(this._targetKey);
+                const parents = StatementFitnessFunction.getCDGParent(currentTarget.getTargetNode(), currentTarget.getCDG());
+                const graphParents = parents.filter(node => !(node instanceof UserEventNode));
+                if (graphParents.length === 0) {
+                    return [];
+                }
+                const allStatements = [...this._fitnessFunctionMap.values()];
+                const parentNetworks: NeatChromosome[] = [];
+
+                // We may get multiple parents. Filter for unique networks.
+                for (const parent of graphParents) {
+                    const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
+                    const parentId = this.mapStatementToKey(parentStatement);
+                    for (const [statementId, network] of this._archive.entries()) {
+                        if (statementId == parentId && !parentNetworks.includes(network)) {
+                            parentNetworks.push(network);
+                        }
+                    }
+                }
+                return parentNetworks;
+            }
+            case "random":
+            default:
+                return [];
+        }
+    }
+
+    /**
+     * Returns the id of the currently targeted statement.
+     */
+    private _getIdOfCurrentStatement(): string {
+        return this._fitnessFunctionMap.get(this._targetKey).getNodeId();
     }
 
     /**
      * Sets the required hyperparameter.
      * @param properties the user-defined hyperparameter.
      */
-    override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
+    public override setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         this._neuroevolutionProperties = properties as unknown as NeatestParameter;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         if (this._stoppingCondition instanceof OneOfStoppingCondition) {

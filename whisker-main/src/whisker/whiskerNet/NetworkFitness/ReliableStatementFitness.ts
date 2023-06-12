@@ -14,7 +14,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      */
     private _random: Randomness
 
-    constructor(private _stableCount: number) {
+    constructor(private _stableCount: number, private _earlyStop: boolean) {
         this._random = Randomness.getInstance();
     }
 
@@ -26,7 +26,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * @returns Promise<number> the fitness of the given network based on reliable statement coverage.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
         await executor.execute(network);
         network.initialiseOpenStatements([...network.openStatementTargets.keys()]);
         const fitness = await network.targetFitness.getFitness(network);
@@ -36,6 +36,11 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         if (fitness > 0) {
             network.fitness = 1 / fitness;
         } else {
+
+            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent training data.
+            if (Container.backpropagationInstance && Container.peerToPeerSharing) {
+                this._peerToPeerSharing(network);
+            }
             // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
             await this.checkStableCoverage(network, timeout, eventSelection);
@@ -63,7 +68,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Iterate over each seed and calculate the achieved fitness
         for (const seed of repetitionSeeds) {
             Randomness.setScratchSeed(seed, true);
-            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, true);
+            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
             if (eventSelection === 'random') {
                 // Re-execute the saved sequence from the first run
                 await executor.executeSavedTrace(network);
@@ -79,6 +84,12 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             if(!await network.targetFitness.isCovered(network)){
                 network.fitness += (1 / await network.targetFitness.getFitness(network));
                 break;
+            }
+
+            // At this point we know that we have covered the statement again.
+            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth data.
+            if (Container.backpropagationInstance && Container.peerToPeerSharing) {
+                this._peerToPeerSharing(network);
             }
         }
         // Reset to the old Scratch seed and network attributes.
@@ -110,5 +121,17 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
     get stableCount(): number {
         return this._stableCount;
+    }
+
+    /**
+     * Adds the collected state-action trace to the gradient descent ground truth data.
+     * @param network the network in which the state-action trace is saved.
+     */
+    private _peerToPeerSharing(network: NetworkChromosome): void {
+        for (const [state, action] of network.stateActionPairs.entries()) {
+            Container.backpropagationInstance.training_data.set(state, action);
+        }
+        Container.debugLog(`Increased Dataset size to ${Container.backpropagationInstance.training_data.size}`);
+        network.stateActionPairs.clear();
     }
 }

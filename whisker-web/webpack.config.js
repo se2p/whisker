@@ -67,6 +67,14 @@ module.exports = [
                     {
                         from: 'src/locales',
                         to: 'locales'
+                    },
+                    {
+                        from: 'src/examples',
+                        to: 'examples'
+                    },
+                    {
+                        from: 'src/includes',
+                        to: 'includes'
                     }
                 ]
             })

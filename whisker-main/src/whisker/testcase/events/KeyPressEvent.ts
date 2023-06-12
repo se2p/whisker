@@ -22,7 +22,6 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
 import {ParameterType} from "./ParameterType";
-import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
 
 export class KeyPressEvent extends ScratchEvent {
@@ -82,7 +81,7 @@ export class KeyPressEvent extends ScratchEvent {
                 this._steps = args[0];
                 break;
             case "activation":
-                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getPressDurationUpperBound());
+                this._steps = args[0] * Container.config.getPressDurationUpperBound();
                 break;
         }
         if(!Container.isNeuroevolution) {

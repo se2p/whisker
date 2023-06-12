@@ -1,7 +1,7 @@
 const logger = require("./logger");
 const fs = require("fs");
 const rimraf = require("rimraf");
-const {tmpDir, showHiddenFunctionality} = require("./common");
+const {tmpDir, switchToProjectTab} = require("./common");
 const {
     csvFile,
     testDownloadDir,
@@ -10,6 +10,7 @@ const {
     configPath,
     acceleration,
     seed,
+    groundTruth,
 } = require("./cli").opts;
 
 // Test generation
@@ -41,9 +42,12 @@ async function runGeneticSearch(openNewPage) {
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(testPath);
         }
-        await showHiddenFunctionality(page);
+        await switchToProjectTab(page, true);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        if (groundTruth) {
+            await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
+        }
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
@@ -67,7 +71,8 @@ async function runGeneticSearch(openNewPage) {
     }
 
     async function executeSearch() {
-        await (await page.$('#run-search')).click();
+        const startSearchButton = await page.$('#run-search');
+        await startSearchButton.evaluate(t => t.click());
     }
 
     async function downloadTests() {

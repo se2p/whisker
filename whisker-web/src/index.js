@@ -1,13 +1,18 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
-import {DynamicNetworkSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite";
+import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
+import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
 import {FileSaver} from "./web-libs";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
-const faqDE = require('./locales/de/faq.json');
-const faqEN = require('./locales/en/faq.json');
+const aboutDE = require('./locales/de/about.json');
+const aboutEN = require('./locales/en/about.json');
+const snippetsDE = require('./locales/de/snippets.json');
+const snippetsEN = require('./locales/en/snippets.json');
+const tutorialDE = require('./locales/de/tutorial.json');
+const tutorialEN = require('./locales/en/tutorial.json');
 const contactDE = require('./locales/de/contact.json');
 const contactEN = require('./locales/en/contact.json');
 const imprintDE = require('./locales/de/imprint.json');
@@ -132,11 +137,12 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-    const networkTemplate = await Whisker.testFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
-    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm,
-        Whisker.scratch.project, projectName, config, configName, accelerationFactor, seed, networkTemplate);
+    const groundTruth = document.querySelector('#container').groundTruth;
+
+    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
+        projectName, config, configName, accelerationFactor, seed, groundTruth);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
@@ -380,8 +386,6 @@ const initComponents = function () {
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
-
-
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
     Whisker.testTable = new TestTable($('#test-table')[0], runTests, Whisker.testRunner);
@@ -394,6 +398,7 @@ const initComponents = function () {
         Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
+    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
@@ -429,6 +434,9 @@ const initEvents = function () {
         if (Whisker.inputRecorder.isRecording()) {
             Whisker.inputRecorder.stop();
         }
+        if (Whisker.stateActionRecorder.isRecording){
+            Whisker.stateActionRecorder.onStopAll();
+        }
     });
     $('#reset').on('click', () => {
         $('#reset').tooltip('hide');
@@ -455,7 +463,22 @@ const initEvents = function () {
     });
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
-        if (Whisker.inputRecorder.isRecording()) {
+        if (document.querySelector('#container').stateActionRecorder){
+            if (Whisker.stateActionRecorder.isRecording) {
+                Whisker.inputRecorder.emit('stopRecording');
+                Whisker.stateActionRecorder.stopRecording();
+                Whisker.scratch.disableInput();
+
+                // Download the recording.
+                const recording = Whisker.stateActionRecorder.getRecord();
+                const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
+                FileSaver.saveAs(blob, `Recording-${Whisker.projectFileSelect.getName()}.json`);
+            } else {
+                Whisker.inputRecorder.emit('startRecording');
+                Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
+                Whisker.scratch.enableInput();
+            }
+        } else if (Whisker.inputRecorder.isRecording()) {
             _enableVMRelatedButtons();
             Whisker.inputRecorder.stopRecording();
             Whisker.scratch.disableInput();
@@ -465,6 +488,7 @@ const initEvents = function () {
             Whisker.inputRecorder.startRecording();
         }
     });
+
     const modelLog = msg => {
         Whisker.outputLog.println(msg);
     };
@@ -603,28 +627,21 @@ const loadHeader = function () {
     localize('#header');
     if (window.location.href.includes('/html')) {
         $('#link').attr('href', '../index.html');
+        $('#tutorial').attr('href', 'tutorial.html');
+        $('#contact').attr('href', 'contact.html');
+        $('#about').attr('href', 'about.html');
         $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
-        $('#banner').attr('src', '../assets/banner_slim.jpg');
+        $('#banner').attr('src', '../assets/whiskerHeader.png');
     } else {
         $('#link').attr('href', 'index.html');
+        $('#tutorial').attr('href', 'html/tutorial.html');
+        $('#contact').attr('href', 'html/contact.html');
+        $('#about').attr('href', 'html/about.html');
         $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
-        $('#banner').attr('src', 'assets/banner_slim.jpg');
+        $('#banner').attr('src', 'assets/whiskerHeader.png');
     }
-    /* Add border to header if it sticks to the top */
-    $(() => {
-        const stickyHeader = $('.sticky');
-        const stickyHeaderPosition = stickyHeader.offset().top;
-        $(window).scroll(() => {
-            const scroll = $(window).scrollTop();
-            if (scroll > stickyHeaderPosition + 1) {
-                stickyHeader.addClass('scrolled');
-                $('#small-logo').show();
-            } else {
-                stickyHeader.removeClass('scrolled');
-                $('#small-logo').hide();
-            }
-        });
-    });
+    $('#tutorial').attr('target', '_blank');
+    $('#about').attr('target', '_blank');
     $('#form-lang').on('change', () => {
         $('[data-toggle="tooltip"]').tooltip('dispose');
         const lng = $('#lang-select').val();
@@ -699,7 +716,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
+        ns: ['index', 'about', 'snippets', 'tutorial', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false
@@ -707,7 +724,9 @@ i18next
         resources: {
             de: {
                 index: indexDE,
-                faq: faqDE,
+                about: aboutDE,
+                snippets: snippetsDE,
+                tutorial: tutorialDE,
                 contact: contactDE,
                 imprint: imprintDE,
                 privacy: privacyDE,
@@ -717,7 +736,9 @@ i18next
             },
             en: {
                 index: indexEN,
-                faq: faqEN,
+                about: aboutEN,
+                snippets: snippetsEN,
+                tutorial: tutorialEN,
                 contact: contactEN,
                 imprint: imprintEN,
                 privacy: privacyEN,
@@ -883,22 +904,6 @@ function _updateFilenameLabels () {
         $('#model-label').html(Whisker.modelFileSelect.getName());
     }
 }
-
-/* Add border to header if it sticks to the top */
-$(() => {
-    const stickyHeader = $('.sticky');
-    const stickyHeaderPosition = stickyHeader.offset().top;
-    $(window).scroll(() => {
-        const scroll = $(window).scrollTop();
-        if (scroll > stickyHeaderPosition + 1) {
-            stickyHeader.addClass('scrolled');
-            $('#small-logo').show();
-        } else {
-            stickyHeader.removeClass('scrolled');
-            $('#small-logo').hide();
-        }
-    });
-});
 
 
 export {i18next as i18n};

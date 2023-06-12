@@ -75,7 +75,7 @@ export class MouseDownForStepsEvent extends ScratchEvent {
                 this._steps = args[0];
                 break;
             case "activation":
-                this._steps = Math.round(NeuroevolutionUtil.sigmoid(args[0], 0.5) * Container.config.getClickDuration());
+                this._steps = Math.round(args[0] * Container.config.getClickDuration());
                 break;
         }
         if (!Container.isNeuroevolution) {

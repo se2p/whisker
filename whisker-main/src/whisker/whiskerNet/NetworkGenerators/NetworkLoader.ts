@@ -13,7 +13,7 @@ import {NeatCrossover} from "../Operators/NeatCrossover";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
-import {InputConnectionMethod} from "../Networks/NetworkChromosome";
+import {InputConnectionMethod, NetworkLayer} from "../Networks/NetworkChromosome";
 
 export class NetworkLoader {
 
@@ -52,23 +52,29 @@ export class NetworkLoader {
     public loadNetworks(): NeatChromosome[] {
         const networks = [];
         for (const savedNetwork of Object.values(this._networkSuite)) {
-            const allNodes: NodeGene[] = [];
+            const layers: NetworkLayer = new Map<number, NodeGene[]>();
+            layers.set(0, []);
+            layers.set(1, []);
             for (const savedNode of Object.values(savedNetwork['Nodes'])) {
                 switch (savedNode['t']) {
                     case "I": {
                         const iNode = new InputNode(savedNode['id'], savedNode['sprite'], savedNode['feature']);
-                        allNodes.push(iNode);
+                        layers.get(0).push(iNode);
                         break;
                     }
                     case "B": {
                         const biasNode = new BiasNode(savedNode['id']);
-                        allNodes.push(biasNode);
+                        layers.get(0).push(biasNode);
                         break;
                     }
                     case "H": {
                         const activationFunction = savedNode['aF'] as string;
-                        const hiddenNode = new HiddenNode(savedNode['id'], ActivationFunction[activationFunction]);
-                        allNodes.push(hiddenNode);
+                        const depth = savedNode['d'] as number;
+                        const hiddenNode = new HiddenNode(savedNode['id'], depth, ActivationFunction[activationFunction]);
+                        if (!layers.has(depth)) {
+                            layers.set(depth, []);
+                        }
+                        layers.get(depth).push(hiddenNode);
                         break;
                     }
                     case "C": {
@@ -76,16 +82,15 @@ export class NetworkLoader {
                         if (event) {
                             const classificationNode = new ClassificationNode(savedNode['id'], event,
                                 ActivationFunction.NONE);
-                            allNodes.push(classificationNode);
+                            layers.get(1).push(classificationNode);
                         }
                         break;
                     }
                     case "R": {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
                         if (event) {
-                            const regressionNode = new RegressionNode(savedNode['id'], event, savedNode['eventP'],
-                                ActivationFunction.NONE);
-                            allNodes.push(regressionNode);
+                            const regressionNode = new RegressionNode(savedNode['id'], event, savedNode['eventP']);
+                            layers.get(1).push(regressionNode);
                         }
                         break;
                     }
@@ -93,19 +98,19 @@ export class NetworkLoader {
             }
             const allConnections: ConnectionGene[] = [];
             for (const savedConnection of Object.values(savedNetwork['Cons'])) {
-                const sourceNode = allNodes.find(node => node.uID === savedConnection['s']);
-                const targetNode = allNodes.find(node => node.uID === savedConnection['t']);
-                const recurrent = savedConnection['r'] === `true`;
+                const sourceNode = [...layers.values()].flat().find(node => node.uID === savedConnection['s']);
+                const targetNode = [...layers.values()].flat().find(node => node.uID === savedConnection['t']);
                 if (sourceNode && targetNode) {
                     allConnections.push(new ConnectionGene(sourceNode, targetNode, savedConnection['w'],
-                        savedConnection['e'], savedConnection['i'], recurrent));
+                        savedConnection['e'], savedConnection['i']));
                 }
             }
+
             const mutation = new NeatMutation({});
             const crossover = new NeatCrossover({});
             const activationFunction = savedNetwork['aF'] as string;
             const connectionMethod = savedNetwork['cM'] as InputConnectionMethod;
-            const network = new NeatChromosome(allNodes, allConnections, mutation, crossover, connectionMethod,
+            const network = new NeatChromosome(layers, allConnections, mutation, crossover, connectionMethod,
                 ActivationFunction[activationFunction]);
 
             // If the generated networks are based on the StatementFitness function, we load their fitness targets.
@@ -119,7 +124,7 @@ export class NetworkLoader {
             }
 
             // Load the saved AT if there is one.
-            if(savedNetwork['AT'] !== undefined) {
+            if (savedNetwork['AT'] !== undefined) {
                 NetworkLoader.loadActivationTrace(network, savedNetwork['AT']);
             }
             networks.push(network);
@@ -133,8 +138,8 @@ export class NetworkLoader {
      * @param savedTrace the trace that should be loaded into the network.
      */
     private static loadActivationTrace(network: NeatChromosome,
-                                      savedTrace: Record<string, Record<string, number[]>>): void {
-        network.referenceActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.HIDDEN));
+                                       savedTrace: Record<string, Record<string, number[]>>): void {
+        network.referenceActivationTrace = new ActivationTrace(network.getAllNodes().filter(node => node.type === NodeType.HIDDEN));
         for (const [step, nodeTraces] of Object.entries(savedTrace)) {
             const nodeStepTraces = new Map<string, number[]>();
             for (const [nodeId, activationValues] of Object.entries(nodeTraces)) {

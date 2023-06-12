@@ -162,9 +162,8 @@ export class Search {
      * Main entry point -- called from whisker-web
      */
     public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number, seedString: string, template?: string): Promise<Array<string>> {
+                     accelerationFactor: number, seedString: string, groundTruth?: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
-        Container.template = template;
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
@@ -199,6 +198,11 @@ seed ${configSeed} defined within the config files.`);
         }
         else{
             Randomness.setInitialSeeds(Date.now());
+        }
+
+        // Check presence of groundTruth for Neatest + backpropagation.
+        if(groundTruth){
+            Container.backpropagationData = JSON.parse(groundTruth);
         }
 
         StatisticsCollector.getInstance().reset();

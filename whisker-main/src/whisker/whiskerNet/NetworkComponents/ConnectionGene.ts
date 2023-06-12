@@ -17,6 +17,11 @@ export class ConnectionGene {
     private _weight: number;
 
     /**
+     * The gradient defined by the backward pass and used to update the connection weight during gradient descent.
+     */
+    private _gradient = 0;
+
+    /**
      * Defines whether the connection is enabled.
      */
     private _isEnabled: boolean;
@@ -43,15 +48,14 @@ export class ConnectionGene {
      * @param weight the weight of the connection.
      * @param enabled defines whether the connection is enabled.
      * @param innovation the innovation number of the connection.
-     * @param recurrent defines whether the connection is a recurrent connection.
      */
-    constructor(source: NodeGene, target: NodeGene, weight: number, enabled: boolean, innovation: number, recurrent: boolean) {
+    constructor(source: NodeGene, target: NodeGene, weight: number, enabled: boolean, innovation: number) {
         this._source = source;
         this._target = target;
         this._weight = weight;
         this._isEnabled = enabled;
         this._innovation = innovation;
-        this._isRecurrent = recurrent;
+        this._isRecurrent = source.depth >= target.depth;
     }
 
     /**
@@ -60,7 +64,7 @@ export class ConnectionGene {
      * @param target the target node of the new connection.
      */
     public cloneWithNodes(source: NodeGene, target: NodeGene): ConnectionGene {
-        return new ConnectionGene(source, target, this.weight, this.isEnabled, this.innovation, this.isRecurrent);
+        return new ConnectionGene(source, target, this.weight, this.isEnabled, this.innovation);
     }
 
     /**
@@ -120,6 +124,14 @@ export class ConnectionGene {
 
     set weight(value: number) {
         this._weight = value;
+    }
+
+    get gradient(): number {
+        return this._gradient;
+    }
+
+    set gradient(value: number) {
+        this._gradient = value;
     }
 
     get isEnabled(): boolean {

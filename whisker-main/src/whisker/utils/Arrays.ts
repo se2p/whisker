@@ -240,9 +240,9 @@ export default class Arrays {
      * @param subtrahend the array which will be subtracted from the minuend.
      * @returns Array<number> the difference between the two arrays.
      */
-    static subtract(minuend:number[], subtrahend:number[]): number[]{
+    static subtract(minuend: number[], subtrahend: number[]): number[] {
         // Make sure the subtrahend is at least as big as the minuend; pad with zeros if necessary.
-        if(minuend.length > subtrahend.length){
+        if (minuend.length > subtrahend.length) {
             subtrahend.push(...[minuend.length - subtrahend.length].fill(0));
         }
         return minuend.map(((value, index) => value - subtrahend[index]));
@@ -254,7 +254,7 @@ export default class Arrays {
      * @param scalar the scalar to be multiplied with the array.
      * @returns Array<number> the array after multiplying the scalar to the given array.
      */
-    static scalarProduct(array:number[], scalar:number): number[]{
+    static scalarProduct(array: number[], scalar: number): number[] {
         return array.map(value => value * scalar);
     }
 

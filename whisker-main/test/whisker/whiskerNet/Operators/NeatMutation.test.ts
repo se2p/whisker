@@ -14,6 +14,8 @@ import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatCh
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
+import {generateInputs} from "../Algorithms/NEAT.test";
+import {NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 
 
 describe("Test NeatMutation", () => {
@@ -52,21 +54,7 @@ describe("Test NeatMutation", () => {
         };
         NeatPopulation.innovations = [];
         mutation = new NeatMutation(mutationConfig);
-        const genInputs = new Map<string, Map<string, number>>();
-        const sprite1 = new Map<string, number>();
-        sprite1.set("X-Position", 1);
-        sprite1.set("Y-Position", 2);
-        sprite1.set("Costume", 3);
-        sprite1.set("DistanceToSprite2-X", 4);
-        sprite1.set("DistanceToSprite2-y", 5);
-        genInputs.set("Sprite1", sprite1);
-        const sprite2 = new Map<string, number>();
-        sprite2.set("X-Position", 6);
-        sprite2.set("Y-Position", 7);
-        sprite2.set("Costume", 8);
-        sprite2.set("DistanceToSprite2-X", 9);
-        sprite2.set("DistanceToSprite2-y", 10);
-        genInputs.set("Sprite2", sprite2);
+        const genInputs = generateInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         networkGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
@@ -128,8 +116,8 @@ describe("Test NeatMutation", () => {
         neatChromosome1.addNodeSplitConnection(Randomness.getInstance().pick(neatChromosome1.connections));
         neatChromosome2.addNodeSplitConnection(Randomness.getInstance().pick(neatChromosome2.connections));
         for (let i = 0; i < 50; i++) {
-        mutation.mutateAddConnection(neatChromosome1, 30);
-        mutation.mutateAddConnection(neatChromosome2, 30);
+            mutation.mutateAddConnection(neatChromosome1, 30);
+            mutation.mutateAddConnection(neatChromosome2, 30);
         }
         // Equal if by chance an already established connection is chosen
         expect(originalConnectionsSize).toBeLessThanOrEqual(neatChromosome1.connections.length);
@@ -139,23 +127,23 @@ describe("Test NeatMutation", () => {
     });
 
     test("Test MutateAddConnection with recurrent connection between output Nodes", () => {
-        const allNodes: NodeGene[] = [];
         const innovationLengthBefore = NeatPopulation.innovations.length;
         const iNode = new InputNode(0, "Sprite1", "X-Position");
-        allNodes.push(iNode);
         const oNode1 = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
-        allNodes.push(oNode1);
         const oNode2 = new ClassificationNode(2, new ClickStageEvent(), ActivationFunction.SIGMOID);
-        allNodes.push(oNode2);
+        const layer: NetworkLayer = new Map<number, NodeGene[]>();
+        layer.set(0, [iNode]);
+        layer.set(1, [oNode1, oNode2]);
+
 
         const connectionList: ConnectionGene[] = [];
-        const connection1 = new ConnectionGene(iNode, oNode1, 1, true, 0, false);
+        const connection1 = new ConnectionGene(iNode, oNode1, 1, true, 0);
         connectionList.push(connection1);
-        const connection2 = new ConnectionGene(iNode, oNode2, 2, true, 1, false);
+        const connection2 = new ConnectionGene(iNode, oNode2, 2, true, 1);
         connectionList.push(connection2);
         mutationConfig.recurrentConnection = 1;
         mutation = new NeatMutation(mutationConfig);
-        neatChromosome1 = new NeatChromosome(allNodes, connectionList, mutation, crossoverOp, 'fully');
+        neatChromosome1 = new NeatChromosome(layer, connectionList, mutation, crossoverOp, 'fully');
         const originalConnectionsSize = neatChromosome1.connections.length;
 
         mutation.mutateAddConnection(neatChromosome1, 30);
@@ -167,29 +155,27 @@ describe("Test NeatMutation", () => {
 
     test("Test MutateAddConnection with hidden Layer", () => {
         const inputNodes = neatChromosome1.inputNodes;
-        const outputNodes = neatChromosome1.outputNodes;
+        const outputNodes = neatChromosome1.layers.get(1);
         const innovationLengthBefore = NeatPopulation.innovations.length;
-        const hiddenLayerNode = new HiddenNode(8, ActivationFunction.SIGMOID);
-        neatChromosome1.allNodes.push(hiddenLayerNode);
-        const hiddenLayerNode2 = new HiddenNode(9, ActivationFunction.SIGMOID);
-        neatChromosome1.allNodes.push(hiddenLayerNode2);
-        const hiddenLayerNode3 = new HiddenNode(10, ActivationFunction.SIGMOID);
-        neatChromosome1.allNodes.push(hiddenLayerNode3);
-        const hiddenLayerNode4 = new HiddenNode(11, ActivationFunction.SIGMOID);
-        neatChromosome1.allNodes.push(hiddenLayerNode4);
-        const deepHiddenLayerNode = new HiddenNode(12, ActivationFunction.SIGMOID);
-        neatChromosome1.allNodes.push(deepHiddenLayerNode);
+        const hiddenLayerNode = new HiddenNode(8, 0.5, ActivationFunction.SIGMOID);
+        const hiddenLayerNode2 = new HiddenNode(9, 0.5, ActivationFunction.SIGMOID);
+        const hiddenLayerNode3 = new HiddenNode(10, 0.5, ActivationFunction.SIGMOID);
+        const hiddenLayerNode4 = new HiddenNode(11, 0.5, ActivationFunction.SIGMOID);
+        const deepHiddenLayerNode = new HiddenNode(12, 0.75, ActivationFunction.SIGMOID);
+
+        neatChromosome1.layers.set(0.5, [hiddenLayerNode, hiddenLayerNode2, hiddenLayerNode3, hiddenLayerNode4]);
+        neatChromosome1.layers.set(0.25, [deepHiddenLayerNode]);
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
-        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("X-Position"), hiddenLayerNode, 1, true, 50, false));
-        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1, true, 51, false));
-        neatChromosome1.connections.push(new ConnectionGene(deepHiddenLayerNode, outputNodes[0], 1, true, 52, false));
-        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("Y-Position"), hiddenLayerNode2, 1, true, 53, false));
-        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode2, outputNodes[1], 1, true, 54, false));
-        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("Costume"), hiddenLayerNode3, 1, true, 56, false));
-        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode3, outputNodes[1], 1, true, 57, false));
-        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("Costume"), hiddenLayerNode4, 1, true, 58, false));
-        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode4, outputNodes[0], 1, true, 59, false));
+        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("X-Position"), hiddenLayerNode, 1, true, 50));
+        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1, true, 51));
+        neatChromosome1.connections.push(new ConnectionGene(deepHiddenLayerNode, outputNodes[0], 1, true, 52));
+        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("Y-Position"), hiddenLayerNode2, 1, true, 53));
+        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode2, outputNodes[1], 1, true, 54));
+        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("Costume"), hiddenLayerNode3, 1, true, 56));
+        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode3, outputNodes[1], 1, true, 57));
+        neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("Costume"), hiddenLayerNode4, 1, true, 58));
+        neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode4, outputNodes[0], 1, true, 59));
         neatChromosome1.generateNetwork();
         const originalConnections = neatChromosome1.connections.length;
         // Make some rounds of mutations to ensure a mutation eventually happens
@@ -202,8 +188,8 @@ describe("Test NeatMutation", () => {
     });
 
     test("Test mutateToggleEnableConnection", () => {
-        const recConnection = new ConnectionGene(neatChromosome1.outputNodes[0],
-            neatChromosome1.outputNodes[1], 1, true, 60, true);
+        const recConnection = new ConnectionGene(neatChromosome1.layers.get(1)[0],
+            neatChromosome1.layers.get(1)[1], 1, true, 60);
         neatChromosome1.connections.push(recConnection);
         neatChromosome1.generateNetwork();
         const innovationLengthBefore = NeatPopulation.innovations.length;
@@ -223,8 +209,8 @@ describe("Test NeatMutation", () => {
     });
 
     test("Test mutateConnectionReenable", () => {
-        const recConnection = new ConnectionGene(neatChromosome1.outputNodes[0],
-            neatChromosome1.outputNodes[1], 1, false, 60, true);
+        const recConnection = new ConnectionGene(neatChromosome1.layers.get(1)[0],
+            neatChromosome1.layers.get(1)[1], 1, false, 60);
         neatChromosome1.connections.push(recConnection);
         neatChromosome1.generateNetwork();
         const innovationLengthBefore = NeatPopulation.innovations.length;
@@ -242,27 +228,29 @@ describe("Test NeatMutation", () => {
     });
 
     test("Test MutateAddNode", () => {
-        const oldNodes = neatChromosome1.allNodes.length;
+        const oldNodes = neatChromosome1.getNumNodes();
         const oldConnections = neatChromosome1.connections.length;
         const innovationLengthBefore = NeatPopulation.innovations.length;
+        const layerSizeBefore = neatChromosome1.layers.size;
 
         for (let i = 0; i < 10; i++) {
-        mutation.mutateAddNode(neatChromosome1);
-        mutation.mutateAddNode(neatChromosome2);
+            mutation.mutateAddNode(neatChromosome1);
+            mutation.mutateAddNode(neatChromosome2);
         }
 
-        expect(oldNodes + 10).toBe(neatChromosome1.allNodes.length);
+        expect(oldNodes + 10).toBe(neatChromosome1.getNumNodes());
         expect(oldConnections + (2 * 10)).toBe(neatChromosome1.connections.length);
         expect(innovationLengthBefore).toBeLessThanOrEqual(neatChromosome1.connections.length);
         expect(innovationLengthBefore).toBeLessThanOrEqual(neatChromosome2.connections.length);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(oldConnections);
+        expect(neatChromosome1.layers.size).toBeGreaterThan(layerSizeBefore);
     });
 
     test("Test MutateAddNode with only non-valid connections", () => {
         const oldNodes = [];
         const oldConnections = [];
         const oldInnovationNumbers = [];
-        for (const nodes of neatChromosome1.allNodes)
+        for (const nodes of neatChromosome1.getAllNodes())
             oldNodes.push(nodes);
         for (const connection of neatChromosome1.connections) {
             connection.isEnabled = false;
@@ -275,7 +263,7 @@ describe("Test NeatMutation", () => {
         const mutantNodes = [];
         const mutantConnections = [];
         const mutantInnovationNumbers = [];
-        for (const nodes of neatChromosome1.allNodes)
+        for (const nodes of neatChromosome1.getAllNodes())
             mutantNodes.push(nodes);
         for (const connection of neatChromosome1.connections) {
             mutantConnections.push(connection);

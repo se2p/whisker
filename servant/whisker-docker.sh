@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
-# Make sure we're actually inside a Docker container before proceeding.
-if [ ! -f /.dockerenv ]; then
-    echo "This script is only supposed to be run within a Docker container."
+# Make sure we're actually inside a Docker or Apptainer/Singularity container before proceeding.
+if [ ! -f /.dockerenv ] && [ ! -f /.singularity.d/Singularity ]; then
+    echo "This script is only supposed to be run within a Docker or Apptainer/Singularity container."
     echo "You cannot run it as a standalone script."
     exit 1
 fi
@@ -15,7 +15,7 @@ whisker() {
     # Make sure to use `exec` here (instead of `eval`). This allows Whisker to receive any
     # Unix signals sent to this wrapper script. See:
     # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
-    exec node servant.js "$@" -d -k -l
+    exec node /whisker/servant "$@" -d -k -l
 }
 
 print_info() {
