@@ -23,7 +23,7 @@ class TestRunner extends EventEmitter {
     async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
 
-        if (props === undefined || typeof props === 'undefined' || props === null) {
+        if (typeof props === 'undefined' || props === null) {
             props = {extend: {}};
         } else if (!('extend' in props)) {
             props.extend = {};
@@ -41,12 +41,8 @@ class TestRunner extends EventEmitter {
 
         this._setRNGSeeds(props['seed'], sampleTest, vm);
 
-        // If we use a vm that allows debug tracing, deactivate the functionality for common test executions.
-        if (typeof vm.deactivateDebugTracing === "function") {
-            vm.deactivateDebugTracing();
-        }
-
         // Load project and establish an initial save state
+        vm.deactivateDebugTracing();
         this.util = await this._loadProject(vm, project, props);
         this.saveState = this.vmWrapper._recordInitialState();
 
@@ -247,15 +243,9 @@ class TestRunner extends EventEmitter {
      */
     async _loadProject(vm, project, props) {
         const util = new WhiskerUtil(vm, project);
-        const isTutorial = "tutorial" in props && props['tutorial'];
-        await util.prepare(props.accelerationFactor || 1, isTutorial);
+        await util.prepare(props.accelerationFactor || 1);
         this.vmWrapper = util.getVMWrapper();
-
-        // Check if the given vm has the option to precompute text2speech blocks.
-        if (typeof this.vmWrapper.vm.runtime === "function") {
-            await this.vmWrapper.vm.runtime.translateText2Speech();
-        }
-
+        await this.vmWrapper.vm.runtime.translateText2Speech();
         return util;
     }
 
@@ -489,11 +479,7 @@ class TestRunner extends EventEmitter {
             }
         }
 
-        // Check if given vm contains the tracer utility.
-        if (this.vmWrapper.vm.runtime.traceInfo !== undefined) {
-            result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
-        }
-
+        result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
         for (const statement of this.statementMap.keys()){
             if(result.covered.has(statement._targetNode.id)){
                 this.statementMap.set(statement, true);

@@ -330,21 +330,15 @@ class VMWrapper {
      * Initializes the vm wrapper with the project and acceleration factor that should be used for testing.
      * @param {string} project The project to test.
      * @param {number} accelerationFactor The used acceleration factor.
-     * @param {boolean} isTutorial whether the vm wrapper is initialized for a tutorial execution.
      * @returns {Promise<void>} Promise that resolves after targets are installed.
      */
-    async setup(project, accelerationFactor = 1, isTutorial = false) {
+    async setup(project, accelerationFactor = 1) {
         delete Runtime.THREAD_STEP_INTERVAL;
         Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / accelerationFactor;
         this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
         this.vm.runtime.accelerationFactor = accelerationFactor;
         this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
-
-        // Tutorials break when clearing the interval, might be related to the VM mismatch
-        if (!isTutorial) {
-            clearInterval(this.vm.runtime._steppingInterval);
-        }
-
+        clearInterval(this.vm.runtime._steppingInterval);
         this.accelerationFactor = accelerationFactor;
         this.vm.runtime.virtualSound = -1;
 
