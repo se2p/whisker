@@ -357,32 +357,32 @@ export class WhiskerSearchConfiguration {
             case 'variableLength':
                 return new VariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this._config['chromosomeLength'],
-                    this._config['reservedCodons'],
+                    this.searchAlgorithmProperties['chromosomeLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'variableLengthConstrained':
                 return new VariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this._config['chromosomeLength'],
-                    this._config['reservedCodons'],
+                    this.searchAlgorithmProperties['chromosomeLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLength':
                 return new BiasedVariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this._config['chromosomeLength'],
-                    this._config['reservedCodons'],
+                    this.searchAlgorithmProperties['chromosomeLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLengthConstrained':
                 return new BiasedVariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this._config['chromosomeLength'],
-                    this._config['reservedCodons'],
+                    this.searchAlgorithmProperties['chromosomeLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'eventBiased':
                 return new EventBiasedMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this._config['chromosomeLength'],
-                    this._config['reservedCodons'],
+                    this.searchAlgorithmProperties['chromosomeLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(this._config['mutation'], this.neuroevolutionProperties);
@@ -401,7 +401,7 @@ export class WhiskerSearchConfiguration {
         const crossoverOperator = this._config['crossover']['operator'];
         switch (crossoverOperator) {
             case 'singlePointRelative':
-                return new SinglePointRelativeCrossover(this._config['reservedCodons']);
+                return new SinglePointRelativeCrossover(this.searchAlgorithmProperties['reservedCodons']);
             case 'neatCrossover':
                 return new NeatCrossover(this._config['crossover']);
             case 'singlePoint':
