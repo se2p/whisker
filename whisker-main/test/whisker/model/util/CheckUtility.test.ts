@@ -27,7 +27,7 @@ describe('CheckUtility', () => {
         result = CheckUtility.splitEventString(eventString);
         expect(result.name == CheckName.AttrComp);
         expect(result.negated == false);
-        expect(result.args === ["sprite1", "costume", "=", "costume2"]);
+        expect(result.args).toEqual(["sprite1", "costume", "=", "costume2"]);
     });
 
     test("get event string", () => {
