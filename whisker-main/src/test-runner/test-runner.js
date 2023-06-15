@@ -54,7 +54,7 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
-        if (props['mutators'][0] !== 'NONE') {
+        if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
             const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER;
 
