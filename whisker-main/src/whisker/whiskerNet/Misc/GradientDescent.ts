@@ -137,7 +137,7 @@ export class GradientDescent {
         const eventLabel = batch.get(example).event;
         const labelVector = new Map<string, number>();
         for (const event of network.classificationNodes.keys()) {
-            if (event.localeCompare(eventLabel, 'en', {sensitivity: 'base'})) {
+            if (event.localeCompare(eventLabel, 'en', {sensitivity: 'base'}) === 0) {
                 labelVector.set(event, 1);
             } else {
                 labelVector.set(event, 0);

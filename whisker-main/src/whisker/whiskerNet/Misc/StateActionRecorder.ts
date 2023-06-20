@@ -136,7 +136,7 @@ export class StateActionRecorder extends EventEmitter {
 
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
-            if (availableActions.some(actionId => actionId.localeCompare(event.stringIdentifier(), 'en', { sensitivity: 'base' })) ||
+            if (availableActions.some(actionId => actionId.localeCompare(event.stringIdentifier(), 'en', { sensitivity: 'base' }) === 0) ||
                 event instanceof TypeTextEvent || event instanceof TypeNumberEvent) {
                 this._recordAction(event);
             }
