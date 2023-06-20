@@ -132,11 +132,11 @@ export class StateActionRecorder extends EventEmitter {
     private handleInput(actionData): void {
         const event = this._inputToEvent(actionData);
         if (event) {
-            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
+            const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier().toLowerCase());
 
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
-            if (availableActions.indexOf(event.stringIdentifier()) >= 0 ||
+            if (availableActions.indexOf(event.stringIdentifier().toLowerCase()) >= 0 ||
                 event instanceof TypeTextEvent || event instanceof TypeNumberEvent) {
                 this._recordAction(event);
             }
