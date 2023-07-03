@@ -394,7 +394,7 @@ export class Neatest extends NEAT {
                 return this._archive.size == 0 ? [] : Arrays.distinct(this._archive.values());
             case "direct_parent": {
                 const currentTarget = this._fitnessFunctionMap.get(this._targetKey);
-                const parents = StatementFitnessFunction.getCDGParent(currentTarget.getTargetNode(), currentTarget.getCDG());
+                const parents = StatementFitnessFunction.getCDGParent(currentTarget.getTargetNode());
                 const graphParents = parents.filter(node => !(node instanceof UserEventNode));
                 if (graphParents.length === 0) {
                     return [];
