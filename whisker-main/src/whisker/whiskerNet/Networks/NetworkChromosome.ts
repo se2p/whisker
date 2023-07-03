@@ -83,7 +83,7 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Maps each uncovered target statement to the number of times it has been covered using different seeds.
      */
-    private _openStatementTargets: Map<FitnessFunction<NetworkChromosome>, number>;
+    private _openStatementTargets: Map<number, number>;
 
     /**
      * The fitness value of the network.
@@ -460,11 +460,11 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Initialises the open target statements, setting each coverage count to zero; Used for Explorative-NEAT's
      * robustness check.
-     * @param targets all block statements of the given Scratch program.
+     * @param fitnessKeys all block statements of the given Scratch program.
      */
-    public initialiseOpenStatements(targets: FitnessFunction<NetworkChromosome>[]): void {
-        this.openStatementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
-        for (const t of targets) {
+    public initialiseOpenStatements(fitnessKeys: number[]): void {
+        this.openStatementTargets = new Map<number, number>();
+        for (const t of fitnessKeys) {
             this.openStatementTargets.set(t, 0);
         }
     }
@@ -821,11 +821,11 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons;
     }
 
-    get openStatementTargets(): Map<FitnessFunction<NetworkChromosome>, number> {
+    get openStatementTargets(): Map<number, number> {
         return this._openStatementTargets;
     }
 
-    set openStatementTargets(value: Map<FitnessFunction<NetworkChromosome>, number>) {
+    set openStatementTargets(value: Map<number, number>) {
         this._openStatementTargets = value;
     }
 

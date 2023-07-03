@@ -5,6 +5,7 @@ import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
+import {FitnessFunction} from "../../search/FitnessFunction";
 
 
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -109,9 +110,10 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      */
     private static async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
-        for (const [statement, coverCount] of network.openStatementTargets.entries()) {
+        for (const [fitnessKey, coverCount] of network.openStatementTargets.entries()) {
+            const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
             if (await statement.isCovered(network)) {
-                network.openStatementTargets.set(statement, coverCount + 1);
+                network.openStatementTargets.set(fitnessKey, coverCount + 1);
                 if (statement === network.targetFitness) {
                     network.fitness++;
                 }

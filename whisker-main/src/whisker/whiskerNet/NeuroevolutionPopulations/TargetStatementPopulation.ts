@@ -1,7 +1,6 @@
 import {NeatPopulation} from "./NeatPopulation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {FitnessFunction} from "../../search/FitnessFunction";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {Container} from "../../utils/Container";
@@ -14,7 +13,7 @@ import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
 export class TargetStatementPopulation extends NeatPopulation {
 
     constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeuroevolutionTestGenerationParameter,
-                private readonly _allStatements: FitnessFunction<NetworkChromosome>[],
+                private readonly _allStatements: number[],
                 private readonly _targetStatementFitness: StatementFitnessFunction,
                 private readonly _startingNetworks: NeatChromosome[],
                 private readonly _switchedToEasierTarget: boolean,

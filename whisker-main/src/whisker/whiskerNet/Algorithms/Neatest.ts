@@ -12,8 +12,6 @@ import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/
 import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {UserEventNode} from "scratch-analysis/src/control-flow-graph";
-import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {GradientDescent} from "../Misc/GradientDescent";
 
 export class Neatest extends NEAT {
 
@@ -272,8 +270,7 @@ export class Neatest extends NEAT {
      */
     private updateMostPromisingMap(network: NeatChromosome): void {
         for (const fitnessFunctionKey of this._promisingTargets.keys()) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            const networkFitness = network.openStatementTargets.get(fitnessFunction);
+            const networkFitness = network.openStatementTargets.get(fitnessFunctionKey);
             if (this._promisingTargets.has(fitnessFunctionKey) &&
                 networkFitness > this._promisingTargets.get(fitnessFunctionKey)) {
                 this._promisingTargets.set(fitnessFunctionKey, networkFitness);
@@ -295,7 +292,7 @@ export class Neatest extends NEAT {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, network);
                 for (const n of this._population.networks) {
-                    n.openStatementTargets.delete(fitnessFunction);
+                    n.openStatementTargets.delete(fitnessFunctionKey);
                 }
                 if (this._promisingTargets.has(fitnessFunctionKey)) {
                     this._promisingTargets.delete(fitnessFunctionKey);
@@ -313,7 +310,7 @@ export class Neatest extends NEAT {
      */
     private async isCovered(fitnessFunctionKey: number, network: NeatChromosome): Promise<boolean> {
         const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-        const coverageStableCount = network.openStatementTargets.get(fitnessFunction);
+        const coverageStableCount = network.openStatementTargets.get(fitnessFunctionKey);
         const statementFitness = await fitnessFunction.getFitness(network);
         return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount &&
                 !this._archive.has(fitnessFunctionKey)) ||
@@ -381,7 +378,7 @@ export class Neatest extends NEAT {
      */
     protected override getPopulation(): NeatPopulation {
         const startingNetworks = this._getStartingNetworks();
-        const allStatements = [...this._fitnessFunctions.values()];
+        const allStatements = [...this._fitnessFunctions.keys()];
         const currentTarget = this._fitnessFunctionMap.get(this._targetKey);
         return new TargetStatementPopulation(this._chromosomeGenerator, this._neuroevolutionProperties, allStatements,
             currentTarget, startingNetworks, this._switchToEasierTarget, this._neuroevolutionProperties.randomFraction);
