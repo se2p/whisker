@@ -243,6 +243,7 @@ export class Neatest extends NEAT {
 
             // Update the map of the most promising fitness targets
             this.updateMostPromisingMap(network);
+            network.openStatementTargets = null;
 
             // Determine whether we should switch the currently selected target. We do that if we have accidentally
             // reached a previously not targeted statement without reaching the actual target statement at least once.
@@ -292,7 +293,9 @@ export class Neatest extends NEAT {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, network);
                 for (const n of this._population.networks) {
-                    n.openStatementTargets.delete(fitnessFunctionKey);
+                    if (n.openStatementTargets != null) {
+                        n.openStatementTargets.delete(fitnessFunctionKey);
+                    }
                 }
                 if (this._promisingTargets.has(fitnessFunctionKey)) {
                     this._promisingTargets.delete(fitnessFunctionKey);
