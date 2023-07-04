@@ -29,7 +29,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
         await executor.execute(network);
-        network.initialiseOpenStatements([...network.openStatementTargets.keys()]);
+        network.resetOpenStatement();
         const fitness = await network.targetFitness.getFitness(network);
         await ReliableStatementFitness.updateUncoveredMap(network);
         executor.resetState();

@@ -107,10 +107,10 @@ export class Neatest extends NEAT {
                 this._population.evolve();
 
                 // Extract the remaining openStatements and set them for the evolved population of networks.
-                const openStatements = [];
-                for (const [key, fitness] of this._fitnessFunctions.entries()) {
+                const openStatements: number[] = [];
+                for (const key of this._fitnessFunctions.keys()) {
                     if (!this._archive.has(key)) {
-                        openStatements.push(fitness);
+                        openStatements.push(key);
                     }
                 }
                 for (const network of this._population.networks) {

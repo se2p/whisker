@@ -470,6 +470,15 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
+     * Resets the openStatementTargets map by setting all values to zero.
+     */
+    public resetOpenStatement(): void {
+        for (const key of this.openStatementTargets.keys()) {
+            this.openStatementTargets.set(key, 0);
+        }
+    }
+
+    /**
      * Adds a single ActivationTrace to the network's current trace.
      * @param step the previously performed step whose ActivationTrace should be recorded.
      */
