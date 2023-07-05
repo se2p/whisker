@@ -161,7 +161,7 @@ describe('Test NeatChromosome', () => {
         chromosome.surpriseCount = 3;
         chromosome.referenceUncertainty = refUncertainty;
         chromosome.testUncertainty = new Map<number, number>();
-        chromosome.openStatementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
+        chromosome.openStatementTargets = new Map<number, number>();
 
         expect(chromosome.uID).toBe(1234);
         expect(chromosome.fitness).toEqual(4);
