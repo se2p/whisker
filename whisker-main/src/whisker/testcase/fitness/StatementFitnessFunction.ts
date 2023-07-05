@@ -582,7 +582,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     /**
      * Extracts the direct CDG parent of a given node.
      * @param node the node whose parent should be found.
-     * @param cdg the control dependence graph based on which a direct ancestor should be found.
      * @return parent node of the given child node.
      */
     public static getCDGParent(node: GraphNode): GraphNode[] {
@@ -670,7 +669,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
     }
 
-    public getNodeId():string {
+    public getNodeId(): string {
         return `${this._targetNode.id}`;
     }
 }
