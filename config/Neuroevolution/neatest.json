@@ -74,5 +74,7 @@
         "clickDuration": 30,
         "pressDuration": 30
     },
-    "debugLogging": true
+    "debugLogging": true,
+    "assertions": true,
+    "minimizeAssertions": true
 }
