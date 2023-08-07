@@ -217,6 +217,13 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionTraceBlocks() {
+        return this.option(
+            '-tb, --trace-blocks',
+            'activates recording of block traces',
+        );
+    }
+
     optionStateActionRecorder(){
         return this.option('-rec, --state-action-recorder',
             'records executed scratch events and maps them to the current program state');
@@ -261,7 +268,8 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
-        .optionExecutionTrace(),
+        .optionExecutionTrace()
+        .optionTraceBlocks(),
 
     newSubCommand('generate')
         .description('generate Whisker test suites')

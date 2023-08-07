@@ -177,6 +177,15 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             });
         }
 
+        const traceBlocks = document.querySelector('#container').traceBlocks;
+        if (traceBlocks) {
+            Whisker.testRunner.on(TestRunner.RUN_END, () => {
+                const blob = new Blob([JSON.stringify(Whisker.testRunner.blockTraces)],
+                    {type: 'application/json;charset=utf-8'});
+                FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
+            });
+        }
+
         let summary;
         let csvResults;
         let mutantPrograms;
@@ -203,7 +212,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, traceBlocks},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);

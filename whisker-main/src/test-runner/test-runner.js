@@ -12,6 +12,12 @@ const {shuffle} = require("../whisker/utils/Arrays");
 class TestRunner extends EventEmitter {
 
     /**
+     * Collects traces of executed blocks during the execution of tests.
+     * @type {{}}
+     */
+    blockTraces = {}
+
+    /**
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
@@ -480,6 +486,9 @@ class TestRunner extends EventEmitter {
         }
 
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
+        if (props['traceBlocks']){
+        this.blockTraces[Object.keys(this.blockTraces).length.toString()] = this._extractTraces();
+        }
         for (const statement of this.statementMap.keys()){
             if(result.covered.has(statement._targetNode.id)){
                 this.statementMap.set(statement, true);
@@ -487,6 +496,19 @@ class TestRunner extends EventEmitter {
         }
         this.vmWrapper.end();
         return result;
+    }
+
+    /**
+     * Extracts desired trace information for every executed block.
+     * @return {{id:string, targets:{}}}
+     * @private
+     */
+    _extractTraces() {
+        const traces = [];
+        for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
+            traces.push({id: trace['id'], targets: trace['targetsInfo']});
+        }
+        return {... traces};
     }
 
     /**
