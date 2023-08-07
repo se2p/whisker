@@ -506,7 +506,7 @@ class TestRunner extends EventEmitter {
     _extractTraces() {
         const traces = [];
         for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
-            traces.push({id: trace['id'], targets: trace['targetsInfo']});
+            traces.push({id: trace['id'], opcode: trace['opcode'], sprite: trace['targetsInfo']});
         }
         return {... traces};
     }
