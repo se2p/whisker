@@ -35,7 +35,7 @@
         "minilog": "^3.1.0",
         "ntc": "^0.0.1",
         "scratch-analysis": "0.8.0",
-        "scratch-vm": "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#develop",
+        "scratch-vm": "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#remove-husky",
         "seed-random": "^2.2.0",
         "setimmediate": "^1.0.5",
         "source-map-loader": "^1.1.3",
