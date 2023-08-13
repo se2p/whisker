@@ -385,9 +385,9 @@ export class StatisticsCollector {
         return [headerRow, dataRow].join("\n");
     }
 
-    public asCsvNeuroevolution(sampleDistance: number, maxTimeStamp: number): string {
+    public asCsvNeuroevolution(sampleDistance?: number, maxTimeStamp?: number): string {
         // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
-        const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance, maxTimeStamp);
+        const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance);
         const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
         const timelineValues = timestamps.map((ts) => Object.values(fitnessOverTimeMap.get(ts)).join('|'));
 
@@ -409,8 +409,9 @@ export class StatisticsCollector {
             const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance);
             const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
 
-            header = [...header, ...headerPadding].slice(0, maxTimeStamp);
-            values = [...values, ...valuePadding].slice(0, maxTimeStamp);
+            const numHeaderCols = Math.ceil(maxTimeStamp / sampleDistance);
+            header = [...header, ...headerPadding].slice(0, numHeaderCols);
+            values = [...values, ...valuePadding].slice(0, numHeaderCols);
         }
 
         const fitnessHeaders = header.join(",");
@@ -446,7 +447,7 @@ export class StatisticsCollector {
         return csv;
     }
 
-    private _adjustFitnessOverEvaluations(sampleDistance: number, maxTimeStamp:number): Map<number, NeuroevolutionFitnessOverTime> {
+    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, NeuroevolutionFitnessOverTime> {
         const adjusted: Map<number, NeuroevolutionFitnessOverTime> = new Map();
         let maxTime = 0;
         for (const timeSample of this._fitnessOverTime.keys()) {
@@ -463,7 +464,7 @@ export class StatisticsCollector {
             score: 0,
             survive: 0
         };
-        for (let i = 0; i <= maxTimeStamp; i = i + sampleDistance) {
+        for (let i = 0; i <= maxTime; i = i + sampleDistance) {
             if (adjusted.has(i)) {
                 max = adjusted.get(i);
             } else {
