@@ -409,7 +409,8 @@ export class StatisticsCollector {
             const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance);
             const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
 
-            const numHeaderCols = Math.ceil(maxTimeStamp / sampleDistance);
+            // Plus one since we start at timestamp 0.
+            const numHeaderCols = Math.ceil(maxTimeStamp / sampleDistance) + 1;
             header = [...header, ...headerPadding].slice(0, numHeaderCols);
             values = [...values, ...valuePadding].slice(0, numHeaderCols);
         }
