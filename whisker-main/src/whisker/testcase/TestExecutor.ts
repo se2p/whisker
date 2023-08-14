@@ -162,7 +162,12 @@ export class TestExecutor {
         for (let i = 0; i < eventAndParams.length; i+=2) {
             const nextEvent = eventAndParams[i].event;
             const parameters = eventAndParams[i].parameters;
-            const nextStepEvent = eventAndParams[i+1].event;
+            let nextStepEvent: ScratchEvent;
+            if (i+1 < eventAndParams.length) {
+                nextStepEvent = eventAndParams[i+1].event;
+            } else {
+                nextStepEvent = new WaitEvent(1);
+            }
             this.notify(nextEvent, parameters);
             await nextEvent.apply();
             await nextStepEvent.apply();

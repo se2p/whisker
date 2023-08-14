@@ -39,14 +39,18 @@ export class KeyPressEvent extends ScratchEvent {
         // Press the specified key
         Container.testDriver.keyPress(this._keyOption, this._steps);
         // Wait for the key to be released again if we use a codon based test generator.
-        if(!Container.isNeuroevolution) {
+        if (!Container.isNeuroevolution) {
             await new WaitEvent(this._steps).apply();
         }
     }
 
     public toJavaScript(): string {
         const keyName = this._keyOption.replace(/'/g, "\\'");
-        return `t.keyPress('${keyName}', ${this._steps});\n  ${new WaitEvent(this._steps).toJavaScript()}`;
+        if (Container.isNeuroevolution) {
+            return `t.keyPress('${keyName}', ${this._steps});\n`;
+        } else {
+            return `t.keyPress('${keyName}', ${this._steps});\n  ${new WaitEvent(this._steps).toJavaScript()}`;
+        }
     }
 
     public toJSON(): Record<string, any> {
@@ -73,7 +77,7 @@ export class KeyPressEvent extends ScratchEvent {
     }
 
     setParameter(args: number[], testExecutor: ParameterType): [number] {
-        switch (testExecutor){
+        switch (testExecutor) {
             case "random":
                 this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
                 break;
@@ -84,11 +88,11 @@ export class KeyPressEvent extends ScratchEvent {
                 this._steps = args[0] * Container.config.getPressDurationUpperBound();
                 break;
         }
-        if(!Container.isNeuroevolution) {
+        if (!Container.isNeuroevolution) {
             this._steps %= Container.config.getPressDurationUpperBound();
         }
         // If the event has been selected ensure that it is executed for at least one step.
-        if(this._steps < 1){
+        if (this._steps < 1) {
             this._steps = 1;
         }
         return [this._steps];
