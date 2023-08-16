@@ -8,6 +8,7 @@ const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const {shuffle} = require("../whisker/utils/Arrays");
+const CoverageGenerator = require("../coverage/coverage");
 
 class TestRunner extends EventEmitter {
 
@@ -402,10 +403,7 @@ class TestRunner extends EventEmitter {
                         this._log(test, message);
                         result.log.push(message);
                     },
-                    getCoverage: () => {
-                        const coverage = props.CoverageGenerator.getCoverage();
-                        return coverage.getCoverage();
-                    },
+                    getCoverage: () => CoverageGenerator.getCoverage(),
                     ...props.extend
                 }
             },
