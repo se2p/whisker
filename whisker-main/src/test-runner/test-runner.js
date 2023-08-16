@@ -8,6 +8,7 @@ const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const {shuffle} = require("../whisker/utils/Arrays");
+const CoverageGenerator = require("../coverage/coverage");
 
 class TestRunner extends EventEmitter {
 
@@ -220,7 +221,7 @@ class TestRunner extends EventEmitter {
      * @param {Test} test
      */
     _checkSeed(test){
-        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed){
+        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()){
             console.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
@@ -402,10 +403,7 @@ class TestRunner extends EventEmitter {
                         this._log(test, message);
                         result.log.push(message);
                     },
-                    getCoverage: () => {
-                        const coverage = props.CoverageGenerator.getCoverage();
-                        return coverage.getCoverage();
-                    },
+                    getCoverage: () => CoverageGenerator.getCoverage(),
                     ...props.extend
                 }
             },
