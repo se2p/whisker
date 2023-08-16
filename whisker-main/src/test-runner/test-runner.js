@@ -220,7 +220,7 @@ class TestRunner extends EventEmitter {
      * @param {Test} test
      */
     _checkSeed(test){
-        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed){
+        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()){
             console.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
