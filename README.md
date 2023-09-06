@@ -21,7 +21,7 @@ Whisker provides automated and property-based testing functionality for Scratch 
 
 ## Building Whisker
 
-Whisker requires Node.js v16.14.0 and is built using the [yarn](https://classic.yarnpkg.com/lang/en/) (classic) package manager.
+Whisker requires Node.js v18.16.0 and is built using the [yarn](https://classic.yarnpkg.com/lang/en/) (classic) package manager.
 
 After cloning the repository, install all dependencies using:
 
