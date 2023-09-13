@@ -57,7 +57,9 @@ class TestRunner extends EventEmitter {
 
         if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
-            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER;
+
+            // Divide by 1000 since we measure the budget in seconds and will multiply by 1000 afterwards.
+            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER / 1000;
 
             // Add the original as reference when applying mutation analysis
             const original = JSON.parse((vm.toJSON()));
@@ -66,7 +68,7 @@ class TestRunner extends EventEmitter {
             const mutantFactory = new MutationFactory(vm);
             mutantPrograms = mutantFactory.generateScratchMutations(props['mutators'], props['maxMutants']);
             shuffle(mutantPrograms); // Shuffle so we do not favour mutation operators when a time limit is set
-            mutantPrograms.push(original);
+            mutantPrograms.unshift(original);
 
             // Execute the given tests on every mutant
             for (const mutant of mutantPrograms) {
@@ -114,7 +116,7 @@ class TestRunner extends EventEmitter {
                 testResults.length = 0;
 
                 // Stop if time budget in seconds has been exceeded.
-                if (Date.now() - startTime < mutationBudget * 1000){
+                if (Date.now() - startTime > mutationBudget * 1000){
                     break;
                 }
             }
