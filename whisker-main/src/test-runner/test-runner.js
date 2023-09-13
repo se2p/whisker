@@ -69,9 +69,7 @@ class TestRunner extends EventEmitter {
             mutantPrograms.push(original);
 
             // Execute the given tests on every mutant
-            const startTime = Date.now();
-            while (mutantPrograms.length > 0 && Date.now() - startTime < mutationBudget) {
-                const mutant = mutantPrograms.pop();
+            for (const mutant of mutantPrograms) {
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
@@ -114,6 +112,11 @@ class TestRunner extends EventEmitter {
                 csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
+
+                // Stop if time budget in seconds has been exceeded.
+                if (Date.now() - startTime < mutationBudget * 1000){
+                    break;
+                }
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);

@@ -11,7 +11,7 @@ const {
     mutators,
     mutationBudget,
     maxMutants,
-    mutantsDownloadPath,
+    downloadMutants,
     activationTraces
 } = require('./cli').opts
 
@@ -38,7 +38,9 @@ async function runDynamicTestSuite(openNewPage, path) {
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
+        await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
         await page.evaluate(at => document.querySelector('#container').activationTraceRepetitions = at, activationTraces);
+
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
@@ -52,12 +54,6 @@ async function runDynamicTestSuite(openNewPage, path) {
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName,testName')) {
-
-                // Download mutants
-                if (mutantsDownloadPath) {
-                    await downloadMutants(mutantsDownloadPath);
-                }
-
                 break;
             }
             await page.waitForTimeout(1000);
@@ -75,19 +71,6 @@ async function runDynamicTestSuite(openNewPage, path) {
      */
     async function executeTests() {
         await (await page.$('#run-all-tests')).click();
-    }
-
-    /**
-     * Downloads the generated Scratch mutants.
-     * @param downloadPath the path the mutants should be saved to.
-     */
-    async function downloadMutants(downloadPath) {
-        await page._client().send('Page.setDownloadBehavior', {
-            behavior: 'allow',
-            downloadPath: downloadPath
-        });
-        await (await page.$('.output-save')).click();
-        await page.waitForTimeout(5000);
     }
 
     try {

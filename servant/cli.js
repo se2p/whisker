@@ -172,9 +172,10 @@ class WhiskerSubCommand extends Command {
             }
         });
 
-        return this.option('-e, --mutants-download-path <Path>',
-            'where generated mutants should be saved',
-            (downloadPath) => util.processDirPathExists(downloadPath));
+        return this.option(
+            '-dm, --download-mutants',
+            'downloads the generated mutants',
+        );
     }
 
     optionMutationBudget() {

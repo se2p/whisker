@@ -80,21 +80,22 @@ Usage: node servant run [options]
 run Whisker tests
 
 Options:
-  -a, --acceleration <Integer>        acceleration factor (default: 1)
-  -d, --headless                      run headless ("d" like in "decapitated") (default: false)
-  -e, --mutants-download-path <Path>  where generated mutants should be saved
-  -h, --help                          display help for command
-  -j, --number-of-jobs <Integer>      number of jobs (Chromium tabs) for test execution (default: 1)
-  -k, --console-forwarded             forward browser console output
-  -l, --live-log                      print new log output regularly
-  -m, --mutators <String...>          mutation operators to apply
-  -o, --live-output-coverage          print new coverage output regularly
-  -s, --scratch-path <Path>           path to file (".sb3") or folder with scratch application(s)
-  -t, --test-path <Path>              path to Whisker tests to run (".js")
-  -v, --csv-file <Path>               create CSV file with results
-  -z, --seed <String>                 custom seed for Scratch-VM
-  -et, --executionTrace               whether and execution trace should be recorded and downloaded (default: false)
-  -rec, --state-action-recorder       record the program execution as a json file when running with the `open` command
+  -a, --acceleration <Integer>      acceleration factor (default: 1)
+  -bm, --max-mutants <Integer>      upper bound of analysed mutants during mutation analysis
+  -bt, --mutation-budget <Integer>  timeout for the mutation analysis
+  -d, --headless                    run headless ("d" like in "decapitated") (default: false)
+  -dm, --download-mutants           downloads the generated mutants
+  -et, --execution-trace            activates recording of execution trace
+  -h, --help                        display help for command
+  -j, --number-of-jobs <Integer>    number of jobs (Chromium tabs) for test execution (default: 1)
+  -k, --console-forwarded           forward browser console output
+  -l, --live-log                    print new log output regularly
+  -m, --mutators <String...>        mutation operators to apply
+  -o, --live-output-coverage        print new coverage output regularly
+  -s, --scratch-path <Path>         path to file (".sb3") or folder with scratch application(s)
+  -t, --test-path <Path>            path to Whisker tests to run (".js")
+  -v, --csv-file <Path>             create CSV file with results
+  -z, --seed <String>               custom seed for Scratch-VM
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
