@@ -20,8 +20,8 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ControlDependenceGraph, GraphNode, EventNode, UserEventNode, Graph} from 'scratch-analysis';
-import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter';
+import {ControlDependenceGraph, GraphNode, EventNode, UserEventNode, Graph} from '../../../../../scratch-analysis';
+import {ControlFilter, CustomFilter} from '../../../../../scratch-analysis/src/block-filter';
 import {Trace} from "scratch-vm/src/engine/tracing.js";
 import {Container} from "../../utils/Container";
 
@@ -261,7 +261,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             const queue = [targetNode];
             const visited = new Set([targetNode]);
             let node;
-            const res = new Set();
+            const res = new Set<GraphNode>();
             while (queue.length > 0) {
                 const qSize = queue.length;
                 for (let i = 0; i < qSize; i++) {
