@@ -5,10 +5,15 @@ import {InputConnectionMethod, NetworkChromosome, NetworkLayer} from "./NetworkC
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
-import {AddConnectionInnovation, AddNodeSplitConnectionInnovation, NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import {
+    AddConnectionInnovation,
+    AddNodeSplitConnectionInnovation,
+    NeatPopulation
+} from "../NeuroevolutionPopulations/NeatPopulation";
 import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {BiasNode} from "../NetworkComponents/BiasNode";
+import {NodeType} from "../NetworkComponents/NodeType";
 
 export class NeatChromosome extends NetworkChromosome {
     /**
@@ -155,8 +160,8 @@ export class NeatChromosome extends NetworkChromosome {
      * @param inputRate the probability of adding additional sprites to the network in case a sparse method is used
      * @param connectionMethod determines how the input layer should be connected to the given nodes.
      */
-    public connectNodeToInputLayer(nodesToConnect: NodeGene[], connectionMethod: InputConnectionMethod,
-                                   inputRate = 0.3): void {
+    public connectNodesToInputLayer(nodesToConnect: NodeGene[], connectionMethod: InputConnectionMethod,
+                                    inputRate = 0.3): void {
         switch (connectionMethod) {
             case "sparse":
                 this.connectNodeSpriteSparse(nodesToConnect, inputRate);
@@ -189,29 +194,48 @@ export class NeatChromosome extends NetworkChromosome {
      * @returns ConnectionGene[] the generated network's connections.
      */
     private connectNodeFullyHidden(nodesToConnect: NodeGene[]): ConnectionGene[] {
-        const connections: ConnectionGene[] = [];
-        let minDepth = 1;
-        let minDepthNode = nodesToConnect[0];
-        for(const node of nodesToConnect){
-            if(node.depth < minDepth){
-                minDepth = node.depth;
-                minDepthNode = node;
+        const newConnections: ConnectionGene[] = [];
+        const minDepth = Math.min(...nodesToConnect.map(node => node.depth));
+
+        for (const [sprite, featureMap] of this.inputNodes.entries()) {
+            // Add Hidden Node if there is none for the given sprite feature.
+            if (!this._fullyHiddenPairs.has(sprite)) {
+                const depth = minDepth / 2;
+                const hiddenNode = new HiddenNode(this.getNumNodes(), depth, this.activationFunction);
+                this.addNode(hiddenNode);
+                this._fullyHiddenPairs.set(sprite, hiddenNode);
             }
-        }
-        for (const featureMap of this.inputNodes.values()) {
-            const depth = this.getDepthOfNewNode([...featureMap.values()][0], minDepthNode);
-            const hiddenNode = new HiddenNode(this.getNumNodes(), depth, this.activationFunction);
-            this.addNode(hiddenNode, [...featureMap.values()][0], minDepthNode);
-            for (const inputNode of featureMap.values()) {
-                const inputHiddenConnection = new ConnectionGene(inputNode, hiddenNode, this._random.nextDoubleMinMax(-1, 1), true, 0);
-                this.addConnection(inputHiddenConnection);
+
+            const hiddenNode = this._fullyHiddenPairs.get(sprite);
+            const hiddenIncomingNodes = hiddenNode.incomingConnections.map(conn => conn.source);
+
+            // Connect inputNode to hiddenNode if there is no such connection.
+            for (const iNode of featureMap.values()) {
+                if (!hiddenIncomingNodes.includes(iNode)) {
+                    const inputHiddenConn = new ConnectionGene(iNode, hiddenNode, this._random.nextDoubleMinMax(-1, 1), true, 0);
+                    newConnections.push(inputHiddenConn);
+                    this.addConnection(inputHiddenConn);
+                }
             }
+
+            // Connect nodeToConnect to corresponding hidden node.
             for (const nodeToConnect of nodesToConnect) {
-                const hiddenOutputConnection = new ConnectionGene(hiddenNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
-                this.addConnection(hiddenOutputConnection);
+                const hiddenToNewNode = new ConnectionGene(hiddenNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
+                newConnections.push(hiddenToNewNode);
+                this.addConnection(hiddenToNewNode);
             }
+
         }
-        return connections;
+
+        // Connect new nodes to Bias
+        const biasNode = this.layers.get(0).find(node => node.type == NodeType.BIAS);
+        for (const nodeToConnect of nodesToConnect) {
+            const biasConnection = new ConnectionGene(biasNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
+            newConnections.push(biasConnection);
+            this.addConnection(biasConnection);
+        }
+
+        return newConnections;
     }
 
     /**
@@ -318,7 +342,7 @@ export class NeatChromosome extends NetworkChromosome {
 
         // We do not use the addConnection method here since we have already assigned innovation numbers to the
         // created connections.
-        this.addNode(newNode, sourceNode, targetNode);
+        this.addNode(newNode);
         this.connections.push(connection1);
         this.connections.push(connection2);
         this.generateNetwork();

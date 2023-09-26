@@ -74,7 +74,7 @@ describe('Test NeatChromosomeGenerator', () => {
             ActivationFunction.TANH, mutationOp, crossoverOp);
         const neatChromosome = generator.get();
         expect(neatChromosome.getAllNodes().length).toBe(21);
-        expect(neatChromosome.connections.length).toBe(27);
+        expect(neatChromosome.connections.length).toBe(36);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toBe(2);

@@ -269,8 +269,8 @@ export class StateActionRecorder extends EventEmitter {
             (stepsSinceLastMouseMove > this.MOUSE_MOVE_THRESHOLD || mouseDownNoticed)) {
             const clickTarget = Util.getTargetSprite(this._vm);
             let event: ScratchEvent;
-            if (availableActions.includes(new MouseMoveToEvent(clickTarget.x, clickTarget.y).stringIdentifier())) {
-                event = new MouseMoveToEvent(clickTarget.x, clickTarget.y);
+            if (availableActions.includes(new MouseMoveToEvent(clickTarget.x, clickTarget.y, clickTarget.sprite.name).stringIdentifier())) {
+                event = new MouseMoveToEvent(clickTarget.x, clickTarget.y, clickTarget.sprite.name);
             } else {
                 event = new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]);
             }
