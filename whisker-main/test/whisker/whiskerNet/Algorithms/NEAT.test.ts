@@ -64,15 +64,15 @@ describe('Test NEAT', () => {
     const mutationConfig = {
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
-        "mutationAddConnection": 0.05,
+        "mutationAddConnection": 0.5,
         "recurrentConnection": 0,
         "addConnectionTries": 20,
         "populationChampionNumberOffspring": 3,
         "populationChampionNumberClones": 1,
         "populationChampionConnectionMutation": 0.3,
-        "mutationAddNode": 0.01,
+        "mutationAddNode": 0.05,
         "mutateWeights": 0.6,
-        "perturbationPower": 1,
+        "perturbationPower": 1.5,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
@@ -124,7 +124,6 @@ describe('Test NEAT', () => {
     });
 
     test("XOR Sanity Test", () => {
-        const printInfo = false;
         const inputMap = new Map<string, Map<string, number>>();
         inputMap.set("Test", new Map<string, number>());
         const mutation = new NeatMutation(mutationConfig);
@@ -138,20 +137,6 @@ describe('Test NEAT', () => {
         const generator = new NeatChromosomeGenerator(inputMap, events, "fully", ActivationFunction.SIGMOID, mutation, crossover);
         const population = new NeatPopulation(generator, properties);
         population.generatePopulation();
-
-        for (const network of population.networks) {
-            for (const conn of network.connections) {
-                if (conn.source.type === NodeType.BIAS) {
-                    network.connections.splice(network.connections.findIndex(c => c.equalsByNodes(conn)), 1);
-                }
-            }
-
-            const inputLayer = network.layers.get(0);
-            network.getAllNodes();
-            inputLayer.splice(inputLayer.findIndex(node => node.type === NodeType.BIAS), 1);
-
-            network.generateNetwork();
-        }
 
         let found = false;
         let generation = 0;
@@ -179,6 +164,7 @@ describe('Test NEAT', () => {
                 network.fitness = (4 - error_sum) ** 2;
                 if (network.fitness >= 15.8) {
                     found = true;
+                    // console.log(network.toString());
                     break;
                 }
             }
