@@ -155,10 +155,7 @@ export class Species<C extends NeatChromosome> {
 
         // Determines how many members of this species are allowed to reproduce.
         // Ensure that the species will not go extinct -> at least one member survives.
-        let numberOfParents = Math.floor((this.hyperParameter.parentsPerSpecies * this.networks.length));
-        if (numberOfParents === 0) {
-            numberOfParents = 1;
-        }
+        const numberOfParents = Math.floor((this.hyperParameter.parentsPerSpecies * this.networks.length));
 
         // Allow the first <numberOfParents> to reproduce.
         for (const network of this.networks.slice(0, numberOfParents + 1)) {
