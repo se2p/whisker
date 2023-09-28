@@ -333,11 +333,14 @@ export class Neatest extends NEAT {
         Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
         Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
         Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`);
-        Container.debugLog(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
-        const sortedSpecies = this._population.species.sort((a, b) => b.averageFitness - a.averageFitness);
+
+        const sortedSpecies = this._population.species.sort((a, b) => a.uID - b.uID);
+        Container.debugLog(`Population of ${this._population.populationSize} distributed in ${sortedSpecies.length} species`);
+        Container.debugLog("\tID\tage\tsize\tfitness");
         for (const species of sortedSpecies) {
-            Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
+            Container.debugLog(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}`);
         }
+        Container.debugLog(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
         Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         Container.debugLog("\n-----------------------------------------------------\n");
     }
