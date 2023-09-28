@@ -82,6 +82,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             executor.resetState();
 
             // Stop if we failed to cover our target statement.
+            // TODO: Think about continue running since first seed may be bad.
             if(!await network.targetFitness.isCovered(network)){
                 network.fitness += (1 / await network.targetFitness.getFitness(network));
                 break;

@@ -62,7 +62,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
             layer.get(1).push(classificationNode);
         }
 
-        // Add regression nodes for each parameter of each parameterized Event
+        // Add regression nodes for each parameter of each parameterised Event
         const parameterizedEvents = this._outputSpace.filter(event => event.numSearchParameter() > 0);
         if (parameterizedEvents.length !== 0) {
             this.addRegressionNodes(numNodes, layer, parameterizedEvents);

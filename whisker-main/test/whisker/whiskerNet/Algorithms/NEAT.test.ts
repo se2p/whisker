@@ -4,20 +4,29 @@ import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/Net
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
-import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
+import {
+    FixedIterationsStoppingCondition
+} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {
+    NeuroevolutionTestGenerationParameter
+} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {ParameterType} from "../../../../src/whisker/testcase/events/ParameterType";
+import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
+import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
 
 export const generateInputs = (): InputFeatures => {
     const genInputs: InputFeatures = new Map<string, Map<string, number>>();
@@ -55,15 +64,15 @@ describe('Test NEAT', () => {
     const mutationConfig = {
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
-        "mutationAddConnection": 0.2,
-        "recurrentConnection": 0.1,
+        "mutationAddConnection": 0.05,
+        "recurrentConnection": 0,
         "addConnectionTries": 20,
-        "populationChampionNumberOffspring": 10,
-        "populationChampionNumberClones": 5,
+        "populationChampionNumberOffspring": 3,
+        "populationChampionNumberClones": 1,
         "populationChampionConnectionMutation": 0.3,
-        "mutationAddNode": 0.1,
+        "mutationAddNode": 0.01,
         "mutateWeights": 0.6,
-        "perturbationPower": 2.5,
+        "perturbationPower": 1,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
@@ -114,8 +123,8 @@ describe('Test NEAT', () => {
         });
     });
 
-    /* Exclude due to long runtime
     test("XOR Sanity Test", () => {
+        const printInfo = false;
         const inputMap = new Map<string, Map<string, number>>();
         inputMap.set("Test", new Map<string, number>());
         const mutation = new NeatMutation(mutationConfig);
@@ -126,51 +135,68 @@ describe('Test NEAT', () => {
 
         const events = [new XOR()];
 
-        const generator = new NeatChromosomeGenerator(inputMap, events, "fully", ActivationFunction.RELU, mutation, crossover);
+        const generator = new NeatChromosomeGenerator(inputMap, events, "fully", ActivationFunction.SIGMOID, mutation, crossover);
         const population = new NeatPopulation(generator, properties);
         population.generatePopulation();
 
+        for (const network of population.networks) {
+            for (const conn of network.connections) {
+                if (conn.source.type === NodeType.BIAS) {
+                    network.connections.splice(network.connections.findIndex(c => c.equalsByNodes(conn)), 1);
+                }
+            }
+
+            const inputLayer = network.layers.get(0);
+            network.getAllNodes();
+            inputLayer.splice(inputLayer.findIndex(node => node.type === NodeType.BIAS), 1);
+
+            network.generateNetwork();
+        }
+
         let found = false;
+        let generation = 0;
+        let speciesString = "Current fitness Target: XOR\n";
         while (!found) {
+            // console.log("Generation: " + generation);
             for (const network of population.networks) {
-                let fitness = 0;
-                network.flushNodeValues();
+                let error_sum = 0;
                 for (let i = 0; i < 2; i++) {
                     inputMap.get("Test").set("Gate1", i);
                     for (let k = 0; k < 2; k++) {
+                        let groundTruth: number;
+                        if (i === k)
+                            groundTruth = 0;
+                        else
+                            groundTruth = 1;
+
                         inputMap.get("Test").set("Gate2", k);
                         network.activateNetwork(inputMap);
 
-                        let output: number;
-                        if (network.regressionNodes.get('XOR')[0].nodeValue > 1)
-                            output = 1;
-                        else
-                            output = 0;
-
-                        let result: number;
-                        if (i === k)
-                            result = 0;
-                        else
-                            result = 1;
-
-                        if (output === result)
-                            fitness++;
+                        const networkOutput = NeuroevolutionUtil.sigmoid(network.classificationNodes.get('XOR').nodeValue, 1);
+                        error_sum += Math.abs(groundTruth - Math.abs(networkOutput));
                     }
                 }
-                network.fitness = fitness;
-                if (fitness === 4)
+                network.fitness = (4 - error_sum) ** 2;
+                if (network.fitness >= 15.8) {
                     found = true;
-            }
-            let fitness = 0;
-            for(const net of population.networks){
-                if (net.fitness > fitness){
-                    fitness = net.fitness;
+                    break;
                 }
             }
             population.updatePopulationStatistics();
             population.evolve();
+
+            const sortedSpecies = population.species.sort((a, b) => b.uID - a.uID);
+            speciesString = speciesString.concat(`Population of ${population.populationSize} distributed in ${sortedSpecies.length} species\n`);
+            speciesString = speciesString.concat("\tID\tage\tsize\tfitness\n");
+            for (const species of sortedSpecies) {
+                speciesString = speciesString.concat(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}\n`);
+            }
+            speciesString = speciesString.concat("\n");
+
+            generation++;
         }
-        expect(population.populationChampion.fitness).toBe(4);
+        // console.log(speciesString);
+        expect(population.populationChampion.fitness).toBeGreaterThan(15.7);
     });
 
 
@@ -181,7 +207,7 @@ describe('Test NEAT', () => {
         }
 
         getSearchParameterNames(): string[] {
-            return ['GateInput'];
+            return [];
         }
 
         getParameters(): unknown[] {
@@ -201,11 +227,13 @@ describe('Test NEAT', () => {
         }
 
         toJSON(): Record<string, any> {
-            throw new Error("Method not implemented.");
+            const json = {};
+            json['type'] = "XOR";
+            return json;
         }
 
         numSearchParameter(): number {
-            return 1;
+            return 0;
         }
 
         setParameter(args: number[], argType: ParameterType): number[] {
@@ -213,5 +241,5 @@ describe('Test NEAT', () => {
         }
     }
 
-     */
+
 });

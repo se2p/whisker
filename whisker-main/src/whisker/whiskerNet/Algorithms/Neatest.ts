@@ -315,11 +315,8 @@ export class Neatest extends NEAT {
         const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
         const coverageStableCount = network.openStatementTargets.get(fitnessFunctionKey);
         const statementFitness = await fitnessFunction.getFitness(network);
-        return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount &&
-                !this._archive.has(fitnessFunctionKey)) ||
-            (this._neuroevolutionProperties.coverageStableCount == 0 &&
-                await fitnessFunction.isOptimal(statementFitness) &&
-                !this._archive.has(fitnessFunctionKey));
+        return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount && !this._archive.has(fitnessFunctionKey)) ||
+            (this._neuroevolutionProperties.coverageStableCount == 0 && await fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey));
     }
 
     /**
@@ -334,7 +331,7 @@ export class Neatest extends NEAT {
         Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
         Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`);
 
-        const sortedSpecies = this._population.species.sort((a, b) => a.uID - b.uID);
+        const sortedSpecies = this._population.species.sort((a, b) => b.uID - a.uID);
         Container.debugLog(`Population of ${this._population.populationSize} distributed in ${sortedSpecies.length} species`);
         Container.debugLog("\tID\tage\tsize\tfitness");
         for (const species of sortedSpecies) {

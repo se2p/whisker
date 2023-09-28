@@ -95,6 +95,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 this.removeNetwork(chromosome);
             }
         }
+
         // Now, let the reproduction start.
         const offspring: NeatChromosome[] = [];
         for (const specie of this.species) {
@@ -290,29 +291,29 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      */
     public speciate(network: NeatChromosome): void {
 
-        // If we have no existent species in our population create the first one.
+        // If we have no existent species in our population, create the first one.
         if (this.species.length === 0) {
             const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
             this.speciesCount++;
             this.species.push(newSpecies);
             newSpecies.networks.push(network);
             network.species = newSpecies;
-        }
-
-            // If we already have some species find a compatible one or create a new species for the network if the network
-        // is not compatible enough with any existent species.
-        else {
+        } else {
+            // If we already have some species,
+            // find a compatible one or create a new species for the network if the network
+            // is not compatible enough with any existent species.
             let foundSpecies = false;
             for (const specie of this.species) {
                 // Skip empty species
                 if (specie.networks.length == 0) {
                     continue;
                 }
+
                 // Get a representative of the specie and calculate the compatibility distance.
                 const representative = specie.networks[0];
                 const compatDistance = this.compatibilityDistance(network, representative);
 
-                // If the representative and the given network are compatible enough add the network to the
+                // If the representative and the given network are compatible enough, add the network to the
                 // representative's species.
                 if (compatDistance < this.compatibilityThreshold) {
                     specie.networks.push(network);
