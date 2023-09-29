@@ -7,7 +7,7 @@
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
-    "switchTargetCount": 20,
+    "switchTargetCount": 10,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
     "chromosome": {
@@ -41,7 +41,7 @@
         "distanceThreshold": 3.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
-        "weightCoefficient": 0.4
+        "weightCoefficient": 0.5
     },
     "fitnessFunction": {
         "type": "statement",

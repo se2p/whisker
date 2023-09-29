@@ -85,7 +85,6 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             // TODO: Think about continue running since first seed may be bad.
             if(!await network.targetFitness.isCovered(network)){
                 network.fitness += (1 / await network.targetFitness.getFitness(network));
-                break;
             }
 
             // At this point, we know that we have covered the statement again.

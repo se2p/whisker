@@ -85,8 +85,6 @@ export class Neatest extends NEAT {
                 // Switch target if other statements than the currently selected one are easier to cover.
                 if (this._switchToEasierTarget) {
                     Container.debugLog("Switch to easier Target");
-                    const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id;
-                    this._switchedTargets.add(currentTargetId);
                     break;
                 }
 
@@ -101,7 +99,7 @@ export class Neatest extends NEAT {
                     uncoveredUntouchedTargets.length > 0) {
                     const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id;
                     this._switchedTargets.add(currentTargetId);
-                    Container.debugLog("Switching Target due to missing improvement.");
+                    Container.debugLog("Switching Target " + currentTargetId + " due to missing improvement.");
                     break;
                 }
 
