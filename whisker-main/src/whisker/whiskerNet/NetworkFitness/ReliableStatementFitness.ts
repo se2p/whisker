@@ -88,7 +88,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 break;
             }
 
-            // At this point we know that we have covered the statement again.
+            // At this point, we know that we have covered the statement again.
             // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth data.
             if (Container.backpropagationInstance && Container.peerToPeerSharing) {
                 this._peerToPeerSharing(network);

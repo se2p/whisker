@@ -7,7 +7,7 @@
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
-    "switchTargetCount": 5,
+    "switchTargetCount": 20,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
     "chromosome": {
