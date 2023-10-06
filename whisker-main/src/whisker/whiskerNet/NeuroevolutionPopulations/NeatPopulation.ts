@@ -87,14 +87,17 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Generates a new generation of networks by evolving the current population.
      */
     public evolve(): void {
+
         // Remove chromosomes that are not allowed to reproduce.
+        const doomedChromosomes = [];
         for (const chromosome of this.networks) {
             if (!chromosome.isParent) {
                 const specie = chromosome.species;
                 specie.removeNetwork(chromosome);
-                this.removeNetwork(chromosome);
+                doomedChromosomes.push(chromosome);
             }
         }
+        this._networks = this.networks.filter(network => !doomedChromosomes.includes(network));
 
         // Now, let the reproduction start.
         const offspring: NeatChromosome[] = [];

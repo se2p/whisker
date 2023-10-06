@@ -169,16 +169,16 @@ describe('Test NEAT', () => {
                 }
             }
             population.updatePopulationStatistics();
-            population.evolve();
 
             const sortedSpecies = population.species.sort((a, b) => b.uID - a.uID);
             speciesString = speciesString.concat(`Population of ${population.populationSize} distributed in ${sortedSpecies.length} species\n`);
             speciesString = speciesString.concat("\tID\tage\tsize\tfitness\n");
             for (const species of sortedSpecies) {
-                speciesString = speciesString.concat(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}\n`);
+                speciesString = speciesString.concat(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}\t${species.expectedOffspring}\n`);
             }
             speciesString = speciesString.concat("\n");
 
+            population.evolve();
             generation++;
         }
         // console.log(speciesString);
