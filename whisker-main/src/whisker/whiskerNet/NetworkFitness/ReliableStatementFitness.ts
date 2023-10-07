@@ -81,10 +81,11 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             await ReliableStatementFitness.updateUncoveredMap(network);
             executor.resetState();
 
-            // Stop if we failed to cover our target statement.
-            // TODO: Think about continue running since first seed may be bad.
+            // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
+            // target statement to the fitness function.
             if(!await network.targetFitness.isCovered(network)){
                 network.fitness += (1 / await network.targetFitness.getFitness(network));
+                continue;
             }
 
             // At this point, we know that we have covered the statement again.
