@@ -46,9 +46,9 @@
 # [1] https://www.ibm.com/docs/en/filenet-p8-platform/5.5.x?topic=deployment-choosing-image-tags-digests
 # [2] https://hub.docker.com/_/node?tab=tags
 #
-# Currently, this digest corresponds to the tag 16.14.0-bullseye-slim:
-# https://hub.docker.com/layers/satantime/puppeteer-node/16.14.0-bullseye-slim/images/sha256-bed240a3b8cd99af56a2971046201a26fba978804f55c296bde7f9b1075d19bc?context=explore
-ARG version=@sha256:bed240a3b8cd99af56a2971046201a26fba978804f55c296bde7f9b1075d19bc
+# Currently, this digest corresponds to the tag 18.18.0-bullseye-slim:
+# https://hub.docker.com/layers/satantime/puppeteer-node/18.18-bullseye-slim/images/sha256-0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555?context=explore
+ARG version=@sha256:0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555
 
 # (a) We use a slim base image that already includes Node.JS and a minimal set
 #     of packages required to run Puppeteer (without packaging Puppeteer
