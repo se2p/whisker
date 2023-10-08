@@ -3,11 +3,11 @@
     "algorithm": "neatest",
     "eventSelection": "activation",
     "populationSize": 150,
-    "numberOfSpecies": 10,
+    "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
-    "switchTargetCount": 10,
+    "switchTargetCount": 15,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
     "chromosome": {
