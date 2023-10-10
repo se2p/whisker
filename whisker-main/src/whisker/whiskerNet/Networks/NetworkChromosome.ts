@@ -17,6 +17,8 @@ import assert from "assert";
 import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
 import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 import {BiasNode} from "../NetworkComponents/BiasNode";
+import {HiddenNode} from "../NetworkComponents/HiddenNode";
+import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -44,6 +46,13 @@ export abstract class NetworkChromosome extends Chromosome {
      * Maps events which take at least one parameter as input to the corresponding regression nodes.
      */
     protected readonly _regressionNodes = new Map<string, RegressionNode[]>();
+
+    /**
+     * When using the fullyHidden input connection method, this map keeps track of which input nodes
+     * are connected to which HiddenNodes during the generation of the chromosome. This mapping facilitates connecting
+     * new output nodes to the networks during the execution.
+     */
+    protected readonly _fullyHiddenPairs: Map<string, HiddenNode> = new Map<string, HiddenNode>();
 
     /**
      * Reference activation trace serving as the ground truth.
@@ -222,15 +231,31 @@ export abstract class NetworkChromosome extends Chromosome {
     public updateOutputNodes(events: ScratchEvent[]): void {
         let updated = false;
         for (const event of events) {
+
+            // Update MouseMoveEvents by changing the Event itself in order to prevent an explosion of such events.
+            if (event instanceof MouseMoveToEvent) {
+                const targetSprite = event.sprite;
+                for (const classNode of this.classificationNodes.values()) {
+                    const nodeEvent = classNode.event;
+                    if (nodeEvent instanceof MouseMoveToEvent && nodeEvent.sprite === targetSprite
+                        && (nodeEvent.x !== event.x || nodeEvent.y !== event.y)) {
+                        nodeEvent.x = event.x;
+                        nodeEvent.y = event.y;
+                        break;
+                    }
+                }
+            }
+
+            // Check if we have to add new event nodes.
             if (!this.classificationNodes.has(event.stringIdentifier())) {
                 updated = true;
                 const featureID = `C:${event.stringIdentifier()}`;
                 const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                 const classificationNode = new ClassificationNode(id, event, ActivationFunction.NONE);
                 this._layers.get(1).push(classificationNode);
-                this.connectNodeToInputLayer([classificationNode], this._inputConnectionMethod);
+                this.connectNodesToInputLayer([classificationNode], this._inputConnectionMethod);
             }
-            // Check if we also have to add regression nodes.
+            // Check if we also have to add new regression nodes.
             if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
                 updated = true;
                 for (const parameter of event.getSearchParameterNames()) {
@@ -238,7 +263,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const regressionNode = new RegressionNode(id, event, parameter);
                     this._layers.get(1).push(regressionNode);
-                    this.connectNodeToInputLayer([regressionNode], this._inputConnectionMethod);
+                    this.connectNodesToInputLayer([regressionNode], this._inputConnectionMethod);
                 }
             }
         }
@@ -253,7 +278,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param nodesToConnect the nodes that should be connected to the input layer.
      * @param mode determines how the input layer should be connected to the given nodes.
      */
-    public abstract connectNodeToInputLayer(nodesToConnect: NodeGene[], mode: InputConnectionMethod): void;
+    public abstract connectNodesToInputLayer(nodesToConnect: NodeGene[], mode: InputConnectionMethod): void;
 
     /**
      * Fetches the ID of a functional Node, i.e. a non-Hidden node.
@@ -357,11 +382,9 @@ export abstract class NetworkChromosome extends Chromosome {
                     this._calculateNodeValue(node);
                     node.activationValue = node.activate();
                 }
-            }
-
-                // For output nodes calculate the node values first since we require them for the softmax function within
-            // the classification nodes.
-            else {
+            } else {
+                // For output nodes, calculate the node values first since we require them for the softmax function within
+                // the classification nodes.
                 for (const node of nodes) {
                     this._calculateNodeValue(node);
                 }
@@ -593,11 +616,9 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Adds a new node to the network.
      * @param newNode the node to be added.
-     * @param sourceNode the source node with a connection into the new node.
-     * @param targetNode the target node to which the new node has an outgoing connection.
      */
-    public addNode(newNode: NodeGene, sourceNode: NodeGene, targetNode: NodeGene): void {
-        const depth = this.getDepthOfNewNode(sourceNode, targetNode);
+    public addNode(newNode: NodeGene): void {
+        const depth = newNode.depth;
         if (!this._layers.get(depth)) {
             this._layers.set(depth, []);
         }

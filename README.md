@@ -247,3 +247,13 @@ Whisker is supported by the project FR 2955/3-1 funded by the
   doi           = {10.48550/arXiv.2304.06413}
 }
 ```
+
+```
+@inproceedings{nuzzlebug24,
+  author    = {Adina Deiner and Gordon Fraser},
+  title     = {NuzzleBug: Debugging Block-Based Programs in Scratch },
+  booktitle = {ACM/IEEE International Conference on Software Engineering (ICSE)},
+  publisher = {{IEEE}},
+  year      = {2024}
+}
+```

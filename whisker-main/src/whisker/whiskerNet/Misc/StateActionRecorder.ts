@@ -136,7 +136,7 @@ export class StateActionRecorder extends EventEmitter {
 
             // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
             // question was asked.
-            if (availableActions.some(actionId => actionId.localeCompare(event.stringIdentifier(), 'en', { sensitivity: 'base' }) === 0) ||
+            if (availableActions.some(actionId => actionId.localeCompare(event.stringIdentifier(), 'en', {sensitivity: 'base'}) === 0) ||
                 event instanceof TypeTextEvent || event instanceof TypeNumberEvent) {
                 this._recordAction(event);
             }
@@ -239,7 +239,7 @@ export class StateActionRecorder extends EventEmitter {
                     clearInterval(this._checkForMouseMoveInterval);
                     this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
                     event = new ClickSpriteEvent(clickTarget);
-                } else if (availableActions.includes(new MouseDownForStepsEvent().stringIdentifier())){
+                } else if (availableActions.includes(new MouseDownForStepsEvent().stringIdentifier())) {
                     // Check if we had a long period without any actions being executed.
                     this._checkForWait(false);
                     // Register mouse down Event and
@@ -269,8 +269,8 @@ export class StateActionRecorder extends EventEmitter {
             (stepsSinceLastMouseMove > this.MOUSE_MOVE_THRESHOLD || mouseDownNoticed)) {
             const clickTarget = Util.getTargetSprite(this._vm);
             let event: ScratchEvent;
-            if (availableActions.includes(new MouseMoveToEvent(clickTarget.x, clickTarget.y).stringIdentifier())) {
-                event = new MouseMoveToEvent(clickTarget.x, clickTarget.y);
+            if (availableActions.includes(new MouseMoveToEvent(clickTarget.x, clickTarget.y, clickTarget.sprite.name).stringIdentifier())) {
+                event = new MouseMoveToEvent(clickTarget.x, clickTarget.y, clickTarget.sprite.name);
             } else {
                 event = new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]);
             }
@@ -317,6 +317,16 @@ export class StateActionRecorder extends EventEmitter {
         } else {
             stateFeatures = InputExtraction.extractFeatures(this._vm);
         }
+
+        // Reduce required storage capacity by rounding state values.
+        for (const featureGroup of stateFeatures.values()) {
+            for (const [feature, value] of featureGroup.entries()) {
+                console.log("Prev Feature " + featureGroup.get(feature));
+                featureGroup.set(feature, Math.round(value * 100) / 100);
+                console.log("After feature " + featureGroup.get(feature));
+            }
+        }
+
         let parameter: Record<string, number>;
         switch (event.toJSON()['type']) {
             case "WaitEvent":
@@ -346,6 +356,13 @@ export class StateActionRecorder extends EventEmitter {
                 break;
             default:
                 console.log("Missing event handler: ", event);
+        }
+
+        // Reduce required storage capacity by rounding action parameter.
+        for (const key in parameter) {
+            console.log("PRev Param: " + parameter[key]);
+            parameter[key] = Math.round(parameter[key] * 100) / 100;
+            console.log("After Param: " + parameter[key]);
         }
 
         const record: ActionRecord = {
