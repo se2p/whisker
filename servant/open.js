@@ -53,6 +53,7 @@ async function open(openNewPage) {
 
             // Stop recording and download recorded data.
             await (await page.$('#stop-scratch')).click();
+            await page.waitForTimeout(3000);        // Give StateActionRecorder time to parse data.
             await (await page.$('#record')).click();
         }
 

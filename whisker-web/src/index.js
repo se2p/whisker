@@ -797,7 +797,7 @@ const _addFileListeners = function () {
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
-        initScratch();
+        Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
