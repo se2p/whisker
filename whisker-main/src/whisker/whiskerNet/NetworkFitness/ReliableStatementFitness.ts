@@ -81,13 +81,14 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             await ReliableStatementFitness.updateUncoveredMap(network);
             executor.resetState();
 
-            // Stop if we failed to cover our target statement.
+            // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
+            // target statement to the fitness function.
             if(!await network.targetFitness.isCovered(network)){
                 network.fitness += (1 / await network.targetFitness.getFitness(network));
-                break;
+                continue;
             }
 
-            // At this point we know that we have covered the statement again.
+            // At this point, we know that we have covered the statement again.
             // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth data.
             if (Container.backpropagationInstance && Container.peerToPeerSharing) {
                 this._peerToPeerSharing(network);

@@ -22,7 +22,6 @@ import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/Networ
 import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {ActivationTrace} from "../../../../src/whisker/whiskerNet/Misc/ActivationTrace";
-import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {EventAndParameters, ExecutionTrace} from "../../../../src/whisker/testcase/ExecutionTrace";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 import {generateInputs} from "../Algorithms/NEAT.test";
@@ -255,9 +254,9 @@ describe('Test NeatChromosome', () => {
         const inputNode = chromosome.inputNodes.get("Sprite1").get("X-Position");
         const outputNode = chromosome.layers.get(1)[0];
         const hiddenNode = new HiddenNode(7, 0.5, ActivationFunction.SIGMOID);
-        const deepHiddenNode = new HiddenNode(8, 0.5, ActivationFunction.SIGMOID);
-        chromosome.addNode(hiddenNode, inputNode, outputNode);
-        chromosome.addNode(deepHiddenNode, hiddenNode, outputNode);
+        const deepHiddenNode = new HiddenNode(8, 0.75, ActivationFunction.SIGMOID);
+        chromosome.addNode(hiddenNode);
+        chromosome.addNode(deepHiddenNode);
         chromosome.connections.push(new ConnectionGene(inputNode, hiddenNode, 0.5, true, 7));
         chromosome.connections.push(new ConnectionGene(hiddenNode, outputNode, 0, true, 8));
         chromosome.connections.push(new ConnectionGene(hiddenNode, deepHiddenNode, 1, true, 9));
@@ -348,7 +347,7 @@ describe('Test NeatChromosome', () => {
     test('Network activation with hidden layer', () => {
         const chromosome = getSampleNetwork();
         const hiddenNode = new HiddenNode(101, 0.5, ActivationFunction.SIGMOID);
-        chromosome.addNode(hiddenNode, chromosome.layers.get(0)[0], chromosome.layers.get(1)[1]);
+        chromosome.addNode(hiddenNode);
         chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[0], hiddenNode, 1.1, true, 121));
         chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[1], hiddenNode, 1.2, true, 123));
         chromosome.connections.push(new ConnectionGene(hiddenNode, chromosome.layers.get(1)[0], 1.3, true, 123));
@@ -378,7 +377,7 @@ describe('Test NeatChromosome', () => {
     test('Network activation with recurrent connection from classification to hidden node', () => {
         const chromosome = getSampleNetwork();
         const hiddenNode = new HiddenNode(101, 0.5, ActivationFunction.SIGMOID);
-        chromosome.addNode(hiddenNode, chromosome.layers.get(0)[0], chromosome.layers.get(1)[1]);
+        chromosome.addNode(hiddenNode);
         chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[0], hiddenNode, 1.1, true, 121));
         chromosome.connections.push(new ConnectionGene(chromosome.layers.get(0)[1], hiddenNode, 1.2, true, 123));
         chromosome.connections.push(new ConnectionGene(hiddenNode, chromosome.layers.get(1)[0], 1.3, true, 123));
@@ -502,7 +501,7 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.connections.length).toBeGreaterThan(oldConnectionSize);
         expect(NeatPopulation.nodeToId.size).toBe(oldMapSize + 5);
         expect(chromosome.layers.size).toEqual(3);
-        expect(chromosome.layers.get(0.5).length).toEqual(8);
+        expect(chromosome.layers.get(0.5).length).toEqual(2);
         expect(chromosome.layers.get(1)[chromosome.layers.get(1).length - 1].uID).toEqual(
             chromosome2.layers.get(1)[chromosome2.layers.get(1).length - 1].uID);
         expect(chromosome.layers.get(1)[chromosome.layers.get(1).length - 1].uID).not.toEqual(

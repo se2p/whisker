@@ -19,12 +19,12 @@ export class NeuroevolutionTestGenerationParameter extends BasicNeuroevolutionPa
     private _numberOfSpecies = 5;
 
     /**
-     * Specifies how many member per species survive in each generation.
+     * Specifies how many members per species survive in each generation.
      */
     private _parentsPerSpecies = 0.20;
 
     /**
-     * Specifies when Species start go get penalized if no improvement is being observed.
+     * Specifies when Species start to get penalised if no improvement is being observed.
      */
     private _penalizingAge = 15;
 

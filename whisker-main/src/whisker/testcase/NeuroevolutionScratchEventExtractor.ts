@@ -1,7 +1,6 @@
 import {ScratchBlocks} from "./ScratchEventExtractor";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "./events/ScratchEvent";
-import {DragSpriteEvent} from "./events/DragSpriteEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {Container} from "../utils/Container";
@@ -112,7 +111,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                     const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
                     // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
                     if (currentMousePosition.x !== target.x || currentMousePosition.y !== target.y) {
-                        eventList.push(new MouseMoveToEvent(target.x, target.y));
+                        eventList.push(new MouseMoveToEvent(target.x, target.y, target.sprite.name));
                     }
                     eventList.push(new MouseMoveEvent());
                 }

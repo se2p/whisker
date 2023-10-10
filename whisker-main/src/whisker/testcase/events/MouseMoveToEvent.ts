@@ -24,32 +24,34 @@ import {Container} from "../../utils/Container";
 export class MouseMoveToEvent extends ScratchEvent {
 
 
-    private readonly x: number;
-    private readonly y: number;
+    private _x: number;
+    private _y: number;
+    private readonly _sprite: string;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, sprite: string) {
         super();
-        this.x = x;
-        this.y = y;
+        this._x = x;
+        this._y = y;
+        this._sprite = sprite;
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.mouseMove(this.x, this.y);
+        Container.testDriver.mouseMove(this._x, this._y);
     }
 
     public toJavaScript(): string {
-        return `t.mouseMove(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
+        return `t.mouseMove(${Math.trunc(this._x)}, ${Math.trunc(this._y)});`;
     }
 
     public toJSON(): Record<string, any> {
         const event = {};
         event[`type`] = `MouseMoveToEvent`;
-        event[`args`] = {"x": this.x, "y": this.y};
+        event[`args`] = {"x": this._x, "y": this._y};
         return event;
     }
 
     public toString(): string {
-        return "MouseMoveToEvent " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
+        return "MouseMoveToEvent " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
     numSearchParameter(): number {
@@ -57,7 +59,7 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     getParameters(): [number, number] {
-        return [this.x, this.y];
+        return [this._x, this._y];
     }
 
     getSearchParameterNames(): [] {
@@ -69,6 +71,18 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     stringIdentifier(): string {
-        return `MouseMoveToEvent-${this.x}-${this.y}`;
+        return `MouseMoveToEvent-${this.sprite}`;
+    }
+
+    get sprite(): string {
+        return this._sprite;
+    }
+
+    set x(value: number) {
+        this._x = value;
+    }
+
+    set y(value: number) {
+        this._y = value;
     }
 }

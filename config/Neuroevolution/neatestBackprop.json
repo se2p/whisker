@@ -2,7 +2,7 @@
     "testGenerator": "neuroevolution",
     "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 100,
+    "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -21,7 +21,7 @@
         "epochs": 1000,
         "batchSize": 1,
         "labelSmoothing": 0,
-        "probability": 1,
+        "probability": 0.6,
         "peerToPeerSharing": false,
 
         "dataAugmentation": {
@@ -42,7 +42,7 @@
         "mutationWithoutCrossover": 0.25,
         "mutationAddConnection": 0.05,
         "recurrentConnection": 0.1,
-        "addConnectionTries": 50,
+        "addConnectionTries": 10,
         "populationChampionNumberOffspring": 3,
         "populationChampionNumberClones": 1,
         "populationChampionConnectionMutation": 0.3,
