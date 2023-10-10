@@ -222,6 +222,20 @@ class WhiskerSubCommand extends Command {
             'records executed scratch events and maps them to the current program state');
     }
 
+    optionDataset(){
+        return this.option(
+            '-da, --dataset <Path>',
+            'Executes procedure for collecting recording data of all projects in the specified directory.',
+            dataSetPath => util.processDirPathExists(dataSetPath));
+    }
+
+    optionRecordingTime(){
+        return this.option(
+            '-t, --time <Integer>',
+            'Sets the time for how long gameplay should be recorded in seconds.',
+            seconds => util.processPositiveInt(seconds));
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -249,7 +263,9 @@ const subCommands = [
         .description('Open the Whisker web page with the specified parameters')
         .optionScratchPath()
         .optionConfigPath()
-        .optionStateActionRecorder(),
+        .optionStateActionRecorder()
+        .optionDataset()
+        .optionRecordingTime(),
 
 
     newSubCommand('run')
