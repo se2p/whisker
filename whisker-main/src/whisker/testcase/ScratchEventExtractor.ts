@@ -249,7 +249,7 @@ export abstract class ScratchEventExtractor {
                     const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
                     // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
                     if (currentMousePosition.x !== target.x || currentMousePosition.y !== target.y) {
-                        eventList.push(new MouseMoveToEvent(target.x, target.y));
+                        eventList.push(new MouseMoveToEvent(target.x, target.y, target.sprite.name));
                     }
                     eventList.push(new MouseMoveEvent());
                 }

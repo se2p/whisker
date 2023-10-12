@@ -11,7 +11,6 @@ import {InputNode} from "../NetworkComponents/InputNode";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {InputFeatures} from "../Misc/InputExtraction";
-import {Randomness} from "../../utils/Randomness";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
@@ -26,8 +25,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * @param _inputRate governs the probability of adding multiple input groups to the network when a sparse
      * connection method is being used.
      */
-    public constructor(private readonly _inputSpace: InputFeatures,
-                       private readonly _outputSpace: ScratchEvent[],
+    public constructor(private _inputSpace: InputFeatures,
+                       private _outputSpace: ScratchEvent[],
                        protected readonly _inputConnectionMethod: InputConnectionMethod,
                        protected readonly _activationFunction: ActivationFunction,
                        private _mutationOperator: NeatMutation,
@@ -39,8 +38,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * Generates a single NeatChromosome using the specified connection method.
      * @returns generated NeatChromosome.
      */
-    get():
-        NeatChromosome {
+    get(): NeatChromosome {
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, []);
 
@@ -64,7 +62,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
             layer.get(1).push(classificationNode);
         }
 
-        // Add regression nodes for each parameter of each parameterized Event
+        // Add regression nodes for each parameter of each parameterised Event
         const parameterizedEvents = this._outputSpace.filter(event => event.numSearchParameter() > 0);
         if (parameterizedEvents.length !== 0) {
             this.addRegressionNodes(numNodes, layer, parameterizedEvents);
@@ -74,13 +72,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         const chromosome = new NeatChromosome(layer, [], this._mutationOperator, this._crossoverOperator,
             this._inputConnectionMethod, this._activationFunction);
         const outputNodes = [...chromosome.layers.get(1).values()];
-        chromosome.connectNodeToInputLayer(outputNodes, this._inputConnectionMethod, this._inputRate);
+        chromosome.connectNodesToInputLayer(outputNodes, this._inputConnectionMethod, this._inputRate);
 
-        // Assign randomised weights.
-        const connections = chromosome.connections;
-        for (const connection of connections) {
-            connection.weight = Randomness.getInstance().nextDoubleMinMax(-1, 1);
-        }
         return chromosome;
     }
 
@@ -106,5 +99,13 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     setCrossoverOperator(crossoverOp: NeatCrossover): void {
         this._crossoverOperator = crossoverOp;
+    }
+
+    set inputSpace(value: InputFeatures) {
+        this._inputSpace = value;
+    }
+
+    set outputSpace(value: ScratchEvent[]) {
+        this._outputSpace = value;
     }
 }

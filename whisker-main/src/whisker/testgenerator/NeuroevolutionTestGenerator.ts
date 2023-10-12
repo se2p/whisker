@@ -11,6 +11,7 @@ import {Randomness} from "../utils/Randomness";
 import {NetworkExecutor} from "../whiskerNet/Misc/NetworkExecutor";
 import {Container} from "../utils/Container";
 import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {AssertionGenerator} from "./AssertionGenerator";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -29,6 +30,17 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         }
 
         const testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
+
+        // Generate Assertions for static test suite.
+        if (this._config.isAssertionGenerationActive()) {
+            const assertionGenerator = new AssertionGenerator();
+            if (this._config.isMinimizeAssertionsActive()) {
+                await assertionGenerator.addStateChangeAssertions(testSuite);
+            } else {
+                await assertionGenerator.addAssertions(testSuite);
+            }
+        }
+
         await this.collectStatistics(testSuite);
         const summary = await this.summarizeSolution(archive);
         return new WhiskerTestListWithSummary(testSuite, summary);

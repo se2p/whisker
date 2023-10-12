@@ -22,7 +22,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     /**
      * Saves all networks of the current population.
      */
-    private readonly _networks: C[] = [];
+    protected _networks: C[] = [];
 
     /**
      * The average fitness of the current generation. Used for reporting purposes.

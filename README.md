@@ -21,7 +21,7 @@ Whisker provides automated and property-based testing functionality for Scratch 
 
 ## Building Whisker
 
-Whisker is built using the [yarn](https://yarnpkg.com/) package manager.
+Whisker requires Node.js v18.18.0 and is built using the [yarn](https://classic.yarnpkg.com/lang/en/) (classic) package manager.
 
 After cloning the repository, install all dependencies using:
 
@@ -246,5 +246,15 @@ Whisker is supported by the project FR 2955/3-1 funded by the
   journal       = {arXiv preprint arXiv:2304.06413},
   year          = {2023},
   doi           = {10.48550/arXiv.2304.06413}
+}
+```
+
+```
+@inproceedings{nuzzlebug24,
+  author    = {Adina Deiner and Gordon Fraser},
+  title     = {NuzzleBug: Debugging Block-Based Programs in Scratch },
+  booktitle = {ACM/IEEE International Conference on Software Engineering (ICSE)},
+  publisher = {{IEEE}},
+  year      = {2024}
 }
 ```

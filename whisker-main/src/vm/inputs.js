@@ -445,7 +445,7 @@ class Inputs {
      */
     dragSprite (spriteName, x, y, cloneID) {
         let target = this.vmWrapper.getTargetBySpriteName(spriteName);
-        if(cloneID !== null){
+        if(cloneID){
             target = target.sprite.clones.find(target => target.cloneID === cloneID);
         }
         if (target != null) {

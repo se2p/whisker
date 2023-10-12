@@ -103,8 +103,9 @@ export class NetworkExecutor {
             // Update input nodes and load inputs into the Network.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
-            // Check if we encountered additional events during the playthrough
-            // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
+            // Check if we encountered additional sprites/events during the playthrough
+            // If we did so add corresponding input/output nodes to the network.
+            network.updateInputNodes(spriteFeatures);
             network.updateOutputNodes(this.availableEvents);
             const defect = !network.activateNetwork(spriteFeatures);
 
