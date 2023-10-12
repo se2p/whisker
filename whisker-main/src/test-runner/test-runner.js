@@ -400,6 +400,10 @@ class TestRunner extends EventEmitter {
     async _executeTest(vm, project, test, modelTester, props, modelProps, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
 
+        if (props['traceBlocks']) {
+            this.vmWrapper.vm.runtime.traceInfo.tracer.recordTraces = true;
+        }
+
         const testDriver = this.util.getTestDriver(
             {
                 extend: {
@@ -484,8 +488,8 @@ class TestRunner extends EventEmitter {
         }
 
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
-        if (props['traceBlocks']){
-        this.blockTraces[Object.keys(this.blockTraces).length.toString()] = this._extractTraces();
+        if (props['traceBlocks']) {
+            this.blockTraces[Object.keys(this.blockTraces).length.toString()] = this._extractTraces();
         }
         for (const statement of this.statementMap.keys()){
             if(result.covered.has(statement._targetNode.id)){
