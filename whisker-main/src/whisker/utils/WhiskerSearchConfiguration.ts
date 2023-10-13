@@ -294,8 +294,8 @@ export class WhiskerSearchConfiguration {
                 }
 
                 // Check for Peer-To-Peer sharing.
-                if (gradientDescent['peerToPeerSharing']) {
-                    Container.peerToPeerSharing = true;
+                if ('dynamicRecordingFraction' in gradientDescent) {
+                    Container.dynamicRecordingFraction = gradientDescent['dynamicRecordingFraction'];
                 }
             }
         }

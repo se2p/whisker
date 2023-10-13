@@ -415,6 +415,9 @@ export class GradientDescent {
      */
     public _extractDataForStatement(statement: string): StateActionRecord {
         const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+        if (!this._groundTruth){
+            return stateActionRecord;
+        }
 
         // Iterate over each recording in the .json file.
         for (const recording of Object.values(this._groundTruth)) {

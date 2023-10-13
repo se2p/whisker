@@ -2,7 +2,7 @@
     "testGenerator": "neuroevolution",
     "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 150,
+    "populationSize": 10,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -22,7 +22,7 @@
         "batchSize": 1,
         "labelSmoothing": 0,
         "probability": 0.6,
-        "peerToPeerSharing": false,
+        "dynamicRecordingFraction": 0,
 
         "dataAugmentation": {
             "doAugment": false,
@@ -67,7 +67,7 @@
         "type": "reliableStatement",
         "timeout": 10000,
         "stableCount": 10,
-        "earlyStop": false
+        "earlyStop": true
     },
     "population": {
         "strategy": "global_solutions",
