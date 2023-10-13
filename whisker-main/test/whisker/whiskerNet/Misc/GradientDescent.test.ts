@@ -82,7 +82,7 @@ describe('Test Gradient Descent', () => {
     beforeEach(() => {
         augmentationParameter = {
             doAugment: false,
-            numAugments: 0,
+            augmentFactor: 0,
             disturbStateProb: 0,
             disturbStatePower: 0
         };
@@ -224,7 +224,7 @@ describe('Test Gradient Descent', () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const augmentationParameter = {
             doAugment: true,
-            numAugments: 1000,
+            augmentFactor: 2,
             disturbStateProb: 0.1,
             disturbStatePower: 0.01
         };

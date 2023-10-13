@@ -26,9 +26,9 @@
 
         "dataAugmentation": {
             "doAugment": false,
-            "numAugments": 1000,
-            "disturbStateProb": 0.1,
-            "disturbStatePower": 0.01
+            "augmentFactor": 2,
+            "disturbStateProb": 0.3,
+            "disturbStatePower": 0.05
         }
     },
     "crossover": {

@@ -287,7 +287,7 @@ export class WhiskerSearchConfiguration {
                     const augmentationProperties = gradientDescent['dataAugmentation'];
                     properties.dataAugmentation = {
                         doAugment: augmentationProperties['doAugment'],
-                        numAugments: augmentationProperties['numAugments'],
+                        augmentFactor: augmentationProperties['augmentFactor'],
                         disturbStateProb: augmentationProperties['disturbStateProb'],
                         disturbStatePower: augmentationProperties['disturbStatePower']
                     };

@@ -52,7 +52,7 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
      */
     private _dataAugmentation: augmentationParameter = {
         doAugment: false,
-        numAugments: 0,
+        augmentFactor: 0,
         disturbStateProb: 0,
         disturbStatePower: 0
     };

@@ -522,7 +522,10 @@ export class GradientDescent {
         }
 
         const random = Randomness.getInstance();
-        for (let i = 0; i < this._augmentationParameter.numAugments; i++) {
+        const desiredAugments = this._augmentationParameter.augmentFactor * data.size;
+
+        Container.debugLog(`Augmenting dataset from ${data.size} to ${desiredAugments} data points`);
+        while (data.size < desiredAugments) {
             const randomState = random.pick(keys);
             const stateClone = lodashClonedeep(randomState) as ObjectInputFeatures;
 
@@ -639,7 +642,7 @@ export interface gradientDescentParameter {
  */
 export interface augmentationParameter {
     doAugment: boolean,
-    numAugments: number,
+    augmentFactor: number,
     disturbStateProb: number,
     disturbStatePower: number
 }
