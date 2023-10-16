@@ -473,7 +473,7 @@ const initEvents = function () {
                 // Download the recording.
                 const recording = Whisker.stateActionRecorder.getRecord();
                 const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `Recording-${Whisker.projectFileSelect.getName()}.json`);
+                FileSaver.saveAs(blob, `${Whisker.projectFileSelect.getName().replace('.sb3', '')}.json`);
             } else {
                 Whisker.inputRecorder.emit('startRecording');
                 Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
