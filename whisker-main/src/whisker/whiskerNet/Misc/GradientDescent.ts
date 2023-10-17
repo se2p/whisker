@@ -9,6 +9,8 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {Randomness} from "../../utils/Randomness";
 
 import lodashClonedeep from 'lodash.clonedeep';
+import Statistics from "../../utils/Statistics";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 
 export class GradientDescent {
 
@@ -98,7 +100,7 @@ export class GradientDescent {
                 }
             }
 
-            // Early stopping: Stop after a few rounds without improvement and reset weights to the best epoch.
+            // Early stopping: Stop after a few rounds without an improvement and reset weights to the best epoch.
             if (loss < bestValidationLoss) {
                 bestWeights = network.connections.map(conn => conn.weight);
                 bestValidationLoss = loss;
@@ -195,6 +197,7 @@ export class GradientDescent {
 
                 // Compute loss and determine gradients of weights.
                 trainingLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
+                trainingLoss += this._getRegularisationLoss(network);
                 this._backwardPass(network, labelVector);
                 numTrainingExamples++;
             }
@@ -253,7 +256,7 @@ export class GradientDescent {
     }
 
     /**
-     * The forward pass propagates activates the network based on a supplied input vector
+     * The forward pass activates the network based on a supplied input vector
      * and returns a loss value based on the specified loss function.
      * @param network the network to be trained.
      * @param inputs the provided feature vector.
@@ -305,7 +308,7 @@ export class GradientDescent {
 
     /**
      * Calculates the categorical cross entropy loss function between a classification prediction and the true label.
-     * @param classNodes the classification nodes on which the cross entropy loss will be computed.
+     * @param classNodes the classification nodes on which the cross-entropy loss will be computed.
      * @param labels vector of true target labels.
      * @returns categorical cross entropy loss between classification prediction and label.
      */
@@ -353,6 +356,7 @@ export class GradientDescent {
                     // Calculate gradients for incoming connections of output nodes.
                     for (const connection of node.incomingConnections) {
                         connection.gradient += node.gradient * connection.source.activationValue;
+                        connection.gradient += this._getRegularisationGradient(connection);
                     }
                 }
             }
@@ -365,6 +369,7 @@ export class GradientDescent {
                     node.gradient += incomingGradient * activationDerivative(node.activationValue);
                     for (const connection of node.incomingConnections) {
                         connection.gradient += node.gradient * connection.source.activationValue;
+                        connection.gradient += this._getRegularisationGradient(connection);
                     }
                 }
             }
@@ -415,7 +420,7 @@ export class GradientDescent {
      */
     public _extractDataForStatement(statement: string): StateActionRecord {
         const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
-        if (!this._groundTruth){
+        if (!this._groundTruth) {
             return stateActionRecord;
         }
 
@@ -589,6 +594,34 @@ export class GradientDescent {
     }
 
     /**
+     * Computes the regularisation term to be added to the loss function.
+     * @param network The network chromosome hosting the network weights.
+     * @return The regularisation term to be added to the loss function.
+     */
+    private _getRegularisationLoss(network: NetworkChromosome): number {
+        let regularisation = 0;
+        if (this._parameter.l2Regularisation > 0) {
+            const weights = network.connections.map(conn => conn.weight);
+            regularisation += 0.5 * this._parameter.l2Regularisation * Statistics.L2Norm(weights);
+        }
+
+        return regularisation;
+    }
+
+    /**
+     * Computes the regularisation term to be added to the connection's gradient.
+     * @param connection The connection gene hosting the network weight.
+     * @return The regularisation term to be added to the connection's gradient.
+     */
+    private _getRegularisationGradient(connection: ConnectionGene) {
+        let regularisationGradient = 0;
+        if (this._parameter.l2Regularisation > 0) {
+            regularisationGradient += this._parameter.l2Regularisation * connection.weight;
+        }
+        return regularisationGradient;
+    }
+
+    /**
      * Returns a unique identifier for regression nodes to save and fetch regression labels in the label map.
      * @param node for which an id should be generated.
      * @return regression neuron label id
@@ -638,6 +671,7 @@ export interface gradientDescentParameter {
     epochs: number,
     batchSize: number,
     labelSmoothing: number
+    l2Regularisation: number,
 }
 
 /**

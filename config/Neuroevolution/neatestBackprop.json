@@ -2,7 +2,7 @@
     "testGenerator": "neuroevolution",
     "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 10,
+    "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -16,12 +16,13 @@
         "inputConnectionMethod": "fullyHidden"
     },
     "gradientDescent": {
+        "probability": 0.6,
         "learningRate": 0.1,
         "learningRateAlgorithm": "Static",
         "epochs": 1000,
         "batchSize": 1,
         "labelSmoothing": 0,
-        "probability": 0.6,
+        "l2Regularisation": 0,
         "dynamicRecordingFraction": 0,
 
         "dataAugmentation": {

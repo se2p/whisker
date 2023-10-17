@@ -44,7 +44,8 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         learningRateAlgorithm: 'Static',
         epochs: 100,
         batchSize: 32,
-        labelSmoothing: 0
+        labelSmoothing: 0,
+        l2Regularisation: 0.1
     };
 
     /**
