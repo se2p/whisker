@@ -42,10 +42,10 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     private _gradientDescentParameter: gradientDescentParameter = {
         learningRate: 0.001,
         learningRateAlgorithm: 'Static',
-        epochs: 100,
-        batchSize: 32,
+        epochs: 1000,
+        batchSize: 1,
         labelSmoothing: 0,
-        l2Regularisation: 0.1
+        l2Regularisation: 0
     };
 
     /**
