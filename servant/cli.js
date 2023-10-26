@@ -222,11 +222,11 @@ class WhiskerSubCommand extends Command {
             'records executed scratch events and maps them to the current program state');
     }
 
-    optionDataset(){
+    optionRecordProject(){
         return this.option(
-            '-da, --dataset <Path>',
-            'Executes procedure for collecting recording data of all projects in the specified directory.',
-            dataSetPath => util.processDirPathExists(dataSetPath));
+            '-rp, --record-project <Path>',
+            'Executes procedure for collecting recording data of single project.',
+            projectPath => util.processFileOrDirPathExists(projectPath, '.sb3'));
     }
 
     optionRecordingTime(){
@@ -264,7 +264,7 @@ const subCommands = [
         .optionScratchPath()
         .optionConfigPath()
         .optionStateActionRecorder()
-        .optionDataset()
+        .optionRecordProject()
         .optionRecordingTime(),
 
 

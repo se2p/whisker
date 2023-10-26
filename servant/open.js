@@ -5,70 +5,58 @@ const {
     seed,
     stateActionRecorder,
     configPath,
-    dataset,
+    recordProject,
     time
 } = require("./cli").opts;
-const fs = require('fs');
 
 
 async function open(openNewPage) {
     const page = await openNewPage();
 
     // Procedure for generating game recordings.
-    if (dataset) {
+    if (recordProject) {
         await toggleExtendedView(page);
         await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
+        console.log(`Start Recording ${recordProject.path} for ${time} seconds`);
 
-        // Iterate over each Scratch project in the specified dataset directory.
-        for (const project of fs.readdirSync(dataset)) {
-            // Skip files that are not in the Scratch-3 format.
-            if (!project.endsWith(".sb3")) {
-                continue;
-            }
+        // Upload File
+        await switchToUploadTab(page);
+        await (await page.$('#fileselect-project')).uploadFile(recordProject.path);
 
-            console.log(`Start Recording ${project} for ${time} seconds`);
+        // Switch to Project tab and specify the required parameters.
+        await switchToProjectTab(page, false);
+        await (await page.$('#scratch-stage')).focus();
+        await page.evaluate(() => {window.scroll(0, 180);});
+        await page.waitForTimeout(3000);
 
-            // Upload File
-            await page.evaluate(() => { window.scroll(0,0); });
-            await switchToUploadTab(page);
-            await (await page.$('#fileselect-project')).uploadFile(`${dataset}/${project}`);
-            await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
+        // Start game and recording.
+        await (await page.$('#record')).click();
+        await (await page.$('#green-flag')).click();
+        await page.evaluate(() => {window.scroll(0, 180);});
+        await (await page.$('#scratch-stage')).focus();
 
-            // Switch to Project tab and specify the required parameters.
-            await switchToProjectTab(page, false);
-            await (await page.$('#scratch-stage')).focus();
-            await page.evaluate(() => { window.scroll(0,180); });
-            await page.waitForTimeout(3000);
-
-            // Start game and recording.
-            await (await page.$('#record')).click();
-            await (await page.$('#green-flag')).click();
-            await page.evaluate(() => { window.scroll(0,180); });
-            await (await page.$('#scratch-stage')).focus();
-
-            // Record for specified amount of time.
-            const start = Date.now();
-            let elapsed = 0;
-            while (elapsed <= time) {
-                elapsed = (Date.now() - start) / 1000;
-                await page.waitForTimeout(1000);
-            }
-
-            // Stop recording and download recorded data.
-            await (await page.$('#stop-scratch')).click();
-            await (await page.$('#scratch-stage')).focus();
-            await page.waitForTimeout(3000);        // Give StateActionRecorder time to parse data.
-            await (await page.$('#record')).click();
-            await (await page.$('#scratch-stage')).focus();
+        // Record for specified amount of time.
+        let start = Date.now();
+        let elapsed = 0;
+        while (elapsed <= time) {
+            elapsed = (Date.now() - start) / 1000;
+            await page.waitForTimeout(1000);
         }
 
-        // Wait 5 seconds for the last file to be downloaded.
-        const start = Date.now();
-        let elapsed = 0;
+        // Stop recording and download recorded data.
+        await (await page.$('#stop-scratch')).click();
+        await page.waitForTimeout(1000);        // Give StateActionRecorder time to parse data.
+        await (await page.$('#record')).click();
+        await (await page.$('#scratch-stage')).focus();
+
+        // Wait 1 second for recording to be downloaded.
+        start = Date.now();
+        elapsed = 0;
         while (elapsed <= 10) {
-            page.waitForTimeout(5000);
+            page.waitForTimeout(1000);
             elapsed = (Date.now() - start) / 1000;
         }
+
     } else {
         if (scratchPath) {
             await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
