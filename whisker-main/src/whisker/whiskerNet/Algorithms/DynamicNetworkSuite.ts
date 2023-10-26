@@ -126,8 +126,7 @@ export class DynamicNetworkSuite {
         const mutantFactory = new MutationFactory(this.vm);
         const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[], this.properties.maxMutants as number);
         let i = 0;
-        while (mutantPrograms.length > 0) {
-            const mutant = mutantPrograms.pop();
+        for (const mutant of mutantPrograms) {
             this.archive.clear();
             const projectMutation = `${this.projectName}-${mutant.name}`;
             Container.debugLog(`Analysing mutant ${i}: ${projectMutation}`);
@@ -148,7 +147,7 @@ export class DynamicNetworkSuite {
             await this.updateTestStatistics(executedTests, projectMutation, this.testName);
             i++;
         }
-        return [];
+        return mutantPrograms;
     }
 
     /**
@@ -203,8 +202,8 @@ export class DynamicNetworkSuite {
         if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
             Container.debugLog("Performing Mutation Analysis");
             await this.testSingleProject();     // Execute the original program to obtain reference data
-            await this.mutationAnalysis();
-            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
+            const mutants = await this.mutationAnalysis();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutants];
         } else {
             Container.debugLog("Testing Single Project");
             await this.testSingleProject();

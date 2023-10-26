@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
 import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
-import {FileSaver} from "./web-libs";
+import {FileSaver} from './web-libs';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -122,6 +122,14 @@ const enableVMRelatedButtons = function () {
     $('.vm-related').prop('disabled', false);
 };
 
+const downloadMutants = async function (mutants) {
+    for (const mutant of mutants) {
+        await Whisker.scratch.vm.loadProject(JSON.parse(JSON.stringify(mutant)));
+        const projectBlob = await Whisker.scratch.vm.saveProjectSb3(); // await required
+        FileSaver.saveAs(projectBlob, `${mutant.name}.sb3`);
+    }
+};
+
 const runSearch = async function () {
     _disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
@@ -179,7 +187,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         let summary;
         let csvResults;
-        let mutantPrograms;
+        let mutantPrograms = [];
         let coverage;
         let coverageModels = {};
         accSlider.slider('disable');
@@ -190,6 +198,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
         const mutationBudget = document.querySelector('#container').mutationBudget;
         const maxMutants = document.querySelector('#container').maxMutants;
+        const mutantDownload = document.querySelector('#container').downloadMutants;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -208,10 +217,9 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
 
-            // Set the mutants in the output log from where we can download them later.
-            if (mutantPrograms && mutantPrograms.length > 0){
-                Whisker.outputRun.setScratch(Whisker.scratch);
-                Whisker.outputRun.mutants = mutantPrograms;
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
             }
 
             if (Whisker.modelTester.programModelsLoaded()) {
@@ -310,6 +318,8 @@ const runAllTests = async function () {
             const setMutators = document.querySelector('#container').mutators;
             const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
             const maxMutants = document.querySelector('#container').maxMutants;
+            const mutantDownload = document.querySelector('#container').downloadMutants;
+
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
@@ -323,10 +333,9 @@ const runAllTests = async function () {
                 properties);
             const [csv, mutantPrograms] = await dynamicSuite.execute();
 
-            // Set the mutants in the output log from where we can download it later.
-            if (mutantPrograms.length > 0){
-                Whisker.outputRun.setScratch(Whisker.scratch);
-                Whisker.outputRun.setMutants(mutantPrograms);
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
             }
 
             coverage = CoverageGenerator.getCoverage();
