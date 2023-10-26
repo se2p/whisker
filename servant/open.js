@@ -37,11 +37,13 @@ async function open(openNewPage) {
             // Switch to Project tab and specify the required parameters.
             await switchToProjectTab(page, false);
             await (await page.$('#scratch-stage')).focus();
+            await page.evaluate(() => { window.scroll(0,180); });
             await page.waitForTimeout(3000);
 
             // Start game and recording.
             await (await page.$('#record')).click();
             await (await page.$('#green-flag')).click();
+            await page.evaluate(() => { window.scroll(0,180); });
             await (await page.$('#scratch-stage')).focus();
 
             // Record for specified amount of time.
