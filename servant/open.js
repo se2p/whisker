@@ -29,6 +29,7 @@ async function open(openNewPage) {
             console.log(`Start Recording ${project} for ${time} seconds`);
 
             // Upload File
+            await page.evaluate(() => { window.scroll(0,0); });
             await switchToUploadTab(page);
             await (await page.$('#fileselect-project')).uploadFile(`${dataset}/${project}`);
             await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
@@ -53,8 +54,10 @@ async function open(openNewPage) {
 
             // Stop recording and download recorded data.
             await (await page.$('#stop-scratch')).click();
+            await (await page.$('#scratch-stage')).focus();
             await page.waitForTimeout(3000);        // Give StateActionRecorder time to parse data.
             await (await page.$('#record')).click();
+            await (await page.$('#scratch-stage')).focus();
         }
 
         // Wait 5 seconds for the last file to be downloaded.
