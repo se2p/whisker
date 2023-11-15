@@ -15,7 +15,14 @@ async function run(openNewPage) {
 
     if (csvFile) {
         console.info(`Creating CSV summary in ${csvFile}`);
-        fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join(os.EOL));
+
+        // There can only be multiple headers if there are more than one csv result.
+        if (csvs.length > 1) {
+            console.log("A")
+            fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join(os.EOL));
+        } else {
+            fs.writeFileSync(csvFile, csvs.toString());
+        }
     }
 }
 
