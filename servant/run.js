@@ -18,7 +18,7 @@ async function run(openNewPage) {
 
         // There can only be multiple headers if there are more than one csv result.
         if (csvs.length > 1) {
-            fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join(os.EOL));
+            fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join('\n'));
         } else {
             fs.writeFileSync(csvFile, csvs.toString());
         }
