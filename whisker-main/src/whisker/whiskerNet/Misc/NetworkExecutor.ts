@@ -91,7 +91,7 @@ export class NetworkExecutor {
             statementTarget !== undefined &&
             statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
 
-        this._vm.runtime.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
+        this._vm.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
