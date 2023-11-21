@@ -30,7 +30,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     private static _EXECUTION_HALTING_OPCODES = ['control_wait', 'looks_thinkforsecs', 'looks_sayforsecs',
         'motion_glideto', 'motion_glidesecstoxy', 'sound_playuntildone', 'text2speech_speakAndWait'];
 
-    private readonly _targetNode: GraphNode;
+    protected readonly _targetNode: GraphNode;
     private readonly _approachLevels: Record<string, number>
     private readonly _eventMapping: Record<string, string>
 
@@ -305,7 +305,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
 
-    private static _normalize(x: number): number {
+    public static _normalize(x: number): number {
         return x / (x + 1.0);
     }
 

@@ -44,6 +44,7 @@ import {NEAT} from "../whiskerNet/Algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Neatest} from "../whiskerNet/Algorithms/Neatest";
+import {DecisionFitnessFunctionFactory} from "../testcase/fitness/DecisionFitnessFunctionFactory";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -171,7 +172,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 this._initializeSingleBitFitness(length);
                 break;
             case FitnessFunctionType.STATEMENT:
-                this._initializeStatementFitness(targets);
+                this._initializeStatementFitness(targets, new StatementFitnessFunctionFactory());
+                break;
+            case FitnessFunctionType.DECISION:
+                this._initializeStatementFitness(targets, new DecisionFitnessFunctionFactory());
                 break;
         }
         return this;
@@ -350,9 +354,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * A helper method that initializes the 'Statement' fitness function(s).
      */
-    private _initializeStatementFitness(targets: string[]) {
+    private _initializeStatementFitness(targets: string[], factory: StatementFitnessFunctionFactory) {
         // TODO: Check if this is done correctly
-        const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
         const fitnesses = factory.extractFitnessFunctions(Container.vm, targets);
 
         if (fitnesses.length == 1) {
