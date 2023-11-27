@@ -83,8 +83,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
             // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
             // target statement to the fitness function.
-            if(!await network.targetFitness.isCovered(network)){
-                network.fitness += (1 / await network.targetFitness.getFitness(network));
+            const fitness = await network.targetFitness.getFitness(network);
+            if (fitness > 0){
+                network.fitness += (1 / fitness);
                 continue;
             }
 
@@ -113,7 +114,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
         for (const [fitnessKey, coverCount] of network.openStatementTargets.entries()) {
             const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
-            if (await statement.isCovered(network)) {
+            if (await statement.getFitness(network) == 0) {
                 network.openStatementTargets.set(fitnessKey, coverCount + 1);
                 if (statement === network.targetFitness) {
                     network.fitness++;

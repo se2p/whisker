@@ -93,11 +93,11 @@ export class Neatest extends NEAT {
 
                 // Switch the target if we stop improving for a set number of times and have statements to which we
                 // can switch to left
-                const uncoveredStatementIds = this.getUncoveredStatements().map(statement => statement.getTargetNode().id);
+                const uncoveredStatementIds = this.getUncoveredStatements().map(statement => statement.getNodeId());
                 const uncoveredUntouchedTargets = uncoveredStatementIds.filter(targetId => !this._switchedTargets.has(targetId));
                 if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount &&
                     uncoveredUntouchedTargets.length > 0) {
-                    const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id;
+                    const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getNodeId();
                     this._switchedTargets.add(currentTargetId);
                     Container.debugLog("Switching Target " + currentTargetId + " due to missing improvement.");
                     break;
@@ -158,8 +158,7 @@ export class Neatest extends NEAT {
         // If there are no greenFlagEvents left to cover, prioritise targets we have already reached in the past and
         // were not selected as target yet.
         if (nextTarget === undefined) {
-            const uncoveredUntouchedTargets = new Set([...potentialTargets].filter(target =>
-                !this._switchedTargets.has(target.getTargetNode().id)));
+            const uncoveredUntouchedTargets = new Set([...potentialTargets].filter(target => !this._switchedTargets.has(target.getNodeId())));
             potentialTargets = uncoveredUntouchedTargets.size > 0 ? uncoveredUntouchedTargets : potentialTargets;
             let mostPromisingTargets = [];
             let mostPromisingValue = 0;
@@ -168,7 +167,7 @@ export class Neatest extends NEAT {
                 // When switching targets without having covered the previous target, we want to make sure not to
                 // select the same target again.
                 if (this._targetKey !== undefined &&
-                    this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id === potTarget.getTargetNode().id) {
+                    this._fitnessFunctionMap.get(this._targetKey).getNodeId() === potTarget.getNodeId()) {
                     continue;
                 }
 
@@ -217,7 +216,7 @@ export class Neatest extends NEAT {
      */
     private mapStatementToKey(statement: StatementFitnessFunction): number {
         for (const [key, st] of this._fitnessFunctionMap.entries()) {
-            if (st.getTargetNode().id === statement.getTargetNode().id) {
+            if (st.getNodeId() === statement.getNodeId()) {
                 return key;
             }
         }
@@ -248,10 +247,10 @@ export class Neatest extends NEAT {
             // Determine whether we should switch the currently selected target. We do that if we have accidentally
             // reached a previously not targeted statement without reaching the actual target statement at least once.
             if (this._promisingTargets.get(this._targetKey) < 1) {
-                const uncoveredTargetIds = this.getUncoveredStatements().map(target => target.getTargetNode().id);
+                const uncoveredTargetIds = this.getUncoveredStatements().map(target => target.getNodeId());
                 const untouchedUncovered = uncoveredTargetIds.filter(target => !this._switchedTargets.has(target));
                 for (const [key, value] of this._promisingTargets) {
-                    if (value > 0 && untouchedUncovered.includes(this._fitnessFunctionMap.get(key).getTargetNode().id)) {
+                    if (value > 0 && untouchedUncovered.includes(this._fitnessFunctionMap.get(key).getNodeId())) {
                         this._switchToEasierTarget = true;
                         return;
                     }
