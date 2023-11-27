@@ -22,6 +22,7 @@
 import {GraphNode} from 'scratch-analysis';
 import {StatementFitnessFunction} from "./StatementFitnessFunction";
 import {TestChromosome} from "../TestChromosome";
+import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
 
 export class DecisionFitnessFunction extends StatementFitnessFunction {
 
@@ -53,6 +54,11 @@ export class DecisionFitnessFunction extends StatementFitnessFunction {
         const approachLevel = this.getApproachLevel(chromosome);
         const branchDistance = this.getBranchDistance(chromosome);
 
+        // When dealing with NetworkChromosomes, ignore the cfgDistance.
+        if (chromosome instanceof NetworkChromosome){
+            return StatementFitnessFunction._normalize(approachLevel + StatementFitnessFunction._normalize(branchDistance));
+        }
+
         let cfgDistanceNormalized: number;
         if (branchDistance === 0 && approachLevel < Number.MAX_SAFE_INTEGER) {
             cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome, approachLevel > 0));
@@ -67,6 +73,6 @@ export class DecisionFitnessFunction extends StatementFitnessFunction {
     }
 
     public override getNodeId(): string {
-        return `${this._targetNode.id}->${this._isTrueBranch}`;
+        return `${this._targetNode.id}-${this._isTrueBranch}`;
     }
 }

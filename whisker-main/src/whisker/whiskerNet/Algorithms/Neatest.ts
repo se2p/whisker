@@ -12,6 +12,7 @@ import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/
 import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {UserEventNode} from "scratch-analysis/src/control-flow-graph";
+import {DecisionFitnessFunction} from "../../testcase/fitness/DecisionFitnessFunction";
 
 export class Neatest extends NEAT {
 
@@ -147,8 +148,15 @@ export class Neatest extends NEAT {
         const uncoveredStatements = this.getUncoveredStatements();
         const allStatements = [...this._fitnessFunctionMap.values()];
 
-        // Select the next target statement by querying the CDG.
-        let potentialTargets = StatementFitnessFunction.getNearestUncoveredStatements(allStatements, uncoveredStatements);
+        // If we are dealing with DecisionFitness, our set of potential targets is formed over all uncovered Statements
+        // since a selection based on the CDG is infeasible as we are only targeting decision nodes and not statements.
+        let potentialTargets: Set<StatementFitnessFunction>;
+        if (this._fitnessFunctionMap.get(0) instanceof DecisionFitnessFunction){
+            potentialTargets = new Set(uncoveredStatements);
+        } else {
+            // Otherwise, select a target by querying the CDG for targets that have an approachLevel of zero.
+            potentialTargets = StatementFitnessFunction.getNearestUncoveredStatements(allStatements, uncoveredStatements);
+        }
         let nextTarget: StatementFitnessFunction;
 
         // Prioritise greenFlag events
@@ -244,22 +252,22 @@ export class Neatest extends NEAT {
             this.updateMostPromisingMap(network);
             network.openStatementTargets = null;
 
+            // Stop if we covered the targeted statement or depleted the search budget.
+            if (this._archive.has(this._targetKey) || await this._stoppingCondition.isFinished(this)) {
+                return;
+            }
+
             // Determine whether we should switch the currently selected target. We do that if we have accidentally
             // reached a previously not targeted statement without reaching the actual target statement at least once.
             if (this._promisingTargets.get(this._targetKey) < 1) {
                 const uncoveredTargetIds = this.getUncoveredStatements().map(target => target.getNodeId());
                 const untouchedUncovered = uncoveredTargetIds.filter(target => !this._switchedTargets.has(target));
-                for (const [key, value] of this._promisingTargets) {
-                    if (value > 0 && untouchedUncovered.includes(this._fitnessFunctionMap.get(key).getNodeId())) {
+                for (const [key, value] of this._promisingTargets.entries()) {
+                    if (value >= 1 && untouchedUncovered.includes(this._fitnessFunctionMap.get(key).getNodeId())) {
                         this._switchToEasierTarget = true;
                         return;
                     }
                 }
-            }
-
-            // Stop if we covered the targeted statement or depleted the search budget.
-            if (this._archive.has(this._targetKey) || await this._stoppingCondition.isFinished(this)) {
-                return;
             }
         }
     }

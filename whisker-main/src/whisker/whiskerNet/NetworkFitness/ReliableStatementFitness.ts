@@ -35,13 +35,14 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         executor.resetState();
 
         if (fitness > 0) {
-            network.fitness = 1 / fitness;
+            network.fitness = 1 - fitness;
         } else {
 
             // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent training data.
             if (Container.backpropagationInstance && Container.peerToPeerSharing) {
                 this._peerToPeerSharing(network);
             }
+
             // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
             await this.checkStableCoverage(network, timeout, eventSelection);
@@ -83,9 +84,8 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
             // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
             // target statement to the fitness function.
-            const fitness = await network.targetFitness.getFitness(network);
-            if (fitness > 0){
-                network.fitness += (1 / fitness);
+            if (!await network.targetFitness.isCovered(network)) {
+                network.fitness += (1 - await network.targetFitness.getFitness(network));
                 continue;
             }
 
@@ -114,7 +114,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
         for (const [fitnessKey, coverCount] of network.openStatementTargets.entries()) {
             const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
-            if (await statement.getFitness(network) == 0) {
+            if (await statement.isCovered(network)) {
                 network.openStatementTargets.set(fitnessKey, coverCount + 1);
                 if (statement === network.targetFitness) {
                     network.fitness++;
