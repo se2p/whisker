@@ -180,6 +180,11 @@ const ControlFilter = {
     hatBlock: block =>
         EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone',
 
+    decision: block =>
+        ControlFilter.singleBranch(block) ||
+        ControlFilter.doubleBranch(block) ||
+        ControlFilter.executionHaltingBlock(block),
+
     executionHaltingBlock: block =>
         block.opcode === 'control_wait' ||
         block.opcode === 'looks_thinkforsecs' ||

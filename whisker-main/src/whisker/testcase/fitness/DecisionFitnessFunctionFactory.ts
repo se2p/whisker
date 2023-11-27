@@ -18,7 +18,7 @@ export class DecisionFitnessFunctionFactory extends StatementFitnessFunctionFact
                 }
 
                 // Create two decision fitness functions for each branch.
-                if (ControlFilter.branch(node.block)) {
+                if (ControlFilter.decision(node.block)) {
                     fitnessFunctions.push(new DecisionFitnessFunction(node, true));
                     fitnessFunctions.push(new DecisionFitnessFunction(node, false));
                 }
