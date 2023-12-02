@@ -279,6 +279,7 @@ export class WhiskerSearchConfiguration {
                     learningRateAlgorithm: gradientDescent['learningRateAlgorithm'],
                     epochs: gradientDescent['epochs'],
                     batchSize: gradientDescent['batchSize'],
+                    combinePlayerRecordings: gradientDescent['combinePlayerRecordings'],
                     labelSmoothing: gradientDescent['labelSmoothing'],
                     l2Regularisation: gradientDescent['l2Regularisation']
                 };

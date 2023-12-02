@@ -43,6 +43,7 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         learningRate: 0.001,
         learningRateAlgorithm: 'Static',
         epochs: 1000,
+        combinePlayerRecordings: false,
         batchSize: 1,
         labelSmoothing: 0,
         l2Regularisation: 0

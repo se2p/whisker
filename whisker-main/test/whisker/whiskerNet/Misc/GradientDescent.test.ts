@@ -94,6 +94,7 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
+            combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
         };
@@ -103,6 +104,7 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 500,
             batchSize: 32,
+            combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
         };
@@ -122,8 +124,20 @@ describe('Test Gradient Descent', () => {
     });
 
     test("Check number of combined recordings after initialisation", () => {
-        const combined = new GradientDescent(groundTruthFruitCatchingCombined as any, gradientDescentForward, augmentationParameter);
-        const numIndividuals = [...backpropagation_1.extractDataForStatement(statement).keys()].length;
+        const combinedIndividual = new GradientDescent(groundTruthFruitCatchingCombined as any, gradientDescentForward, augmentationParameter);
+
+        const gradientDescentCombined: gradientDescentParameter = {
+            learningRate: 0.001,
+            learningRateAlgorithm: 'Static',
+            epochs: 500,
+            batchSize: 32,
+            combinePlayerRecordings: true,
+            labelSmoothing: 0,
+            l2Regularisation: 0
+        };
+
+        const combined = new GradientDescent(groundTruthFruitCatchingCombined as any, gradientDescentCombined, augmentationParameter);
+        const numIndividuals = [...combinedIndividual.extractDataForStatement(statement).keys()].length;
         const numCombined = [...combined.extractDataForStatement(statement).keys()].length;
         expect(numCombined).toBeGreaterThan(numIndividuals);
     });
@@ -145,6 +159,7 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
+            combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
         };
@@ -186,6 +201,7 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Gradual',
             epochs: 500,
             batchSize: 1,
+            combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
         };
@@ -201,6 +217,7 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
+            combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
         };
@@ -222,6 +239,7 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: Infinity,
+            combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
         };
@@ -268,6 +286,7 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 500,
             batchSize: 1,
+            combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
         };

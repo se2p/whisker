@@ -79,7 +79,7 @@ export class GradientDescent {
     public gradientDescent(network: NetworkChromosome, statement: string): number | undefined {
 
         // If necessary, update the prepared ground truth data for the given statement.
-        if (this._current_target !== statement) {
+        if (!this._parameter.combinePlayerRecordings || this._current_target !== statement) {
             Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
             this._training_data = this.extractDataForStatement(statement);
             Container.debugLog(`Starting with ${this.training_data.size} recordings.`);
@@ -434,14 +434,27 @@ export class GradientDescent {
 
     public extractDataForStatement(statement: string): StateActionRecord {
         let stateActionRecord: StateActionRecord;
+
+        // Check if there are multiple player recordings available in the training dataset.
         if (this._is_multiple_player_trace) {
-            stateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
-            for (const player in this._groundTruth) {
-                const playerData = this._extractDataForStatementFromPlayer(statement,
-                    this._groundTruth[player] as Record<string, unknown>);
-                playerData.forEach((value, key) => stateActionRecord.set(key, value));
+
+            // Decide whether we combine all player recordings or pick one randomly.
+            if (this._parameter.combinePlayerRecordings) {
+                // Combine all player recordings.
+                stateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+                for (const player in this._groundTruth) {
+                    const playerData = this._extractDataForStatementFromPlayer(statement,
+                        this._groundTruth[player] as Record<string, unknown>);
+                    playerData.forEach((value, key) => stateActionRecord.set(key, value));
+                }
+            } else {
+                // Pick a random player recording to be used.
+                const player = Randomness.getInstance().pick(Object.keys(this._groundTruth));
+                stateActionRecord = this._extractDataForStatementFromPlayer(statement, this._groundTruth[player] as Record<string, unknown>);
+                Container.debugLog(`Using recording of player ${player}`);
             }
         } else {
+            // If there is only one player recording, use it as a training dataset.
             stateActionRecord = this._extractDataForStatementFromPlayer(statement, this._groundTruth);
         }
 
@@ -736,6 +749,7 @@ export interface gradientDescentParameter {
     batchSize: number,
     labelSmoothing: number
     l2Regularisation: number,
+    combinePlayerRecordings: boolean
 }
 
 /**

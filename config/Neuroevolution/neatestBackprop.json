@@ -21,6 +21,7 @@
         "learningRateAlgorithm": "Static",
         "epochs": 1000,
         "batchSize": 1,
+        "combinePlayerRecordings": true,
         "labelSmoothing": 0,
         "l2Regularisation": 0,
         "dynamicRecordingFraction": 0,
