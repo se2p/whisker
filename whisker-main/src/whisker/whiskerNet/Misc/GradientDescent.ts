@@ -48,10 +48,26 @@ export class GradientDescent {
      */
     private _current_target: string
 
+    /**
+     * Defines whether the given groundTruth trace was combined of several player traces.
+     */
+    private readonly _is_multiple_player_trace: boolean
+
+    /**
+     * Safes the optimisation times per target.
+     */
+    private readonly _training_times: number[] = []
+
+    /**
+     * Safes the epochs in which early stopping terminated the optimisation.
+     */
+    private readonly _training_epochs: number[] = []
+
 
     constructor(private readonly _groundTruth: Record<string, unknown>,
                 private readonly _parameter: gradientDescentParameter,
                 private readonly _augmentationParameter: augmentationParameter) {
+        this._is_multiple_player_trace = Object.keys(_groundTruth).every(key => key.startsWith("P"));
     }
 
     /**
@@ -65,7 +81,7 @@ export class GradientDescent {
         // If necessary, update the prepared ground truth data for the given statement.
         if (this._current_target !== statement) {
             Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
-            this._training_data = this._extractDataForStatement(statement);
+            this._training_data = this.extractDataForStatement(statement);
             Container.debugLog(`Starting with ${this.training_data.size} recordings.`);
             this._current_target = statement;
         }
@@ -84,6 +100,7 @@ export class GradientDescent {
         // Extract the training and validation batches.
         const batches = this._extractBatches();
         const [trainingSet, validationSet] = this._validationSetSplit(batches);
+        const startTime = Date.now();
         for (let i = 0; i < this._parameter.epochs; i++) {
             let loss = this._trainingEpoch(network, trainingSet, i);  // Train
             if (loss === undefined) {
@@ -111,10 +128,13 @@ export class GradientDescent {
 
             if (epochsWithoutImprovement >= GradientDescent.EARLY_STOPPING_THRESHOLD) {
                 Container.debugLog(`Early stopping at epoch ${i}`);
+                this._training_epochs.push(i);
                 break;
             }
 
         }
+        this._training_times.push(Date.now() - startTime);
+        this._training_epochs.push(this._parameter.epochs);
 
         // Reset weights to the ones that obtained the best training loss.
         for (let j = 0; j < network.connections.length; j++) {
@@ -412,20 +432,38 @@ export class GradientDescent {
         network.getAllNodes().forEach(node => node.gradient = 0);
     }
 
+    public extractDataForStatement(statement: string): StateActionRecord {
+        let stateActionRecord: StateActionRecord;
+        if (this._is_multiple_player_trace) {
+            stateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+            for (const player in this._groundTruth) {
+                const playerData = this._extractDataForStatementFromPlayer(statement,
+                    this._groundTruth[player] as Record<string, unknown>);
+                playerData.forEach((value, key) => stateActionRecord.set(key, value));
+            }
+        } else {
+            stateActionRecord = this._extractDataForStatementFromPlayer(statement, this._groundTruth);
+        }
+
+        // Return the collected data or augment it to increase the dataset size.
+        return this._augmentationParameter.doAugment ? this._augmentData(stateActionRecord) : stateActionRecord;
+    }
+
     /**
-     * Restructures the data obtained from the .json file such that it only includes records that
-     * correspond to the current statement target.
+     * Restructures the data obtained from the .json file from a player's recording trace
+     * such that it only includes records that correspond to the current statement target.
      * @param statement the target statement for which the networks should be optimised.
+     * @param playerRecording the player's recording dataset.
      * @returns structured data for the gradient descent process.
      */
-    public _extractDataForStatement(statement: string): StateActionRecord {
+    private _extractDataForStatementFromPlayer(statement: string, playerRecording: Record<string, unknown>): StateActionRecord {
         const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
-        if (!this._groundTruth) {
+        if (!playerRecording) {
             return stateActionRecord;
         }
 
         // Iterate over each recording in the .json file.
-        for (const recording of Object.values(this._groundTruth)) {
+        for (const recording of Object.values(playerRecording)) {
 
             // Exclude recordings that do not include the supplied target statement.
             if (!(recording['coverage'].includes(statement))) {
@@ -446,7 +484,7 @@ export class GradientDescent {
         }
 
         // Return the collected data or augment it to increase the dataset size.
-        return this._augmentationParameter.doAugment ? this._augmentData(stateActionRecord) : stateActionRecord;
+        return stateActionRecord;
     }
 
     /**
@@ -628,6 +666,32 @@ export class GradientDescent {
      */
     private _regressionNodeIdentifier(node: RegressionNode) {
         return `${node.event.stringIdentifier()}-${node.eventParameter}`;
+    }
+
+    /**
+     * Computes and returns the average number of training epochs.
+     * @return Average number of training epochs.
+     */
+    public getTrainingEpochsMean(): number {
+        if (this._training_epochs.length > 0) {
+            const time = this._training_epochs.reduce((a, b) => a + b, 0) / this._training_epochs.length;
+            const timeSeconds = time / 1000;
+            return Math.round(timeSeconds * 100) / 100;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Computes and returns the average time used for gradient descent.
+     * @return Average gradient descent optimisation time.
+     */
+    public getTrainingTimeMean(): number {
+        if (this._training_times.length > 0) {
+            return Math.round(this._training_times.reduce((a, b) => a + b, 0) / this._training_times.length * 100) / 100;
+        } else {
+            return 0;
+        }
     }
 
     get training_data(): StateActionRecord {

@@ -78,7 +78,7 @@ export class StateActionRecorder extends EventEmitter {
     public startRecording(config: string): void {
         this._vm.on(Runtime.PROJECT_START, this._onRunStart);
         this._vm.on(Runtime.PROJECT_STOP_ALL, this._onRunStop);
-        this._vm.on(Runtime.PROJECT_STOP_ALL, this._onRunStop);
+        this._vm.runtime.on(Runtime.PROJECT_STOP_ALL, this._onRunStop);
         Container.config = new WhiskerSearchConfiguration(JSON.parse(config));
         this._isRecording = true;
     }

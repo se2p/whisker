@@ -1,4 +1,5 @@
 import groundTruthFruitCatching from "./GroundTruthFruitCatching.json";
+import groundTruthFruitCatchingCombined from "./GroundTruthFruitCatchingCombined.json";
 import fruitCatchingNetwork from "./fruitCatchingNetwork.json";
 import {augmentationParameter, GradientDescent, gradientDescentParameter, LossFunction} from "../../../../src/whisker/whiskerNet/Misc/GradientDescent";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
@@ -117,7 +118,14 @@ describe('Test Gradient Descent', () => {
             }
             featureRecordings += Object.keys(recordings).length - 1;
         }
-        expect([...backpropagation_1._extractDataForStatement(statement).keys()].length).toBe(featureRecordings);
+        expect([...backpropagation_1.extractDataForStatement(statement).keys()].length).toBe(featureRecordings);
+    });
+
+    test("Check number of combined recordings after initialisation", () => {
+        const combined = new GradientDescent(groundTruthFruitCatchingCombined as any, gradientDescentForward, augmentationParameter);
+        const numIndividuals = [...backpropagation_1.extractDataForStatement(statement).keys()].length;
+        const numCombined = [...combined.extractDataForStatement(statement).keys()].length;
+        expect(numCombined).toBeGreaterThan(numIndividuals);
     });
 
     test("Forward Pass", () => {
