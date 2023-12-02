@@ -687,9 +687,7 @@ export class GradientDescent {
      */
     public getTrainingEpochsMean(): number {
         if (this._training_epochs.length > 0) {
-            const time = this._training_epochs.reduce((a, b) => a + b, 0) / this._training_epochs.length;
-            const timeSeconds = time / 1000;
-            return Math.round(timeSeconds * 100) / 100;
+            return this._training_epochs.reduce((a, b) => a + b, 0) / this._training_epochs.length;
         } else {
             return 0;
         }
@@ -701,7 +699,9 @@ export class GradientDescent {
      */
     public getTrainingTimeMean(): number {
         if (this._training_times.length > 0) {
-            return Math.round(this._training_times.reduce((a, b) => a + b, 0) / this._training_times.length * 100) / 100;
+            const time = Math.round(this._training_times.reduce((a, b) => a + b, 0) / this._training_times.length * 100) / 100;
+            const timeSeconds = time / 1000;
+            return Math.round(timeSeconds * 100) / 100;
         } else {
             return 0;
         }
