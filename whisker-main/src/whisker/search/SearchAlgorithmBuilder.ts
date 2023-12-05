@@ -249,6 +249,12 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             const fitnessFunctions = [...this.fitnessFunctions.values()];
             if (fitnessFunctions.every(fitnessFunction => fitnessFunction instanceof StatementFitnessFunction)) {
                 Container.statementFitnessFunctions = fitnessFunctions as unknown as StatementFitnessFunction[];
+                const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+                const coveredMap = new Map<StatementFitnessFunction, number>();
+                for (const statement of statements){
+                    coveredMap.set(statement, 0);
+                }
+                Container.statements = coveredMap;
             }
         } else if (this._fitnessFunction && this._fitnessFunction instanceof StatementFitnessFunction) {
             Container.statementFitnessFunctions = [this._fitnessFunction as StatementFitnessFunction];

@@ -31,6 +31,8 @@ export class Neatest extends NEAT {
      */
     private _targetKey: number;
 
+    private _statementCoverage = 0;
+
     /**
      * Maps statement keys to the corresponding StatementFitnessFunction.
      */
@@ -69,6 +71,7 @@ export class Neatest extends NEAT {
         while (this._archive.size != totalGoals && !(await this._stoppingCondition.isFinished(this))) {
             const currentTarget = this.setNextGoal();
             Container.debugLog(`Next goal ${this._archive.size}/${totalGoals}:${currentTarget}`);
+            Container.debugLog(`Statements Covered ${this._statementCoverage * 100}%`);
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
@@ -123,6 +126,7 @@ export class Neatest extends NEAT {
                 this._iterations++;
             }
         }
+        StatisticsCollector.getInstance().stCovered = this._statementCoverage;
         return this._archive;
     }
 
@@ -240,6 +244,16 @@ export class Neatest extends NEAT {
                 this._neuroevolutionProperties.eventSelection);
             await this.updateArchive(network);
 
+            let covered = 0;
+            for(const [st, coverCount] of Container.statements.entries()){
+                if (coverCount < this._neuroevolutionProperties.coverageStableCount){
+                    Container.statements.set(st, 0);
+                } else {
+                    covered++;
+                }
+            }
+            this._statementCoverage = covered / Container.statements.size;
+
             // Check if we just covered the greenFlag event, and if so save the number of blocks that are covered
             // by only clicking on the greenFlag. This is ensured since we stop the execution as soon as we covered
             // the target statement and prioritise the greenFlag as target statement.
@@ -332,7 +346,8 @@ export class Neatest extends NEAT {
     protected override reportOfCurrentIteration(): void {
         Container.debugLog(`\nTotal Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
-        Container.debugLog(`Covered Statements: ${this._archive.size}/${this._fitnessFunctions.size}`);
+        Container.debugLog(`Covered Targets: ${this._archive.size}/${this._fitnessFunctions.size}`);
+        Container.debugLog(`Covered Statements: ${this._statementCoverage * 100}%`);
         Container.debugLog(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
         Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
         Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
@@ -367,10 +382,8 @@ export class Neatest extends NEAT {
 
         // Update TimeLine
         const timeLineValues: NeuroevolutionFitnessOverTime = {
-            coverage: this._archive.size,
-            fitness: highestFitness,
-            score: highestScore,
-            survive: highestSurvive
+            targetCoverage: this._archive.size,
+            statementCoverage: this._statementCoverage
         };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
 

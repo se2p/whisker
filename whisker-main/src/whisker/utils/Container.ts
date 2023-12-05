@@ -20,6 +20,7 @@ export class Container {
     static cfg: ControlFlowGraph;
     static cdg: ControlDependenceGraph;
     static statementFitnessFunctions: StatementFitnessFunction[];
+    static statements: Map<StatementFitnessFunction, number>;
     static backpropagationData: Record<string, unknown>;
     static backpropagationInstance: GradientDescent;
     static neatestTargetId: string

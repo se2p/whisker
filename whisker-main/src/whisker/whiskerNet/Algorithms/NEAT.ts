@@ -109,10 +109,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
 
         const timeLineValues: NeuroevolutionFitnessOverTime = {
-            coverage: this._archive.size,
-            fitness: highestFitness,
-            score: highestScore,
-            survive: highestSurvive
+            targetCoverage: this._archive.size,
+            statementCoverage:0
         };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
 

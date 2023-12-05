@@ -56,6 +56,7 @@ export class StatisticsCollector {
     private _highestScore: number;
     private _highestPlayTime: number;
     private readonly _fitnessOverTime: Map<number, NeuroevolutionFitnessOverTime>;
+    private _stCovered:number
 
     // Dynamic Suite
     private _testName: string;
@@ -105,6 +106,10 @@ export class StatisticsCollector {
         }
 
         return StatisticsCollector._instance;
+    }
+
+    set stCovered(value:number){
+        this._stCovered = value;
     }
 
     get projectName(): string {
@@ -421,11 +426,11 @@ export class StatisticsCollector {
         // Default header and data arrays
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
             "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
-            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime'];
+            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'stCovered'];
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
             this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
             this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
-            this._highestScore, this._highestPlayTime];
+            this._highestScore, this._highestPlayTime, this._stCovered];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
@@ -460,10 +465,8 @@ export class StatisticsCollector {
 
         }
         let max: NeuroevolutionFitnessOverTime = {
-            coverage: 0,
-            fitness: 0,
-            score: 0,
-            survive: 0
+            targetCoverage: 0,
+            statementCoverage: 0
         };
         for (let i = 0; i <= maxTime; i = i + sampleDistance) {
             if (adjusted.has(i)) {
@@ -530,8 +533,7 @@ export interface NetworkTestSuiteResults {
 }
 
 export interface NeuroevolutionFitnessOverTime {
-    coverage: number,
-    fitness: number,
-    score: number,
-    survive: number
+    targetCoverage: number,
+    statementCoverage: number
+
 }

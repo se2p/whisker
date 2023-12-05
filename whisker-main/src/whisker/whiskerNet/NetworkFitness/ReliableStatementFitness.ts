@@ -31,7 +31,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         await executor.execute(network);
         network.resetOpenStatement();
         const fitness = await network.targetFitness.getFitness(network);
-        await ReliableStatementFitness.updateUncoveredMap(network);
+        await this.updateUncoveredMap(network);
         executor.resetState();
 
         if (fitness > 0) {
@@ -79,7 +79,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 await executor.execute(network);
             }
             executor.resetState();
-            await ReliableStatementFitness.updateUncoveredMap(network);
+            await this.updateUncoveredMap(network);
             executor.resetState();
 
             // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
@@ -110,7 +110,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * target.
      * @param network the network chromosome that has finished its playthrough.
      */
-    private static async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
+    private async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
         for (const [fitnessKey, coverCount] of network.openStatementTargets.entries()) {
             const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
@@ -119,6 +119,16 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 if (statement === network.targetFitness) {
                     network.fitness++;
                 }
+            }
+        }
+
+        for (const [st, coverCount] of Container.statements.entries()){
+            const statement = st as unknown as FitnessFunction<NetworkChromosome>;
+            if (Container.statements.get(st) >= this._stableCount) {
+                continue;
+            }
+            if (await statement.isCovered(network)) {
+                Container.statements.set(st, coverCount + 1);
             }
         }
     }
