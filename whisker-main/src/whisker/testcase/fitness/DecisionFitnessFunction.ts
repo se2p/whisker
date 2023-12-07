@@ -39,10 +39,13 @@ export class DecisionFitnessFunction extends StatementFitnessFunction {
 
         // Otherwise, compute the distance toward the desired branch.
         const blockTrace = Object.values(chromosome.trace.blockTraces).find(block => block.id === this._targetNode.block.id);
+        if (!blockTrace){   // If we cannot find the block trace return a default value of 1.
+            return 1;
+        }
         if (this._isTrueBranch) {
-            return blockTrace.distances[0][0];
+            return blockTrace['distances'][0][0];
         } else {
-            return blockTrace.distances[0][1];
+            return blockTrace['distances'][0][1];
         }
     }
 
