@@ -45,6 +45,8 @@ import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Neatest} from "../whiskerNet/Algorithms/Neatest";
 import {DecisionFitnessFunctionFactory} from "../testcase/fitness/DecisionFitnessFunctionFactory";
+import {DecisionFitnessFunction} from "../testcase/fitness/DecisionFitnessFunction";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -234,6 +236,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 break;
             case "neatest":
                 searchAlgorithm = this._buildNeatest();
+                this._initialiseCoverageMappings();
                 break;
             case "random":
             default:
@@ -249,12 +252,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             const fitnessFunctions = [...this.fitnessFunctions.values()];
             if (fitnessFunctions.every(fitnessFunction => fitnessFunction instanceof StatementFitnessFunction)) {
                 Container.statementFitnessFunctions = fitnessFunctions as unknown as StatementFitnessFunction[];
-                const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
-                const coveredMap = new Map<StatementFitnessFunction, number>();
-                for (const statement of statements){
-                    coveredMap.set(statement, 0);
-                }
-                Container.statements = coveredMap;
             }
         } else if (this._fitnessFunction && this._fitnessFunction instanceof StatementFitnessFunction) {
             Container.statementFitnessFunctions = [this._fitnessFunction as StatementFitnessFunction];
@@ -373,6 +370,25 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }
+    }
+
+    /**
+     * Initialises mapping for assessing the achieved coverages during the test generation
+     */
+    private _initialiseCoverageMappings(){
+        const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+        const statementMap = new Map<StatementFitnessFunction, number>();
+        for (const statement of statements){
+            statementMap.set(statement, 0);
+        }
+        StatisticsCollector.getInstance().statements = statementMap;
+
+        const decisions = new DecisionFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+        const decisionMap = new Map<DecisionFitnessFunction, number>();
+        for (const decision of decisions){
+            decisionMap.set(decision, 0);
+        }
+        StatisticsCollector.getInstance().decisions = decisionMap;
     }
 
 

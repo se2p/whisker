@@ -47,6 +47,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             // in other circumstances as well.
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
+
+        StatisticsCollector.getInstance().computeStatementCoverage(this.stableCount);
+        StatisticsCollector.getInstance().computeDecisionCoverage(this.stableCount);
         return network.fitness;
     }
 
@@ -106,7 +109,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     }
 
     /**
-     * Updates the map of uncovered targets by the amount of times the given network was able to cover a respective
+     * Updates the map of uncovered targets by the number of times the given network was able to cover a respective
      * target.
      * @param network the network chromosome that has finished its playthrough.
      */
@@ -122,15 +125,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             }
         }
 
-        for (const [st, coverCount] of Container.statements.entries()){
-            const statement = st as unknown as FitnessFunction<NetworkChromosome>;
-            if (Container.statements.get(st) >= this._stableCount) {
-                continue;
-            }
-            if (await statement.isCovered(network)) {
-                Container.statements.set(st, coverCount + 1);
-            }
-        }
+        // Update statistics on the number of covered statements and decisions
+        await StatisticsCollector.getInstance().updateStatementCoverage(this.stableCount, network);
+        await StatisticsCollector.getInstance().updateDecisionCoverage(this.stableCount, network);
     }
 
     get stableCount(): number {

@@ -20,6 +20,8 @@
 
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Chromosome} from "../search/Chromosome";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
+import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 
 /**
  * Singleton class to collect statistics from search runs
@@ -37,7 +39,7 @@ export class StatisticsCollector {
     private _bestCoverage: number;
     private _greenFlagCovered: number;
     private _eventsCount: number; //executed events
-    private _testEventCount: number; //events in final test suite
+    private _testEventCount: number; //events in the final test suite
     private _bestTestSuiteSize: number;
     private _minimizedTests: number;
     private _minimizedEvents: number;
@@ -50,16 +52,18 @@ export class StatisticsCollector {
     private _timeToReachFullCoverage: number;
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
+    private _statements: Map<StatementFitnessFunction, number>;
+    private _decisions: Map<StatementFitnessFunction, number>;
+    private _statementCoverage: number
+    private _decisionCoverage: number
 
     // Neuroevolution
     private _highestNetworkFitness: number;
     private _highestScore: number;
     private _highestPlayTime: number;
     private readonly _fitnessOverTime: Map<number, NeuroevolutionFitnessOverTime>;
-    private _stCovered:number
 
     // Dynamic Suite
-    private _testName: string;
     private _surpriseAdequacy: number;
     private _surpriseNodeAdequacy: number;
     private readonly _networkSuiteResults: NetworkTestSuiteResults[];
@@ -98,6 +102,8 @@ export class StatisticsCollector {
         this._highestPlayTime = 0;
         this._surpriseAdequacy = 0;
         this._surpriseNodeAdequacy = 0;
+        this._statementCoverage = 0;
+        this._decisionCoverage = 0;
     }
 
     public static getInstance(): StatisticsCollector {
@@ -106,10 +112,6 @@ export class StatisticsCollector {
         }
 
         return StatisticsCollector._instance;
-    }
-
-    set stCovered(value:number){
-        this._stCovered = value;
     }
 
     get projectName(): string {
@@ -142,6 +144,31 @@ export class StatisticsCollector {
 
     set iterationCount(value: number) {
         this._iterationCount = value;
+    }
+
+    get statementCoverage(): number {
+        return this._statementCoverage;
+    }
+
+    set statementCoverage(value: number) {
+        this._statementCoverage = value;
+    }
+
+
+    get decisionCoverage(): number {
+        return this._decisionCoverage;
+    }
+
+    set decisionCoverage(value: number) {
+        this._decisionCoverage = value;
+    }
+
+    set statements(value: Map<StatementFitnessFunction, number>) {
+        this._statements = value;
+    }
+
+    set decisions(value: Map<StatementFitnessFunction, number>) {
+        this._decisions = value;
     }
 
     /**
@@ -200,6 +227,18 @@ export class StatisticsCollector {
     public updateHighestPlaytime(value: number): void {
         if (value > this.highestPlayTime) {
             this._highestPlayTime = value;
+        }
+    }
+
+    public updateHighestStatementCoverage(value: number): void {
+        if (value > this._statementCoverage) {
+            this._statementCoverage = value;
+        }
+    }
+
+    public updateHighestDecisionCoverage(value: number): void {
+        if (value > this._decisionCoverage) {
+            this._decisionCoverage = value;
         }
     }
 
@@ -278,7 +317,7 @@ export class StatisticsCollector {
         this._minimizedTests = value;
     }
 
-    addMinimizedEvents(minimizationCount:number): void{
+    addMinimizedEvents(minimizationCount: number): void {
         this._minimizedEvents += minimizationCount;
     }
 
@@ -304,10 +343,6 @@ export class StatisticsCollector {
 
     set timeToReachFullCoverage(value: number) {
         this._timeToReachFullCoverage = value;
-    }
-
-    set testName(value: string) {
-        this._testName = value;
     }
 
     get surpriseAdequacy(): number {
@@ -339,9 +374,10 @@ export class StatisticsCollector {
     }
 
     /**
-     * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so-called
-     * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
-     * truncate this timeline. The optional parameter `numberOfCoverageValues` can be used to specify how many entries
+     * Outputs a CSV string that summarises statistics about the search.
+     * Among others, this includes a so-called fitness timeline, which reports the achieved coverage over time.
+     * In some cases, it might be desirable to truncate this timeline.
+     * The optional parameter `numberOfCoverageValues` can be used to specify how many entries
      * this timeline should consist of. If no value or `undefined` is given, all entries are included.
      * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
      */
@@ -374,14 +410,14 @@ export class StatisticsCollector {
             values = [...values, ...valuePadding].slice(0, numberOfCoverageValues);
         }
 
-        const coveragesHeaders = header.join(",");
+        const coverageHeaders = header.join(",");
         const coverageValues = values.join(",");
 
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "testsuiteEventCount", "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents",
             "averageTestExecutionTime", "bestTestSuiteSize", "numberFitnessEvaluations", "createdTestsToReachFullCoverage",
             "timeToReachFullCoverage"];
-        const headerRow = headers.join(",").concat(",", coveragesHeaders);
+        const headerRow = headers.join(",").concat(",", coverageHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
             this._coveredFitnessFunctionsCount, this._bestCoverage, this._testEventCount, this._eventsCount,
             this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime, this._bestTestSuiteSize,
@@ -426,11 +462,11 @@ export class StatisticsCollector {
         // Default header and data arrays
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
             "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
-            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'stCovered'];
+            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'stCoverage', 'decCoverage'];
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
             this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
             this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
-            this._highestScore, this._highestPlayTime, this._stCovered];
+            this._highestScore, this._highestPlayTime, this._statementCoverage, this._decisionCoverage];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
@@ -465,8 +501,8 @@ export class StatisticsCollector {
 
         }
         let max: NeuroevolutionFitnessOverTime = {
-            targetCoverage: 0,
-            statementCoverage: 0
+            statementCoverage: 0,
+            decisionCoverage: 0
         };
         for (let i = 0; i <= maxTime; i = i + sampleDistance) {
             if (adjusted.has(i)) {
@@ -503,6 +539,54 @@ export class StatisticsCollector {
         return adjusted;
     }
 
+    public async updateStatementCoverage(stableCount = 0, chromosome: NetworkChromosome): Promise<void> {
+        for (const [st, coverCount] of this._statements.entries()) {
+            const statement = st as unknown as FitnessFunction<NetworkChromosome>;
+            if (this._statements.get(st) >= stableCount) {
+                continue;
+            }
+            if (await statement.isCovered(chromosome)) {
+                this._statements.set(st, coverCount + 1);
+            }
+        }
+    }
+
+    public async updateDecisionCoverage(stableCount = 0, chromosome: NetworkChromosome): Promise<void> {
+        for (const [dec, coverCount] of this._decisions.entries()) {
+            const decision = dec as unknown as FitnessFunction<NetworkChromosome>;
+            if (this._decisions.get(dec) >= stableCount) {
+                continue;
+            }
+            if (await decision.isCovered(chromosome)) {
+                this._decisions.set(dec, coverCount + 1);
+            }
+        }
+    }
+
+    public computeStatementCoverage(stableCount = 1): void {
+        let covered = 0;
+        for (const [st, coverCount] of this._statements.entries()) {
+            if (coverCount < stableCount) {
+                this._statements.set(st, 0);
+            } else {
+                covered++;
+            }
+        }
+        this.updateHighestStatementCoverage(covered / this._statements.size);
+    }
+
+    public computeDecisionCoverage(stableCount = 1): void {
+        let covered = 0;
+        for (const [dec, coverCount] of this._decisions.entries()) {
+            if (coverCount < stableCount) {
+                this._decisions.set(dec, 0);
+            } else {
+                covered++;
+            }
+        }
+        this.updateHighestDecisionCoverage(covered / this._decisions.size);
+    }
+
     public reset(): void {
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
@@ -533,7 +617,7 @@ export interface NetworkTestSuiteResults {
 }
 
 export interface NeuroevolutionFitnessOverTime {
-    targetCoverage: number,
-    statementCoverage: number
+    statementCoverage: number,
+    decisionCoverage: number
 
 }

@@ -31,8 +31,6 @@ export class Neatest extends NEAT {
      */
     private _targetKey: number;
 
-    private _statementCoverage = 0;
-
     /**
      * Maps statement keys to the corresponding StatementFitnessFunction.
      */
@@ -46,12 +44,12 @@ export class Neatest extends NEAT {
     private _targetIterations = 0;
 
     /**
-     * Determines whether we should switch the currently selected target with an easier to reach target.
+     * Determines whether we should switch the currently selected target due to easier targets being within reach.
      */
     private _switchToEasierTarget = false;
 
     /**
-     * Saves target ids of objectives that have already been switched out in order to prioritise different ones.
+     * Saves target ids of objectives that have already been switched out to prioritise different ones.
      */
     private _switchedTargets = new Set<string>();
 
@@ -71,7 +69,6 @@ export class Neatest extends NEAT {
         while (this._archive.size != totalGoals && !(await this._stoppingCondition.isFinished(this))) {
             const currentTarget = this.setNextGoal();
             Container.debugLog(`Next goal ${this._archive.size}/${totalGoals}:${currentTarget}`);
-            Container.debugLog(`Statements Covered ${this._statementCoverage * 100}%`);
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
@@ -126,7 +123,7 @@ export class Neatest extends NEAT {
                 this._iterations++;
             }
         }
-        StatisticsCollector.getInstance().stCovered = this._statementCoverage;
+        this.updateBestIndividualAndStatistics();
         return this._archive;
     }
 
@@ -144,7 +141,7 @@ export class Neatest extends NEAT {
     }
 
     /**
-     * Sets the next fitness objective by prioritising the most promising statements, i.e. statement that are direct
+     * Sets the next fitness objective by prioritising the most promising statements, i.e. statements that are direct
      * children of already reached statements in the control dependence graph.
      * @returns the next target statement's fitness function.
      */
@@ -244,19 +241,10 @@ export class Neatest extends NEAT {
                 this._neuroevolutionProperties.eventSelection);
             await this.updateArchive(network);
 
-            let covered = 0;
-            for(const [st, coverCount] of Container.statements.entries()){
-                if (coverCount < this._neuroevolutionProperties.coverageStableCount){
-                    Container.statements.set(st, 0);
-                } else {
-                    covered++;
-                }
-            }
-            this._statementCoverage = covered / Container.statements.size;
-
-            // Check if we just covered the greenFlag event, and if so save the number of blocks that are covered
-            // by only clicking on the greenFlag. This is ensured since we stop the execution as soon as we covered
-            // the target statement and prioritise the greenFlag as target statement.
+            // Check if we just covered the greenFlag event, and if so, save the number of blocks that are covered
+            // by only clicking on the greenFlag.
+            // This is ensured since we stopped the execution as soon as
+            // we covered the target statement and prioritised the greenFlag as a target statement.
             if (this._fitnessFunctionMap.get(this._targetKey).getTargetNode().block.opcode === 'event_whenflagclicked' &&
                 this._archive.has(this._targetKey)) {
                 StatisticsCollector.getInstance().greenFlagCovered = this._archive.size;
@@ -308,7 +296,7 @@ export class Neatest extends NEAT {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
 
-            // If we covered a statement update the archive, statistics and the map of open target statements.
+            // If we covered a statement, update the archive, statistics and the map of open target statements.
             if (await this.isCovered(fitnessFunctionKey, network)) {
                 Container.debugLog(`Covered Statement ${fitnessFunctionKey}:${fitnessFunction}`);
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
@@ -347,7 +335,8 @@ export class Neatest extends NEAT {
         Container.debugLog(`\nTotal Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
         Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
         Container.debugLog(`Covered Targets: ${this._archive.size}/${this._fitnessFunctions.size}`);
-        Container.debugLog(`Covered Statements: ${this._statementCoverage * 100}%`);
+        Container.debugLog(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);
+        Container.debugLog(`Covered Decisions: ${StatisticsCollector.getInstance().decisionCoverage * 100}%`);
         Container.debugLog(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
         Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
         Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
@@ -365,7 +354,7 @@ export class Neatest extends NEAT {
     }
 
     /**
-     * Updates the List of the best networks found so far and the statistics used for reporting.
+     * Updates the List of the best networks found so far, and the statistics used for reporting.
      */
     protected override updateBestIndividualAndStatistics(): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
@@ -374,16 +363,10 @@ export class Neatest extends NEAT {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);
 
-        const highestFitness = Math.max(...this._population.networks.map(n => n.fitness));
-        const highestScore = Math.max(...this._population.networks.map(n => n.score));
-        const highestSurvive = Math.max(...this._population.networks.map(n => n.playTime));
-        StatisticsCollector.getInstance().updateHighestScore(highestScore);
-        StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
-
         // Update TimeLine
         const timeLineValues: NeuroevolutionFitnessOverTime = {
-            targetCoverage: this._archive.size,
-            statementCoverage: this._statementCoverage
+            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
+            decisionCoverage: StatisticsCollector.getInstance().decisionCoverage
         };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
 

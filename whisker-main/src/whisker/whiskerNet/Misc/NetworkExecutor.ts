@@ -145,6 +145,7 @@ export class NetworkExecutor {
             // Otherwise, we just Wait...
             else {
                 this._waitDuration--;
+                await new WaitEvent(1).apply();
             }
 
             // Record the activation trace and increase the stepCount.

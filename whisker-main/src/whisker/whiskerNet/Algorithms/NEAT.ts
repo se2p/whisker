@@ -92,7 +92,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     /**
-     * Updates the List of the best networks found so far and the statistics used for reporting. Order is important!
+     * Updates the List of the best networks found so far, and the statistics used for reporting.
+     * Order is important!
      * @param population the current generation's population of networks.
      */
     protected updateBestIndividualAndStatistics(population: NeatPopulation): void {
@@ -102,15 +103,14 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size - 1;
         StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.fitness);
 
-        const highestFitness = Math.max(...population.networks.map(n => n.fitness));
         const highestScore = Math.max(...population.networks.map(n => n.score));
         const highestSurvive = Math.max(...population.networks.map(n => n.playTime));
         StatisticsCollector.getInstance().updateHighestScore(highestScore);
         StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
 
         const timeLineValues: NeuroevolutionFitnessOverTime = {
-            targetCoverage: this._archive.size,
-            statementCoverage:0
+            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
+            decisionCoverage: StatisticsCollector.getInstance().decisionCoverage
         };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
 
