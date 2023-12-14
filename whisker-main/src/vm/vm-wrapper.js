@@ -1,5 +1,4 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
-const Stepper = require('./stepper');
 const log = require('minilog')('vm-wrapper');
 const Sprites = require('./sprites');
 const {Callbacks} = require('./callbacks');
@@ -7,6 +6,16 @@ const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
 require('setimmediate'); // attaches setImmediate to the global scope as side effect
+
+const STEP_TIME = 1000 / 30;
+
+function pause(millis) {
+    if (millis === 0) {
+        return;
+    }
+
+    return new Promise((resolve) => setTimeout(resolve, millis));
+}
 
 /**
  * Wraps the used virtual machine and extends existing functionality.
@@ -20,14 +29,14 @@ class VMWrapper {
         this.vm = vm;
 
         /**
+         * @type {number}
+         */
+        this.accelerationFactor = 1;
+
+        /**
          * {object} The original project json, which is used to reload the original VM state.
          */
         this._originalProjectJSON = project;
-
-        /**
-         * @type {Stepper} The stepper that counts steps of the virtual machine.
-         */
-        this.stepper = new Stepper(Runtime.THREAD_STEP_INTERVAL);
 
         /**
          * @type {Sprites} Sprite specific functionality.
@@ -65,19 +74,18 @@ class VMWrapper {
         this.actionOnConstraintFailure = VMWrapper.ON_CONSTRAINT_FAILURE_FAIL;
 
         /**
-         * @type {number} Time the virtual machine starts.
+         * The "in-game" time elapsed during the last run.
+         * @type {number}
+         * @private
          */
-        this.startTime = 0;
+        this._runTimeElapsed = 0;
 
         /**
-         * @type {number} The overall count of executed steps.
+         * The number of steps the VM executed during the last run.
+         * @type {number}
+         * @private
          */
-        this.stepsExecuted = 0;
-
-        /**
-         * @type {number} The executed steps after a new run starts.
-         */
-        this.runStartStepsExecuted = 0;
+        this._runStepsExecuted = 0;
 
         /**
          * @type {boolean} Indicates if the Scratch program has active threads that are being executed.
@@ -95,7 +103,7 @@ class VMWrapper {
         this._whiskerRunning = false;
 
         /**
-         * @type {string} Text for a question.
+         * @type {null|string} Text for a question.
          */
         this.question = null;
 
@@ -121,8 +129,8 @@ class VMWrapper {
     }
 
     /**
-     * Takes a run step.
-     * @returns {Promise<*>} Returns AssertionError, if constraint failed.
+     * Takes a run step (performs one tick.)
+     * @returns {Promise<*>} Promise that wraps an AssertionError, if a constraint was violated, otherwise `null`
      */
     async step() {
         await this.vm.runtime.translateText2Speech();
@@ -174,54 +182,52 @@ class VMWrapper {
      * @param {Function?} condition Run condition.
      * @param {number=} timeout Time after which run is aborted.
      * @param {number=} steps Number of steps the run is lasting.
-     * @returns {number} Runtime in ms.
+     * @returns {Promise<number>} Runtime in ms.
      */
-    async run(condition, timeout, steps) {
+    async run({condition = (() => false), timeout = Infinity, steps = Infinity}) {
         if (this.isScratchRunning()) {
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
                 'missing any await-statements in your test.');
         }
 
-        condition = condition || (() => false);
-        if (timeout !== undefined && steps === undefined) {
-            steps = this.convertFromTimeToSteps(timeout);
-        }
-        steps = steps === undefined ? Infinity : steps;
+        steps = Math.min(steps, this.convertFromTimeToSteps(timeout));
 
         this._scratchRunning = true;
-        this.runStartStepsExecuted = this.getTotalStepsExecuted();
 
-        let constraintError = null;
+        const stopOnError = (
+            this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
+            this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP
+        );
 
-        while (this.isScratchRunning() && this.getRunStepsExecuted() < steps && !condition()) {
+        const timeBefore = this.getTotalTimeElapsed();
+        let assertionError = null;
+        this._runStepsExecuted = 0;
+
+        while (this.isScratchRunning() && this._runStepsExecuted < steps && !condition()) {
             if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
-                const previousStepsExecuted = this.vm.runtime.stepsExecuted;
+                [assertionError] = await Promise.all([this.step(), pause(STEP_TIME / this.accelerationFactor)]);
+                this._runStepsExecuted++;
 
-                constraintError = await this.stepper.step(this.step.bind(this));
-
-                this.stepsExecuted += this.vm.runtime.stepsExecuted - previousStepsExecuted;
-
-                if (constraintError &&
-                    (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
-                        this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
+                if (stopOnError && assertionError !== null) {
                     break;
                 }
             } else {
                 // The execution of a test is paused in the debugger. Without the timeout, the debugger GUI freezes.
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await pause(100);
             }
         }
+
+        this._runTimeElapsed = this.getTotalTimeElapsed() - timeBefore;
 
         if (this.aborted) {
             throw new Error('Run was aborted!');
         }
 
         this._scratchRunning = false;
-        const stepsExecuted = this.getRunStepsExecuted();
-        this.inputs.updateInputs(stepsExecuted);
+        this.inputs.updateInputs(this._runStepsExecuted);
 
-        if (constraintError && this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL) {
-            throw constraintError;
+        if (assertionError !== null && this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL) {
+            throw assertionError;
         }
 
         return this.getRunTimeElapsed();
@@ -229,41 +235,42 @@ class VMWrapper {
 
     /**
      * Starts another run for a specific amount of time.
-     * @param {number} time Time constraint for runtime.
-     * @returns {number} Runtime in ms.
+     * @param {number} timeout Time constraint for runtime.
+     * @returns {Promise<number>} Runtime in ms.
      */
-    async runForTime(time) {
-        return await this.run(undefined, time);
+    runForTime(timeout) {
+        return this.run({timeout});
     }
 
     /**
      * Starts another run until a specific condition occurs.
      * @param {Function} condition Condition that stops the run.
      * @param {number=} timeout Time constraint for runtime.
-     * @returns {number} Runtime in ms.
+     * @returns {Promise<number>} Runtime in ms.
      */
-    async runUntil(condition, timeout) {
-        return await this.run(condition, timeout);
+    runUntil(condition, timeout) {
+        return this.run({condition, timeout});
     }
 
     /**
      * Starts another run until a specific callback.
      * @param {Function} callback Callback that stops run.
      * @param {number=} timeout Time constraint for runtime.
-     * @returns {number} Runtime in ms .
+     * @returns {Promise<number>} Runtime in ms .
      */
-    async runUntilChanges(callback, timeout) {
+    runUntilChanges(callback, timeout) {
         const initialValue = callback();
-        return await this.run(() => callback() !== initialValue, timeout);
+        const condition = () => callback() !== initialValue;
+        return this.run({condition, timeout});
     }
 
     /**
      * Starts another run that lasts for a specific number of steps.
      * @param {number} steps Step constraint for run.
-     * @returns {number} Runtime in steps.
+     * @returns {Promise<number>} Runtime in steps.
      */
     async runForSteps(steps) {
-        return this.convertFromTimeToSteps(await this.run(undefined, undefined, steps));
+        return this.convertFromTimeToSteps(await this.run({steps}));
     }
 
     /**
@@ -283,19 +290,11 @@ class VMWrapper {
     }
 
     /**
-     * Gives back the current step time.
-     * @return {number} Step time in ms.
-     */
-    getCurrentStepTime() {
-        return this.vm.runtime.paused ? this.vm.runtime.oldStepTime : this.vm.runtime.currentStepTime;
-    }
-
-    /**
-     * Gives back the total timespan since the start of the test suite taking the acceleration factor into account.
+     * Gives back the total timespan since the start of the test suite.
      * @return {number} Runtime in ms.
      */
     getTotalTimeElapsed() {
-        return this.getTotalStepsExecuted() * this.getCurrentStepTime() * this.accelerationFactor;
+        return this.vm.runtime.currentMSecs;
     }
 
     /**
@@ -303,7 +302,7 @@ class VMWrapper {
      * @return {number} Runtime in ms.
      */
     getRunTimeElapsed() {
-        return this.getRunStepsExecuted() * this.getCurrentStepTime() * this.accelerationFactor;
+        return this._runTimeElapsed;
     }
 
     /**
@@ -311,7 +310,7 @@ class VMWrapper {
      * @return {number} Runtime in steps.
      */
     getTotalStepsExecuted() {
-        return this.stepsExecuted;
+        return this.vm.runtime.stepsExecuted;
     }
 
     /**
@@ -319,16 +318,16 @@ class VMWrapper {
      * @return {number} Runtime in steps.
      */
     getRunStepsExecuted() {
-        return this.stepsExecuted - this.runStartStepsExecuted;
+        return this._runStepsExecuted;
     }
 
     /**
      * Runs the virtual machine for a specific number of steps.
      * @param {number} steps Number of steps to wait.
-     * @returns {Promise<void>} Promise that resolves after targets are installed.
+     * @returns {Promise<number>} Promise that resolves after targets are installed.
      */
-    async wait(steps) {
-        await this.runForSteps(steps);
+    wait(steps) {
+        return this.runForSteps(steps);
     }
 
     /**
@@ -338,13 +337,7 @@ class VMWrapper {
      * @returns {Promise<void>} Promise that resolves after targets are installed.
      */
     async setup(project, accelerationFactor = 1) {
-        delete Runtime.THREAD_STEP_INTERVAL;
-        Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / accelerationFactor;
-        this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
-        this.vm.runtime.accelerationFactor = accelerationFactor;
-        this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
-        clearInterval(this.vm.runtime._steppingInterval);
-        this.accelerationFactor = accelerationFactor;
+        this.accelerationFactor = Number(accelerationFactor);
         this.vm.runtime.virtualSound = -1;
 
         const returnValue = await this.vm.loadProject(project);
@@ -446,9 +439,6 @@ class VMWrapper {
         this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange);
 
         this.vm.greenFlag();
-        this.startTime = Date.now();
-        this.vm.runtime.stepsExecuted = 0;
-        this.vm.runtime.stepTimer = 0;
         this.vm.runtime.virtualSound = -1;
 
         this.aborted = false;
@@ -548,8 +538,7 @@ class VMWrapper {
      * @return {number} The converted time in steps.
      */
     convertFromTimeToSteps(timeDuration) {
-        const stepDuration = this.getCurrentStepTime() * this.accelerationFactor;
-        return timeDuration / stepDuration;
+        return timeDuration / STEP_TIME;
     }
 
     /**
@@ -689,6 +678,10 @@ class VMWrapper {
      * before the next action is taken.
      */
     async _yield() {
+        if (this.accelerationFactor === Infinity) {
+            return;
+        }
+
         await new Promise(resolve => setImmediate(() => resolve()));
     }
 
