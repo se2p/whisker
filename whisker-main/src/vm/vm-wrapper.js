@@ -342,58 +342,9 @@ class VMWrapper {
         this.accelerationFactor = accelerationFactor;
         this.vm.runtime.virtualSound = -1;
 
-        this.instrumentPrimitive('control_wait', 'DURATION');
-        this.instrumentPrimitive('looks_sayforsecs', 'SECS');
-        this.instrumentPrimitive('looks_thinkforsecs', 'SECS');
-        this.instrumentPrimitive('motion_glidesecstoxy', 'SECS');
-        this.instrumentPrimitive('motion_glideto', 'SECS');
-
-        this.instrumentDevice('clock', 'projectTimer');
-
         const returnValue = await this.vm.loadProject(project);
         await this._yield();
         return returnValue;
-    }
-
-    /**
-     * Instrumentation of a new runtime device.
-     * @param deviceName Name of the device to set.
-     * @param method Device method to set.
-     */
-    instrumentDevice(deviceName, method) {
-        const device = this.vm.runtime.ioDevices[deviceName];
-        let original = device[method];
-
-        if (original.isInstrumented) {
-            original = original.primitive;
-        }
-
-        const instrumented = () => original.call(device) * this.accelerationFactor;
-        instrumented.isInstrumented = true;
-        instrumented.primitive = original;
-        device[method] = instrumented;
-    }
-
-    /**
-     * Instrumentation of a new runtime primitive.
-     * @param primitive Runtime primitive to set.
-     * @param argument Primitive argument to set.
-     */
-    instrumentPrimitive(primitive, argument) {
-        let original = this.vm.runtime._primitives[primitive];
-
-        if (original.isInstrumented) {
-            original = original.primitive;
-        }
-
-        const instrumented = (args, util) => {
-            const clone = {...args};
-            clone[argument] = args[argument] / this.accelerationFactor;
-            return original(clone, util);
-        };
-        instrumented.isInstrumented = true;
-        instrumented.primitive = original;
-        this.vm.runtime._primitives[primitive] = instrumented;
     }
 
     /**
