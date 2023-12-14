@@ -5,8 +5,6 @@ const cloneDeep = require('lodash.clonedeep');
 const Util = require("../vm/util");
 
 
-let threadPreparedForCoverage = false;
-
 /* Only works with Scratch 3.0 (.sb3) projects. sb2 projects can be easily converted by saving them with Scratch 3.0. */
 class Coverage {
     constructor (coveredBlockIdsPerSprite, blockIdsPerSprite, blockDescriptions) {
@@ -89,131 +87,6 @@ class Coverage {
 class CoverageGenerator {
 
     /**
-
-     * @param classes
-     * @param testRunner
-     * @param {recordExecutionTrace: boolean} recordExecutionTrace
-     */
-    static prepareClasses (classes, testRunner, recordExecutionTrace=false) {
-        const Thread = classes.Thread;
-
-        if (!Thread.hasOwnProperty('real_pushStack')) {
-            Thread.real_pushStack = Thread.prototype.pushStack;
-            Thread.prototype.pushStack = function (blockId) {
-                CoverageGenerator._coverBlock(blockId);
-                Thread.real_pushStack.call(this, blockId);
-            };
-        }
-        if (!('real_reuseStackForNextBlock' in Thread)) {
-            Thread.real_reuseStackForNextBlock = Thread.prototype.reuseStackForNextBlock;
-            Thread.prototype.reuseStackForNextBlock = function (blockId) {
-                CoverageGenerator._coverBlock(blockId);
-                Thread.real_reuseStackForNextBlock.call(this, blockId);
-
-                // Check if we would like to record the execution trace.
-                if (recordExecutionTrace) {
-                    const target = this.target;
-                    const block = target.blocks.getBlock(this.peekStack());
-                    const opcode = target.blocks.getOpcode(block);
-
-                    // Record execution traces for each opcode block.
-                    if (opcode) {
-
-                        const otherSpritesName = target.runtime.targets
-                            .filter(t => t.sprite).map(t => t.getName());
-
-                        let keysDown = target.runtime.ioDevices.keyboard._keysPressed;
-                        keysDown = keysDown.map(x => Util.scratchKeyToKeyString(x));
-
-                        const clockTime = target.runtime.ioDevices.clock.projectTimer();
-
-                        const input = target.blocks.getInputs(block);
-                        const inputContent = Object.keys(input).map((key) =>
-                            cloneDeep(target.blocks.getBlock(input[key].block))
-                        );
-
-                        const stage = target.runtime.getTargetForStage();
-                        const stageVariables = cloneDeep(stage.variables);
-                        const variables = cloneDeep(target.variables);
-
-                        const renderer = target.renderer;
-                        const allDrawableCopy = [];
-
-                        for (const drawable of renderer._allDrawables) {
-                            if (!drawable) {
-                                continue;
-                            }
-                            const propertiesToLog = {};
-                            propertiesToLog.id = drawable._id;
-                            propertiesToLog.posx = drawable._position[0];
-                            propertiesToLog.posy = drawable._position[1];
-                            propertiesToLog.direction = drawable._direction;
-                            propertiesToLog.scalex = drawable._scale[0];
-                            propertiesToLog.scaley = drawable._scale[1];
-                            propertiesToLog.scaleboth = drawable._scale.slice(0, 2);
-                            propertiesToLog.color = drawable._uniforms.u_color;
-                            propertiesToLog.whirl = drawable._uniforms.u_whirl;
-                            propertiesToLog.fisheye = drawable._uniforms.u_fisheye;
-                            propertiesToLog.pixelate = drawable._uniforms.u_pixelate;
-                            propertiesToLog.mosaic = drawable._uniforms.u_mosaic;
-                            propertiesToLog.brightness = drawable._uniforms.u_brightness;
-                            propertiesToLog.ghost = drawable._uniforms.u_ghost;
-                            allDrawableCopy.push(propertiesToLog);
-                        }
-
-                        testRunner.addExecutionTrace(
-                            {
-                                clockTime: clockTime,
-                                block: {
-                                    id: block.id,
-                                    opcode: block.opcode,
-                                    fields: target.blocks.getFields(block),
-                                    inputs: inputContent,
-                                    mutation: target.blocks.getMutation(block)
-                                },
-                                target: {
-                                    isStage: target.isStage,
-                                    name: target.getName(),
-                                    visible: target.visible,
-                                    drawableID: target.drawableID,
-                                    touching: otherSpritesName.filter(x =>
-                                        (x !== target.getName() && target.isTouchingSprite(x))
-                                    ),
-                                    currentCostume: target.currentCostume,
-                                    layerOrder: 'layerOrder' in target ? target.layerOrder : 'undefined',
-                                    variables: variables
-                                },
-                                allDrawables: allDrawableCopy,
-                                stageVariables: stageVariables,
-                                keysDown: keysDown
-                            });
-                    }
-                }
-            };
-        }
-
-        threadPreparedForCoverage = true;
-    }
-
-    /**
-     * @param {Thread: class} classes .
-     */
-    static restoreClasses (classes) {
-        const Thread = classes.Thread;
-
-        if (Thread.hasOwnProperty('real_pushStack')) {
-            Thread.prototype.pushStack = Thread.real_pushStack;
-            delete Thread.real_pushStack;
-        }
-        if (Thread.hasOwnProperty('real_reuseStackForNextBlock')) {
-            Thread.prototype.reuseStackForNextBlock = Thread.real_reuseStackForNextBlock;
-            delete Thread.real_reuseStackForNextBlock;
-        }
-
-        threadPreparedForCoverage = false;
-    }
-
-    /**
      * @param {number} blockId .
      */
     static _coverBlock (blockId) {
@@ -247,8 +120,6 @@ class CoverageGenerator {
                 }
             }
         }
-
-        vm.preparedForCoverage = true;
     }
 
     /**
@@ -289,7 +160,7 @@ class CoverageGenerator {
      * @returns {boolean} .
      */
     static isCoverageEnabled (vm) {
-        return threadPreparedForCoverage && vm.preparedForCoverage;
+        return vm.runtime.onBlockCoveredCallback !== null;
     }
 
     static clearCoverage () {
@@ -361,6 +232,85 @@ class CoverageGenerator {
         }
 
         return new Coverage(coveredBlockIdsPerSprite, blockIdsPerSprite);
+    }
+
+    static traceExecution (thread) {
+        const target = thread.target;
+        const block = target.blocks.getBlock(thread.peekStack());
+        const opcode = target.blocks.getOpcode(block);
+
+        // Record execution traces for each opcode block.
+        if (!opcode) {
+            return;
+        }
+
+        const otherSpritesName = target.runtime.targets
+            .filter(t => t.sprite).map(t => t.getName());
+
+        let keysDown = target.runtime.ioDevices.keyboard._keysPressed;
+        keysDown = keysDown.map(x => Util.scratchKeyToKeyString(x));
+
+        const clockTime = target.runtime.ioDevices.clock.projectTimer();
+
+        const input = target.blocks.getInputs(block);
+        const inputContent = Object.keys(input).map((key) =>
+            cloneDeep(target.blocks.getBlock(input[key].block))
+        );
+
+        const stage = target.runtime.getTargetForStage();
+        const stageVariables = cloneDeep(stage.variables);
+        const variables = cloneDeep(target.variables);
+
+        const renderer = target.renderer;
+        const allDrawableCopy = [];
+
+        for (const drawable of renderer._allDrawables) {
+            if (!drawable) {
+                continue;
+            }
+            const propertiesToLog = {};
+            propertiesToLog.id = drawable._id;
+            propertiesToLog.posx = drawable._position[0];
+            propertiesToLog.posy = drawable._position[1];
+            propertiesToLog.direction = drawable._direction;
+            propertiesToLog.scalex = drawable._scale[0];
+            propertiesToLog.scaley = drawable._scale[1];
+            propertiesToLog.scaleboth = drawable._scale.slice(0, 2);
+            propertiesToLog.color = drawable._uniforms.u_color;
+            propertiesToLog.whirl = drawable._uniforms.u_whirl;
+            propertiesToLog.fisheye = drawable._uniforms.u_fisheye;
+            propertiesToLog.pixelate = drawable._uniforms.u_pixelate;
+            propertiesToLog.mosaic = drawable._uniforms.u_mosaic;
+            propertiesToLog.brightness = drawable._uniforms.u_brightness;
+            propertiesToLog.ghost = drawable._uniforms.u_ghost;
+            allDrawableCopy.push(propertiesToLog);
+        }
+
+        return {
+            clockTime: clockTime,
+            block: {
+                id: block.id,
+                opcode: block.opcode,
+                fields: target.blocks.getFields(block),
+                inputs: inputContent,
+                mutation: target.blocks.getMutation(block)
+            },
+            target: {
+                isStage: target.isStage,
+                name: target.getName(),
+                visible: target.visible,
+                drawableID: target.drawableID,
+                touching: otherSpritesName.filter(x =>
+                    (x !== target.getName() && target.isTouchingSprite(x))
+                ),
+                currentCostume: target.currentCostume,
+                layerOrder: 'layerOrder' in target ? target.layerOrder : 'undefined',
+                variables: variables
+            },
+            allDrawables: allDrawableCopy,
+            stageVariables: stageVariables,
+            keysDown: keysDown
+        };
     }
 }
 

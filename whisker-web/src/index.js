@@ -33,7 +33,6 @@ const {$} = require('./web-libs');
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
 /* Components */
-const Thread = require('scratch-vm/src/engine/thread');
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
@@ -207,8 +206,18 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const caseSensitive = $('#model-case-sensitive').is(':checked');
 
         try {
-            await Whisker.scratch.vm.loadProject(project);
-            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, traceExecution);
+            await vm.loadProject(project);
+            vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
+
+            if (traceExecution) {
+                vm.runtime.onReuseStackFrame(thread => {
+                    const trace = CoverageGenerator.traceExecution(thread);
+                    if (trace) {
+                        Whisker.testRunner.addExecutionTrace(trace);
+                    }
+                });
+            }
+
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
@@ -247,8 +256,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
                 const serializableModelCoverage = {modelCoverage};
                 window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
             }
-
-            CoverageGenerator.restoreClasses({Thread});
         } finally {
             _showRunIcon();
             enableVMRelatedButtons();
@@ -311,7 +318,6 @@ const runAllTests = async function () {
         let coverage;
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
-            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, false);
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
@@ -339,7 +345,6 @@ const runAllTests = async function () {
             }
 
             coverage = CoverageGenerator.getCoverage();
-            CoverageGenerator.restoreClasses({Thread});
             Whisker.outputLog.println(csv);
         } finally {
             _showRunIcon();
