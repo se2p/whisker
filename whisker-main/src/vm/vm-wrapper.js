@@ -125,13 +125,14 @@ class VMWrapper {
      * @returns {Promise<*>} Returns AssertionError, if constraint failed.
      */
     async step() {
-
         await this.vm.runtime.translateText2Speech();
 
         this.callbacks.callCallbacks(false);
         await this._yield();
 
-        if (!this.isScratchRunning()) return;
+        if (!this.isScratchRunning()) {
+            return null;
+        }
 
         this.randomInputs.performRandomInput();
         await this._yield();
@@ -152,16 +153,20 @@ class VMWrapper {
         this.modelCallbacks.callCallbacks(true);
         await this._yield();
 
-        if (!this.isScratchRunning()) return;
+        if (!this.isScratchRunning()) {
+            return null;
+        }
 
         this.callbacks.callCallbacks(true);
         await this._yield();
 
-        if (!this.isScratchRunning()) return;
+        if (!this.isScratchRunning()) {
+            return null;
+        }
 
-        const returnValue = this.constraints.checkConstraints();
+        const errorOrNull = this.constraints.checkConstraints();
         await this._yield();
-        return returnValue;
+        return errorOrNull;
     }
 
     /**
