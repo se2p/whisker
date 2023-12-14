@@ -223,12 +223,13 @@ export class Randomness {
     /**
      * Sets a seed for the Scratch-VM to enable reproduction of scratch project execution.
      * @param vm the Scratch-VM
+     * @param seedDateObject whether the `Date` object used by the VM should be seeded as well
      */
-    public static seedScratch(vm: VirtualMachine): void {
+    public static seedScratch(vm: VirtualMachine, seedDateObject = true): void {
         if (vm.seed) {
             // Seed the debugger's Scratch-VM, do not seed globally.
             // Global seeding would lead to different random values, because Scratch-GUI also calls Math.random during test execution.
-            vm.seed(Randomness._scratchSeed);
+            vm.seed(Randomness._scratchSeed, seedDateObject);
         } else {
             seed(Randomness._scratchSeed, {global: true});
         }
