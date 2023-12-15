@@ -46,7 +46,7 @@ class TestRunner extends EventEmitter {
             }
         }
 
-        this._setRNGSeeds(props['seed'], sampleTest, vm);
+        this._setRNGSeeds(props['seed'], sampleTest, undefined);
 
         // Load project and establish an initial save state
         vm.deactivateDebugTracing();
@@ -206,20 +206,22 @@ class TestRunner extends EventEmitter {
 
         // Prioritise seeds set using the CLI.
         if (seed !== undefined && seed !== 'undefined' && seed !== "") {
-            Randomness.setInitialSeeds(seed);
+            Randomness.setInitialRNGSeed(seed);
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
-        else if (test !== undefined && "seed" in test){
-            Randomness.setInitialSeeds(test.seed);
+        else if (test !== undefined && "seed" in test) {
+            Randomness.setInitialRNGSeed(test.seed);
         }
 
-        // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
+            // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
         // but only set it once to keep consistent if several test runs are executed at once
         else if (Randomness.getInitialRNGSeed() === undefined) {
-            Randomness.setInitialSeeds(Date.now());
+            Randomness.setInitialRNGSeed(Date.now());
         }
-        Randomness.seedScratch(vm);
+        if (vm) {
+            Randomness.seedScratch(vm);
+        }
     }
 
     /**
@@ -510,6 +512,7 @@ class TestRunner extends EventEmitter {
         for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
             traces.push({id: trace['id'], opcode: trace['opcode'], sprite: trace['targetsInfo']});
         }
+        debugger;
         return {... traces};
     }
 
