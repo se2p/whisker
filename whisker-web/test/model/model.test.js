@@ -22,6 +22,16 @@ async function readModelErrors() {
         const log = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
         if (log.includes('summary')) {
             const logArray = log.split("\n");
+
+            // Delete all lines from the log up until the summary
+            for (let i = 0; i < logArray.length; i++) {
+                if (logArray[i].includes("summary")) {
+                    break;
+                }
+
+                logArray[i] = "";
+            }
+
             const errors = logArray.find(x => x.includes("modelErrors")).split("(")[1].split(")")[0];
             const fails = logArray.find(x => x.includes("modelFails")).split("(")[1].split(")")[0];
             const coverageIndex = logArray.findIndex(x => x.includes("modelCoverage"));
