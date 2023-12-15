@@ -207,6 +207,7 @@ class VMWrapper {
             if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
                 [assertionError] = await Promise.all([this.step(), pause(STEP_TIME / this.accelerationFactor)]);
                 this._runStepsExecuted++;
+                this._runTimeElapsed = this.getTotalTimeElapsed() - timeBefore;
 
                 if (stopOnError && assertionError !== null) {
                     break;
@@ -216,8 +217,6 @@ class VMWrapper {
                 await pause(100);
             }
         }
-
-        this._runTimeElapsed = this.getTotalTimeElapsed() - timeBefore;
 
         if (this.aborted) {
             throw new Error('Run was aborted!');
