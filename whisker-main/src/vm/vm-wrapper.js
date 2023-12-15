@@ -340,6 +340,10 @@ class VMWrapper {
         this.accelerationFactor = Number(accelerationFactor);
         this.vm.runtime.virtualSound = -1;
 
+        // By default, currentStep time is null and only initialized when the VM's start() method is called. Because we
+        // never call start() it needs to be initialized manually. Otherwise, blocks like "sensing loudness" break.
+        this.vm.runtime.currentStepTime = STEP_TIME;
+
         const returnValue = await this.vm.loadProject(project);
         await this._yield();
         return returnValue;
