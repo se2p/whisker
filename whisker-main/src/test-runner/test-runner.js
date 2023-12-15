@@ -214,7 +214,7 @@ class TestRunner extends EventEmitter {
             Randomness.setInitialRNGSeed(test.seed);
         }
 
-            // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
+        // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
         // but only set it once to keep consistent if several test runs are executed at once
         else if (Randomness.getInitialRNGSeed() === undefined) {
             Randomness.setInitialRNGSeed(Date.now());
@@ -512,7 +512,6 @@ class TestRunner extends EventEmitter {
         for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
             traces.push({id: trace['id'], opcode: trace['opcode'], sprite: trace['targetsInfo']});
         }
-        debugger;
         return {... traces};
     }
 
