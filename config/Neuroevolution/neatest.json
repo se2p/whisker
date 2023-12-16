@@ -51,7 +51,7 @@
         "type": "reliableStatement",
         "timeout": 10000,
         "stableCount": 10,
-        "earlyStop": false
+        "earlyStop": true
     },
     "population": {
         "strategy": "global_solutions",
