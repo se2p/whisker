@@ -62,7 +62,7 @@ class WhiskerSubCommand extends Command {
         this.option(
             '-a, --acceleration <Integer>',
             'acceleration factor',
-            (factor) => util.processPositiveInt(factor, {allowInfinity: true}),
+            (factor) => util.processPositiveInt(factor, true),
             1);
         this.option(
             '-v, --csv-file <Path>',
