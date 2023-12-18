@@ -249,7 +249,7 @@ class TestRunner extends EventEmitter {
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
      * @param {boolean} loadSaveState
-     * @return {WhiskerUtil}.
+     * @return {Promise<WhiskerUtil>}.
      */
     async _loadProject(vm, project, props) {
         const util = new WhiskerUtil(vm, project);

@@ -88,6 +88,20 @@ class VMWrapper {
         this._runStepsExecuted = 0;
 
         /**
+         * The number of steps the VM executed in total.
+         * @type {number}
+         * @private
+         */
+        this._totalStepsExecuted = 0;
+
+        /**
+         * The "in-game" time elapsed in total.
+         * @type {number}
+         * @private
+         */
+        this._totalTimeElapsed = 0;
+
+        /**
          * @type {boolean} Indicates if the Scratch program has active threads that are being executed.
          */
         this._scratchRunning = false;
@@ -199,15 +213,17 @@ class VMWrapper {
             this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP
         );
 
-        const timeBefore = this.getTotalTimeElapsed();
+        const timeBefore = this._totalTimeElapsed;
         let assertionError = null;
         this._runStepsExecuted = 0;
 
         while (this.isScratchRunning() && this._runStepsExecuted < steps && !condition()) {
             if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
                 [assertionError] = await Promise.all([this.step(), pause(STEP_TIME / this.accelerationFactor)]);
+                this._totalStepsExecuted++;
                 this._runStepsExecuted++;
-                this._runTimeElapsed = this.getTotalTimeElapsed() - timeBefore;
+                this._totalTimeElapsed = this.vm.runtime.currentMSecs;
+                this._runTimeElapsed = this._totalTimeElapsed - timeBefore;
 
                 if (stopOnError && assertionError !== null) {
                     break;
@@ -293,7 +309,7 @@ class VMWrapper {
      * @return {number} Runtime in ms.
      */
     getTotalTimeElapsed() {
-        return this.vm.runtime.currentMSecs;
+        return this._totalTimeElapsed;
     }
 
     /**
@@ -309,7 +325,7 @@ class VMWrapper {
      * @return {number} Runtime in steps.
      */
     getTotalStepsExecuted() {
-        return this.vm.runtime.stepsExecuted;
+        return this._totalStepsExecuted;
     }
 
     /**
