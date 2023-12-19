@@ -1,6 +1,6 @@
 const fs = require('fs');
 const {basename} = require('path');
-const {logger} = require('./util');
+const logger = require('./logger');
 
 const primitivesArrayPrefix = 't.vm.runtime._primitives';
 const indentation = ' '.repeat(4);

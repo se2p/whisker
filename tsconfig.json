@@ -8,6 +8,7 @@
         "noUnusedLocals": false,                /* Report errors on unused locals. */
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
+        "noImplicitOverride": true,            /* Error to override a method without specifying the `override` keyword */
         "esModuleInterop": true,
         "allowJs": true
     },

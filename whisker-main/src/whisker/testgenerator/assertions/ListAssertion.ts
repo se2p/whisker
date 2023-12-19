@@ -3,6 +3,7 @@ import {AssertionFactory} from "./AssertionFactory";
 //import Variable from "../scratch-vm/@types/scratch-vm/engine/variable";
 import Variable from 'scratch-vm/src/engine/variable.js';
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class ListAssertion extends WhiskerAssertion {
 
@@ -10,17 +11,20 @@ export class ListAssertion extends WhiskerAssertion {
     private readonly _variableName: string;
     private readonly _variableValue: [];
 
-    constructor (target: RenderedTarget, variableID: string, variableName: string, variableValue: []) {
+    constructor(target: RenderedTarget, variableID: string, variableName: string, variableValue: []) {
         super(target);
         this._variableID = variableID;
         this._variableName = variableName;
         this._variableValue = variableValue;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
-                return targetState.variables[this._variableID].value.length == this._variableValue.length;
+                if (Array.isArray(targetState.variables[this._variableID].value)) {
+                    const listVariable = targetState.variables[this._variableID].value as [];
+                    return listVariable.length == this._variableValue.length;
+                }
             }
         }
 
@@ -30,6 +34,7 @@ export class ListAssertion extends WhiskerAssertion {
     toString(): string {
         return `assert ${this.getTargetName()} list variable ${this._variableName} has length ${this._variableValue.length}`;
     }
+
     toJavaScript(): string {
         if (this._target.isStage) {
             return js`t.assert.equal(${this.getTargetAccessor()}.getList("${this._variableName}", false).value.length, ${this._variableValue.length}, "Expected list ${this._variableName} to have length ${this._variableValue.length}");`;
@@ -38,9 +43,9 @@ export class ListAssertion extends WhiskerAssertion {
         }
     }
 
-    static createFactory() : AssertionFactory<ListAssertion>{
+    static createFactory(): AssertionFactory<ListAssertion> {
         return new (class implements AssertionFactory<ListAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): ListAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): ListAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (!targetState.target.isOriginal) {

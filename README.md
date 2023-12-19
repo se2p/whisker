@@ -21,7 +21,7 @@ Whisker provides automated and property-based testing functionality for Scratch 
 
 ## Building Whisker
 
-Whisker is built using the [yarn](https://yarnpkg.com/) package manager.
+Whisker requires Node.js v18.18.0 and is built using the [yarn](https://classic.yarnpkg.com/lang/en/) (classic) package manager.
 
 After cloning the repository, install all dependencies using:
 
@@ -49,51 +49,63 @@ The Servant is a wrapper around the web client, allowing to run tests automatica
 To use Whisker on the command line, you can use the Servant node frontend as follows:
 
 ```bash
-cd servant && node servant.js -s <Scratch project file> -t <test file>
+node servant run -s <Scratch project file> -t <test file>
 ```
 
-The full list of options is provided using `node servant/servant.js -h`:
+An overview of options is provided using `node servant help`:
 
 ```bash
-Usage: servant [options]
+Usage: node servant [options] [command]
+
+A Testing Utility for Scratch 3.0
 
 Options:
-  -u,   --whiskerURL <URL>                File URL of the Whisker instance to run the tests (default:
-                                            "../whisker-web/dist/index.html")
-  -s,   --scratchPath <Path>              Scratch application to run, or directory containing results (default: false)
-  -t,   --testPath <Path>                 Tests to run (default: false)
-  -m,   --modelPath <Path>                Model to test with (default: false)
-  -w,   --errorWitnessPath <Path>         A JSON error witness to replay (default: false)
-  -z,   --isGenerateWitnessTestOnly       Generate test file with error witness replay without executing it
-                                            (default: false)
-  -r,   --addRandomInputs [Integer]       If random inputs should be added to the test and if so, how many seconds
-                                            to wait for its completion (default: false)
-  -a,   --accelerationFactor <Integer>    Acceleration factor (default: "1")
-  -v,   --csvFile <Path>                  Name of CSV File to put output into (default: false)
-  -c,   --configPath <Path>               Path to a configuration file (default: "../config/mio.json")
-  -d,   --isHeadless                      If should run headless (d like in decapitated)
-  -p,   --numberOfTabs <Integer>          The number of tabs to execute the tests in (default: 1)
-  -k,   --isConsoleForwarded              If the browser\'s console output should be forwarded (default: false)
-  -o,   --isLiveOutputCoverage            If new output of the coverage should be printed regularly (default: false)
-  -l,   --isLiveLogEnabled                If the new output of the log should be printed regularly (default: false)
-  -g,   --generateTests [Path]            If new tests should be generated and where to put them (default: false)
-  -se,  --seed <Integer>                  Sets the specified integer as a seed for the Scratch-VM and the random number
-                                           generator contained within Whisker.
-  -mr,  --modelRepetition <Integer>       Model test repetitions. Ignored if a test suite is specified. (default: 1)
-  -mt,  --modelDuration <Integer>         Maximal time of one model test run in seconds (default: 30)
-  -mcs, --modelCaseSensitive <Boolean>    Whether model test should test names case sensitive (default: false)
-  -n, --isNeuroevolution                  If Whisker should execute dynamic test suites using Neuroevolution (default: false);
-  -h,   --help                            Display help for command
+  -h, --help                display help for command
+  -V, --version             output the version number
+
+Commands:
+  open [options]            open the Whisker web interface
+  dynamic [options]         dynamic test suites using Neuroevolution
+  generate [options]        generate Whisker test suites
+  help [options] [command]  display help for command
+  model [options]           test with model
+  run [options]             run Whisker tests
+  witness [options]         generate and replay error witnesses
+```
+To show further help, additionally pass the name of the command you are interested in, e.g.,
+the `run` command: `node servant help run`.
+```bash
+Usage: node servant run [options]
+
+run Whisker tests
+
+Options:
+  -a, --acceleration <Integer>      acceleration factor (default: 1)
+  -bm, --max-mutants <Integer>      upper bound of analysed mutants during mutation analysis
+  -bt, --mutation-budget <Integer>  timeout for the mutation analysis
+  -d, --headless                    run headless ("d" like in "decapitated") (default: false)
+  -dm, --download-mutants           downloads the generated mutants
+  -et, --execution-trace            activates recording of execution trace
+  -h, --help                        display help for command
+  -j, --number-of-jobs <Integer>    number of jobs (Chromium tabs) for test execution (default: 1)
+  -k, --console-forwarded           forward browser console output
+  -l, --live-log                    print new log output regularly
+  -m, --mutators <String...>        mutation operators to apply
+  -o, --live-output-coverage        print new coverage output regularly
+  -s, --scratch-path <Path>         path to file (".sb3") or folder with scratch application(s)
+  -t, --test-path <Path>            path to Whisker tests to run (".js")
+  -v, --csv-file <Path>             create CSV file with results
+  -z, --seed <String>               custom seed for Scratch-VM
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
 acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
 
-For example, the following command runs tests with a 10 fold speedup and two parallel executions in a headless chrome
+For example, the following command runs tests with a 10-fold speedup and two parallel executions in a headless chrome
 instance:
 
 ```bash
-node servant.js -s project.sb3 -t tests.js -a 10 -d -p 2
+node servant run -s project.sb3 -t tests.js -a 10 -d -j 2
 ```
 
 ## Using Docker (Headless Mode)
@@ -193,23 +205,56 @@ Whisker is supported by the project FR 2955/3-1 funded by the
 ```
 
 ```
-@misc{götz2022modelbased,
-      title={Model-based Testing of Scratch Programs},
-      author={Katharina Götz and Patric Feldmeier and Gordon Fraser},
-      year={2022},
-      eprint={2202.06271},
-      archivePrefix={arXiv},
-      primaryClass={cs.SE}
+@InProceedings{gotz2022model,
+  title 		= {Model-based Testing of Scratch Programs},
+  author 		= {G{\"o}tz, Katharina and Feldmeier, Patric and Fraser, Gordon},
+  booktitle 	= {Proceedings of the International Conference on Software Testing, Verification and Validation (ICST'22)},
+  pages 		= {411--421},
+  year 			= {2022},
+  publsiher     = {IEEE},
+  doi 			= {10.1109/ICST53961.2022.00047}
 }
 ```
 
 ```
 @misc{deiner2022automated,
-      title={Automated Test Generation for Scratch Programs},
-      author={Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
-      year={2022},
-      eprint={2202.06274},
-      archivePrefix={arXiv},
-      primaryClass={cs.SE}
+      title         = {Automated Test Generation for Scratch Programs},
+      author        = {Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
+      year          = {2022},
+      eprint        = {2202.06274},
+      archivePrefix = {arXiv},
+      primaryClass  = {cs.SE}
+}
+```
+
+```
+@InProceedings{feldmeier2022neuroevolution,
+	author 		= {Feldmeier, Patric and Fraser, Gordon},
+	booktitle 	= {Proceedings of the International Conference on Automated Software Engineering (ASE'22)},
+	publisher 	= {ACM},
+	title 		= {Neuroevolution-Based Generation of Tests and Oracles for Games},
+	year 		= {2023},
+	doi 		= {10.1145/3551349.3556939},
+	pages 		= {1--13}
+}
+```
+
+```
+@article{feldmeier2023learning,
+  title         = {Learning by Viewing: Generating Test Inputs for Games by Integrating Human Gameplay Traces in Neuroevolution},
+  author        = {Feldmeier, Patric and Fraser, Gordon},
+  journal       = {arXiv preprint arXiv:2304.06413},
+  year          = {2023},
+  doi           = {10.48550/arXiv.2304.06413}
+}
+```
+
+```
+@inproceedings{nuzzlebug24,
+  author    = {Adina Deiner and Gordon Fraser},
+  title     = {NuzzleBug: Debugging Block-Based Programs in Scratch },
+  booktitle = {ACM/IEEE International Conference on Software Engineering (ICSE)},
+  publisher = {{IEEE}},
+  year      = {2024}
 }
 ```

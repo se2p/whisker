@@ -25,6 +25,8 @@ import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {Container} from "../../utils/Container";
+import {Selection} from "../Selection";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -60,14 +62,14 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
 
-        while (!(this._stoppingCondition.isFinished(this))) {
+        while (!(await this._stoppingCondition.isFinished(this))) {
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate(true);
-            this.updateArchive(candidateChromosome);
+            await this.updateArchive(candidateChromosome);
 
             // Update the best performing chromosome if we have a single targeted fitness function.
             if (this._fitnessFunction !== undefined) {
-                const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
+                const candidateFitness = await candidateChromosome.getFitness(this._fitnessFunction);
                 if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                     bestFitness = candidateFitness;
                     bestIndividual = candidateChromosome;
@@ -89,7 +91,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
      *  - createdTestsToReachFullCoverage
      *  - timeToReachFullCoverage
      */
-    protected updateStatistics(): void {
+    protected override updateStatistics(): void {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().incrementIterationCount();
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
@@ -116,5 +118,13 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>): void {
+        throw new Error('Method not implemented.');
+    }
+
+    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
+        throw new Error('Method not implemented.');
     }
 }

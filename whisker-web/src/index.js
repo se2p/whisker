@@ -1,11 +1,18 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
+import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
+import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
+import {FileSaver} from './web-libs';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
-const faqDE = require('./locales/de/faq.json');
-const faqEN = require('./locales/en/faq.json');
+const aboutDE = require('./locales/de/about.json');
+const aboutEN = require('./locales/en/about.json');
+const snippetsDE = require('./locales/de/snippets.json');
+const snippetsEN = require('./locales/en/snippets.json');
+const tutorialDE = require('./locales/de/tutorial.json');
+const tutorialEN = require('./locales/en/tutorial.json');
 const contactDE = require('./locales/de/contact.json');
 const contactEN = require('./locales/en/contact.json');
 const imprintDE = require('./locales/de/imprint.json');
@@ -82,8 +89,20 @@ const loadTestsFromString = async function (string) {
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
-        tests = eval(`${string};
-        module.exports;`);
+        tests = eval(`
+            (function () {
+                /*
+                 * Evil hack: Every Whisker test is a CommonJS module. As such, it contains a "module.exports"
+                 * declaration at the end. In the browser, CommonJS modules usually cannot be used as the global
+                 * "module" object does not exist there. For our purposes, we work around this by creating an empty
+                 * dummy object called "module", letting the test set the "module.exports" property, and return that as
+                 * result of evaluating the test.
+                 */
+                const module = Object.create(null);
+                ${string};
+                return module.exports;
+            })();
+        `);
     } catch (err) {
         console.error(err);
         const message = `${err.name}: ${err.message}`;
@@ -93,6 +112,7 @@ const loadTestsFromString = async function (string) {
     }
     tests = TestRunner.convertTests(tests);
     Whisker.tests = tests;
+    Whisker.testsString = string;
     Whisker.testEditor.setValue(string);
     Whisker.testTable.setTests(tests);
     return tests;
@@ -100,6 +120,14 @@ const loadTestsFromString = async function (string) {
 
 const enableVMRelatedButtons = function () {
     $('.vm-related').prop('disabled', false);
+};
+
+const downloadMutants = async function (mutants) {
+    for (const mutant of mutants) {
+        await Whisker.scratch.vm.loadProject(JSON.parse(JSON.stringify(mutant)));
+        const projectBlob = await Whisker.scratch.vm.saveProjectSb3(); // await required
+        FileSaver.saveAs(projectBlob, `${mutant.name}.sb3`);
+    }
 };
 
 const runSearch = async function () {
@@ -117,11 +145,12 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-    const networkTemplate = await Whisker.testFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
-    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm,
-        Whisker.scratch.project, projectName, config, configName, accelerationFactor, seed, networkTemplate);
+    const groundTruth = document.querySelector('#container').groundTruth;
+
+    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
+        projectName, config, configName, accelerationFactor, seed, groundTruth);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
@@ -146,9 +175,19 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', true);
         $('#record').prop('disabled', true);
 
+        // Activate listener for execution trace record at the end of a test run.
+        const traceExecution = document.querySelector('#container').executionTrace;
+        if (traceExecution) {
+            Whisker.testRunner.on(TestRunner.RUN_END, () => {
+                const blob = new Blob([JSON.stringify(Whisker.testRunner.executionTrace)],
+                    {type: 'application/json;charset=utf-8'});
+                FileSaver.saveAs(blob, `ExecutionTrace-${Whisker.projectFileSelect.getName()}.json`);
+            });
+        }
+
         let summary;
         let csvResults;
-        let mutantPrograms;
+        let mutantPrograms = [];
         let coverage;
         let coverageModels = {};
         accSlider.slider('disable');
@@ -156,9 +195,10 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const accelerationFactor = $('#acceleration-value').text();
         const seed = document.getElementById('seed').value;
         const setMutators = document.querySelector('#container').mutators;
-        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
         const mutationBudget = document.querySelector('#container').mutationBudget;
         const maxMutants = document.querySelector('#container').maxMutants;
+        const mutantDownload = document.querySelector('#container').downloadMutants;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -168,7 +208,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         try {
             await Whisker.scratch.vm.loadProject(project);
-            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, traceExecution);
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
@@ -177,10 +217,9 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
 
-            // Set the mutants in the output log from where we can download them later.
-            if (mutantPrograms && mutantPrograms.length > 0){
-                Whisker.outputRun.setScratch(Whisker.scratch);
-                Whisker.outputRun.mutants = mutantPrograms;
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
             }
 
             if (Whisker.modelTester.programModelsLoaded()) {
@@ -226,8 +265,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
         const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+        let modelCoverageString = '';
+
+        // Add model coverage if we have model-based results
+        if (Object.keys(coverageModels).length > 0) {
+            const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+            modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+        }
 
         Whisker.outputRun.println([
             summaryString,
@@ -242,7 +287,7 @@ const runTests = async function (tests) {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
 };
 
 const runAllTests = async function () {
@@ -260,18 +305,74 @@ const runAllTests = async function () {
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
-        const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
-        Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
-        Whisker.outputRun.println();
-        Whisker.outputLog.println();
+
+    // Dynamic Suite
+    if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
+        let coverage;
+        try {
+            await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
+            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, false);
+            CoverageGenerator.prepareVM(Whisker.scratch.vm);
+
+            const properties = {};
+            const setMutators = document.querySelector('#container').mutators;
+            const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
+            const maxMutants = document.querySelector('#container').maxMutants;
+            const mutantDownload = document.querySelector('#container').downloadMutants;
+
+            properties.projectName = Whisker.projectFileSelect.getName();
+            properties.testName = Whisker.testFileSelect.getName();
+            properties.acceleration = $('#acceleration-value').text();
+            properties.log = true;
+            properties.seed = document.getElementById('seed').value;
+            properties.mutators = mutators;
+            properties.maxMutants = maxMutants;
+            properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
+
+            const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
+                properties);
+            const [csv, mutantPrograms] = await dynamicSuite.execute();
+
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
+            }
+
+            coverage = CoverageGenerator.getCoverage();
+            CoverageGenerator.restoreClasses({Thread});
+            Whisker.outputLog.println(csv);
+        } finally {
+            _showRunIcon();
+            enableVMRelatedButtons();
+            accSlider.slider('enable');
+            testsRunning = false;
+        }
+
+        if (!coverage) {
+            return;
+        }
+
+        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+        Whisker.outputRun.println([
+            coverageString
+        ].join('\n'));
+    } else { // Static Suite
+        for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
+            const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
+            Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+            Whisker.outputRun.println();
+            Whisker.outputLog.println();
+        }
     }
 };
 
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
+    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 };
 
 const initComponents = function () {
@@ -279,7 +380,6 @@ const initComponents = function () {
     Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
     Whisker.outputLog.hide();
-
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
     Whisker.testEditor.show();
@@ -308,6 +408,7 @@ const initComponents = function () {
         Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
+    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
@@ -343,6 +444,9 @@ const initEvents = function () {
         if (Whisker.inputRecorder.isRecording()) {
             Whisker.inputRecorder.stop();
         }
+        if (Whisker.stateActionRecorder.isRecording){
+            Whisker.stateActionRecorder.onStopAll();
+        }
     });
     $('#reset').on('click', () => {
         $('#reset').tooltip('hide');
@@ -369,7 +473,22 @@ const initEvents = function () {
     });
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
-        if (Whisker.inputRecorder.isRecording()) {
+        if (document.querySelector('#container').stateActionRecorder){
+            if (Whisker.stateActionRecorder.isRecording) {
+                Whisker.inputRecorder.emit('stopRecording');
+                Whisker.stateActionRecorder.stopRecording();
+                Whisker.scratch.disableInput();
+
+                // Download the recording.
+                const recording = Whisker.stateActionRecorder.getRecord();
+                const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
+                FileSaver.saveAs(blob, `${Whisker.projectFileSelect.getName().replace('.sb3', '')}.json`);
+            } else {
+                Whisker.inputRecorder.emit('startRecording');
+                Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
+                Whisker.scratch.enableInput();
+            }
+        } else if (Whisker.inputRecorder.isRecording()) {
             _enableVMRelatedButtons();
             Whisker.inputRecorder.stopRecording();
             Whisker.scratch.disableInput();
@@ -379,6 +498,7 @@ const initEvents = function () {
             Whisker.inputRecorder.startRecording();
         }
     });
+
     const modelLog = msg => {
         Whisker.outputLog.println(msg);
     };
@@ -517,28 +637,21 @@ const loadHeader = function () {
     localize('#header');
     if (window.location.href.includes('/html')) {
         $('#link').attr('href', '../index.html');
+        $('#tutorial').attr('href', 'tutorial.html');
+        $('#contact').attr('href', 'contact.html');
+        $('#about').attr('href', 'about.html');
         $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
-        $('#banner').attr('src', '../assets/banner_slim.jpg');
+        $('#banner').attr('src', '../assets/whiskerHeader.png');
     } else {
         $('#link').attr('href', 'index.html');
+        $('#tutorial').attr('href', 'html/tutorial.html');
+        $('#contact').attr('href', 'html/contact.html');
+        $('#about').attr('href', 'html/about.html');
         $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
-        $('#banner').attr('src', 'assets/banner_slim.jpg');
+        $('#banner').attr('src', 'assets/whiskerHeader.png');
     }
-    /* Add border to header if it sticks to the top */
-    $(() => {
-        const stickyHeader = $('.sticky');
-        const stickyHeaderPosition = stickyHeader.offset().top;
-        $(window).scroll(() => {
-            const scroll = $(window).scrollTop();
-            if (scroll > stickyHeaderPosition + 1) {
-                stickyHeader.addClass('scrolled');
-                $('#small-logo').show();
-            } else {
-                stickyHeader.removeClass('scrolled');
-                $('#small-logo').hide();
-            }
-        });
-    });
+    $('#tutorial').attr('target', '_blank');
+    $('#about').attr('target', '_blank');
     $('#form-lang').on('change', () => {
         $('[data-toggle="tooltip"]').tooltip('dispose');
         const lng = $('#lang-select').val();
@@ -613,7 +726,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
+        ns: ['index', 'about', 'snippets', 'tutorial', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false
@@ -621,7 +734,9 @@ i18next
         resources: {
             de: {
                 index: indexDE,
-                faq: faqDE,
+                about: aboutDE,
+                snippets: snippetsDE,
+                tutorial: tutorialDE,
                 contact: contactDE,
                 imprint: imprintDE,
                 privacy: privacyDE,
@@ -631,7 +746,9 @@ i18next
             },
             en: {
                 index: indexEN,
-                faq: faqEN,
+                about: aboutEN,
+                snippets: snippetsEN,
+                tutorial: tutorialEN,
                 contact: contactEN,
                 imprint: imprintEN,
                 privacy: privacyEN,
@@ -689,6 +806,7 @@ const _addFileListeners = function () {
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
+        Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
@@ -797,22 +915,6 @@ function _updateFilenameLabels () {
         $('#model-label').html(Whisker.modelFileSelect.getName());
     }
 }
-
-/* Add border to header if it sticks to the top */
-$(() => {
-    const stickyHeader = $('.sticky');
-    const stickyHeaderPosition = stickyHeader.offset().top;
-    $(window).scroll(() => {
-        const scroll = $(window).scrollTop();
-        if (scroll > stickyHeaderPosition + 1) {
-            stickyHeader.addClass('scrolled');
-            $('#small-logo').show();
-        } else {
-            stickyHeader.removeClass('scrolled');
-            $('#small-logo').hide();
-        }
-    });
-});
 
 
 export {i18next as i18n};

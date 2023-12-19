@@ -64,13 +64,6 @@ export interface SearchAlgorithm<C extends Chromosome> {
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
 
     /**
-     * Sets the functions for calculating the heuristic values.
-     * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
-     *          from the fitness values, where 0 is the worst value and 1 is the best value.
-     */
-    setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void;
-
-    /**
      * Sets the selection operator used by the search algorithm.
      * @param selectionOperator the selection operator used by the algorithm
      */

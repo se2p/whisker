@@ -1,7 +1,7 @@
 const {AssertionError} = require('assert');
 
 class AssumptionError extends AssertionError {
-    constructor (props) {
+    constructor(props) {
         super(props);
         this.name = 'AssumptionError';
     }
@@ -16,7 +16,7 @@ class AssumptionError extends AssertionError {
 /* Got the idea from github.com/bahmutov/lazy-ass. */
 const getMessage = function (message) {
     if (message.length) {
-        return message.join('');
+        return message.join(' ');
     }
 };
 
@@ -24,8 +24,10 @@ const assume = {};
 const assert = {};
 
 /**
+ * Asserts that the given condition is truthy. Type coercion applies and may lead to surprising results.
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assert.isTrue` or `assert.isNotEmpty` instead
  */
 assert.ok = function (condition, ...message) {
     if (!condition) {
@@ -39,8 +41,30 @@ assert.ok = function (condition, ...message) {
 };
 
 /**
+ * Asserts that the given condition is `true`.
+ * @param condition
+ * @param message
+ */
+assert.isTrue = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (!condition) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isTrue'
+        });
+    }
+};
+
+/**
+ * Asserts that the given condition is falsy. Type coercion applies and may lead to surprising results.
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assert.isFalse` or `assert.isEmpty`  instead
  */
 assert.not = function (condition, ...message) {
     if (condition) {
@@ -49,6 +73,26 @@ assert.not = function (condition, ...message) {
             actual: true,
             expected: false,
             operator: 'not'
+        });
+    }
+};
+
+/**
+ * Asserts that the given condition is `false`.
+ * @param condition
+ * @param message
+ */
+assert.isFalse = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (condition) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: true,
+            expected: false,
+            operator: 'isFalse'
         });
     }
 };
@@ -66,22 +110,14 @@ assert.fail = function (...message) {
 };
 
 /**
+ * Asserts that the actual value loosely equals the expected value.
  * @param {*} actual .
  * @param {*} expected .
  * @param {...*} message .
  */
 assert.equal = function (actual, expected, ...message) {
-
-    // Translate NaN to String to avoid type problems.
-    if(isNaN(actual)){
-        actual = "NaN";
-    }
-    if(isNaN(expected)){
-        expected = "NaN";
-    }
-
     /* eslint-disable-next-line eqeqeq */
-    if ((isNaN(actual) && !isNaN(expected)) || !(actual == expected)) {
+    if (!(actual == expected)) {
         throw new AssertionError({
             message: getMessage(message),
             actual: actual,
@@ -108,6 +144,7 @@ assert.equalDictionaries = function (actual, expected, ...message) {
 };
 
 /**
+ * Asserts that the actual value strictly equals the expected value.
  * @param {*} actual .
  * @param {*} expected .
  * @param {...*} message .
@@ -129,6 +166,18 @@ assert.strictEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.greater = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual > expected)) {
         throw new AssertionError({
             message: getMessage(message),
@@ -145,6 +194,18 @@ assert.greater = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.greaterOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual >= expected)) {
         throw new AssertionError({
             message: getMessage(message),
@@ -161,6 +222,18 @@ assert.greaterOrEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.less = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual < expected)) {
         throw new AssertionError({
             message: getMessage(message),
@@ -177,6 +250,18 @@ assert.less = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assert.lessOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual <= expected)) {
         throw new AssertionError({
             message: getMessage(message),
@@ -208,10 +293,18 @@ assert.withinRange = function (actual, expected, delta = 0, ...message) {
 
 /**
  * @param {string} actual .
- * @param {regex} expected .
+ * @param {RegExp} expected .
  * @param {...*} message .
  */
 assert.matches = function (actual, expected, ...message) {
+    if (typeof actual !== 'string') {
+        throw new TypeError(`Actual value "${actual}" is not a string`);
+    }
+
+    if (!(typeof expected === 'string' || expected instanceof RegExp)) {
+        throw new TypeError(`Expected value "${expected}" is not a string or regular expression`);
+    }
+
     if (!(actual.match(expected))) {
         throw new AssertionError({
             message: getMessage(message),
@@ -222,11 +315,42 @@ assert.matches = function (actual, expected, ...message) {
     }
 };
 
+assert.isEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length !== 0) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isEmpty'
+        });
+    }
+};
+
+assert.isNotEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length === 0) {
+        throw new AssertionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isNotEmpty'
+        });
+    }
+};
+
 // -----------------------------------------------------------------------------
 
 /**
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assume.isTrue` or `assume.isNotEmpty` instead
  */
 assume.ok = function (condition, ...message) {
     if (!condition) {
@@ -239,9 +363,25 @@ assume.ok = function (condition, ...message) {
     }
 };
 
+assume.isTrue = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (!condition) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isTrue'
+        });
+    }
+};
+
 /**
  * @param {boolean} condition .
  * @param {...*} message .
+ * @deprecated Please use `assume.isFalse` or `assume.isEmpty` instead
  */
 assume.not = function (condition, ...message) {
     if (condition) {
@@ -254,6 +394,20 @@ assume.not = function (condition, ...message) {
     }
 };
 
+assume.isFalse = function (condition, ...message) {
+    if (typeof condition !== 'boolean') {
+        throw new TypeError(`"${condition}" is not a boolean`);
+    }
+
+    if (condition) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: true,
+            expected: false,
+            operator: 'isFalse'
+        });
+    }
+};
 
 /**
  * @param {...*} message .
@@ -273,14 +427,6 @@ assume.fail = function (...message) {
  * @param {...*} message .
  */
 assume.equal = function (actual, expected, ...message) {
-    // Translate NaN to String to avoid type problems.
-    if(isNaN(actual)){
-        actual = "NaN";
-    }
-    if(isNaN(expected)){
-        expected = "NaN";
-    }
-
     /* eslint-disable-next-line eqeqeq */
     if (!(actual == expected)) {
         throw new AssumptionError({
@@ -314,6 +460,18 @@ assume.strictEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.greater = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual > expected)) {
         throw new AssumptionError({
             message: getMessage(message),
@@ -330,6 +488,18 @@ assume.greater = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.greaterOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual >= expected)) {
         throw new AssumptionError({
             message: getMessage(message),
@@ -346,6 +516,18 @@ assume.greaterOrEqual = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.less = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual < expected)) {
         throw new AssumptionError({
             message: getMessage(message),
@@ -362,6 +544,18 @@ assume.less = function (actual, expected, ...message) {
  * @param {...*} message .
  */
 assume.lessOrEqual = function (actual, expected, ...message) {
+    actual = Number(actual);
+
+    if (Number.isNaN(actual)) {
+        throw new TypeError(`Actual value "${actual}" is not a number`);
+    }
+
+    expected = Number(expected);
+
+    if (Number.isNaN(expected)) {
+        throw new TypeError(`Expected value "${expected}" is not a number`);
+    }
+
     if (!(actual <= expected)) {
         throw new AssumptionError({
             message: getMessage(message),
@@ -397,12 +591,50 @@ assume.withinRange = function (actual, expected, delta = 0, ...message) {
  * @param {...*} message .
  */
 assume.matches = function (actual, expected, ...message) {
+    if (typeof actual !== 'string') {
+        throw new TypeError(`Actual value "${actual}" is not a string`);
+    }
+
+    if (!(typeof expected === 'string' || expected instanceof RegExp)) {
+        throw new TypeError(`Expected value "${expected}" is not a string or regular expression`);
+    }
+
     if (!(actual.match(expected))) {
         throw new AssumptionError({
             message: getMessage(message),
             actual: actual,
             expected: expected,
             operator: 'match'
+        });
+    }
+};
+
+assume.isEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length !== 0) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isEmpty'
+        });
+    }
+};
+
+assume.isNotEmpty = function (arrayOrString, ...message) {
+    if (!("length" in arrayOrString)) {
+        throw new TypeError(`"${arrayOrString}" is not an array or a string`);
+    }
+
+    if (arrayOrString.length === 0) {
+        throw new AssumptionError({
+            message: getMessage(message),
+            actual: false,
+            expected: true,
+            operator: 'isNotEmpty'
         });
     }
 };

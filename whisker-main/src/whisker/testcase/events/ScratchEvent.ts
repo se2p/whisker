@@ -53,8 +53,9 @@ export abstract class ScratchEvent {
      * Sets the parameter(s) of this event using the given arguments.
      * @param args the values to which the parameters of this event should be set to
      * @param argType the type of the given arguments decide how they should be interpreted as parameters.
+     * @returns the set parameter values.
      */
-    abstract setParameter(args: number[], argType: ParameterType): void;
+    abstract setParameter(args: number[], argType: ParameterType): number[];
 
     /**
      * Returns all parameter(s) of this event.

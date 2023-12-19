@@ -2,11 +2,10 @@ import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
 import {Species} from "./Species";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
-import {NeatMutation} from "../Operators/NeatMutation";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NeatProperties} from "../NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
-import {NodeGene} from "../NetworkComponents/NodeGene";
+import {Container} from "../../utils/Container";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -33,13 +32,44 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     private _speciesCount = 0;
 
     /**
-     * Constructs a new NeatPopulation
-     * @param generator the ChromosomeGenerator used for creating the initial population.
-     * @param hyperParameter the defined search parameters
+     * Saves all encountered innovations.
      */
-    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties) {
+    public static innovations: Innovation[] = [];
+
+    /**
+     * Keeps track of the highest node id seen so far.
+     */
+    public static highestNodeId = 0;
+
+    /**
+     * The threshold determining at which point two networks are defined to belong to different species.
+     */
+    private compatibilityThreshold: number
+
+    /**
+     * Maps input, classification and regression nodes to corresponding node ids via input features, events and
+     * event parameter respectively.
+     */
+    public static nodeToId = new Map<string, number>();
+
+    /**
+     * Used for determining the next available innovation number.
+     */
+    private static innovationCounter = 0;
+
+    /**
+     * Constructs a new NeatPopulation.
+     * @param generator the ChromosomeGenerator used for creating the initial population.
+     * @param hyperParameter the defined search parameters.
+     */
+    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeuroevolutionTestGenerationParameter) {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
+        this.compatibilityThreshold = hyperParameter.compatibilityDistanceThreshold;
+    }
+
+    public static getAvailableInnovationNumber(): number {
+        return this.innovationCounter++;
     }
 
     /**
@@ -57,21 +87,26 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Generates a new generation of networks by evolving the current population.
      */
     public evolve(): void {
-        // Remove chromosomes which are not allowed to reproduce.
+
+        // Remove chromosomes that are not allowed to reproduce.
+        const doomedChromosomes = [];
         for (const chromosome of this.networks) {
             if (!chromosome.isParent) {
                 const specie = chromosome.species;
                 specie.removeNetwork(chromosome);
-                this.removeNetwork(chromosome);
+                doomedChromosomes.push(chromosome);
             }
         }
+        this._networks = this.networks.filter(network => !doomedChromosomes.includes(network));
+
         // Now, let the reproduction start.
         const offspring: NeatChromosome[] = [];
         for (const specie of this.species) {
             offspring.push(...specie.evolve(this, this.species));
         }
 
-        // Speciate the produced offspring
+        // Assign representatives to each species and assign each offspring to its closest matching species.
+        this.assignRepresentatives(offspring);
         for (const child of offspring) {
             this.speciate(child);
         }
@@ -122,17 +157,17 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      */
     private updateCompatibilityThreshold(): void {
         const compatibilityModifier = 0.3;
-        if (this.generation > 1) {
+        if (this.generation > 0) {
             // If we have less species than desired, we have to reduce the threshold.
             if (this.species.length < this.numberOfSpeciesTargeted)
-                this.hyperParameter.distanceThreshold -= compatibilityModifier;
+                this.compatibilityThreshold -= compatibilityModifier;
             // If we have more species than desired, we have to increase the threshold.
             else if (this.species.length > this.numberOfSpeciesTargeted)
-                this.hyperParameter.distanceThreshold += compatibilityModifier;
+                this.compatibilityThreshold += compatibilityModifier;
 
-            // Let it now fall below 1 though!
-            if (this.hyperParameter.distanceThreshold < 1) {
-                this.hyperParameter.distanceThreshold = 1;
+            // Let it not fall below 0.1 though!
+            if (this.compatibilityThreshold < 0.1) {
+                this.compatibilityThreshold = 0.1;
             }
         }
     }
@@ -155,7 +190,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             fitnessSum += network.sharedFitness;
         }
         const numberOrganisms = this.networks.length;
-        this._averageSharedFitness = fitnessSum / numberOrganisms;
+        this.averageSharedFitness = fitnessSum / numberOrganisms;
     }
 
     /**
@@ -165,7 +200,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // Compute the expected number of offspring for each network which depends on its fitness value
         // in comparison to the averageFitness of the population
         for (const network of this.networks) {
-            network.expectedOffspring = network.sharedFitness / this._averageSharedFitness;
+            network.expectedOffspring = network.sharedFitness / this.averageSharedFitness;
         }
 
         // Now calculate the number of offspring in each species
@@ -191,16 +226,16 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Check for fitness stagnation
-        if (this.populationChampion.fitness > this.highestFitness) {
-            this.highestFitness = this.populationChampion.fitness;
+        if (this.populationChampion.fitness > this.bestFitness) {
+            this.bestFitness = this.populationChampion.fitness;
             this.highestFitnessLastChanged = 0;
         } else {
             this.highestFitnessLastChanged++;
         }
 
-        // If there is a stagnation in fitness refocus the search
+        // If there is a stagnation in fitness, refocus the search
         if (this.highestFitnessLastChanged > this.hyperParameter.penalizingAge + 5) {
-            console.info("Refocusing the search on the two most promising species");
+            Container.debugLog("Refocusing the search on the two most promising species");
             this.highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize / 2;
 
@@ -225,11 +260,12 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                     // The other species are terminated.
                     else {
                         specie.expectedOffspring = 0;
+                        Arrays.clear(specie.networks);
                     }
                 }
             }
 
-            //TODO: Babies Stolen
+            // TODO: Babies Stolen
         }
     }
 
@@ -244,32 +280,56 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
+     * Assigns a new representative from the offspring for each species based on the compatibility distance
+     * to the previous representative.
+     * @param offspring the offspring from which representatives will be selected.
+     */
+    public assignRepresentatives(offspring: NeatChromosome[]): void {
+        for (const specie of this.species) {
+            let minDistance = Number.MAX_VALUE;
+            let closestNetwork = offspring[0];
+            for (const network of offspring) {
+                const distance = this.compatibilityDistance(specie.representative, network);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestNetwork = network;
+                }
+            }
+            specie.representative = closestNetwork;
+        }
+    }
+
+    /**
      * Assigns a network to the first compatible species.
      * @param network the network that should be assigned to a species.
      */
     public speciate(network: NeatChromosome): void {
 
-        // If we have no existent species in our population create the first one.
+        // If we have no existent species in our population, create the first one.
         if (this.species.length === 0) {
             const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
+            newSpecies.representative = network;
             this.speciesCount++;
             this.species.push(newSpecies);
             newSpecies.networks.push(network);
             network.species = newSpecies;
-        }
-
-            // If we already have some species find a compatible one or create a new species for the network if the network
-        // is not compatible enough with any existent species.
-        else {
+        } else {
+            // If we already have some species,
+            // find a compatible one or create a new species for the network if the network
+            // is not compatible enough with any existent species.
             let foundSpecies = false;
             for (const specie of this.species) {
-                // Get a representative of the specie and calculate the compatibility distance.
-                const representative = specie.networks[0];
-                const compatDistance = this.compatibilityDistance(network, representative);
+                // Skip empty species
+                if (specie.networks.length == 0) {
+                    continue;
+                }
 
-                // If the representative and the given network are compatible enough add the network to the
+                // Get a representative of the specie and calculate the compatibility distance.
+                const compatDistance = this.compatibilityDistance(network, specie.representative);
+
+                // If the representative and the given network are compatible enough, add the network to the
                 // representative's species.
-                if (compatDistance < this.hyperParameter.distanceThreshold) {
+                if (compatDistance < this.compatibilityThreshold) {
                     specie.networks.push(network);
                     network.species = specie;
                     foundSpecies = true;
@@ -277,9 +337,10 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 }
             }
 
-            // If the network fits into no species create a new one.
+            // If the network fits into no species, create a new one.
             if (!foundSpecies) {
                 const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
+                newSpecies.representative = network;
                 this.speciesCount++;
                 this.species.push(newSpecies);
                 newSpecies.networks.push(network);
@@ -303,8 +364,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Generate the networks and by that sort the connections according to their innovation numbers.
-        network1.generateNetwork();
-        network2.generateNetwork();
+        network1.sortConnections();
+        network2.sortConnections();
 
         // Counters for excess, disjoint and matching innovations & the weight difference.
         let excess = 0;
@@ -325,7 +386,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // and their weight differences.
         for (let i = 0; i < maxSize; i++) {
 
-            // If we exceeded the size of any of the two network, we have an excess gene.
+            // If we exceeded the size of one of the two networks, we have an excess gene.
             if (i1 >= size1) {
                 excess++;
                 i2++;
@@ -361,32 +422,42 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Calculate the compatibility distance according to the number of matching, excess and disjoint genes.
-        const disjointCoefficient = this.hyperParameter.disjointCoefficient;
-        const excessCoefficient = this.hyperParameter.excessCoefficient;
+        const disjointFactor = (disjoint * this.hyperParameter.disjointCoefficient) / maxSize;
+        const excessFactor = (excess * this.hyperParameter.excessCoefficient) / maxSize;
         const weightCoefficient = this.hyperParameter.weightCoefficient;
         if (matching === 0) {
-            return (disjointCoefficient * disjoint + excessCoefficient * excess);
+            return disjointFactor + excessFactor;
         } else {
-            return (disjointCoefficient * disjoint + excessCoefficient * excess
-                + weightCoefficient * (weight_diff / matching));
+            return disjointFactor + excessFactor + weightCoefficient * (weight_diff / matching);
         }
     }
 
     /**
      * Assigns the right innovation number for a given connection.
-     * @param newInnovation the connection gene for which an innovation number should be assigned to.
+     * @param connection the connection gene used to evaluate whether a novel innovation occurred.
+     * @param innovationType the type of innovation that occurred (newNode | newConnection).
      */
-    public static assignInnovationNumber(newInnovation: ConnectionGene): void {
-        // Check if the exact same innovation already happened in the past, if so assign the same innovation number.
-        const oldInnovation = NeatMutation._innovations.find(innovation => innovation.equalsByNodes(newInnovation));
-        if (oldInnovation !== undefined) {
-            newInnovation.innovation = oldInnovation.innovation;
+    public static findInnovation(connection: ConnectionGene, innovationType: InnovationType): Innovation | undefined {
+        let findMatchingInnovation: (innovation: Innovation, connection: ConnectionGene) => boolean;
+        switch (innovationType) {
+            case 'addConnection':
+                findMatchingInnovation = (innovation, connection) => {
+                    return innovation.type === 'addConnection' &&
+                        innovation.idSourceNode === connection.source.uID &&
+                        innovation.idTargetNode === connection.target.uID &&
+                        innovation.recurrent === connection.isRecurrent;
+                };
+                break;
+            case "addNodeSplitConnection":
+                findMatchingInnovation = (innovation, connection) => {
+                    return innovation.type === 'addNodeSplitConnection' &&
+                        innovation.idSourceNode === connection.source.uID &&
+                        innovation.idTargetNode === connection.target.uID &&
+                        innovation.splitInnovation === connection.innovation;
+                };
+                break;
         }
-        // If we have a novel innovation, assign the next innovation number.
-        else {
-            newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
-            NeatMutation._innovations.push(newInnovation);
-        }
+        return this.innovations.find(innovation => findMatchingInnovation(innovation, connection));
     }
 
     /**
@@ -419,7 +490,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public clone(): NeatPopulation {
         const clone = new NeatPopulation(this.generator, this.hyperParameter);
         clone.speciesCount = this.speciesCount;
-        clone.highestFitness = this.highestFitness;
+        clone.bestFitness = this.bestFitness;
         clone.highestFitnessLastChanged = this.highestFitnessLastChanged;
         clone.averageFitness = this.averageFitness;
         clone.generation = this.generation;
@@ -439,9 +510,9 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      */
     public toJSON(): Record<string, (number | Species<NeatChromosome>)> {
         const population = {};
-        population[`aF`] = Number(this.averageFitness.toFixed(4));
-        population[`hF`] = Number(this.highestFitness.toFixed(4));
-        population[`PC`] = this.populationChampion.uID;
+        population['aF'] = Number(this.averageFitness.toFixed(4));
+        population['bF'] = Number(this.bestFitness.toFixed(4));
+        population['PC'] = this.populationChampion.uID;
         for (let i = 0; i < this.species.length; i++) {
             population[`S ${i}`] = this.species[i].toJSON();
         }
@@ -473,3 +544,28 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         return this._numberOfSpeciesTargeted;
     }
 }
+
+export type Innovation = AddConnectionInnovation | AddNodeSplitConnectionInnovation;
+
+export interface AddConnectionInnovation {
+    type: 'addConnection';
+    idSourceNode: number;
+    idTargetNode: number;
+    innovationNumber: number;
+    recurrent: boolean
+}
+
+export interface AddNodeSplitConnectionInnovation {
+    type: 'addNodeSplitConnection';
+    idSourceNode: number;
+    idTargetNode: number;
+    firstInnovationNumber: number;
+    secondInnovationNumber: number
+    idNewNode: number
+    splitInnovation: number
+}
+
+export type InnovationType =
+    | 'addConnection'
+    | 'addNodeSplitConnection'
+    ;

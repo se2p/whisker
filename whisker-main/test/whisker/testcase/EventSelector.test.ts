@@ -36,8 +36,8 @@ class DummyEvent extends ScratchEvent {
         return [];
     }
 
-    setParameter(args: number[]): void {
-        // nothing
+    setParameter(): number[] {
+        return [];
     }
 
     toJavaScript(): string {

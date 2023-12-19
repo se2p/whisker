@@ -1,5 +1,6 @@
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import Arrays from "../../utils/Arrays";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export abstract class WhiskerAssertion {
 
@@ -13,7 +14,7 @@ export abstract class WhiskerAssertion {
     }
 
     // evaluate a trace entry -> bool
-    abstract evaluate(state): boolean;
+    abstract evaluate(state: Map<string, AssertionTargetState>): boolean;
 
     // String representation
     abstract toString(): string;

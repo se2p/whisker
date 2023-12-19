@@ -50,6 +50,11 @@ export abstract class Chromosome {
      */
     protected _fitnessCache = new Map<FitnessFunction<Chromosome>, number>();
 
+    /**
+     * Saves the number of statements that were covered by this chromosome.
+     */
+    private _coveredStatements: number;
+
     get lastImprovedFitnessCodon(): number {
         return this._lastImprovedFitnessCodon;
     }
@@ -99,11 +104,11 @@ export abstract class Chromosome {
      *                        chromosome
      * @returns the fitness of this chromosome
      */
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
+    async getFitness(fitnessFunction: FitnessFunction<this>): Promise<number> {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {
-            const fitness = fitnessFunction.getFitness(this);
+            const fitness = await fitnessFunction.getFitness(this);
             this._fitnessCache.set(fitnessFunction, fitness);
             return fitness;
         }
@@ -114,14 +119,14 @@ export abstract class Chromosome {
      * @param fitnessFunction the fitnessFunction that should be erased from the map.
      * @returns boolean set to true if the fitnessFunction was found and deleted from the map.
      */
-    public deleteCacheEntry(fitnessFunction: FitnessFunction<this>):boolean{
+    public deleteCacheEntry(fitnessFunction: FitnessFunction<this>): boolean {
         return this._fitnessCache.delete(fitnessFunction);
     }
 
     /**
      * Flushes the fitness cache to enforce a recalculation of the fitness values.
      */
-    public flushFitnessCache():void{
+    public flushFitnessCache(): void {
         this._fitnessCache.clear();
     }
 
@@ -132,6 +137,20 @@ export abstract class Chromosome {
      */
     async evaluate(executeCodons: boolean): Promise<void> {
         // No-op
+    }
+
+    /**
+     * Determines the number of fitness objectives covered by a given test.
+     * @param fitnessFunctions the fitness objectives.
+     */
+    public async determineCoveredObjectives(fitnessFunctions: FitnessFunction<Chromosome>[]): Promise<void> {
+        let coverageCount = 0;
+        for (const fitnessFunction of fitnessFunctions) {
+            if (await fitnessFunction.isCovered(this)) {
+                coverageCount++;
+            }
+        }
+        this._coveredStatements = coverageCount;
     }
 
     /**
@@ -149,4 +168,8 @@ export abstract class Chromosome {
      * Creates a clone of the current chromosome.
      */
     abstract clone(): Chromosome;
+
+    get coveredStatements(): number {
+        return this._coveredStatements;
+    }
 }

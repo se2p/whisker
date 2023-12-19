@@ -1,23 +1,23 @@
 import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class BackdropAssertion extends WhiskerAssertion {
 
-    private readonly _backdrop: string;
+    private readonly _backdrop: number;
 
-    constructor (target: RenderedTarget, backdrop: string) {
+    constructor (target: RenderedTarget, backdrop: number) {
         super(target);
         this._backdrop = backdrop;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return targetState.costume == this._backdrop;
             }
         }
-
         return false;
     }
 
@@ -29,7 +29,7 @@ export class BackdropAssertion extends WhiskerAssertion {
     }
     static createFactory() : AssertionFactory<BackdropAssertion>{
         return new (class implements AssertionFactory<BackdropAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): BackdropAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): BackdropAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (!targetState.target.isStage) {

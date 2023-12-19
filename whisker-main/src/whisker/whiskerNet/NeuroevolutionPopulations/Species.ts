@@ -1,7 +1,7 @@
 import {Randomness} from "../../utils/Randomness";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
-import {NeatProperties} from "../NeatProperties";
+import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
 
@@ -10,7 +10,7 @@ export class Species<C extends NeatChromosome> {
     /**
      * The hyperParameters defined by the user.
      */
-    private readonly _hyperParameter: NeatProperties;
+    private readonly _hyperParameter: NeuroevolutionTestGenerationParameter;
 
     /**
      * Unique identifier for the species.
@@ -23,17 +23,22 @@ export class Species<C extends NeatChromosome> {
     private readonly _networks: C[] = []
 
     /**
+     * The representative of this species used for speciation calculations.
+     */
+    private _representative: C;
+
+    /**
      * The age of the species.
      */
     private _age = 1;
 
     /**
-     * Average fitness across all member of the species.
+     * Average fitness across all members of the species.
      */
     private _averageFitness = 0;
 
     /**
-     * Average shared fitness across all member of the species.
+     * Average shared fitness across all members of the species.
      */
     private _averageSharedFitness = 0;
 
@@ -76,10 +81,10 @@ export class Species<C extends NeatChromosome> {
     /**
      * Constructs a new Species.
      * @param uID the id of the species
-     * @param novel true if its a new species
+     * @param novel true if it's a new species
      * @param hyperParameter the search parameters
      */
-    constructor(uID: number, novel: boolean, hyperParameter: NeatProperties) {
+    constructor(uID: number, novel: boolean, hyperParameter: NeuroevolutionTestGenerationParameter) {
         this._uID = uID;
         this._isNovel = novel;
         this._hyperParameter = hyperParameter;
@@ -97,16 +102,17 @@ export class Species<C extends NeatChromosome> {
      * Assigns the shared fitness value to each member of the species.
      */
     public assignSharedFitness(): void {
-        // Calculate the age debt based on the penalizing factor -> Determines after how much generations of no improvement
-        // the species gets penalized
+        // Calculate the age debt based on the penalising factor -> Determines after how many generations of no
+        // improvement the species gets penalised
         let ageDept = (this.age - this.ageOfLastImprovement + 1) - this.hyperParameter.penalizingAge;
-        if (ageDept == 0)
+        if (ageDept == 0) {
             ageDept = 1;
+        }
 
         for (const network of this.networks) {
             network.sharedFitness = network.fitness;
 
-            // Penalize fitness if it has not improved for a certain amount of ages
+            // Penalize fitness if it has not improved for a certain number of ages
             if (ageDept >= 1) {
                 network.sharedFitness = network.sharedFitness * 0.01;
                 Container.debugLog(`Penalizing stagnant species ${this.uID}`);
@@ -114,7 +120,7 @@ export class Species<C extends NeatChromosome> {
 
             // Boost fitness for young generations to give them a chance to evolve for some generations.
             if (this._age <= 10) {
-                network.sharedFitness = network.sharedFitness * this.hyperParameter.ageSignificance;
+                network.sharedFitness *= this.hyperParameter.ageSignificance;
             }
 
             // Do not allow negative fitness values
@@ -123,7 +129,7 @@ export class Species<C extends NeatChromosome> {
             }
 
             // Share fitness with the entire species.
-            network.sharedFitness = network.sharedFitness / this.networks.length;
+            network.sharedFitness /= this.networks.length;
 
         }
         this.markParents();
@@ -149,10 +155,7 @@ export class Species<C extends NeatChromosome> {
 
         // Determines how many members of this species are allowed to reproduce.
         // Ensure that the species will not go extinct -> at least one member survives.
-        let numberOfParents = Math.floor((this.hyperParameter.parentsPerSpecies * this.networks.length));
-        if (numberOfParents === 0) {
-            numberOfParents = 1;
-        }
+        const numberOfParents = Math.floor((this.hyperParameter.parentsPerSpecies * this.networks.length));
 
         // Allow the first <numberOfParents> to reproduce.
         for (const network of this.networks.slice(0, numberOfParents + 1)) {
@@ -165,7 +168,7 @@ export class Species<C extends NeatChromosome> {
      * Those leftOvers are carried on from calculation to calculation across all species and are awarded to the
      * population champion's species.
      * The given implementation follows the approach described within the NEAT publication.
-     * @param leftOver makes sure to not loose childs due to rounding errors.
+     * @param leftOver makes sure to not lose children due to rounding errors.
      * @returns number leftOver collects rounding errors to ensure a constant populationSize.
      */
     public getNumberOfOffspringsNEAT(leftOver: number): number {
@@ -197,7 +200,7 @@ export class Species<C extends NeatChromosome> {
      * Calculates the number of offspring based on the average fitness across all members of the species. Saves
      * leftOvers occurring due to rounding errors and carries them on from calculation to calculation across all
      * species to assign them to the population champion's species in the end.
-     * @param leftOver leftOver makes sure to not loose childs due to rounding errors.
+     * @param leftOver leftOver makes sure to not lose children due to rounding errors.
      * @param totalAvgSpeciesFitness the average fitness of all species combined.
      * @param populationSize the size of the whole population.
      * @returns number leftOver collects rounding errors to ensure a constant populationSize.
@@ -236,7 +239,7 @@ export class Species<C extends NeatChromosome> {
 
         // Breed the assigned number of children.
         let champCloned = 0;
-        for (let count = 0; count < this.expectedOffspring; count++) {
+        while (children.length < this.expectedOffspring) {
             let child: C;
 
             // If we have a population Champion in this species apply slight mutation or clone it.
@@ -254,18 +257,20 @@ export class Species<C extends NeatChromosome> {
             else if (champCloned < 1) {
                 child = this.champion.cloneStructure(true) as C;
                 champCloned++;
-            }
-
+            } else if (this._randomness.nextDouble() <= this._hyperParameter.mutationWithoutCrossover || this.networks.length == 1) {
                 // With a user-defined probability or if the species holds only one network, we apply mutation without
-            // crossover.
-            else if (this._randomness.nextDouble() <= this._hyperParameter.mutationWithoutCrossover ||
-                this.networks.length == 1) {
+                // the crossover operation.
                 child = this.breedMutationOnly();
             }
 
-            // Otherwise we apply crossover.
+            // Otherwise, we apply crossover.
             else {
                 child = this.breedCrossover(population, populationSpecies);
+            }
+
+            // Check if we produced a defect network and breed another child if we did so.
+            if (!child.activateNetwork(child.generateDummyInputs())) {
+                continue;
             }
 
             children.push(child);
@@ -303,19 +308,19 @@ export class Species<C extends NeatChromosome> {
         const parent1 = this._randomness.pick(this.networks);
         let parent2: C;
 
-        // Pick second parent either from within the species or from another species.
-        if (this._randomness.nextDouble() < this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
+        // Pick a second parent either from within the species or from another species.
+        if (this._randomness.nextDouble() > this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
             parent2 = this._randomness.pick(this.networks);
         }
 
         // Select second parent from a different species.
-        else  {
+        else {
             const candidateSpecies = populationSpecies.filter(species => species.uID !== this.uID && species.networks.length > 0);
-            // Check if we have at least one other species that contains at least 1 network.
+            // Check if we have at least one other species that contains at least one network.
             if (candidateSpecies.length > 0) {
                 parent2 = this._randomness.pick(candidateSpecies).networks[0];
             }
-            // If we don't find another suitable species we have to mate within our species.
+            // If we don't find another suitable species, we have to mate within our species.
             else {
                 parent2 = this._randomness.pick(this.networks);
             }
@@ -323,6 +328,11 @@ export class Species<C extends NeatChromosome> {
 
         // Apply crossover.
         let child = parent1.crossover(parent2)[0];
+
+        // We may get a defect network. Restart the breeding process for this child.
+        if(!child){
+            return undefined;
+        }
 
         // Decide if we additionally apply mutation, which is done randomly with a user-defined probability or
         // if both parents have a compatibility distance of 0, i.e. they have the same structure and weights.
@@ -401,6 +411,14 @@ export class Species<C extends NeatChromosome> {
         return this._uID;
     }
 
+    get representative(): C {
+        return this._representative;
+    }
+
+    set representative(value: C) {
+        this._representative = value;
+    }
+
     get age(): number {
         return this._age;
     }
@@ -477,7 +495,7 @@ export class Species<C extends NeatChromosome> {
         this._champion = value;
     }
 
-    get hyperParameter(): NeatProperties {
+    get hyperParameter(): NeuroevolutionTestGenerationParameter {
         return this._hyperParameter;
     }
 }

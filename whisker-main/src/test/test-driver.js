@@ -27,6 +27,7 @@ class TestDriver {
         this.keyPress = vmWrapper.inputs.keyPress.bind(vmWrapper.inputs);
         this.keyRelease = vmWrapper.inputs.keyRelease.bind(vmWrapper.inputs);
         this.mouseDown = vmWrapper.inputs.mouseDown.bind(vmWrapper.inputs);
+        this.mouseDownForSteps = vmWrapper.inputs.mouseDownForSteps.bind(vmWrapper.inputs);
         this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
         this.typeText = vmWrapper.inputs.typeText.bind(vmWrapper.inputs);
         this.sendSound = vmWrapper.inputs.sendSound.bind(vmWrapper.inputs);
@@ -67,19 +68,29 @@ class TestDriver {
         this.runUntil = vmWrapper.runUntil.bind(vmWrapper);
         this.runUntilChanges = vmWrapper.runUntilChanges.bind(vmWrapper);
         this.runForSteps = vmWrapper.runForSteps.bind(vmWrapper);
-        this.cancelRun = vmWrapper.cancelRun.bind(vmWrapper);
+        this.cancelScratchRun = vmWrapper.cancelScratchRun.bind(vmWrapper);
         this.onConstraintFailure = vmWrapper.onConstraintFailure.bind(vmWrapper);
         this.getTotalTimeElapsed = vmWrapper.getTotalTimeElapsed.bind(vmWrapper);
         this.getRunTimeElapsed = vmWrapper.getRunTimeElapsed.bind(vmWrapper);
         this.getTotalStepsExecuted = vmWrapper.getTotalStepsExecuted.bind(vmWrapper);
         this.getRunStepsExecuted = vmWrapper.getRunStepsExecuted.bind(vmWrapper);
-        this.isRunning = vmWrapper.isRunning.bind(vmWrapper);
-        this.isProjectRunning = vmWrapper.isProjectRunning.bind(vmWrapper);
+        this.isScratchRunning = vmWrapper.isScratchRunning.bind(vmWrapper);
+        this.isWhiskerRunning= vmWrapper.isWhiskerRunning.bind(vmWrapper);
+
+        // Backward compatibility
+        /** @deprecated Please use the method cancelScratchRun() instead */
+        this.cancelRun = vmWrapper.cancelScratchRun.bind(vmWrapper);
+
+        /** @deprecated Please use the method isScratchRunning() instead */
+        this.isRunning = vmWrapper.isScratchRunning.bind(vmWrapper);
+
+        /** @deprecated Please use the method isWhiskerRunning() instead */
+        this.isProjectRunning = vmWrapper.isWhiskerRunning.bind(vmWrapper);
 
         /* Further Test Tools  */
         this.seedScratch = (seed) => {
             Randomness.setInitialSeeds(seed);
-            Randomness.seedScratch();
+            Randomness.seedScratch(this.vm);
         };
         this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
         this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;

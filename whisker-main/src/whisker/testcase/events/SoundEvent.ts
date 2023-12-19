@@ -57,16 +57,16 @@ export class SoundEvent extends ScratchEvent {
         return 0;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number, number] {
         return [this._volume, this._steps];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [] {
         return [];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): [] {
+        return [];
     }
 
     stringIdentifier(): string {

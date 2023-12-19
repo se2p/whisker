@@ -277,8 +277,8 @@ class Inputs {
      */
     inputImmediate (dataOrInput, name) {
         let input;
-        const executedSteps = this.vmWrapper.isRunning()
-            ? this.vmWrapper.getRunStepsExecuted() : 0
+        const executedSteps = this.vmWrapper.isScratchRunning()
+            ? this.vmWrapper.getRunStepsExecuted() : 0;
 
         if (dataOrInput instanceof Input) {
             input = dataOrInput;
@@ -445,7 +445,7 @@ class Inputs {
      */
     dragSprite (spriteName, x, y, cloneID) {
         let target = this.vmWrapper.getTargetBySpriteName(spriteName);
-        if(cloneID !== null){
+        if(cloneID){
             target = target.sprite.clones.find(target => target.cloneID === cloneID);
         }
         if (target != null) {
@@ -497,6 +497,18 @@ class Inputs {
     }
 
     /**
+     * Presses the left mouse button for the given amount of steps.
+     * @param {number} steps The number of steps indicating how long the mouse button should be pressed.
+     */
+    mouseDownForSteps (steps = 1) {
+        this.inputImmediate({
+            device: 'mouse',
+            isDown: true,
+            steps: steps
+        });
+    }
+
+    /**
      * Moves the mouse to a specific position (x, y) for a number of steps.
      * @param {number} x The x coordinate of the end position.
      * @param {number} y The y coordinate of the end position.
@@ -528,12 +540,12 @@ class Inputs {
      * @param {number} steps defines for how many steps the sound should be sent to the Scratch-VM.
      */
     sendSound(volume, steps = 1){
-        Math.max(Math.min(volume, 100), 0)
+        Math.max(Math.min(volume, 100), 0);
         this.inputImmediate({
             device: 'microphone',
             volume: volume,
             steps: steps
-        })
+        });
     }
 }
 

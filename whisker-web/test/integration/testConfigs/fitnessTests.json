@@ -7,8 +7,8 @@
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
-        "maxSampleLength": 10,
-        "maxLength": 10
+        "maxSampleLength": 5,
+        "maxLength": 5
     },
     "mutation": {
         "operator": "variableLength",
@@ -40,7 +40,7 @@
     },
     "integerRange": {
         "min": 0,
-        "max": 480
+        "max": 10
     },
     "durations": {
         "waitStepUpperBound": 10,

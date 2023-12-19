@@ -1,18 +1,19 @@
 import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
+import {AssertionTargetState} from "./AssertionObserver";
 
 export class CostumeAssertion extends WhiskerAssertion {
 
-    private readonly _costume: string;
+    private readonly _costume: number;
 
-    constructor (target: RenderedTarget, costume: string, cloneIndex?: number) {
+    constructor (target: RenderedTarget, costume: number, cloneIndex?: number) {
         super(target, cloneIndex);
         this._costume = costume;
     }
 
-    evaluate(state: Map<string, Map<string, any>>): boolean {
-        for (const targetState of Object.values(state)) {
+    evaluate(state: Map<string, AssertionTargetState>): boolean {
+        for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 return targetState.costume == this._costume;
             }
@@ -29,7 +30,7 @@ export class CostumeAssertion extends WhiskerAssertion {
 
     static createFactory() : AssertionFactory<CostumeAssertion>{
         return new (class implements AssertionFactory<CostumeAssertion> {
-            createAssertions(state: Map<string, Record<string, any>>): CostumeAssertion[] {
+            createAssertions(state: Map<string, AssertionTargetState>): CostumeAssertion[] {
                 const assertions = [];
                 for (const targetState of state.values()) {
                     if (targetState.target.isStage) {

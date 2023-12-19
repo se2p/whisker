@@ -58,15 +58,15 @@ export class MouseMoveEvent extends ScratchEvent {
         return 2; // x and y?
     }
 
-    getParameters(): number[] {
+    getParameters(): [number, number] {
         return [this._x, this._y];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [string, string] {
         return ["X", "Y"];
     }
 
-    setParameter(args: number[], argType: ParameterType): void {
+    setParameter(args: number[], argType: ParameterType): [number, number] {
         switch (argType) {
             case "random": {
                 const random = Randomness.getInstance();
@@ -83,12 +83,14 @@ export class MouseMoveEvent extends ScratchEvent {
                 this._y = y;
                 break;
             }
-            case "regression": {
-                this._x = Math.tanh(args[0]) * 240;
-                this._y = Math.tanh(args[1]) * 180;
+            case "activation": {
+                // Clamp into coordinates.
+                this._x = args[0] * 240;
+                this._y = args[1] * 180;
                 break;
             }
         }
+        return [this._x, this._y];
     }
 
     stringIdentifier(): string {

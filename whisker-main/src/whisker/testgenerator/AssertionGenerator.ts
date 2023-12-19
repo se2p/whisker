@@ -56,8 +56,6 @@ export class AssertionGenerator {
                 for (const assertionFactory of this.assertionFactories) {
                     const assertions = assertionFactory.createAssertions(trace[position/2]);
                     for (const assertion of assertions) {
-
-                        assert(assertion.evaluate(trace[position/2])); // Just while testing
                         test.addAssertion(position + 1, assertion);
                     }
                 }
@@ -100,8 +98,7 @@ export class AssertionGenerator {
 
 
     private async _executeWithObserver(test: WhiskerTest)  {
-        const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(),
-            Container.config.getEventSelector());
+        const executor = new TestExecutor(Container.vmWrapper, undefined, undefined);
         const observer = new AssertionObserver();
         executor.attach(observer);
         await executor.executeEventTrace(test.chromosome);

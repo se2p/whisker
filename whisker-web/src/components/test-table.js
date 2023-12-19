@@ -51,6 +51,45 @@ class TestTable {
             const test = row.data();
             runTests([test]);
         });
+        this.table.on('click', '.debug-test', event => {
+            const tr = $(event.target).closest('tr');
+            const row = this.dataTable.row(tr);
+            const testIndex = row.data().index - 1;
+            const tests = window.Whisker.testsString;
+            const props = this.getProps();
+            const modelProps = this.getModelProps();
+            window.Whisker.scratch.reset().then(() => {
+                const project = window.Whisker.scratch.vm.toJSON();
+                const url = 'https://scratch.fim.uni-passau.de';
+                const debuggerWindow = window.open(`${url}/debugger`);
+                const handleMessageEvent = e => {
+                    if (e.origin === url && e.data === 'loaded') {
+                        debuggerWindow.postMessage({testIndex, tests, props, modelProps, project}, '*');
+                        window.removeEventListener('message', handleMessageEvent);
+                    }
+                };
+                window.addEventListener('message', handleMessageEvent);
+            });
+        });
+    }
+
+    getProps () {
+        const projectName = window.Whisker.projectFileSelect.getName();
+        const accelerationFactor = 1;
+        const seed = document.getElementById('seed').value;
+        const setMutators = document.querySelector('#container').mutators;
+        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators.split(', ');
+        return {accelerationFactor, seed, projectName, mutators};
+    }
+
+    getModelProps () {
+        let duration = Number(document.querySelector('#model-duration').value);
+        if (duration) {
+            duration = duration * 1000;
+        }
+        const repetitions = Number(document.querySelector('#model-repetitions').value);
+        const caseSensitive = $('#model-case-sensitive').is(':checked');
+        return {duration, repetitions, caseSensitive};
     }
 
     /**
@@ -220,6 +259,14 @@ class TestTable {
                     defaultContent:
                         '<button class="btn btn-sm btn-xs btn-outline-secondary run-test vm-related">' +
                         '<i class="fas fa-play"></i></button>',
+                    width: '0.5em'
+                },
+                {
+                    orderable: false,
+                    data: null,
+                    defaultContent:
+                        '<button class="btn btn-sm btn-xs btn-outline-secondary debug-test vm-related">' +
+                        '<i class="fas fa-bug"></i></button>',
                     width: '0.5em'
                 }
             ],

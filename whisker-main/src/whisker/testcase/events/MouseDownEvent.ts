@@ -53,17 +53,17 @@ export class MouseDownEvent extends ScratchEvent {
         return 0;
     }
 
-    getParameters(): number[] {
+    getParameters(): [number] {
         // 0 returns False in JS/TS
         return [this._value ? 1 : 0];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [] {
         return [];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): [] {
+        return [];
     }
 
     stringIdentifier(): string {

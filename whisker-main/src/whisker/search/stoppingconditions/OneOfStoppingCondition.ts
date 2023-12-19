@@ -25,14 +25,14 @@ import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingConditi
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _conditions: readonly StoppingCondition<T>[];
+    private _conditions: StoppingCondition<T>[] = [];
 
-    constructor(...stoppingConditions: readonly StoppingCondition<T>[]) {
+    constructor(...stoppingConditions: StoppingCondition<T>[]) {
         // Immediately flatten nested OneOfStoppingConditions.
         this._conditions = this._flatten(stoppingConditions);
     }
 
-    private _flatten(stoppingConditions: readonly StoppingCondition<T>[]): readonly StoppingCondition<T>[] {
+    private _flatten(stoppingConditions: StoppingCondition<T>[]): StoppingCondition<T>[] {
         const flattened = [];
         for (const stoppingCondition of stoppingConditions) {
             if (stoppingCondition instanceof OneOfStoppingCondition) {
@@ -44,11 +44,13 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
         return flattened;
     }
 
-    isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        return this.conditions.some(condition => condition.isFinished(algorithm));
+    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
+        const promises = this._conditions.map((condition) => condition.isFinished(algorithm));
+        const finished = await Promise.all(promises);
+        return finished.includes(true);
     }
 
-    getProgress(algorithm: SearchAlgorithm<T>): number {
+    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
         /*
          * We distinguish between stopping conditions tracking (A) how close we are to fulfilling an objective, vs.
          * (B) how much resources have been used. For measuring search progress, we are interested only in (B).
@@ -59,11 +61,15 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
          */
         const resourceConditions = this.conditions.filter(condition =>
             !(condition instanceof OptimalSolutionStoppingCondition));
-        const progress = resourceConditions.map(condition => condition.getProgress(algorithm));
+        const progress = await Promise.all(resourceConditions.map(async (condition) => await condition.getProgress(algorithm)));
         return Math.max(...progress);
     }
 
-    get conditions(): readonly StoppingCondition<T>[] {
+    get conditions(): StoppingCondition<T>[] {
         return this._conditions;
+    }
+
+    set conditions(value: StoppingCondition<T>[]) {
+        this._conditions = value;
     }
 }

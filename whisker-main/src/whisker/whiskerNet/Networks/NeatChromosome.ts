@@ -1,13 +1,19 @@
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {Species} from "../NeuroevolutionPopulations/Species";
-import {NetworkChromosome} from "./NetworkChromosome";
+import {InputConnectionMethod, NetworkChromosome, NetworkLayer} from "./NetworkChromosome";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
-import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {InputNode} from "../NetworkComponents/InputNode";
-import {Container} from "../../utils/Container";
-import {NeatChromosomeGeneratorFullyConnected} from "../NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import {
+    AddConnectionInnovation,
+    AddNodeSplitConnectionInnovation,
+    NeatPopulation
+} from "../NeuroevolutionPopulations/NeatPopulation";
+import {HiddenNode} from "../NetworkComponents/HiddenNode";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {BiasNode} from "../NetworkComponents/BiasNode";
+import {NodeType} from "../NetworkComponents/NodeType";
 
 export class NeatChromosome extends NetworkChromosome {
     /**
@@ -48,7 +54,7 @@ export class NeatChromosome extends NetworkChromosome {
     /**
      * The number of offspring this network is allowed to produce.
      */
-    private _expectedOffspring: number;
+    private _expectedOffspring = 0;
 
     /**
      * The number of additional offspring the population champion is allowed to produce.
@@ -57,135 +63,21 @@ export class NeatChromosome extends NetworkChromosome {
 
     /**
      * Constructs a new NeatChromosome.
-     * @param allNodes all nodes of a network.
+     * @param layers the networks {@link NetworkLayer}s.
      * @param connections the connections between the Nodes.
      * @param mutationOp the mutation operator.
      * @param crossoverOp the crossover operator.
+     * @param inputConnectionMethod determines how novel nodes are being connected to the input layer.
+     * @param activationFunction the activation function that will be used for hidden nodes.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
-    constructor(allNodes: NodeGene[], connections: ConnectionGene[], mutationOp: NeatMutation,
-                crossoverOp: NeatCrossover, incrementID = true) {
-        super(allNodes, connections, incrementID);
+    constructor(layers: NetworkLayer, connections: ConnectionGene[],
+                mutationOp: NeatMutation, crossoverOp: NeatCrossover,
+                inputConnectionMethod: InputConnectionMethod,
+                activationFunction = ActivationFunction.RELU, incrementID = true) {
+        super(layers, connections, inputConnectionMethod, activationFunction, incrementID);
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
-    }
-
-    /**
-     * Deep clone of a NeatChromosome's structure. Attributes that are not related to the network's structure
-     * are initialised with default values.
-     * @param incrementID determines whether the ID counter should be incremented during the cloning process.
-     * @returns NeatChromosome the cloned Network with default attribute values.
-     */
-    public cloneStructure(incrementID: boolean): NeatChromosome {
-        return this.cloneWith(this.connections, incrementID);
-    }
-
-    /**
-     * Deep clone of a NeatChromosome using a defined list of genes.
-     * @param newGenes the ConnectionGenes the network should be initialised with.
-     * @param incrementID determines whether the ID-Counter should be incremented during cloning.
-     * @returns NeatChromosome the cloned network chromosome.
-     */
-    cloneWith(newGenes: ConnectionGene[], incrementID = true): NeatChromosome {
-        const connectionsClone: ConnectionGene[] = [];
-        const nodesClone: NodeGene[] = [];
-
-        // duplicate Nodes
-        for (const node of this.allNodes) {
-            nodesClone.push(node.clone());
-        }
-
-        // duplicate connections
-        for (const connection of newGenes) {
-            const fromNode = nodesClone.find(node => node.equals(connection.source));
-            const toNode = nodesClone.find(node => node.equals(connection.target));
-            const connectionClone = connection.cloneWithNodes(fromNode, toNode);
-            connectionsClone.push(connectionClone);
-        }
-        return new NeatChromosome(nodesClone, connectionsClone, this.getMutationOperator(),
-            this.getCrossoverOperator(), incrementID);
-    }
-
-    /**
-     * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
-     * @param sprites a map which maps each sprite to its input feature vector.
-     */
-    protected updateInputNodes(sprites: Map<string, Map<string, number>>): void {
-        let updated = false;
-        sprites.forEach((spriteFeatures, spriteKey) => {
-
-            // Check if we have encountered a new Sprite.
-            if (!this.inputNodes.has(spriteKey)) {
-                updated = true;
-                const spriteNodes = new Map<string, InputNode>();
-                spriteFeatures.forEach((featureValue, featureKey) => {
-                    const iNode = new InputNode(spriteKey, featureKey);
-                    spriteNodes.set(featureKey, iNode);
-                    this.allNodes.push(iNode);
-                    // By Chance we connect the new Node to the network.
-                    if (this._random.nextDouble() < 0.5 ||
-                        Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
-                        this.connectInputNode(iNode);
-                    }
-                });
-                this.inputNodes.set(spriteKey, spriteNodes);
-            }
-
-                // We haven't encountered a new Sprite but we still have to check if we encountered new features of a
-            // Sprite.
-            else {
-                spriteFeatures.forEach((featureValue, featureKey) => {
-                    const savedSpriteMap = this.inputNodes.get(spriteKey);
-                    if (!savedSpriteMap.has(featureKey)) {
-                        updated = true;
-                        const iNode = new InputNode(spriteKey, featureKey);
-                        savedSpriteMap.set(featureKey, iNode);
-                        this.allNodes.push(iNode);
-                        // By chance or if we use fully connected networks, we connect the new Node to the network.
-                        if (this._random.nextDouble() < 0.5 ||
-                            Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
-                            this.connectInputNode(iNode);
-                        }
-                    }
-                });
-            }
-        });
-
-        // If the network's structure has changed generate the new network and update the stabilize count.
-        if (updated) {
-            this.generateNetwork();
-            this.updateStabiliseCount(100);
-        }
-    }
-
-    /**
-     * Connects an input node to the network by creating a connection between the input node and all output nodes.
-     * @param iNode the input node to connect.
-     */
-    protected connectInputNode(iNode: NodeGene): void {
-        for (const oNode of this.outputNodes) {
-            const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                true, 0, false);
-            NeatPopulation.assignInnovationNumber(newConnection);
-            this.connections.push(newConnection);
-            oNode.incomingConnections.push(newConnection);
-        }
-    }
-
-    /**
-     * Connects an output node to the network by creating a connection between the output node and all input nodes.
-     * @param oNode the output node to connect.
-     */
-    protected connectOutputNode(oNode: NodeGene): void {
-        for (const iNodes of this.inputNodes.values()) {
-            for (const iNode of iNodes.values()) {
-                const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                    true, 0, false);
-                NeatPopulation.assignInnovationNumber(newConnection);
-                this.connections.push(newConnection);
-                oNode.incomingConnections.push(newConnection);
-            }
-        }
     }
 
     /**
@@ -199,13 +91,261 @@ export class NeatChromosome extends NetworkChromosome {
         clone.coverage = this.coverage;
         clone.fitness = this.fitness;
         clone.sharedFitness = this.sharedFitness;
+        clone.targetFitness = this.targetFitness;
+        clone.openStatementTargets = this.openStatementTargets;
         clone.species = this.species;
         clone.isSpeciesChampion = this.isSpeciesChampion;
         clone.isPopulationChampion = this.isPopulationChampion;
         clone.isParent = this.isParent;
         clone.expectedOffspring = this.expectedOffspring;
-        clone.isRecurrent = this.isRecurrent;
+        if (this.referenceActivationTrace !== undefined) {
+            clone.referenceActivationTrace = this.referenceActivationTrace.clone();
+        }
+        if (this.testActivationTrace !== undefined) {
+            clone.testActivationTrace = this.testActivationTrace.clone();
+        }
+        clone.referenceUncertainty = new Map<number, number>(this.referenceUncertainty);
+        clone.testUncertainty = new Map<number, number>(this.testUncertainty);
         return clone;
+    }
+
+    /**
+     * Deep clone of a NeatChromosome using a defined list of genes.
+     * @param newGenes the ConnectionGenes the network should be initialised with.
+     * @param incrementID determines whether the ID-Counter should be incremented during cloning.
+     * @returns NeatChromosome the cloned network chromosome.
+     */
+    cloneWith(newGenes: ConnectionGene[], incrementID = true): NeatChromosome {
+        const connectionsClone: ConnectionGene[] = [];
+        const layerClone = this.cloneLayer();
+
+        // duplicate connections
+        const allNodes = [...layerClone.values()].flat();
+        for (const connection of newGenes) {
+            const fromNode = allNodes.find(node => node.equals(connection.source));
+            const toNode = allNodes.find(node => node.equals(connection.target));
+            const connectionClone = connection.cloneWithNodes(fromNode, toNode);
+            connectionsClone.push(connectionClone);
+        }
+        return new NeatChromosome(layerClone, connectionsClone, this.getMutationOperator(),
+            this.getCrossoverOperator(), this.inputConnectionMethod, this.activationFunction, incrementID);
+    }
+
+    /**
+     * Deep clone of a NeatChromosome's structure. Attributes that are not related to the network's structure
+     * are initialised with default values.
+     * @param incrementID determines whether the ID counter should be incremented during the cloning process.
+     * @returns NeatChromosome the cloned Network with default attribute values.
+     */
+    public cloneStructure(incrementID: boolean): NeatChromosome {
+        return this.cloneWith(this.connections, incrementID);
+    }
+
+    /**
+     * Clones the network during the test execution process.
+     */
+    public cloneAsTestCase(): NeatChromosome {
+        const clone = this.cloneStructure(false);
+        clone.uID = this.uID;
+        if (this.referenceActivationTrace !== undefined) {
+            clone.referenceActivationTrace = this.referenceActivationTrace.clone();
+        }
+        clone.referenceUncertainty = new Map<number, number>(this.referenceUncertainty);
+        return clone;
+    }
+
+    /**
+     * Connects nodes to the specified input nodes using a defined connectionMethod to connect the nodes.
+     * @param nodesToConnect the nodes that should be connected to the input layer.
+     * @param inputRate the probability of adding additional sprites to the network in case a sparse method is used
+     * @param connectionMethod determines how the input layer should be connected to the given nodes.
+     */
+    public connectNodesToInputLayer(nodesToConnect: NodeGene[], connectionMethod: InputConnectionMethod,
+                                    inputRate = 0.3): void {
+        switch (connectionMethod) {
+            case "sparse":
+                this.connectNodeSpriteSparse(nodesToConnect, inputRate);
+                break;
+            case "fullyHidden":
+                this.connectNodeFullyHidden(nodesToConnect);
+                break;
+            default:
+            case "fully":
+                this.connectNodeFully(nodesToConnect);
+        }
+    }
+
+    /**
+     * Creates connections from each input to every specified node.
+     * @param nodesToConnect the nodes that will be connected to the specified inputs.
+     */
+    private connectNodeFully(nodesToConnect: NodeGene[]) {
+        for (const inputNode of this.layers.get(0)) {
+            for (const nodeToConnect of nodesToConnect) {
+                const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
+                this.addConnection(newConnection);
+            }
+        }
+    }
+
+    /**
+     * Creates connections from each input node to every specified node by placing a hidden node in between.
+     * @param nodesToConnect the nodes that will be connected to the specified inputs.
+     * @returns ConnectionGene[] the generated network's connections.
+     */
+    private connectNodeFullyHidden(nodesToConnect: NodeGene[]): ConnectionGene[] {
+        const newConnections: ConnectionGene[] = [];
+        const minDepth = Math.min(...nodesToConnect.map(node => node.depth));
+
+        for (const [sprite, featureMap] of this.inputNodes.entries()) {
+            // Add Hidden Node if there is none for the given sprite feature.
+            if (!this._fullyHiddenPairs.has(sprite)) {
+                const depth = minDepth / 2;
+                const hiddenNode = new HiddenNode(++NeatPopulation.highestNodeId, depth, this.activationFunction);
+                this.addNode(hiddenNode);
+                this._fullyHiddenPairs.set(sprite, hiddenNode);
+            }
+
+            const hiddenNode = this._fullyHiddenPairs.get(sprite);
+            const hiddenIncomingNodes = hiddenNode.incomingConnections.map(conn => conn.source);
+
+            // Connect inputNode to hiddenNode if there is no such connection.
+            for (const iNode of featureMap.values()) {
+                if (!hiddenIncomingNodes.includes(iNode)) {
+                    const inputHiddenConn = new ConnectionGene(iNode, hiddenNode, this._random.nextDoubleMinMax(-1, 1), true, 0);
+                    newConnections.push(inputHiddenConn);
+                    this.addConnection(inputHiddenConn);
+                }
+            }
+
+            // Connect nodeToConnect to corresponding hidden node.
+            for (const nodeToConnect of nodesToConnect) {
+                const hiddenToNewNode = new ConnectionGene(hiddenNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
+                newConnections.push(hiddenToNewNode);
+                this.addConnection(hiddenToNewNode);
+            }
+
+        }
+
+        // Connect new nodes to Bias
+        const biasNode = this.layers.get(0).find(node => node.type == NodeType.BIAS);
+        for (const nodeToConnect of nodesToConnect) {
+            const biasConnection = new ConnectionGene(biasNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
+            newConnections.push(biasConnection);
+            this.addConnection(biasConnection);
+        }
+
+        return newConnections;
+    }
+
+    /**
+     * Creates connections from a single sprite's input nodes to all specified nodes. With a defined probability more
+     * sprite node groups are connected to the specified nodes.
+     * @param nodesToConnect the nodes that will be connected to the inputs.
+     * @param inputRate the probability of adding additional sprites to the network.
+     * @returns ConnectionGene[] the generated network's connections.
+     */
+    private connectNodeSpriteSparse(nodesToConnect: NodeGene[], inputRate): ConnectionGene[] {
+        const connections: ConnectionGene[] = [];
+        const biasNode = this.layers.get(0).find(node => node instanceof BiasNode);
+        for (const nodeToConnect of nodesToConnect) {
+            const newConnection = new ConnectionGene(biasNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
+            this.addConnection(newConnection);
+        }
+
+        // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
+        const spriteKeys = [...this.inputNodes.keys()];
+        do {
+            // Choose a random Sprite to add its input nodes to the network;
+            const spriteToConnect = this._random.pick(spriteKeys);
+
+            // For each input node of the Sprite create a connection to each Output-Node.
+            for (const inputNode of this.inputNodes.get(spriteToConnect).values()) {
+                for (const nodeToConnect of nodesToConnect) {
+                    const newConnection = new ConnectionGene(inputNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
+                    this.addConnection(newConnection);
+                }
+            }
+            spriteKeys.splice(spriteKeys.indexOf(spriteToConnect), 1);
+        }
+        while (this._random.nextDouble() < inputRate && spriteKeys.length > 0);
+        return connections;
+    }
+
+    /**
+     * Determines how a novel connection is added to the network. In NEAT-Chromosomes we have to keep track of the
+     * innovation history.
+     * @param connection the connection to add.
+     */
+    public addConnection(connection: ConnectionGene): void {
+        const innovation = NeatPopulation.findInnovation(connection, "addConnection");
+
+        // Check if this innovation has occurred before.
+        if (innovation && innovation.type === 'addConnection') {
+            connection.innovation = innovation.innovationNumber;
+        } else {
+            const newInnovation: AddConnectionInnovation = {
+                type: 'addConnection',
+                idSourceNode: connection.source.uID,
+                idTargetNode: connection.target.uID,
+                innovationNumber: NeatPopulation.getAvailableInnovationNumber(),
+                recurrent: connection.isRecurrent
+            };
+            NeatPopulation.innovations.push(newInnovation);
+            connection.innovation = newInnovation.innovationNumber;
+        }
+        this.connections.push(connection);
+        this.generateNetwork();
+    }
+
+    /**
+     * Adds a new node by splitting an existing connection and keeping track of the innovation history.
+     * @param splitConnection the connection to be split by the new node.
+     */
+    public addNodeSplitConnection(splitConnection: ConnectionGene): void {
+        // Disable the old connection
+        splitConnection.isEnabled = false;
+
+        // Save the old weight and the nodes of the connection
+        const oldWeight = splitConnection.weight;
+        const sourceNode = splitConnection.source;
+        const targetNode = splitConnection.target;
+        // Create the new HiddenNode and the two new connections.
+        // Check if this innovation has already occurred previously.
+        const innovation = NeatPopulation.findInnovation(splitConnection, 'addNodeSplitConnection');
+        let newNode: HiddenNode;
+        let connection1: ConnectionGene;
+        let connection2: ConnectionGene;
+        const activationFunction = this.activationFunction;
+        const depth = this.getDepthOfNewNode(sourceNode, targetNode);
+        if (innovation && innovation.type === 'addNodeSplitConnection') {
+            newNode = new HiddenNode(innovation.idNewNode, depth, activationFunction);
+            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber);
+            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber);
+        } else {
+            const nextNodeId = ++NeatPopulation.highestNodeId;
+            newNode = new HiddenNode(nextNodeId, depth, activationFunction);
+
+            const newInnovation: AddNodeSplitConnectionInnovation = {
+                type: 'addNodeSplitConnection',
+                idSourceNode: sourceNode.uID,
+                idTargetNode: targetNode.uID,
+                firstInnovationNumber: NeatPopulation.getAvailableInnovationNumber(),
+                secondInnovationNumber: NeatPopulation.getAvailableInnovationNumber(),
+                idNewNode: nextNodeId,
+                splitInnovation: splitConnection.innovation
+            };
+            NeatPopulation.innovations.push(newInnovation);
+            connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, newInnovation.firstInnovationNumber);
+            connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, newInnovation.secondInnovationNumber);
+        }
+
+        // We do not use the addConnection method here since we have already assigned innovation numbers to the
+        // created connections.
+        this.addNode(newNode);
+        this.connections.push(connection1);
+        this.connections.push(connection2);
+        this.generateNetwork();
     }
 
     /**
@@ -214,15 +354,17 @@ export class NeatChromosome extends NetworkChromosome {
      */
     public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
         const network = {};
-        network[`id`] = this.uID;
-        network[`nF`] = Number(this.fitness.toFixed(4));
-        network[`sF`] = Number(this.sharedFitness.toFixed(4));
-        network[`eO`] = Number(this.expectedOffspring.toFixed(4));
-        network[`k`] = this.isParent;
+        network['id'] = this.uID;
+        network['aF'] = ActivationFunction[this.activationFunction];
+        network['cM'] = this.inputConnectionMethod;
+
+        if (this.targetFitness instanceof StatementFitnessFunction) {
+            network['tf'] = this.targetFitness.getTargetNode().id;
+        }
 
         const nodes = {};
-        for (let i = 0; i < this.allNodes.length; i++) {
-            nodes[`Node ${i}`] = this.allNodes[i].toJSON();
+        for (let i = 0; i < this.getAllNodes().length; i++) {
+            nodes[`Node ${i}`] = this.getAllNodes()[i].toJSON();
         }
         network[`Nodes`] = nodes;
 
@@ -231,6 +373,14 @@ export class NeatChromosome extends NetworkChromosome {
             connections[`Con ${i}`] = this.connections[i].toJSON();
         }
         network[`Cons`] = connections;
+
+        // Save the activation trace if one was recorded.
+        if (this.testActivationTrace !== undefined) {
+            network['AT'] = this.testActivationTrace.toJSON();
+        } else {
+            network['AT'] = undefined;
+        }
+
         return network;
     }
 

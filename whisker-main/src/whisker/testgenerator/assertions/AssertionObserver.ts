@@ -1,5 +1,4 @@
 import {EventObserver} from "../../testcase/EventObserver";
-import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {Container} from "../../utils/Container";
 import cloneDeep from "lodash.clonedeep";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
@@ -7,27 +6,28 @@ import Scratch3LooksBlocks from "scratch-vm/src/blocks/scratch3_looks.js";
 
 export class AssertionObserver implements EventObserver {
 
-    private _executionStates = [];
+    private _executionStates: Map<string, AssertionTargetState>[] = [];
 
-    update(event: ScratchEvent, args: number[]): void {
+    update(): void {
+        // No operation
     }
 
-    updateAfter(event: ScratchEvent, args: number[]): void {
+    updateAfter(): void {
         this._executionStates.push(this._captureState());
     }
 
-    public getExecutionTrace() {
+    public getExecutionTrace(): Map<string, AssertionTargetState>[] {
         return this._executionStates;
     }
 
-    private _captureState() {
-        const currentState = new Map<string, Record<string, any>>();
+    private _captureState(): Map<string, AssertionTargetState> {
+        const currentState = new Map<string, AssertionTargetState>();
         for (const target of Object.values(Container.vm.runtime.targets) as RenderedTarget[]) {
             const targetKey = target.isOriginal ? `${target['sprite']['name']}` : `${target['sprite']['name']}Clone${target['cloneID']}`;
             const otherSpriteNames = Container.vm.runtime.targets
                 .filter(t => t.sprite).filter(t => !t.isStage && t.getName() !== target.getName()).map(t => t.getName());
 
-            const properties = {
+            const properties: AssertionTargetState = {
                 target: target,
                 name: target.sprite['name'],
                 clone: !target.isOriginal,
@@ -51,4 +51,25 @@ export class AssertionObserver implements EventObserver {
         }
         return currentState;
     }
+}
+
+export interface AssertionTargetState {
+    target: RenderedTarget,
+    name: string,
+    clone: boolean,
+    cloneIndex: number,
+    direction: number,
+    size: number,
+    layer: number,
+    costume: number,
+    effects: Record<string, number>,
+    visible: boolean,
+    volume: number,
+    x: number,
+    y: number,
+    variables: Record<string, Record<string, string | number | boolean | []>>,
+    touching: Record<string, boolean>,
+    touchingEdge: boolean,
+    cloneCount: number,
+    bubbleState: string
 }

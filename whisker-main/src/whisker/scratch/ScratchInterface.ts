@@ -3,8 +3,7 @@ import {ScratchPosition} from "./ScratchPosition";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import Arrays from "../utils/Arrays";
-
-const twgl = require('twgl.js');
+import * as twgl from 'twgl.js';
 
 
 export class ScratchInterface {
@@ -32,12 +31,12 @@ export class ScratchInterface {
     }
 
     public static getMousePosition(): ScratchPosition {
-        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`];
+        const mouse = Container.vm.runtime.ioDevices[`mouse`];
         return new ScratchPosition(mouse._x, mouse._y);
     }
 
     public static setMousePosition(position: ScratchPosition): void {
-        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`];
+        const mouse = Container.vm.runtime.ioDevices[`mouse`];
         mouse._x = position.x;
         mouse._y = position.y;
     }
@@ -59,7 +58,7 @@ export class ScratchInterface {
 
     public static getColorAtPosition(position: ScratchPosition, excludeTarget: RenderedTarget = undefined): Uint8ClampedArray {
         // Collect all touchable objects which might carry the sensed color
-        const renderer = Container.vmWrapper.vm.runtime.renderer;
+        const renderer = Container.vm.runtime.renderer;
         const touchableObjects = [];
         for (let index = renderer._visibleDrawList.length - 1; index >= 0; index--) {
             const id = renderer._visibleDrawList[index];
@@ -78,7 +77,7 @@ export class ScratchInterface {
     }
 
     public static findColorWithinRadius(color: string, samplingResolution = 5, maxRadius = 600,
-                                        startingPoint = new ScratchPosition(0, 0)): ScratchPosition {
+                                        startingPoint = new ScratchPosition(0, 0)): ScratchPosition | undefined {
         const targetColor = this.getColorFromHex(color);
         let radius = 1;
         const searchAngles = Arrays.range(0, 360, 10);
@@ -98,13 +97,27 @@ export class ScratchInterface {
 
     /**
      * Check if the given point (x/y) lies within the bounds of the Scratch Canvas/Stage.
-     * @param point the ScratchPosition to be checked if its located on top of the Canvas/Stage.
+     * @param point the {@link ScratchPosition} to be checked if it's located on top of the Canvas/Stage.
      * @returns boolean determining if the given point lies within the Scratch Canvas/Stage.
      */
     public static isPointWithinCanvas(point: ScratchPosition): boolean {
-        const stageWidth = Container.vmWrapper.getStageSize().width;
-        const stageHeight = Container.vmWrapper.getStageSize().height;
+        const [stageWidth, stageHeight] = Container.vm.runtime.renderer.getNativeSize();
         return Math.abs(point.x) < stageWidth / 2 && Math.abs(point.y) < stageHeight / 2;
+    }
+
+    public static getStageBounds(): { "left": number, "right": number, "top": number, "bottom": number } {
+        const renderer = Container.vm.runtime.renderer;
+        return {
+            right: renderer._xRight,
+            left: renderer._xLeft,
+            top: renderer._yTop,
+            bottom: renderer._yBottom
+        };
+    }
+
+    public static getStageDiameter(): number{
+        const bounds = this.getStageBounds();
+        return Math.hypot(bounds.top - bounds.bottom, bounds.right - bounds.left);
     }
 }
 

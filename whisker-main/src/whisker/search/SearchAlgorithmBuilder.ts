@@ -40,9 +40,10 @@ import {FitnessFunctionType} from "./FitnessFunctionType";
 import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../utils/Container";
 import {SimpleGA} from "./algorithms/SimpleGA";
-import {NEAT} from "./algorithms/NEAT";
+import {NEAT} from "../whiskerNet/Algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
+import {Neatest} from "../whiskerNet/Algorithms/Neatest";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -146,9 +147,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param generator the generator to use
      * @returns the search builder with the applied chromosome generator
      */
-    addChromosomeGenerator(generator: ChromosomeGenerator<C>): SearchAlgorithmBuilder<C> {
+    addChromosomeGenerator(generator: ChromosomeGenerator<C>): this {
         this._chromosomeGenerator = generator;
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
@@ -157,7 +158,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param length the length of the chromosome
      * @param targets specific lines that should be covered
      */
-    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: string[]): SearchAlgorithmBuilder<C> {
+    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: string[]): this {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
         this._heuristicFunctions = new Map<number, (number) => number>();
 
@@ -170,10 +171,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 this._initializeSingleBitFitness(length);
                 break;
             case FitnessFunctionType.STATEMENT:
-                this._initializeStatementFitness(length, targets);
+                this._initializeStatementFitness(targets);
                 break;
         }
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
@@ -181,9 +182,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param properties the properties to use
      * @returns the search builder with the applied properties
      */
-    addProperties(properties: SearchAlgorithmProperties<C>): SearchAlgorithmBuilder<C> {
+    addProperties(properties: SearchAlgorithmProperties<C>): this {
         this._properties = properties;
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
@@ -191,17 +192,16 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param selectionOp the selection operator to use
      * @returns the search builder with the applied selection operation
      */
-    addSelectionOperator(selectionOp: Selection<C>): SearchAlgorithmBuilder<C> {
+    addSelectionOperator(selectionOp: Selection<C>): this {
         this._selectionOperator = selectionOp;
-
-        return this as unknown as SearchAlgorithmBuilder<C>;
+        return this;
     }
 
     /**
      * Adds the LocalSearch operators callable by the given search algorithm
      * @param localSearchOperators the LocalSearch operators to be used by the algorithm
      */
-    addLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): SearchAlgorithmBuilder<C> {
+    addLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): this {
         this._localSearchOperators = localSearchOperators;
         return this;
     }
@@ -227,6 +227,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 break;
             case "neat":
                 searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>;
+                break;
+            case "neatest":
+                searchAlgorithm = this._buildNeatest();
                 break;
             case "random":
             default:
@@ -266,7 +269,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'MIO' search algorithm with all necessary properties.
      */
     private _buildMIO(): SearchAlgorithm<C> {
-        const searchAlgorithm: SearchAlgorithm<C> = new MIO();
+        const searchAlgorithm = new MIO<C>();
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setHeuristicFunctions(this._heuristicFunctions);
         searchAlgorithm.setLocalSearchOperators(this._localSearchOperators);
@@ -316,6 +319,15 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     }
 
     /**
+     * A helper method that builds the 'explorativeNEAT' Neuroevolution search algorithm with all necessary properties.
+     */
+    private _buildNeatest() {
+        const searchAlgorithm: SearchAlgorithm<C> = new Neatest() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        return searchAlgorithm;
+    }
+
+    /**
      * A helper method that initializes the 'One max' fitness function(s).
      */
     private _initializeOneMaxFitness(length: number) {
@@ -338,7 +350,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * A helper method that initializes the 'Statement' fitness function(s).
      */
-    private _initializeStatementFitness(chromosomeLength: number, targets: string[]) {
+    private _initializeStatementFitness(targets: string[]) {
         // TODO: Check if this is done correctly
         const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
         const fitnesses = factory.extractFitnessFunctions(Container.vm, targets);

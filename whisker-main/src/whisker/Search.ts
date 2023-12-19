@@ -40,7 +40,6 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
-import {FixedIterationsStoppingCondition} from "./search/stoppingconditions/FixedIterationsStoppingCondition";
 
 export class Search {
 
@@ -113,20 +112,19 @@ export class Search {
          */
         let stoppingCondition: StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator) {
-            let maxIterations: number = undefined;
+            let upperBound: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-            if (stoppingCondition instanceof FixedIterationsStoppingCondition) {
-                maxIterations = stoppingCondition.maxIterations;
+            if (stoppingCondition instanceof FixedTimeStoppingCondition) {
+                upperBound = stoppingCondition.maxTime;
             } else if (stoppingCondition instanceof OneOfStoppingCondition) {
                 for (const d of stoppingCondition.conditions) {
-                    if (d instanceof FixedIterationsStoppingCondition) {
-                        if (maxIterations == undefined || maxIterations > d.maxIterations) { // take the minimum
-                            maxIterations = d.maxIterations;
-                        }
+                    if (d instanceof FixedTimeStoppingCondition) {
+                            upperBound = d.maxTime;
                     }
                 }
             }
-            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(maxIterations);
+            // Sample every minute
+            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(60000, upperBound);
             console.log(csvOutput);
             return csvOutput;
         } else {
@@ -164,15 +162,15 @@ export class Search {
      * Main entry point -- called from whisker-web
      */
     public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number, seedString: string, template?: string): Promise<Array<string>> {
+                     accelerationFactor: number, seedString: string, groundTruth?: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
-        Container.template = template;
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
 
         Container.config = config;
         Container.vm = vm;
+        vm.deactivateDebugTracing();
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
@@ -197,6 +195,14 @@ seed ${configSeed} defined within the config files.`);
             Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {
             Randomness.setInitialSeeds(configSeed);
+        }
+        else{
+            Randomness.setInitialSeeds(Date.now());
+        }
+
+        // Check presence of groundTruth for Neatest + backpropagation.
+        if(groundTruth){
+            Container.backpropagationData = JSON.parse(groundTruth);
         }
 
         StatisticsCollector.getInstance().reset();

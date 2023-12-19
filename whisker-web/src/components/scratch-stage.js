@@ -13,18 +13,24 @@ const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
  * <canvas></canvas>
  */
 class Scratch extends EventEmitter {
+
+    static INPUT_LISTENER_KEY = 'input';
+
     constructor (canvas) {
         super();
         this.canvas = canvas;
         this.vm = Scratch.prepareVM(this.canvas);
         this.project = null;
         this.inputEnabled = false;
+        this.keyPresses = [];
 
         this._onMouseMove = this.onMouseMove.bind(this);
         this._onMouseDown = this.onMouseDown.bind(this);
         this._onMouseUp = this.onMouseUp.bind(this);
         this._onKeyDown = this.onKeyDown.bind(this);
         this._onKeyUp = this.onKeyUp.bind(this);
+        this._onQuestion = this.onQuestion.bind(this);
+        this._registerKeyPress = this.registerKeyPress.bind(this);
     }
 
     async loadProject (project) {
@@ -70,6 +76,7 @@ class Scratch extends EventEmitter {
         this.canvas.addEventListener('mouseup', this._onMouseUp);
         this.canvas.addEventListener('keydown', this._onKeyDown);
         this.canvas.addEventListener('keyup', this._onKeyUp);
+        this.vm.runtime.on('QUESTION', this._onQuestion);
         this.inputEnabled = true;
     }
 
@@ -79,6 +86,7 @@ class Scratch extends EventEmitter {
         this.canvas.removeEventListener('mouseup', this._onMouseUp);
         this.canvas.removeEventListener('keydown', this._onKeyDown);
         this.canvas.removeEventListener('keyup', this._onKeyUp);
+        this.vm.runtime.removeListener('QUESTION', this._onQuestion);
         this.inputEnabled = false;
     }
 
@@ -137,7 +145,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit('input', {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
     onMouseDown (e) {
@@ -152,7 +160,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit('input', {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
     onMouseUp (e) {
@@ -167,7 +175,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit('input', {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
     }
 
     onKeyDown (e) {
@@ -178,7 +186,7 @@ class Scratch extends EventEmitter {
             isDown: true
         };
         this.vm.postIOData('keyboard', data);
-        this.emit('input', {device: 'keyboard', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
     }
 
     onKeyUp (e) {
@@ -188,7 +196,26 @@ class Scratch extends EventEmitter {
             isDown: false
         };
         this.vm.postIOData('keyboard', data);
-        this.emit('input', {device: 'keyboard', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
+    }
+
+    onQuestion () {
+        this.keyPresses = [];
+        this.canvas.addEventListener('keydown', this._registerKeyPress);
+    }
+
+    registerKeyPress (e) {
+        if (e.key === 'Backspace') {
+            this.keyPresses.pop();
+        } else if (e.key === 'Enter') {
+            const textInput = this.keyPresses.join('');
+            this.vm.runtime.emit('ANSWER', textInput);
+            this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'text', text: textInput});
+            this.keyPresses = [];
+            this.canvas.removeEventListener('keydown', this._registerKeyPress);
+        } else {
+            this.keyPresses.push(e.key);
+        }
     }
 }
 

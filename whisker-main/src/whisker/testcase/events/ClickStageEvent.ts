@@ -47,15 +47,15 @@ export class ClickStageEvent extends ScratchEvent {
         return 0;
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): [] {
+        return [];
     }
 
     getParameters(): [] {
         return [];
     }
 
-    getSearchParameterNames(): string[] {
+    getSearchParameterNames(): [] {
         return [];
     }
 

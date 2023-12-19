@@ -9,11 +9,9 @@ const footer = `<div class="container-fluid">
             <div class="row spacer10">
                 <div class="col-lg-12">
                     <ul class="nav justify-content-center">
-                        <!-- Not currently needed.
                         <li class="nav-item">
                             <a id="contact" class="nav-link active" data-i18n="footer:contact"></a>
                         </li>
-                        -->
                         <li class="nav-item">
                             <a id="imprint" class="nav-link active" data-i18n="footer:imprint"></a>
                         </li>

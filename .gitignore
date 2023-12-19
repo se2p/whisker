@@ -1,7 +1,7 @@
 # NPM
 **/node_modules
 **/dist
-coverage
+./coverage
 *~
 
 # Editor
@@ -26,3 +26,6 @@ coverage
 
 # WhiskerNet evaluation
 /whisker-main/src/whisker/whiskerNet/EvaluationScripts
+
+# Generated
+/whisker-main/coverage

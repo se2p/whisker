@@ -55,12 +55,12 @@ describe('OneMaxFitnessFunction', () => {
         expect(await fitnessFunction.getFitness(chromosome)).toBe(1);
     });
 
-    test('Check optimality', () => {
+    test('Check optimality', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(fitnessFunction.isOptimal(0)).toBeFalsy();
-        expect(fitnessFunction.isOptimal(1)).toBeFalsy();
-        expect(fitnessFunction.isOptimal(2)).toBeTruthy();
+        expect(await fitnessFunction.isOptimal(0)).toBeFalsy();
+        expect(await fitnessFunction.isOptimal(1)).toBeFalsy();
+        expect(await fitnessFunction.isOptimal(2)).toBeTruthy();
     });
 
     test('Check comparison', () => {

@@ -8,6 +8,7 @@ const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const {shuffle} = require("../whisker/utils/Arrays");
+const CoverageGenerator = require("../coverage/coverage");
 
 class TestRunner extends EventEmitter {
 
@@ -29,19 +30,22 @@ class TestRunner extends EventEmitter {
             props.extend = {};
         }
 
-        this._setRNGSeeds(props['seed']);
-
-        // Load project and establish an initial save state
-        this.util = await this._loadProject(vm, project, props);
-        this.saveState = this.vmWrapper._recordInitialState();
-
-        // Count number of assertions across all test cases.
+        // Count number of assertions across all test cases and define a sampleTest used for setting the seed.
         let totalAssertions = 0;
+        let sampleTest = undefined;
         if(tests) {
+            sampleTest = tests[0];
             for (const test of tests) {
                 totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
             }
         }
+
+        this._setRNGSeeds(props['seed'], sampleTest, vm);
+
+        // Load project and establish an initial save state
+        vm.deactivateDebugTracing();
+        this.util = await this._loadProject(vm, project, props);
+        this.saveState = this.vmWrapper._recordInitialState();
 
         const projectName = props['projectName'];
         const testResults = [];
@@ -51,9 +55,11 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
-        if (props['mutators'][0] !== 'NONE') {
+        if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
-            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER;
+
+            // Divide by 1000 since we measure the budget in seconds and will multiply by 1000 afterwards.
+            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER / 1000;
 
             // Add the original as reference when applying mutation analysis
             const original = JSON.parse((vm.toJSON()));
@@ -62,12 +68,10 @@ class TestRunner extends EventEmitter {
             const mutantFactory = new MutationFactory(vm);
             mutantPrograms = mutantFactory.generateScratchMutations(props['mutators'], props['maxMutants']);
             shuffle(mutantPrograms); // Shuffle so we do not favour mutation operators when a time limit is set
-            mutantPrograms.push(original);
+            mutantPrograms.unshift(original);
 
             // Execute the given tests on every mutant
-            const startTime = Date.now();
-            while (mutantPrograms.length > 0 && Date.now() - startTime < mutationBudget) {
-                const mutant = mutantPrograms.pop();
+            for (const mutant of mutantPrograms) {
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
@@ -106,9 +110,15 @@ class TestRunner extends EventEmitter {
                 const duration = (Date.now() - startTime) / 1000;
                 const total = this.statementMap.size;
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
-                csv += this._generateCSVRow(projectMutation, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
+                const seed = Randomness.scratchSeed;
+                csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
+
+                // Stop if time budget in seconds has been exceeded.
+                if (Date.now() - startTime > mutationBudget * 1000){
+                    break;
+                }
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
@@ -136,7 +146,8 @@ class TestRunner extends EventEmitter {
                 const total = this.statementMap.size;
                 const covered = [...this.statementMap.values()].filter(cov => cov).length;
                 const modelResults = this._extractModelCSVData(result.modelResult);
-                csv += this._generateCSVRow(projectName, props.seed, totalAssertions,[result.status], total,  covered, duration, undefined, modelResults);
+                const seed = Randomness.scratchSeed;
+                csv += this._generateCSVRow(projectName, seed, totalAssertions,[result.status], total,  covered, duration, undefined, modelResults);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -172,7 +183,8 @@ class TestRunner extends EventEmitter {
             const duration = (Date.now() - startTime) / 1000;
             const total = this.statementMap.size;
             const covered = [...this.statementMap.values()].filter(cov => cov).length;
-            csv += this._generateCSVRow(projectName, props.seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
+            const seed = Randomness.scratchSeed;
+            csv += this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
 
@@ -183,19 +195,30 @@ class TestRunner extends EventEmitter {
     }
 
     /**
-     * Sets the seeds for the RNG generator based on the supplied cli parameter.
+     * Sets the seeds for the RNG generator and Scratch based on the supplied cli parameter
+     * or the seed used during the test generation phase.
      * @param {string | undefined } seed the supplied seed form the cli.
+     * @param {Test} test the test to be executed that may contain the seed used during the generation phase.
+     * @param {VirtualMachine} vm the vm that contains the loaded project
      */
-    _setRNGSeeds(seed) {
-        if (seed !== 'undefined' && seed !== "") {
+    _setRNGSeeds(seed, test, vm) {
+
+        // Prioritise seeds set using the CLI.
+        if (seed !== undefined && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
         }
-            // If no seed is specified via the CLI use Date.now() as RNG-Seed but only set it once to keep consistent if
-        // several test runs are executed at once
-        else if (Randomness.getInitialRNGSeed() === undefined) {
-            Randomness.setInitialRNGSeed(Date.now());
+
+        // Check if a seed is saved in the test and set the RNG generators to that seed if present.
+        else if (test !== undefined && "seed" in test){
+            Randomness.setInitialSeeds(test.seed);
         }
-        Randomness.seedScratch();
+
+        // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
+        // but only set it once to keep consistent if several test runs are executed at once
+        else if (Randomness.getInitialRNGSeed() === undefined) {
+            Randomness.setInitialSeeds(Date.now());
+        }
+        Randomness.seedScratch(vm);
     }
 
     /**
@@ -203,7 +226,7 @@ class TestRunner extends EventEmitter {
      * @param {Test} test
      */
     _checkSeed(test){
-        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed){
+        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()){
             console.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
@@ -369,13 +392,13 @@ class TestRunner extends EventEmitter {
      * @param {Test} test .
      * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
-     * @param {number} timeout .
+     * @param {number} defaultTimeoutPerTest .
      *
      * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, project, test, modelTester, props, modelProps, timeout = 0) {
+    async _executeTest(vm, project, test, modelTester, props, modelProps, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
 
         const testDriver = this.util.getTestDriver(
@@ -387,10 +410,7 @@ class TestRunner extends EventEmitter {
                         this._log(test, message);
                         result.log.push(message);
                     },
-                    getCoverage: () => {
-                        const coverage = props.CoverageGenerator.getCoverage();
-                        return coverage.getCoverage();
-                    },
+                    getCoverage: () => CoverageGenerator.getCoverage(),
                     ...props.extend
                 }
             },
@@ -399,7 +419,7 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.TEST_START, test);
         this.vmWrapper.start();
-        this._setRNGSeeds(props.seed);
+        this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
         if (modelTester && modelTester.someModelLoaded()) {
@@ -408,6 +428,8 @@ class TestRunner extends EventEmitter {
 
         if (test) {
             try {
+                // Use the default timeout (given as function parameter), unless the test specifies its own timeout.
+                const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeoutPerTest;
 
                 // A timeout was set to stop the test after the timeout has been reached.
                 if (timeout > 0) {
@@ -480,6 +502,18 @@ class TestRunner extends EventEmitter {
     _log (test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
+
+    /**
+     * Adds an execution trace to the trace array.
+     * @param {object} object .
+     */
+    addExecutionTrace (object) {
+        if(!this.executionTrace){
+            this.executionTrace = [];
+        }
+        this.executionTrace.push(object);
+    }
+
 
     abort() {
         this.aborted = true;
@@ -556,6 +590,13 @@ class TestRunner extends EventEmitter {
      */
     static get TEST_LOG () {
         return 'testLog';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static get TEST_DUMP() {
+        return 'testDump';
     }
 
     /**

@@ -201,7 +201,7 @@ export class ProgramModelEdge extends ModelEdge {
         super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
     }
 
-    reset(): void {
+    override reset(): void {
         super.reset();
         this.failedEffects = [];
     }
@@ -217,14 +217,14 @@ export class ProgramModelEdge extends ModelEdge {
     /**
      * Register the check listener and test driver on the conditions and effects.
      */
-    registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
+    override registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
         super.registerComponents(cu, testDriver, caseSensitive);
         this.effects.forEach(effect => {
             effect.registerComponents(testDriver, cu, caseSensitive, this.graphID);
         });
     }
 
-    simplifyForSave() {
+    override simplifyForSave() {
         let effects = [];
         this.effects.forEach(effect => {
             effects.push(effect.simplifyForSave());
@@ -239,7 +239,7 @@ export class ProgramModelEdge extends ModelEdge {
      * Check the conditions and effects for checks that are depending on the check listeners and the fired events.
      * Effects are checked for Function:true Checks.
      */
-    checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
+    override checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                            eventStrings: string[]): Condition[] {
         if (this.failedForcedTest) {
             return this.conditions;
@@ -335,14 +335,14 @@ export class UserModelEdge extends ModelEdge {
     /**
      *  Register the check listener and test driver on the conditions and input effects.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
+    override registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
         super.registerComponents(checkListener, testDriver, caseSensitive);
         this.inputEffects.forEach(effect => {
             effect.registerComponents(testDriver, caseSensitive);
         });
     }
 
-    simplifyForSave() {
+    override simplifyForSave() {
         let inputEffects = [];
         this.inputEffects.forEach(effect => {
             inputEffects.push(effect.simplifyForSave());

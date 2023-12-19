@@ -18,13 +18,13 @@ for i in `seq 1 $measurements`
 do
     echo "Starting iteration $i"
     start=$(date +%s%N)
-    node servant.js -s "$program" -t "$testFile" -w "$errorWitness" -l -o
+    node servant.js witness -s "$program" -t "$testFile" -w "$errorWitness" -l -o
     end=$(date +%s%N)
     replayDiff=$(((end - start)/1000000))
     replay=$((replay + replayDiff))
 
     start=$(date +%s%N)
-    node servant.js -s "$program" -t "$testFile" -r -l -o
+    node servant.js run -s "$program" -t "$testFile" -r -l -o
     end=$(date +%s%N)
     randomDiff=$(((end - start)/1000000))
     random=$((random + randomDiff))
