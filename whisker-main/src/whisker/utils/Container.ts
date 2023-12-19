@@ -23,5 +23,5 @@ export class Container {
     static backpropagationData: Record<string, unknown>;
     static backpropagationInstance: GradientDescent;
     static neatestTargetId: string
-    static peerToPeerSharing: boolean;
+    static dynamicRecordingFraction = 0;
 }

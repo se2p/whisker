@@ -1,33 +1,81 @@
-const {switchToProjectTab} = require("./common");
+const {switchToProjectTab, switchToUploadTab, toggleExtendedView} = require("./common");
 const {
     scratchPath,
     acceleration,
     seed,
     stateActionRecorder,
     configPath,
+    recordProject,
+    time
 } = require("./cli").opts;
 
 
-
-async function open(openNewPage){
+async function open(openNewPage) {
     const page = await openNewPage();
-    if(scratchPath) {
-        await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
-    }
-    await (await page.$('#fileselect-config')).uploadFile(configPath);
-    await switchToProjectTab(page, true);
-    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-    await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-    if(stateActionRecorder){
-        await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
-    }
 
-    // Wait until page gets closed.
-    while (true){
-        if(page.isClosed()){
-            break;
+    // Procedure for generating game recordings.
+    if (recordProject) {
+        await toggleExtendedView(page);
+        await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
+        console.log(`Start Recording ${recordProject.path} for ${time} seconds`);
+
+        // Upload File
+        await switchToUploadTab(page);
+        await (await page.$('#fileselect-project')).uploadFile(recordProject.path);
+
+        // Switch to Project tab and specify the required parameters.
+        await switchToProjectTab(page, false);
+        await (await page.$('#scratch-stage')).focus();
+        await page.evaluate(() => {window.scroll(0, 180);});
+        await page.waitForTimeout(3000);
+
+        // Start game and recording.
+        await (await page.$('#record')).click();
+        await (await page.$('#green-flag')).click();
+        await page.evaluate(() => {window.scroll(0, 180);});
+        await (await page.$('#scratch-stage')).focus();
+
+        // Record for specified amount of time.
+        let start = Date.now();
+        let elapsed = 0;
+        while (elapsed <= time) {
+            elapsed = (Date.now() - start) / 1000;
+            await page.waitForTimeout(1000);
         }
-        await page.waitForTimeout(1000);
+
+        // Stop recording and download recorded data.
+        await (await page.$('#stop-scratch')).click();
+        await page.waitForTimeout(1000);        // Give StateActionRecorder time to parse data.
+        await (await page.$('#record')).click();
+        await (await page.$('#scratch-stage')).focus();
+
+        // Wait 1 second for recording to be downloaded.
+        start = Date.now();
+        elapsed = 0;
+        while (elapsed <= 10) {
+            page.waitForTimeout(1000);
+            elapsed = (Date.now() - start) / 1000;
+        }
+
+    } else {
+        if (scratchPath) {
+            await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
+        }
+        await (await page.$('#fileselect-config')).uploadFile(configPath);
+        await switchToProjectTab(page, true);
+        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
+        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        if (stateActionRecorder) {
+            await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
+        }
+
+        // Wait until the page gets closed.
+        while (true) {
+            if (page.isClosed()) {
+                break;
+            }
+            await page.waitForTimeout(1000);
+        }
     }
 }
 
