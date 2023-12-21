@@ -7633,10 +7633,10 @@ scratch-audio@0.1.0-prerelease.20200528195344:
     minilog "^3.0.1"
     startaudiocontext "1.2.1"
 
-scratch-parser@5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/scratch-parser/-/scratch-parser-5.0.0.tgz#480c357047d45b7119b74be441ba4a3c28cd8216"
-  integrity sha512-7kjxoxivLgYYvmAJVLOOWnca4CigwuCpgjy9+6UuxOMgSZKO1xqIjxIADupabmh1ZLZZDVe45DBM/CQTdtVDkw==
+scratch-parser@5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/scratch-parser/-/scratch-parser-5.1.1.tgz#4ff52776ce0b21461e68546d1085aa8961105207"
+  integrity sha512-Kh1ddyNDgnzaVQrEaA5L4hYeSoqrXBXDMb1xKycrauFZNcOcbcBpE1X6bE2mA5fK6B0Dd+yuaRyKpMHJYlC69g==
   dependencies:
     ajv "6.3.0"
     jszip "3.1.5"
@@ -7714,8 +7714,8 @@ scratch-translate-extension-languages@0.0.20191118205314:
   integrity sha512-r0lvpgQjPMjbhI2wROrgoXzBhCvWJdkbAqJMfl2CdNqrwBpUXqLvNNtI3VtNLPJAcp9VfxEylkU9lVZ0gvU46Q==
 
 "scratch-vm@git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#develop":
-  version "0.2.0"
-  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#d836a3dcaa181ac165f294db0aedb34157e2b62e"
+  version "1.5.76"
+  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#8e83b6630c70060f19ab49bdfc61b6abf4155e35"
   dependencies:
     "@vernier/godirect" "1.5.0"
     arraybuffer-loader "^1.0.6"
@@ -7730,7 +7730,7 @@ scratch-translate-extension-languages@0.0.20191118205314:
     jszip "^3.1.5"
     minilog "3.1.0"
     nets "3.2.0"
-    scratch-parser "5.0.0"
+    scratch-parser "5.1.1"
     scratch-sb1-converter "0.2.7"
     scratch-translate-extension-languages "0.0.20191118205314"
     seed-random "^2.2.0"
