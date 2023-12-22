@@ -81,6 +81,15 @@ class VMWrapper {
         this._runTimeElapsed = 0;
 
         /**
+         * The actual time elapsed during the last run.
+         * @type {number}
+         * @private
+         */
+        this._realRunTimeElapsed = 0;
+
+        this._realStartTime = null;
+
+        /**
          * The number of steps the VM executed during the last run.
          * @type {number}
          * @private
@@ -100,6 +109,13 @@ class VMWrapper {
          * @private
          */
         this._totalTimeElapsed = 0;
+
+        /**
+         * The actual time elapsed in total.
+         * @type {number}
+         * @private
+         */
+        this._realTotalTimeElapsed = 0;
 
         /**
          * @type {boolean} Indicates if the Scratch program has active threads that are being executed.
@@ -214,16 +230,31 @@ class VMWrapper {
         );
 
         const timeBefore = this._totalTimeElapsed;
+        const realTimeBefore = Date.now();
+
+        if (this._realStartTime === null) {
+            this._realStartTime = realTimeBefore;
+        }
+
         let assertionError = null;
         this._runStepsExecuted = 0;
 
         while (this.isScratchRunning() && this._runStepsExecuted < steps && !condition()) {
             if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
-                [assertionError] = await Promise.all([this.step(), pause(STEP_TIME / this.accelerationFactor)]);
+                [assertionError] = await Promise.all([
+                    this.step(),
+                    pause(STEP_TIME / this.accelerationFactor)
+                ]);
+
                 this._totalStepsExecuted++;
                 this._runStepsExecuted++;
+
                 this._totalTimeElapsed = this.vm.runtime.currentMSecs;
                 this._runTimeElapsed = this._totalTimeElapsed - timeBefore;
+
+                const realTimeAfter = Date.now()
+                this._realTotalTimeElapsed = realTimeAfter - this._realStartTime;
+                this._realRunTimeElapsed = realTimeAfter - realTimeBefore;
 
                 if (stopOnError && assertionError !== null) {
                     break;
@@ -312,12 +343,20 @@ class VMWrapper {
         return this._totalTimeElapsed;
     }
 
+    getTotalRealTimeElapsed() {
+        return this._realTotalTimeElapsed;
+    }
+
     /**
      * Gives back the timespan since the last run started taking the acceleration factor into account.
      * @return {number} Runtime in ms.
      */
     getRunTimeElapsed() {
         return this._runTimeElapsed;
+    }
+
+    getRealRunTimeElapsed() {
+        return this._realRunTimeElapsed;
     }
 
     /**
