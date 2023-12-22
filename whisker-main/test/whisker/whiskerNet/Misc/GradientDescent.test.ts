@@ -1,4 +1,5 @@
 import groundTruthFruitCatching from "./GroundTruthFruitCatching.json";
+import groundTruthFruitCatchingCombined from "./GroundTruthFruitCatchingCombined.json";
 import fruitCatchingNetwork from "./fruitCatchingNetwork.json";
 import {augmentationParameter, GradientDescent, gradientDescentParameter, LossFunction} from "../../../../src/whisker/whiskerNet/Misc/GradientDescent";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
@@ -17,6 +18,7 @@ import {Container} from "../../../../src/whisker/utils/Container";
 import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
 import {TypeNumberEvent} from "../../../../src/whisker/testcase/events/TypeNumberEvent";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
+import Statistics from "../../../../src/whisker/utils/Statistics";
 
 
 const generateNetwork = () => {
@@ -82,7 +84,7 @@ describe('Test Gradient Descent', () => {
     beforeEach(() => {
         augmentationParameter = {
             doAugment: false,
-            numAugments: 0,
+            augmentFactor: 0,
             disturbStateProb: 0,
             disturbStatePower: 0
         };
@@ -92,7 +94,9 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
-            labelSmoothing: 0
+            combinePlayerRecordings: false,
+            labelSmoothing: 0,
+            l2Regularisation: 0
         };
 
         gradientDescentLearning = {
@@ -100,7 +104,9 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 500,
             batchSize: 32,
-            labelSmoothing: 0
+            combinePlayerRecordings: false,
+            labelSmoothing: 0,
+            l2Regularisation: 0
         };
         backpropagation_1 = new GradientDescent(groundTruthFruitCatching as any, gradientDescentForward, augmentationParameter);
         backpropagation_2 = new GradientDescent(groundTruthFruitCatching as any, gradientDescentLearning, augmentationParameter);
@@ -114,7 +120,26 @@ describe('Test Gradient Descent', () => {
             }
             featureRecordings += Object.keys(recordings).length - 1;
         }
-        expect([...backpropagation_1._extractDataForStatement(statement).keys()].length).toBe(featureRecordings);
+        expect([...backpropagation_1.extractDataForStatement(statement).keys()].length).toBe(featureRecordings);
+    });
+
+    test("Check number of combined recordings after initialisation", () => {
+        const combinedIndividual = new GradientDescent(groundTruthFruitCatchingCombined as any, gradientDescentForward, augmentationParameter);
+
+        const gradientDescentCombined: gradientDescentParameter = {
+            learningRate: 0.001,
+            learningRateAlgorithm: 'Static',
+            epochs: 500,
+            batchSize: 32,
+            combinePlayerRecordings: true,
+            labelSmoothing: 0,
+            l2Regularisation: 0
+        };
+
+        const combined = new GradientDescent(groundTruthFruitCatchingCombined as any, gradientDescentCombined, augmentationParameter);
+        const numIndividuals = [...combinedIndividual.extractDataForStatement(statement).keys()].length;
+        const numCombined = [...combined.extractDataForStatement(statement).keys()].length;
+        expect(numCombined).toBeGreaterThan(numIndividuals);
     });
 
     test("Forward Pass", () => {
@@ -134,7 +159,9 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
-            labelSmoothing: 0
+            combinePlayerRecordings: false,
+            labelSmoothing: 0,
+            l2Regularisation: 0
         };
         // Example from https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
         const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
@@ -174,7 +201,9 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Gradual',
             epochs: 500,
             batchSize: 1,
-            labelSmoothing: 0
+            combinePlayerRecordings: false,
+            labelSmoothing: 0,
+            l2Regularisation: 0
         };
         const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
@@ -188,13 +217,15 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: 1,
-            labelSmoothing: 0
+            combinePlayerRecordings: false,
+            labelSmoothing: 0,
+            l2Regularisation: 0
         };
         let backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const startingLoss = backpropagation.gradientDescent(net, statement);
 
-        gradientDescentParameter.learningRate = 0.001;
-        gradientDescentParameter.epochs = 500;
+        gradientDescentParameter.learningRate = 0.01;
+        gradientDescentParameter.epochs = 1000;
         backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
@@ -208,7 +239,9 @@ describe('Test Gradient Descent', () => {
             learningRateAlgorithm: 'Static',
             epochs: 1,
             batchSize: Infinity,
-            labelSmoothing: 0
+            combinePlayerRecordings: false,
+            labelSmoothing: 0,
+            l2Regularisation: 0
         };
         let backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const startingLoss = backpropagation.gradientDescent(net, statement);
@@ -224,7 +257,7 @@ describe('Test Gradient Descent', () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const augmentationParameter = {
             doAugment: true,
-            numAugments: 1000,
+            augmentFactor: 2,
             disturbStateProb: 0.1,
             disturbStatePower: 0.01
         };
@@ -244,6 +277,29 @@ describe('Test Gradient Descent', () => {
         const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentLearning, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
+    });
+
+    test("L2-Regularisation", () => {
+        const net = loadNetwork(fruitCatchingNetwork);
+        const gradientDescentParameter: gradientDescentParameter = {
+            learningRate: 0.1,
+            learningRateAlgorithm: 'Static',
+            epochs: 500,
+            batchSize: 1,
+            combinePlayerRecordings: false,
+            labelSmoothing: 0,
+            l2Regularisation: 0
+        };
+        const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
+        backpropagation.gradientDescent(net, statement);
+        const weightNorm = Statistics.L2Norm(net.connections.map(conn => conn.weight));
+
+        gradientDescentParameter.l2Regularisation = 0.1;
+        const backpropagationWeightDecay = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
+        backpropagationWeightDecay.gradientDescent(net, statement);
+        const weightNormWD = Statistics.L2Norm(net.connections.map(conn => conn.weight));
+
+        expect(weightNorm).toBeGreaterThan(weightNormWD);
     });
 
 });

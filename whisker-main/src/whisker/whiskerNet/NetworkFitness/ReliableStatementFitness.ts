@@ -6,6 +6,7 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {FitnessFunction} from "../../search/FitnessFunction";
+import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 
 
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -14,6 +15,11 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * Random number generator.
      */
     private _random: Randomness
+
+    /**
+     * Safes the collected recordings of a single network evaluation.
+     */
+    private _dynamicRecordingBuffer: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
 
     constructor(private _stableCount: number, private _earlyStop: boolean) {
         this._random = Randomness.getInstance();
@@ -27,6 +33,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * @returns Promise<number> the fitness of the given network based on reliable statement coverage.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
+        this._dynamicRecordingBuffer.clear();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
         await executor.execute(network);
         network.resetOpenStatement();
@@ -38,9 +45,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             network.fitness = 1 - fitness;
         } else {
 
-            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent training data.
-            if (Container.backpropagationInstance && Container.peerToPeerSharing) {
-                this._peerToPeerSharing(network);
+            // If Peer-To-Peer Sharing is activated, add collected trace to recording buffer.
+            if (Container.backpropagationInstance && Container.dynamicRecordingFraction > 0) {
+                this._dynamicRecordingBuffer = new Map([...this._dynamicRecordingBuffer, ...network.stateActionPairs]);
             }
 
             // If we cover the statement, we want to ensure using different seeds that we would cover this statement
@@ -94,10 +101,13 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
             // At this point, we know that we have covered the statement again.
             // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth data.
-            if (Container.backpropagationInstance && Container.peerToPeerSharing) {
-                this._peerToPeerSharing(network);
+            if (Container.backpropagationInstance && Container.dynamicRecordingFraction > 0) {
+                this._dynamicRecordingBuffer = new Map([...this._dynamicRecordingBuffer, ...network.stateActionPairs]);
             }
         }
+        // Add dynamically recorded data to training dataset.
+        this._addDynamicRecordToTrainingDataset();
+
         // Reset to the old Scratch seed and network attributes.
         Randomness.setScratchSeed(originalSeed, true);
         network.playTime = originalPlayTime;
@@ -135,14 +145,43 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     }
 
     /**
-     * Adds the collected state-action trace to the gradient descent ground truth data.
-     * @param network the network in which the state-action trace is saved.
+     * Adds a random subset of collected state-action traces to the gradient descent ground truth data.
      */
-    private _peerToPeerSharing(network: NetworkChromosome): void {
-        for (const [state, action] of network.stateActionPairs.entries()) {
-            Container.backpropagationInstance.training_data.set(state, action);
+    private _addDynamicRecordToTrainingDataset(): void {
+        if (Container.dynamicRecordingFraction <= 0) {
+            return;
         }
-        Container.debugLog(`Increased Dataset size to ${Container.backpropagationInstance.training_data.size}`);
-        network.stateActionPairs.clear();
+
+        const extractionSize = Math.floor(this._dynamicRecordingBuffer.size * Container.dynamicRecordingFraction);
+        const stateKeys: ObjectInputFeatures[] = [...this._dynamicRecordingBuffer.keys()];
+
+        for (let i = 0; i < extractionSize; i++) {
+            const randomKey = this._random.pick(stateKeys);
+            const event = this._normaliseActionParameter(this._dynamicRecordingBuffer.get(randomKey));
+            Container.backpropagationInstance.training_data.set(randomKey, event);
+            stateKeys.slice(stateKeys.indexOf(randomKey), 1);
+        }
+
+        Container.debugLog(`Picked ${extractionSize} data points and increased Dataset size to ${Container.backpropagationInstance.training_data.size}`);
+    }
+
+    /**
+     * Normalises executed event parameter.
+     * @param event the event object hosting the executed event parameter.
+     */
+    private _normaliseActionParameter(event: eventAndParametersObject): eventAndParametersObject {
+        if (event.event == "WaitEvent") {
+            event.parameter = {'Duration': Math.min(event.parameter['Duration'] / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
+        } else if (event.event.startsWith("KeyPressEvent")) {
+            event.parameter = {'Steps': Math.min(event.parameter['Steps'] / Container.config.getPressDurationUpperBound(), 1)};      // Press duration
+        } else if (event.event == "TypeNumberEvent") {
+            event.parameter = {"Number": event.parameter['Number']};   // Number
+        } else if (event.event == "MouseMoveEvent") {
+            event.parameter = {"X": event['X'] / 240, "Y": event['Y'] / 180}; // Coordinates.
+        } else if (event.event == "MouseDownForStepsEvent") {
+            event.parameter = {"Steps": Math.min(event['Steps'] / Container.config.getPressDurationUpperBound(), 1)}; // Steps;
+        }
+
+        return event;
     }
 }

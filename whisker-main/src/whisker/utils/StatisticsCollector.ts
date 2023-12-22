@@ -22,6 +22,7 @@ import {FitnessFunction} from "../search/FitnessFunction";
 import {Chromosome} from "../search/Chromosome";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
+import {Container} from "./Container";
 
 /**
  * Singleton class to collect statistics from search runs
@@ -459,14 +460,18 @@ export class StatisticsCollector {
         const fitnessHeaders = header.join(",");
         const fitnessValues = values.join(",");
 
+        const gdTime = Container.backpropagationInstance? Container.backpropagationInstance.getTrainingTimeMean() : 0;
+        const gdEpochs = Container.backpropagationInstance? Container.backpropagationInstance.getTrainingEpochsMean() : 0;
+
         // Default header and data arrays
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
             "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
-            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'stCoverage', 'decCoverage'];
+            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'stCoverage', 'decCoverage',
+            'gdTime', 'gdEpochs'];
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
             this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
             this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
-            this._highestScore, this._highestPlayTime, this._statementCoverage, this._decisionCoverage];
+            this._highestScore, this._highestPlayTime, this._statementCoverage, this._decisionCoverage, gdTime, gdEpochs];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
