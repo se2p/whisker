@@ -327,6 +327,7 @@ const runAllTests = async function () {
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
             properties.maxMutants = maxMutants;
+            properties.minimiseSuite = document.querySelector('#container').minimiseSuite;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
 
             const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,

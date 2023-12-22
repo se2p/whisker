@@ -12,7 +12,8 @@ const {
     mutationBudget,
     maxMutants,
     downloadMutants,
-    activationTraces
+    activationTraces,
+    minimiseSuite
 } = require('./cli').opts
 
 // Dynamic Test suite using Neuroevolution
@@ -40,6 +41,7 @@ async function runDynamicTestSuite(openNewPage, path) {
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
         await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
         await page.evaluate(at => document.querySelector('#container').activationTraceRepetitions = at, activationTraces);
+        await page.evaluate(m => document.querySelector('#container').minimiseSuite = m, minimiseSuite);
 
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }

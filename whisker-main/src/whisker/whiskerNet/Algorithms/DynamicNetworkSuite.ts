@@ -151,7 +151,7 @@ export class DynamicNetworkSuite {
     }
 
     /**
-     * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
+     * Executes a test for a user-defined number of times on the sample solution to collect activationTraces that
      * can later be used to verify the correctness of a modified project.
      */
     protected async collectActivationTrace(): Promise<void> {
@@ -189,7 +189,7 @@ export class DynamicNetworkSuite {
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets(this.vm);
         this.testCases = this.loadTestCases();
-        if (this.testCases.length > 1) {
+        if (this.properties.minimiseSuite && this.testCases.length > 1) {
             await this.minimiseSuite();
         }
 
