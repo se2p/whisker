@@ -101,7 +101,11 @@ function processFileOrDirPathExists(path, extension = '') {
     };
 }
 
-function processPositiveInt(value) {
+function processPositiveInt(value, allowInfinity = false) {
+    if (allowInfinity && Number(value) === Infinity) {
+        return Infinity;
+    }
+
     value = parseInt(value);
     mustBePositiveInt(value);
     return value;

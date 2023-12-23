@@ -55,6 +55,12 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
+        if (props.accelerationFactor === "Infinity") {
+            // We need a small delay here to give the renderer a chance to initialize everything properly. Otherwise,
+            // it leads to weird behavior (e.g., touchingColor blocks may sometimes report false negatives.)
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+
         if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
 
@@ -202,15 +208,18 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm the vm that contains the loaded project
      */
     _setRNGSeeds(seed, test, vm) {
+        let seedDateObject = false;
 
         // Prioritise seeds set using the CLI.
         if (seed !== undefined && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
+            seedDateObject = true;
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
         else if (test !== undefined && "seed" in test){
             Randomness.setInitialSeeds(test.seed);
+            seedDateObject = true;
         }
 
         // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
@@ -218,7 +227,8 @@ class TestRunner extends EventEmitter {
         else if (Randomness.getInitialRNGSeed() === undefined) {
             Randomness.setInitialSeeds(Date.now());
         }
-        Randomness.seedScratch(vm);
+
+        Randomness.seedScratch(vm, seedDateObject);
     }
 
     /**
@@ -245,7 +255,7 @@ class TestRunner extends EventEmitter {
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
      * @param {boolean} loadSaveState
-     * @return {WhiskerUtil}.
+     * @return {Promise<WhiskerUtil>}.
      */
     async _loadProject(vm, project, props) {
         const util = new WhiskerUtil(vm, project);
