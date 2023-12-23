@@ -37,6 +37,10 @@ class Scratch extends EventEmitter {
         this.project = project;
         this.vm.clear();
         await this.vm.loadProject(project);
+
+        // Note: this _step() is necessary to update the canvas. Otherwise, it remains blank, or it still shows the
+        // previously loaded project. The test runner will also re-load the project before execution, because it needs
+        // to undo the effects of the _step() taken here.
         this.vm.runtime._step();
     }
 
@@ -45,8 +49,6 @@ class Scratch extends EventEmitter {
     }
 
     start () {
-        clearInterval(this.vm.runtime._steppingInterval);
-        this.vm.runtime._steppingInterval = null;
         this.vm.start();
     }
 
@@ -56,8 +58,6 @@ class Scratch extends EventEmitter {
     }
 
     stop () {
-        clearInterval(this.vm.runtime._steppingInterval);
-        this.vm.runtime._steppingInterval = -1;
         this.vm.stopAll();
         this.vm.runtime._step();
     }
