@@ -15,16 +15,29 @@ async function run(openNewPage) {
 
     if (csvFile) {
         console.info(`Creating CSV summary in ${csvFile}`);
-        fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join(os.EOL));
+
+        // There can only be multiple headers if there is more than one csv result.
+        if (csvs.length > 1) {
+            fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join('\n'));
+        } else {
+            fs.writeFileSync(csvFile, csvs.toString());
+        }
     }
 }
 
 function removeDuplicateHeaders([first, ...rest]) {
     const [firstHeader, firstData] = first.split('\n');
+    const columnCount = firstData.split(',').length;
     const restData = rest.map((headerAndData) => {
-        // eslint-disable-next-line no-unused-vars
-        const [_header, data] = headerAndData.split('\n');
-        return data;
+        // If test execution gets interrupted, e.g. due to an out-of-memory issue, we may face undefined csv data value.
+        if (headerAndData === undefined) {
+            // Fill with undefined values to mark interrupted test execution in data.
+            return Array(columnCount).fill('undefined');
+        } else {
+            // eslint-disable-next-line no-unused-vars
+            const [_header, data] = headerAndData.split('\n');
+            return data;
+        }
     });
     return [firstHeader, firstData, ...restData];
 }

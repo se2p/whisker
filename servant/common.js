@@ -87,6 +87,26 @@ async function switchToProjectTab(page,toggleExtendedView) {
     }
 }
 
+/**
+ * Switches to the upload tab, which is necessary to upload Scratch .sb3 files and test generation configs.
+ * @param {Page} page
+ * @returns {Promise<void>}
+ */
+async function switchToUploadTab(page) {
+    const projectTab = await page.$('#tabUpload');
+    await projectTab.evaluate(t => t.click());
+}
+
+/**
+ * Toggles the extended view element.
+ * @param {Page} page
+ * @returns {Promise<void>}
+ */
+async function toggleExtendedView(page) {
+    const toggleExtendedView = await page.$('#extendedView');
+    await toggleExtendedView.evaluate(t => t.click());
+}
+
 async function runTests(path, openNewPage, index, targetProject) {
     const page = await openNewPage();
 
@@ -400,6 +420,8 @@ function getProjectsInScratchPath() {
 module.exports = {
     runTestsOnFile,
     switchToProjectTab,
+    switchToUploadTab,
+    toggleExtendedView,
     tmpDir,
     prepareTestFiles,
     getProjectsInScratchPath,

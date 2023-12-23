@@ -73,7 +73,7 @@ export class StateActionRecorder extends EventEmitter {
 
     /**
      * Starts the recording procedure by setting listeners for the start and end of Scratch runs.
-     * @param config: contains settings that are important during test generation such as the click duration.
+     * @param config contains settings that are important during test generation such as the click duration.
      */
     public startRecording(config: string): void {
         this._vm.on(Runtime.PROJECT_START, this._onRunStart);
@@ -105,9 +105,7 @@ export class StateActionRecorder extends EventEmitter {
      */
     public onStopAll(): void {
         // Fetch coverage and add run to recording after a short delay to make sure that the vm finished gracefully.
-        setTimeout(async () => {
-            await this.addStateActionRecordsToRecording();
-        }, 1000);
+        setTimeout(async () => {this.addStateActionRecordsToRecording();}, 1000);
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
         clearInterval(this._checkForWaitInterval);
     }
@@ -126,7 +124,7 @@ export class StateActionRecorder extends EventEmitter {
     /**
      * Handles received action data by converting it to a string representation of an executable {@link ScratchEvent}
      * and checking whether the executed action has an active listener. If there is no active listener for the received
-     * input event then the event can be discarded as it does not lead to a state change.
+     * input event, then the event can be discarded as it does not lead to a state change.
      * @param actionData represents the received input event.
      */
     private handleInput(actionData): void {
@@ -318,12 +316,10 @@ export class StateActionRecorder extends EventEmitter {
             stateFeatures = InputExtraction.extractFeatures(this._vm);
         }
 
-        // Reduce required storage capacity by rounding state values.
+        // Reduce the required storage capacity by rounding state values.
         for (const featureGroup of stateFeatures.values()) {
             for (const [feature, value] of featureGroup.entries()) {
-                console.log("Prev Feature " + featureGroup.get(feature));
                 featureGroup.set(feature, Math.round(value * 100) / 100);
-                console.log("After feature " + featureGroup.get(feature));
             }
         }
 
@@ -358,11 +354,9 @@ export class StateActionRecorder extends EventEmitter {
                 console.log("Missing event handler: ", event);
         }
 
-        // Reduce required storage capacity by rounding action parameter.
+        // Reduce the required storage capacity by rounding action parameter.
         for (const key in parameter) {
-            console.log("PRev Param: " + parameter[key]);
             parameter[key] = Math.round(parameter[key] * 100) / 100;
-            console.log("After Param: " + parameter[key]);
         }
 
         const record: ActionRecord = {

@@ -377,6 +377,7 @@ const runAllTests = async function () {
 
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
+    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 };
 
 const initComponents = function () {
@@ -486,7 +487,7 @@ const initEvents = function () {
                 // Download the recording.
                 const recording = Whisker.stateActionRecorder.getRecord();
                 const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `Recording-${Whisker.projectFileSelect.getName()}.json`);
+                FileSaver.saveAs(blob, `${Whisker.projectFileSelect.getName().replace('.sb3', '')}.json`);
             } else {
                 Whisker.inputRecorder.emit('startRecording');
                 Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
@@ -810,6 +811,7 @@ const _addFileListeners = function () {
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
+        Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
