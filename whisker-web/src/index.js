@@ -206,7 +206,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const caseSensitive = $('#model-case-sensitive').is(':checked');
 
         try {
-            await vm.loadProject(project);
             vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
 
             if (traceExecution) {
