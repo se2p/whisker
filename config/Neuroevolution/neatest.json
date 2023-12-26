@@ -51,7 +51,7 @@
         "type": "reliableStatement",
         "timeout": 10000,
         "stableCount": 10,
-        "earlyStop": false
+        "earlyStop": true
     },
     "population": {
         "strategy": "global_solutions",
@@ -65,7 +65,7 @@
             },
             {
                 "type": "fixedTime",
-                "duration": 828000000
+                "duration": 82800000
             }
         ]
     },

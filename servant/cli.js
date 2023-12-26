@@ -62,7 +62,7 @@ class WhiskerSubCommand extends Command {
         this.option(
             '-a, --acceleration <Integer>',
             'acceleration factor',
-            (factor) => util.processPositiveInt(factor),
+            (factor) => util.processPositiveInt(factor, true),
             1);
         this.option(
             '-v, --csv-file <Path>',
@@ -172,9 +172,10 @@ class WhiskerSubCommand extends Command {
             }
         });
 
-        return this.option('-e, --mutants-download-path <Path>',
-            'where generated mutants should be saved',
-            (downloadPath) => util.processDirPathExists(downloadPath));
+        return this.option(
+            '-dm, --download-mutants',
+            'downloads the generated mutants',
+        );
     }
 
     optionMutationBudget() {
@@ -229,6 +230,20 @@ class WhiskerSubCommand extends Command {
             'records executed scratch events and maps them to the current program state');
     }
 
+    optionRecordProject(){
+        return this.option(
+            '-rp, --record-project <Path>',
+            'Executes procedure for collecting recording data of single project.',
+            projectPath => util.processFileOrDirPathExists(projectPath, '.sb3'));
+    }
+
+    optionRecordingTime(){
+        return this.option(
+            '-t, --time <Integer>',
+            'Sets the time for how long gameplay should be recorded in seconds.',
+            seconds => util.processPositiveInt(seconds));
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -256,7 +271,9 @@ const subCommands = [
         .description('Open the Whisker web page with the specified parameters')
         .optionScratchPath()
         .optionConfigPath()
-        .optionStateActionRecorder(),
+        .optionStateActionRecorder()
+        .optionRecordProject()
+        .optionRecordingTime(),
 
 
     newSubCommand('run')

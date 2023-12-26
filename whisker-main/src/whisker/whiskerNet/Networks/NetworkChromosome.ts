@@ -394,19 +394,23 @@ export abstract class NetworkChromosome extends Chromosome {
                     return false;
                 }
 
-                // Calculate softmax denominator
-                let denominator = 0;
+                // Collect Node values
+                const classNodeValues:number[] = [];
                 for (const node of this.classificationNodes.values()) {
                     if (node.activatedFlag) {
-                        denominator += Math.exp(node.nodeValue);
+                       classNodeValues.push(node.nodeValue);
                     }
                 }
+
+                // Softmax Normalisation
+                const maxValue = Math.max(...classNodeValues);
+                const denominator = classNodeValues.reduce((acc, curr) => acc + Math.exp(curr - maxValue), 0);
 
                 // Activate the classification nodes using softmax and
                 // the regression nodes with their specified activation function.
                 for (const node of nodes) {
                     if (node instanceof ClassificationNode) {
-                        node.activationValue = node.activate(denominator);
+                        node.activationValue = node.activate(denominator, maxValue);
                     } else if (node instanceof RegressionNode) {
                         node.activationValue = node.activate();
                     }

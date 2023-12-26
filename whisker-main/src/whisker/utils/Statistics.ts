@@ -105,6 +105,16 @@ export default class Statistics {
     }
 
     /**
+     * Computes the L2-Norm of a supplied vector.
+     * @param vector The vector for which the L2-Norm should be computed.
+     * @return The L2-Norm of the supplied vector.
+     */
+    public static L2Norm(vector: number[]): number {
+        const sum = vector.reduce((acc, curr) => Math.pow(curr, 2) + acc, 0);
+        return Math.sqrt(sum);
+    }
+
+    /**
      * Calculates the Levenshtein Distance between chunks of ScratchEvents.
      * @param a source chunk
      * @param b target chunk

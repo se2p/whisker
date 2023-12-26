@@ -43,16 +43,17 @@ export class ClassificationNode extends NodeGene {
 
     /**
      * On classification nodes we apply softmax activation.
-     * @params softmaxDenominator the denominator required for the softmax function.
+     * @param softMaxDenominator the denominator required for the softmax function.
+     * @param maxValue The max softmax vector value used for softmax normalisation.
      * @returns softmax activation based on the given node value and the supplied denominator.
      */
-    activate(softMaxDenominator:number): number {
-        switch (this.activationFunction){
+    activate(softMaxDenominator: number, maxValue: number): number {
+        switch (this.activationFunction) {
             case ActivationFunction.SIGMOID:
                 return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
             case ActivationFunction.SOFTMAX:
             default:
-                return Math.exp(this.nodeValue) / softMaxDenominator;
+                return Math.exp(this.nodeValue - maxValue) / softMaxDenominator;
         }
     }
 

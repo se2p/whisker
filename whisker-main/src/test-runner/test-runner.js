@@ -46,6 +46,7 @@ class TestRunner extends EventEmitter {
             }
         }
 
+        // Only seed Whisker at this point, as seeding the VM could lead to changes in blockIDs
         this._setRNGSeeds(props['seed'], sampleTest, undefined);
 
         // Load project and establish an initial save state
@@ -61,9 +62,17 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
+        if (props.accelerationFactor === "Infinity") {
+            // We need a small delay here to give the renderer a chance to initialize everything properly. Otherwise,
+            // it leads to weird behavior (e.g., touchingColor blocks may sometimes report false negatives.)
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+
         if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
-            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER;
+
+            // Divide by 1000 since we measure the budget in seconds and will multiply by 1000 afterwards.
+            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER / 1000;
 
             // Add the original as reference when applying mutation analysis
             const original = JSON.parse((vm.toJSON()));
@@ -72,12 +81,10 @@ class TestRunner extends EventEmitter {
             const mutantFactory = new MutationFactory(vm);
             mutantPrograms = mutantFactory.generateScratchMutations(props['mutators'], props['maxMutants']);
             shuffle(mutantPrograms); // Shuffle so we do not favour mutation operators when a time limit is set
-            mutantPrograms.push(original);
+            mutantPrograms.unshift(original);
 
             // Execute the given tests on every mutant
-            const startTime = Date.now();
-            while (mutantPrograms.length > 0 && Date.now() - startTime < mutationBudget) {
-                const mutant = mutantPrograms.pop();
+            for (const mutant of mutantPrograms) {
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
@@ -120,6 +127,11 @@ class TestRunner extends EventEmitter {
                 csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
+
+                // Stop if time budget in seconds has been exceeded.
+                if (Date.now() - startTime > mutationBudget * 1000){
+                    break;
+                }
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
@@ -203,15 +215,18 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm the vm that contains the loaded project
      */
     _setRNGSeeds(seed, test, vm) {
+        let seedDateObject = false;
 
         // Prioritise seeds set using the CLI.
         if (seed !== undefined && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialRNGSeed(seed);
+            seedDateObject = true;
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
         else if (test !== undefined && "seed" in test) {
             Randomness.setInitialRNGSeed(test.seed);
+            seedDateObject = true;
         }
 
         // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
@@ -220,7 +235,7 @@ class TestRunner extends EventEmitter {
             Randomness.setInitialRNGSeed(Date.now());
         }
         if (vm) {
-            Randomness.seedScratch(vm);
+            Randomness.seedScratch(vm, seedDateObject);
         }
     }
 
@@ -248,7 +263,7 @@ class TestRunner extends EventEmitter {
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
      * @param {boolean} loadSaveState
-     * @return {WhiskerUtil}.
+     * @return {Promise<WhiskerUtil>}.
      */
     async _loadProject(vm, project, props) {
         const util = new WhiskerUtil(vm, project);

@@ -9,6 +9,8 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {Randomness} from "../../utils/Randomness";
 
 import lodashClonedeep from 'lodash.clonedeep';
+import Statistics from "../../utils/Statistics";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 
 export class GradientDescent {
 
@@ -46,10 +48,26 @@ export class GradientDescent {
      */
     private _current_target: string
 
+    /**
+     * Defines whether the given groundTruth trace was combined of several player traces.
+     */
+    private readonly _is_multiple_player_trace: boolean
+
+    /**
+     * Safes the optimisation times per target.
+     */
+    private readonly _training_times: number[] = []
+
+    /**
+     * Safes the epochs in which early stopping terminated the optimisation.
+     */
+    private readonly _training_epochs: number[] = []
+
 
     constructor(private readonly _groundTruth: Record<string, unknown>,
                 private readonly _parameter: gradientDescentParameter,
                 private readonly _augmentationParameter: augmentationParameter) {
+        this._is_multiple_player_trace = Object.keys(_groundTruth).every(key => key.startsWith("P"));
     }
 
     /**
@@ -61,9 +79,9 @@ export class GradientDescent {
     public gradientDescent(network: NetworkChromosome, statement: string): number | undefined {
 
         // If necessary, update the prepared ground truth data for the given statement.
-        if (this._current_target !== statement) {
+        if (!this._parameter.combinePlayerRecordings || this._current_target !== statement) {
             Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
-            this._training_data = this._extractDataForStatement(statement);
+            this._training_data = this.extractDataForStatement(statement);
             Container.debugLog(`Starting with ${this.training_data.size} recordings.`);
             this._current_target = statement;
         }
@@ -82,6 +100,7 @@ export class GradientDescent {
         // Extract the training and validation batches.
         const batches = this._extractBatches();
         const [trainingSet, validationSet] = this._validationSetSplit(batches);
+        const startTime = Date.now();
         for (let i = 0; i < this._parameter.epochs; i++) {
             let loss = this._trainingEpoch(network, trainingSet, i);  // Train
             if (loss === undefined) {
@@ -98,7 +117,7 @@ export class GradientDescent {
                 }
             }
 
-            // Early stopping: Stop after a few rounds without improvement and reset weights to the best epoch.
+            // Early stopping: Stop after a few rounds without an improvement and reset weights to the best epoch.
             if (loss < bestValidationLoss) {
                 bestWeights = network.connections.map(conn => conn.weight);
                 bestValidationLoss = loss;
@@ -109,10 +128,13 @@ export class GradientDescent {
 
             if (epochsWithoutImprovement >= GradientDescent.EARLY_STOPPING_THRESHOLD) {
                 Container.debugLog(`Early stopping at epoch ${i}`);
+                this._training_epochs.push(i);
                 break;
             }
 
         }
+        this._training_times.push(Date.now() - startTime);
+        this._training_epochs.push(this._parameter.epochs);
 
         // Reset weights to the ones that obtained the best training loss.
         for (let j = 0; j < network.connections.length; j++) {
@@ -195,6 +217,7 @@ export class GradientDescent {
 
                 // Compute loss and determine gradients of weights.
                 trainingLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
+                trainingLoss += this._getRegularisationLoss(network);
                 this._backwardPass(network, labelVector);
                 numTrainingExamples++;
             }
@@ -253,7 +276,7 @@ export class GradientDescent {
     }
 
     /**
-     * The forward pass propagates activates the network based on a supplied input vector
+     * The forward pass activates the network based on a supplied input vector
      * and returns a loss value based on the specified loss function.
      * @param network the network to be trained.
      * @param inputs the provided feature vector.
@@ -305,7 +328,7 @@ export class GradientDescent {
 
     /**
      * Calculates the categorical cross entropy loss function between a classification prediction and the true label.
-     * @param classNodes the classification nodes on which the cross entropy loss will be computed.
+     * @param classNodes the classification nodes on which the cross-entropy loss will be computed.
      * @param labels vector of true target labels.
      * @returns categorical cross entropy loss between classification prediction and label.
      */
@@ -353,6 +376,7 @@ export class GradientDescent {
                     // Calculate gradients for incoming connections of output nodes.
                     for (const connection of node.incomingConnections) {
                         connection.gradient += node.gradient * connection.source.activationValue;
+                        connection.gradient += this._getRegularisationGradient(connection);
                     }
                 }
             }
@@ -365,6 +389,7 @@ export class GradientDescent {
                     node.gradient += incomingGradient * activationDerivative(node.activationValue);
                     for (const connection of node.incomingConnections) {
                         connection.gradient += node.gradient * connection.source.activationValue;
+                        connection.gradient += this._getRegularisationGradient(connection);
                     }
                 }
             }
@@ -407,17 +432,51 @@ export class GradientDescent {
         network.getAllNodes().forEach(node => node.gradient = 0);
     }
 
+    public extractDataForStatement(statement: string): StateActionRecord {
+        let stateActionRecord: StateActionRecord;
+
+        // Check if there are multiple player recordings available in the training dataset.
+        if (this._is_multiple_player_trace) {
+
+            // Decide whether we combine all player recordings or pick one randomly.
+            if (this._parameter.combinePlayerRecordings) {
+                // Combine all player recordings.
+                stateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+                for (const player in this._groundTruth) {
+                    const playerData = this._extractDataForStatementFromPlayer(statement,
+                        this._groundTruth[player] as Record<string, unknown>);
+                    playerData.forEach((value, key) => stateActionRecord.set(key, value));
+                }
+            } else {
+                // Pick a random player recording to be used.
+                const player = Randomness.getInstance().pick(Object.keys(this._groundTruth));
+                stateActionRecord = this._extractDataForStatementFromPlayer(statement, this._groundTruth[player] as Record<string, unknown>);
+                Container.debugLog(`Using recording of player ${player}`);
+            }
+        } else {
+            // If there is only one player recording, use it as a training dataset.
+            stateActionRecord = this._extractDataForStatementFromPlayer(statement, this._groundTruth);
+        }
+
+        // Return the collected data or augment it to increase the dataset size.
+        return this._augmentationParameter.doAugment ? this._augmentData(stateActionRecord) : stateActionRecord;
+    }
+
     /**
-     * Restructures the data obtained from the .json file such that it only includes records that
-     * correspond to the current statement target.
+     * Restructures the data obtained from the .json file from a player's recording trace
+     * such that it only includes records that correspond to the current statement target.
      * @param statement the target statement for which the networks should be optimised.
+     * @param playerRecording the player's recording dataset.
      * @returns structured data for the gradient descent process.
      */
-    public _extractDataForStatement(statement: string): StateActionRecord {
+    private _extractDataForStatementFromPlayer(statement: string, playerRecording: Record<string, unknown>): StateActionRecord {
         const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+        if (!playerRecording) {
+            return stateActionRecord;
+        }
 
         // Iterate over each recording in the .json file.
-        for (const recording of Object.values(this._groundTruth)) {
+        for (const recording of Object.values(playerRecording)) {
 
             // Exclude recordings that do not include the supplied target statement.
             if (!(recording['coverage'].includes(statement))) {
@@ -438,7 +497,7 @@ export class GradientDescent {
         }
 
         // Return the collected data or augment it to increase the dataset size.
-        return this._augmentationParameter.doAugment ? this._augmentData(stateActionRecord) : stateActionRecord;
+        return stateActionRecord;
     }
 
     /**
@@ -522,7 +581,10 @@ export class GradientDescent {
         }
 
         const random = Randomness.getInstance();
-        for (let i = 0; i < this._augmentationParameter.numAugments; i++) {
+        const desiredAugments = this._augmentationParameter.augmentFactor * data.size;
+
+        Container.debugLog(`Augmenting dataset from ${data.size} to ${desiredAugments} data points`);
+        while (data.size < desiredAugments) {
             const randomState = random.pick(keys);
             const stateClone = lodashClonedeep(randomState) as ObjectInputFeatures;
 
@@ -583,12 +645,66 @@ export class GradientDescent {
     }
 
     /**
+     * Computes the regularisation term to be added to the loss function.
+     * @param network The network chromosome hosting the network weights.
+     * @return The regularisation term to be added to the loss function.
+     */
+    private _getRegularisationLoss(network: NetworkChromosome): number {
+        let regularisation = 0;
+        if (this._parameter.l2Regularisation > 0) {
+            const weights = network.connections.map(conn => conn.weight);
+            regularisation += 0.5 * this._parameter.l2Regularisation * Statistics.L2Norm(weights);
+        }
+
+        return regularisation;
+    }
+
+    /**
+     * Computes the regularisation term to be added to the connection's gradient.
+     * @param connection The connection gene hosting the network weight.
+     * @return The regularisation term to be added to the connection's gradient.
+     */
+    private _getRegularisationGradient(connection: ConnectionGene) {
+        let regularisationGradient = 0;
+        if (this._parameter.l2Regularisation > 0) {
+            regularisationGradient += this._parameter.l2Regularisation * connection.weight;
+        }
+        return regularisationGradient;
+    }
+
+    /**
      * Returns a unique identifier for regression nodes to save and fetch regression labels in the label map.
      * @param node for which an id should be generated.
      * @return regression neuron label id
      */
     private _regressionNodeIdentifier(node: RegressionNode) {
         return `${node.event.stringIdentifier()}-${node.eventParameter}`;
+    }
+
+    /**
+     * Computes and returns the average number of training epochs.
+     * @return Average number of training epochs.
+     */
+    public getTrainingEpochsMean(): number {
+        if (this._training_epochs.length > 0) {
+            return this._training_epochs.reduce((a, b) => a + b, 0) / this._training_epochs.length;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Computes and returns the average time used for gradient descent.
+     * @return Average gradient descent optimisation time.
+     */
+    public getTrainingTimeMean(): number {
+        if (this._training_times.length > 0) {
+            const time = Math.round(this._training_times.reduce((a, b) => a + b, 0) / this._training_times.length * 100) / 100;
+            const timeSeconds = time / 1000;
+            return Math.round(timeSeconds * 100) / 100;
+        } else {
+            return 0;
+        }
     }
 
     get training_data(): StateActionRecord {
@@ -632,6 +748,8 @@ export interface gradientDescentParameter {
     epochs: number,
     batchSize: number,
     labelSmoothing: number
+    l2Regularisation: number,
+    combinePlayerRecordings: boolean
 }
 
 /**
@@ -639,7 +757,7 @@ export interface gradientDescentParameter {
  */
 export interface augmentationParameter {
     doAugment: boolean,
-    numAugments: number,
+    augmentFactor: number,
     disturbStateProb: number,
     disturbStatePower: number
 }
