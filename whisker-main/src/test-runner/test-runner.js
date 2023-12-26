@@ -217,11 +217,10 @@ class TestRunner extends EventEmitter {
      */
     _setRNGSeeds(seed, test, vm) {
         let seedDateObject = false;
-        let scratchSeed;
+        let scratchSeed = seed;
 
         // Prioritise seeds set using the CLI.
         if (seed !== undefined && seed !== 'undefined' && seed !== "") {
-            scratchSeed = seed;
             Randomness.setInitialRNGSeed(seed);
             seedDateObject = true;
         }
