@@ -217,15 +217,18 @@ class TestRunner extends EventEmitter {
      */
     _setRNGSeeds(seed, test, vm) {
         let seedDateObject = false;
+        let scratchSeed;
 
         // Prioritise seeds set using the CLI.
         if (seed !== undefined && seed !== 'undefined' && seed !== "") {
+            scratchSeed = seed;
             Randomness.setInitialRNGSeed(seed);
             seedDateObject = true;
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
         else if (test !== undefined && "seed" in test) {
+            scratchSeed = test.seed;
             Randomness.setInitialRNGSeed(test.seed);
             seedDateObject = true;
         }
@@ -233,11 +236,14 @@ class TestRunner extends EventEmitter {
         // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
         // but only set it once to keep consistent if several test runs are executed at once
         else if (Randomness.getInitialRNGSeed() === undefined) {
-            Randomness.setInitialRNGSeed(Date.now());
+            const dateSeed = Date.now();
+            scratchSeed = dateSeed;
+            Randomness.setInitialRNGSeed(dateSeed);
         }
 
         // Seed VM.
         if (vm) {
+            Randomness.setScratchSeed(scratchSeed);
             Randomness.seedScratch(vm, seedDateObject);
         }
     }
