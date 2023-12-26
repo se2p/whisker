@@ -46,7 +46,8 @@ class TestRunner extends EventEmitter {
             }
         }
 
-        // Only seed Whisker at this point, as seeding the VM could lead to changes in blockIDs
+        // Only seed Whisker at this point, as seeding the VM could lead to changes in blockIDs.
+        // The VM will be seeded before text execution.
         this._setRNGSeeds(props['seed'], sampleTest, undefined);
 
         // Load project and establish an initial save state
@@ -234,6 +235,8 @@ class TestRunner extends EventEmitter {
         else if (Randomness.getInitialRNGSeed() === undefined) {
             Randomness.setInitialRNGSeed(Date.now());
         }
+
+        // Seed VM.
         if (vm) {
             Randomness.seedScratch(vm, seedDateObject);
         }
