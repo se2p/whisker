@@ -14,9 +14,9 @@ class TestRunner extends EventEmitter {
 
     /**
      * Collects traces of executed blocks during the execution of tests.
-     * @type {{}}
+     * @type {[]}
      */
-    blockTraces = {}
+    blockTraces = []
 
     /**
      * @param {VirtualMachine} vm .
@@ -46,11 +46,12 @@ class TestRunner extends EventEmitter {
             }
         }
 
-        // Only seed Whisker at this point, as seeding the VM could lead to changes in blockIDs.
-        // The VM will be seeded before text execution.
-        this._setRNGSeeds(props['seed'], sampleTest, undefined);
+        // Only seed Whisker at this point, as seeding the VM could lead to duplicated rendered-target IDs
+        // if clones get generated during runtime.
+        // The VM will be seeded before test execution.
+        this._setRNGSeeds(props['seed'], sampleTest, null);
 
-        // Load project and establish an initial save state
+        // Load the project and establish an initial save state
         vm.deactivateDebugTracing();
         this.util = await this._loadProject(vm, project, props);
         this.saveState = this.vmWrapper._recordInitialState();
@@ -513,9 +514,12 @@ class TestRunner extends EventEmitter {
         }
 
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
+
+        // If desired, save execution trace after executing each block.
         if (props['traceBlocks']) {
-            this.blockTraces[Object.keys(this.blockTraces).length.toString()] = this._extractTraces();
+            this.blockTraces.push(this._extractTraces());
         }
+
         for (const statement of this.statementMap.keys()){
             if(result.covered.has(statement._targetNode.id)){
                 this.statementMap.set(statement, true);
@@ -535,7 +539,7 @@ class TestRunner extends EventEmitter {
         for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
             traces.push({id: trace['id'], opcode: trace['opcode'], sprite: trace['targetsInfo']});
         }
-        return {... traces};
+        return {...traces};
     }
 
     /**
