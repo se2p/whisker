@@ -426,7 +426,7 @@ class TestRunner extends EventEmitter {
         const result = new TestResult(test);
 
         if (props['traceBlocks']) {
-            this.vmWrapper.vm.runtime.traceInfo.tracer.recordTraces = true;
+            this.vmWrapper.vm.activateBlockTracing();
         }
 
         const testDriver = this.util.getTestDriver(
