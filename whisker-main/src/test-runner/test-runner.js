@@ -46,10 +46,7 @@ class TestRunner extends EventEmitter {
             }
         }
 
-        // Only seed Whisker at this point, as seeding the VM could lead to duplicated rendered-target IDs
-        // if clones get generated during runtime.
-        // The VM will be seeded before test execution.
-        this._setRNGSeeds(props['seed'], sampleTest, null);
+        this._setRNGSeeds(props['seed'], sampleTest, vm);
 
         // Load the project and establish an initial save state
         vm.deactivateDebugTracing();
@@ -218,34 +215,26 @@ class TestRunner extends EventEmitter {
      */
     _setRNGSeeds(seed, test, vm) {
         let seedDateObject = false;
-        let scratchSeed = seed;
 
         // Prioritise seeds set using the CLI.
         if (seed !== undefined && seed !== 'undefined' && seed !== "") {
-            Randomness.setInitialRNGSeed(seed);
+            Randomness.setInitialSeeds(seed);
             seedDateObject = true;
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
-        else if (test !== undefined && "seed" in test) {
-            scratchSeed = test.seed;
-            Randomness.setInitialRNGSeed(test.seed);
+        else if (test !== undefined && "seed" in test){
+            Randomness.setInitialSeeds(test.seed);
             seedDateObject = true;
         }
 
         // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
         // but only set it once to keep consistent if several test runs are executed at once
         else if (Randomness.getInitialRNGSeed() === undefined) {
-            const dateSeed = Date.now();
-            scratchSeed = dateSeed;
-            Randomness.setInitialRNGSeed(dateSeed);
+            Randomness.setInitialSeeds(Date.now());
         }
 
-        // Seed VM.
-        if (vm) {
-            Randomness.setScratchSeed(scratchSeed);
-            Randomness.seedScratch(vm, seedDateObject);
-        }
+        Randomness.seedScratch(vm, seedDateObject);
     }
 
     /**
