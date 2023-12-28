@@ -2,6 +2,7 @@
     "testGenerator": "random",
     "algorithm": "random",
     "extractor": "naive",
+    "eventSelector": "interleaving",
     "minEventSize": 2,
     "maxEventSize": 20,
     "chromosome": {
