@@ -148,9 +148,8 @@ export class Search {
         const truncateFitnessTimeline = maxTime != undefined;
         let csvString: string;
         if (truncateFitnessTimeline) {
-            // We want one coverage value per second (+ 1 because the timeline starts at 0 seconds.)
-            const numberOfCoverageValues = Math.floor(maxTime / 1000) + 1;
-            csvString = StatisticsCollector.getInstance().asCsv(numberOfCoverageValues);
+            // Sample every 10 seconds.
+            csvString = StatisticsCollector.getInstance().asCsv(10000, maxTime);
         } else {
             csvString = StatisticsCollector.getInstance().asCsv();
         }

@@ -25,7 +25,7 @@ import {FitnessFunction} from "../FitnessFunction";
 import {Selection} from "../Selection";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {CoverageOverTime, StatisticsCollector} from "../../utils/StatisticsCollector";
 import {StoppingCondition} from "../StoppingCondition";
 import {TestChromosome} from "../../testcase/TestChromosome";
 import Arrays from "../../utils/Arrays";
@@ -159,6 +159,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
      *  - iterationCount
      *  - createdTestsToReachFullCoverage
      *  - timeToReachFullCoverage
+     *  - coverage over time timeline
      */
     protected updateStatistics(): void {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
@@ -169,5 +170,17 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
                 (this._iterations + 1) * this._properties['populationSize']; // FIXME: unsafe access
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
+        this.updateCoverageTimeLine();
+    }
+
+    /**
+     * Updates the coverage over time timeline.
+     */
+    protected updateCoverageTimeLine():void {
+        const timeLineValues: CoverageOverTime = {
+            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
+            decisionCoverage: StatisticsCollector.getInstance().decisionCoverage
+        };
+        StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
     }
 }

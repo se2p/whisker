@@ -136,8 +136,8 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         }
 
         // Update statistics on the number of covered statements and decisions
-        await StatisticsCollector.getInstance().updateStatementCoverage(this.stableCount, network);
-        await StatisticsCollector.getInstance().updateDecisionCoverage(this.stableCount, network);
+        await StatisticsCollector.getInstance().updateStatementCoverage(network, this.stableCount);
+        await StatisticsCollector.getInstance().updateDecisionCoverage(network, this.stableCount);
     }
 
     get stableCount(): number {

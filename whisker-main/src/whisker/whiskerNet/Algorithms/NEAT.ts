@@ -2,7 +2,7 @@ import {ChromosomeGenerator} from '../../search/ChromosomeGenerator';
 import {SearchAlgorithmProperties} from "../../search/SearchAlgorithmProperties";
 import {SearchAlgorithmDefault} from "../../search/algorithms/SearchAlgorithmDefault";
 import {FitnessFunction} from "../../search/FitnessFunction";
-import {NeuroevolutionFitnessOverTime, StatisticsCollector} from "../../utils/StatisticsCollector";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import Arrays from "../../utils/Arrays";
@@ -108,11 +108,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         StatisticsCollector.getInstance().updateHighestScore(highestScore);
         StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
 
-        const timeLineValues: NeuroevolutionFitnessOverTime = {
-            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
-            decisionCoverage: StatisticsCollector.getInstance().decisionCoverage
-        };
-        StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
+        this.updateCoverageTimeLine();
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;

@@ -236,13 +236,13 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 break;
             case "neatest":
                 searchAlgorithm = this._buildNeatest();
-                this._initialiseCoverageMappings();
                 break;
             case "random":
             default:
                 searchAlgorithm = this._buildRandom();
         }
 
+        this._initialiseCoverageMappings();
         searchAlgorithm.setProperties(this._properties);
         searchAlgorithm.setChromosomeGenerator(this._chromosomeGenerator);
 
@@ -375,17 +375,17 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * Initialises mapping for assessing the achieved coverages during the test generation
      */
-    private _initialiseCoverageMappings(){
+    private _initialiseCoverageMappings(): void {
         const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
         const statementMap = new Map<StatementFitnessFunction, number>();
-        for (const statement of statements){
+        for (const statement of statements) {
             statementMap.set(statement, 0);
         }
         StatisticsCollector.getInstance().statements = statementMap;
 
         const decisions = new DecisionFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
         const decisionMap = new Map<DecisionFitnessFunction, number>();
-        for (const decision of decisions){
+        for (const decision of decisions) {
             decisionMap.set(decision, 0);
         }
         StatisticsCollector.getInstance().decisions = decisionMap;
