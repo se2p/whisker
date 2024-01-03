@@ -236,9 +236,7 @@ export class TestExecutor {
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._vmWrapper.loadSaveState(this._initialState);
 
-        StatisticsCollector.getInstance().incrementExecutedTests();
-        StatisticsCollector.getInstance().numberFitnessEvaluations++;
-        StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
+        await this.updateStatistics(endTime, randomEventChromosome);
 
         return trace;
     }

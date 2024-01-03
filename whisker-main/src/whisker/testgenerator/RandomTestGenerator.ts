@@ -23,13 +23,14 @@ import {TestChromosome} from "../testcase/TestChromosome";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
 import {FitnessFunction} from "../search/FitnessFunction";
-import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {CoverageOverTime, StatisticsCollector} from "../utils/StatisticsCollector";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import Arrays from "../utils/Arrays";
+import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 
 /**
  * A naive approach to generating tests by always selecting a random event from the set of available events
@@ -80,9 +81,10 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
 
     /**
      * Generate tests by randomly sending events to the Scratch-VM.
-     * After each Iteration the archive is updated with the trace of executed events.
+     * After each Iteration, the archive is updated with the trace of executed events.
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
+        SearchAlgorithmBuilder.initialiseCoverageMappings();
         this._iterations = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
@@ -145,6 +147,11 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
+        const timeLineValues: CoverageOverTime = {
+            statementCoverage: StatisticsCollector.getInstance().statementCoverage,
+            decisionCoverage: StatisticsCollector.getInstance().decisionCoverage
+        };
+        StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
     }
 
     getCurrentSolution(): TestChromosome[] {

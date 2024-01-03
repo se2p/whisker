@@ -242,7 +242,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 searchAlgorithm = this._buildRandom();
         }
 
-        this._initialiseCoverageMappings();
+        SearchAlgorithmBuilder.initialiseCoverageMappings();
         searchAlgorithm.setProperties(this._properties);
         searchAlgorithm.setChromosomeGenerator(this._chromosomeGenerator);
 
@@ -375,7 +375,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * Initialises mapping for assessing the achieved coverages during the test generation
      */
-    private _initialiseCoverageMappings(): void {
+    public static initialiseCoverageMappings(): void {
         const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
         const statementMap = new Map<StatementFitnessFunction, number>();
         for (const statement of statements) {
