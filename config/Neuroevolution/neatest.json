@@ -2,7 +2,7 @@
     "testGenerator": "neuroevolution",
     "algorithm": "neatest",
     "eventSelection": "activation",
-    "populationSize": 10,
+    "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -44,7 +44,7 @@
         "weightCoefficient": 0.5
     },
     "fitnessFunction": {
-        "type": "decision",
+        "type": "statement",
         "targets": []
     },
     "networkFitness": {
@@ -65,7 +65,7 @@
             },
             {
                 "type": "fixedTime",
-                "duration": 18000000
+                "duration": 82800000
             }
         ]
     },

@@ -6,7 +6,7 @@ const fs = require("fs");
 const URL = "dist/index.html";
 
 const timeout = 20000;
-const ACCELERATION = 10;
+const ACCELERATION = Infinity;
 
 async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);

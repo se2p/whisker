@@ -113,6 +113,8 @@ class Constraints {
                 }
             }
         }
+
+        return null;
     }
 
     /**
