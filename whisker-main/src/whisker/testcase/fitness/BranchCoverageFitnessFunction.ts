@@ -24,7 +24,7 @@ import {StatementFitnessFunction} from "./StatementFitnessFunction";
 import {TestChromosome} from "../TestChromosome";
 import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
 
-export class DecisionFitnessFunction extends StatementFitnessFunction {
+export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
 
     constructor(controlNode: GraphNode, private _isTrueBranch: boolean) {
         super(controlNode);

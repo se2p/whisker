@@ -22,6 +22,7 @@ import {FitnessFunction} from "../search/FitnessFunction";
 import {Chromosome} from "../search/Chromosome";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Container} from "./Container";
+import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 
 /**
  * Singleton class to collect statistics from search runs
@@ -53,9 +54,9 @@ export class StatisticsCollector {
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
     private _statements: Map<StatementFitnessFunction, number>;
-    private _decisions: Map<StatementFitnessFunction, number>;
+    private _branches: Map<BranchCoverageFitnessFunction, number>;
     private _statementCoverage: number
-    private _decisionCoverage: number
+    private _branchCoverage: number
 
     // Neuroevolution
     private _highestNetworkFitness: number;
@@ -103,7 +104,7 @@ export class StatisticsCollector {
         this._surpriseAdequacy = 0;
         this._surpriseNodeAdequacy = 0;
         this._statementCoverage = 0;
-        this._decisionCoverage = 0;
+        this._branchCoverage = 0;
     }
 
     public static getInstance(): StatisticsCollector {
@@ -150,16 +151,16 @@ export class StatisticsCollector {
         return this._statementCoverage;
     }
 
-    get decisionCoverage(): number {
-        return this._decisionCoverage;
+    get branchCoverage(): number {
+        return this._branchCoverage;
     }
 
     set statements(value: Map<StatementFitnessFunction, number>) {
         this._statements = value;
     }
 
-    set decisions(value: Map<StatementFitnessFunction, number>) {
-        this._decisions = value;
+    set branches(value: Map<BranchCoverageFitnessFunction, number>) {
+        this._branches = value;
     }
 
     /**
@@ -227,9 +228,9 @@ export class StatisticsCollector {
         }
     }
 
-    public updateHighestDecisionCoverage(value: number): void {
-        if (value > this._decisionCoverage) {
-            this._decisionCoverage = value;
+    public updateHighestBranchCoverage(value: number): void {
+        if (value > this._branchCoverage) {
+            this._branchCoverage = value;
         }
     }
 
@@ -409,12 +410,12 @@ export class StatisticsCollector {
         // Default header and data arrays
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
             "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
-            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'stCoverage', 'decCoverage',
+            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'statCov', 'branchCov',
             'gdTime', 'gdEpochs'];
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
             this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
             this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
-            this._highestScore, this._highestPlayTime, this._statementCoverage, this._decisionCoverage, gdTime, gdEpochs];
+            this._highestScore, this._highestPlayTime, this._statementCoverage, this._branchCoverage, gdTime, gdEpochs];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
@@ -489,7 +490,7 @@ export class StatisticsCollector {
         }
         let max: CoverageOverTime = {
             statementCoverage: 0,
-            decisionCoverage: 0
+            branchCoverage: 0
         };
         for (let i = 0; i <= maxTime; i = i + sampleDistance) {
             if (adjusted.has(i)) {
@@ -514,14 +515,14 @@ export class StatisticsCollector {
         }
     }
 
-    public async updateDecisionCoverage(chromosome: Chromosome, stableCount = 1): Promise<void> {
-        for (const [dec, coverCount] of this._decisions.entries()) {
-            const decision = dec as unknown as FitnessFunction<Chromosome>;
-            if (this._decisions.get(dec) >= stableCount) {
+    public async updateBranchCoverage(chromosome: Chromosome, stableCount = 1): Promise<void> {
+        for (const [dec, coverCount] of this._branches.entries()) {
+            const branch = dec as unknown as FitnessFunction<Chromosome>;
+            if (this._branches.get(dec) >= stableCount) {
                 continue;
             }
-            if (await decision.isCovered(chromosome)) {
-                this._decisions.set(dec, coverCount + 1);
+            if (await branch.isCovered(chromosome)) {
+                this._branches.set(dec, coverCount + 1);
             }
         }
     }
@@ -538,16 +539,16 @@ export class StatisticsCollector {
         this.updateHighestStatementCoverage(covered / this._statements.size);
     }
 
-    public computeDecisionCoverage(stableCount = 1): void {
+    public computeBranchCoverage(stableCount = 1): void {
         let covered = 0;
-        for (const [dec, coverCount] of this._decisions.entries()) {
+        for (const [dec, coverCount] of this._branches.entries()) {
             if (coverCount < stableCount) {
-                this._decisions.set(dec, 0);
+                this._branches.set(dec, 0);
             } else {
                 covered++;
             }
         }
-        this.updateHighestDecisionCoverage(covered / this._decisions.size);
+        this.updateHighestBranchCoverage(covered / this._branches.size);
     }
 
     public reset(): void {
@@ -581,5 +582,5 @@ export interface NetworkTestSuiteResults {
 
 export interface CoverageOverTime {
     statementCoverage: number,
-    decisionCoverage: number
+    branchCoverage: number
 }

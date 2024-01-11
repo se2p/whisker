@@ -149,7 +149,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         }
         const timeLineValues: CoverageOverTime = {
             statementCoverage: StatisticsCollector.getInstance().statementCoverage,
-            decisionCoverage: StatisticsCollector.getInstance().decisionCoverage
+            branchCoverage: StatisticsCollector.getInstance().branchCoverage
         };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
     }

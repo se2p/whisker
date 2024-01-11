@@ -251,9 +251,9 @@ export class TestExecutor {
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         StatisticsCollector.getInstance().updateAverageTestExecutionTime(executionTime);
         await StatisticsCollector.getInstance().updateStatementCoverage(chromosome);
-        await StatisticsCollector.getInstance().updateDecisionCoverage(chromosome);
+        await StatisticsCollector.getInstance().updateBranchCoverage(chromosome);
         StatisticsCollector.getInstance().computeStatementCoverage();
-        StatisticsCollector.getInstance().computeDecisionCoverage();
+        StatisticsCollector.getInstance().computeBranchCoverage();
     }
 
     /**

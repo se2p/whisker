@@ -179,7 +179,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     protected updateCoverageTimeLine():void {
         const timeLineValues: CoverageOverTime = {
             statementCoverage: StatisticsCollector.getInstance().statementCoverage,
-            decisionCoverage: StatisticsCollector.getInstance().decisionCoverage
+            branchCoverage: StatisticsCollector.getInstance().branchCoverage
         };
         StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
     }

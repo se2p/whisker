@@ -12,7 +12,7 @@ import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/
 import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {UserEventNode} from "scratch-analysis/src/control-flow-graph";
-import {DecisionFitnessFunction} from "../../testcase/fitness/DecisionFitnessFunction";
+import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class Neatest extends NEAT {
 
@@ -149,10 +149,11 @@ export class Neatest extends NEAT {
         const uncoveredStatements = this.getUncoveredStatements();
         const allStatements = [...this._fitnessFunctionMap.values()];
 
-        // If we are dealing with DecisionFitness, our set of potential targets is formed over all uncovered Statements
-        // since a selection based on the CDG is infeasible as we are only targeting decision nodes and not statements.
+        // If we are dealing with BranchCoverage, our set of potential targets is formed over all uncovered Statements
+        // since a selection based on the CDG is infeasible
+        // because only targeting branching nodes and not statements.
         let potentialTargets: Set<StatementFitnessFunction>;
-        if (this._fitnessFunctionMap.get(0) instanceof DecisionFitnessFunction){
+        if (this._fitnessFunctionMap.get(0) instanceof BranchCoverageFitnessFunction){
             potentialTargets = new Set(uncoveredStatements);
         } else {
             // Otherwise, select a target by querying the CDG for targets that have an approachLevel of zero.
@@ -336,7 +337,7 @@ export class Neatest extends NEAT {
         Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
         Container.debugLog(`Covered Targets: ${this._archive.size}/${this._fitnessFunctions.size}`);
         Container.debugLog(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);
-        Container.debugLog(`Covered Decisions: ${StatisticsCollector.getInstance().decisionCoverage * 100}%`);
+        Container.debugLog(`Covered Branches: ${StatisticsCollector.getInstance().branchCoverage * 100}%`);
         Container.debugLog(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
         Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
         Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);

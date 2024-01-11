@@ -38,7 +38,7 @@ export enum FitnessFunctionType {
     STATEMENT,
 
     /**
-     * Value for 'Decision' fitness
+     * Value for 'Branch' coverage fitness
      */
-    DECISION
+    BRANCH
 }

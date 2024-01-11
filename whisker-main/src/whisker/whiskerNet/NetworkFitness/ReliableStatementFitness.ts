@@ -56,7 +56,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         }
 
         StatisticsCollector.getInstance().computeStatementCoverage(this.stableCount);
-        StatisticsCollector.getInstance().computeDecisionCoverage(this.stableCount);
+        StatisticsCollector.getInstance().computeBranchCoverage(this.stableCount);
         return network.fitness;
     }
 
@@ -135,9 +135,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             }
         }
 
-        // Update statistics on the number of covered statements and decisions
+        // Update statistics on the number of covered statements and branches
         await StatisticsCollector.getInstance().updateStatementCoverage(network, this.stableCount);
-        await StatisticsCollector.getInstance().updateDecisionCoverage(network, this.stableCount);
+        await StatisticsCollector.getInstance().updateBranchCoverage(network, this.stableCount);
     }
 
     get stableCount(): number {

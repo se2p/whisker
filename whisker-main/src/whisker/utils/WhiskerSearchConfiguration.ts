@@ -558,8 +558,8 @@ export class WhiskerSearchConfiguration {
         switch (fitnessFunction) {
             case 'statement':
                 return FitnessFunctionType.STATEMENT;
-            case 'decision':
-                return FitnessFunctionType.DECISION;
+            case 'branch':
+                return FitnessFunctionType.BRANCH;
             case 'one-max':
                 return FitnessFunctionType.ONE_MAX;
             case 'single-bit':

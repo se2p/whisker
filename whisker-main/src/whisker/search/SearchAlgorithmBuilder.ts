@@ -44,8 +44,8 @@ import {NEAT} from "../whiskerNet/Algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Neatest} from "../whiskerNet/Algorithms/Neatest";
-import {DecisionFitnessFunctionFactory} from "../testcase/fitness/DecisionFitnessFunctionFactory";
-import {DecisionFitnessFunction} from "../testcase/fitness/DecisionFitnessFunction";
+import {BranchCoverageFitnessFunctionFactory} from "../testcase/fitness/BranchCoverageFitnessFunctionFactory";
+import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 /**
@@ -176,8 +176,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case FitnessFunctionType.STATEMENT:
                 this._initializeStatementFitness(targets, new StatementFitnessFunctionFactory());
                 break;
-            case FitnessFunctionType.DECISION:
-                this._initializeStatementFitness(targets, new DecisionFitnessFunctionFactory());
+            case FitnessFunctionType.BRANCH:
+                this._initializeStatementFitness(targets, new BranchCoverageFitnessFunctionFactory());
                 break;
         }
         return this;
@@ -383,12 +383,12 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         }
         StatisticsCollector.getInstance().statements = statementMap;
 
-        const decisions = new DecisionFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
-        const decisionMap = new Map<DecisionFitnessFunction, number>();
-        for (const decision of decisions) {
-            decisionMap.set(decision, 0);
+        const branches = new BranchCoverageFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+        const branchMap = new Map<BranchCoverageFitnessFunction, number>();
+        for (const branch of branches) {
+            branchMap.set(branch, 0);
         }
-        StatisticsCollector.getInstance().decisions = decisionMap;
+        StatisticsCollector.getInstance().branches = branchMap;
     }
 
 
