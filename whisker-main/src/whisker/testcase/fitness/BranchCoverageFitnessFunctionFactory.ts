@@ -22,7 +22,9 @@ export class BranchCoverageFitnessFunctionFactory extends StatementFitnessFuncti
                     fitnessFunctions.push(new BranchCoverageFitnessFunction(node, true));
 
                     // Forever blocks cannot be passed and thus have no false branch.
-                    if (node.block.opcode !== 'control_forever') {
+                    // Passing execution halting blocks and repeat blocks via the true branch,
+                    // implicitly also covers the false branch
+                    if (!ControlFilter.noFalseBranch(node.block)) {
                         fitnessFunctions.push(new BranchCoverageFitnessFunction(node, false));
                     }
                 }

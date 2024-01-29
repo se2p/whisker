@@ -43,6 +43,12 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
             return 1;
         }
         if (this._isTrueBranch) {
+
+            // If music blocks from the corresponding blocks-extension are used, the remaining halting time originates
+            // from time measured in beats, causing the remained halting time to sometimes skip the value of zero.
+            if(this._targetNode.block.opcode == 'sound_playuntildone' && blockTrace['distances'][0][0] < 0.01){
+                return 0;
+            }
             return blockTrace['distances'][0][0];
         } else {
             return blockTrace['distances'][0][1];

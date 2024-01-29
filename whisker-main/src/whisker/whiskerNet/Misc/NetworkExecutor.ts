@@ -16,6 +16,7 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "../../testcase/events/ParameterType";
 import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class NetworkExecutor {
 
@@ -157,7 +158,8 @@ export class NetworkExecutor {
             // Check if we have reached our selected target and stop if it's not the green flag.
             // Keep executing when the green flag was covered to cover all easy targets at once
             // and avoid repeated executions for trivial targets.
-            if (this._stopEarly && statementTarget !== undefined && statementTarget.getCDGDepth() > 1) {
+            if (this._stopEarly && statementTarget !== undefined && statementTarget.getCDGDepth() > 1 &&
+                !(statementTarget instanceof BranchCoverageFitnessFunction)) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
                 if (currentCoverage.has(statementTarget.getTargetNode().id)) {
                     break;
