@@ -414,6 +414,7 @@ class VMWrapper {
             initialState[targetsKey] = {
                 name: this.vm.runtime.targets[targetsKey].sprite['name'],
                 direction: this.vm.runtime.targets[targetsKey]["direction"],
+                rotation: this.vm.runtime.targets[targetsKey]["rotationStyle"],
                 size: this.vm.runtime.targets[targetsKey]['size'],
                 currentCostume: this.vm.runtime.targets[targetsKey]["currentCostume"],
                 draggable: this.vm.runtime.targets[targetsKey]["draggable"],
@@ -426,7 +427,8 @@ class VMWrapper {
                 volume: this.vm.runtime.targets[targetsKey]["volume"],
                 x: this.vm.runtime.targets[targetsKey]["x"],
                 y: this.vm.runtime.targets[targetsKey]["y"],
-                variables: JSON.parse(JSON.stringify(this.vm.runtime.targets[targetsKey]["variables"]))
+                variables: JSON.parse(JSON.stringify(this.vm.runtime.targets[targetsKey]["variables"])),
+                layer: this.vm.runtime.targets[targetsKey].getLayerOrder()
             };
         }
         return initialState;
@@ -453,6 +455,7 @@ class VMWrapper {
         // Restore state of all others
         for (const targetsKey in this.vm.runtime.targets) {
             this.vm.runtime.targets[targetsKey]["direction"] = saveState[targetsKey]["direction"];
+            this.vm.runtime.targets[targetsKey]["rotationStyle"] = saveState[targetsKey]["rotationStyle"];
             this.vm.runtime.targets[targetsKey]["size"] = saveState[targetsKey]["size"];
             this.vm.runtime.targets[targetsKey]["currentCostume"] = saveState[targetsKey]["currentCostume"];
             this.vm.runtime.targets[targetsKey]["draggable"] = saveState[targetsKey]["draggable"];
@@ -467,6 +470,7 @@ class VMWrapper {
             const y = saveState[targetsKey]["y"];
             this.vm.runtime.targets[targetsKey].setXY(x, y, true, true);
             this.vm.runtime.targets[targetsKey]["variables"] = JSON.parse(JSON.stringify(saveState[targetsKey]["variables"]));
+            this.vm.runtime.targets[targetsKey].setLayer(saveState[targetsKey]['layer']);
         }
 
         this.inputs.clearInputs();
