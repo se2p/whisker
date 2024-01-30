@@ -340,11 +340,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 break;
             }
             case 'control_repeat': {
-                requiredCondition = false;
+                requiredCondition = true;
                 if (controlNode.block.inputs.SUBSTACK !== undefined) {
                     const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
                     if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
-                        requiredCondition = true;
+                        requiredCondition = false;
                     }
                 }
                 break;
