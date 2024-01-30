@@ -344,7 +344,7 @@ export class Neatest extends NEAT {
         Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`);
 
         const sortedSpecies = this._population.species.sort((a, b) => b.uID - a.uID);
-        Container.debugLog(`Population of ${this._population.populationSize} distributed in ${sortedSpecies.length} species`);
+        Container.debugLog(`Population of ${this._population.populationSize} distributed over ${sortedSpecies.length} species`);
         Container.debugLog("\tID\tage\tsize\tfitness\tshared fitness");
         for (const species of sortedSpecies) {
             Container.debugLog(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}\t${Math.round(species.averageSharedFitness * 100) / 100}`);

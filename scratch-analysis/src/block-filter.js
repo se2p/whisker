@@ -173,6 +173,7 @@ const ControlFilter = {
 
     noFalseBranch: block =>
         block.opcode === 'control_forever' ||
+        block.opcode === 'control_wait_until' ||
         ControlFilter.executionHaltingBlock(block),
 
     doubleBranch: block =>
