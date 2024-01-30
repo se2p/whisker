@@ -172,8 +172,6 @@ const ControlFilter = {
         block.opcode === 'control_wait_until',
 
     noFalseBranch: block =>
-        block.opcode === 'control_repeat' ||
-        block.opcode === 'control_repeat_until' ||
         block.opcode === 'control_forever' ||
         ControlFilter.executionHaltingBlock(block),
 

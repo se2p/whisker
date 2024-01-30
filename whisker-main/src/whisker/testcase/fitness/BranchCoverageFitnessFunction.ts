@@ -23,6 +23,7 @@ import {GraphNode} from 'scratch-analysis';
 import {StatementFitnessFunction} from "./StatementFitnessFunction";
 import {TestChromosome} from "../TestChromosome";
 import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
+import {Container} from "../../utils/Container";
 
 export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
 
@@ -40,15 +41,10 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
         // Otherwise, compute the distance toward the desired branch.
         const blockTrace = Object.values(chromosome.trace.blockTraces).find(block => block.id === this._targetNode.block.id);
         if (!blockTrace){   // If we cannot find the block trace return a default value of 1.
+            Container.debugLog(`No block trace found for ${this.toString()}`, chromosome.trace.blockTraces);
             return 1;
         }
         if (this._isTrueBranch) {
-
-            // If music blocks from the corresponding blocks-extension are used, the remaining halting time originates
-            // from time measured in beats, causing the remained halting time to sometimes skip the value of zero.
-            if(this._targetNode.block.opcode == 'sound_playuntildone' && blockTrace['distances'][0][0] < 0.01){
-                return 0;
-            }
             return blockTrace['distances'][0][0];
         } else {
             return blockTrace['distances'][0][1];
