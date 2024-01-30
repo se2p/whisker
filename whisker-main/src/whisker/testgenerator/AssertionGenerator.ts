@@ -31,8 +31,8 @@ export class AssertionGenerator {
         PositionAssertion.createFactory(),
         SayAssertion.createFactory(),
         SizeAssertion.createFactory(),
-        //TouchingAssertion.createFactory(), //FIXME: Buggy
-        //TouchingEdgeAssertion.createFactory(), // FIXME: Buggy
+        TouchingAssertion.createFactory(), //FIXME: Buggy
+        TouchingEdgeAssertion.createFactory(), // FIXME: Buggy
         VariableAssertion.createFactory(),
         VisibilityAssertion.createFactory(),
         VolumeAssertion.createFactory()];
@@ -52,9 +52,9 @@ export class AssertionGenerator {
 
             Container.debugLog("Trace length: "+trace.length);
             // for each event
-            for (let position = 0; position < numEvents; position+=2) {
+            for (let position = 0; position < numEvents; position++) {
                 for (const assertionFactory of this.assertionFactories) {
-                    const assertions = assertionFactory.createAssertions(trace[position/2]);
+                    const assertions = assertionFactory.createAssertions(trace[position]);
                     for (const assertion of assertions) {
                         test.addAssertion(position + 1, assertion);
                     }
@@ -65,8 +65,6 @@ export class AssertionGenerator {
     }
 
     public async addStateChangeAssertions(tests: WhiskerTest[]): Promise<void> {
-
-        await Container.vmWrapper.resetVM();
         Container.debugLog("Adding State change Assertions");
 
         // determine relevant attributes?
@@ -80,9 +78,9 @@ export class AssertionGenerator {
 
             Container.debugLog("Trace length: " + trace.length);
             // for each event
-            for (let position = 2; position < numEvents; position += 2) {
-                const stateBefore = trace[(position / 2) - 1];
-                const stateAfter = trace[position / 2];
+            for (let position = 0; position < trace.length - 1; position++) {
+                const stateBefore = trace[position];
+                const stateAfter = trace[position+1];
                 for (const assertionFactory of this.assertionFactories) {
                     const assertionsAfter = assertionFactory.createAssertions(stateAfter);
                     for (const assertion of assertionsAfter) {
@@ -98,7 +96,7 @@ export class AssertionGenerator {
 
 
     private async _executeWithObserver(test: WhiskerTest)  {
-        const executor = new TestExecutor(Container.vmWrapper, undefined, undefined);
+        const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(), Container.config.getEventSelector());
         const observer = new AssertionObserver();
         executor.attach(observer);
         await executor.executeEventTrace(test.chromosome);

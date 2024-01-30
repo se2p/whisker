@@ -157,20 +157,19 @@ export class TestExecutor {
      */
     async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace>{
         Randomness.seedScratch(this._vm);
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
         this._vmWrapper.start();
         const eventAndParams = chromosome.trace.events;
-        for (let i = 0; i < eventAndParams.length; i+=2) {
-            const nextEvent = eventAndParams[i].event;
-            const parameters = eventAndParams[i].parameters;
-            let nextStepEvent: ScratchEvent;
-            if (i+1 < eventAndParams.length) {
-                nextStepEvent = eventAndParams[i+1].event;
-            } else {
-                nextStepEvent = new WaitEvent(1);
+        for (const eventParam of eventAndParams){
+            if(!this._projectRunning || !this.hasActionEvents(this._eventExtractor.extractEvents(this._vm))){
+                break;
             }
+            const nextEvent = eventParam.event;
+            const parameters = eventParam.parameters;
             this.notify(nextEvent, parameters);
             await nextEvent.apply();
-            await nextStepEvent.apply();
             this.notifyAfter(nextEvent, parameters);
         }
 
@@ -180,6 +179,7 @@ export class TestExecutor {
 
         this._vmWrapper.end();
         this._vmWrapper.loadSaveState(this._initialState);
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
 
         return chromosome.trace;
     }
