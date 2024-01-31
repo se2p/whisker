@@ -102,7 +102,7 @@ export class AssertionGenerator {
 
 
     private async _executeWithObserver(test: WhiskerTest)  {
-        const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(), Container.config.getEventSelector());
+        const executor = new TestExecutor(Container.vmWrapper, undefined, undefined);
         const observer = new AssertionObserver();
         executor.attach(observer);
         const coverageGroundTruth = test.chromosome.coverage;
