@@ -163,7 +163,7 @@ export class TestExecutor {
         this._vmWrapper.start();
         const eventAndParams = chromosome.trace.events;
         for (const eventParam of eventAndParams){
-            if(!this._projectRunning || !this.hasActionEvents(this._eventExtractor.extractEvents(this._vm))){
+            if(!this._projectRunning){
                 break;
             }
             const nextEvent = eventParam.event;

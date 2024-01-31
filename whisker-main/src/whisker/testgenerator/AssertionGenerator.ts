@@ -72,6 +72,12 @@ export class AssertionGenerator {
             // produce execution trace
             const trace = await this._executeWithObserver(test);
 
+            // TODO: TNot a fix for the underlying issue, which is probably related to flaky touching blocks.
+            if (trace == null){
+                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                continue;
+            }
+
             // trace should be same length as events in test
             const numEvents = test.getEventsCount();
             Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
@@ -99,7 +105,13 @@ export class AssertionGenerator {
         const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(), Container.config.getEventSelector());
         const observer = new AssertionObserver();
         executor.attach(observer);
+        const coverageGroundTruth = test.chromosome.coverage;
         await executor.executeEventTrace(test.chromosome);
+        const coverageAssertionExec = test.chromosome.coverage;
+        if (coverageGroundTruth.size !== coverageAssertionExec.size ||
+            !([...coverageGroundTruth].every((c) => coverageAssertionExec.has(c)))){
+            return null;
+        }
         return observer.getExecutionTrace();
     }
 
