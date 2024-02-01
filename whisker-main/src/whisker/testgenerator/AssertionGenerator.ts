@@ -11,12 +11,11 @@ import {ListAssertion} from "./assertions/ListAssertion";
 import {PositionAssertion} from "./assertions/PositionAssertion";
 import {SayAssertion} from "./assertions/SayAssertion";
 import {SizeAssertion} from "./assertions/SizeAssertion";
-import {TouchingAssertion} from "./assertions/TouchingAssertion";
 import {VariableAssertion} from "./assertions/VariableAssertion";
 import {VisibilityAssertion} from "./assertions/VisibilityAssertion";
 import {VolumeAssertion} from "./assertions/VolumeAssertion";
 import {CloneCountAssertion} from "./assertions/CloneCountAssertion";
-import assert from "assert";
+import {TouchingAssertion} from "./assertions/TouchingAssertion";
 import {TouchingEdgeAssertion} from "./assertions/TouchingEdgeAssertion";
 
 export class AssertionGenerator {
@@ -31,8 +30,8 @@ export class AssertionGenerator {
         PositionAssertion.createFactory(),
         SayAssertion.createFactory(),
         SizeAssertion.createFactory(),
-        TouchingAssertion.createFactory(), //FIXME: Buggy
-        TouchingEdgeAssertion.createFactory(), // FIXME: Buggy
+        //TouchingAssertion.createFactory(), // See comment in AssertionObserver
+        //TouchingEdgeAssertion.createFactory(), // See comment in AssertionObserver
         VariableAssertion.createFactory(),
         VisibilityAssertion.createFactory(),
         VolumeAssertion.createFactory()];
@@ -46,7 +45,7 @@ export class AssertionGenerator {
             // produce execution trace
             const trace = await this._executeWithObserver(test);
 
-            // trace should be same length as events in test
+            // trace should have the same length as events in test
             const numEvents = test.getEventsCount();
             Container.debugLog("Adding assertions to test "+test+" of length "+numEvents);
 
@@ -78,7 +77,7 @@ export class AssertionGenerator {
                 continue;
             }
 
-            // trace should be same length as events in test
+            // trace should have the same length as events in test
             const numEvents = test.getEventsCount();
             Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
 
