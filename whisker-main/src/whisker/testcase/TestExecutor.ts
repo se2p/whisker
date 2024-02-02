@@ -74,7 +74,7 @@ export class TestExecutor {
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
 
         let numCodon = 0;
@@ -160,7 +160,7 @@ export class TestExecutor {
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
         const eventAndParams = chromosome.trace.events;
         for (const eventParam of eventAndParams){
             if(!this._projectRunning){
@@ -194,7 +194,7 @@ export class TestExecutor {
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();

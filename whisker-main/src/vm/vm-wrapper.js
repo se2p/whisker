@@ -5,7 +5,8 @@ const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
-require('setimmediate'); // attaches setImmediate to the global scope as side effect
+require('setimmediate');
+const {Container} = require("../whisker/utils/Container"); // attaches setImmediate to the global scope as side effect
 
 const STEP_TIME = 1000 / 30;
 
@@ -481,7 +482,7 @@ class VMWrapper {
     /**
      * Start the vm wrapper by resetting it to its original state and starting the virtual machine.
      */
-    start() {
+    async start() {
         this.vm.runtime.stopAll();
         this.callbacks.clearCallbacks();
         this.inputs.clearInputs();
@@ -499,6 +500,12 @@ class VMWrapper {
         this.vm.runtime.on('SAY', this._onSayOrThink);
         this.vm.runtime.on('DELETE_SAY_OR_THINK', this._onSayOrThink);
         this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange);
+
+        // We need a small delay here to give the renderer a chance to initialise everything properly.
+        // Otherwise, blocks depending on visual features like touching blocks do not work properly.
+        if (!isFinite(Container.acceleration)) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
 
         this.vm.greenFlag();
         this.vm.runtime.virtualSound = -1;
