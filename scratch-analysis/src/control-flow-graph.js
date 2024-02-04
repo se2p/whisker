@@ -364,10 +364,11 @@ export const getBlockMap = targets => {
     let blocks = new Map()
     for (const target of targets) {
         for (const block of Object.values(target.blocks._blocks)) {
-            const blockKey = `${block.id}-${target.sprite.name}`;
+            const targetName = target.isStage ? "_stage_" : target.sprite.name
+            const blockKey = `${block.id}-${targetName}`;
             // Create a deep clone for the CFG to not alter the block residing in the Scratch-VM.
             const blockClone = JSON.parse(JSON.stringify(block))
-            blockClone['target'] = target.sprite.name;
+            blockClone['target'] = targetName;
             changeBlockIds(blockClone, target)
             blocks.set(blockKey, blockClone);
         }
@@ -651,7 +652,8 @@ function changeBlockIds(block, target) {
         if (typeof block[k] === 'object' && block[k] !== null) {
             changeBlockIds(block[k], target)
         } else if (idKeys.includes(k) && block[k] !== null) {
-            block[k] = block[k] + "-" + target.sprite.name;
+            const targetName = target.isStage ? "_stage_" : target.sprite.name
+            block[k] = block[k] + "-" + targetName;
         }
     }
 }
