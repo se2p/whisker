@@ -489,6 +489,11 @@ class VMWrapper {
         this.constraints.clearConstraints();
         this.sprites.reset();
 
+        // Reset all listeners registered to targets to avoid an explosion of registered listeners.
+        for (const target of this.vm.runtime.targets){
+            target.removeAllListeners();
+        }
+
         this.inputs.resetMouse();
         this.inputs.resetKeyboard();
 
