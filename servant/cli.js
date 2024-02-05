@@ -211,13 +211,6 @@ class WhiskerSubCommand extends Command {
             (activationTraces) => util.processPositiveInt(activationTraces));
     }
 
-    optionExecutionTrace() {
-        return this.option(
-            '-et, --execution-trace',
-            'activates recording of execution trace',
-        );
-    }
-
     optionTraceBlocks() {
         return this.option(
             '-tb, --trace-blocks',
@@ -285,7 +278,6 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
-        .optionExecutionTrace()
         .optionTraceBlocks(),
 
     newSubCommand('generate')

@@ -174,16 +174,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', true);
         $('#record').prop('disabled', true);
 
-        // Activate listener for execution trace record at the end of a test run.
-        const traceExecution = document.querySelector('#container').executionTrace;
-        if (traceExecution) {
-            Whisker.testRunner.on(TestRunner.RUN_END, () => {
-                const blob = new Blob([JSON.stringify(Whisker.testRunner.executionTrace)],
-                    {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `ExecutionTrace-${Whisker.projectFileSelect.getName()}.json`);
-            });
-        }
-
+        // Activate listener for tracing executed blocks
         const traceBlocks = document.querySelector('#container').traceBlocks;
         if (traceBlocks) {
             Whisker.testRunner.on(TestRunner.RUN_END, () => {
@@ -216,15 +207,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         try {
             vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
-
-            if (traceExecution) {
-                vm.runtime.onReuseStackFrame(thread => {
-                    const trace = CoverageGenerator.traceExecution(thread);
-                    if (trace) {
-                        Whisker.testRunner.addExecutionTrace(trace);
-                    }
-                });
-            }
 
             CoverageGenerator.prepareVM(vm);
 
