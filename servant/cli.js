@@ -167,7 +167,7 @@ class WhiskerSubCommand extends Command {
     optionMutantsDownloadPath() {
         customChecks.push(function mutantsDownloadPathImpliesMutators() {
             // Note: Option.implies(...) does not fit our use-case. So we have to implement a custom check here.
-            if ('mutantsDownloadPath' in opts && !('mutators' in opts)) {
+            if ('downloadMutants' in opts && !('mutators' in opts)) {
                 throw new InvalidArgumentError('You gave a download path for mutants but did not enable mutators.');
             }
         });
