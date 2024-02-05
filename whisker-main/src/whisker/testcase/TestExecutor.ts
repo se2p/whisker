@@ -34,6 +34,7 @@ import VMWrapper = require("../../vm/vm-wrapper.js");
 import {Container} from "../utils/Container";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+import {DragSpriteEvent} from "./events/DragSpriteEvent";
 
 
 export class TestExecutor {
@@ -88,6 +89,14 @@ export class TestExecutor {
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
+            }
+
+            // Disallow DragSpriteEvents as first events since they modify the attributes of sprites directly and thus
+            // will change the sprite behaviour before the first blocks have been executed.
+            // This may make DragSpriteEvents sent as first events obsolete since initialisation code in green flag
+            // scripts will reset the changed sprite position.
+            if (numCodon === 0) {
+                availableEvents = availableEvents.filter(event => !(event instanceof DragSpriteEvent));
             }
 
             // Select and send the next Event to the VM & calculate the new fitness values.
@@ -206,6 +215,14 @@ export class TestExecutor {
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
+            }
+
+            // Disallow DragSpriteEvents as first events since they modify the attributes of sprites directly and thus
+            // will change the sprite behaviour before the first blocks have been executed.
+            // This may make DragSpriteEvents sent as first events obsolete since initialisation code in green flag
+            // scripts will reset the changed sprite position.
+            if (eventCount === 0) {
+                availableEvents = availableEvents.filter(event => !(event instanceof DragSpriteEvent));
             }
 
             // Randomly select an event and increase the event count.
