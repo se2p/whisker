@@ -5,8 +5,8 @@ const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
-require('setimmediate');
-const {Container} = require("../whisker/utils/Container"); // attaches setImmediate to the global scope as side effect
+require('setimmediate'); // attaches setImmediate to the global scope as side effect
+const {Container} = require("../whisker/utils/Container");
 
 const STEP_TIME = 1000 / 30;
 
