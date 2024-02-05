@@ -85,7 +85,6 @@ Options:
   -bt, --mutation-budget <Integer>  timeout for the mutation analysis
   -d, --headless                    run headless ("d" like in "decapitated") (default: false)
   -dm, --download-mutants           downloads the generated mutants
-  -et, --execution-trace            activates recording of execution trace
   -h, --help                        display help for command
   -j, --number-of-jobs <Integer>    number of jobs (Chromium tabs) for test execution (default: 1)
   -k, --console-forwarded           forward browser console output
@@ -96,6 +95,7 @@ Options:
   -t, --test-path <Path>            path to Whisker tests to run (".js")
   -v, --csv-file <Path>             create CSV file with results
   -z, --seed <String>               custom seed for Scratch-VM
+  -tb, --trace-blocks               whether block traces should be recorded and downloaded (default: false)
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
