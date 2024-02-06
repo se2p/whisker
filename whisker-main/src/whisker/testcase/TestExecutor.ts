@@ -91,14 +91,6 @@ export class TestExecutor {
                 break;
             }
 
-            // Disallow DragSpriteEvents as first events since they modify the attributes of sprites directly and thus
-            // will change the sprite behaviour before the first blocks have been executed.
-            // This may make DragSpriteEvents sent as first events obsolete since initialisation code in green flag
-            // scripts will reset the changed sprite position.
-            if (numCodon === 0) {
-                availableEvents = availableEvents.filter(event => !(event instanceof DragSpriteEvent));
-            }
-
             // Select and send the next Event to the VM & calculate the new fitness values.
             numCodon = await this.selectAndSendEvent(codons, numCodon, availableEvents, events);
 
@@ -106,8 +98,8 @@ export class TestExecutor {
             testChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, events);
             testChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
-            // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
-            // focused Algorithm like MIO.
+            // Check if we came closer to cover a specific block.
+            // This only makes sense when using a SingleObjective focused Algorithm like MIO.
             if (testChromosome.targetFitness) {
                 // Enforce the recalculation of the fitness value by deleting the cached value.
                 testChromosome.deleteCacheEntry(testChromosome.targetFitness);
@@ -120,7 +112,7 @@ export class TestExecutor {
 
             // Determine the last improved codon and trace if we require it for further mutation/localSearch operations.
             if (TestExecutor.doRequireLastImprovedCodon(testChromosome)) {
-                // If this was the first executed event we have to set up the reference fitnessValues first.
+                // If this was the first executed event, we have to set up the reference fitnessValues first.
                 if (!fitnessValues) {
                     fitnessValues = await TestExecutor.calculateUncoveredFitnessValues(testChromosome);
                 }
@@ -138,7 +130,7 @@ export class TestExecutor {
         const endTime = Date.now() - startTime;
 
         // Check if the last event had to use a codon from the start of the codon list.
-        // Extend the codon list by the required amount of codons by duplicating the first few codons.
+        // Extend the codon list by the required number of codons by duplicating the first few codons.
         if (numCodon > codons.length) {
             const codonsToDuplicate = numCodon - codons.length;
             codons.push(...codons.slice(0, codonsToDuplicate));
@@ -164,15 +156,15 @@ export class TestExecutor {
      * @param chromosome the chromosome hosting the event trace.
      * @returns executed trace.
      */
-    async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace>{
+    async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace> {
         Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         await this._vmWrapper.start();
         const eventAndParams = chromosome.trace.events;
-        for (const eventParam of eventAndParams){
-            if(!this._projectRunning){
+        for (const eventParam of eventAndParams) {
+            if (!this._projectRunning) {
                 break;
             }
             const nextEvent = eventParam.event;
@@ -272,6 +264,14 @@ export class TestExecutor {
      */
     public async selectAndSendEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[],
                                     events: EventAndParameters[]): Promise<number> {
+        // Disallow DragSpriteEvents as first events since they modify the attributes of sprites directly and thus
+        // will change the sprite behaviour before the first blocks have been executed.
+        // This may make DragSpriteEvents sent as first events obsolete since initialisation code in green flag
+        // scripts will reset the changed sprite position.
+        if (numCodon === 0) {
+            availableEvents = availableEvents.filter(e => !(e instanceof DragSpriteEvent));
+        }
+
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const parameters = TestExecutor.getArgs(nextEvent, codons, numCodon);
