@@ -45,13 +45,20 @@ export class AssertionGenerator {
             // produce execution trace
             const trace = await this._executeWithObserver(test);
 
+            // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
+            if (trace == null){
+                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                continue;
+            }
+
+
             // trace should have the same length as events in test
             const numEvents = test.getEventsCount();
             Container.debugLog("Adding assertions to test "+test+" of length "+numEvents);
 
             Container.debugLog("Trace length: "+trace.length);
             // for each event
-            for (let position = 0; position < numEvents; position++) {
+            for (let position = 0; position < trace.length; position++) {
                 for (const assertionFactory of this.assertionFactories) {
                     const assertions = assertionFactory.createAssertions(trace[position]);
                     for (const assertion of assertions) {
@@ -71,7 +78,7 @@ export class AssertionGenerator {
             // produce execution trace
             const trace = await this._executeWithObserver(test);
 
-            // TODO: TNot a fix for the underlying issue, which is probably related to flaky touching blocks.
+            // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
             if (trace == null){
                 console.log("Mismatching behaviour for this test. Skipping assertion generation");
                 continue;
