@@ -34,6 +34,7 @@ import VMWrapper = require("../../vm/vm-wrapper.js");
 import {Container} from "../utils/Container";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+import {DragSpriteEvent} from "./events/DragSpriteEvent";
 
 
 export class TestExecutor {
@@ -74,7 +75,7 @@ export class TestExecutor {
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
 
         let numCodon = 0;
@@ -97,8 +98,8 @@ export class TestExecutor {
             testChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, events);
             testChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
-            // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
-            // focused Algorithm like MIO.
+            // Check if we came closer to cover a specific block.
+            // This only makes sense when using a SingleObjective focused Algorithm like MIO.
             if (testChromosome.targetFitness) {
                 // Enforce the recalculation of the fitness value by deleting the cached value.
                 testChromosome.deleteCacheEntry(testChromosome.targetFitness);
@@ -111,7 +112,7 @@ export class TestExecutor {
 
             // Determine the last improved codon and trace if we require it for further mutation/localSearch operations.
             if (TestExecutor.doRequireLastImprovedCodon(testChromosome)) {
-                // If this was the first executed event we have to set up the reference fitnessValues first.
+                // If this was the first executed event, we have to set up the reference fitnessValues first.
                 if (!fitnessValues) {
                     fitnessValues = await TestExecutor.calculateUncoveredFitnessValues(testChromosome);
                 }
@@ -129,7 +130,7 @@ export class TestExecutor {
         const endTime = Date.now() - startTime;
 
         // Check if the last event had to use a codon from the start of the codon list.
-        // Extend the codon list by the required amount of codons by duplicating the first few codons.
+        // Extend the codon list by the required number of codons by duplicating the first few codons.
         if (numCodon > codons.length) {
             const codonsToDuplicate = numCodon - codons.length;
             codons.push(...codons.slice(0, codonsToDuplicate));
@@ -155,20 +156,19 @@ export class TestExecutor {
      */
     async executeEventTrace(chromosome: TestChromosome): Promise<ExecutionTrace> {
         Randomness.seedScratch(this._vm);
-        this._vmWrapper.start();
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        await this._vmWrapper.start();
         const eventAndParams = chromosome.trace.events;
-        for (let i = 0; i < eventAndParams.length; i += 2) {
-            const nextEvent = eventAndParams[i].event;
-            const parameters = eventAndParams[i].parameters;
-            let nextStepEvent: ScratchEvent;
-            if (i + 1 < eventAndParams.length) {
-                nextStepEvent = eventAndParams[i + 1].event;
-            } else {
-                nextStepEvent = new WaitEvent(1);
+        for (const eventParam of eventAndParams) {
+            if (!this._projectRunning) {
+                break;
             }
+            const nextEvent = eventParam.event;
+            const parameters = eventParam.parameters;
             this.notify(nextEvent, parameters);
             await nextEvent.apply();
-            await nextStepEvent.apply();
             this.notifyAfter(nextEvent, parameters);
         }
 
@@ -178,6 +178,7 @@ export class TestExecutor {
 
         this._vmWrapper.end();
         this._vmWrapper.loadSaveState(this._initialState);
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
 
         return chromosome.trace;
     }
@@ -192,7 +193,7 @@ export class TestExecutor {
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();
@@ -204,6 +205,14 @@ export class TestExecutor {
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
+            }
+
+            // Disallow DragSpriteEvents as first events since they modify the attributes of sprites directly and thus
+            // will change the sprite behaviour before the first blocks have been executed.
+            // This may make DragSpriteEvents sent as first events obsolete since initialisation code in green flag
+            // scripts will reset the changed sprite position.
+            if (eventCount === 0) {
+                availableEvents = availableEvents.filter(event => !(event instanceof DragSpriteEvent));
             }
 
             // Randomly select an event and increase the event count.
@@ -266,6 +275,14 @@ export class TestExecutor {
      */
     public async selectAndSendEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[],
                                     events: EventAndParameters[]): Promise<number> {
+        // Disallow DragSpriteEvents as first events since they modify the attributes of sprites directly and thus
+        // will change the sprite behaviour before the first blocks have been executed.
+        // This may make DragSpriteEvents sent as first events obsolete since initialisation code in green flag
+        // scripts will reset the changed sprite position.
+        if (numCodon === 0) {
+            availableEvents = availableEvents.filter(e => !(e instanceof DragSpriteEvent));
+        }
+
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const parameters = TestExecutor.getArgs(nextEvent, codons, numCodon);

@@ -414,6 +414,7 @@ class VMWrapper {
             initialState[targetsKey] = {
                 name: this.vm.runtime.targets[targetsKey].sprite['name'],
                 direction: this.vm.runtime.targets[targetsKey]["direction"],
+                rotation: this.vm.runtime.targets[targetsKey]["rotationStyle"],
                 size: this.vm.runtime.targets[targetsKey]['size'],
                 currentCostume: this.vm.runtime.targets[targetsKey]["currentCostume"],
                 draggable: this.vm.runtime.targets[targetsKey]["draggable"],
@@ -426,7 +427,8 @@ class VMWrapper {
                 volume: this.vm.runtime.targets[targetsKey]["volume"],
                 x: this.vm.runtime.targets[targetsKey]["x"],
                 y: this.vm.runtime.targets[targetsKey]["y"],
-                variables: JSON.parse(JSON.stringify(this.vm.runtime.targets[targetsKey]["variables"]))
+                variables: JSON.parse(JSON.stringify(this.vm.runtime.targets[targetsKey]["variables"])),
+                layer: this.vm.runtime.targets[targetsKey].getLayerOrder()
             };
         }
         return initialState;
@@ -453,6 +455,7 @@ class VMWrapper {
         // Restore state of all others
         for (const targetsKey in this.vm.runtime.targets) {
             this.vm.runtime.targets[targetsKey]["direction"] = saveState[targetsKey]["direction"];
+            this.vm.runtime.targets[targetsKey]["rotationStyle"] = saveState[targetsKey]["rotationStyle"];
             this.vm.runtime.targets[targetsKey]["size"] = saveState[targetsKey]["size"];
             this.vm.runtime.targets[targetsKey]["currentCostume"] = saveState[targetsKey]["currentCostume"];
             this.vm.runtime.targets[targetsKey]["draggable"] = saveState[targetsKey]["draggable"];
@@ -467,6 +470,7 @@ class VMWrapper {
             const y = saveState[targetsKey]["y"];
             this.vm.runtime.targets[targetsKey].setXY(x, y, true, true);
             this.vm.runtime.targets[targetsKey]["variables"] = JSON.parse(JSON.stringify(saveState[targetsKey]["variables"]));
+            this.vm.runtime.targets[targetsKey].setLayer(saveState[targetsKey]['layer']);
         }
 
         this.inputs.clearInputs();
@@ -476,13 +480,19 @@ class VMWrapper {
 
     /**
      * Start the vm wrapper by resetting it to its original state and starting the virtual machine.
+     * @returns {Promise<void>}
      */
-    start() {
+    async start() {
         this.vm.runtime.stopAll();
         this.callbacks.clearCallbacks();
         this.inputs.clearInputs();
         this.constraints.clearConstraints();
         this.sprites.reset();
+
+        // Reset all listeners registered to targets to avoid an explosion of registered listeners.
+        for (const target of this.vm.runtime.targets){
+            target.removeAllListeners();
+        }
 
         this.inputs.resetMouse();
         this.inputs.resetKeyboard();
@@ -495,6 +505,10 @@ class VMWrapper {
         this.vm.runtime.on('SAY', this._onSayOrThink);
         this.vm.runtime.on('DELETE_SAY_OR_THINK', this._onSayOrThink);
         this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange);
+
+        // We need a small delay here to give the renderer a chance to initialise everything properly.
+        // Otherwise, blocks depending on visual features like touching blocks do not work properly.
+        await new Promise((resolve) => setTimeout(resolve, 0));
 
         this.vm.greenFlag();
         this.vm.runtime.virtualSound = -1;

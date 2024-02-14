@@ -97,13 +97,14 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const events: EventAndParameters[] = [];
         newCodons.push(...chromosome.getGenes());
         Randomness.seedScratch(this._vmWrapper.vm);
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
 
         // Execute the original codons to obtain the state of the VM after executing the original chromosome.
         await this._executeGenes(newCodons, events);
 
-        // Now extend the codons of the original chromosome to increase coverage.
-        const lastImprovedResults = await this._extendGenes(newCodons, events, chromosome);
+        // Now extend the codons of a cloned chromosome to increase coverage.
+        // We clone the original chromosome to avoid introducing detrimental changes to the original individual.
+        const lastImprovedResults = await this._extendGenes(newCodons, events, chromosome.clone());
 
         // Create the chromosome resulting from local search.
         const newChromosome = chromosome.cloneWith(newCodons);
@@ -304,11 +305,13 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
     /**
      * Determines whether the Extension local search operator improved the original chromosome.
+     * The original chromosome improved if its new coverage set forms a superset over the old coverage set.
      * @param originalChromosome the chromosome Extension local search has been applied to.
      * @param modifiedChromosome the resulting chromosome after Extension local search has been applied to the original.
      * @return boolean whether the local search operator improved the original chromosome.
      */
     hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome): boolean {
-        return originalChromosome.coverage.size < modifiedChromosome.coverage.size;
+        return originalChromosome.coverage.size < modifiedChromosome.coverage.size &&
+            [...originalChromosome.coverage].every(key => modifiedChromosome.coverage.has(key));
     }
 }

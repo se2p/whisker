@@ -181,7 +181,7 @@ export class Search {
         console.log(this.vm);
 
         await util.prepare(accelerationFactor || 1);
-        util.start();
+        await util.start();
 
         // Specify seed
         const configSeed = config.getRandomSeed();

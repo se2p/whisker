@@ -24,8 +24,8 @@ export class AssertionObserver implements EventObserver {
         const currentState = new Map<string, AssertionTargetState>();
         for (const target of Object.values(Container.vm.runtime.targets) as RenderedTarget[]) {
             const targetKey = target.isOriginal ? `${target['sprite']['name']}` : `${target['sprite']['name']}Clone${target['cloneID']}`;
-            const otherSpriteNames = Container.vm.runtime.targets
-                .filter(t => t.sprite).filter(t => !t.isStage && t.getName() !== target.getName()).map(t => t.getName());
+            //const otherSpriteNames = Container.vm.runtime.targets
+            //  .filter(t => t.sprite).filter(t => !t.isStage && t.getName() !== target.getName()).map(t => t.getName());
 
             const properties: AssertionTargetState = {
                 target: target,
@@ -42,10 +42,10 @@ export class AssertionObserver implements EventObserver {
                 x: target["x"],
                 y: target["y"],
                 variables: cloneDeep(target["variables"]),
-                touching: Object.assign({}, ...((otherSpriteNames.map(x => ({[x]: target.isTouchingSprite(x)}))))),
-                touchingEdge: target.isTouchingEdge(),
                 cloneCount: (target.sprite.clones.filter(t => !t.isOriginal) as []).length, // wtf?
                 bubbleState: target.getCustomState(Scratch3LooksBlocks.STATE_KEY) !== undefined ? target.getCustomState(Scratch3LooksBlocks.STATE_KEY).text : null
+                //touching: Object.assign({}, ...((otherSpriteNames.map(x => ({[x]: target.isTouchingSprite(x)}))))),
+                //touchingEdge: target.isTouchingEdge()
             } as const;
             currentState.set(targetKey, properties);
         }
@@ -68,8 +68,10 @@ export interface AssertionTargetState {
     x: number,
     y: number,
     variables: Record<string, Record<string, string | number | boolean | []>>,
-    touching: Record<string, boolean>,
-    touchingEdge: boolean,
     cloneCount: number,
     bubbleState: string
+
+    // TODO: Touching Assertions removed for now because evaluating them in _captureState() causes non-determinism.
+    //touching: Record<string, boolean>,
+    // touchingEdge: boolean,
 }

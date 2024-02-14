@@ -31,14 +31,15 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
     }
 
     /**
-     * ReductionLocalSearch has improved the original Chromosome if the modified chromosome covers at least as much
-     * blocks as the original one and if the modified gene size is smaller than the original gene size.
+     * ReductionLocalSearch has improved the original Chromosome if the modified chromosome's coverage set forms a
+     * superset over the original coverage set and if the modified gene size is smaller than the original gene size.
      * @param originalChromosome the chromosome ReductionLocalSearch has been applied to.
      * @param modifiedChromosome the resulting chromosome after ReductionLocalSearch has been applied to the original.
      * @return boolean whether ReductionLocalSearch has improved the original chromosome.
      */
     hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome): boolean {
         return originalChromosome.coverage <= modifiedChromosome.coverage &&
+            [...originalChromosome.coverage].every(key => modifiedChromosome.coverage.has(key)) &&
             originalChromosome.getGenes().length > modifiedChromosome.getGenes().length;
     }
 }

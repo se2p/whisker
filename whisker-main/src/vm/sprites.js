@@ -79,7 +79,6 @@ class Sprites {
             }
         }
 
-        target.removeAllListeners();
         wrapper = new Sprite(target, this, this.vmWrapper.vm.runtime);
         wrapper._update();
         this.sprites[target.id] = wrapper;
