@@ -1,6 +1,5 @@
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
-import {expect} from "@jest/globals";
 
 describe('Condition', () => {
     test("no arguments", () => {

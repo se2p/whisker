@@ -1,5 +1,4 @@
 import {ProgramModelEdge, UserModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
-import {expect} from "@jest/globals";
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {Effect} from "../../../../src/whisker/model/components/Effect";

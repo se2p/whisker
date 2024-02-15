@@ -25,7 +25,6 @@ import {ActivationTrace} from "../../../../src/whisker/whiskerNet/Misc/Activatio
 import {EventAndParameters, ExecutionTrace} from "../../../../src/whisker/testcase/ExecutionTrace";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 import {generateInputs} from "../Algorithms/NEAT.test";
-import {expect} from "@jest/globals";
 
 describe('Test NeatChromosome', () => {
     let mutationOp: NeatMutation;
