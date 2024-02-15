@@ -20,13 +20,13 @@ const {
     liveOutputCoverage,
     addRandomInputs,
     mutators,
-    mutantsDownloadPath,
+    downloadMutants,
     errorWitnessPath,
     numberOfJobs,
     scratchPath,
     mutationBudget,
     maxMutants,
-    executionTrace
+    traceBlocks
 } = require("./cli").opts;
 const {subcommand} = require("./cli");
 
@@ -87,6 +87,26 @@ async function switchToProjectTab(page,toggleExtendedView) {
     }
 }
 
+/**
+ * Switches to the upload tab, which is necessary to upload Scratch .sb3 files and test generation configs.
+ * @param {Page} page
+ * @returns {Promise<void>}
+ */
+async function switchToUploadTab(page) {
+    const projectTab = await page.$('#tabUpload');
+    await projectTab.evaluate(t => t.click());
+}
+
+/**
+ * Toggles the extended view element.
+ * @param {Page} page
+ * @returns {Promise<void>}
+ */
+async function toggleExtendedView(page) {
+    const toggleExtendedView = await page.$('#extendedView');
+    await toggleExtendedView.evaluate(t => t.click());
+}
+
 async function runTests(path, openNewPage, index, targetProject) {
     const page = await openNewPage();
 
@@ -100,7 +120,9 @@ async function runTests(path, openNewPage, index, targetProject) {
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
-        await page.evaluate(e => document.querySelector('#container').executionTrace = e, executionTrace);
+        await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
+        await page.evaluate(tb => document.querySelector('#container').traceBlocks = tb, traceBlocks);
+
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (path) {
             await (await page.$('#fileselect-tests')).uploadFile(path);
@@ -138,12 +160,6 @@ async function runTests(path, openNewPage, index, targetProject) {
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName')) {
-
-                // Download mutants
-                if (mutantsDownloadPath) {
-                    await downloadMutants(mutantsDownloadPath);
-                }
-
                 // Return CSV file
                 const currentLogString = currentLog.toString();
                 const startIndex = currentLogString.indexOf('projectName');
@@ -181,19 +197,6 @@ async function runTests(path, openNewPage, index, targetProject) {
 
             await page.waitForTimeout(1000);
         }
-    }
-
-    /**
-     * Downloads the generated Scratch mutants.
-     * @param downloadPath the path the mutants should be saved to.
-     */
-    async function downloadMutants(downloadPath) {
-        await page._client().send('Page.setDownloadBehavior', {
-            behavior: 'allow',
-            downloadPath: downloadPath
-        });
-        await (await page.$('.output-save')).click();
-        await page.waitForTimeout(5000);
     }
 
     /**
@@ -417,6 +420,8 @@ function getProjectsInScratchPath() {
 module.exports = {
     runTestsOnFile,
     switchToProjectTab,
+    switchToUploadTab,
+    toggleExtendedView,
     tmpDir,
     prepareTestFiles,
     getProjectsInScratchPath,

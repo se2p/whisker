@@ -72,6 +72,7 @@ export class NetworkExecutor {
 
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
+        network.stateActionPairs.clear();
 
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch(this._vm);
@@ -103,8 +104,9 @@ export class NetworkExecutor {
             // Update input nodes and load inputs into the Network.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
-            // Check if we encountered additional events during the playthrough
-            // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
+            // Check if we encountered additional sprites/events during the playthrough
+            // If we did so add corresponding input/output nodes to the network.
+            network.updateInputNodes(spriteFeatures);
             network.updateOutputNodes(this.availableEvents);
             const defect = !network.activateNetwork(spriteFeatures);
 
@@ -120,7 +122,7 @@ export class NetworkExecutor {
                 let nextEvent = this.availableEvents[eventIndex];
 
                 // If something goes wrong, e.g. we have a defect network due to all active input nodes being
-                // disconnected to every output node, just insert a Wait.
+                // disconnected to every output node, insert a Wait.
                 if (nextEvent === undefined) {
                     eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
                     nextEvent = this.availableEvents[eventIndex];
@@ -133,11 +135,12 @@ export class NetworkExecutor {
                     }
                 }
                 network.codons.push(eventIndex);
-                await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
+                const nextEventAndParams = await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
 
-                // Record the state action pair:
-                if (Container.peerToPeerSharing && !(nextEvent instanceof WaitEvent)) {
-                    network.updateStateActionPair(spriteFeatures, events[events.length - 1]);
+                // Record the state action pair if dynamicRecordTracing is activated
+                // and a valid action has been selected.
+                if (Container.dynamicRecordingFraction > 0 && nextEventAndParams !== undefined && !(nextEvent instanceof WaitEvent)) {
+                    network.updateStateActionPair(spriteFeatures, nextEventAndParams);
                 }
             }
 
@@ -150,9 +153,9 @@ export class NetworkExecutor {
             this.recordActivationTrace(network, stepCount, spriteFeatures);
             stepCount++;
 
-            // Check if we have reached our selected target and stop if it's not the green flag this is the case.
-            // Keep executing when green flag was covered to cover all easy target at once and avoid repeated executions
-            // for trivial targets.
+            // Check if we have reached our selected target and stop if it's not the green flag.
+            // Keep executing when the green flag was covered to cover all easy targets at once
+            // and avoid repeated executions for trivial targets.
             if (this._stopEarly && statementTarget !== undefined && statementTarget.getCDGDepth() > 1) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
                 if (currentCoverage.has(statementTarget.getTargetNode().id)) {
@@ -185,7 +188,7 @@ export class NetworkExecutor {
     }
 
     /**
-     * Executes an execution trace that is saved within the network.
+     * Executes an execution trace saved within the network.
      * @param network the network holding the execution trace.
      */
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
@@ -201,11 +204,11 @@ export class NetworkExecutor {
         const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {
 
-            // Stop if project is no longer running.
+            // Stop if the project is no longer running.
             if (!this._projectRunning) {
                 break;
             }
-            // Load input features into the node to record the AT later.
+            // Load input features into the node to record the activation trace later.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
             network.setUpInputs(spriteFeatures);
 
@@ -267,7 +270,8 @@ export class NetworkExecutor {
                 return this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
             } else {
                 // It can happen that all output nodes of corresponding available events do not have an active path
-                // starting from the input nodes, i.e. they did not get activated. In that case we just wait.
+                // starting from the input nodes, i.e. they did not get activated.
+                // In that case, we just wait.
                 return this.availableEvents.findIndex(event => event instanceof WaitEvent);
             }
         }
@@ -278,11 +282,11 @@ export class NetworkExecutor {
      * @param network determines the next action to take.
      * @param nextEvent the event that should be executed next.
      * @param events saves a trace of executed events.
-     * @param greenFlag determines whether the next event is based on the greenFlag event as a targetStatement. If
-     * so we do not want to add any parameters and just wait for 1 Step.
+     * @param greenFlag determines whether the next event is based on the greenFlag event as a targetStatement.
+     * If so, we do not want to add any parameters and just wait for 1 Step.
      */
     private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[],
-                                   greenFlag = false): Promise<void> {
+                                   greenFlag = false): Promise<EventAndParameters> {
         let setParameter: number[];
         const argType: ParameterType = this._eventSelection as ParameterType;
         if (nextEvent.numSearchParameter() > 0 && !greenFlag) {
@@ -290,9 +294,11 @@ export class NetworkExecutor {
             setParameter = nextEvent.setParameter(parameters, argType);
         }
 
+        let nextEventAndParams = undefined;
         // Do not double press Keys as this just interrupts the prior key press.
         if (!this.isDoubleKeyPress(nextEvent)) {
-            events.push(new EventAndParameters(nextEvent, setParameter));
+            nextEventAndParams = new EventAndParameters(nextEvent, setParameter);
+            events.push(nextEventAndParams);
             await nextEvent.apply();
         }
 
@@ -307,13 +313,14 @@ export class NetworkExecutor {
         }
 
         StatisticsCollector.getInstance().incrementEventsCount();
+        return nextEventAndParams;
     }
 
     /**
      * Checks for double key presses. We do not want to re-press an already pressed key since this only interrupts
      * the key press signal sent to the VM.
      * @param nextEvent the nextEvent which will be checked against a double keyPress.
-     * @returns true if we are about to double press an already pressed key.
+     * @returns true if we are about to double-press an already pressed key.
      */
     private isDoubleKeyPress(nextEvent: ScratchEvent): boolean {
         const key = String(nextEvent.getParameters()[0]);
@@ -357,22 +364,22 @@ export class NetworkExecutor {
      * Saves the initial state of the Scratch-VM
      */
     private recordInitialState(): void {
-        for (const targetsKey in this._vm.runtime.targets) {
-            this._initialState[targetsKey] = {
-                name: this._vm.runtime.targets[targetsKey].sprite['name'],
-                direction: this._vm.runtime.targets[targetsKey]["direction"],
-                currentCostume: this._vm.runtime.targets[targetsKey]["currentCostume"],
-                draggable: this._vm.runtime.targets[targetsKey]["draggable"],
-                dragging: this._vm.runtime.targets[targetsKey]["dragging"],
-                drawableID: this._vm.runtime.targets[targetsKey]['drawableID'],
-                effects: Object.assign({}, this._vm.runtime.targets[targetsKey]["effects"]),
-                videoState: this._vm.runtime.targets[targetsKey]["videoState"],
-                videoTransparency: this._vm.runtime.targets[targetsKey]["videoTransparency"],
-                visible: this._vm.runtime.targets[targetsKey]["visible"],
-                volume: this._vm.runtime.targets[targetsKey]["volume"],
-                x: this._vm.runtime.targets[targetsKey]["x"],
-                y: this._vm.runtime.targets[targetsKey]["y"],
-                variables: JSON.parse(JSON.stringify(this._vm.runtime.targets[targetsKey]["variables"]))
+        for (const targetKey in this._vm.runtime.targets) {
+            this._initialState[targetKey] = {
+                name: this._vm.runtime.targets[targetKey].sprite['name'],
+                direction: this._vm.runtime.targets[targetKey]["direction"],
+                currentCostume: this._vm.runtime.targets[targetKey]["currentCostume"],
+                draggable: this._vm.runtime.targets[targetKey]["draggable"],
+                dragging: this._vm.runtime.targets[targetKey]["dragging"],
+                drawableID: this._vm.runtime.targets[targetKey]['drawableID'],
+                effects: Object.assign({}, this._vm.runtime.targets[targetKey]["effects"]),
+                videoState: this._vm.runtime.targets[targetKey]["videoState"],
+                videoTransparency: this._vm.runtime.targets[targetKey]["videoTransparency"],
+                visible: this._vm.runtime.targets[targetKey]["visible"],
+                volume: this._vm.runtime.targets[targetKey]["volume"],
+                x: this._vm.runtime.targets[targetKey]["x"],
+                y: this._vm.runtime.targets[targetKey]["y"],
+                variables: JSON.parse(JSON.stringify(this._vm.runtime.targets[targetKey]["variables"]))
             };
         }
     }
@@ -383,9 +390,9 @@ export class NetworkExecutor {
     public resetState(): void {
         // Delete clones
         const clones = [];
-        for (const targetsKey in this._vm.runtime.targets) {
-            if (!this._vm.runtime.targets[targetsKey].isOriginal) {
-                clones.push(this._vm.runtime.targets[targetsKey]);
+        for (const targetKey in this._vm.runtime.targets) {
+            if (!this._vm.runtime.targets[targetKey].isOriginal) {
+                clones.push(this._vm.runtime.targets[targetKey]);
             }
         }
 
@@ -394,22 +401,22 @@ export class NetworkExecutor {
             this._vm.runtime.disposeTarget(target);
         }
 
-        // Restore state of all others
-        for (const targetsKey in this._vm.runtime.targets) {
-            this._vm.runtime.targets[targetsKey]["direction"] = this._initialState[targetsKey]["direction"];
-            this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
-            this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
-            this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
-            this._vm.runtime.targets[targetsKey]["drawableID"] = this._initialState[targetsKey]["drawableID"];
-            this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
-            this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
-            this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
-            this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
-            this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
-            const x = this._initialState[targetsKey]["x"];
-            const y = this._initialState[targetsKey]["y"];
-            this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
-            this._vm.runtime.targets[targetsKey]["variables"] = JSON.parse(JSON.stringify(this._initialState[targetsKey]["variables"]));
+        // Restore the state of all others
+        for (const targetKey in this._vm.runtime.targets) {
+            this._vm.runtime.targets[targetKey]["direction"] = this._initialState[targetKey]["direction"];
+            this._vm.runtime.targets[targetKey]["currentCostume"] = this._initialState[targetKey]["currentCostume"];
+            this._vm.runtime.targets[targetKey]["draggable"] = this._initialState[targetKey]["draggable"];
+            this._vm.runtime.targets[targetKey]["dragging"] = this._initialState[targetKey]["dragging"];
+            this._vm.runtime.targets[targetKey]["drawableID"] = this._initialState[targetKey]["drawableID"];
+            this._vm.runtime.targets[targetKey]["effects"] = Object.assign({}, this._initialState[targetKey]["effects"]);
+            this._vm.runtime.targets[targetKey]["videoState"] = this._initialState[targetKey]["videoState"];
+            this._vm.runtime.targets[targetKey]["videoTransparency"] = this._initialState[targetKey]["videoTransparency"];
+            this._vm.runtime.targets[targetKey]["visible"] = this._initialState[targetKey]["visible"];
+            this._vm.runtime.targets[targetKey]["volume"] = this._initialState[targetKey]["volume"];
+            const x = this._initialState[targetKey]["x"];
+            const y = this._initialState[targetKey]["y"];
+            this._vm.runtime.targets[targetKey].setXY(x, y, true, true);
+            this._vm.runtime.targets[targetKey]["variables"] = JSON.parse(JSON.stringify(this._initialState[targetKey]["variables"]));
         }
 
         this._vmWrapper.inputs.resetMouse();

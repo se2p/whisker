@@ -2,6 +2,7 @@
     "testGenerator": "random",
     "algorithm": "random",
     "extractor": "naive",
+    "eventSelector": "interleaving",
     "minEventSize": 2,
     "maxEventSize": 20,
     "chromosome": {
@@ -16,7 +17,7 @@
         "conditions": [
             {
                 "type": "fixedTime",
-                "duration": 6000000
+                "duration": 600000
             },
             {
                 "type": "optimal"

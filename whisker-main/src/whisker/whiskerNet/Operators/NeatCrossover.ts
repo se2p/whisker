@@ -1,10 +1,7 @@
 import {Pair} from "../../utils/Pair";
-import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
-import {NodeGene} from "../NetworkComponents/NodeGene";
 import {Randomness} from "../../utils/Randomness";
 import {NetworkCrossover} from "./NetworkCrossover";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {NetworkLayer} from "../Networks/NetworkChromosome";
 
 
 export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
@@ -64,145 +61,56 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
      * @param avgWeights determines whether we inherit matching genes randomly or by averaging the weight of both parent
      * connections.
      */
-    private multipointCrossover(parent1: NeatChromosome, parent2: NeatChromosome, avgWeights) {
+    private multipointCrossover(parent1: NeatChromosome, parent2: NeatChromosome, avgWeights: boolean) {
 
         // Check which parent has the higher non-adjusted fitness value
         // The worst performing parent should not add additional connections
         // If they have the same fitness value, take the smaller ones excess and disjoint connections only
-        let p1Better = false;
-        const parent1Size = parent1.connections.length;
-        const parent2Size = parent2.connections.length;
-
-        if (parent1.fitness > parent2.fitness)
-            p1Better = true;
-        else if (parent1.fitness === parent2.fitness) {
-            if (parent1Size < parent2Size) {
-                p1Better = true;
-            }
+        let fittestParent: NeatChromosome;
+        let lessFitParent: NeatChromosome;
+        if (parent1.fitness > parent2.fitness) {
+            fittestParent = parent1;
+            lessFitParent = parent2;
+        } else if (parent1.fitness < parent2.fitness) {
+            fittestParent = parent2;
+            lessFitParent = parent1;
+        } else if (parent1.connections.length < parent2.connections.length) {
+            fittestParent = parent1;
+            lessFitParent = parent2;
+        } else {
+            fittestParent = parent2;
+            lessFitParent = parent1;
         }
 
-        // Create Lists for the new Connections and the layer map that includes the new nodes.
-        const newConnections: ConnectionGene[] = [];
-        const newLayers: NetworkLayer = new Map<number, NodeGene[]>();
+        // The crossover child inherits all nodes and connections from the fittest parent.
+        const child = fittestParent.cloneStructure(true);
 
-        // Iterators for the connections of both parents
-        let i1 = 0;
-        let i2 = 0;
+        // Map innovation numbers to the corresponding connection weights of the lesser fit parent.
+        const lessFitParentInnovations = new Map<number, number>();
+        for (const connection of lessFitParent.connections) {
+            lessFitParentInnovations.set(connection.innovation, connection.weight);
+        }
 
-        // Average weight, only used when the flag is activated.
-        let avgWeight = undefined;
+        // Iterate over all connections from the fittest parent and inherit all disjoint and excess genes.
+        // When faced with matching genes inherit connections randomly from any of the two parents.
+        for (const connection of child.connections) {
 
-        // Booleans for deciding if we inherit a connection and if we enable the new Connection.
-        let skip = false;
+            // Matching genes
+            if (lessFitParentInnovations.has(connection.innovation)) {
+                const lessFitWeight = lessFitParentInnovations.get(connection.innovation);
 
-        // Here we save the chosen connection for each iteration of the while loop and if it's a recurrent one.
-        let currentConnection: ConnectionGene;
-
-        while (i1 < parent1Size || i2 < parent2Size) {
-
-            // reset the skip value and the avgWeight value
-            skip = false;
-            avgWeight = undefined;
-
-            // Excess Genes coming from parent2
-            if (i1 >= parent1Size) {
-                currentConnection = parent2.connections[i2];
-                i2++;
-                // Skip excess genes from the worse parent
-                if (p1Better) {
-                    skip = true;
-                }
-            }
-            // Excess genes coming from parent 1
-            else if (i2 >= parent2Size) {
-                currentConnection = parent1.connections[i1];
-                i1++;
-                // Skip excess genes from the worse parent
-                if (!p1Better) {
-                    skip = true;
-                }
-            }
-
-            // Matching genes or Disjoint Genes
-            else {
-                const parent1Connection = parent1.connections[i1];
-                const parent2Connection = parent2.connections[i2];
-                const parent1Innovation = parent1Connection.innovation;
-                const parent2Innovation = parent2Connection.innovation;
-
-                // Matching genes are chosen randomly between the parents
-                if (parent1Innovation === parent2Innovation) {
-                    if (this.random.randomBoolean()) {
-                        currentConnection = parent1Connection;
-                    } else {
-                        currentConnection = parent2Connection;
-                    }
-
-                    if (avgWeights) {
-                        avgWeight = (parent1Connection.weight + parent2Connection.weight) / 2.0;
-                    }
-
-                    i1++;
-                    i2++;
-                }
-
-                // Disjoint connections are inherited from the more fit parent
-                else if (parent1Innovation < parent2Innovation) {
-                    currentConnection = parent1Connection;
-                    i1++;
-                    if (!p1Better) {
-                        skip = true;
-                    }
+                // Average weights of matching genes
+                if (avgWeights) {
+                    connection.weight = (connection.weight + lessFitWeight) / 2;
                 } else {
-                    currentConnection = parent2Connection;
-                    i2++;
-                    if (p1Better) {
-                        skip = true;
+                    // Pick weight of one parent randomly.
+                    // Note that at this point the connection has already inherited the weight of the fitter parent.
+                    if (this.random.randomBoolean()) {
+                        connection.weight = lessFitWeight;
                     }
                 }
-            }
-
-            // Now add the new Connection if we found a valid one.
-            if (!skip) {
-                // Check for the nodes and add them if they are not already in the new Nodes List
-                const sourceNode = currentConnection.source;
-                const targetNode = currentConnection.target;
-
-                // Clone and add the sourceNode to the new layer map.
-                let newSourceNode = [...newLayers.values()].flat().find(node => node.uID === sourceNode.uID);
-                if (!newSourceNode) {
-                    newSourceNode = sourceNode.clone();
-                    if (!newLayers.has(newSourceNode.depth)) {
-                        newLayers.set(newSourceNode.depth, []);
-                    }
-                    newLayers.get(newSourceNode.depth).push(newSourceNode);
-                }
-
-                // Clone and add the targetNode to the new layer map.
-                let newTargetNode = [...newLayers.values()].flat().find(node => node.uID === targetNode.uID);
-                if (!newTargetNode) {
-                    newTargetNode = targetNode.clone();
-                    if (!newLayers.has(newTargetNode.depth)) {
-                        newLayers.set(newTargetNode.depth, []);
-                    }
-                    newLayers.get(newTargetNode.depth).push(newTargetNode);
-                }
-
-                // Now add the new Connection
-                const newConnection = new ConnectionGene(newSourceNode, newTargetNode, currentConnection.weight,
-                    currentConnection.isEnabled, currentConnection.innovation);
-
-                // Average the weight if we calculated a value for matching genes.
-                if (avgWeight) {
-                    newConnection.weight = avgWeight;
-                }
-
-                newConnections.push(newConnection);
             }
         }
-
-        // Finally, create the child with the selected Connections and Nodes
-        return new NeatChromosome(newLayers, newConnections, parent1.getMutationOperator(),
-            parent1.getCrossoverOperator(), parent1.inputConnectionMethod, parent1.activationFunction);
+        return child;
     }
 }

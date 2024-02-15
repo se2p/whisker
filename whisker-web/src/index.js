@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
 import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
-import {FileSaver} from "./web-libs";
+import {FileSaver} from './web-libs';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -33,7 +33,6 @@ const {$} = require('./web-libs');
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
 /* Components */
-const Thread = require('scratch-vm/src/engine/thread');
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
@@ -122,6 +121,14 @@ const enableVMRelatedButtons = function () {
     $('.vm-related').prop('disabled', false);
 };
 
+const downloadMutants = async function (mutants) {
+    for (const mutant of mutants) {
+        await Whisker.scratch.vm.loadProject(JSON.parse(JSON.stringify(mutant)));
+        const projectBlob = await Whisker.scratch.vm.saveProjectSb3(); // await required
+        FileSaver.saveAs(projectBlob, `${mutant.name}.sb3`);
+    }
+};
+
 const runSearch = async function () {
     _disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
@@ -167,19 +174,19 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', true);
         $('#record').prop('disabled', true);
 
-        // Activate listener for execution trace record at the end of a test run.
-        const traceExecution = document.querySelector('#container').executionTrace;
-        if (traceExecution) {
+        // Activate listener for tracing executed blocks
+        const traceBlocks = document.querySelector('#container').traceBlocks;
+        if (traceBlocks) {
             Whisker.testRunner.on(TestRunner.RUN_END, () => {
-                const blob = new Blob([JSON.stringify(Whisker.testRunner.executionTrace)],
+                const blob = new Blob([JSON.stringify(Whisker.testRunner.blockTraces)],
                     {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `ExecutionTrace-${Whisker.projectFileSelect.getName()}.json`);
+                FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
             });
         }
 
         let summary;
         let csvResults;
-        let mutantPrograms;
+        let mutantPrograms = [];
         let coverage;
         let coverageModels = {};
         accSlider.slider('disable');
@@ -190,6 +197,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
         const mutationBudget = document.querySelector('#container').mutationBudget;
         const maxMutants = document.querySelector('#container').maxMutants;
+        const mutantDownload = document.querySelector('#container').downloadMutants;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -198,20 +206,19 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const caseSensitive = $('#model-case-sensitive').is(':checked');
 
         try {
-            await Whisker.scratch.vm.loadProject(project);
-            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, traceExecution);
+            vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
+
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, traceBlocks},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
 
-            // Set the mutants in the output log from where we can download them later.
-            if (mutantPrograms && mutantPrograms.length > 0){
-                Whisker.outputRun.setScratch(Whisker.scratch);
-                Whisker.outputRun.mutants = mutantPrograms;
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
             }
 
             if (Whisker.modelTester.programModelsLoaded()) {
@@ -239,8 +246,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
                 const serializableModelCoverage = {modelCoverage};
                 window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
             }
-
-            CoverageGenerator.restoreClasses({Thread});
         } finally {
             _showRunIcon();
             enableVMRelatedButtons();
@@ -303,13 +308,14 @@ const runAllTests = async function () {
         let coverage;
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
-            CoverageGenerator.prepareClasses({Thread}, Whisker.testRunner, false);
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
             const setMutators = document.querySelector('#container').mutators;
             const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
             const maxMutants = document.querySelector('#container').maxMutants;
+            const mutantDownload = document.querySelector('#container').downloadMutants;
+
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
@@ -323,14 +329,12 @@ const runAllTests = async function () {
                 properties);
             const [csv, mutantPrograms] = await dynamicSuite.execute();
 
-            // Set the mutants in the output log from where we can download it later.
-            if (mutantPrograms.length > 0){
-                Whisker.outputRun.setScratch(Whisker.scratch);
-                Whisker.outputRun.setMutants(mutantPrograms);
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
             }
 
             coverage = CoverageGenerator.getCoverage();
-            CoverageGenerator.restoreClasses({Thread});
             Whisker.outputLog.println(csv);
         } finally {
             _showRunIcon();
@@ -363,6 +367,7 @@ const runAllTests = async function () {
 
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
+    Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 };
 
 const initComponents = function () {
@@ -472,7 +477,7 @@ const initEvents = function () {
                 // Download the recording.
                 const recording = Whisker.stateActionRecorder.getRecord();
                 const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `Recording-${Whisker.projectFileSelect.getName()}.json`);
+                FileSaver.saveAs(blob, `${Whisker.projectFileSelect.getName().replace('.sb3', '')}.json`);
             } else {
                 Whisker.inputRecorder.emit('startRecording');
                 Whisker.configFileSelect.loadAsString().then(config => Whisker.stateActionRecorder.startRecording(config));
@@ -796,6 +801,7 @@ const _addFileListeners = function () {
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
+        Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();

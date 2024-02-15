@@ -50,7 +50,7 @@ export class Neatest extends NEAT {
     /**
      * Saves target ids of objectives that have already been switched out in order to prioritise different ones.
      */
-    private _switchedTargets: string[] = [];
+    private _switchedTargets = new Set<string>();
 
     /**
      * Holds a record of promising targets, i.e. the maximum amount of how often a target has accidentally already been
@@ -60,7 +60,7 @@ export class Neatest extends NEAT {
 
     /**
      * Searches for a suite of networks that are able to cover all statements of a given Scratch program reliably.
-     * @returns a Map mapping a statement's key to the network capable of reaching the given statement reliably.
+     * @returns Mapping of a statement's key to the network capable of reaching the given statement reliably.
      */
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialise();
@@ -94,12 +94,12 @@ export class Neatest extends NEAT {
                 // Switch the target if we stop improving for a set number of times and have statements to which we
                 // can switch to left
                 const uncoveredStatementIds = this.getUncoveredStatements().map(statement => statement.getTargetNode().id);
-                const uncoveredUntouchedTargets = uncoveredStatementIds.filter(targetId => !this._switchedTargets.includes(targetId));
+                const uncoveredUntouchedTargets = uncoveredStatementIds.filter(targetId => !this._switchedTargets.has(targetId));
                 if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount &&
                     uncoveredUntouchedTargets.length > 0) {
                     const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getTargetNode().id;
-                    this._switchedTargets.push(currentTargetId);
-                    Container.debugLog("Switching Target due to missing improvement.");
+                    this._switchedTargets.add(currentTargetId);
+                    Container.debugLog("Switching Target " + currentTargetId + " due to missing improvement.");
                     break;
                 }
 
@@ -159,7 +159,7 @@ export class Neatest extends NEAT {
         // were not selected as target yet.
         if (nextTarget === undefined) {
             const uncoveredUntouchedTargets = new Set([...potentialTargets].filter(target =>
-                !this._switchedTargets.includes(target.getTargetNode().id)));
+                !this._switchedTargets.has(target.getTargetNode().id)));
             potentialTargets = uncoveredUntouchedTargets.size > 0 ? uncoveredUntouchedTargets : potentialTargets;
             let mostPromisingTargets = [];
             let mostPromisingValue = 0;
@@ -185,7 +185,7 @@ export class Neatest extends NEAT {
             }
         }
 
-        // If no target looks promising we pick the next target randomly.
+        // If no target looks promising, we pick the next target randomly.
         if (nextTarget === undefined) {
             nextTarget = Randomness.getInstance().pick(Array.from(potentialTargets));
         }
@@ -249,7 +249,7 @@ export class Neatest extends NEAT {
             // reached a previously not targeted statement without reaching the actual target statement at least once.
             if (this._promisingTargets.get(this._targetKey) < 1) {
                 const uncoveredTargetIds = this.getUncoveredStatements().map(target => target.getTargetNode().id);
-                const untouchedUncovered = uncoveredTargetIds.filter(target => !this._switchedTargets.includes(target));
+                const untouchedUncovered = uncoveredTargetIds.filter(target => !this._switchedTargets.has(target));
                 for (const [key, value] of this._promisingTargets) {
                     if (value > 0 && untouchedUncovered.includes(this._fitnessFunctionMap.get(key).getTargetNode().id)) {
                         this._switchToEasierTarget = true;
@@ -315,11 +315,8 @@ export class Neatest extends NEAT {
         const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
         const coverageStableCount = network.openStatementTargets.get(fitnessFunctionKey);
         const statementFitness = await fitnessFunction.getFitness(network);
-        return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount &&
-                !this._archive.has(fitnessFunctionKey)) ||
-            (this._neuroevolutionProperties.coverageStableCount == 0 &&
-                await fitnessFunction.isOptimal(statementFitness) &&
-                !this._archive.has(fitnessFunctionKey));
+        return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount && !this._archive.has(fitnessFunctionKey)) ||
+            (this._neuroevolutionProperties.coverageStableCount == 0 && await fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey));
     }
 
     /**
@@ -333,11 +330,14 @@ export class Neatest extends NEAT {
         Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
         Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
         Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`);
-        Container.debugLog(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
-        const sortedSpecies = this._population.species.sort((a, b) => b.averageFitness - a.averageFitness);
+
+        const sortedSpecies = this._population.species.sort((a, b) => b.uID - a.uID);
+        Container.debugLog(`Population of ${this._population.populationSize} distributed in ${sortedSpecies.length} species`);
+        Container.debugLog("\tID\tage\tsize\tfitness\tshared fitness");
         for (const species of sortedSpecies) {
-            Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
+            Container.debugLog(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}\t${Math.round(species.averageSharedFitness * 100) / 100}`);
         }
+        Container.debugLog(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
         Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         Container.debugLog("\n-----------------------------------------------------\n");
     }

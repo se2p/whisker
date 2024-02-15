@@ -21,7 +21,7 @@ Whisker provides automated and property-based testing functionality for Scratch 
 
 ## Building Whisker
 
-Whisker requires Node.js v16.14.0 and is built using the [yarn](https://classic.yarnpkg.com/lang/en/) (classic) package manager.
+Whisker requires Node.js v18.18.0 and is built using the [yarn](https://classic.yarnpkg.com/lang/en/) (classic) package manager.
 
 After cloning the repository, install all dependencies using:
 
@@ -80,21 +80,22 @@ Usage: node servant run [options]
 run Whisker tests
 
 Options:
-  -a, --acceleration <Integer>        acceleration factor (default: 1)
-  -d, --headless                      run headless ("d" like in "decapitated") (default: false)
-  -e, --mutants-download-path <Path>  where generated mutants should be saved
-  -h, --help                          display help for command
-  -j, --number-of-jobs <Integer>      number of jobs (Chromium tabs) for test execution (default: 1)
-  -k, --console-forwarded             forward browser console output
-  -l, --live-log                      print new log output regularly
-  -m, --mutators <String...>          mutation operators to apply
-  -o, --live-output-coverage          print new coverage output regularly
-  -s, --scratch-path <Path>           path to file (".sb3") or folder with scratch application(s)
-  -t, --test-path <Path>              path to Whisker tests to run (".js")
-  -v, --csv-file <Path>               create CSV file with results
-  -z, --seed <String>                 custom seed for Scratch-VM
-  -et, --executionTrace               whether and execution trace should be recorded and downloaded (default: false)
-  -rec, --state-action-recorder       record the program execution as a json file when running with the `open` command
+  -a, --acceleration <Integer>      acceleration factor (default: 1)
+  -bm, --max-mutants <Integer>      upper bound of analysed mutants during mutation analysis
+  -bt, --mutation-budget <Integer>  timeout for the mutation analysis
+  -d, --headless                    run headless ("d" like in "decapitated") (default: false)
+  -dm, --download-mutants           downloads the generated mutants
+  -h, --help                        display help for command
+  -j, --number-of-jobs <Integer>    number of jobs (Chromium tabs) for test execution (default: 1)
+  -k, --console-forwarded           forward browser console output
+  -l, --live-log                    print new log output regularly
+  -m, --mutators <String...>        mutation operators to apply
+  -o, --live-output-coverage        print new coverage output regularly
+  -s, --scratch-path <Path>         path to file (".sb3") or folder with scratch application(s)
+  -t, --test-path <Path>            path to Whisker tests to run (".js")
+  -v, --csv-file <Path>             create CSV file with results
+  -z, --seed <String>               custom seed for Scratch-VM
+  -tb, --trace-blocks               whether block traces should be recorded and downloaded (default: false)
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
@@ -245,5 +246,15 @@ Whisker is supported by the project FR 2955/3-1 funded by the
   journal       = {arXiv preprint arXiv:2304.06413},
   year          = {2023},
   doi           = {10.48550/arXiv.2304.06413}
+}
+```
+
+```
+@inproceedings{nuzzlebug24,
+  author    = {Adina Deiner and Gordon Fraser},
+  title     = {NuzzleBug: Debugging Block-Based Programs in Scratch },
+  booktitle = {ACM/IEEE International Conference on Software Engineering (ICSE)},
+  publisher = {{IEEE}},
+  year      = {2024}
 }
 ```

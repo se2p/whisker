@@ -62,7 +62,7 @@ class WhiskerSubCommand extends Command {
         this.option(
             '-a, --acceleration <Integer>',
             'acceleration factor',
-            (factor) => util.processPositiveInt(factor),
+            (factor) => util.processPositiveInt(factor, true),
             1);
         this.option(
             '-v, --csv-file <Path>',
@@ -167,14 +167,15 @@ class WhiskerSubCommand extends Command {
     optionMutantsDownloadPath() {
         customChecks.push(function mutantsDownloadPathImpliesMutators() {
             // Note: Option.implies(...) does not fit our use-case. So we have to implement a custom check here.
-            if ('mutantsDownloadPath' in opts && !('mutators' in opts)) {
+            if ('downloadMutants' in opts && !('mutators' in opts)) {
                 throw new InvalidArgumentError('You gave a download path for mutants but did not enable mutators.');
             }
         });
 
-        return this.option('-e, --mutants-download-path <Path>',
-            'where generated mutants should be saved',
-            (downloadPath) => util.processDirPathExists(downloadPath));
+        return this.option(
+            '-dm, --download-mutants',
+            'downloads the generated mutants',
+        );
     }
 
     optionMutationBudget() {
@@ -210,16 +211,30 @@ class WhiskerSubCommand extends Command {
             (activationTraces) => util.processPositiveInt(activationTraces));
     }
 
-    optionExecutionTrace() {
+    optionTraceBlocks() {
         return this.option(
-            '-et, --execution-trace',
-            'activates recording of execution trace',
+            '-tb, --trace-blocks',
+            'activates recording of block traces',
         );
     }
 
     optionStateActionRecorder(){
         return this.option('-rec, --state-action-recorder',
             'records executed scratch events and maps them to the current program state');
+    }
+
+    optionRecordProject(){
+        return this.option(
+            '-rp, --record-project <Path>',
+            'Executes procedure for collecting recording data of single project.',
+            projectPath => util.processFileOrDirPathExists(projectPath, '.sb3'));
+    }
+
+    optionRecordingTime(){
+        return this.option(
+            '-t, --time <Integer>',
+            'Sets the time for how long gameplay should be recorded in seconds.',
+            seconds => util.processPositiveInt(seconds));
     }
 
     /**
@@ -249,7 +264,9 @@ const subCommands = [
         .description('Open the Whisker web page with the specified parameters')
         .optionScratchPath()
         .optionConfigPath()
-        .optionStateActionRecorder(),
+        .optionStateActionRecorder()
+        .optionRecordProject()
+        .optionRecordingTime(),
 
 
     newSubCommand('run')
@@ -261,7 +278,7 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
-        .optionExecutionTrace(),
+        .optionTraceBlocks(),
 
     newSubCommand('generate')
         .description('generate Whisker test suites')

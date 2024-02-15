@@ -279,7 +279,9 @@ export class WhiskerSearchConfiguration {
                     learningRateAlgorithm: gradientDescent['learningRateAlgorithm'],
                     epochs: gradientDescent['epochs'],
                     batchSize: gradientDescent['batchSize'],
-                    labelSmoothing: gradientDescent['labelSmoothing']
+                    combinePlayerRecordings: gradientDescent['combinePlayerRecordings'],
+                    labelSmoothing: gradientDescent['labelSmoothing'],
+                    l2Regularisation: gradientDescent['l2Regularisation']
                 };
 
                 // Check for data augmentation.
@@ -287,15 +289,15 @@ export class WhiskerSearchConfiguration {
                     const augmentationProperties = gradientDescent['dataAugmentation'];
                     properties.dataAugmentation = {
                         doAugment: augmentationProperties['doAugment'],
-                        numAugments: augmentationProperties['numAugments'],
+                        augmentFactor: augmentationProperties['augmentFactor'],
                         disturbStateProb: augmentationProperties['disturbStateProb'],
                         disturbStatePower: augmentationProperties['disturbStatePower']
                     };
                 }
 
                 // Check for Peer-To-Peer sharing.
-                if (gradientDescent['peerToPeerSharing']) {
-                    Container.peerToPeerSharing = true;
+                if ('dynamicRecordingFraction' in gradientDescent) {
+                    Container.dynamicRecordingFraction = gradientDescent['dynamicRecordingFraction'];
                 }
             }
         }

@@ -40,6 +40,6 @@ export class FixedTimeStoppingCondition<T extends Chromosome> implements Stoppin
     }
 
     get maxTime(): number {
-        return this._maxTime / Container.acceleration;
+        return this._maxTime;
     }
 }

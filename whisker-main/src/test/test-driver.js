@@ -92,8 +92,8 @@ class TestDriver {
             Randomness.setInitialSeeds(seed);
             Randomness.seedScratch(this.vm);
         };
-        this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
-        this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;
+        this.getTotalRealTimeElapsed = () => vmWrapper.getTotalRealTimeElapsed.bind(vmWrapper);
+        this.getRealRunTimeElapsed = () => vmWrapper.getRealRunTimeElapsed.bind(vmWrapper);
         this.getAccelerationFactor = () => vmWrapper.accelerationFactor;
         this.isCoverageEnabled = Coverage.isCoverageEnabled.bind(null, vmWrapper.vm);
         this.getCoverage = Coverage.getCoverage;

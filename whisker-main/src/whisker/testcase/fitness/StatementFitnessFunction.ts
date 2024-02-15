@@ -24,6 +24,7 @@ import {ControlDependenceGraph, GraphNode, EventNode, UserEventNode, Graph} from
 import {ControlFilter, CustomFilter} from '../../../../../scratch-analysis/src/block-filter';
 import {Trace} from "scratch-vm/src/engine/tracing.js";
 import {Container} from "../../utils/Container";
+import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -95,6 +96,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
         const approachLevel = this.getApproachLevel(chromosome);
         const branchDistance = this.getBranchDistance(chromosome);
+
+        // When dealing with NetworkChromosomes, ignore the cfgDistance.
+        if (chromosome instanceof NetworkChromosome){
+            return StatementFitnessFunction._normalize(approachLevel + StatementFitnessFunction._normalize(branchDistance));
+        }
 
         let cfgDistanceNormalized;
         if (branchDistance === 0 && approachLevel < Number.MAX_SAFE_INTEGER) {

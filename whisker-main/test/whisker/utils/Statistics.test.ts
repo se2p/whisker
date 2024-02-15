@@ -74,6 +74,10 @@ describe("Statistics", () => {
         expect(Statistics.silvermanRuleOfThumb([0, 1, 2, 3, 4, 5]).toFixed(1)).toBe("1.1");
     });
 
+    test("L2-Norm", () => {
+        expect(Statistics.L2Norm([3,4])).toBe(5);
+    });
+
     test("Levenshtein Distance Trivial Case", () => {
         const testArray = [new MouseMoveEvent(1, 2), new WaitEvent(), new KeyPressEvent('left arrow')];
         expect(Statistics.levenshteinDistanceEvents(testArray, [])).toBe(testArray.length);

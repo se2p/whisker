@@ -13,6 +13,12 @@ const CoverageGenerator = require("../coverage/coverage");
 class TestRunner extends EventEmitter {
 
     /**
+     * Collects traces of executed blocks during the execution of tests.
+     * @type {[]}
+     */
+    blockTraces = []
+
+    /**
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
@@ -42,7 +48,7 @@ class TestRunner extends EventEmitter {
 
         this._setRNGSeeds(props['seed'], sampleTest, vm);
 
-        // Load project and establish an initial save state
+        // Load the project and establish an initial save state
         vm.deactivateDebugTracing();
         this.util = await this._loadProject(vm, project, props);
         this.saveState = this.vmWrapper._recordInitialState();
@@ -55,9 +61,17 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
+        if (props.accelerationFactor === "Infinity") {
+            // We need a small delay here to give the renderer a chance to initialize everything properly. Otherwise,
+            // it leads to weird behavior (e.g., touchingColor blocks may sometimes report false negatives.)
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+
         if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
-            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER;
+
+            // Divide by 1000 since we measure the budget in seconds and will multiply by 1000 afterwards.
+            const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER / 1000;
 
             // Add the original as reference when applying mutation analysis
             const original = JSON.parse((vm.toJSON()));
@@ -66,12 +80,10 @@ class TestRunner extends EventEmitter {
             const mutantFactory = new MutationFactory(vm);
             mutantPrograms = mutantFactory.generateScratchMutations(props['mutators'], props['maxMutants']);
             shuffle(mutantPrograms); // Shuffle so we do not favour mutation operators when a time limit is set
-            mutantPrograms.push(original);
+            mutantPrograms.unshift(original);
 
             // Execute the given tests on every mutant
-            const startTime = Date.now();
-            while (mutantPrograms.length > 0 && Date.now() - startTime < mutationBudget) {
-                const mutant = mutantPrograms.pop();
+            for (const mutant of mutantPrograms) {
                 const projectMutation = `${projectName}-${mutant.name}`;
                 console.log(`Analysing mutant ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
@@ -114,6 +126,11 @@ class TestRunner extends EventEmitter {
                 csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
+
+                // Stop if time budget in seconds has been exceeded.
+                if (Date.now() - startTime > mutationBudget * 1000){
+                    break;
+                }
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
@@ -197,15 +214,18 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm the vm that contains the loaded project
      */
     _setRNGSeeds(seed, test, vm) {
+        let seedDateObject = false;
 
         // Prioritise seeds set using the CLI.
         if (seed !== undefined && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
+            seedDateObject = true;
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
         else if (test !== undefined && "seed" in test){
             Randomness.setInitialSeeds(test.seed);
+            seedDateObject = true;
         }
 
         // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
@@ -213,7 +233,8 @@ class TestRunner extends EventEmitter {
         else if (Randomness.getInitialRNGSeed() === undefined) {
             Randomness.setInitialSeeds(Date.now());
         }
-        Randomness.seedScratch(vm);
+
+        Randomness.seedScratch(vm, seedDateObject);
     }
 
     /**
@@ -240,7 +261,7 @@ class TestRunner extends EventEmitter {
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
      * @param {boolean} loadSaveState
-     * @return {WhiskerUtil}.
+     * @return {Promise<WhiskerUtil>}.
      */
     async _loadProject(vm, project, props) {
         const util = new WhiskerUtil(vm, project);
@@ -394,6 +415,10 @@ class TestRunner extends EventEmitter {
     async _executeTest(vm, project, test, modelTester, props, modelProps, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
 
+        if (props['traceBlocks']) {
+            this.vmWrapper.vm.activateBlockTracing();
+        }
+
         const testDriver = this.util.getTestDriver(
             {
                 extend: {
@@ -478,6 +503,12 @@ class TestRunner extends EventEmitter {
         }
 
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
+
+        // If desired, save execution trace after executing each block.
+        if (props['traceBlocks']) {
+            this.blockTraces.push(this._extractTraces());
+        }
+
         for (const statement of this.statementMap.keys()){
             if(result.covered.has(statement._targetNode.id)){
                 this.statementMap.set(statement, true);
@@ -488,23 +519,25 @@ class TestRunner extends EventEmitter {
     }
 
     /**
+     * Extracts desired trace information for every executed block.
+     * @return {{id:string, targets:{}}}
+     * @private
+     */
+    _extractTraces() {
+        const traces = [];
+        for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
+            traces.push({id: trace['id'], opcode: trace['opcode'], sprite: trace['targetsInfo']});
+        }
+        return {...traces};
+    }
+
+    /**
      * @param {Test} test .
      * @param {string} message .
      * @private
      */
     _log (test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
-    }
-
-    /**
-     * Adds an execution trace to the trace array.
-     * @param {object} object .
-     */
-    addExecutionTrace (object) {
-        if(!this.executionTrace){
-            this.executionTrace = [];
-        }
-        this.executionTrace.push(object);
     }
 
 

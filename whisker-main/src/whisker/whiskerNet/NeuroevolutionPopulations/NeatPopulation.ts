@@ -87,21 +87,26 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Generates a new generation of networks by evolving the current population.
      */
     public evolve(): void {
+
         // Remove chromosomes that are not allowed to reproduce.
+        const doomedChromosomes = [];
         for (const chromosome of this.networks) {
             if (!chromosome.isParent) {
                 const specie = chromosome.species;
                 specie.removeNetwork(chromosome);
-                this.removeNetwork(chromosome);
+                doomedChromosomes.push(chromosome);
             }
         }
+        this._networks = this.networks.filter(network => !doomedChromosomes.includes(network));
+
         // Now, let the reproduction start.
         const offspring: NeatChromosome[] = [];
         for (const specie of this.species) {
             offspring.push(...specie.evolve(this, this.species));
         }
 
-        // Speciate the produced offspring
+        // Assign representatives to each species and assign each offspring to its closest matching species.
+        this.assignRepresentatives(offspring);
         for (const child of offspring) {
             this.speciate(child);
         }
@@ -134,16 +139,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             Arrays.remove(this.species, doomedSpecie);
         }
         this.generation++;
-
-        // If we have big differences in fitness values across species, we might get small over-populations that expand.
-        if (this.networks.length > this.hyperParameter.populationSize) {
-            Container.debugLog(`The population size has changed from ${this.hyperParameter.populationSize} to
-            ${this.networks.length} members.`);
-            while (this.networks.length > this.hyperParameter.populationSize) {
-                this.networks.pop();
-            }
-            Container.debugLog(`Reduced the population size down to ${this.networks.length}`);
-        }
     }
 
     /**
@@ -238,7 +233,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             this.highestFitnessLastChanged++;
         }
 
-        // If there is a stagnation in fitness refocus the search
+        // If there is a stagnation in fitness, refocus the search
         if (this.highestFitnessLastChanged > this.hyperParameter.penalizingAge + 5) {
             Container.debugLog("Refocusing the search on the two most promising species");
             this.highestFitnessLastChanged = 0;
@@ -285,34 +280,54 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
+     * Assigns a new representative from the offspring for each species based on the compatibility distance
+     * to the previous representative.
+     * @param offspring the offspring from which representatives will be selected.
+     */
+    public assignRepresentatives(offspring: NeatChromosome[]): void {
+        for (const specie of this.species) {
+            let minDistance = Number.MAX_VALUE;
+            let closestNetwork = offspring[0];
+            for (const network of offspring) {
+                const distance = this.compatibilityDistance(specie.representative, network);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestNetwork = network;
+                }
+            }
+            specie.representative = closestNetwork;
+        }
+    }
+
+    /**
      * Assigns a network to the first compatible species.
      * @param network the network that should be assigned to a species.
      */
     public speciate(network: NeatChromosome): void {
 
-        // If we have no existent species in our population create the first one.
+        // If we have no existent species in our population, create the first one.
         if (this.species.length === 0) {
             const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
+            newSpecies.representative = network;
             this.speciesCount++;
             this.species.push(newSpecies);
             newSpecies.networks.push(network);
             network.species = newSpecies;
-        }
-
-            // If we already have some species find a compatible one or create a new species for the network if the network
-        // is not compatible enough with any existent species.
-        else {
+        } else {
+            // If we already have some species,
+            // find a compatible one or create a new species for the network if the network
+            // is not compatible enough with any existent species.
             let foundSpecies = false;
             for (const specie of this.species) {
                 // Skip empty species
                 if (specie.networks.length == 0) {
                     continue;
                 }
-                // Get a representative of the specie and calculate the compatibility distance.
-                const representative = specie.networks[0];
-                const compatDistance = this.compatibilityDistance(network, representative);
 
-                // If the representative and the given network are compatible enough add the network to the
+                // Get a representative of the specie and calculate the compatibility distance.
+                const compatDistance = this.compatibilityDistance(network, specie.representative);
+
+                // If the representative and the given network are compatible enough, add the network to the
                 // representative's species.
                 if (compatDistance < this.compatibilityThreshold) {
                     specie.networks.push(network);
@@ -322,9 +337,10 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 }
             }
 
-            // If the network fits into no species create a new one.
+            // If the network fits into no species, create a new one.
             if (!foundSpecies) {
                 const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
+                newSpecies.representative = network;
                 this.speciesCount++;
                 this.species.push(newSpecies);
                 newSpecies.networks.push(network);
@@ -370,7 +386,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // and their weight differences.
         for (let i = 0; i < maxSize; i++) {
 
-            // If we exceeded the size of one of the two network, we have an excess gene.
+            // If we exceeded the size of one of the two networks, we have an excess gene.
             if (i1 >= size1) {
                 excess++;
                 i2++;
