@@ -14,6 +14,11 @@ class TestRunner extends EventEmitter {
 
     constructor() {
         super();
+
+        /**
+         * Collects traces of executed blocks during the execution of tests.
+         * @type {[]}
+         */
         this.blockTraces = [];
     }
 
