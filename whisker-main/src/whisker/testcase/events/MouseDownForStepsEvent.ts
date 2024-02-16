@@ -58,7 +58,6 @@ export class MouseDownForStepsEvent extends ScratchEvent {
     }
 
     getParameters(): [number] {
-        // 0 returns False in JS/TS
         return [this._steps];
     }
 

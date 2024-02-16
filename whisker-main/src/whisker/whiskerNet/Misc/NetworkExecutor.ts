@@ -16,6 +16,9 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "../../testcase/events/ParameterType";
 import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
+import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
+import {SoundEvent} from "../../testcase/events/SoundEvent";
 
 export class NetworkExecutor {
 
@@ -50,11 +53,6 @@ export class NetworkExecutor {
     private _eventExtractor: ScratchEventExtractor;
 
     /**
-     * The number of steps we are waiting before executing a new event. Set by WaitEvents.
-     */
-    private _waitDuration = 0;
-
-    /**
      * Constructs a new NetworkExecutor object.
      * @param _vmWrapper the wrapper of the Scratch-VM.
      * @param _timeout timeout after which each playthrough is halted.
@@ -79,7 +77,6 @@ export class NetworkExecutor {
         const _onRunStop = this.projectStopped.bind(this);
         this._projectRunning = true;
         this._vmWrapper.start();
-        this._waitDuration = 0;
 
         // Initialise required variables.
         network.codons = [];
@@ -117,36 +114,29 @@ export class NetworkExecutor {
             }
 
             // Select the next event and execute it if we did not decide to wait
-            if (this._waitDuration <= 0) {
-                let eventIndex = this.selectNextEvent(network, isGreenFlag);
-                let nextEvent = this.availableEvents[eventIndex];
+            let eventIndex = this.selectNextEvent(network, isGreenFlag);
+            let nextEvent = this.availableEvents[eventIndex];
 
-                // If something goes wrong, e.g. we have a defect network due to all active input nodes being
-                // disconnected to every output node, insert a Wait.
+            // If something goes wrong, e.g. we have a defect network due to all active input nodes being
+            // disconnected to every output node, insert a Wait.
+            if (nextEvent === undefined) {
+                eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
+                nextEvent = this.availableEvents[eventIndex];
+
+                // If we still don't have a WaitEvent, we must add it manually.
+                // This could happen if we encounter type text events.
                 if (nextEvent === undefined) {
-                    eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
-                    nextEvent = this.availableEvents[eventIndex];
-
-                    // If we still don't have a WaitEvent, we must add it manually. This could happen if we encounter
-                    // type text events.
-                    if (nextEvent === undefined) {
-                        this.availableEvents.push(new WaitEvent());
-                        nextEvent = this.availableEvents[this.availableEvents.length - 1];
-                    }
-                }
-                network.codons.push(eventIndex);
-                const nextEventAndParams = await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
-
-                // Record the state action pair if dynamicRecordTracing is activated
-                // and a valid action has been selected.
-                if (Container.dynamicRecordingFraction > 0 && nextEventAndParams !== undefined && !(nextEvent instanceof WaitEvent)) {
-                    network.updateStateActionPair(spriteFeatures, nextEventAndParams);
+                    this.availableEvents.push(new WaitEvent());
+                    nextEvent = this.availableEvents[this.availableEvents.length - 1];
                 }
             }
+            network.codons.push(eventIndex);
+            const nextEventAndParams = await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
 
-            // Otherwise, we just Wait...
-            else {
-                this._waitDuration--;
+            // Record the state action pair if dynamicRecordTracing is activated
+            // and a valid action has been selected.
+            if (Container.dynamicRecordingFraction > 0 && nextEventAndParams !== undefined && !(nextEvent instanceof WaitEvent)) {
+                network.updateStateActionPair(spriteFeatures, nextEventAndParams);
             }
 
             // Record the activation trace and increase the stepCount.
@@ -302,14 +292,12 @@ export class NetworkExecutor {
             await nextEvent.apply();
         }
 
-        // To perform non-waiting actions, we have to execute a Wait.
+        // To perform non-waiting actions, we have to execute a Wait
+        // so that the VM can react to the simulated user input.
         if (!(nextEvent instanceof WaitEvent)) {
             const waitEvent = new WaitEvent(1);
             events.push(new EventAndParameters(waitEvent, [1]));
             await waitEvent.apply();
-        } else {
-            // Otherwise, set the wait duration
-            this._waitDuration = nextEvent.getParameters()[0];
         }
 
         StatisticsCollector.getInstance().incrementEventsCount();
@@ -325,6 +313,22 @@ export class NetworkExecutor {
     private isDoubleKeyPress(nextEvent: ScratchEvent): boolean {
         const key = String(nextEvent.getParameters()[0]);
         return nextEvent instanceof KeyPressEvent && this._vmWrapper.inputs.isKeyDown(key);
+    }
+
+    /**
+     * Determines the duration of the supplied event.
+     * If the event is not duration-based, we return a value of one to give the VM time to react to the sent event.
+     * @param event for which we want to determine the required waiting duration.
+     * @returns duration of supplied event in number of steps.
+     */
+    private getDuration(event: ScratchEvent): number {
+        if (event instanceof ClickSpriteEvent || event instanceof KeyPressEvent || event instanceof SoundEvent) {
+            return event.getParameters()[1];
+        } else if (event instanceof MouseDownForStepsEvent) {
+            return event.getParameters()[0];
+        } else {
+            return 1;
+        }
     }
 
     /**
