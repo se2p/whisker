@@ -1,4 +1,3 @@
-import {expect} from "@jest/globals";
 import {InputEffect, InputEffectName} from "../../../../src/whisker/model/components/InputEffect";
 
 describe('InputEffect', () => {

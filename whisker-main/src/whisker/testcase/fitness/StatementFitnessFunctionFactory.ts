@@ -1,5 +1,5 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {generateCFG, generateCDG} from 'scratch-analysis';
+import {generateCFG, generateCDG} from '../../../../../scratch-analysis';
 import {StatementFitnessFunction} from "./StatementFitnessFunction";
 import {Container} from "../../utils/Container";
 

@@ -1,4 +1,3 @@
-import {expect} from "@jest/globals";
 import {ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";

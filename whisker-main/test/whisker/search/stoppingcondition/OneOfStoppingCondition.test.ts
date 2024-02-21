@@ -28,7 +28,6 @@ import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {StatisticsCollector} from "../../../../src/whisker/utils/StatisticsCollector";
 import Arrays from "../../../../src/whisker/utils/Arrays";
-import {expect} from "@jest/globals";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     setCurrentSolution(chromosome: BitstringChromosome) {
