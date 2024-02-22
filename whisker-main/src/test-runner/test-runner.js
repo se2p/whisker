@@ -9,6 +9,8 @@ const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFa
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const {shuffle} = require("../whisker/utils/Arrays");
 const CoverageGenerator = require("../coverage/coverage");
+const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
+const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
 
 class TestRunner extends EventEmitter {
 
@@ -108,10 +110,10 @@ class TestRunner extends EventEmitter {
 
                 // Record the results
                 const duration = (Date.now() - startTime) / 1000;
-                const total = this.statementMap.size;
-                const covered = [...this.statementMap.values()].filter(cov => cov).length;
+                const coverage = this._extractCoverage();
                 const seed = Randomness.scratchSeed;
-                csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
+                csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, coverage,
+                    duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
 
@@ -143,11 +145,11 @@ class TestRunner extends EventEmitter {
 
                 // Record the results
                 const duration = (Date.now() - startTime) / 1000;
-                const total = this.statementMap.size;
-                const covered = [...this.statementMap.values()].filter(cov => cov).length;
+                const coverage = this._extractCoverage();
                 const modelResults = this._extractModelCSVData(result.modelResult);
                 const seed = Randomness.scratchSeed;
-                csv += this._generateCSVRow(projectName, seed, totalAssertions,[result.status], total,  covered, duration, undefined, modelResults);
+                csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
+                    duration, undefined, modelResults);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -158,7 +160,7 @@ class TestRunner extends EventEmitter {
             for (const test of tests) {
                 this.vmWrapper.loadSaveState(this.saveState);
                 let result;
-                if("generationAlgorithm" in test){
+                if ("generationAlgorithm" in test) {
                     resultRecords.generationAlgorithm = test.generationAlgorithm;
                 }
 
@@ -181,10 +183,10 @@ class TestRunner extends EventEmitter {
             }
             // Record the results
             const duration = (Date.now() - startTime) / 1000;
-            const total = this.statementMap.size;
-            const covered = [...this.statementMap.values()].filter(cov => cov).length;
             const seed = Randomness.scratchSeed;
-            csv += this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults, total, covered, duration, resultRecords);
+            const coverage = this._extractCoverage();
+            csv += this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults,
+                coverage, duration, resultRecords);
             finalResults[projectName] = testResults;
         }
 
@@ -260,16 +262,41 @@ class TestRunner extends EventEmitter {
     }
 
     /**
+     * Extracts coverage information based on the last test run.
+     * @returns {{statements:number, statCoverage:number, branches:number, branchCoverage:number}} the extracted
+     * coverage information
+     */
+    _extractCoverage() {
+        const coveredStatements = [...this.statementMap.values()].filter(cov => cov).length;
+        const coveredBranches = [...this.branchMap.values()].filter(cov => cov).length;
+        return {
+            statements: this.statementMap.size,
+            statCoverage: Math.round((coveredStatements / this.statementMap.size) * 100) / 100,
+            branches: this.branchMap.size,
+            branchCoverage: Math.round((coveredBranches / this.branchMap.size) * 100) / 100,
+        };
+    }
+
+    /**
      * Initialises the statement map.
      * @param {VirtualMachine} vm
      * @returns {number} total statements.
      */
     _initialiseFitnessTargets(vm) {
-        const fitnessFactory = new StatementFitnessFunctionFactory();
-        const fitnessTargets = fitnessFactory.extractFitnessFunctions(vm, []);
+        // Initialise statements
+        const statementFactory = new StatementFitnessFunctionFactory();
+        const statementTargets = statementFactory.extractFitnessFunctions(vm, []);
         this.statementMap = new Map();
-        for (const statement of fitnessTargets){
+        for (const statement of statementTargets) {
             this.statementMap.set(statement, false);
+        }
+
+        // Initialise branches
+        const branchFactory = new BranchCoverageFitnessFunctionFactory();
+        const branchTargets = branchFactory.extractFitnessFunctions(vm, []);
+        this.branchMap = new Map();
+        for (const branch of branchTargets) {
+            this.branchMap.set(branch, false);
         }
     }
 
@@ -299,14 +326,13 @@ class TestRunner extends EventEmitter {
      */
     _generateCSVHeader(tests, modelProps) {
         let header = `\nprojectName,seed,assertions,generationAlgorithm`;
-        if(tests) {
+        if (tests) {
             for (const test of tests) {
                 header += `,${test.name}`;
             }
-            header += `,passed,failed,error,skip,totalBlocks,coveredBlocks,coverage,duration\n`;
-        }
-        else if(modelProps.repetitions > 0){
-            header += `,modelRepetition,modelFails,modelErrors,testResult,totalBlocks,projectCoverage,modelCoverage,duration\n`;
+            header += `,passed,failed,error,skip,statements,statementCoverage,branches,branchCoverage,duration\n`;
+        } else if (modelProps.repetitions > 0) {
+            header += `,modelRepetition,modelFails,modelErrors,testResult,statements,statementCoverage,branches,branchCoverage,modelCoverage,duration\n`;
         }
         return header;
     }
@@ -317,24 +343,23 @@ class TestRunner extends EventEmitter {
      * @param {number} seed
      * @param {number} assertions
      * @param {Array<string>} testStatusResults
-     * @param {number} total
-     * @param {number} covered
+     * @param {{statements:number, statCoverage:number, branches:number, branchCoverage:number}} coverage
      * @param {number} duration
      * @param {{}} resultRecords
      * @param {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}} modelResults
      * @return {string}
      */
-    _generateCSVRow(projectName, seed, assertions, testStatusResults, total, covered, duration, resultRecords, modelResults = undefined) {
-        const coverage = Math.round((covered / total) * 100) / 100;
+    _generateCSVRow(projectName, seed, assertions, testStatusResults,
+                    coverage, duration, resultRecords, modelResults = undefined) {
         let csvRow = `${projectName},${seed},${assertions}`;
         if (modelResults !== undefined) {
-            csvRow += `,${modelResults.generationAlgorithm},${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${total},${covered},${coverage},${modelResults.coverage},${duration}\n`;
+            csvRow += `,${modelResults.generationAlgorithm},${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${modelResults.coverage},${duration}\n`;
         } else if (resultRecords !== undefined) {
             csvRow += `,${resultRecords.generationAlgorithm}`;
             for (const testResult of testStatusResults) {
                 csvRow += `,${testResult}`;
             }
-            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${total},${covered},${coverage},${duration}\n`;
+            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration}\n`;
         }
         return csvRow;
     }
@@ -485,13 +510,26 @@ class TestRunner extends EventEmitter {
                 result.status = Test.ERROR;
             }
         }
-
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
-        for (const statement of this.statementMap.keys()){
-            if(result.covered.has(statement._targetNode.id)){
+
+        // Set required attributes for computing coverages.
+        test.trace = new ExecutionTrace(this.vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, []);
+        test.coverage = result.covered;
+
+        // Infer statement coverage
+        for (const statement of this.statementMap.keys()) {
+            if (await statement.isCovered(test)) {
                 this.statementMap.set(statement, true);
             }
         }
+
+        // Infer branch coverage
+        for (const branch of this.branchMap.keys()) {
+            if (await branch.isCovered(test)) {
+                this.branchMap.set(branch, true);
+            }
+        }
+
         this.vmWrapper.end();
         return result;
     }
