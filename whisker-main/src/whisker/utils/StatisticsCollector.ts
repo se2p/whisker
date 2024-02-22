@@ -424,12 +424,14 @@ export class StatisticsCollector {
     }
 
     public asCsvNetworkSuite(): string {
-        let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
-            "playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
+        let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,suiteCoveredStatements," +
+            "totalBranches,testCoveredBranches,suiteCoveredBranches,score,playTime,surpriseNodeAdequacy," +
+            "surpriseCount,avgUncertainty,isMutant\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
-                testResult.totalObjectives, testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite,
+                testResult.totalStatements, testResult.coveredStatementsByTest, testResult.coveredStatementsBySuite,
+                testResult.totalBranches, testResult.coveredBranchesByTest, testResult.coveredBranchesBySuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
                 testResult.avgUncertainty, testResult.isMutant];
             const dataRow = data.join(",").concat("\n");
@@ -569,9 +571,12 @@ export interface NetworkTestSuiteResults {
     testName: string,
     testID: number,
     seed: string,
-    totalObjectives: number,
-    coveredObjectivesByTest: number,
-    coveredObjectivesBySuite: number
+    totalStatements: number,
+    coveredStatementsByTest: number,
+    coveredStatementsBySuite: number,
+    totalBranches: number,
+    coveredBranchesByTest: number,
+    coveredBranchesBySuite: number,
     score: number,
     playTime: number,
     surpriseNodeAdequacy: number,

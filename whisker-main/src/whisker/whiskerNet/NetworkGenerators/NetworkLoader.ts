@@ -117,7 +117,7 @@ export class NetworkLoader {
             if (savedNetwork['tf']) {
                 const targetId = savedNetwork['tf'];
                 for (const statement of this._scratchStatements) {
-                    if (statement.getTargetNode().id === targetId) {
+                    if (statement.getNodeId() === targetId) {
                         network.targetFitness = statement;
                     }
                 }
