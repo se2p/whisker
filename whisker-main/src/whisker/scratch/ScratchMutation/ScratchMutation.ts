@@ -65,11 +65,16 @@ export abstract class ScratchMutation {
      * block ids in the default Scratch program are not extended with the target names.
      */
     protected extractBlockFromProgram(program: ScratchProgram, blockId: string, targetName: string): unknown | undefined {
-        // blockId can be null, e.g., when we are trying to extract a parent block but the block does not exist.
+        // blockId can be null, e.g. when we are trying to extract a parent block but the block does not exist.
         if (blockId === null) {
             return undefined;
         }
 
+        // Scratch serialises the Stage using the name Stage, however, in Whisker stages are marked as _stage_.
+        if (targetName == "_stage_") {
+            targetName = "Stage";
+
+        }
         const targetBlocks = program.targets.find(target => target.name === targetName).blocks;
         for (const [id, block] of Object.entries(targetBlocks)) {
             if (blockId.startsWith(id)) {
