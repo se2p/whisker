@@ -11,7 +11,7 @@ import {OneOfStoppingCondition} from "../../search/stoppingconditions/OneOfStopp
 import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
-import {UserEventNode} from "scratch-analysis/src/control-flow-graph";
+import {UserEventNode} from "../../../../../scratch-analysis";
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class Neatest extends NEAT {

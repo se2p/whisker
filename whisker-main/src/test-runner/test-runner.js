@@ -14,6 +14,16 @@ const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
 
 class TestRunner extends EventEmitter {
 
+    constructor() {
+        super();
+
+        /**
+         * Collects traces of executed blocks during the execution of tests.
+         * @type {[]}
+         */
+        this.blockTraces = [];
+    }
+
     /**
      * @param {VirtualMachine} vm .
      * @param {string} project .
@@ -44,7 +54,7 @@ class TestRunner extends EventEmitter {
 
         this._setRNGSeeds(props['seed'], sampleTest, vm);
 
-        // Load project and establish an initial save state
+        // Load the project and establish an initial save state
         vm.deactivateDebugTracing();
         this.util = await this._loadProject(vm, project, props);
         this.saveState = this.vmWrapper._recordInitialState();
@@ -428,6 +438,10 @@ class TestRunner extends EventEmitter {
     async _executeTest(vm, project, test, modelTester, props, modelProps, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
 
+        if (props['traceBlocks']) {
+            this.vmWrapper.vm.activateBlockTracing();
+        }
+
         const testDriver = this.util.getTestDriver(
             {
                 extend: {
@@ -512,6 +526,14 @@ class TestRunner extends EventEmitter {
         }
         result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
 
+        // If desired, save execution trace after executing each block.
+        if (props['traceBlocks']) {
+            this.blockTraces.push(this._extractTraces());
+        }
+
+        for (const statement of this.statementMap.keys()){
+            if(result.covered.has(statement._targetNode.id)){
+
         // Set required attributes for computing coverages.
         test.trace = new ExecutionTrace(this.vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, []);
         test.coverage = result.covered;
@@ -535,23 +557,25 @@ class TestRunner extends EventEmitter {
     }
 
     /**
+     * Extracts desired trace information for every executed block.
+     * @return {{id:string, targets:{}}}
+     * @private
+     */
+    _extractTraces() {
+        const traces = [];
+        for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
+            traces.push({id: trace['id'], opcode: trace['opcode'], sprite: trace['targetsInfo']});
+        }
+        return {...traces};
+    }
+
+    /**
      * @param {Test} test .
      * @param {string} message .
      * @private
      */
     _log (test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
-    }
-
-    /**
-     * Adds an execution trace to the trace array.
-     * @param {object} object .
-     */
-    addExecutionTrace (object) {
-        if(!this.executionTrace){
-            this.executionTrace = [];
-        }
-        this.executionTrace.push(object);
     }
 
 

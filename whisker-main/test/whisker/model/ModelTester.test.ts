@@ -1,5 +1,4 @@
 import {ModelTester} from "../../../src/whisker/model/ModelTester";
-import {expect} from "@jest/globals";
 
 describe('ModelTester', () => {
     test("Model Tester Load models", () => {

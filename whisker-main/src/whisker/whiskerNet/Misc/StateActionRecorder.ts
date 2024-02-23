@@ -1,5 +1,5 @@
 import {EventEmitter} from "events";
-import Scratch from "whisker-web/src/components/scratch-stage";
+import Scratch from "../../../../../whisker-web/src/components/scratch-stage";
 import {InputExtraction, InputFeatures} from "./InputExtraction";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {Container} from "../../utils/Container";

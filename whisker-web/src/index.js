@@ -174,13 +174,13 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', true);
         $('#record').prop('disabled', true);
 
-        // Activate listener for execution trace record at the end of a test run.
-        const traceExecution = document.querySelector('#container').executionTrace;
-        if (traceExecution) {
+        // Activate listener for tracing executed blocks
+        const traceBlocks = document.querySelector('#container').traceBlocks;
+        if (traceBlocks) {
             Whisker.testRunner.on(TestRunner.RUN_END, () => {
-                const blob = new Blob([JSON.stringify(Whisker.testRunner.executionTrace)],
+                const blob = new Blob([JSON.stringify(Whisker.testRunner.blockTraces)],
                     {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `ExecutionTrace-${Whisker.projectFileSelect.getName()}.json`);
+                FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
             });
         }
 
@@ -208,19 +208,10 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         try {
             vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
 
-            if (traceExecution) {
-                vm.runtime.onReuseStackFrame(thread => {
-                    const trace = CoverageGenerator.traceExecution(thread);
-                    if (trace) {
-                        Whisker.testRunner.addExecutionTrace(trace);
-                    }
-                });
-            }
-
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, traceBlocks},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);

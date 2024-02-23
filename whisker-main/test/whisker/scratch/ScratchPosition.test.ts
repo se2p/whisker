@@ -1,5 +1,4 @@
 import {ScratchPosition} from "../../../src/whisker/scratch/ScratchPosition";
-import {expect} from "@jest/globals";
 
 describe("ScratchPosition Test", () => {
 

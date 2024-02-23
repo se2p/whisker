@@ -26,7 +26,7 @@ const {
     scratchPath,
     mutationBudget,
     maxMutants,
-    executionTrace
+    traceBlocks
 } = require("./cli").opts;
 const {subcommand} = require("./cli");
 
@@ -121,7 +121,7 @@ async function runTests(path, openNewPage, index, targetProject) {
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
         await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
-        await page.evaluate(e => document.querySelector('#container').executionTrace = e, executionTrace);
+        await page.evaluate(tb => document.querySelector('#container').traceBlocks = tb, traceBlocks);
 
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (path) {
@@ -146,57 +146,27 @@ async function runTests(path, openNewPage, index, targetProject) {
     }
 
     /**
-     * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
-     * run is over.
+     * Observes the log output, waiting for the csv summary to be written to the log, which indicates the end of the
+     * entire test run.
+     * @returns {Promise<string>}
      */
     async function readTestOutput() {
-        const coverageOutput = await page.$('#output-run .output-content');
         const logOutput = await page.$('#output-log .output-content');
-
-        let coverageLog = '';
-        let log = '';
-
         // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
             if (currentLog.includes('projectName')) {
-                // Return CSV file
-                const currentLogString = currentLog.toString();
-                const startIndex = currentLogString.indexOf('projectName');
-                const endIndex = currentLogString.indexOf("\n\n\n");    // We may have additional output after 3 newlines
-                if (endIndex > 0) {
-                    return currentLogString.slice(startIndex, endIndex).trim();
-                } else {
-                    return currentLogString.slice(startIndex);
-                }
-            }
-
-            if (liveLog) {
-                const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '').trim();
-
-                if (newInfoFromLog.length) {
-                    logger.log(newInfoFromLog);
-                }
-
-                log = currentLog;
-            }
-
-            const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '').trim();
-            if (newInfoFromCoverage.length && liveOutputCoverage) {
-                logger.log(`Page ${index} | Coverage: `, newInfoFromCoverage);
-            } else if (newInfoFromCoverage.includes('not ok ')) {
-                logger.warn(`Page ${index} | Coverage: `, newInfoFromCoverage);
-            }
-            coverageLog = currentCoverageLog;
-
-            if (currentCoverageLog.includes('summary')) {
                 break;
             }
-
             await page.waitForTimeout(1000);
         }
+        // Get CSV-Output
+        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+        const coverageLogLines = outputLog.split('\n');
+        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
+        const csvHeader = coverageLogLines[csvHeaderIndex];
+        const csvBody = coverageLogLines[csvHeaderIndex + 1]
+        return `${csvHeader}\n${csvBody}`;
     }
 
     /**
