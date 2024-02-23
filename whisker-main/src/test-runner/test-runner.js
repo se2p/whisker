@@ -531,9 +531,6 @@ class TestRunner extends EventEmitter {
             this.blockTraces.push(this._extractTraces());
         }
 
-        for (const statement of this.statementMap.keys()){
-            if(result.covered.has(statement._targetNode.id)){
-
         // Set required attributes for computing coverages.
         test.trace = new ExecutionTrace(this.vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, []);
         test.coverage = result.covered;
