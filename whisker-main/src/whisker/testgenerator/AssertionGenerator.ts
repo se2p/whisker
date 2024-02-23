@@ -1,4 +1,4 @@
-import { WhiskerTest } from "./WhiskerTest";
+import {WhiskerTest} from "./WhiskerTest";
 import {Container} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {AssertionObserver} from "./assertions/AssertionObserver";
@@ -46,7 +46,7 @@ export class AssertionGenerator {
             const trace = await this._executeWithObserver(test);
 
             // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
-            if (trace == null){
+            if (trace == null) {
                 console.log("Mismatching behaviour for this test. Skipping assertion generation");
                 continue;
             }
@@ -54,19 +54,19 @@ export class AssertionGenerator {
 
             // trace should have the same length as events in test
             const numEvents = test.getEventsCount();
-            Container.debugLog("Adding assertions to test "+test+" of length "+numEvents);
+            Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
 
-            Container.debugLog("Trace length: "+trace.length);
+            Container.debugLog("Trace length: " + trace.length);
             // for each event
             for (let position = 0; position < trace.length; position++) {
                 for (const assertionFactory of this.assertionFactories) {
                     const assertions = assertionFactory.createAssertions(trace[position]);
                     for (const assertion of assertions) {
-                        test.addAssertion(position + 1, assertion);
+                        test.addAssertion(position, assertion);
                     }
                 }
             }
-            Container.debugLog("Resulting test: "+test);
+            Container.debugLog("Resulting test: " + test);
         }
     }
 
@@ -79,7 +79,7 @@ export class AssertionGenerator {
             const trace = await this._executeWithObserver(test);
 
             // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
-            if (trace == null){
+            if (trace == null) {
                 console.log("Mismatching behaviour for this test. Skipping assertion generation");
                 continue;
             }
@@ -92,7 +92,7 @@ export class AssertionGenerator {
             // for each event
             for (let position = 0; position < trace.length - 1; position++) {
                 const stateBefore = trace[position];
-                const stateAfter = trace[position+1];
+                const stateAfter = trace[position + 1];
                 for (const assertionFactory of this.assertionFactories) {
                     const assertionsAfter = assertionFactory.createAssertions(stateAfter);
                     for (const assertion of assertionsAfter) {
@@ -107,7 +107,7 @@ export class AssertionGenerator {
     }
 
 
-    private async _executeWithObserver(test: WhiskerTest)  {
+    private async _executeWithObserver(test: WhiskerTest) {
         const executor = new TestExecutor(Container.vmWrapper, undefined, undefined);
         const observer = new AssertionObserver();
         executor.attach(observer);
@@ -115,7 +115,7 @@ export class AssertionGenerator {
         await executor.executeEventTrace(test.chromosome);
         const coverageAssertionExec = test.chromosome.coverage;
         if (coverageGroundTruth.size !== coverageAssertionExec.size ||
-            !([...coverageGroundTruth].every((c) => coverageAssertionExec.has(c)))){
+            !([...coverageGroundTruth].every((c) => coverageAssertionExec.has(c)))) {
             return null;
         }
         return observer.getExecutionTrace();
