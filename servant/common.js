@@ -383,7 +383,8 @@ function getProjectsInScratchPath() {
 
     return fs.readdirSync(path)
         .filter((file) => file.endsWith(".sb3"))
-        .map((file) => resolve(path, file));
+        .map((file) => resolve(path, file))
+        .sort();
 }
 
 
