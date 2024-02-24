@@ -505,12 +505,20 @@ class TestRunner extends EventEmitter {
             if (modelTester && modelTester.someModelLoaded()) {
                 result.modelResult = modelTester.stopAndGetModelResult(testDriver);
             }
+
+            // Set the execution trace and the covered blocks set for computing coverages.
+            test.trace = new ExecutionTrace(this.vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, []);
+            test.coverage = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
+            await this._determineCoverages(test);
+
         } else if (modelTester && modelTester.someModelLoaded()) {
             // Start the test run with either a maximal duration or until the model stops
             try {
                 await testDriver.runUntil(() => {
                     return !modelTester.running();
                 }, modelProps.duration);
+
+                // TODO: Refactor coverage computation for model executions to be similar to test executions.
                 result.modelResult = modelTester.stopAndGetModelResult(testDriver);
                 if (result.modelResult.errors.length > 0) {
                     result.status = Test.ERROR;
@@ -524,17 +532,22 @@ class TestRunner extends EventEmitter {
                 result.status = Test.ERROR;
             }
         }
-        result.covered = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
 
         // If desired, save execution trace after executing each block.
         if (props['traceBlocks']) {
             this.blockTraces.push(this._extractTraces());
         }
 
-        // Set required attributes for computing coverages.
-        test.trace = new ExecutionTrace(this.vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, []);
-        test.coverage = result.covered;
+        this.vmWrapper.end();
+        return result;
+    }
 
+    /**
+     * Determines the achieved coverage values of an executed test.
+     * @param {Test} test
+     * @returns {Promise<void>}
+     */
+    async _determineCoverages(test){
         // Infer statement coverage
         for (const statement of this.statementMap.keys()) {
             if (await statement.isCovered(test)) {
@@ -548,9 +561,6 @@ class TestRunner extends EventEmitter {
                 this.branchMap.set(branch, true);
             }
         }
-
-        this.vmWrapper.end();
-        return result;
     }
 
     /**

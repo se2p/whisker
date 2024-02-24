@@ -40,6 +40,7 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
+import {SearchAlgorithmBuilder} from "./search/SearchAlgorithmBuilder";
 
 export class Search {
 
@@ -73,6 +74,7 @@ export class Search {
     private handleEmptyProject(): Array<string> {
         console.log("Cannot find any suitable events for this project, not starting search.");
         const stats = StatisticsCollector.getInstance();
+        SearchAlgorithmBuilder.initialiseCoverageMappings();
 
         let hasBlocks = false;
         for (const target of this.vm.runtime.targets) {
@@ -85,7 +87,6 @@ export class Search {
         }
         if (!hasBlocks) {
             console.log("Project contains no code");
-            stats.bestCoverage = 1.0;
         }
 
         const csvString: string = stats.asCsv();

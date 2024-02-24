@@ -38,9 +38,9 @@ async function getCoverage() {
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('projectName')) {
-            const csvHeader = log.split('\n').find(logLine => logLine.includes('bestCoverage'));
+            const csvHeader = log.split('\n').find(logLine => logLine.includes('statementCoverage'));
             const row = log.split('\n').find(logLine => logLine.includes('FruitCatching.sb3,'));
-            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('bestCoverage'));
+            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statementCoverage'));
             return Number(row.split(',')[coverageIndex]);
         }
         if (log.includes('empty project')) {

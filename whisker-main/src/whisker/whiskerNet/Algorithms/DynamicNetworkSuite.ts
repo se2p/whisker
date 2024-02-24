@@ -361,8 +361,10 @@ export class DynamicNetworkSuite {
                                          testName: Readonly<string>): Promise<void> {
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
-            const statCov = await test.determineCoveredObjectives([...this.statementMap.values()]);
-            const branchCov = await test.determineCoveredObjectives([...this.branchMap.values()]);
+            const statements = [...this.statementMap.keys()].length;
+            const branches = [...this.branchMap.keys()].length;
+            const statCovered = await test.determineCoveredObjectives([...this.statementMap.values()]);
+            const branchCovered = await test.determineCoveredObjectives([...this.branchMap.values()]);
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
@@ -372,12 +374,12 @@ export class DynamicNetworkSuite {
                 testName: testName,
                 testID: i,
                 seed: this.properties.seed.toString(),
-                totalStatements: [...this.statementMap.keys()].length,
-                coveredStatementsByTest: statCov,
-                coveredStatementsBySuite: [...this.statementArchive.keys()].length,
-                totalBranches: [...this.branchMap.keys()].length,
-                coveredBranchesByTest: branchCov,
-                coveredBranchesBySuite: [...this.branchArchive.keys()].length,
+                statements: statements,
+                statementCoverageTest: Math.round((statCovered / statements) * 100) / 100,
+                statementCoverageSuite: Math.round((this.statementArchive.size / statements) * 100) / 100,
+                branches: branches,
+                branchCoverageTest: Math.round((branchCovered / branches) * 100) / 100,
+                branchCoverageSuite: Math.round((this.branchArchive.size / branches) * 100) / 100,
                 score: test.score,
                 playTime: test.playTime,
                 surpriseNodeAdequacy: test.averageLSA,

@@ -37,7 +37,6 @@ export class StatisticsCollector {
     private _fitnessFunctionCount: number;
     private _iterationCount: number;
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
-    private _bestCoverage: number;
     private _greenFlagCovered: number;
     private _eventsCount: number; //executed events
     private _testEventCount: number; //events in the final test suite
@@ -86,7 +85,6 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = 0;
         this._minimizedTests = 0;
         this._minimizedEvents = 0;
-        this._bestCoverage = 0;
         this._greenFlagCovered = 0;
         this._startTime = 0;
         this._executedTests = 0;
@@ -258,14 +256,6 @@ export class StatisticsCollector {
         this._executedTests = value;
     }
 
-    get bestCoverage(): number {
-        return this._bestCoverage;
-    }
-
-    set bestCoverage(value: number) {
-        this._bestCoverage = value;
-    }
-
     get eventsCount(): number {
         return this._eventsCount;
     }
@@ -378,14 +368,15 @@ export class StatisticsCollector {
         const coverageHeaders = header.join(",");
         const coverageValues = values.join(",");
 
-        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "testsuiteEventCount", "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents",
-            "averageTestExecutionTime", "bestTestSuiteSize", "numberFitnessEvaluations", "createdTestsToReachFullCoverage",
-            "timeToReachFullCoverage"];
+        const headers = ["projectName", "configName", "fitnessFunctionCount", "statements",
+            "statementCoverage", "branches", "branchCoverage", "iterationCount", "testsuiteEventCount",
+            "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents", "averageTestExecutionTime",
+            "bestTestSuiteSize", "fitnessEvaluations", "generatedTests", "searchTime"];
         const headerRow = headers.join(",").concat(",", coverageHeaders);
-        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
-            this._coveredFitnessFunctionsCount, this._bestCoverage, this._testEventCount, this._eventsCount,
-            this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime, this._bestTestSuiteSize,
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount,
+            this._statements.size, this._statementCoverage, this._branches.size, this._branchCoverage,
+            this._iterationCount, this._testEventCount, this._eventsCount, this._executedTests, this._minimizedTests,
+            this._minimizedEvents, this._averageTestExecutionTime, this._bestTestSuiteSize,
             this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
@@ -408,14 +399,11 @@ export class StatisticsCollector {
         const gdEpochs = Container.backpropagationInstance ? Container.backpropagationInstance.getTrainingEpochsMean() : 0;
 
         // Default header and data arrays
-        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
-            "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
-            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'statCov', 'branchCov',
-            'gdTime', 'gdEpochs'];
-        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
-            this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
-            this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
-            this._highestScore, this._highestPlayTime, this._statementCoverage, this._branchCoverage, gdTime, gdEpochs];
+        const headers = ["projectName", "configName", "statements", "statementCoverage", "branches",
+            "branchCoverage", "iterationCount", "numberFitnessEvaluations", "searchTime", 'gdTime', 'gdEpochs'];
+        const data = [this._projectName, this._configName, this._statements.size,
+            this._statementCoverage, this._branches.size, this._branchCoverage, this._iterationCount,
+            this._numberFitnessEvaluations, this._timeToReachFullCoverage, gdTime, gdEpochs];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
@@ -424,14 +412,15 @@ export class StatisticsCollector {
     }
 
     public asCsvNetworkSuite(): string {
-        let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,suiteCoveredStatements," +
-            "totalBranches,testCoveredBranches,suiteCoveredBranches,score,playTime,surpriseNodeAdequacy," +
-            "surpriseCount,avgUncertainty,isMutant\n";
+        let csv = "projectName,testName,id,seed," +
+            "totalStatements,testStatementCoverage,suiteStatementCoverage," +
+            "totalBranches,testBranchCoverage,suiteBranchCoverage," +
+            "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
-                testResult.totalStatements, testResult.coveredStatementsByTest, testResult.coveredStatementsBySuite,
-                testResult.totalBranches, testResult.coveredBranchesByTest, testResult.coveredBranchesBySuite,
+                testResult.statements, testResult.statementCoverageTest, testResult.statementCoverageSuite,
+                testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
                 testResult.avgUncertainty, testResult.isMutant];
             const dataRow = data.join(",").concat("\n");
@@ -559,7 +548,6 @@ export class StatisticsCollector {
         this._coveredFitnessFunctionsCount = 0;
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
-        this._bestCoverage = 0;
         this._startTime = Date.now();
         this._projectName = this._unknownProject;
         this._configName = this._unknownConfig;
@@ -571,12 +559,12 @@ export interface NetworkTestSuiteResults {
     testName: string,
     testID: number,
     seed: string,
-    totalStatements: number,
-    coveredStatementsByTest: number,
-    coveredStatementsBySuite: number,
-    totalBranches: number,
-    coveredBranchesByTest: number,
-    coveredBranchesBySuite: number,
+    statements: number,
+    statementCoverageTest: number,
+    statementCoverageSuite: number,
+    branches: number,
+    branchCoverageTest: number,
+    branchCoverageSuite: number,
     score: number,
     playTime: number,
     surpriseNodeAdequacy: number,

@@ -20,9 +20,9 @@ async function getLogAfterSearch() {
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('projectName')) {
-            const csvHeader = log.split('\n').find(logLine => logLine.includes('totalCoveredStatements'));
-            const row = log.split('\n').find(logLine => !logLine.includes('totalCoveredStatements'));
-            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('totalCoveredStatements'));
+            const csvHeader = log.split('\n').find(logLine => logLine.includes('testStatementCoverage'));
+            const row = log.split('\n').find(logLine => !logLine.includes('testStatementCoverage'));
+            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('testStatementCoverage'));
             return row.split(',')[coverageIndex];
         }
         if (log.includes('empty project')) {
@@ -59,7 +59,7 @@ describe('Test Dynamic Network Suites', () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingDynamic.json");
         await (await page.$('#run-all-tests')).click();
         const coveredBlocks = await getLogAfterSearch();
-        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(38);
+        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 });
 
