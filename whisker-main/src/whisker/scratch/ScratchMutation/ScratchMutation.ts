@@ -70,12 +70,10 @@ export abstract class ScratchMutation {
             return undefined;
         }
 
-        // Scratch serialises the Stage using the name Stage, however, in Whisker stages are marked as _stage_.
-        if (targetName == "_stage_") {
-            targetName = "Stage";
-
-        }
-        const targetBlocks = program.targets.find(target => target.name === targetName).blocks;
+        const isTarget = targetName === "_stage_" 
+            ? (t) => t.isStage 
+            : (t) => !t.isStage && t.name === targetName;
+        const targetBlocks = program.targets.find((t) => isTarget(t)).blocks;
         for (const [id, block] of Object.entries(targetBlocks)) {
             if (blockId.startsWith(id)) {
                 return block;
