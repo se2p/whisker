@@ -21,7 +21,7 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
      * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
         const originalOpcode = mutationBlock['opcode'];
         let mutantOpcode = Randomness.getInstance().pick(ArithmeticOperatorReplacementMutation.ARITHMETIC_OPCODES);
@@ -38,7 +38,7 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
      * Valid mutation candidates are arithmetic operation blocks.
      * @returns an array of mutation candidate block ids.
      */
-    protected getMutationCandidates(): string[] {
+     public getMutationCandidates(): string[] {
         const arithmeticOperatorBlocks: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             if (OperatorFilter.arithmetic(block)) {

@@ -16,7 +16,7 @@ export class LogicalOperatorReplacementMutation extends ScratchMutation {
      * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
         const originalOpcode = mutationBlock['opcode'];
         const mutantOpcode = originalOpcode === 'operator_and' ? 'operator_or' : 'operator_and';
@@ -30,7 +30,7 @@ export class LogicalOperatorReplacementMutation extends ScratchMutation {
      * Valid mutation candidates are logical operation blocks.
      * @returns an array of mutation candidate block ids.
      */
-    protected getMutationCandidates(): string[] {
+    public getMutationCandidates(): string[] {
         const logicalOperationBlocks: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             if (OperatorFilter.logical(block)) {

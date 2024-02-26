@@ -17,7 +17,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
 
 
@@ -73,7 +73,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * Valid mutation candidates are all statements blocks that are neither hat nor branching blocks .
      * @returns an array of mutation candidate block ids.
      */
-    protected getMutationCandidates(): string[] {
+    public getMutationCandidates(): string[] {
         const deletionCandidates: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             if (StatementFilter.isStatementBlock(block) &&
