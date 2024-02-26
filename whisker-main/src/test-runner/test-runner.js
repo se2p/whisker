@@ -12,11 +12,15 @@ const CoverageGenerator = require("../coverage/coverage");
 
 class TestRunner extends EventEmitter {
 
-    /**
-     * Collects traces of executed blocks during the execution of tests.
-     * @type {[]}
-     */
-    blockTraces = []
+    constructor() {
+        super();
+
+        /**
+         * Collects traces of executed blocks during the execution of tests.
+         * @type {[]}
+         */
+        this.blockTraces = [];
+    }
 
     /**
      * @param {VirtualMachine} vm .

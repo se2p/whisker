@@ -1,7 +1,6 @@
 import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
-import {expect} from "@jest/globals";
 
 describe('CheckUtility', () => {
     test("split event strings", () => {
