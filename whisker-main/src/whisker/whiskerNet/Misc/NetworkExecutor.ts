@@ -316,22 +316,6 @@ export class NetworkExecutor {
     }
 
     /**
-     * Determines the duration of the supplied event.
-     * If the event is not duration-based, we return a value of one to give the VM time to react to the sent event.
-     * @param event for which we want to determine the required waiting duration.
-     * @returns duration of supplied event in number of steps.
-     */
-    private getDuration(event: ScratchEvent): number {
-        if (event instanceof ClickSpriteEvent || event instanceof KeyPressEvent || event instanceof SoundEvent) {
-            return event.getParameters()[1];
-        } else if (event instanceof MouseDownForStepsEvent) {
-            return event.getParameters()[0];
-        } else {
-            return 1;
-        }
-    }
-
-    /**
      * Extracts the arguments for parameters by querying the regression head of the neural network.
      * @param event for which parameter will be extracted
      * @param network that will be queried for parameter
