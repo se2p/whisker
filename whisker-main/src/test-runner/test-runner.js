@@ -7,7 +7,6 @@ const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
-const {shuffle} = require("../whisker/utils/Arrays");
 const CoverageGenerator = require("../coverage/coverage");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
 const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
@@ -75,9 +74,6 @@ class TestRunner extends EventEmitter {
             const mutantFactory = new MutationFactory(vm, props['mutators']);
             let i = -1; // We start with -1 since the first suite execution is on the original project
             const mutationStart = Date.now();
-            console.log("A: ",  i < maxMutants)
-            console.log("B: ", mutantFactory.candidates.size > 0)
-            console.log("C: ", Date.now() - mutationStart < mutationBudget * 1000)
             while (i < maxMutants && mutantFactory.candidates.size > 0 && Date.now() - mutationStart < mutationBudget * 1000) {
                 let mutant;
                 if (i === -1) { // In the first iteration, we execute the original project as a reference.
