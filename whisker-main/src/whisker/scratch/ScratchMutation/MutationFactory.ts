@@ -85,25 +85,6 @@ export class MutationFactory {
     }
 
     /**
-     * Generates Scratch mutants based on the specified mutation operators.
-     * @param maxMutants the maximum number of mutants that should be returned.
-     * @returns an array of the created mutants.
-     */
-    public generateScratchMutations(maxMutants: number): ScratchProgram[] {
-        if (maxMutants === undefined) {
-            maxMutants = Number.MAX_SAFE_INTEGER;
-        }
-
-        const mutantPrograms: ScratchProgram[] = [];
-        while (mutantPrograms.length < maxMutants) {
-            mutantPrograms.push(this.generateRandomMutant());
-        }
-
-        console.log(`Produced ${mutantPrograms.length} mutants`);
-        return mutantPrograms;
-    }
-
-    /**
      * Generates a random Scratch mutant from the set of available mutation candidates and
      * removes the generated mutant from the set of available candidates.
      * @returns The generated scratch mutant or null if the mutation operation was unsuccessful.
