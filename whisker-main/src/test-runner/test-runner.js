@@ -70,11 +70,15 @@ class TestRunner extends EventEmitter {
             // Mutation Analysis
 
             // Divide by 1000 since we measure the budget in seconds and will multiply by 1000 afterwards.
+            const maxMutants = props['maxMutants'] > 0 ? props['maxMutants'] : Number.MAX_SAFE_INTEGER;
             const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER / 1000;
             const mutantFactory = new MutationFactory(vm, props['mutators']);
             let i = -1; // We start with -1 since the first suite execution is on the original project
             const mutationStart = Date.now();
-            while (i < props['maxMutants'] && mutantFactory.candidates.size > 0 && Date.now() - mutationStart < mutationBudget * 1000) {
+            console.log("A: ",  i < maxMutants)
+            console.log("B: ", mutantFactory.candidates.size > 0)
+            console.log("C: ", Date.now() - mutationStart < mutationBudget * 1000)
+            while (i < maxMutants && mutantFactory.candidates.size > 0 && Date.now() - mutationStart < mutationBudget * 1000) {
                 let mutant;
                 if (i === -1) { // In the first iteration, we execute the original project as a reference.
                     mutant = JSON.parse(vm.toJSON());
