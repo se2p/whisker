@@ -23,7 +23,7 @@ export class VariableReplacementMutation extends ScratchMutation {
      * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
 
         // We may have the chance to replace multiple variables within one parent block. We therefore, count how
@@ -85,7 +85,7 @@ export class VariableReplacementMutation extends ScratchMutation {
      * Valid mutation candidates are all blocks that use variables.
      * @returns a Set of variable holding block ids.
      */
-    protected getMutationCandidates(): string [] {
+    public getMutationCandidates(): string [] {
         const variableIds = [];
         for (const block of this.blockMap.values()) {
             if (block['opcode'] === 'data_variable' && block['parent'] !== null) {

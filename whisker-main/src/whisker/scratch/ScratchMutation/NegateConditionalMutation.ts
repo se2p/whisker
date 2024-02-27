@@ -15,18 +15,18 @@ export class NegateConditionalMutation extends ScratchMutation {
      * The NegateConditionalMutation negates a selected diamond shaped conditional block by inserting a not block.
      * @param mutationBlockId the id of the block that will be negated.
      * @param mutantProgram the mutant program in which the conditional block will be negated
-     * @param target the name of the target in which the block to mutate resides.
+     * @param targetName the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
-        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, targetName: Readonly<string>): boolean {
+        const blockId = `${mutationBlockId.slice(0, 4)}-${targetName}`;
         mutantProgram.name = `NCM:${blockId}`.replace(/,/g, '');
 
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
-        const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId.split(`-${target}`)[0], mutationBlock['parent']);
+        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, targetName);
+        const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId.split(`-${targetName}`)[0], mutationBlock['parent']);
 
         // The parent of the mutated block.
-        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], target);
+        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], targetName);
 
         // Only if the parent exists, modify the parent block to point to the wrapping not block instead of the negated
         // conditional diamond block
@@ -52,21 +52,22 @@ export class NegateConditionalMutation extends ScratchMutation {
         }
 
         // Add the not block to the mutant program
-        const sourceTarget = mutantProgram.targets.find(sourceTarget => sourceTarget.name === target);
+        const sourceTarget = mutantProgram.targets
+            .find(sourceTarget => this.isTarget(targetName, sourceTarget));
         if (sourceTarget !== undefined) {
             sourceTarget.blocks[not_block['id']] = not_block;
         } else {
-            console.log(`Unknown source target ${target} for program ${mutantProgram.name}`);
+            console.log(`Unknown source target ${targetName} for program ${mutantProgram.name}`);
             return false;
         }
         return true;
     }
 
     /**
-     * Valid mutation candidates are negatable conditional blocks.
+     * Valid mutation candidates are conditional blocks that can be negated.
      * @returns an array of mutation candidate block ids.
      */
-    protected getMutationCandidates(): string[] {
+    public getMutationCandidates(): string[] {
         const conditionalBlocks: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             // Negating a not block is pointless since we negate its argument anyway.

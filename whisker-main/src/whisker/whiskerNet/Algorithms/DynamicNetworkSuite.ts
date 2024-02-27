@@ -135,16 +135,23 @@ export class DynamicNetworkSuite {
     /**
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
-    protected async mutationAnalysis(): Promise<ScratchProgram[]> {
-        const mutantFactory = new MutationFactory(this.vm);
-        const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[], this.properties.maxMutants as number);
+    protected async mutationAnalysis(): Promise<void> {
+        const mutantFactory = new MutationFactory(this.vm, this.properties.mutators as string[]);
+        const maxMutants = this.properties.maxMutants as number;
         let i = 0;
-        for (const mutant of mutantPrograms) {
-            this.statementArchive.clear();
-            this.branchArchive.clear();
+        while (i < maxMutants && mutantFactory.candidates.size > 0) {
+            // Generate mutant
+            const mutant = mutantFactory.generateRandomMutant();
+            if (mutant == null) {
+                continue;
+            }
+
+            // Execute test suite on mutant
             const projectMutation = `${this.projectName}-${mutant.name}`;
             Container.debugLog(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
+            this.statementArchive.clear();
+            this.branchArchive.clear();
             for (let i = 0; i < this.testCases.length; i++) {
                 Container.debugLog(`Executing test ${i}`);
                 const test = this.testCases[i];
@@ -161,7 +168,6 @@ export class DynamicNetworkSuite {
             await this.updateTestStatistics(executedTests, projectMutation, this.testName);
             i++;
         }
-        return mutantPrograms;
     }
 
     /**
@@ -194,9 +200,9 @@ export class DynamicNetworkSuite {
     /**
      * Executes the given network suite by fist initialising required fields and then executing the respective test
      * cases on the original project or the created mutants.
+     * @returns Results of network suite execution in csv format.
      */
-    protected async execute(): Promise<[string, ScratchProgram[]]> {
-
+    public async execute(): Promise<string> {
         // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
         await this.initialiseCommonVariables();
@@ -216,12 +222,12 @@ export class DynamicNetworkSuite {
         if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
             Container.debugLog("Performing Mutation Analysis");
             await this.testSingleProject();     // Execute the original program to obtain reference data
-            const mutants = await this.mutationAnalysis();
-            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutants];
+            await this.mutationAnalysis();
+            return StatisticsCollector.getInstance().asCsvNetworkSuite();
         } else {
             Container.debugLog("Testing Single Project");
             await this.testSingleProject();
-            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
+            return StatisticsCollector.getInstance().asCsvNetworkSuite();
         }
     }
 
@@ -235,7 +241,7 @@ export class DynamicNetworkSuite {
         const util = new WhiskerUtil(this.vm, this.project);
         const vmWrapper = util.getVMWrapper();
         await util.prepare(this.properties['acceleration'] as number || 1);
-        await util.start();
+        util.start();
 
         // Set up Container variables.
         Container.vm = this.vm;
@@ -243,10 +249,9 @@ export class DynamicNetworkSuite {
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
         if (this.properties['log'] === true) {
-            Container.debugLog = (...data) => console.log('DEBUG:', ...data);
+            Container.debugLog = (...data: unknown[]) => console.log('DEBUG:', ...data);
         } else {
-            Container.debugLog = () => { /* No operation */
-            };
+            Container.debugLog = () => { /* No operation */ };
         }
     }
 

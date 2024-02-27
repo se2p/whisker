@@ -9,51 +9,75 @@ import {NegateConditionalMutation} from "./NegateConditionalMutation";
 import {VariableReplacementMutation} from "./VariableReplacementMutation";
 import {ScratchMutation} from "./ScratchMutation";
 import {ScratchProgram} from "../ScratchInterface";
-import Arrays from "../../utils/Arrays";
+import {Randomness} from "../../utils/Randomness";
 
 export class MutationFactory {
 
-    constructor(private _vm: VirtualMachine) {
+    /**
+     * Array of feasible mutation operations, where each element is of the form "operator-mutationId"
+     * @private
+     */
+    private _candidates: Set<string> = new Set<string>();
+
+    constructor(private _vm: VirtualMachine, _specifiedMutators: string[]) {
+        this.initialiseCandidateArray(_specifiedMutators);
     }
 
-    private fetchMutationOperators(specifiedMutators: string[]): ScratchMutation[] {
-        const mutationOperators: ScratchMutation[] = [];
+    /**
+     * Initialises an array of feasible mutation candidates based on the specified mutation operators.
+     * @param specifiedMutators The specified mutation operators.
+     */
+    private initialiseCandidateArray(specifiedMutators: string[]) {
+        const operators = this.fetchMutationOperators(specifiedMutators);
+        for (const operator of operators) {
+            const operatorCandidates = operator.getMutationCandidates();
+            console.log(`Operator ${operator} corresponds to ${operatorCandidates.length} mutation candidates`);
+            operatorCandidates.forEach(candidate => this._candidates.add(`${operator}-${candidate}`));
+        }
+    }
+
+    /**
+     * Generates for every specified mutation operator the respective mutation class.
+     * @param specifiedMutators The
+     * @private
+     */
+    private fetchMutationOperators(specifiedMutators: string[]): Set<ScratchMutation> {
+        const mutationOperators = new Set<ScratchMutation>();
         for (const mutator of specifiedMutators) {
             switch (mutator) {
                 case 'KRM':
-                    mutationOperators.push(new KeyReplacementMutation(this._vm));
+                    mutationOperators.add(new KeyReplacementMutation(this._vm));
                     break;
                 case 'SBD':
-                    mutationOperators.push(new SingleBlockDeletionMutation(this._vm));
+                    mutationOperators.add(new SingleBlockDeletionMutation(this._vm));
                     break;
                 case 'SDM':
-                    mutationOperators.push(new ScriptDeletionMutation(this._vm));
+                    mutationOperators.add(new ScriptDeletionMutation(this._vm));
                     break;
                 case 'AOR':
-                    mutationOperators.push(new ArithmeticOperatorReplacementMutation(this._vm));
+                    mutationOperators.add(new ArithmeticOperatorReplacementMutation(this._vm));
                     break;
                 case 'LOR':
-                    mutationOperators.push(new LogicalOperatorReplacementMutation(this._vm));
+                    mutationOperators.add(new LogicalOperatorReplacementMutation(this._vm));
                     break;
                 case 'ROR':
-                    mutationOperators.push(new RelationalOperatorReplacementMutation(this._vm));
+                    mutationOperators.add(new RelationalOperatorReplacementMutation(this._vm));
                     break;
                 case 'NCM':
-                    mutationOperators.push(new NegateConditionalMutation(this._vm));
+                    mutationOperators.add(new NegateConditionalMutation(this._vm));
                     break;
                 case 'VRM':
-                    mutationOperators.push(new VariableReplacementMutation(this._vm));
+                    mutationOperators.add(new VariableReplacementMutation(this._vm));
                     break;
                 case 'ALL':
-                    mutationOperators.push(
-                        new KeyReplacementMutation(this._vm),
-                        new SingleBlockDeletionMutation(this._vm),
-                        new ScriptDeletionMutation(this._vm),
-                        new ArithmeticOperatorReplacementMutation(this._vm),
-                        new LogicalOperatorReplacementMutation(this._vm),
-                        new RelationalOperatorReplacementMutation(this._vm),
-                        new NegateConditionalMutation(this._vm),
-                        new VariableReplacementMutation(this._vm));
+                    mutationOperators.add(new KeyReplacementMutation(this._vm));
+                    mutationOperators.add(new SingleBlockDeletionMutation(this._vm));
+                    mutationOperators.add(new ScriptDeletionMutation(this._vm));
+                    mutationOperators.add(new ArithmeticOperatorReplacementMutation(this._vm));
+                    mutationOperators.add(new LogicalOperatorReplacementMutation(this._vm));
+                    mutationOperators.add(new RelationalOperatorReplacementMutation(this._vm));
+                    mutationOperators.add(new NegateConditionalMutation(this._vm));
+                    mutationOperators.add(new VariableReplacementMutation(this._vm));
                     break;
             }
         }
@@ -62,30 +86,38 @@ export class MutationFactory {
 
     /**
      * Generates Scratch mutants based on the specified mutation operators.
-     * @param specifiedMutators the specified mutation operations.
      * @param maxMutants the maximum number of mutants that should be returned.
      * @returns an array of the created mutants.
      */
-    public generateScratchMutations(specifiedMutators: string[], maxMutants:number): ScratchProgram[] {
+    public generateScratchMutations(maxMutants: number): ScratchProgram[] {
         if (maxMutants === undefined) {
             maxMutants = Number.MAX_SAFE_INTEGER;
         }
-        const operators = this.fetchMutationOperators(specifiedMutators);
+
         const mutantPrograms: ScratchProgram[] = [];
-        for (const mutator of operators) {
-            const mutants = mutator.generateMutants();
-            console.log(`Operator ${mutator} generated ${mutants.length} mutants`);
-            mutantPrograms.push(...mutants);
+        while (mutantPrograms.length < maxMutants) {
+            mutantPrograms.push(this.generateRandomMutant());
         }
 
-        // If we have an upper bound of desired mutants; we choose randomly selected ones until we hit the bound.
-        if (mutantPrograms.length > maxMutants) {
-            Arrays.shuffle(mutantPrograms);
-            const reducedMutants = mutantPrograms.slice(0, maxMutants);
-            console.log(`Reduced Mutants from ${mutantPrograms.length} down to ${reducedMutants.length} mutants`);
-            return reducedMutants;
-        }
         console.log(`Produced ${mutantPrograms.length} mutants`);
         return mutantPrograms;
+    }
+
+    /**
+     * Generates a random Scratch mutant from the set of available mutation candidates and
+     * removes the generated mutant from the set of available candidates.
+     * @returns The generated scratch mutant or null if the mutation operation was unsuccessful.
+     */
+    public generateRandomMutant(): ScratchProgram | null {
+        const mutationCandidate = Randomness.getInstance().pick(Array.from(this._candidates));
+        this._candidates.delete(mutationCandidate);
+        const [operatorKey, ...mutationID] = mutationCandidate.split("-");
+        const operator = Array.from(this.fetchMutationOperators([operatorKey]))[0];
+        return operator.generateMutant(mutationID.join("-"));
+    }
+
+
+    get candidates(): Set<string> {
+        return this._candidates;
     }
 }

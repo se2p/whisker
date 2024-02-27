@@ -164,9 +164,8 @@ async function runTests(path, openNewPage, index, targetProject) {
         const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
         const coverageLogLines = outputLog.split('\n');
         const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
-        const csvHeader = coverageLogLines[csvHeaderIndex];
-        const csvBody = coverageLogLines[csvHeaderIndex + 1]
-        return `${csvHeader}\n${csvBody}`;
+        const endIndex = coverageLogLines.indexOf("", csvHeaderIndex);
+        return coverageLogLines.slice(csvHeaderIndex, endIndex).join("\n")
     }
 
     /**
@@ -383,7 +382,8 @@ function getProjectsInScratchPath() {
 
     return fs.readdirSync(path)
         .filter((file) => file.endsWith(".sb3"))
-        .map((file) => resolve(path, file));
+        .map((file) => resolve(path, file))
+        .sort();
 }
 
 
