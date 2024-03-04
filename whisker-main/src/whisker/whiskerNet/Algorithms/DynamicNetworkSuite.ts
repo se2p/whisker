@@ -124,7 +124,7 @@ export class DynamicNetworkSuite {
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
         const mutantFactory = new MutationFactory(this.vm, this.properties.mutators as string[]);
-        const maxMutants = this.properties.maxMutants as number;
+        const maxMutants = this.properties.maxMutants as number || Number.MAX_SAFE_INTEGER;
         const mutantPrograms: ScratchProgram[] = [];
         let i = 0;
         while (i < maxMutants && mutantFactory.candidates.size > 0) {

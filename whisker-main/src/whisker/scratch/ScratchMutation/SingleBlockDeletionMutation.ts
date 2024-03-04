@@ -17,7 +17,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
 
 
@@ -90,7 +90,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * String representation of a given mutator.
      * @returns string representation of the mutator.
      */
-    public toString():string{
+    public toString(): string {
         return 'SBD';
     }
 }

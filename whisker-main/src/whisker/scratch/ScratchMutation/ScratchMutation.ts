@@ -14,11 +14,11 @@ export abstract class ScratchMutation {
     /**
      * JSON representation of the original project.
      */
-    protected readonly originalProjectJSON
+    protected readonly originalProjectJSON: string
 
-    protected constructor(protected readonly originalVM: VirtualMachine) {
-        this.blockMap = getBlockMap(this.originalVM.runtime.targets);
-        this.originalProjectJSON = this.originalVM.toJSON();
+    protected constructor(originalVM: Readonly<VirtualMachine>) {
+        this.blockMap = getBlockMap(originalVM.runtime.targets);
+        this.originalProjectJSON = originalVM.toJSON();
     }
 
     /**
@@ -28,7 +28,7 @@ export abstract class ScratchMutation {
 
     /**
      * Applies the instantiated mutation operator.
-     * @param mutationBlockId the id  of the block that will be mutated.
+     * @param mutationBlockId the id of the block that will be mutated.
      * @param mutantProgram the mutant program in which the mutationBlock resides.
      * @param target the name of the target in which the block to mutate resides.
      */
