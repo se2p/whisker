@@ -294,7 +294,7 @@ const runTests = async function (tests) {
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
 
-    if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith(".json")) {
+    if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith('.json')) {
         // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
         // Hence we wait a second before checking if tests are loaded.
         await new Promise(resolve => setTimeout(resolve, 1000));
