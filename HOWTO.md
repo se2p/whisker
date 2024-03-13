@@ -9,7 +9,7 @@ const whisker = new WhiskerUtil(scratchVM, scratchProject);
 whisker.prepare();
 const t = whisker.getTestDriver();
 
-whisker.start();
+await whisker.start();
 
 /* Run the Scratch VM and control it with t. */
 ...

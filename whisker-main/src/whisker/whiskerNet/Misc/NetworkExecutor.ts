@@ -76,7 +76,7 @@ export class NetworkExecutor {
         Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
         this._projectRunning = true;
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
 
         // Initialise required variables.
         network.codons = [];
@@ -186,7 +186,7 @@ export class NetworkExecutor {
         Randomness.seedScratch(this._vm);
         const _onRunStop = this.projectStopped.bind(this);
         this._projectRunning = true;
-        this._vmWrapper.start();
+        await this._vmWrapper.start();
 
         const eventTrace = network.trace.events;
         const statementTarget = network.targetFitness as StatementFitnessFunction;

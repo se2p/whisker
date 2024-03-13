@@ -54,7 +54,10 @@ export class TestMinimizer {
             const eventChunks = Arrays.chunk(newTest.trace.events, 2);
             const codonChunks = Arrays.chunk(newTest.getGenes(), this._reservedCodons);
 
-            for (let i = eventChunks.length - 1; i >= 1; i--) {
+            // Do not delete the first event pair to avoid DragSpriteEvents being shifted to the start of a test
+            // since this can lead to discrepancies between the execution of tests
+            // during the generation and execution phase.
+            for (let i = eventChunks.length - 1; i > 1; i--) {
                 const newEvents = eventChunks.slice(0, i).concat(eventChunks.slice(i + 1)).flat();
                 const newCodons = codonChunks.slice(0, i).concat(codonChunks.slice(i + 1)).flat();
 

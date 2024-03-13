@@ -1,4 +1,4 @@
-import { WhiskerTest } from "./WhiskerTest";
+import {WhiskerTest} from "./WhiskerTest";
 import {Container} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {AssertionObserver} from "./assertions/AssertionObserver";
@@ -11,12 +11,11 @@ import {ListAssertion} from "./assertions/ListAssertion";
 import {PositionAssertion} from "./assertions/PositionAssertion";
 import {SayAssertion} from "./assertions/SayAssertion";
 import {SizeAssertion} from "./assertions/SizeAssertion";
-import {TouchingAssertion} from "./assertions/TouchingAssertion";
 import {VariableAssertion} from "./assertions/VariableAssertion";
 import {VisibilityAssertion} from "./assertions/VisibilityAssertion";
 import {VolumeAssertion} from "./assertions/VolumeAssertion";
 import {CloneCountAssertion} from "./assertions/CloneCountAssertion";
-import assert from "assert";
+import {TouchingAssertion} from "./assertions/TouchingAssertion";
 import {TouchingEdgeAssertion} from "./assertions/TouchingEdgeAssertion";
 
 export class AssertionGenerator {
@@ -31,8 +30,8 @@ export class AssertionGenerator {
         PositionAssertion.createFactory(),
         SayAssertion.createFactory(),
         SizeAssertion.createFactory(),
-        //TouchingAssertion.createFactory(), //FIXME: Buggy
-        //TouchingEdgeAssertion.createFactory(), // FIXME: Buggy
+        //TouchingAssertion.createFactory(), // See comment in AssertionObserver
+        //TouchingEdgeAssertion.createFactory(), // See comment in AssertionObserver
         VariableAssertion.createFactory(),
         VisibilityAssertion.createFactory(),
         VolumeAssertion.createFactory()];
@@ -46,27 +45,32 @@ export class AssertionGenerator {
             // produce execution trace
             const trace = await this._executeWithObserver(test);
 
-            // trace should be same length as events in test
-            const numEvents = test.getEventsCount();
-            Container.debugLog("Adding assertions to test "+test+" of length "+numEvents);
+            // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
+            if (trace == null) {
+                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                continue;
+            }
 
-            Container.debugLog("Trace length: "+trace.length);
+
+            // trace should have the same length as events in test
+            const numEvents = test.getEventsCount();
+            Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
+
+            Container.debugLog("Trace length: " + trace.length);
             // for each event
-            for (let position = 0; position < numEvents; position+=2) {
+            for (let position = 0; position < trace.length; position++) {
                 for (const assertionFactory of this.assertionFactories) {
-                    const assertions = assertionFactory.createAssertions(trace[position/2]);
+                    const assertions = assertionFactory.createAssertions(trace[position]);
                     for (const assertion of assertions) {
-                        test.addAssertion(position + 1, assertion);
+                        test.addAssertion(position, assertion);
                     }
                 }
             }
-            Container.debugLog("Resulting test: "+test);
+            Container.debugLog("Resulting test: " + test);
         }
     }
 
     public async addStateChangeAssertions(tests: WhiskerTest[]): Promise<void> {
-
-        await Container.vmWrapper.resetVM();
         Container.debugLog("Adding State change Assertions");
 
         // determine relevant attributes?
@@ -74,15 +78,21 @@ export class AssertionGenerator {
             // produce execution trace
             const trace = await this._executeWithObserver(test);
 
-            // trace should be same length as events in test
+            // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
+            if (trace == null) {
+                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                continue;
+            }
+
+            // trace should have the same length as events in test
             const numEvents = test.getEventsCount();
             Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
 
             Container.debugLog("Trace length: " + trace.length);
             // for each event
-            for (let position = 2; position < numEvents; position += 2) {
-                const stateBefore = trace[(position / 2) - 1];
-                const stateAfter = trace[position / 2];
+            for (let position = 0; position < trace.length - 1; position++) {
+                const stateBefore = trace[position];
+                const stateAfter = trace[position + 1];
                 for (const assertionFactory of this.assertionFactories) {
                     const assertionsAfter = assertionFactory.createAssertions(stateAfter);
                     for (const assertion of assertionsAfter) {
@@ -97,11 +107,17 @@ export class AssertionGenerator {
     }
 
 
-    private async _executeWithObserver(test: WhiskerTest)  {
+    private async _executeWithObserver(test: WhiskerTest) {
         const executor = new TestExecutor(Container.vmWrapper, undefined, undefined);
         const observer = new AssertionObserver();
         executor.attach(observer);
+        const coverageGroundTruth = test.chromosome.coverage;
         await executor.executeEventTrace(test.chromosome);
+        const coverageAssertionExec = test.chromosome.coverage;
+        if (coverageGroundTruth.size !== coverageAssertionExec.size ||
+            !([...coverageGroundTruth].every((c) => coverageAssertionExec.has(c)))) {
+            return null;
+        }
         return observer.getExecutionTrace();
     }
 

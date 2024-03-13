@@ -51,9 +51,10 @@ class WhiskerUtil {
 
     /**
      * Starts the used {@link VMWrapper}.
+     * @return {Promise<void>}
      */
     start () {
-        this.vmWrapper.start();
+        return this.vmWrapper.start();
     }
 
     /**
