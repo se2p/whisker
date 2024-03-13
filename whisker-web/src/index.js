@@ -206,6 +206,10 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         let mutantPrograms = [];
         try {
+            // Loading the project again seems unneccessary here. But removing
+            // this line can cause occasional crashes in the renderer when
+            // restoring the save state between test executions. See issue #217.
+            await vm.loadProject(project);
             vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
 
             CoverageGenerator.prepareVM(vm);
@@ -289,9 +293,13 @@ const runTests = async function (tests) {
 
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
-    // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
-    // Hence we wait a second before checking if tests are loaded.
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith('.json')) {
+        // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
+        // Hence we wait a second before checking if tests are loaded.
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
     if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t('test-execution'), i18next.t('no-tests'));
         return;

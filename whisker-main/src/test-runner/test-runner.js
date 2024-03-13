@@ -63,12 +63,6 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
-        if (props.accelerationFactor === "Infinity") {
-            // We need a small delay here to give the renderer a chance to initialize everything properly. Otherwise,
-            // it leads to weird behavior (e.g., touchingColor blocks may sometimes report false negatives.)
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        }
-
         const generatedMutants = [];
         if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
@@ -438,7 +432,7 @@ class TestRunner extends EventEmitter {
 
 
         this.emit(TestRunner.TEST_START, test);
-        this.vmWrapper.start();
+        await this.vmWrapper.start();
         this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 

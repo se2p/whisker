@@ -235,7 +235,7 @@ export class DynamicNetworkSuite {
         const util = new WhiskerUtil(this.vm, this.project);
         const vmWrapper = util.getVMWrapper();
         await util.prepare(this.properties['acceleration'] as number || 1);
-        util.start();
+        await util.start();
 
         // Set up Container variables.
         Container.vm = this.vm;
