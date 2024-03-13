@@ -2,7 +2,6 @@ const fs = require("fs");
 const logger = require("./logger");
 const {modelPath, csvFile} = require("./cli").opts;
 const {runTestsOnFile, getProjectsInScratchPath} = require("./common");
-const os = require("os");
 
 // Standard TestSuite / Model-based testing
 async function run(openNewPage) {

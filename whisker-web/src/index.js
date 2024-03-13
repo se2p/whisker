@@ -174,13 +174,13 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', true);
         $('#record').prop('disabled', true);
 
-        // Activate listener for execution trace record at the end of a test run.
-        const traceExecution = document.querySelector('#container').executionTrace;
-        if (traceExecution) {
+        // Activate listener for tracing executed blocks
+        const traceBlocks = document.querySelector('#container').traceBlocks;
+        if (traceBlocks) {
             Whisker.testRunner.on(TestRunner.RUN_END, () => {
-                const blob = new Blob([JSON.stringify(Whisker.testRunner.executionTrace)],
+                const blob = new Blob([JSON.stringify(Whisker.testRunner.blockTraces)],
                     {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `ExecutionTrace-${Whisker.projectFileSelect.getName()}.json`);
+                FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
             });
         }
 
@@ -206,21 +206,16 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const caseSensitive = $('#model-case-sensitive').is(':checked');
 
         try {
+            // Loading the project again seems unneccessary here. But removing
+            // this line can cause occasional crashes in the renderer when
+            // restoring the save state between test executions. See issue #217.
+            await vm.loadProject(project);
             vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
-
-            if (traceExecution) {
-                vm.runtime.onReuseStackFrame(thread => {
-                    const trace = CoverageGenerator.traceExecution(thread);
-                    if (trace) {
-                        Whisker.testRunner.addExecutionTrace(trace);
-                    }
-                });
-            }
 
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, traceBlocks},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
@@ -298,9 +293,13 @@ const runTests = async function (tests) {
 
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
-    // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
-    // Hence we wait a second before checking if tests are loaded.
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    if (Whisker.testFileSelect.files.length > 0 && Whisker.testFileSelect.getName().endsWith('.json')) {
+        // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
+        // Hence we wait a second before checking if tests are loaded.
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
     if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t('test-execution'), i18next.t('no-tests'));
         return;

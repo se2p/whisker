@@ -1,5 +1,5 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {getBlockMap} from 'scratch-analysis/src/control-flow-graph';
+import {getBlockMap} from '../../../../../scratch-analysis/src/control-flow-graph';
 import {ScratchProgram} from "../ScratchInterface";
 
 
@@ -65,12 +65,15 @@ export abstract class ScratchMutation {
      * block ids in the default Scratch program are not extended with the target names.
      */
     protected extractBlockFromProgram(program: ScratchProgram, blockId: string, targetName: string): unknown | undefined {
-        // blockId can be null, e.g., when we are trying to extract a parent block but the block does not exist.
+        // blockId can be null, e.g. when we are trying to extract a parent block but the block does not exist.
         if (blockId === null) {
             return undefined;
         }
 
-        const targetBlocks = program.targets.find(target => target.name === targetName).blocks;
+        const isTarget = targetName === "_stage_" 
+            ? (t) => t.isStage 
+            : (t) => !t.isStage && t.name === targetName;
+        const targetBlocks = program.targets.find((t) => isTarget(t)).blocks;
         for (const [id, block] of Object.entries(targetBlocks)) {
             if (blockId.startsWith(id)) {
                 return block;
