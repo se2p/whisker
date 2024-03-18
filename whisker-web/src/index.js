@@ -186,7 +186,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         let summary;
         let csvResults;
-        let mutantPrograms = [];
         let coverage;
         let coverageModels = {};
         accSlider.slider('disable');
@@ -205,6 +204,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const repetitions = Number(document.querySelector('#model-repetitions').value);
         const caseSensitive = $('#model-case-sensitive').is(':checked');
 
+        let mutantPrograms = [];
         try {
             // Loading the project again seems unneccessary here. But removing
             // this line can cause occasional crashes in the renderer when
@@ -215,7 +215,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, traceBlocks},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload, traceBlocks},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
@@ -331,6 +331,7 @@ const runAllTests = async function () {
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
             properties.maxMutants = maxMutants;
+            properties.downloadMutants = mutantDownload;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
 
             const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,

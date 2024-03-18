@@ -17,7 +17,7 @@ export class ScriptDeletionMutation extends ScratchMutation {
      * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
         if(mutationBlock['next'] !== null) {
             const nextBlock = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], target);
@@ -36,7 +36,7 @@ export class ScriptDeletionMutation extends ScratchMutation {
      * Valid mutation candidates are hat blocks.
      * @returns an array of mutation candidate block ids.
      */
-    protected getMutationCandidates(): string[] {
+    public getMutationCandidates(): string[] {
         const hatBlocks: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             if (ControlFilter.hatBlock(block)) {

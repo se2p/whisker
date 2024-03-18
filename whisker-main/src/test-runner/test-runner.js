@@ -7,7 +7,6 @@ const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
-const {shuffle} = require("../whisker/utils/Arrays");
 const CoverageGenerator = require("../coverage/coverage");
 
 class TestRunner extends EventEmitter {
@@ -61,29 +60,35 @@ class TestRunner extends EventEmitter {
         const testResults = [];
         const finalResults = {};
         let csv = this._generateCSVHeader(tests, modelProps);
-        let mutantPrograms = undefined;
 
         this.emit(TestRunner.RUN_START, tests);
 
+        const generatedMutants = [];
         if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
 
             // Divide by 1000 since we measure the budget in seconds and will multiply by 1000 afterwards.
+            const maxMutants = props['maxMutants'] > 0 ? props['maxMutants'] : Number.MAX_SAFE_INTEGER;
             const mutationBudget = props['mutationBudget'] > 0 ? props['mutationBudget'] : Number.MAX_SAFE_INTEGER / 1000;
-
-            // Add the original as reference when applying mutation analysis
-            const original = JSON.parse((vm.toJSON()));
-            original.name = "Original";
-
-            const mutantFactory = new MutationFactory(vm);
-            mutantPrograms = mutantFactory.generateScratchMutations(props['mutators'], props['maxMutants']);
-            shuffle(mutantPrograms); // Shuffle so we do not favour mutation operators when a time limit is set
-            mutantPrograms.unshift(original);
-
-            // Execute the given tests on every mutant
-            for (const mutant of mutantPrograms) {
+            const mutantFactory = new MutationFactory(vm, props['mutators']);
+            let i = -1; // We start with -1 since the first suite execution is on the original project
+            const mutationStart = Date.now();
+            while (i < maxMutants && mutantFactory.candidates.size > 0 && Date.now() - mutationStart < mutationBudget * 1000) {
+                let mutant;
+                if (i === -1) { // In the first iteration, we execute the original project as a reference.
+                    mutant = JSON.parse(vm.toJSON());
+                    mutant.name = "Original";
+                } else { // Generate mutant
+                    mutant = mutantFactory.generateRandomMutant();
+                    if (mutant == null) {
+                        continue;
+                    }
+                    if (props['mutantDownload']) {
+                        generatedMutants.push(mutant);
+                    }
+                }
                 const projectMutation = `${projectName}-${mutant.name}`;
-                console.log(`Analysing mutant ${projectMutation}`);
+                console.log(`Analysing mutant ${i}: ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
                 this.saveState = this.vmWrapper._recordInitialState(vm);
                 this._initialiseFitnessTargets(vm);
@@ -93,7 +98,7 @@ class TestRunner extends EventEmitter {
                 for (const test of tests) {
                     this.vmWrapper.loadSaveState(this.saveState);
                     let result;
-                    if("generationAlgorithm" in test){
+                    if ("generationAlgorithm" in test) {
                         resultRecords.generationAlgorithm = test.generationAlgorithm;
                     }
 
@@ -110,10 +115,6 @@ class TestRunner extends EventEmitter {
                     }
 
                     testResults.push(result);
-
-                    if (this.aborted) {
-                        return null;
-                    }
                 }
 
                 // Record the results
@@ -125,10 +126,7 @@ class TestRunner extends EventEmitter {
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
 
-                // Stop if time budget in seconds has been exceeded.
-                if (Date.now() - startTime > mutationBudget * 1000){
-                    break;
-                }
+                i++;
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
@@ -201,7 +199,7 @@ class TestRunner extends EventEmitter {
         csv += "\n";    // We add another newline here to make it easier finding the csv output within the logs
 
         this.emit(TestRunner.RUN_END, finalResults);
-        return [finalResults, csv, mutantPrograms];
+        return [finalResults, csv, generatedMutants];
     }
 
     /**

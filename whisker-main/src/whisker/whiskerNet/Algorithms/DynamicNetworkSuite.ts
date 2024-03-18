@@ -123,14 +123,27 @@ export class DynamicNetworkSuite {
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
     protected async mutationAnalysis(): Promise<ScratchProgram[]> {
-        const mutantFactory = new MutationFactory(this.vm);
-        const mutantPrograms = mutantFactory.generateScratchMutations(this.properties.mutators as string[], this.properties.maxMutants as number);
+        const mutantFactory = new MutationFactory(this.vm, this.properties.mutators as string[]);
+        const maxMutants = this.properties.maxMutants as number || Number.MAX_SAFE_INTEGER;
+        const mutantPrograms: ScratchProgram[] = [];
         let i = 0;
-        for (const mutant of mutantPrograms) {
-            this.archive.clear();
+        while (i < maxMutants && mutantFactory.candidates.size > 0) {
+            // Generate mutant
+            const mutant = mutantFactory.generateRandomMutant();
+            if (mutant == null) {
+                continue;
+            }
+
+            // Save mutant for download. This may cause memory issues!
+            if (this.properties.downloadMutants) {
+                mutantPrograms.push(mutant);
+            }
+
+            // Execute test suite on mutant
             const projectMutation = `${this.projectName}-${mutant.name}`;
             Container.debugLog(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
+            this.archive.clear();
             for (let i = 0; i < this.testCases.length; i++) {
                 Container.debugLog(`Executing test ${i}`);
                 const test = this.testCases[i];
@@ -151,7 +164,7 @@ export class DynamicNetworkSuite {
     }
 
     /**
-     * Executes a test for a user-defined amount of times on the sample solution to collect activationTraces that
+     * Executes a test for a user-defined number of times on the sample solution to collect activationTraces that
      * can later be used to verify the correctness of a modified project.
      */
     protected async collectActivationTrace(): Promise<void> {
@@ -180,6 +193,7 @@ export class DynamicNetworkSuite {
     /**
      * Executes the given network suite by fist initialising required fields and then executing the respective test
      * cases on the original project or the created mutants.
+     * @returns Results of network suite execution in csv format.
      */
     protected async execute(): Promise<[string, ScratchProgram[]]> {
 
@@ -229,7 +243,7 @@ export class DynamicNetworkSuite {
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
         if (this.properties['log'] === true) {
-            Container.debugLog = (...data) => console.log('DEBUG:', ...data);
+            Container.debugLog = (...data: unknown[]) => console.log('DEBUG:', ...data);
         } else {
             Container.debugLog = () => { /* No operation */ };
         }
@@ -316,7 +330,7 @@ export class DynamicNetworkSuite {
      * @param testName the name of the executed test file.
      */
     protected async updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
-                                   testName: Readonly<string>): Promise<void> {
+                                         testName: Readonly<string>): Promise<void> {
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
             await test.determineCoveredObjectives([...this.statementMap.values()]);

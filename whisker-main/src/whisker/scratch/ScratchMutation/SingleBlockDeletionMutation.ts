@@ -6,8 +6,49 @@ import {ControlFilter, StatementFilter} from "../../../../../scratch-analysis";
 
 export class SingleBlockDeletionMutation extends ScratchMutation {
 
+    /**
+     * Contains block ids of blocks that should never be deleted as deleting them probably causes issues in the VM.
+     */
+    private ignoreIDs: Set<string>;
+
     constructor(vm: VirtualMachine) {
         super(vm);
+        this.ignoreIDs = this.collectExecutionHaltingBeforeCreateClone();
+    }
+
+    /**
+     * Create clone blocks should always have an execution-halting block between the hat block and themselves.
+     * Otherwise, the Scratch-VM will freeze ---> https://github.com/scratchfoundation/scratch-vm/issues/2282.
+     * This method collects all execution-halting blocks that should not be deleted during the mutation operation
+     * to ensure that the VM does not freeze due to the issue described above.
+     * @returns Set of block ids that should not be deleted during the mutation operation.
+     */
+    private collectExecutionHaltingBeforeCreateClone(): Set<string> {
+        const ignoreIDs = new Set<string>();
+        const createCloneBlocks = [...this.blockMap.values()].filter(block => block['opcode'] == 'control_create_clone_of');
+        for (const createCloneBlock of createCloneBlocks) {
+
+            // Check if the current create clone block generates clones of itself.
+            // If it generates clones of another Sprite, the VM does not freeze.
+            const menuBlock = createCloneBlock['inputs']['CLONE_OPTION']['block'];
+            const cloneTarget = this.blockMap.get(menuBlock)['fields']['CLONE_OPTION']['value'];
+            if (cloneTarget !== '_myself_') {
+                continue;
+            }
+
+            // Find the first execution halting block that is a predecessor of the current create clone block and
+            // add it to the set of blocks that should not be deleted.
+            let parent = createCloneBlock['parent'];
+            while (parent !== null) {
+                const curr = this.blockMap.get(parent);
+                if (ControlFilter.executionHaltingBlock(curr)) {
+                    ignoreIDs.add(parent);
+                    break;
+                }
+                parent = curr['parent'];
+            }
+        }
+        return ignoreIDs;
     }
 
     /**
@@ -17,7 +58,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
+    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
         const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
 
 
@@ -45,7 +86,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
             parent['next'] = next === null ? null : mutationBlock['next'];
         }
 
-        // If the parent points to the block within its substack field we have to bend the pointer to point to the
+        // If the parent points to the block within its substack field, we have to bend the pointer to point to the
         // deletion block's next block.
         if ('SUBSTACK' in parent['inputs']) {
             const substackArray = parent['inputs']['SUBSTACK'];
@@ -73,13 +114,14 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * Valid mutation candidates are all statements blocks that are neither hat nor branching blocks .
      * @returns an array of mutation candidate block ids.
      */
-    protected getMutationCandidates(): string[] {
+    public getMutationCandidates(): string[] {
         const deletionCandidates: string[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             if (StatementFilter.isStatementBlock(block) &&
                 !block['shadow'] &&
                 !ControlFilter.hatBlock(block) &&
-                !ControlFilter.branch(block)) {
+                !ControlFilter.branch(block) &&
+                !this.ignoreIDs.has(id)) {
                 deletionCandidates.push(id);
             }
         }
@@ -90,7 +132,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * String representation of a given mutator.
      * @returns string representation of the mutator.
      */
-    public toString():string{
+    public toString(): string {
         return 'SBD';
     }
 }
