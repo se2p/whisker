@@ -174,10 +174,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 this._initializeSingleBitFitness(length);
                 break;
             case FitnessFunctionType.STATEMENT:
-                this._initializeStatementFitness(targets, new StatementFitnessFunctionFactory());
+                this._initializeCoverageFitness(targets, new StatementFitnessFunctionFactory());
                 break;
             case FitnessFunctionType.BRANCH:
-                this._initializeStatementFitness(targets, new BranchCoverageFitnessFunctionFactory());
+                this._initializeCoverageFitness(targets, new BranchCoverageFitnessFunctionFactory());
                 break;
         }
         return this;
@@ -242,7 +242,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 searchAlgorithm = this._buildRandom();
         }
 
-        SearchAlgorithmBuilder.initialiseCoverageMappings();
+        SearchAlgorithmBuilder.initializeCoverageMappings();
         searchAlgorithm.setProperties(this._properties);
         searchAlgorithm.setChromosomeGenerator(this._chromosomeGenerator);
 
@@ -355,27 +355,26 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     }
 
     /**
-     * A helper method that initializes the 'Statement' fitness function(s).
+     * A helper method that initializes coverage-based fitness function(s).
      */
-    private _initializeStatementFitness(targets: string[], factory: StatementFitnessFunctionFactory) {
-        // TODO: Check if this is done correctly
-        const fitnesses = factory.extractFitnessFunctions(Container.vm, targets);
+    private _initializeCoverageFitness(targets: string[], factory: StatementFitnessFunctionFactory) {
+        const fitnessFunctions = factory.extractFitnessFunctions(Container.vm, targets);
 
-        if (fitnesses.length == 1) {
-            this._fitnessFunction = fitnesses[0] as unknown as FitnessFunction<C>;
+        if (fitnessFunctions.length == 1) {
+            this._fitnessFunction = fitnessFunctions[0] as unknown as FitnessFunction<C>;
         }
 
-        for (let i = 0; i < fitnesses.length; i++) {
-            const fitness = fitnesses[i];
+        for (let i = 0; i < fitnessFunctions.length; i++) {
+            const fitness = fitnessFunctions[i];
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }
     }
 
     /**
-     * Initialises mapping for assessing the achieved coverages during the test generation
+     * Initializes mappings for assessing the achieved coverages during the test generation.
      */
-    public static initialiseCoverageMappings(): void {
+    public static initializeCoverageMappings(): void {
         const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
         const statementMap = new Map<StatementFitnessFunction, number>();
         for (const statement of statements) {

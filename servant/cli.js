@@ -151,7 +151,7 @@ class WhiskerSubCommand extends Command {
     optionMinimiseSuite() {
         return this.option(
             '-mi, --minimise-suite',
-            'minimises the network suite based on statement coverage',
+            'minimises the network suite based on branch coverage',
         );
     }
 

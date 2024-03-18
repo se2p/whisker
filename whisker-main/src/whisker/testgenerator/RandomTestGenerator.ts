@@ -84,7 +84,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
      * After each Iteration, the archive is updated with the trace of executed events.
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
-        SearchAlgorithmBuilder.initialiseCoverageMappings();
+        SearchAlgorithmBuilder.initializeCoverageMappings();
         this._iterations = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;

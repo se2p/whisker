@@ -74,7 +74,7 @@ export class Search {
     private handleEmptyProject(): Array<string> {
         console.log("Cannot find any suitable events for this project, not starting search.");
         const stats = StatisticsCollector.getInstance();
-        SearchAlgorithmBuilder.initialiseCoverageMappings();
+        SearchAlgorithmBuilder.initializeCoverageMappings();
 
         let hasBlocks = false;
         for (const target of this.vm.runtime.targets) {

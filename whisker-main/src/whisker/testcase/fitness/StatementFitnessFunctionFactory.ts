@@ -39,19 +39,13 @@ export class StatementFitnessFunctionFactory {
             return true;
         }
 
+        // Exclude blocks that are not explicit block statements.
         if ("userEvent" in node || "event" in node) {
-            // Exclude blocks that are not explicit statements.
             return true;
         }
 
-        // Check if explicit targets are specified
-        if (targets && targets.length !== 0) {
-            if (!targets.includes(node.id)) {
-                // A target list is specified and the node is not in that target list
-                return true;
-            }
-        }
-
-        return false;
+        // Check if explicit targets are specified and whether the current node is contained in the target list.
+        // If no target list is specified, we do not want to skip the node.
+        return targets && !targets.includes(node.id);
     }
 }

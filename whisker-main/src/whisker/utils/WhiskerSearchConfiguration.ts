@@ -51,18 +51,11 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {
-    BiasedVariableLengthConstrainedChromosomeMutation
-} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {
-    NeuroevolutionTestGenerationParameter
-} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {
-    BasicNeuroevolutionParameter,
-    NeuroevolutionEventSelection
-} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
+import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {BasicNeuroevolutionParameter, NeuroevolutionEventSelection} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
