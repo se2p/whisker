@@ -75,8 +75,8 @@ describe('Algorithms', () => {
     // If we obtain this amount of coverage, the algorithms execute without throwing an error.
     // Testing for higher coverage values involves randomness and requires longer running tests.
 
-    test('MIO', async () => {
-        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
+    test('MIO Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mioStatement.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
@@ -85,8 +85,8 @@ describe('Algorithms', () => {
         expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 
-    test('MOSA', async () => {
-        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMOSA.json");
+    test('MIO Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mioBranch.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
@@ -95,8 +95,38 @@ describe('Algorithms', () => {
         expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 
-    test('Neatest', async () => {
-        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatest.json");
+    test('MOSA Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mosaStatement.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+    }, timeout);
+
+    test('MOSA Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mosaBranch.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+    }, timeout);
+
+    test('Neatest Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatestStatement.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+    }, timeout);
+
+    test('Neatest Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatestBranch.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
