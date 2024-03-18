@@ -135,15 +135,21 @@ export class DynamicNetworkSuite {
     /**
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
-    protected async mutationAnalysis(): Promise<void> {
+    protected async mutationAnalysis(): Promise<ScratchProgram[]> {
         const mutantFactory = new MutationFactory(this.vm, this.properties.mutators as string[]);
         const maxMutants = this.properties.maxMutants as number || Number.MAX_SAFE_INTEGER;
+        const mutantPrograms: ScratchProgram[] = [];
         let i = 0;
         while (i < maxMutants && mutantFactory.candidates.size > 0) {
             // Generate mutant
             const mutant = mutantFactory.generateRandomMutant();
             if (mutant == null) {
                 continue;
+            }
+
+            // Save mutant for download. This may cause memory issues!
+            if (this.properties.downloadMutants) {
+                mutantPrograms.push(mutant);
             }
 
             // Execute test suite on mutant
@@ -168,6 +174,7 @@ export class DynamicNetworkSuite {
             await this.updateTestStatistics(executedTests, projectMutation, this.testName);
             i++;
         }
+        return mutantPrograms;
     }
 
     /**
@@ -202,7 +209,8 @@ export class DynamicNetworkSuite {
      * cases on the original project or the created mutants.
      * @returns Results of network suite execution in csv format.
      */
-    public async execute(): Promise<string> {
+    protected async execute(): Promise<[string, ScratchProgram[]]> {
+
         // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
         await this.initialiseCommonVariables();
@@ -222,12 +230,12 @@ export class DynamicNetworkSuite {
         if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
             Container.debugLog("Performing Mutation Analysis");
             await this.testSingleProject();     // Execute the original program to obtain reference data
-            await this.mutationAnalysis();
-            return StatisticsCollector.getInstance().asCsvNetworkSuite();
+            const mutants = await this.mutationAnalysis();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutants];
         } else {
             Container.debugLog("Testing Single Project");
             await this.testSingleProject();
-            return StatisticsCollector.getInstance().asCsvNetworkSuite();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         }
     }
 
@@ -241,7 +249,7 @@ export class DynamicNetworkSuite {
         const util = new WhiskerUtil(this.vm, this.project);
         const vmWrapper = util.getVMWrapper();
         await util.prepare(this.properties['acceleration'] as number || 1);
-        util.start();
+        await util.start();
 
         // Set up Container variables.
         Container.vm = this.vm;

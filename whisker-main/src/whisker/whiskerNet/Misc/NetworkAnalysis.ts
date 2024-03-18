@@ -91,6 +91,7 @@ export class NetworkAnalysis {
 
                 // Check if the test AT for the given step and node is surprising.
                 if (LSA > threshold) {
+                    Container.debugLog(`Suspicious at step ${step} with node ${nodeId} and a value of ${LSA} vs Threshold ${threshold}`);
                     surpriseMap.get(step).set(nodeId, true);
                     susNodes.add(nodeId);
                     surpriseCount++;

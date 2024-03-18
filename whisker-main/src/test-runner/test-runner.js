@@ -65,6 +65,7 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
+        const generatedMutants = [];
         if ('mutators' in props && props['mutators'][0] !== 'NONE') {
             // Mutation Analysis
 
@@ -83,6 +84,9 @@ class TestRunner extends EventEmitter {
                     mutant = mutantFactory.generateRandomMutant();
                     if (mutant == null) {
                         continue;
+                    }
+                    if (props['mutantDownload']) {
+                        generatedMutants.push(mutant);
                     }
                 }
                 const projectMutation = `${projectName}-${mutant.name}`;
@@ -197,7 +201,7 @@ class TestRunner extends EventEmitter {
         csv += "\n";    // We add another newline here to make it easier finding the csv output within the logs
 
         this.emit(TestRunner.RUN_END, finalResults);
-        return [finalResults, csv];
+        return [finalResults, csv, generatedMutants];
     }
 
     /**

@@ -196,6 +196,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
         const mutationBudget = document.querySelector('#container').mutationBudget;
         const maxMutants = document.querySelector('#container').maxMutants;
+        const mutantDownload = document.querySelector('#container').downloadMutants;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -203,6 +204,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         const repetitions = Number(document.querySelector('#model-repetitions').value);
         const caseSensitive = $('#model-case-sensitive').is(':checked');
 
+        let mutantPrograms = [];
         try {
             // Loading the project again seems unneccessary here. But removing
             // this line can cause occasional crashes in the renderer when
@@ -212,11 +214,16 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
             CoverageGenerator.prepareVM(vm);
 
-            [summary, csvResults] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, traceBlocks},
+            [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload, traceBlocks},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
+
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
+            }
 
             if (Whisker.modelTester.programModelsLoaded()) {
                 coverageModels = Whisker.modelTester.getTotalCoverage();
@@ -315,6 +322,7 @@ const runAllTests = async function () {
             const setMutators = document.querySelector('#container').mutators;
             const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
             const maxMutants = document.querySelector('#container').maxMutants;
+            const mutantDownload = document.querySelector('#container').downloadMutants;
 
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
@@ -324,11 +332,18 @@ const runAllTests = async function () {
             properties.mutators = mutators;
             properties.maxMutants = maxMutants;
             properties.minimiseSuite = document.querySelector('#container').minimiseSuite;
+            properties.downloadMutants = mutantDownload;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
 
             const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
                 properties);
-            const csv = await dynamicSuite.execute();
+            const [csv, mutantPrograms] = await dynamicSuite.execute();
+
+            // Download generated mutants if desired.
+            if (mutantDownload && mutantPrograms.length > 0){
+                await downloadMutants(mutantPrograms);
+            }
+
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csv);
         } finally {
