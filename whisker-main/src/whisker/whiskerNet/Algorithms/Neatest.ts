@@ -150,8 +150,7 @@ export class Neatest extends NEAT {
         const allStatements = [...this._fitnessFunctionMap.values()];
 
         // If we are dealing with BranchCoverage, our set of potential targets is formed over all uncovered Statements
-        // since a selection based on the CDG is infeasible
-        // because only targeting branching nodes and not statements.
+        // since a selection based on the CDG is infeasible as we are only targeting branching nodes and not statements.
         let potentialTargets: Set<StatementFitnessFunction>;
         if (this._fitnessFunctionMap.get(0) instanceof BranchCoverageFitnessFunction){
             potentialTargets = new Set(uncoveredStatements);
