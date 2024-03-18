@@ -371,7 +371,7 @@ export class StatisticsCollector {
         const headers = ["projectName", "configName", "fitnessFunctionCount", "statements",
             "statementCoverage", "branches", "branchCoverage", "iterationCount", "testsuiteEventCount",
             "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents", "averageTestExecutionTime",
-            "bestTestSuiteSize", "fitnessEvaluations", "generatedTests", "searchTime"];
+            "bestTestSuiteSize", "fitnessEvaluations", "generatedTestsForFullCoverage", "searchTimeForFullCoverage"];
         const headerRow = headers.join(",").concat(",", coverageHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount,
             this._statements.size, this._statementCoverage, this._branches.size, this._branchCoverage,
@@ -400,7 +400,8 @@ export class StatisticsCollector {
 
         // Default header and data arrays
         const headers = ["projectName", "configName", "statements", "statementCoverage", "branches",
-            "branchCoverage", "iterationCount", "numberFitnessEvaluations", "searchTime", 'gdTime', 'gdEpochs'];
+            "branchCoverage", "iterationCount", "numberFitnessEvaluations", "searchTimeForFullCoverage",
+            'gdTime', 'gdEpochs'];
         const data = [this._projectName, this._configName, this._statements.size,
             this._statementCoverage, this._branches.size, this._branchCoverage, this._iterationCount,
             this._numberFitnessEvaluations, this._timeToReachFullCoverage, gdTime, gdEpochs];
