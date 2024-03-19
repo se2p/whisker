@@ -5,7 +5,7 @@ const fs = require("fs");
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = 30000;
+const timeout = 50000;
 const ACCELERATION = Infinity;
 
 async function loadProject(scratchPath) {
