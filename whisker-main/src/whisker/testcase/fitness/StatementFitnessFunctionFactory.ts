@@ -44,8 +44,8 @@ export class StatementFitnessFunctionFactory {
             return true;
         }
 
-        // Check if explicit targets are specified and whether the current node is contained in the target list.
-        // If no target list is specified, we do not want to skip the node.
-        return targets && !targets.includes(node.id);
+        // Check if explicit targets are specified
+        return targets && targets.length !== 0 && !targets.includes(node.id);
+
     }
 }

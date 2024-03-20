@@ -5,8 +5,8 @@ const fs = require("fs");
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = 50000;
-const ACCELERATION = 10;
+const timeout = 30000;
+const ACCELERATION = Infinity;
 
 async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
@@ -26,6 +26,7 @@ async function readFitnessLog() {
         const outputContent = await output.getProperty('innerHTML');
         const log = await outputContent.jsonValue();
         if (log.includes('uncoveredBlocks')) {
+            console.log(log)
             const csvHeaderIndex = log.split('\n').findIndex(logLine => logLine.includes('projectName'));
             const uncoveredBlocksLog = log.split('\n').slice(0, csvHeaderIndex).join('\n');
             return JSON.parse(uncoveredBlocksLog);
