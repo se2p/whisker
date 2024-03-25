@@ -11,6 +11,11 @@ async function openNewBrowser() {
         // '--use-gl=desktop', // could be used next to headless, but pages tend to quit unexpectedly
     ];
 
+    if (process.env.WHISKER_CONTAINERIZED) {
+        // https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#tips
+        args.push('--disable-dev-shm-usage');
+    }
+
     return await puppeteer.launch({
         headless,
         args,
