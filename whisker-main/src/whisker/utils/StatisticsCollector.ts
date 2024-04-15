@@ -23,6 +23,7 @@ import {Chromosome} from "../search/Chromosome";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
+import Arrays from "./Arrays";
 
 /**
  * Singleton class to collect statistics from search runs

@@ -99,16 +99,16 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
         // When dealing with NetworkChromosomes, ignore the cfgDistance.
         if (chromosome instanceof NetworkChromosome){
-            return StatementFitnessFunction._normalize(approachLevel + StatementFitnessFunction._normalize(branchDistance));
+            return StatementFitnessFunction.normalize(approachLevel + StatementFitnessFunction.normalize(branchDistance));
         }
 
         let cfgDistanceNormalized;
         if (branchDistance === 0 && approachLevel < Number.MAX_SAFE_INTEGER) {
-            cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome, approachLevel > 0));
+            cfgDistanceNormalized = StatementFitnessFunction.normalize(this.getCFGDistance(chromosome, approachLevel > 0));
         } else {
             cfgDistanceNormalized = 1;
         }
-        return 2 * approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
+        return 2 * approachLevel + StatementFitnessFunction.normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -311,7 +311,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
 
-    public static _normalize(x: number): number {
+    public static normalize(x: number): number {
         return x / (x + 1.0);
     }
 
