@@ -27,7 +27,7 @@ import {Container} from "../../utils/Container";
 
 export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
 
-    constructor(controlNode: GraphNode, private _isTrueBranch: boolean) {
+    constructor(readonly controlNode: GraphNode, private readonly _isTrueBranch: boolean) {
         super(controlNode);
     }
 

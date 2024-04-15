@@ -9,27 +9,31 @@ export class BranchCoverageFitnessFunctionFactory extends StatementFitnessFuncti
     override extractFitnessFunctions(vm: VirtualMachine, targets: string[]): BranchCoverageFitnessFunction[] {
         const fitnessFunctions: BranchCoverageFitnessFunction[] = [];
 
-        if (!(vm === undefined || vm === null)) {
-            Container.cfg = generateCFG(vm);
-            Container.cdg = generateCDG(Container.cfg);
-            for (const node of Container.cdg.getAllNodes()) {
-                if (this.skipNode(node, targets)) {
-                    continue;
-                }
+        if (vm === undefined || vm === null) {
+            return fitnessFunctions;
+        } 
 
-                // Create two branch coverage fitness functions for each branch.
-                if (ControlFilter.branchCoverage(node.block)) {
-                    fitnessFunctions.push(new BranchCoverageFitnessFunction(node, true));
+        Container.cfg = generateCFG(vm);
+        Container.cdg = generateCDG(Container.cfg);
+        for (const node of Container.cdg.getAllNodes()) {
+            if (this.skipNode(node, targets)) {
+                continue;
+            }
 
-                    // Forever blocks cannot be passed and thus have no false branch.
-                    // Passing execution halting blocks and repeat blocks via the true branch,
-                    // implicitly also covers the false branch
-                    if (!ControlFilter.noFalseBranch(node.block)) {
-                        fitnessFunctions.push(new BranchCoverageFitnessFunction(node, false));
-                    }
-                }
+            if (!ControlFilter.branchCoverage(node.block)) {
+                continue;
+            }
+            
+            fitnessFunctions.push(new BranchCoverageFitnessFunction(node, true));
+
+            // Forever blocks cannot be passed and thus have no false branch.
+            // Passing execution halting blocks and repeat blocks via the true branch,
+            // implicitly also covers the false branch
+            if (!ControlFilter.noFalseBranch(node.block)) {
+                fitnessFunctions.push(new BranchCoverageFitnessFunction(node, false));
             }
         }
+
         return fitnessFunctions;
     }
 }
