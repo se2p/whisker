@@ -20,10 +20,11 @@ async function getLogAfterSearch() {
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('projectName')) {
-            const csvHeader = log.split('\n').find(logLine => logLine.includes('totalCoveredStatements'));
-            const row = log.split('\n').find(logLine => !logLine.includes('totalCoveredStatements'));
-            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('totalCoveredStatements'));
-            return row.split(',')[coverageIndex];
+            const csvHeader = log.split('\n').find(logLine => logLine.includes('testStatementCoverage'));
+            const row = log.split('\n').find(logLine => !logLine.includes('testStatementCoverage'));
+            const statCovIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('testStatementCoverage'));
+            const branchCovIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('testBranchCoverage'));
+            return [row.split(',')[statCovIndex], row.split(',')[branchCovIndex]];
         }
         if (log.includes('empty project')) {
             return 'empty project';
@@ -58,8 +59,9 @@ describe('Test Dynamic Network Suites', () => {
     test('Dynamic Suite FruitCatching', async () => {
         await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingDynamic.json");
         await (await page.$('#run-all-tests')).click();
-        const coveredBlocks = await getLogAfterSearch();
-        expect(Number(coveredBlocks)).toBeGreaterThanOrEqual(38);
+        const [statCov, branchCov] = await getLogAfterSearch();
+        expect(Number(statCov)).toBeGreaterThanOrEqual(0.6);
+        expect(Number(branchCov)).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 });
 

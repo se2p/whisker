@@ -171,6 +171,11 @@ const ControlFilter = {
         block.opcode === 'control_forever' ||
         block.opcode === 'control_wait_until',
 
+    noFalseBranch: block =>
+        block.opcode === 'control_forever' ||
+        block.opcode === 'control_wait_until' ||
+        ControlFilter.executionHaltingBlock(block),
+
     doubleBranch: block =>
         block.opcode === 'control_if_else',
 
@@ -179,6 +184,11 @@ const ControlFilter = {
 
     hatBlock: block =>
         EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone',
+
+    branchCoverage: block =>
+        ControlFilter.singleBranch(block) ||
+        ControlFilter.doubleBranch(block) ||
+        ControlFilter.executionHaltingBlock(block),
 
     executionHaltingBlock: block =>
         block.opcode === 'control_wait' ||

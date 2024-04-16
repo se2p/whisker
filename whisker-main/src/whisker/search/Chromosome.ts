@@ -142,8 +142,9 @@ export abstract class Chromosome {
     /**
      * Determines the number of fitness objectives covered by a given test.
      * @param fitnessFunctions the fitness objectives.
+     * @returns the number of covered fitness objectives.
      */
-    public async determineCoveredObjectives(fitnessFunctions: FitnessFunction<Chromosome>[]): Promise<void> {
+    public async determineCoveredObjectives(fitnessFunctions: FitnessFunction<Chromosome>[]): Promise<number> {
         let coverageCount = 0;
         for (const fitnessFunction of fitnessFunctions) {
             if (await fitnessFunction.isCovered(this)) {
@@ -151,6 +152,7 @@ export abstract class Chromosome {
             }
         }
         this._coveredStatements = coverageCount;
+        return coverageCount;
     }
 
     /**

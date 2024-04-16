@@ -23,7 +23,7 @@ async function generateTests(openNewPage) {
         logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         // Save results in CSV-file if specified
         if (csvFile) {
-            console.info(`Creating CSV summary in ${testDownloadDir}`);
+            console.info(`Creating CSV summary in ${csvFile}`);
             fs.writeFileSync(csvFile, csv);
         }
     } catch (e) {

@@ -331,6 +331,7 @@ const runAllTests = async function () {
             properties.seed = document.getElementById('seed').value;
             properties.mutators = mutators;
             properties.maxMutants = maxMutants;
+            properties.minimiseSuite = document.querySelector('#container').minimiseSuite;
             properties.downloadMutants = mutantDownload;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
 

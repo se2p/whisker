@@ -19,6 +19,7 @@ import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessF
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
 import {SoundEvent} from "../../testcase/events/SoundEvent";
+import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class NetworkExecutor {
 
@@ -83,10 +84,10 @@ export class NetworkExecutor {
         let stepCount = 0;
 
         // Play the game until we reach a GameOver state or the timeout.
-        const statementTarget = network.targetFitness as StatementFitnessFunction;
+        const coverageObjective = network.targetFitness as StatementFitnessFunction;
         const isGreenFlag = this._stopEarly &&
-            statementTarget !== undefined &&
-            statementTarget.getTargetNode().block.opcode === 'event_whenflagclicked';
+            coverageObjective !== undefined &&
+            coverageObjective.getTargetNode().block.opcode === 'event_whenflagclicked';
 
         this._vm.runtime.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
@@ -146,9 +147,11 @@ export class NetworkExecutor {
             // Check if we have reached our selected target and stop if it's not the green flag.
             // Keep executing when the green flag was covered to cover all easy targets at once
             // and avoid repeated executions for trivial targets.
-            if (this._stopEarly && statementTarget !== undefined && statementTarget.getCDGDepth() > 1) {
+            // Keep executing if we are optimising for branch coverage to avoid having a branch only partly covered.
+            if (this._stopEarly && coverageObjective !== undefined && coverageObjective.getCDGDepth() > 1 &&
+                !(coverageObjective instanceof BranchCoverageFitnessFunction)) {
                 const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
-                if (currentCoverage.has(statementTarget.getTargetNode().id)) {
+                if (currentCoverage.has(coverageObjective.getTargetNode().id)) {
                     break;
                 }
             }

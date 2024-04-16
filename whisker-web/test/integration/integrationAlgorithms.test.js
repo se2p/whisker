@@ -38,10 +38,11 @@ async function getCoverage() {
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('projectName')) {
-            const csvHeader = log.split('\n').find(logLine => logLine.includes('bestCoverage'));
+            const csvHeader = log.split('\n').find(logLine => logLine.includes('statementCoverage'));
             const row = log.split('\n').find(logLine => logLine.includes('FruitCatching.sb3,'));
-            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('bestCoverage'));
-            return Number(row.split(',')[coverageIndex]);
+            const statCovIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statementCoverage'));
+            const branchCovIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('branchCoverage'));
+            return [Number(row.split(',')[statCovIndex]), Number(row.split(',')[branchCovIndex])];
         }
         if (log.includes('empty project')) {
             return 'empty project';
@@ -70,34 +71,68 @@ beforeEach(async () => {
 });
 
 describe('Algorithms', () => {
-    // We test for coverages of >= 0.5. If we obtain this amount of coverage, the algorithms execute without throwing an
-    // error. Testing for higher coverages involves randomness and requires longer running tests.
+    // We test for coverages of >= 0.4.
+    // If we obtain this amount of coverage, the algorithms execute without throwing an error.
+    // Testing for higher coverage values involves randomness and requires longer running tests.
 
-    test('MIO', async () => {
-        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
+    test('MIO Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mioStatement.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
-        const coverage = await getCoverage();
-        expect(coverage).toBeGreaterThanOrEqual(0.4);
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 
-    test('MOSA', async () => {
-        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMOSA.json");
+    test('MIO Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mioBranch.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
-        const coverage = await getCoverage();
-        expect(coverage).toBeGreaterThanOrEqual(0.4);
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 
-    test('Neatest', async () => {
-        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatest.json");
+    test('MOSA Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mosaStatement.json");
         await loadProject('test/integration/networkSuites/FruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
-        const coverage = await getCoverage();
-        expect(coverage).toBeGreaterThanOrEqual(0.4);
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+    }, timeout);
+
+    test('MOSA Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mosaBranch.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+    }, timeout);
+
+    test('Neatest Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatestStatement.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+    }, timeout);
+
+    test('Neatest Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatestBranch.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
     }, timeout);
 });
 
@@ -108,7 +143,7 @@ describe('LocalSearch', () => {
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
-        await expect(log.uncoveredBlocks.length).toBe(0);
+        expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
     test('Test ExtensionLocalSearch with repeat until block', async () => {
@@ -117,6 +152,6 @@ describe('LocalSearch', () => {
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
         const log = await getUncoveredBlocks();
-        await expect(log.uncoveredBlocks.length).toBe(0);
+        expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 });

@@ -75,12 +75,7 @@ export abstract class TestGenerator {
 
     protected collectStatistics(testSuite: WhiskerTest[]): void {
         const statistics = StatisticsCollector.getInstance();
-
-        StatisticsCollector.getInstance().bestCoverage =
-            statistics.coveredFitnessFunctionsCount / statistics.fitnessFunctionCount;
-
         statistics.bestTestSuiteSize = testSuite.length;
-
         for (const test of testSuite) {
             statistics.testEventCount += test.getEventsCount();
         }

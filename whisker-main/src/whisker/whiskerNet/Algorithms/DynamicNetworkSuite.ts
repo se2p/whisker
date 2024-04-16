@@ -18,6 +18,7 @@ import {NeuroevolutionScratchEventExtractor} from "../../testcase/Neuroevolution
 import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
+import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 
 
 export class DynamicNetworkSuite {
@@ -25,17 +26,27 @@ export class DynamicNetworkSuite {
     /**
      * JSON representation of the dynamic test suite.
      */
-    private readonly _testSuiteJSON;
+    private readonly _testSuiteJSON: unknown;
 
     /**
-     * Maps fitness function keys to fitness functions.
+     * Maps statement fitness function keys to fitness functions.
      */
     protected statementMap: Map<number, FitnessFunction<Chromosome>>;
 
     /**
-     * Saves for each covered fitness function key, a network capable of covering the respective fitness function.
+     * Maps branching fitness function keys to fitness functions.
      */
-    protected archive = new Map<number, NetworkChromosome>();
+    protected branchMap: Map<number, FitnessFunction<Chromosome>>;
+
+    /**
+     * Saves for each covered statement fitness key, a network capable of covering the respective fitness function.
+     */
+    protected statementArchive = new Map<number, NetworkChromosome>();
+
+    /**
+     * Saves for each covered branch fitness key, a network capable of covering the respective fitness function.
+     */
+    protected branchArchive = new Map<number, NetworkChromosome>();
 
     /**
      * Saves the parameter of the test suite.
@@ -83,7 +94,8 @@ export class DynamicNetworkSuite {
      * Loads the dynamic test cases by initialising the saved networks.
      */
     protected loadTestCases(): NeatChromosome[] {
-        const fitnessTargets = [...this.statementMap.values()] as unknown as StatementFitnessFunction[];
+        const fitnessTargets = [...this.statementMap.values()]
+            .concat(...this.branchMap.values()) as unknown as StatementFitnessFunction[];
         const eventExtractor = new NeuroevolutionScratchEventExtractor(this.vm);
         const networkLoader = new NetworkLoader(this._testSuiteJSON['Networks'],
             eventExtractor.extractStaticEvents(this.vm), fitnessTargets);
@@ -100,7 +112,8 @@ export class DynamicNetworkSuite {
         test.recordNetworkStatistics = true;
         await this.executor.execute(test);
         if (recordExecution) {
-            await this.updateArchive(test);
+            await this.updateStatementArchive(test);
+            await this.updateBranchArchive(test);
             NetworkAnalysis.analyseNetwork(test);
         }
         test.recordNetworkStatistics = false;
@@ -143,7 +156,8 @@ export class DynamicNetworkSuite {
             const projectMutation = `${this.projectName}-${mutant.name}`;
             Container.debugLog(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
-            this.archive.clear();
+            this.statementArchive.clear();
+            this.branchArchive.clear();
             for (let i = 0; i < this.testCases.length; i++) {
                 Container.debugLog(`Executing test ${i}`);
                 const test = this.testCases[i];
@@ -203,7 +217,7 @@ export class DynamicNetworkSuite {
         this.initialiseExecutionParameter();
         this.initialiseFitnessTargets(this.vm);
         this.testCases = this.loadTestCases();
-        if (this.testCases.length > 1) {
+        if (this.properties.minimiseSuite && this.testCases.length > 1) {
             await this.minimiseSuite();
         }
 
@@ -269,13 +283,21 @@ export class DynamicNetworkSuite {
      * Initialises the statement map.
      */
     private initialiseFitnessTargets(vm: VirtualMachine): void {
-        const fitnessFactory = new StatementFitnessFunctionFactory();
-        const fitnessTargets = fitnessFactory.extractFitnessFunctions(vm, []);
+        // Initialise Statements
+        const statementFactory = new StatementFitnessFunctionFactory();
+        const statementTargets = statementFactory.extractFitnessFunctions(vm, []);
         this.statementMap = new Map<number, FitnessFunction<Chromosome>>();
-        for (let i = 0; i < fitnessTargets.length; i++) {
-            this.statementMap.set(i, fitnessTargets[i] as unknown as FitnessFunction<NeatChromosome>);
+        for (let i = 0; i < statementTargets.length; i++) {
+            this.statementMap.set(i, statementTargets[i] as unknown as FitnessFunction<NeatChromosome>);
         }
-        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessTargets.length;
+
+        // Initialise Branches
+        const branchFactory = new BranchCoverageFitnessFunctionFactory();
+        const branchTargets = branchFactory.extractFitnessFunctions(vm, []);
+        this.branchMap = new Map<number, FitnessFunction<Chromosome>>();
+        for (let i = 0; i < branchTargets.length; i++) {
+            this.branchMap.set(i, branchTargets[i] as unknown as FitnessFunction<NeatChromosome>);
+        }
     }
 
     /**
@@ -285,7 +307,7 @@ export class DynamicNetworkSuite {
         Container.debugLog("Minimising Test Suite....");
         for (const test of this.testCases) {
             await this.executeTestCase(test, false);
-            await test.determineCoveredObjectives([...this.statementMap.values()]);
+            await test.determineCoveredObjectives([...this.branchMap.values()]);
         }
         this.testCases.sort((a, b) => b.coveredStatements - a.coveredStatements);
         let coverage = 0;
@@ -294,31 +316,50 @@ export class DynamicNetworkSuite {
             await this.executeTestCase(test, false);
             test.testActivationTrace = undefined;
             test.testUncertainty = new Map<number, number>();
-            await this.updateArchive(test);
-            if ([...this.archive.keys()].length > coverage) {
-                coverage = [...this.archive.keys()].length;
+            await this.updateBranchArchive(test);
+
+            // Branches subsume statements, thus when minimising we focus on branch coverage.
+            if ([...this.branchArchive.keys()].length > coverage) {
+                coverage = [...this.branchArchive.keys()].length;
                 shortenedTestCases.push(test);
             }
-            if ([...this.statementMap.keys()].length === [...this.archive.keys()].length) {
+
+            // Branches subsume statements, thus when minimising we focus on branch coverage.
+            if ([...this.branchMap.keys()].length === [...this.branchArchive.keys()].length) {
                 break;
             }
         }
         Container.debugLog(`Minimised from ${this.testCases.length} tests to ${shortenedTestCases.length} tests`);
         this.testCases = shortenedTestCases;
-        this.archive.clear();
+        this.branchArchive.clear();
     }
 
     /**
-     * Updates the archive of covered fitness functions.
+     * Updates the archive of covered statement fitness functions.
      * @param network the network with which the archive should be updated.
      */
-    protected async updateArchive(network: NeatChromosome): Promise<void> {
+    protected async updateStatementArchive(network: NeatChromosome): Promise<void> {
         for (const statementKey of this.statementMap.keys()) {
             const fitnessFunction = this.statementMap.get(statementKey);
             const statementFitness = await fitnessFunction.getFitness(network);
-            if (await fitnessFunction.isOptimal(statementFitness) && !this.archive.has(statementKey)) {
+            if (!this.statementArchive.has(statementKey) && await fitnessFunction.isOptimal(statementFitness)) {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                this.archive.set(statementKey, network);
+                this.statementArchive.set(statementKey, network);
+            }
+        }
+    }
+
+    /**
+     * Updates the archive of covered branch fitness functions.
+     * @param network the network with which the archive should be updated.
+     */
+    protected async updateBranchArchive(network: NeatChromosome): Promise<void> {
+        for (const branchKey of this.branchMap.keys()) {
+            const fitnessFunction = this.branchMap.get(branchKey);
+            const branchFitness = await fitnessFunction.getFitness(network);
+            if (!this.branchArchive.has(branchKey) && await fitnessFunction.isOptimal(branchFitness)) {
+                StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                this.branchArchive.set(branchKey, network);
             }
         }
     }
@@ -333,7 +374,10 @@ export class DynamicNetworkSuite {
                                          testName: Readonly<string>): Promise<void> {
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
-            await test.determineCoveredObjectives([...this.statementMap.values()]);
+            const statements = [...this.statementMap.keys()].length;
+            const branches = [...this.branchMap.keys()].length;
+            const statCovered = await test.determineCoveredObjectives([...this.statementMap.values()]);
+            const branchCovered = await test.determineCoveredObjectives([...this.branchMap.values()]);
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
@@ -343,9 +387,12 @@ export class DynamicNetworkSuite {
                 testName: testName,
                 testID: i,
                 seed: this.properties.seed.toString(),
-                totalObjectives: [...this.statementMap.keys()].length,
-                coveredObjectivesByTest: test.coveredStatements,
-                coveredObjectivesBySuite: [...this.archive.keys()].length,
+                statements: statements,
+                statementCoverageTest: Math.round((statCovered / statements) * 100) / 100,
+                statementCoverageSuite: Math.round((this.statementArchive.size / statements) * 100) / 100,
+                branches: branches,
+                branchCoverageTest: Math.round((branchCovered / branches) * 100) / 100,
+                branchCoverageSuite: Math.round((this.branchArchive.size / branches) * 100) / 100,
                 score: test.score,
                 playTime: test.playTime,
                 surpriseNodeAdequacy: test.averageLSA,

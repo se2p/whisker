@@ -148,6 +148,13 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionMinimiseSuite() {
+        return this.option(
+            '-mi, --minimise-suite',
+            'minimises the network suite based on branch coverage',
+        );
+    }
+
     optionMutators() {
         // Option can be used by specifying multiple arguments separated by spaces:
         //      -m ROR LOR AOR
@@ -305,6 +312,7 @@ const subCommands = [
             'path to dynamic test suite',
             (testPath) => util.processFilePathExists(testPath, 'json'))
         .optionActivationTraceRepetitions()
+        .optionMinimiseSuite()
         .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()

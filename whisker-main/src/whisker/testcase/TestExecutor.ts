@@ -144,9 +144,7 @@ export class TestExecutor {
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._vmWrapper.loadSaveState(this._initialState);
 
-        StatisticsCollector.getInstance().incrementExecutedTests();
-        StatisticsCollector.getInstance().numberFitnessEvaluations++;
-        StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
+        await this.updateStatistics(endTime, testChromosome);
 
         return testChromosome.trace;
     }
@@ -247,11 +245,24 @@ export class TestExecutor {
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._vmWrapper.loadSaveState(this._initialState);
 
-        StatisticsCollector.getInstance().incrementExecutedTests();
-        StatisticsCollector.getInstance().numberFitnessEvaluations++;
-        StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
+        await this.updateStatistics(endTime, randomEventChromosome);
 
         return trace;
+    }
+
+    /**
+     * Updates the search algorithm statistics at the end of a test execution.
+     * @param executionTime The test execution time.
+     * @param chromosome The executed test chromosome.
+     */
+    private async updateStatistics(executionTime: number, chromosome: TestChromosome): Promise<void> {
+        StatisticsCollector.getInstance().incrementExecutedTests();
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+        StatisticsCollector.getInstance().updateAverageTestExecutionTime(executionTime);
+        await StatisticsCollector.getInstance().updateStatementCoverage(chromosome);
+        await StatisticsCollector.getInstance().updateBranchCoverage(chromosome);
+        StatisticsCollector.getInstance().computeStatementCoverage();
+        StatisticsCollector.getInstance().computeBranchCoverage();
     }
 
     /**

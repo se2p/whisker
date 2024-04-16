@@ -38,7 +38,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         await executor.execute(network);
         network.resetOpenStatement();
         const fitness = await network.targetFitness.getFitness(network);
-        await ReliableStatementFitness.updateUncoveredMap(network);
+        await this.updateUncoveredMap(network);
         executor.resetState();
 
         if (fitness > 0) {
@@ -54,6 +54,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             // in other circumstances as well.
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
+
+        StatisticsCollector.getInstance().computeStatementCoverage(this.stableCount);
+        StatisticsCollector.getInstance().computeBranchCoverage(this.stableCount);
         return network.fitness;
     }
 
@@ -86,7 +89,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 await executor.execute(network);
             }
             executor.resetState();
-            await ReliableStatementFitness.updateUncoveredMap(network);
+            await this.updateUncoveredMap(network);
             executor.resetState();
 
             // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
@@ -120,7 +123,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
      * target.
      * @param network the network chromosome that has finished its playthrough.
      */
-    private static async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
+    private async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
         for (const [fitnessKey, coverCount] of network.openStatementTargets.entries()) {
             const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
@@ -131,6 +134,10 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 }
             }
         }
+
+        // Update statistics on the number of covered statements and branches
+        await StatisticsCollector.getInstance().updateStatementCoverage(network, this.stableCount);
+        await StatisticsCollector.getInstance().updateBranchCoverage(network, this.stableCount);
     }
 
     get stableCount(): number {

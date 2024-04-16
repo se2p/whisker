@@ -31,6 +31,7 @@ import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessF
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
 import {Selection} from '../Selection';
+import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -246,6 +247,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // Reset mutationCounter
                 mutationCounter = 0;
             }
+            this.updateCoverageTimeLine();
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();
             }
@@ -296,7 +298,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
     private getIndependentStatements(): Map<number, FitnessFunction<C>> {
         const fitnessFunctions = [...this._fitnessFunctions.values()] as unknown as StatementFitnessFunction[];
         // We can only extract independent block statements if we indeed deal with scratch blocks.
-        if (fitnessFunctions[0] instanceof StatementFitnessFunction) {
+        if (fitnessFunctions[0] instanceof StatementFitnessFunction && !(fitnessFunctions[0] instanceof BranchCoverageFitnessFunction)) {
             const mergeNodeStatements = StatementFitnessFunction.getMergeNodeMap(fitnessFunctions);
             let independentFitnessFunctions: StatementFitnessFunction[] = [];
             [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.push(...statementList));
@@ -308,8 +310,9 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
                 }
             });
             return independentFitnessFunctionMap;
-        } else
+        } else {
             return this._fitnessFunctions;
+        }
     }
 
     /**

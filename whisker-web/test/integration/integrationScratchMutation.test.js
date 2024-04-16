@@ -21,17 +21,17 @@ async function getCSVResults() {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('projectName')) {
             const logArray = log.trim().split('\n');
-            const csvHeaderIndex = logArray.findIndex(logLine => logLine.includes('coverage'));
+            const csvHeaderIndex = logArray.findIndex(logLine => logLine.includes('statementCoverage'));
             const csvHeader = logArray[csvHeaderIndex];
             const originalCSVArray = logArray[csvHeaderIndex + 1].split(',');
             const mutantCSVArray = logArray[csvHeaderIndex + 2].split(',');
-            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('covered'));
-            const totalBlocksIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('totalBlocks'));
+            const coverageIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statementCoverage'));
+            const totalBlocksIndex = csvHeader.split(',').findIndex(headerLine => headerLine.includes('statements'));
             return {
                 originalTotal: originalCSVArray[totalBlocksIndex],
-                originalCovered: originalCSVArray[coverageIndex],
+                originalCoverage: originalCSVArray[coverageIndex],
                 mutantTotal: mutantCSVArray[totalBlocksIndex],
-                mutantCovered: mutantCSVArray[coverageIndex]
+                mutantCoverage: mutantCSVArray[coverageIndex]
             };
         }
     }
@@ -64,9 +64,9 @@ describe('Scratch Mutations', () => {
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
         await loadProject('test/integration/mutation/KRM-Sensing.sb3')
         await (await page.$('#run-all-tests')).click();
-        const {originalCovered, mutantCovered} = await getCSVResults();
-        expect(Number(originalCovered)).toBe(3);
-        expect(Number(mutantCovered)).toBe(2);
+        const {originalCoverage, mutantCoverage} = await getCSVResults();
+        expect(Number(originalCoverage)).toBe(1);
+        expect(Number(mutantCoverage)).toBe(0.67);
     }, timeout);
 
     test('Key-Replacement-Mutation hat block', async () => {
@@ -74,9 +74,9 @@ describe('Scratch Mutations', () => {
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
         await loadProject('test/integration/mutation/KRM-Hat.sb3')
         await (await page.$('#run-all-tests')).click();
-        const {originalCovered, mutantCovered} = await getCSVResults();
-        expect(Number(originalCovered)).toBe(2);
-        expect(Number(mutantCovered)).toBe(0);
+        const {originalCoverage, mutantCoverage} = await getCSVResults();
+        expect(Number(originalCoverage)).toBe(1);
+        expect(Number(mutantCoverage)).toBe(0);
     }, timeout);
 
     test('Single-Block-Deletion-Mutation', async () => {
@@ -104,9 +104,9 @@ describe('Scratch Mutations', () => {
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["AOR"]);
         await loadProject('test/integration/mutation/AOR.sb3')
         await (await page.$('#run-all-tests')).click();
-        const {originalCovered, mutantCovered} = await getCSVResults();
-        expect(Number(originalCovered)).toBe(5);
-        expect(Number(mutantCovered)).toBe(4);
+        const {originalCoverage, mutantCoverage} = await getCSVResults();
+        expect(Number(originalCoverage)).toBe(1);
+        expect(Number(mutantCoverage)).toBe(0.8);
     }, timeout);
 
     test('Relational-Operator-Replacement-Mutation', async () => {
@@ -114,9 +114,9 @@ describe('Scratch Mutations', () => {
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["ROR"]);
         await loadProject('test/integration/mutation/ROR.sb3')
         await (await page.$('#run-all-tests')).click();
-        const {originalCovered, mutantCovered} = await getCSVResults();
-        expect(Number(originalCovered)).toBe(4);
-        expect(Number(mutantCovered)).toBe(3);
+        const {originalCoverage, mutantCoverage} = await getCSVResults();
+        expect(Number(originalCoverage)).toBe(1);
+        expect(Number(mutantCoverage)).toBe(0.75);
     }, timeout);
 
     test('Logical-Operator-Replacement-Mutation', async () => {
@@ -124,9 +124,9 @@ describe('Scratch Mutations', () => {
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["LOR"]);
         await loadProject('test/integration/mutation/LOR.sb3')
         await (await page.$('#run-all-tests')).click();
-        const {originalCovered, mutantCovered} = await getCSVResults();
-        expect(Number(originalCovered)).toBe(4);
-        expect(Number(mutantCovered)).toBe(3);
+        const {originalCoverage, mutantCoverage} = await getCSVResults();
+        expect(Number(originalCoverage)).toBe(1);
+        expect(Number(mutantCoverage)).toBe(0.75);
     }, timeout);
 
     test('Variable-Replacement-Mutation', async () => {
@@ -134,9 +134,9 @@ describe('Scratch Mutations', () => {
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["VRM"]);
         await loadProject('test/integration/mutation/VRM.sb3')
         await (await page.$('#run-all-tests')).click();
-        const {originalCovered, mutantCovered} = await getCSVResults();
-        expect(Number(originalCovered)).toBe(5);
-        expect(Number(mutantCovered)).toBe(4);
+        const {originalCoverage, mutantCoverage} = await getCSVResults();
+        expect(Number(originalCoverage)).toBe(1);
+        expect(Number(mutantCoverage)).toBe(0.8);
     }, timeout);
 
 });

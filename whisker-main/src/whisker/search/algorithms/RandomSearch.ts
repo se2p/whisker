@@ -90,6 +90,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
      *  - iterationCount
      *  - createdTestsToReachFullCoverage
      *  - timeToReachFullCoverage
+     *  - coverage over time timeline
      */
     protected override updateStatistics(): void {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
@@ -99,6 +100,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage = StatisticsCollector.getInstance().numberFitnessEvaluations;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
+        this.updateCoverageTimeLine();
     }
 
     getNumberOfIterations(): number {

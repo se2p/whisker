@@ -44,6 +44,9 @@ import {NEAT} from "../whiskerNet/Algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Neatest} from "../whiskerNet/Algorithms/Neatest";
+import {BranchCoverageFitnessFunctionFactory} from "../testcase/fitness/BranchCoverageFitnessFunctionFactory";
+import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -171,7 +174,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 this._initializeSingleBitFitness(length);
                 break;
             case FitnessFunctionType.STATEMENT:
-                this._initializeStatementFitness(targets);
+                this._initializeCoverageFitness(targets, new StatementFitnessFunctionFactory());
+                break;
+            case FitnessFunctionType.BRANCH:
+                this._initializeCoverageFitness(targets, new BranchCoverageFitnessFunctionFactory());
                 break;
         }
         return this;
@@ -236,6 +242,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 searchAlgorithm = this._buildRandom();
         }
 
+        SearchAlgorithmBuilder.initializeCoverageMappings();
         searchAlgorithm.setProperties(this._properties);
         searchAlgorithm.setChromosomeGenerator(this._chromosomeGenerator);
 
@@ -348,22 +355,39 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     }
 
     /**
-     * A helper method that initializes the 'Statement' fitness function(s).
+     * A helper method that initializes coverage-based fitness function(s).
      */
-    private _initializeStatementFitness(targets: string[]) {
-        // TODO: Check if this is done correctly
-        const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
-        const fitnesses = factory.extractFitnessFunctions(Container.vm, targets);
+    private _initializeCoverageFitness(targets: string[], factory: StatementFitnessFunctionFactory) {
+        const fitnessFunctions = factory.extractFitnessFunctions(Container.vm, targets);
 
-        if (fitnesses.length == 1) {
-            this._fitnessFunction = fitnesses[0] as unknown as FitnessFunction<C>;
+        if (fitnessFunctions.length == 1) {
+            this._fitnessFunction = fitnessFunctions[0] as unknown as FitnessFunction<C>;
         }
 
-        for (let i = 0; i < fitnesses.length; i++) {
-            const fitness = fitnesses[i];
+        for (let i = 0; i < fitnessFunctions.length; i++) {
+            const fitness = fitnessFunctions[i];
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }
+    }
+
+    /**
+     * Initializes mappings for assessing the achieved coverages during the test generation.
+     */
+    public static initializeCoverageMappings(): void {
+        const statements = new StatementFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+        const statementMap = new Map<StatementFitnessFunction, number>();
+        for (const statement of statements) {
+            statementMap.set(statement, 0);
+        }
+        StatisticsCollector.getInstance().statements = statementMap;
+
+        const branches = new BranchCoverageFitnessFunctionFactory().extractFitnessFunctions(Container.vm, []);
+        const branchMap = new Map<BranchCoverageFitnessFunction, number>();
+        for (const branch of branches) {
+            branchMap.set(branch, 0);
+        }
+        StatisticsCollector.getInstance().branches = branchMap;
     }
 
 

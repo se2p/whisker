@@ -359,7 +359,7 @@ export class NeatChromosome extends NetworkChromosome {
         network['cM'] = this.inputConnectionMethod;
 
         if (this.targetFitness instanceof StatementFitnessFunction) {
-            network['tf'] = this.targetFitness.getTargetNode().id;
+            network['tf'] = this.targetFitness.getNodeId();
         }
 
         const nodes = {};

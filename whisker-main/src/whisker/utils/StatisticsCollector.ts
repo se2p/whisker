@@ -20,7 +20,10 @@
 
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Chromosome} from "../search/Chromosome";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {Container} from "./Container";
+import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
+import Arrays from "./Arrays";
 
 /**
  * Singleton class to collect statistics from search runs
@@ -35,10 +38,9 @@ export class StatisticsCollector {
     private _fitnessFunctionCount: number;
     private _iterationCount: number;
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
-    private _bestCoverage: number;
     private _greenFlagCovered: number;
     private _eventsCount: number; //executed events
-    private _testEventCount: number; //events in final test suite
+    private _testEventCount: number; //events in the final test suite
     private _bestTestSuiteSize: number;
     private _minimizedTests: number;
     private _minimizedEvents: number;
@@ -51,15 +53,18 @@ export class StatisticsCollector {
     private _timeToReachFullCoverage: number;
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
+    private _statements: Map<StatementFitnessFunction, number>;
+    private _branches: Map<BranchCoverageFitnessFunction, number>;
+    private _statementCoverage: number
+    private _branchCoverage: number
 
     // Neuroevolution
     private _highestNetworkFitness: number;
     private _highestScore: number;
     private _highestPlayTime: number;
-    private readonly _fitnessOverTime: Map<number, NeuroevolutionFitnessOverTime>;
+    private readonly _fitnessOverTime: Map<number, CoverageOverTime>;
 
     // Dynamic Suite
-    private _testName: string;
     private _surpriseAdequacy: number;
     private _surpriseNodeAdequacy: number;
     private readonly _networkSuiteResults: NetworkTestSuiteResults[];
@@ -81,7 +86,6 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = 0;
         this._minimizedTests = 0;
         this._minimizedEvents = 0;
-        this._bestCoverage = 0;
         this._greenFlagCovered = 0;
         this._startTime = 0;
         this._executedTests = 0;
@@ -91,13 +95,15 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = 0;
         this._highestNetworkFitness = 0;
         this._covOverTime = new Map<number, number>();
-        this._fitnessOverTime = new Map<number, NeuroevolutionFitnessOverTime>();
+        this._fitnessOverTime = new Map<number, CoverageOverTime>();
         this.coveredFitnessFunctions = [];
         this._networkSuiteResults = [];
         this._highestScore = 0;
         this._highestPlayTime = 0;
         this._surpriseAdequacy = 0;
         this._surpriseNodeAdequacy = 0;
+        this._statementCoverage = 0;
+        this._branchCoverage = 0;
     }
 
     public static getInstance(): StatisticsCollector {
@@ -138,6 +144,22 @@ export class StatisticsCollector {
 
     set iterationCount(value: number) {
         this._iterationCount = value;
+    }
+
+    get statementCoverage(): number {
+        return this._statementCoverage;
+    }
+
+    get branchCoverage(): number {
+        return this._branchCoverage;
+    }
+
+    set statements(value: Map<StatementFitnessFunction, number>) {
+        this._statements = value;
+    }
+
+    set branches(value: Map<BranchCoverageFitnessFunction, number>) {
+        this._branches = value;
     }
 
     /**
@@ -199,7 +221,19 @@ export class StatisticsCollector {
         }
     }
 
-    public updateFitnessOverTime(timeStamp: number, value: NeuroevolutionFitnessOverTime): void {
+    public updateHighestStatementCoverage(value: number): void {
+        if (value > this._statementCoverage) {
+            this._statementCoverage = value;
+        }
+    }
+
+    public updateHighestBranchCoverage(value: number): void {
+        if (value > this._branchCoverage) {
+            this._branchCoverage = value;
+        }
+    }
+
+    public updateFitnessOverTime(timeStamp: number, value: CoverageOverTime): void {
         this._fitnessOverTime.set(timeStamp, value);
     }
 
@@ -221,14 +255,6 @@ export class StatisticsCollector {
 
     set executedTests(value: number) {
         this._executedTests = value;
-    }
-
-    get bestCoverage(): number {
-        return this._bestCoverage;
-    }
-
-    set bestCoverage(value: number) {
-        this._bestCoverage = value;
     }
 
     get eventsCount(): number {
@@ -274,7 +300,7 @@ export class StatisticsCollector {
         this._minimizedTests = value;
     }
 
-    addMinimizedEvents(minimizationCount:number): void{
+    addMinimizedEvents(minimizationCount: number): void {
         this._minimizedEvents += minimizationCount;
     }
 
@@ -300,10 +326,6 @@ export class StatisticsCollector {
 
     set timeToReachFullCoverage(value: number) {
         this._timeToReachFullCoverage = value;
-    }
-
-    set testName(value: string) {
-        this._testName = value;
     }
 
     get surpriseAdequacy(): number {
@@ -335,101 +357,55 @@ export class StatisticsCollector {
     }
 
     /**
-     * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so-called
-     * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
-     * truncate this timeline. The optional parameter `numberOfCoverageValues` can be used to specify how many entries
-     * this timeline should consist of. If no value or `undefined` is given, all entries are included.
-     * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
+     * Outputs a CSV string that summarises statistics about the search.
+     * Among others, this includes a coverage timeline, which reports the achieved coverage over time.
+     * @param sampleStepSize the step size for sampling coverage values.
+     * @param maxTimeStep defines at which point the coverage timeline will be truncated.
+     * @returns Formatted csv string containing the results of the search algorithm.
      */
-    public asCsv(numberOfCoverageValues?: number): string {
-        // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
-        const coverageStatsMap = this._adjustCoverageOverTime();
-        const timestamps = [...coverageStatsMap.keys()].sort((a, b) => a - b);
-        const coverages = timestamps.map((ts) => coverageStatsMap.get(ts));
+    public asCsv(sampleStepSize = 10000, maxTimeStep?: number): string {
+        const [header, values] = this._getPaddedCoverageTimeLine(sampleStepSize, maxTimeStep);
 
-        let header = timestamps;
-        let values = coverages;
-
-        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
-        const truncateFitnessTimeline = numberOfCoverageValues != undefined && 0 <= numberOfCoverageValues;
-
-        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
-        // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
-        // the number of columns should be padded in this case so that the number of columns is always identical.
-        if (truncateFitnessTimeline) {
-            const nextTimeStamp = timestamps[timestamps.length - 1] + 1000;
-            const nextCoverageValue = coverages[coverages.length - 1];
-
-            const lengthDiff = Math.abs(numberOfCoverageValues - timestamps.length);
-
-            const range: (until: number) => number[] = (until) => [...Array(until).keys()];
-            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * 1000);
-            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
-
-            header = [...header, ...headerPadding].slice(0, numberOfCoverageValues);
-            values = [...values, ...valuePadding].slice(0, numberOfCoverageValues);
-        }
-
-        const coveragesHeaders = header.join(",");
+        const coverageHeaders = header.join(",");
         const coverageValues = values.join(",");
 
-        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "testsuiteEventCount", "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents",
-            "averageTestExecutionTime", "bestTestSuiteSize", "numberFitnessEvaluations", "createdTestsToReachFullCoverage",
-            "timeToReachFullCoverage"];
-        const headerRow = headers.join(",").concat(",", coveragesHeaders);
-        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
-            this._coveredFitnessFunctionsCount, this._bestCoverage, this._testEventCount, this._eventsCount,
-            this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime, this._bestTestSuiteSize,
+        const headers = ["projectName", "configName", "fitnessFunctionCount", "statements",
+            "statementCoverage", "branches", "branchCoverage", "iterationCount", "testsuiteEventCount",
+            "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents", "averageTestExecutionTime",
+            "bestTestSuiteSize", "fitnessEvaluations", "generatedTestsForFullCoverage", "searchTimeForFullCoverage"];
+        const headerRow = headers.join(",").concat(",", coverageHeaders);
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount,
+            this._statements.size, this._statementCoverage, this._branches.size, this._branchCoverage,
+            this._iterationCount, this._testEventCount, this._eventsCount, this._executedTests, this._minimizedTests,
+            this._minimizedEvents, this._averageTestExecutionTime, this._bestTestSuiteSize,
             this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
     }
 
-    public asCsvNeuroevolution(sampleDistance?: number, maxTimeStamp?: number): string {
-        // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
-        const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance);
-        const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
-        const timelineValues = timestamps.map((ts) => Object.values(fitnessOverTimeMap.get(ts)).join('|'));
-
-        let header = timestamps;
-        let values = timelineValues;
-
-        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
-        const truncateFitnessTimeline = maxTimeStamp !== undefined && 0 <= maxTimeStamp;
-
-        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
-        // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
-        // the number of columns should be padded in this case so that the number of columns is always identical.
-        if (truncateFitnessTimeline) {
-            const nextTimeStamp = timestamps[timestamps.length - 1] + sampleDistance;
-            const nextCoverageValue = timelineValues[timelineValues.length - 1];
-
-            const lengthDiff = Math.ceil(Math.abs(maxTimeStamp - timestamps[timestamps.length - 1]) / sampleDistance);
-            const range: (until: number) => number[] = (until) => [...Array(until).keys()];
-            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance);
-            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
-
-            // Plus one since we start at timestamp 0.
-            const numHeaderCols = Math.ceil(maxTimeStamp / sampleDistance) + 1;
-            header = [...header, ...headerPadding].slice(0, numHeaderCols);
-            values = [...values, ...valuePadding].slice(0, numHeaderCols);
-        }
+    /**
+     * Outputs a CSV string that summarises statistics about the neuroevolution search.
+     * Among others, this includes a coverage timeline, which reports the achieved coverage over time.
+     * @param sampleStepSize the step size for sampling coverage values.
+     * @param maxTimeStep defines at which point the coverage timeline will be truncated.
+     * @returns Formatted csv string containing the results of the neuroevolution search algorithm.
+     */
+    public asCsvNeuroevolution(sampleStepSize?: number, maxTimeStep?: number): string {
+        const [header, values] = this._getPaddedCoverageTimeLine(sampleStepSize, maxTimeStep);
 
         const fitnessHeaders = header.join(",");
         const fitnessValues = values.join(",");
 
-        const gdTime = Container.backpropagationInstance? Container.backpropagationInstance.getTrainingTimeMean() : 0;
-        const gdEpochs = Container.backpropagationInstance? Container.backpropagationInstance.getTrainingEpochsMean() : 0;
+        const gdTime = Container.backpropagationInstance ? Container.backpropagationInstance.getTrainingTimeMean() : 0;
+        const gdEpochs = Container.backpropagationInstance ? Container.backpropagationInstance.getTrainingEpochsMean() : 0;
 
         // Default header and data arrays
-        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount",
-            "coveredFitnessFunctionCount", "greenFlagCovered", "bestCoverage", "numberFitnessEvaluations",
-            "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime', 'gdTime', 'gdEpochs'];
-        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
-            this._coveredFitnessFunctionsCount, this._greenFlagCovered, this._bestCoverage,
-            this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness,
-            this._highestScore, this._highestPlayTime, gdTime, gdEpochs];
+        const headers = ["projectName", "configName", "statements", "statementCoverage", "branches",
+            "branchCoverage", "iterationCount", "numberFitnessEvaluations", "searchTimeForFullCoverage",
+            'gdTime', 'gdEpochs'];
+        const data = [this._projectName, this._configName, this._statements.size,
+            this._statementCoverage, this._branches.size, this._branchCoverage, this._iterationCount,
+            this._numberFitnessEvaluations, this._timeToReachFullCoverage, gdTime, gdEpochs];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
@@ -438,12 +414,15 @@ export class StatisticsCollector {
     }
 
     public asCsvNetworkSuite(): string {
-        let csv = "projectName,testName,id,seed,totalStatements,testCoveredStatements,totalCoveredStatements,score," +
-            "playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
+        let csv = "projectName,testName,id,seed," +
+            "totalStatements,testStatementCoverage,suiteStatementCoverage," +
+            "totalBranches,testBranchCoverage,suiteBranchCoverage," +
+            "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
-                testResult.totalObjectives, testResult.coveredObjectivesByTest, testResult.coveredObjectivesBySuite,
+                testResult.statements, testResult.statementCoverageTest, testResult.statementCoverageSuite,
+                testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
                 testResult.avgUncertainty, testResult.isMutant];
             const dataRow = data.join(",").concat("\n");
@@ -452,8 +431,46 @@ export class StatisticsCollector {
         return csv;
     }
 
-    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, NeuroevolutionFitnessOverTime> {
-        const adjusted: Map<number, NeuroevolutionFitnessOverTime> = new Map();
+    /**
+     * Formats and pads the achieved coverage values over time.
+     * @param sampleStepSize the step size for sampling coverage values.
+     * @param maxTimeStep defines at which point the coverage timeline will be truncated.
+     * @return Array containing the formatted header and body of the coverage timeline for the respective csv row.
+     */
+    private _getPaddedCoverageTimeLine(sampleStepSize: number, maxTimeStep?: number): [number[], string[]] {
+        // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
+        const fitnessOverTimeMap = this._adjustCoverageOverTime(sampleStepSize);
+        const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
+        const timelineValues = timestamps.map((ts) => Object.values(fitnessOverTimeMap.get(ts)).join('|'));
+
+        let header = timestamps;
+        let values = timelineValues;
+
+        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        const truncateFitnessTimeline = maxTimeStep !== undefined && 0 <= maxTimeStep;
+
+        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
+        // that time, and not until the final time.
+        // Therefore, the number of columns should be padded so that the number of columns is always identical.
+        if (truncateFitnessTimeline) {
+            const nextTimeStamp = timestamps[timestamps.length - 1] + sampleStepSize;
+            const nextCoverageValue = timelineValues[timelineValues.length - 1];
+
+            const lengthDiff = Math.ceil(Math.abs(maxTimeStep - timestamps[timestamps.length - 1]) / sampleStepSize);
+            const headerPadding = Arrays.range(0, lengthDiff).map(x => nextTimeStamp + x * sampleStepSize);
+            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
+
+            // Plus one since we start at timestamp 0.
+            const numHeaderCols = Math.ceil(maxTimeStep / sampleStepSize) + 1;
+            header = [...header, ...headerPadding].slice(0, numHeaderCols);
+            values = [...values, ...valuePadding].slice(0, numHeaderCols);
+        }
+
+        return [header, values];
+    }
+
+    private _adjustCoverageOverTime(sampleDistance: number): Map<number, CoverageOverTime> {
+        const adjusted: Map<number, CoverageOverTime> = new Map();
         let maxTime = 0;
         for (const timeSample of this._fitnessOverTime.keys()) {
             const rounded = Math.round(timeSample / sampleDistance) * sampleDistance;
@@ -463,11 +480,9 @@ export class StatisticsCollector {
             }
 
         }
-        let max: NeuroevolutionFitnessOverTime = {
-            coverage: 0,
-            fitness: 0,
-            score: 0,
-            survive: 0
+        let max: CoverageOverTime = {
+            statementCoverage: 0,
+            branchCoverage: 0
         };
         for (let i = 0; i <= maxTime; i = i + sampleDistance) {
             if (adjusted.has(i)) {
@@ -480,28 +495,52 @@ export class StatisticsCollector {
         return adjusted;
     }
 
-    private _adjustCoverageOverTime() {
-        const adjusted: Map<number, number> = new Map();
-        let maxTime = 0;
-        for (const timestamp of this._covOverTime.keys()) {
-            const rounded = Math.round(timestamp / 1000) * 1000;
-            adjusted.set(rounded, this._covOverTime.get(timestamp));
-            if (rounded > maxTime) {
-                maxTime = rounded;
+    public async updateStatementCoverage(chromosome: Chromosome, stableCount = 1): Promise<void> {
+        for (const [st, coverCount] of this._statements.entries()) {
+            const statement = st as unknown as FitnessFunction<Chromosome>;
+            if (this._statements.get(st) >= stableCount) {
+                continue;
             }
-
+            if (await statement.isCovered(chromosome)) {
+                this._statements.set(st, coverCount + 1);
+            }
         }
-        let maxCov = 0;
-        for (let i = 0; i <= maxTime; i = i + 1000) {
-            if (adjusted.has(i)) {
-                maxCov = adjusted.get(i);
+    }
+
+    public async updateBranchCoverage(chromosome: Chromosome, stableCount = 1): Promise<void> {
+        for (const [dec, coverCount] of this._branches.entries()) {
+            const branch = dec as unknown as FitnessFunction<Chromosome>;
+            if (this._branches.get(dec) >= stableCount) {
+                continue;
+            }
+            if (await branch.isCovered(chromosome)) {
+                this._branches.set(dec, coverCount + 1);
+            }
+        }
+    }
+
+    public computeStatementCoverage(stableCount = 1): void {
+        let covered = 0;
+        for (const [st, coverCount] of this._statements.entries()) {
+            if (coverCount < stableCount) {
+                this._statements.set(st, 0);
             } else {
-                adjusted.set(i, maxCov);
+                covered++;
             }
         }
+        this.updateHighestStatementCoverage(covered / this._statements.size);
+    }
 
-
-        return adjusted;
+    public computeBranchCoverage(stableCount = 1): void {
+        let covered = 0;
+        for (const [dec, coverCount] of this._branches.entries()) {
+            if (coverCount < stableCount) {
+                this._branches.set(dec, 0);
+            } else {
+                covered++;
+            }
+        }
+        this.updateHighestBranchCoverage(covered / this._branches.size);
     }
 
     public reset(): void {
@@ -510,7 +549,6 @@ export class StatisticsCollector {
         this._coveredFitnessFunctionsCount = 0;
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
-        this._bestCoverage = 0;
         this._startTime = Date.now();
         this._projectName = this._unknownProject;
         this._configName = this._unknownConfig;
@@ -522,9 +560,12 @@ export interface NetworkTestSuiteResults {
     testName: string,
     testID: number,
     seed: string,
-    totalObjectives: number,
-    coveredObjectivesByTest: number,
-    coveredObjectivesBySuite: number
+    statements: number,
+    statementCoverageTest: number,
+    statementCoverageSuite: number,
+    branches: number,
+    branchCoverageTest: number,
+    branchCoverageSuite: number,
     score: number,
     playTime: number,
     surpriseNodeAdequacy: number,
@@ -533,9 +574,7 @@ export interface NetworkTestSuiteResults {
     isMutant?: boolean,
 }
 
-export interface NeuroevolutionFitnessOverTime {
-    coverage: number,
-    fitness: number,
-    score: number,
-    survive: number
+export interface CoverageOverTime {
+    statementCoverage: number,
+    branchCoverage: number
 }
