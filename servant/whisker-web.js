@@ -1,10 +1,10 @@
 const puppeteer = require("puppeteer");
 const logger = require("./logger");
-const {consoleForwarded, headless, whiskerUrl} = require("./cli").opts;
+const {consoleForwarded, headless, whiskerUrl, enableGpu} = require("./cli").opts;
 
 async function openNewBrowser() {
     const args = [
-        '--disable-gpu',
+        enableGpu ? "--enable-gpu" : "--disable-gpu",
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--autoplay-policy=no-user-gesture-required', // https://developer.chrome.com/blog/autoplay/
