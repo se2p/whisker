@@ -144,6 +144,13 @@ class VMWrapper {
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
         this._onSayOrThink = this.sprites.doOnSayOrThink.bind(this.sprites);
         this._onVariableChange = this.sprites.doOnVariableChange.bind(this.sprites);
+
+        /**
+         * Whether programs should be reset to their initial state by reloading them into the VM (`false`), or by
+         * recording and restoring an initial save state.
+         * @private
+         */
+        this._useSaveStates = false;
     }
 
     /**
@@ -435,8 +442,24 @@ class VMWrapper {
     }
 
     /**
+     * Resets the project to its initial state. If save states are enabled (`useSaveStates` is set to `true`), it uses
+     * the supplied `saveState`. Otherwise, i.e., `useSaveStates` is `false`, it resets the project by reloading it, and
+     * the given `saveState` is ignored.
+     *
+     * @param saveState The save state to restore
+     * @return {Promise<void>}
+     */
+    async resetProject(saveState) {
+        if (this._useSaveStates) {
+            this.loadSaveState(saveState);
+        } else {
+            await this.resetVM();
+        }
+    }
+
+    /**
      * Loads supplied saveState. Usually used for resetting the VM state to a previously saved initial state.
-     * @param {object} saveState of a previous vm state, can be generated using the recordState() method.
+     * @param {object?} saveState of a previous vm state, can be generated using the recordState() method.
      */
     loadSaveState(saveState) {
         // Delete clones
@@ -548,7 +571,6 @@ class VMWrapper {
      * This approach may lead to page crashed and should therefore be avoided.
      * Please use the recordState() and resetState() method for this purpose.
      * @returns {Promise<void>}
-     * @deprecated
      */
     async resetVM() {
         await this.vm.loadProject(this._originalProjectJSON);
@@ -743,6 +765,14 @@ class VMWrapper {
      */
     onRunStop() {
         this._whiskerRunning = false;
+    }
+
+    set useSaveStates(useSaveStates) {
+        this._useSaveStates = useSaveStates;
+    }
+
+    get useSaveStates() {
+        return this._useSaveStates;
     }
 
     /**

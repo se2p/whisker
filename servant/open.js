@@ -6,7 +6,8 @@ const {
     stateActionRecorder,
     configPath,
     recordProject,
-    time
+    time,
+    useSaveStates,
 } = require("./cli").opts;
 
 
@@ -65,6 +66,7 @@ async function open(openNewPage) {
         await switchToProjectTab(page, true);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         if (stateActionRecorder) {
             await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
         }

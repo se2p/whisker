@@ -16,8 +16,6 @@ const {
     modelRepetition,
     modelDuration,
     modelCaseSensitive,
-    liveLog,
-    liveOutputCoverage,
     addRandomInputs,
     mutators,
     downloadMutants,
@@ -26,7 +24,8 @@ const {
     scratchPath,
     mutationBudget,
     maxMutants,
-    traceBlocks
+    traceBlocks,
+    useSaveStates,
 } = require("./cli").opts;
 const {subcommand} = require("./cli");
 
@@ -117,6 +116,7 @@ async function runTests(path, openNewPage, index, targetProject) {
     async function configureWhiskerWebInstance() {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);

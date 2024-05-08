@@ -381,6 +381,10 @@
                                            data-toggle="tooltip" data-placement="top"
                                            data-animation="false"></label>
                                 </div>
+                                <div class="row">
+                                    <input id="use-save-states" type="checkbox" autocomplete="off">
+                                    <label id="use-save-states-label" data-i18n="use-save-states" for="use-save-states"></label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1246,6 +1250,8 @@
                 document.getElementById("seedLabel").style.display = "block";
                 document.getElementById("green-flag").style.display = "block";
                 document.getElementById("stop-scratch").style.display = "block";
+                document.getElementById("use-save-states").style.display = "block";
+                document.getElementById("use-save-states-label").style.display = "block";
             }
             else
             {
@@ -1257,6 +1263,8 @@
                 document.getElementById("seedLabel").style.display = "none";
                 document.getElementById("green-flag").style.display = "none";
                 document.getElementById("stop-scratch").style.display = "none";
+                document.getElementById("use-save-states").style.display = "none";
+                document.getElementById("use-save-states-label").style.display = "none";
             }
         }
         function _addTestClass() {

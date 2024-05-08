@@ -203,10 +203,11 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         }
         const repetitions = Number(document.querySelector('#model-repetitions').value);
         const caseSensitive = $('#model-case-sensitive').is(':checked');
+        const useSaveStates = $('#use-save-states').is(':checked');
 
         let mutantPrograms = [];
         try {
-            // Loading the project again seems unneccessary here. But removing
+            // Loading the project again seems unnecessary here. But removing
             // this line can cause occasional crashes in the renderer when
             // restoring the save state between test executions. See issue #217.
             await vm.loadProject(project);
@@ -215,7 +216,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload, traceBlocks},
+                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload, traceBlocks, useSaveStates},
                 {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);

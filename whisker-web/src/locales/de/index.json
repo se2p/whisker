@@ -133,5 +133,6 @@
     "snippets-tooltip": "Du findest hier die gängigsten Codebausteine zum Erstellen von Tests.",
     "snippets-helptext01": "Klicke auf die einzelnen Bausteine und sieh dir die gängigsten Codesnippets zum Erstellen von JavaScript-Whisker-Tests an.",
     "snippets-helptext02": "Kopiere dir genau die Bausteine, die du für deine Test-Suite brauchst. Solltest du eine Schritt-für-Schritt-Einführung in Whisker-Tests brauchen, wähle ganz oben im Menü den Punkt 'Tutorial' aus.",
-    "snippets-helptext03": "Eine vollständige Liste aller Codebausteine findest du in der Beschreibung auf der GitHub-Seite."
+    "snippets-helptext03": "Eine vollständige Liste aller Codebausteine findest du in der Beschreibung auf der GitHub-Seite.",
+    "use-save-states": "Setze Projekt mittels Speicherstand zurück"
 }

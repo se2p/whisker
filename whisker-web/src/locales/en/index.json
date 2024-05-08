@@ -133,5 +133,6 @@
     "snippets-tooltip": "Common code snippets for creating Whisker tests are listed here.",
     "snippets-helptext01": "Click on the single components and check these common snippets.",
     "snippets-helptext02": "Copy and paste the snippets, you want to use for your test suite. If you need a step by step introduction in Whisker tests, click on the 'Tutorial' link in the top menu.",
-    "snippets-helptext03": "You can find a complete list with all possible code snippets and test methods on Whisker github page."
+    "snippets-helptext03": "You can find a complete list with all possible code snippets and test methods on Whisker github page.",
+    "use-save-states": "Reset project by loading save state"
 }
