@@ -1,5 +1,5 @@
 const {Command, InvalidArgumentError} = require('commander');
-const util = require('./util')
+const util = require('./util');
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../package.json');
 const {relativeToServantDir} = require("./util");
@@ -78,7 +78,7 @@ class WhiskerSubCommand extends Command {
         this.option('-k, --console-forwarded', 'forward browser console output');
         this.option('-l, --live-log', 'print new log output regularly');
         this.option('-o, --live-output-coverage', 'print new coverage output regularly');
-        this.option('--enable-gpu', 'enable hardware GPU support', false)
+        this.option('--enable-gpu', 'enable hardware GPU support', false);
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -114,7 +114,7 @@ class WhiskerSubCommand extends Command {
         );
     }
 
-    optionGroundTruthPath(){
+    optionGroundTruthPath() {
         return this.option(
             '-g, --ground-truth <Path>',
             'path to GroundTruth data for Neatest + Backpropagation',
@@ -226,19 +226,19 @@ class WhiskerSubCommand extends Command {
         );
     }
 
-    optionStateActionRecorder(){
+    optionStateActionRecorder() {
         return this.option('-rec, --state-action-recorder',
             'records executed scratch events and maps them to the current program state');
     }
 
-    optionRecordProject(){
+    optionRecordProject() {
         return this.option(
             '-rp, --record-project <Path>',
             'Executes procedure for collecting recording data of single project.',
             projectPath => util.processFileOrDirPathExists(projectPath, '.sb3'));
     }
 
-    optionRecordingTime(){
+    optionRecordingTime() {
         return this.option(
             '-t, --time <Integer>',
             'Sets the time for how long gameplay should be recorded in seconds.',
