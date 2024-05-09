@@ -147,7 +147,7 @@ class VMWrapper {
 
         /**
          * Whether programs should be reset to their initial state by reloading them into the VM (`false`), or by
-         * recording and restoring an initial save state.
+         * recording and restoring an initial save state without reloading the program.
          * @private
          */
         this._useSaveStates = false;
@@ -446,7 +446,7 @@ class VMWrapper {
      * the supplied `saveState`. Otherwise, i.e., `useSaveStates` is `false`, it resets the project by reloading it, and
      * the given `saveState` is ignored.
      *
-     * @param saveState The save state to restore
+     * @param {object?} saveState The save state to restore
      * @return {Promise<void>}
      */
     async resetProject(saveState) {
@@ -459,7 +459,7 @@ class VMWrapper {
 
     /**
      * Loads supplied saveState. Usually used for resetting the VM state to a previously saved initial state.
-     * @param {object?} saveState of a previous vm state, can be generated using the recordState() method.
+     * @param {object} saveState of a previous vm state, can be generated using the recordState() method.
      */
     loadSaveState(saveState) {
         // Delete clones
@@ -567,9 +567,9 @@ class VMWrapper {
     }
 
     /**
-     * Resets the VM state to the state of the original .sb3 file.
-     * This approach may lead to page crashed and should therefore be avoided.
-     * Please use the recordState() and resetState() method for this purpose.
+     * Resets the VM state to the state of the original .sb3 file by reloading it.
+     * This approach has lead to page crashes before (see #217), but with !396 merged it should be fixed.
+     * If you experience problems, consider using `recordState()` and `resetState()` instead.
      * @returns {Promise<void>}
      */
     async resetVM() {
