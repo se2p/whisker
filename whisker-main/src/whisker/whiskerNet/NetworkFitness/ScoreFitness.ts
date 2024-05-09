@@ -23,7 +23,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             score = 0.01;
         }
         network.fitness = score;
-        executor.resetState();
+        await executor.resetState();
         return network.fitness;
     }
 

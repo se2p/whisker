@@ -93,7 +93,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             for (const seed of scratchSeeds) {
                 Randomness.setScratchSeed(seed);
                 await executor.execute(network);
-                executor.resetState();
+                await executor.resetState();
             }
 
             // Restore the saved values

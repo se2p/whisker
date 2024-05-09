@@ -16,9 +16,6 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "../../testcase/events/ParameterType";
 import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
-import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
-import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
-import {SoundEvent} from "../../testcase/events/SoundEvent";
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class NetworkExecutor {
@@ -66,7 +63,7 @@ export class NetworkExecutor {
                 private readonly _stopEarly: boolean) {
         this._vm = this._vmWrapper.vm;
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
-        this.recordInitialState();
+        this._initialState = this._vmWrapper._recordInitialState();
     }
 
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
@@ -352,65 +349,9 @@ export class NetworkExecutor {
     }
 
     /**
-     * Saves the initial state of the Scratch-VM
-     */
-    private recordInitialState(): void {
-        for (const targetKey in this._vm.runtime.targets) {
-            this._initialState[targetKey] = {
-                name: this._vm.runtime.targets[targetKey].sprite['name'],
-                direction: this._vm.runtime.targets[targetKey]["direction"],
-                currentCostume: this._vm.runtime.targets[targetKey]["currentCostume"],
-                draggable: this._vm.runtime.targets[targetKey]["draggable"],
-                dragging: this._vm.runtime.targets[targetKey]["dragging"],
-                drawableID: this._vm.runtime.targets[targetKey]['drawableID'],
-                effects: Object.assign({}, this._vm.runtime.targets[targetKey]["effects"]),
-                videoState: this._vm.runtime.targets[targetKey]["videoState"],
-                videoTransparency: this._vm.runtime.targets[targetKey]["videoTransparency"],
-                visible: this._vm.runtime.targets[targetKey]["visible"],
-                volume: this._vm.runtime.targets[targetKey]["volume"],
-                x: this._vm.runtime.targets[targetKey]["x"],
-                y: this._vm.runtime.targets[targetKey]["y"],
-                variables: JSON.parse(JSON.stringify(this._vm.runtime.targets[targetKey]["variables"]))
-            };
-        }
-    }
-
-    /**
      * Resets the Scratch-VM to the initial state
      */
-    public resetState(): void {
-        // Delete clones
-        const clones = [];
-        for (const targetKey in this._vm.runtime.targets) {
-            if (!this._vm.runtime.targets[targetKey].isOriginal) {
-                clones.push(this._vm.runtime.targets[targetKey]);
-            }
-        }
-
-        for (const target of clones) {
-            this._vm.runtime.stopForTarget(target);
-            this._vm.runtime.disposeTarget(target);
-        }
-
-        // Restore the state of all others
-        for (const targetKey in this._vm.runtime.targets) {
-            this._vm.runtime.targets[targetKey]["direction"] = this._initialState[targetKey]["direction"];
-            this._vm.runtime.targets[targetKey]["currentCostume"] = this._initialState[targetKey]["currentCostume"];
-            this._vm.runtime.targets[targetKey]["draggable"] = this._initialState[targetKey]["draggable"];
-            this._vm.runtime.targets[targetKey]["dragging"] = this._initialState[targetKey]["dragging"];
-            this._vm.runtime.targets[targetKey]["drawableID"] = this._initialState[targetKey]["drawableID"];
-            this._vm.runtime.targets[targetKey]["effects"] = Object.assign({}, this._initialState[targetKey]["effects"]);
-            this._vm.runtime.targets[targetKey]["videoState"] = this._initialState[targetKey]["videoState"];
-            this._vm.runtime.targets[targetKey]["videoTransparency"] = this._initialState[targetKey]["videoTransparency"];
-            this._vm.runtime.targets[targetKey]["visible"] = this._initialState[targetKey]["visible"];
-            this._vm.runtime.targets[targetKey]["volume"] = this._initialState[targetKey]["volume"];
-            const x = this._initialState[targetKey]["x"];
-            const y = this._initialState[targetKey]["y"];
-            this._vm.runtime.targets[targetKey].setXY(x, y, true, true);
-            this._vm.runtime.targets[targetKey]["variables"] = JSON.parse(JSON.stringify(this._initialState[targetKey]["variables"]));
-        }
-
-        this._vmWrapper.inputs.resetMouse();
-        this._vmWrapper.inputs.resetKeyboard();
+    public async resetState(): Promise<void> {
+        await this._vmWrapper.resetProject(this._initialState);
     }
 }

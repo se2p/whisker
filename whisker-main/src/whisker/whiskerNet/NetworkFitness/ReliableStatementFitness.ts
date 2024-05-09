@@ -39,7 +39,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         network.resetOpenStatement();
         const fitness = await network.targetFitness.getFitness(network);
         await this.updateUncoveredMap(network);
-        executor.resetState();
+        await executor.resetState();
 
         if (fitness > 0) {
             network.fitness = 1 - fitness;
@@ -88,9 +88,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 // Let the network decided on what to do...
                 await executor.execute(network);
             }
-            executor.resetState();
+            await executor.resetState();
             await this.updateUncoveredMap(network);
-            executor.resetState();
+            await executor.resetState();
 
             // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
             // target statement to the fitness function.

@@ -20,7 +20,7 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         // Calculate time survived, transform it into seconds and include acceleration.
         const surviveTime = Math.trunc((Date.now() - start)) / 1000 * Container.acceleration;
         network.fitness = surviveTime;
-        executor.resetState();
+        await executor.resetState();
         return surviveTime;
     }
 }
