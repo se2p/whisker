@@ -215,10 +215,13 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         let mutantPrograms = [];
         try {
-            // Loading the project again seems unnecessary here. But removing
-            // this line can cause occasional crashes in the renderer when
-            // restoring the save state between test executions. See issue #217.
-            await vm.loadProject(project);
+            if (props.useSaveStates) {
+                // Loading the project again seems unnecessary here. But removing
+                // this line can cause occasional crashes in the renderer when
+                // restoring the save state between test executions. See issue #217.
+                await vm.loadProject(project);
+            }
+
             vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
 
             CoverageGenerator.prepareVM(vm);
