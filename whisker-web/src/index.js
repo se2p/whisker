@@ -189,14 +189,21 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         let coverage;
         let coverageModels = {};
         accSlider.slider('disable');
-        const projectName = Whisker.projectFileSelect.getName();
-        const accelerationFactor = $('#acceleration-value').text();
-        const seed = document.getElementById('seed').value;
+
         const setMutators = document.querySelector('#container').mutators;
-        const mutators = !setMutators || setMutators === '' ? ['NONE'] : setMutators;
-        const mutationBudget = document.querySelector('#container').mutationBudget;
-        const maxMutants = document.querySelector('#container').maxMutants;
         const mutantDownload = document.querySelector('#container').downloadMutants;
+        const props = {
+            accelerationFactor: $('#acceleration-value').text(),
+            seed: document.getElementById('seed').value,
+            projectName: Whisker.projectFileSelect.getName(),
+            mutators: !setMutators || setMutators === '' ? ['NONE'] : setMutators,
+            mutationBudget: document.querySelector('#container').mutationBudget,
+            maxMutants: document.querySelector('#container').maxMutants,
+            mutantDownload: mutantDownload,
+            traceBlocks: traceBlocks,
+            log: true
+        };
+
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -215,8 +222,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.prepareVM(vm);
 
             [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, {accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload, traceBlocks},
-                {duration, repetitions, caseSensitive});
+                Whisker.modelTester, props, {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
             Whisker.outputLog.println(csvResults);
 
