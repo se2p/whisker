@@ -16,7 +16,7 @@ async function openNewBrowser() {
         args.push('--disable-dev-shm-usage');
     }
 
-    return await puppeteer.launch({
+    const browser = await puppeteer.launch({
         headless,
         args,
         devtools: process.env.NODE_ENV !== "production",
@@ -28,6 +28,61 @@ async function openNewBrowser() {
         // https://github.com/puppeteer/puppeteer/issues/1793#issuecomment-358216238
         executablePath: process.env.CHROME_BIN || null,
     });
+
+    await logGraphicsFeatureStatus(browser);
+
+    return browser;
+}
+
+async function logGraphicsFeatureStatus(browser) {
+    if (!enableGpu) {
+        return;
+    }
+
+    let page = null;
+    const searchString = "Graphics Feature Status";
+
+    try {
+        page = await browser.newPage();
+        await page.goto("chrome://gpu");
+
+        const status = await page.evaluate((searchString) => {
+            // noinspection CssInvalidHtmlTagReference
+            const shadowRoot = document.querySelector("info-view").shadowRoot;
+            const h3s = [...shadowRoot.querySelectorAll("h3")];
+            const [gfs] = h3s.filter((h3) => h3.textContent.includes(searchString));
+            const lis = [...gfs.nextElementSibling.children]
+
+            function getStatus(li) {
+                const classes = [...li.children].flatMap((c) => [...c.classList]);
+
+                const classMapper = {
+                    "feature-green": "✔",
+                    "feature-yellow": "✗",
+                    "feature-red": "✗",
+                };
+
+                for (const [c, v] of Object.entries(classMapper)) {
+                    if (classes.includes(c)) {
+                        return v;
+                    }
+                }
+
+                return "?";
+            }
+
+            return lis.map((li) => ` ${(getStatus(li))} ${li.textContent}`);
+        }, searchString);
+
+        const statusString = status.join("\n");
+        logger.info(`${searchString}\n${statusString}`);
+    } catch (e) {
+        logger.error(`Could not retrieve ${searchString}. Reason: ${e}`);
+    } finally {
+        if (page) {
+            await page.close();
+        }
+    }
 }
 
 async function forwardJSHandleError(msg) {
