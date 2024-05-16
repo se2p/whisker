@@ -76,7 +76,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
             Container.pathToGoal = this._pathToTarget;
         }
         const fitness = this.getTargetDistanceFitness(network, playerRenderedTarget);
-        executor.resetState();
+        await executor.resetState();
         network.fitness = fitness;
         return fitness;
     }

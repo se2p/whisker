@@ -117,7 +117,7 @@ export class DynamicNetworkSuite {
             NetworkAnalysis.analyseNetwork(test);
         }
         test.recordNetworkStatistics = false;
-        this.executor.resetState();
+        await this.executor.resetState();
     }
 
     /**

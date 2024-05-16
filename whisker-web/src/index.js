@@ -192,6 +192,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         const setMutators = document.querySelector('#container').mutators;
         const mutantDownload = document.querySelector('#container').downloadMutants;
+
+        let duration = Number(document.querySelector('#model-duration').value);
+        if (duration) {
+            duration = duration * 1000;
+        }
+        const repetitions = Number(document.querySelector('#model-repetitions').value);
+        const caseSensitive = $('#model-case-sensitive').is(':checked');
+
         const props = {
             accelerationFactor: $('#acceleration-value').text(),
             seed: document.getElementById('seed').value,
@@ -201,22 +209,19 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             maxMutants: document.querySelector('#container').maxMutants,
             mutantDownload: mutantDownload,
             traceBlocks: traceBlocks,
-            log: true
+            log: true,
+            useSaveStates: $('#use-save-states').is(':checked'),
         };
-
-        let duration = Number(document.querySelector('#model-duration').value);
-        if (duration) {
-            duration = duration * 1000;
-        }
-        const repetitions = Number(document.querySelector('#model-repetitions').value);
-        const caseSensitive = $('#model-case-sensitive').is(':checked');
 
         let mutantPrograms = [];
         try {
-            // Loading the project again seems unneccessary here. But removing
-            // this line can cause occasional crashes in the renderer when
-            // restoring the save state between test executions. See issue #217.
-            await vm.loadProject(project);
+            if (props.useSaveStates) {
+                // Loading the project again seems unnecessary here. But removing
+                // this line can cause occasional crashes in the renderer when
+                // restoring the save state between test executions. See issue #217.
+                await vm.loadProject(project);
+            }
+
             vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
 
             CoverageGenerator.prepareVM(vm);

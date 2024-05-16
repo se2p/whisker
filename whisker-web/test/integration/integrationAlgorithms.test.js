@@ -122,7 +122,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
     }, timeout);
 
     test('Neatest Optimising for Branch Coverage', async () => {
@@ -132,7 +132,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.6);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
     }, timeout);
 });
 

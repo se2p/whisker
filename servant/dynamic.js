@@ -13,7 +13,8 @@ const {
     maxMutants,
     downloadMutants,
     activationTraces,
-    minimiseSuite
+    minimiseSuite,
+    useSaveStates,
 } = require('./cli').opts
 
 // Dynamic Test suite using Neuroevolution
@@ -36,6 +37,7 @@ async function runDynamicTestSuite(openNewPage, path) {
         await switchToProjectTab(page, false);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
