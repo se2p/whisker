@@ -1,5 +1,5 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {getBlockMap} from '../../../../../scratch-analysis/src/control-flow-graph';
+import {getBlockMap} from 'scratch-analysis/src/control-flow-graph';
 import {ScratchProgram} from "../ScratchInterface";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 

@@ -1,7 +1,7 @@
 import {ScratchMutation} from "./ScratchMutation";
 import {ScratchProgram} from "../ScratchInterface";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ControlFilter, StatementFilter} from "../../../../../scratch-analysis";
+import {ControlFilter, StatementFilter} from "scratch-analysis";
 
 
 export class SingleBlockDeletionMutation extends ScratchMutation {

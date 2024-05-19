@@ -1,0 +1,79 @@
+Arguments: 
+  /Users/patric/.nvm/versions/node/v16.18.0/bin/node /opt/homebrew/Cellar/yarn/1.22.19/libexec/bin/yarn.js config get npmScopes --json
+
+PATH: 
+  /Users/patric/opt/anaconda3/bin:/Users/patric/.pyenv/shims:/Users/patric/.nvm/versions/node/v16.18.0/bin:/Applications/Sublime Text.app/Contents/SharedSupport/bin:/usr/local/texlive/2024/bin/universal-darwin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/patricfeldmeier/Library/Application Support/JetBrains/Toolbox/scripts:/Users/patric/Library/Android/sdk/tools:/Users/patric/Library/Android/sdk/platform-tools:/Users/patric/Library/Android/sdk/build-tools/30.0.3:/Users/patric/Library/Android/sdk/platform-tools/adb
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.18.0
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  SyntaxError: /Users/patric/Projects/Scratch/whisker-main/whisker-main/package.json: Unexpected token 
+   in JSON at position 1746
+      at JSON.parse (<anonymous>)
+      at /opt/homebrew/Cellar/yarn/1.22.19/libexec/lib/cli.js:1629:59
+      at Generator.next (<anonymous>)
+      at step (/opt/homebrew/Cellar/yarn/1.22.19/libexec/lib/cli.js:310:30)
+      at /opt/homebrew/Cellar/yarn/1.22.19/libexec/lib/cli.js:321:13
+
+npm manifest: 
+  {
+      "name": "whisker-main",
+      "version": "0.8.0",
+      "description": "A Testing Utility for Scratch 3.0",
+      "author": "Marvin Kreis",
+      "license": "GPL-3.0-only",
+      "homepage": "https://github.com/se2p/whisker-main",
+      "repository": {
+          "type": "git",
+          "url": "git+ssh://git@github.com/se2p/whisker-main"
+      },
+      "main": "./src/index.js",
+      "scripts": {
+          "build": "tsc --incremental && webpack --color --bail",
+          "build:watch": "tsc-watch --onFirstSuccess \"webpack --color --watch\"",
+          "build:prod": "NODE_ENV=production webpack --color --bail",
+          "build:clean": "if [ -d dist ]; then rm -rf dist; fi && tsc --incremental && webpack --color --bail",
+          "test": "jest --forceExit --coverage --verbose",
+          "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+          "watch-test": "npm run test -- --watchAll",
+          "test:coverage": "npm test -- --coverage",
+          "build-ts": "tsc --incremental",
+          "watch-ts": "tsc -w",
+          "docs": "jsdoc -c .jsdoc.json",
+          "lint": "eslint . && format-message lint src/**/*.{ts,js}",
+          "lint:fix": "eslint . --fix"
+      },
+      "dependencies": {
+          "assert": "^2.0.0",
+          "clean-yaml-object": "^0.1.0",
+          "js-yaml": "^4.1.0",
+          "lodash.clonedeep": "^4.5.0",
+          "lodash.defaults": "^4.2.0",
+          "lodash.isequal": "^4.5.0",
+          "minilog": "^3.1.0",
+          "ntc": "^0.0.1",
+          "scratch-analysis": "0.8.0",
+          "scratch-vm": "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/whisker/scratch-vm.git#develop",
+          "scratch-analysis": "
+          "seed-random": "^2.2.0",
+          "setimmediate": "^1.0.5",
+          "source-map-loader": "^1.1.3",
+          "xml-js": "^1.6.11"
+      },
+      "devDependencies": {
+          "tsc-watch": "^6.0.0"
+      }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

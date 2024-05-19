@@ -5,7 +5,7 @@ import TestDriver from "../../test/test-driver.js";
 import {ScratchPosition} from "../scratch/ScratchPosition";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {GradientDescent} from "../whiskerNet/Misc/GradientDescent";
-import {ControlDependenceGraph, ControlFlowGraph} from '../../../../scratch-analysis';
+import {ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis';
 
 
 export class Container {
