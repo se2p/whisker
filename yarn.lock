@@ -7626,7 +7626,7 @@ schema-utils@^3.0.0, schema-utils@^3.1.0, schema-utils@^3.1.1:
 
 "scratch-analysis@git+https://gitlab+deploy-token-26:gldt-JnhezqQAx-v4JyLZBw7P@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-analysis.git":
   version "1.0.0"
-  resolved "git+https://gitlab+deploy-token-26:gldt-JnhezqQAx-v4JyLZBw7P@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-analysis.git#9b67640a5147f9b93316b2bb4fdba6e3522f4cfd"
+  resolved "git+https://gitlab+deploy-token-26:gldt-JnhezqQAx-v4JyLZBw7P@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-analysis.git#fa0562b63557989445b085bc6817082778ed442f"
 
 scratch-audio@0.1.0-prerelease.20200528195344:
   version "0.1.0-prerelease.20200528195344"
