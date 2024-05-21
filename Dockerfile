@@ -72,7 +72,6 @@ RUN apt-get update \
 #     docker flattens the subdirectory structure when using wildcards.
 WORKDIR /whisker-build/
 COPY package.json ./
-COPY scratch-analysis/package.json ./scratch-analysis/
 COPY servant/package.json ./servant/
 COPY whisker-web/package.json ./whisker-web/
 COPY whisker-main/package.json ./whisker-main/

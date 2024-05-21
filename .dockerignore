@@ -17,13 +17,6 @@
 config/*
 !config/*.json
 
-# Whitelist source codes for scratch-analysis.
-!scratch-analysis
-scratch-analysis/*
-!scratch-analysis/*.js
-!scratch-analysis/package.json
-!scratch-analysis/src
-
 # Whitelist source codes for servant.
 !servant
 servant/*

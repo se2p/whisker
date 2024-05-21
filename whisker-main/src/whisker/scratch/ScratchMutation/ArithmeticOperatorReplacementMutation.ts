@@ -1,7 +1,7 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchProgram} from "../ScratchInterface";
-import {OperatorFilter} from "../../../../../scratch-analysis/src/block-filter";
+import {OperatorFilter} from "scratch-analysis/src/block-filter";
 import {Randomness} from "../../utils/Randomness";
 
 export class ArithmeticOperatorReplacementMutation extends ScratchMutation {

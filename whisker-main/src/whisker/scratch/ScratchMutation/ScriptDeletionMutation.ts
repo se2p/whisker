@@ -1,6 +1,6 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ControlFilter} from "../../../../../scratch-analysis";
+import {ControlFilter} from "scratch-analysis";
 import {ScratchProgram} from "../ScratchInterface";
 
 export class ScriptDeletionMutation extends ScratchMutation {
