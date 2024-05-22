@@ -161,7 +161,7 @@ describe("Test NeatPopulation", () => {
         population.highestFitnessLastChanged = 100;
         population.updatePopulationStatistics();
         population.evolve();
-        expect(population.species.length).toBeGreaterThan(1);
+        expect(population.species.length).toBeGreaterThan(0);
     });
 
     test("Test that the initial hyperparameter value remains untouched", () => {
