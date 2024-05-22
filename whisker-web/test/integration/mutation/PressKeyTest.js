@@ -1,5 +1,5 @@
 const test0 = async function (t) {
-    await t.keyPress('space');
+    await t.keyPress('.');
     await t.runForSteps(10);
 }
 
