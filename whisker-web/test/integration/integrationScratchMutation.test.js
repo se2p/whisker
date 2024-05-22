@@ -60,7 +60,7 @@ beforeEach(async () => {
 
 describe('Scratch Mutations', () => {
     test('Key-Replacement-Mutation sensing block', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressSpaceTest.js");
+        await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressKeyTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
         await loadProject('test/integration/mutation/KRM-Sensing.sb3')
         await (await page.$('#run-all-tests')).click();
@@ -70,7 +70,7 @@ describe('Scratch Mutations', () => {
     }, timeout);
 
     test('Key-Replacement-Mutation hat block', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressSpaceTest.js");
+        await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/PressKeyTest.js");
         await page.evaluate(m => document.querySelector('#container').mutators = m, ["KRM"]);
         await loadProject('test/integration/mutation/KRM-Hat.sb3')
         await (await page.$('#run-all-tests')).click();
