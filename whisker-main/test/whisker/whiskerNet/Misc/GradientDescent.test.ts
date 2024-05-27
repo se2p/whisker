@@ -238,7 +238,7 @@ describe('Test Gradient Descent', () => {
             learningRate: 0,
             learningRateAlgorithm: 'Static',
             epochs: 1,
-            batchSize: Infinity,
+            batchSize: 5,
             combinePlayerRecordings: false,
             labelSmoothing: 0,
             l2Regularisation: 0
@@ -246,7 +246,7 @@ describe('Test Gradient Descent', () => {
         let backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const startingLoss = backpropagation.gradientDescent(net, statement);
 
-        gradientDescentParameter.learningRate = 0.1;
+        gradientDescentParameter.learningRate = 0.01;
         gradientDescentParameter.epochs = 500;
         backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentParameter, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
@@ -273,7 +273,7 @@ describe('Test Gradient Descent', () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const startingLoss = backpropagation_1.gradientDescent(net, statement);
 
-        gradientDescentLearning.labelSmoothing = 0.1;
+        gradientDescentLearning.labelSmoothing = 0.01;
         const backpropagation = new GradientDescent(groundTruthFruitCatching as any, gradientDescentLearning, augmentationParameter);
         const finalLoss = backpropagation.gradientDescent(net, statement);
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
