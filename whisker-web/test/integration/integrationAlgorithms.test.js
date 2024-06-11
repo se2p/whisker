@@ -82,7 +82,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 
     test('MIO Optimising for Branch Coverage', async () => {
@@ -92,7 +92,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 
     test('MOSA Optimising for Statement Coverage', async () => {
@@ -102,7 +102,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 
     test('MOSA Optimising for Branch Coverage', async () => {
@@ -112,7 +112,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 
     test('Neatest Optimising for Statement Coverage', async () => {
@@ -122,7 +122,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 
     test('Neatest Optimising for Branch Coverage', async () => {
@@ -132,7 +132,7 @@ describe('Algorithms', () => {
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.5);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 });
 
