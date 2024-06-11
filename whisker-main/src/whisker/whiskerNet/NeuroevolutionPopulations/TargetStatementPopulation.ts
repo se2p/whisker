@@ -9,6 +9,7 @@ import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/Neuroevol
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
 import {NeatChromosomeGenerator} from "../NetworkGenerators/NeatChromosomeGenerator";
+import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class TargetStatementPopulation extends NeatPopulation {
 
@@ -28,12 +29,18 @@ export class TargetStatementPopulation extends NeatPopulation {
      * anything, we just generate the desired number of networks using the defined NetworkGenerator.
      */
     public override generatePopulation(): void {
-        // If we don't have any starting networks, i.e. it's the first ever selected fitness target simply generate
+        // If we don't have any starting networks, i.e. it's the first ever selected fitness target generate
         // the desired number of networks using the defined generator.
         if (this._startingNetworks.length === 0) {
             while (this.networks.length < this.populationSize) {
                 const network = this.generator.get();
                 this.networks.push(network);
+
+                // Do not apply gradient descent for the first statement since it will always be the green flag,
+                // which is covered trivially without further optimisations.
+                if (this._targetStatementFitness instanceof BranchCoverageFitnessFunction) {
+                    this.applyGradientDescent(network);
+                }
             }
         } else {
 
@@ -56,8 +63,6 @@ export class TargetStatementPopulation extends NeatPopulation {
 
             // Then, we fill our population with new networks based on the supplied randomFraction.
             const newNetworksSize = Math.floor(this._randomFraction * this.hyperParameter.populationSize);
-            const random = Randomness.getInstance();
-
             for (let i = 0; i < newNetworksSize; i++) {
                 // Stop if we already hit the population boundary.
                 if (this.networks.length >= this.hyperParameter.populationSize) {
@@ -65,11 +70,7 @@ export class TargetStatementPopulation extends NeatPopulation {
                 }
                 const network = this.generator.get();
 
-                // With the given probability, we apply gradient descent if enabled
-                if (Container.backpropagationInstance && !this._switchedToEasierTarget &&
-                    random.nextDouble() <= (this.hyperParameter as NeatestParameter).gradientDescentProb) {
-                    Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
-                }
+                this.applyGradientDescent(network);
 
                 this.networks.push(network);
             }
@@ -94,6 +95,22 @@ export class TargetStatementPopulation extends NeatPopulation {
         }
     }
 
+
+    /**
+     * Apply gradient descent with a given probability if it's enabled.
+     * @param network The network that may be optimised via gradient descent.
+     */
+    private applyGradientDescent(network: NeatChromosome) {
+        if (!Container.backpropagationInstance || this._switchedToEasierTarget) {
+            return;
+        }
+
+        const randomNumber = Randomness.getInstance().nextDouble();
+        const gradientDescentProb = (this.hyperParameter as NeatestParameter).gradientDescentProb;
+        if (randomNumber <= gradientDescentProb) {
+            Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
+        }
+    }
 
     /**
      * Ponders through the provided starting networks and collects all input states discovered so far.
