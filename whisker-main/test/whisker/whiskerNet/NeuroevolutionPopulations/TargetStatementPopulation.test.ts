@@ -63,7 +63,7 @@ describe("Test TargetStatementPopulation", () => {
 
     test("Generate population without starting networks", () => {
         const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
-            undefined, [], false, 0);
+            undefined, [], 0);
         population.generatePopulation();
         expect(population.networks.length).toBe(size);
     });
@@ -74,7 +74,7 @@ describe("Test TargetStatementPopulation", () => {
             networks.push(chromosomeGenerator.get());
         }
         const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
-            undefined, networks, false, 0.1);
+            undefined, networks, 0.1);
         const innovations = NeatPopulation.innovations.length;
         population.generatePopulation();
         expect(population.networks.length).toBe(size);
@@ -87,7 +87,7 @@ describe("Test TargetStatementPopulation", () => {
             networks.push(chromosomeGenerator.get());
         }
         const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
-            undefined, networks, false, 1);
+            undefined, networks, 1);
         const innovations = NeatPopulation.innovations.length;
         population.generatePopulation();
         expect(population.networks.length).toBe(size);

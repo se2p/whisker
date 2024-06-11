@@ -16,7 +16,6 @@ export class TargetStatementPopulation extends NeatPopulation {
                 private readonly _allStatements: number[],
                 private readonly _targetStatementFitness: StatementFitnessFunction,
                 private readonly _startingNetworks: NeatChromosome[],
-                private readonly _switchedToEasierTarget: boolean,
                 private readonly _randomFraction: number) {
         super(generator, hyperParameter);
     }
@@ -66,7 +65,7 @@ export class TargetStatementPopulation extends NeatPopulation {
                 const network = this.generator.get();
 
                 // With the given probability, we apply gradient descent if enabled
-                if (Container.backpropagationInstance && !this._switchedToEasierTarget &&
+                if (Container.backpropagationInstance &&
                     random.nextDouble() <= (this.hyperParameter as NeatestParameter).gradientDescentProb) {
                     Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
                 }

@@ -44,11 +44,6 @@ export class Neatest extends NEAT {
     private _targetIterations = 0;
 
     /**
-     * Determines whether we should switch the currently selected target due to easier targets being within reach.
-     */
-    private _switchToEasierTarget = false;
-
-    /**
      * Saves target ids of objectives that have already been switched out to prioritise different ones.
      */
     private _switchedTargets = new Set<string>();
@@ -72,7 +67,6 @@ export class Neatest extends NEAT {
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
-            this._switchToEasierTarget = false;
             while (!(await this._stoppingCondition.isFinished(this))) {
                 await this.evaluateNetworks();
                 this.updateBestIndividualAndStatistics();
@@ -80,12 +74,6 @@ export class Neatest extends NEAT {
                 // Stop if we managed to cover the current target statement.
                 if (this._archive.has(this._targetKey)) {
                     Container.debugLog(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
-                    break;
-                }
-
-                // Switch target if other statements than the currently selected one are easier to cover.
-                if (this._switchToEasierTarget) {
-                    Container.debugLog("Switch to easier Target");
                     break;
                 }
 
@@ -148,20 +136,10 @@ export class Neatest extends NEAT {
     private setNextGoal(): StatementFitnessFunction {
         const uncoveredStatements = this.getUncoveredStatements();
         const allStatements = [...this._fitnessFunctionMap.values()];
-
-        // If we are dealing with BranchCoverage, our set of potential targets is formed over all uncovered Statements
-        // since a selection based on the CDG is infeasible as we are only targeting branching nodes and not statements.
-        let potentialTargets: Set<StatementFitnessFunction>;
-        if (this._fitnessFunctionMap.get(0) instanceof BranchCoverageFitnessFunction){
-            potentialTargets = new Set(uncoveredStatements);
-        } else {
-            // Otherwise, select a target by querying the CDG for targets that have an approachLevel of zero.
-            potentialTargets = StatementFitnessFunction.getNearestUncoveredStatements(allStatements, uncoveredStatements);
-        }
-        let nextTarget: StatementFitnessFunction;
+        let potentialTargets = StatementFitnessFunction.getNearestTargets(allStatements, uncoveredStatements);
 
         // Prioritise greenFlag events
-        nextTarget = [...potentialTargets.values()]
+        let nextTarget = [...potentialTargets.values()]
             .find(target => target.getTargetNode().block.opcode === 'event_whenflagclicked');
 
         // If there are no greenFlagEvents left to cover, prioritise targets we have already reached in the past and
@@ -257,19 +235,6 @@ export class Neatest extends NEAT {
             // Stop if we covered the targeted statement or depleted the search budget.
             if (this._archive.has(this._targetKey) || await this._stoppingCondition.isFinished(this)) {
                 return;
-            }
-
-            // Determine whether we should switch the currently selected target. We do that if we have accidentally
-            // reached a previously not targeted statement without reaching the actual target statement at least once.
-            if (this._promisingTargets.get(this._targetKey) < 1) {
-                const uncoveredTargetIds = this.getUncoveredStatements().map(target => target.getNodeId());
-                const untouchedUncovered = uncoveredTargetIds.filter(target => !this._switchedTargets.has(target));
-                for (const [key, value] of this._promisingTargets.entries()) {
-                    if (value >= 1 && untouchedUncovered.includes(this._fitnessFunctionMap.get(key).getNodeId())) {
-                        this._switchToEasierTarget = true;
-                        return;
-                    }
-                }
             }
         }
     }
@@ -382,7 +347,7 @@ export class Neatest extends NEAT {
         const allStatements = [...this._fitnessFunctions.keys()];
         const currentTarget = this._fitnessFunctionMap.get(this._targetKey);
         return new TargetStatementPopulation(this._chromosomeGenerator, this._neuroevolutionProperties, allStatements,
-            currentTarget, startingNetworks, this._switchToEasierTarget, this._neuroevolutionProperties.randomFraction);
+            currentTarget, startingNetworks, this._neuroevolutionProperties.randomFraction);
     }
 
     /**

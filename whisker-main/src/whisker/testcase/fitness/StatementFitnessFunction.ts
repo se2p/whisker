@@ -543,7 +543,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param uncoveredStatements uncovered subset of allStatements.
      * @returns uncovered immediate children of already covered statements.
      */
-    public static getNearestUncoveredStatements(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Set<StatementFitnessFunction> {
+    public static getNearestTargets(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Set<StatementFitnessFunction> {
         const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
         const cdg = Container.cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
