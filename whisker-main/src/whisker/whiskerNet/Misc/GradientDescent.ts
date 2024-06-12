@@ -34,8 +34,8 @@ export class GradientDescent {
         // Activation functions
         "SIGMOID": (prediction: number): number => prediction * (1 - prediction),
         "TANH": (prediction: number): number => 1 - Math.pow(Math.tanh(prediction), 2),
-        "RELU": (prediction: number): number => prediction > 0 ? 1 : 0,
-        "NONE": (prediction: number): number => prediction >= 0 ? 1 : -1
+        "RELU": (prediction: number): number => prediction >= 0 ? 1 : 0,
+        "NONE": (): number => 1
     } as const;
 
     /**
@@ -539,9 +539,10 @@ export class GradientDescent {
     private _validationSetSplit(batches: StateActionRecord[]): [StateActionRecord[], StateActionRecord[]] {
 
         // Only make a split if we have enough data.
-        if (batches.length < 30) {
+        if (batches.length < 20) {
             return [batches, []];
         }
+        Arrays.shuffle(batches);
         const desiredValidationSize = Math.ceil(batches.length * GradientDescent.VALIDATION_SET_SIZE);
         const validationSet = batches.slice(0, desiredValidationSize);
         const trainingSet = batches.slice(desiredValidationSize);

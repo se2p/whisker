@@ -49,7 +49,7 @@ export class HiddenNode extends NodeGene {
                     this.activationValue = Math.tanh(this.nodeValue);
                     break;
                 case ActivationFunction.RELU:
-                    this.activationValue = Math.max(0, this.nodeValue);
+                    this.activationValue = NeuroevolutionUtil.relu(this.nodeValue);
                     break;
                 default:
                     this.activationValue = this.nodeValue;
