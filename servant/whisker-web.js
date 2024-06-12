@@ -5,6 +5,7 @@ const {consoleForwarded, headless, whiskerUrl, enableGpu} = require("./cli").opt
 async function openNewBrowser() {
     const args = [
         enableGpu ? "--enable-gpu" : "--disable-gpu",
+        '--ignore-gpu-blocklist',
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--autoplay-policy=no-user-gesture-required', // https://developer.chrome.com/blog/autoplay/
