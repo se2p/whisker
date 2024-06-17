@@ -53,10 +53,9 @@ ARG version=@sha256:0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e
 # (a) We use a slim base image that already includes Node.JS and a minimal set
 #     of packages required to run Puppeteer (without packaging Puppeteer
 #     itself – we install the right version of Puppeteer later using yarn).
-#     We also need "tini".
 FROM satantime/puppeteer-node${version} as base
 RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y tini \
+    && apt-get install --no-install-recommends --no-install-suggests -y tini xvfb xauth \
     && rm -rf /usr/share/icons
 
 # (b) Install packages only required to build Whisker, not to run it.
@@ -134,5 +133,4 @@ WORKDIR /whisker/servant/
 # [2] https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
 # [3] https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
 # [4] https://github.com/krallin/tini#existing-entrypoint
-ENTRYPOINT ["tini", "--", "/whisker/servant/whisker-docker.sh"]
-
+ENTRYPOINT ["tini", "--", "xvfb-run", "/whisker/servant/whisker-docker.sh"]

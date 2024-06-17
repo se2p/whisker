@@ -18,6 +18,9 @@ import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
 import WhiskerUtil from "../../../test/whisker-util";
+import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
+import {TestChromosome} from "../../testcase/TestChromosome";
+import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -386,6 +389,18 @@ export class StateActionRecorder extends EventEmitter {
      */
     public addStateActionRecordsToRecording(): void {
         const coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
+        // Check for branch Coverage. We have to generate a chromosome stub to work around the fitness interface.
+        const branchFactory = new BranchCoverageFitnessFunctionFactory();
+        const branchTargets = branchFactory.extractFitnessFunctions(this._vm, []);
+        const chromosomeStub = new TestChromosome([], null, null);
+        chromosomeStub.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, undefined);
+        for (const branchTarget of branchTargets) {
+            if (branchTarget.isCovered(chromosomeStub)) {
+                coverage.add(branchTarget.getNodeId());
+            }
+        }
+
         const fullRecord: Recording = {
             recordings: [...this._actionRecords],
             coverage: [...coverage.values()]
