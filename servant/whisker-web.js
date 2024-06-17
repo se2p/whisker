@@ -41,25 +41,23 @@ async function logGraphicsFeatureStatus(browser) {
     }
 
     let page = null;
-    const searchString = "Graphics Feature Status";
 
     try {
         page = await browser.newPage();
         await page.goto("chrome://gpu");
 
-        const status = await page.evaluate((searchString) => {
+        const [status, driverInfo] = await page.evaluate(() => {
             // noinspection CssInvalidHtmlTagReference
             const shadowRoot = document.querySelector("info-view").shadowRoot;
-            const h3s = [...shadowRoot.querySelectorAll("h3")];
-            const [gfs] = h3s.filter((h3) => h3.textContent.includes(searchString));
-            const lis = [...gfs.nextElementSibling.children]
+
+            // Retrieve "Graphics Feature Status"
 
             function getStatus(li) {
                 const classes = [...li.children].flatMap((c) => [...c.classList]);
 
                 const classMapper = {
                     "feature-green": "✔",
-                    "feature-yellow": "✗",
+                    "feature-yellow": "!",
                     "feature-red": "✗",
                 };
 
@@ -72,13 +70,40 @@ async function logGraphicsFeatureStatus(browser) {
                 return "?";
             }
 
-            return lis.map((li) => ` ${(getStatus(li))} ${li.textContent}`);
-        }, searchString);
+            const lis = Array.from(shadowRoot.querySelectorAll("h3"))
+                .filter((h3) => h3.textContent.includes("Graphics Feature Status"))[0]
+                .nextElementSibling.children;
 
-        const statusString = status.join("\n");
-        logger.info(`${searchString}\n${statusString}`);
+            const status = Array.from(lis).map((li) => ` ${(getStatus(li))} ${li.textContent}`).join("\n");
+
+            // Retrieve "Driver Information"
+
+            const infoTableRows = Array.from(shadowRoot
+                .getElementById("basic-info")
+                .children[0]
+                .shadowRoot
+                .getElementById("info-view-table")
+                .children);
+
+            const driverInfo = infoTableRows.flatMap((row) => {
+                row = row.shadowRoot;
+                const key = row.getElementById("title").innerText;
+
+                if (!["GPU0", "GL_VENDOR", "GL_RENDERER", "GL_VERSION"].includes(key)) {
+                    return [];
+                }
+
+                const value = row.getElementById("value").innerText;
+                return [` - ${key}: ${value}`];
+            }).join("\n");
+
+            return [status, driverInfo];
+        });
+
+        logger.info(`Grahpics Feature Status:\n${status}`);
+        logger.info(`GPU Driver Information:\n${driverInfo}`);
     } catch (e) {
-        logger.error(`Could not retrieve ${searchString}. Reason: ${e}`);
+        logger.error(`Could not retrieve GPU information. Reason: ${e}`);
     } finally {
         if (page) {
             await page.close();
