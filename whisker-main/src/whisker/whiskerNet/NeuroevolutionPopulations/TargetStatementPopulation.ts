@@ -17,7 +17,6 @@ export class TargetStatementPopulation extends NeatPopulation {
                 private readonly _allStatements: number[],
                 private readonly _targetStatementFitness: StatementFitnessFunction,
                 private readonly _startingNetworks: NeatChromosome[],
-                private readonly _switchedToEasierTarget: boolean,
                 private readonly _randomFraction: number) {
         super(generator, hyperParameter);
     }
@@ -101,7 +100,7 @@ export class TargetStatementPopulation extends NeatPopulation {
      * @param network The network that may be optimised via gradient descent.
      */
     private applyGradientDescent(network: NeatChromosome) {
-        if (!Container.backpropagationInstance || this._switchedToEasierTarget) {
+        if (!Container.backpropagationInstance) {
             return;
         }
 
