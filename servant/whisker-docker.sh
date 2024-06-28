@@ -17,7 +17,7 @@ whisker() {
     # Make sure to use `exec` here (instead of `eval`). This allows Whisker to receive any
     # Unix signals sent to this wrapper script. See:
     # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
-    exec node /whisker/servant "$@" -k -l
+    exec node /whisker/servant "$@" -d -k -l
 }
 
 print_info() {
@@ -27,6 +27,27 @@ print_info() {
     # Just to double check how much memory is available to Whisker.
     df -h /dev/shm
 }
+
+WHISKER_ARGS=""
+
+# Make sure llvmpipe is used as software rasterizer. It is faster than softpipe and swiftshader.
+# https://wiki.archlinux.org/title/OpenGL#Mesa
+# https://docs.mesa3d.org/envvars.html
+export MESA_LOADER_DRIVER_OVERRIDE=/usr/lib/x86_64-linux-gnu/dri/swrast
+export GALLIUM_DRIVER=llvmpipe
+
+# If --enable-gpu is given, do not use llvmpipe, but try to use the host's
+# physical GPU. Do not forward the --enable-gpu flag to Whisker.
+for a in "$@"; do
+    if [ "$a" = '--enable-gpu' ]; then
+        unset MESA_LOADER_DRIVER_OVERRIDE
+        unset GALLIUM_DRIVER
+    else
+        WHISKER_ARGS="${WHISKER_ARGS} \"${a}\""
+    fi
+done
+
+set -- "$(eval echo ${WHISKER_ARGS})"
 
 # We support redirection of stdout and stderr to files in a custom directory.
 # This directory must be specified as first argument of this script, followed

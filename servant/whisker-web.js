@@ -4,18 +4,24 @@ const {consoleForwarded, headless, whiskerUrl, enableGpu} = require("./cli").opt
 
 async function openNewBrowser() {
     const args = [
-        enableGpu ? "--enable-gpu" : "--disable-gpu",
-        '--ignore-gpu-blocklist',
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--autoplay-policy=no-user-gesture-required', // https://developer.chrome.com/blog/autoplay/
-        // '--use-gl=desktop', // could be used next to headless, but pages tend to quit unexpectedly
+
+        // Flags required for hardware acceleration, see
+        // https://mirzabilal.com/how-to-enable-hardware-acceleration-on-chrome-chromium-puppeteer-on-aws-in-headless-mode
+        '--use-gl=angle',
+        '--use-angle=gl-egl',
+        '--enable-unsafe-webgpu',
+        '--ignore-gpu-blocklist',
     ];
 
     if (process.env.WHISKER_CONTAINERIZED) {
         // https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#tips
         args.push('--disable-dev-shm-usage');
     }
+
+    logger.info("Opening browser...");
 
     const browser = await puppeteer.launch({
         headless,
@@ -36,9 +42,7 @@ async function openNewBrowser() {
 }
 
 async function logGraphicsFeatureStatus(browser) {
-    if (!enableGpu) {
-        return;
-    }
+    logger.info("Retrieving GPU information...");
 
     let page = null;
 

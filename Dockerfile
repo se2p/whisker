@@ -46,16 +46,17 @@
 # [1] https://www.ibm.com/docs/en/filenet-p8-platform/5.5.x?topic=deployment-choosing-image-tags-digests
 # [2] https://hub.docker.com/_/node?tab=tags
 #
-# Currently, this digest corresponds to the tag 18.18.0-bullseye-slim:
-# https://hub.docker.com/layers/satantime/puppeteer-node/18.18-bullseye-slim/images/sha256-0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555?context=explore
-ARG version=@sha256:0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555
+# Currently, this digest corresponds to the tag 18.18.0-bullseye:
+# https://hub.docker.com/layers/satantime/puppeteer-node/18.18-bullseye/images/sha256-d41685dfcf4afd90157b3a16dbcbff00388137504827755c50377fe4bba5f7cf?context=explore
+ARG version=@sha256:d41685dfcf4afd90157b3a16dbcbff00388137504827755c50377fe4bba5f7cf
 
-# (a) We use a slim base image that already includes Node.JS and a minimal set
+# (a) We use a base image that already includes Node.JS and a minimal set
 #     of packages required to run Puppeteer (without packaging Puppeteer
 #     itself – we install the right version of Puppeteer later using yarn).
+#     Also install libraries required for hardware acceleration.
 FROM satantime/puppeteer-node${version} as base
 RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y tini xvfb xauth \
+    && apt-get install --no-install-recommends --no-install-suggests -y tini libegl1 libgl1-mesa-dri \
     && rm -rf /usr/share/icons
 
 # (b) Install packages only required to build Whisker, not to run it.
@@ -134,4 +135,4 @@ WORKDIR /whisker/servant/
 # [2] https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
 # [3] https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
 # [4] https://github.com/krallin/tini#existing-entrypoint
-ENTRYPOINT ["tini", "--", "xvfb-run", "/whisker/servant/whisker-docker.sh"]
+ENTRYPOINT ["tini", "--", "/whisker/servant/whisker-docker.sh"]
