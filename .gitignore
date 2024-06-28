@@ -29,3 +29,6 @@
 
 # Generated
 /whisker-main/coverage
+
+# Local puppeteer browsers
+.cache

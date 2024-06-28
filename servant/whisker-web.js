@@ -74,28 +74,23 @@ async function logGraphicsFeatureStatus(browser) {
                 .filter((h3) => h3.textContent.includes("Graphics Feature Status"))[0]
                 .nextElementSibling.children;
 
-            const status = Array.from(lis).map((li) => ` ${(getStatus(li))} ${li.textContent}`).join("\n");
+            const status = Array.from(lis).map((li) =>
+                ` ${(getStatus(li))} ${li.textContent.replace("*   ", "")}`
+            ).join("\n");
 
             // Retrieve "Driver Information"
 
-            const infoTableRows = Array.from(shadowRoot
-                .getElementById("basic-info")
-                .children[0]
-                .shadowRoot
-                .getElementById("info-view-table")
-                .children);
+            const driverInfo = Array.from(shadowRoot.querySelectorAll("td"))
+                .flatMap((td) => {
+                    const key = td.innerText;
 
-            const driverInfo = infoTableRows.flatMap((row) => {
-                row = row.shadowRoot;
-                const key = row.getElementById("title").innerText;
+                    if (!["GPU0", "GL_VENDOR", "GL_RENDERER", "GL_VERSION"].includes(key)) {
+                        return [];
+                    }
 
-                if (!["GPU0", "GL_VENDOR", "GL_RENDERER", "GL_VERSION"].includes(key)) {
-                    return [];
-                }
-
-                const value = row.getElementById("value").innerText;
-                return [` - ${key}: ${value}`];
-            }).join("\n");
+                    const value = td.nextElementSibling.innerText;
+                    return [` - ${key}: ${value}`];
+                }).join("\n");
 
             return [status, driverInfo];
         });

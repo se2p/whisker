@@ -75,6 +75,7 @@ COPY servant/package.json ./servant/
 COPY whisker-web/package.json ./whisker-web/
 COPY whisker-main/package.json ./whisker-main/
 COPY yarn.lock ./
+COPY .puppeteerrc.cjs ./
 RUN yarn install
 
 # (d) Copy source files (as governed by .dockerignore), build Whisker and drop
