@@ -54,13 +54,19 @@ ARG version=@sha256:d41685dfcf4afd90157b3a16dbcbff00388137504827755c50377fe4bba5
 #     of packages required to run Puppeteer (without packaging Puppeteer
 #     itself – we install the right version of Puppeteer later using yarn).
 #     Also install libraries required for hardware acceleration.
+#     Uncomment the lines if you also want to install drivers for Nvidia Titan
+#     Black GPU (this breaks support for Intel and AMD GPUs.)
+#     https://wiki.debian.org/NvidiaGraphicsDrivers#Debian_11_.22Bullseye.22
 FROM satantime/puppeteer-node${version} as base
 RUN : \
+#    && sed -i 's/bullseye main/bullseye main contrib non-free/g' /etc/apt/sources.list \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y \
         tini \
         libegl1 \
         libgl1-mesa-dri \
+#        libgles2 \
+#        nvidia-tesla-470-egl-icd \
     && rm -rf /usr/share/icons \
     && :
 
