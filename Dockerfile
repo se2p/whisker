@@ -55,16 +55,23 @@ ARG version=@sha256:d41685dfcf4afd90157b3a16dbcbff00388137504827755c50377fe4bba5
 #     itself – we install the right version of Puppeteer later using yarn).
 #     Also install libraries required for hardware acceleration.
 FROM satantime/puppeteer-node${version} as base
-RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y tini libegl1 libgl1-mesa-dri \
-    && rm -rf /usr/share/icons
+RUN : \
+    && apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y \
+        tini \
+        libegl1 \
+        libgl1-mesa-dri \
+    && rm -rf /usr/share/icons \
+    && :
 
 # (b) Install packages only required to build Whisker, not to run it.
 #     We need git because we have a dependency to another git repository
 #     (the Scratch VM).
 FROM base as build
-RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y git
+RUN : \
+    && apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y git \
+    && :
 
 # (c) Copy manifest files and install dependencies. This layer is only rebuilt
 #     when a manifest file changes.
@@ -84,8 +91,10 @@ RUN yarn install
 #     necessary for execution. This layer is only rebuilt when a source file
 #     changes.
 COPY ./ ./
-RUN yarn build \
-    && yarn install --production
+RUN : \
+    && yarn build \
+    && yarn install --production \
+    && :
 
 
 #-------------------------------------------------------------------------------
