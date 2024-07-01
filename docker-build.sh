@@ -25,7 +25,19 @@ function my_docker() {
 
 function main() {
     echo "Building docker image of Whisker with tag ${TAG}"
-    my_docker image build . -t "${TAG}" -f Dockerfile
+
+    DOCKER_ARGS=(
+        -t "${TAG}"
+        -f Dockerfile
+    )
+
+    if [[ $1 == nvidia ]]; then
+        DOCKER_ARGS+=(
+            --build-arg execute=nvidia
+        )
+    fi
+
+    my_docker image build . "${DOCKER_ARGS[@]}"
 
     readonly tar_file="${TAG}.tar"
     echo "Saving image to ${tar_file}.gz"
@@ -36,4 +48,4 @@ function main() {
     my_docker save "${TAG}" -o "${tar_file}" && gzip -f "${tar_file}"
 }
 
-main
+main "$@"
