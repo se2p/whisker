@@ -26,7 +26,7 @@ async function openNewBrowser() {
     const browser = await puppeteer.launch({
         headless,
         args,
-        devtools: process.env.NODE_ENV !== "production",
+        devtools: false,
 
         // If specified, use the given version of Chromium/Chrome instead of the one bundled with Puppeteer.
         // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
