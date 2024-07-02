@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 const logger = require("./logger");
-const {consoleForwarded, headless, whiskerUrl, enableGpu} = require("./cli").opts;
+const {consoleForwarded, headless, whiskerUrl} = require("./cli").opts;
 
 async function openNewBrowser() {
     const args = [
