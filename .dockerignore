@@ -42,4 +42,4 @@ whisker-web/*
 !package.json
 !yarn.lock
 !tsconfig.json
-
+!.puppeteerrc.cjs

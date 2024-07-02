@@ -28,7 +28,7 @@ async function open(openNewPage) {
         await switchToProjectTab(page, false);
         await (await page.$('#scratch-stage')).focus();
         await page.evaluate(() => {window.scroll(0, 180);});
-        await page.waitForTimeout(3000);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
         // Start game and recording.
         await (await page.$('#record')).click();
@@ -41,12 +41,12 @@ async function open(openNewPage) {
         let elapsed = 0;
         while (elapsed <= time) {
             elapsed = (Date.now() - start) / 1000;
-            await page.waitForTimeout(1000);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         // Stop recording and download recorded data.
         await (await page.$('#stop-scratch')).click();
-        await page.waitForTimeout(1000);        // Give StateActionRecorder time to parse data.
+        await new Promise((resolve) => setTimeout(resolve, 1000));        // Give StateActionRecorder time to parse data.
         await (await page.$('#record')).click();
         await (await page.$('#scratch-stage')).focus();
 
@@ -54,7 +54,7 @@ async function open(openNewPage) {
         start = Date.now();
         elapsed = 0;
         while (elapsed <= 10) {
-            page.waitForTimeout(1000);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             elapsed = (Date.now() - start) / 1000;
         }
 
@@ -76,7 +76,7 @@ async function open(openNewPage) {
             if (page.isClosed()) {
                 break;
             }
-            await page.waitForTimeout(1000);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
     }
 }

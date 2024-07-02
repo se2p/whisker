@@ -78,7 +78,6 @@ class WhiskerSubCommand extends Command {
         this.option('-k, --console-forwarded', 'forward browser console output');
         this.option('-l, --live-log', 'print new log output regularly');
         this.option('-o, --live-output-coverage', 'print new coverage output regularly');
-        this.option('--enable-gpu', 'enable hardware GPU support', false);
         this.option(
             '--use-save-states',
             'Whether to reset a project by using save states rather than reloading it.'

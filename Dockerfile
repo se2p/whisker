@@ -41,7 +41,7 @@
 # desired digest of the image instead of a tag. Image tags are dynamic references,
 # and might change over time [1]. Tags of Node.JS along with their digests can be
 # found here [2]. The digest or tag to use can be overridden on the command line with
-# `--build-arg node_version=...`
+# `--build-arg version=...`
 #
 # [1] https://www.ibm.com/docs/en/filenet-p8-platform/5.5.x?topic=deployment-choosing-image-tags-digests
 # [2] https://hub.docker.com/_/node?tab=tags
@@ -50,20 +50,45 @@
 # https://hub.docker.com/layers/satantime/puppeteer-node/18.18-bullseye-slim/images/sha256-0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555?context=explore
 ARG version=@sha256:0a94786a0cd3ba9f43a85caabc1d6ae31143c600be0e68027ff19f1c0b7e9555
 
-# (a) We use a slim base image that already includes Node.JS and a minimal set
+# Whether the image should only include open source GPU drivers for Intel
+# and AMD ("base"), or install drivers for Nvidia Titan Black GPU ("nvidia").
+# The latter breaks support for Intel and AMD. The default is "base", but you
+# can override this via `--build-arg execute=nvidia` on the command line.
+ARG execute=base
+
+# (a) We use a base image that already includes Node.JS and a minimal set
 #     of packages required to run Puppeteer (without packaging Puppeteer
 #     itself – we install the right version of Puppeteer later using yarn).
+#     Also install libraries required for hardware acceleration.
 FROM satantime/puppeteer-node${version} as base
-RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y tini xvfb xauth \
-    && rm -rf /usr/share/icons
+RUN : \
+    && apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y \
+        tini \
+        libegl1 \
+        libgl1-mesa-dri \
+    && rm -rf /usr/share/icons \
+    && :
+
+# Also install proprietary drivers for Nvidia Titan Black GPU if desired.
+# https://wiki.debian.org/NvidiaGraphicsDrivers#Debian_11_.22Bullseye.22
+FROM base as nvidia
+RUN : \
+    && sed -i 's/bullseye main/bullseye main contrib non-free/g' /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y \
+        libgles2 \
+        nvidia-tesla-470-egl-icd \
+    && :
 
 # (b) Install packages only required to build Whisker, not to run it.
 #     We need git because we have a dependency to another git repository
 #     (the Scratch VM).
 FROM base as build
-RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y git
+RUN : \
+    && apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y git \
+    && :
 
 # (c) Copy manifest files and install dependencies. This layer is only rebuilt
 #     when a manifest file changes.
@@ -75,6 +100,7 @@ COPY servant/package.json ./servant/
 COPY whisker-web/package.json ./whisker-web/
 COPY whisker-main/package.json ./whisker-main/
 COPY yarn.lock ./
+COPY .puppeteerrc.cjs ./
 RUN yarn install
 
 # (d) Copy source files (as governed by .dockerignore), build Whisker and drop
@@ -82,8 +108,10 @@ RUN yarn install
 #     necessary for execution. This layer is only rebuilt when a source file
 #     changes.
 COPY ./ ./
-RUN yarn build \
-    && yarn install --production
+RUN : \
+    && yarn build \
+    && yarn install --production \
+    && :
 
 
 #-------------------------------------------------------------------------------
@@ -92,7 +120,7 @@ RUN yarn build \
 
 # We use the base image again to drop build dependencies (installed via `apt-get`)
 # and the yarn build cache from the final image.
-FROM base as execute
+FROM ${execute} as execute
 
 # Signal Node.JS that we are running in a production environment. This leads to some
 # differences compared to a development environment [1], such as logging and caching.
@@ -133,4 +161,4 @@ WORKDIR /whisker/servant/
 # [2] https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
 # [3] https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
 # [4] https://github.com/krallin/tini#existing-entrypoint
-ENTRYPOINT ["tini", "--", "xvfb-run", "/whisker/servant/whisker-docker.sh"]
+ENTRYPOINT ["tini", "--", "/whisker/servant/whisker-docker.sh"]

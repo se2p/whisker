@@ -1,15 +1,19 @@
 const puppeteer = require("puppeteer");
 const logger = require("./logger");
-const {consoleForwarded, headless, whiskerUrl, enableGpu} = require("./cli").opts;
+const {consoleForwarded, headless, whiskerUrl} = require("./cli").opts;
 
 async function openNewBrowser() {
     const args = [
-        enableGpu ? "--enable-gpu" : "--disable-gpu",
-        '--ignore-gpu-blocklist',
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--autoplay-policy=no-user-gesture-required', // https://developer.chrome.com/blog/autoplay/
-        // '--use-gl=desktop', // could be used next to headless, but pages tend to quit unexpectedly
+
+        // Flags required for hardware acceleration, see
+        // https://mirzabilal.com/how-to-enable-hardware-acceleration-on-chrome-chromium-puppeteer-on-aws-in-headless-mode
+        '--use-gl=angle',
+        '--use-angle=gl-egl',
+        '--enable-unsafe-webgpu',
+        '--ignore-gpu-blocklist',
     ];
 
     if (process.env.WHISKER_CONTAINERIZED) {
@@ -17,10 +21,12 @@ async function openNewBrowser() {
         args.push('--disable-dev-shm-usage');
     }
 
+    logger.info("Opening browser...");
+
     const browser = await puppeteer.launch({
         headless,
         args,
-        devtools: process.env.NODE_ENV !== "production",
+        devtools: false,
 
         // If specified, use the given version of Chromium/Chrome instead of the one bundled with Puppeteer.
         // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
@@ -36,9 +42,7 @@ async function openNewBrowser() {
 }
 
 async function logGraphicsFeatureStatus(browser) {
-    if (!enableGpu) {
-        return;
-    }
+    logger.info("Retrieving GPU information...");
 
     let page = null;
 
@@ -74,28 +78,23 @@ async function logGraphicsFeatureStatus(browser) {
                 .filter((h3) => h3.textContent.includes("Graphics Feature Status"))[0]
                 .nextElementSibling.children;
 
-            const status = Array.from(lis).map((li) => ` ${(getStatus(li))} ${li.textContent}`).join("\n");
+            const status = Array.from(lis).map((li) =>
+                ` ${(getStatus(li))} ${li.textContent.replace("*   ", "")}`
+            ).join("\n");
 
             // Retrieve "Driver Information"
 
-            const infoTableRows = Array.from(shadowRoot
-                .getElementById("basic-info")
-                .children[0]
-                .shadowRoot
-                .getElementById("info-view-table")
-                .children);
+            const driverInfo = Array.from(shadowRoot.querySelectorAll("td"))
+                .flatMap((td) => {
+                    const key = td.innerText;
 
-            const driverInfo = infoTableRows.flatMap((row) => {
-                row = row.shadowRoot;
-                const key = row.getElementById("title").innerText;
+                    if (!["GPU0", "GL_VENDOR", "GL_RENDERER", "GL_VERSION"].includes(key)) {
+                        return [];
+                    }
 
-                if (!["GPU0", "GL_VENDOR", "GL_RENDERER", "GL_VERSION"].includes(key)) {
-                    return [];
-                }
-
-                const value = row.getElementById("value").innerText;
-                return [` - ${key}: ${value}`];
-            }).join("\n");
+                    const value = td.nextElementSibling.innerText;
+                    return [` - ${key}: ${value}`];
+                }).join("\n");
 
             return [status, driverInfo];
         });
