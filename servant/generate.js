@@ -61,7 +61,7 @@ async function runGeneticSearch(openNewPage) {
             if (currentLog.includes('uncovered')) {
                 break;
             }
-            await page.waitForTimeout(1000);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
         // Get CSV-Output
         const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
@@ -83,7 +83,7 @@ async function runGeneticSearch(openNewPage) {
             downloadPath: testDownloadDir,
         });
         await (await page.$('.editor-save')).click();
-        await page.waitForTimeout(5000);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
     }
 
     try {

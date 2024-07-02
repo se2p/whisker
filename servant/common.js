@@ -158,7 +158,7 @@ async function runTests(path, openNewPage, index, targetProject) {
             if (currentLog.includes('projectName')) {
                 break;
             }
-            await page.waitForTimeout(1000);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
         // Get CSV-Output
         const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
