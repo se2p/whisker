@@ -43,11 +43,11 @@ for a in "$@"; do
         unset MESA_LOADER_DRIVER_OVERRIDE
         unset GALLIUM_DRIVER
     else
-        WHISKER_ARGS="${WHISKER_ARGS} \"${a}\""
+        WHISKER_ARGS="${WHISKER_ARGS} ${a}"
     fi
 done
 
-set -- "$(eval echo ${WHISKER_ARGS})"
+set -- ${WHISKER_ARGS}
 
 # We support redirection of stdout and stderr to files in a custom directory.
 # This directory must be specified as first argument of this script, followed
