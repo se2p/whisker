@@ -6,6 +6,15 @@ stages:
   - integrationtest
 
 before_script:
+  - |
+      # Test Whisker against a specific commit of the scratch-vm. Can be used
+      # either by pipelines in other projects to trigger a downstream build
+      # while using a specific commit, or when manually triggering a CI pipeline
+      # via the GitLab UI.
+      if [ -n "$SCRATCH_VM_COMMIT" ]; then
+        echo "Changing scratch-vm version to $SCRATCH_VM_COMMIT"
+        sed -i "s|se2/whisker/scratch-vm.git#develop|se2/whisker/scratch-vm.git#$SCRATCH_VM_COMMIT|" */package.json
+      fi
   - yarn install --cache-folder .yarn
 
 cache:
