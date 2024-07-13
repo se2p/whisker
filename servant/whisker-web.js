@@ -113,9 +113,9 @@ async function logGraphicsFeatureStatus(browser) {
 async function forwardJSHandleError(msg) {
     // Based on https://github.com/puppeteer/puppeteer/issues/3397#issuecomment-434970058
     return await Promise.all(msg.args().map((arg) =>
-        arg.executionContext().evaluate((arg) => {
+        arg.evaluate((arg) => {
             if (arg instanceof Error) {
-                return arg.stack;
+                return decodeURIComponent(arg.stack);
             }
             return arg;
         }, arg)));
