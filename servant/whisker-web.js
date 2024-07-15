@@ -2,6 +2,36 @@ const puppeteer = require("puppeteer");
 const logger = require("./logger");
 const {consoleForwarded, headless, whiskerUrl} = require("./cli").opts;
 
+// Workaround for Whisker issue #241
+async function openNewBrowserWithRetry(options) {
+    while (true) {
+        try {
+            const browser = await puppeteer.launch(options);
+
+            try {
+                await Promise.race([
+                    browser.pages(),
+                    new Promise((_resolve, reject) => setTimeout(() => {
+                        reject(new puppeteer.TimeoutError('Timed out after 5 seconds trying to access browser pages'));
+                    }, 5000)),
+                ]);
+            } catch (e) {
+                await browser.close();
+                throw e;
+            }
+
+            // Puppeteer succeeded with opening a new browser.
+            return browser;
+        } catch (e) {
+            if (e instanceof puppeteer.TimeoutError) {
+                logger.warn("Timeout while opening browser! Retrying...");
+            } else {
+                throw e;
+            }
+        }
+    }
+}
+
 async function openNewBrowser() {
     const args = [
         '--no-sandbox',
@@ -23,7 +53,7 @@ async function openNewBrowser() {
 
     logger.info("Opening browser...");
 
-    const browser = await puppeteer.launch({
+    const browser = await openNewBrowserWithRetry({
         headless,
         args,
         devtools: false,
