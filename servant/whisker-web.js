@@ -173,6 +173,9 @@ async function openNewPage(browser) {
         return Promise.reject(error);
     });
 
+    // Set navigation timeout to 5 min
+    page.setDefaultNavigationTimeout(300000);
+
     if (consoleForwarded) {
         // https://github.com/puppeteer/puppeteer/issues/1512#issuecomment-349784408
         // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#class-consolemessage
