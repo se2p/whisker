@@ -18,7 +18,7 @@ before_script:
 
       if [ -n "$SCRATCH_RENDER_COMMIT" ]; then
         echo "Changing scratch-render version to $SCRATCH_RENDER_COMMIT"
-        sed -i "s|se2/whisker/scratch-render.git#develop|se2/whisker/scratch-render.git#$SCRATCH_RENDER_COMMIT|" */package.json
+        sed -i "s|se2/scratch/scratch-render.git#develop|se2/scratch/scratch-render.git#$SCRATCH_RENDER_COMMIT|" */package.json
       fi
   - yarn install --cache-folder .yarn
 
