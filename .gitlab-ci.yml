@@ -13,7 +13,7 @@ before_script:
       # via the GitLab UI.
       if [ -n "$SCRATCH_VM_COMMIT" ]; then
         echo "Changing scratch-vm version to $SCRATCH_VM_COMMIT"
-        sed -i "s|se2/whisker/scratch-vm.git#develop|se2/whisker/scratch-vm.git#$SCRATCH_VM_COMMIT|" */package.json
+        sed -i "s|se2/scratch/scratch-vm.git#develop|se2/whisker/scratch-vm.git#$SCRATCH_VM_COMMIT|" */package.json
       fi
 
       if [ -n "$SCRATCH_RENDER_COMMIT" ]; then
