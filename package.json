@@ -19,6 +19,7 @@
         "build:clean": "yarn --cwd whisker-main build:clean && yarn --cwd whisker-web build:clean",
         "build-main": "yarn --cwd whisker-main build",
         "build-web": "yarn --cwd whisker-web build",
+        "ci:prepare-downstream-build": "node .prepare-downstream-build.js",
         "servant": "yarn --cwd servant node servant.js",
         "test": "yarn --cwd whisker-main test",
         "integrationtest": "yarn --cwd whisker-web test"
