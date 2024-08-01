@@ -7,14 +7,10 @@ const cwd = process.cwd();
 const pipelines = [
     {
         module: "scratch-vm",
-        remote: "se2/scratch/scratch-vm",
-        current: "#develop",
         newRev: process.env["SCRATCH_VM_COMMIT"]
     },
     {
         module: "scratch-render",
-        remote: "se2/scratch/scratch-render",
-        current: "#develop",
         newRev: process.env["SCRATCH_RENDER_COMMIT"]
     }
 ].filter(p => p.newRev !== undefined);
@@ -27,7 +23,7 @@ const packageJsons = require(path.join(cwd, "package.json")).workspaces
     }));
 
 function patch(pipeline, packageJson) {
-    const {module, remote, current, newRev} = pipeline;
+    const {module, newRev} = pipeline;
     const {json, path} = packageJson;
 
     console.log(` - Patching ${path}`);
@@ -38,10 +34,11 @@ function patch(pipeline, packageJson) {
 
     for (const dep of deps) {
         const url = dep[module];
-        dep[module] = url.replace(current, `#${newRev}`);
+        const base = url.includes("#") ? url.split("#")[0] : url;
+        dep[module] = `${base}#${newRev}`;
 
         if (url === dep[module]) {
-            console.error(`Expected URL of ${module} in ${path} to contain ${remote}`);
+            console.error(`Revision of ${module} did not change!`);
             process.exit(1);
         }
     }
