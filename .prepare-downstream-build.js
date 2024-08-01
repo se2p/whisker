@@ -17,9 +17,9 @@ const pipelines = [
 
 const packageJsons = require(path.join(cwd, "package.json")).workspaces
     .map((workspace) => path.join(cwd, workspace, "package.json"))
-    .map((projectJson) => ({
-        path: projectJson,
-        json: require(projectJson)
+    .map((packageJson) => ({
+        path: packageJson,
+        json: require(packageJson)
     }));
 
 function patch(pipeline, packageJson) {
@@ -34,7 +34,7 @@ function patch(pipeline, packageJson) {
 
     for (const dep of deps) {
         const url = dep[module];
-        const base = url.includes("#") ? url.split("#")[0] : url;
+        const base = url.split("#")[0];
         dep[module] = `${base}#${newRev}`;
 
         if (url === dep[module]) {
