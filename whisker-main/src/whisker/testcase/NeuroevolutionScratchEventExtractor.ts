@@ -14,6 +14,7 @@ import {MouseDownForStepsEvent} from "./events/MouseDownForStepsEvent";
 import {TypeNumberEvent} from "./events/TypeNumberEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import Arrays from "../utils/Arrays";
+import {ScratchInterface} from "../scratch/ScratchInterface";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
@@ -107,10 +108,10 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
-                if (value == "_mouse_") {
-                    const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
+                if (value == "_mouse_" && target.visible) {
+                    const currentMousePosition = ScratchInterface.getMousePosition();
                     // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
-                    if (currentMousePosition.x !== target.x || currentMousePosition.y !== target.y) {
+                    if (target.isTouchingPoint(currentMousePosition.x, currentMousePosition.y)) {
                         eventList.push(new MouseMoveToEvent(target.x, target.y, target.sprite.name));
                     }
                     eventList.push(new MouseMoveEvent());
