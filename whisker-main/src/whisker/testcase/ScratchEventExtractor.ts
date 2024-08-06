@@ -43,6 +43,7 @@ import {Scratch3SensingBlocks} from 'scratch-vm/src/blocks/scratch3_sensing';
 import {Scratch3SoundBlocks} from 'scratch-vm/src/blocks/scratch3_sound';
 import Cast from "scratch-vm/src/util/cast";
 import {TypeNumberEvent} from "./events/TypeNumberEvent";
+import {ScratchInterface} from "../scratch/ScratchInterface";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const twgl = require('twgl.js');
@@ -245,10 +246,10 @@ export abstract class ScratchEventExtractor {
                 const value = field.VARIABLE ? field.VARIABLE.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
-                if (value == "_mouse_") {
-                    const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
+                if (value == "_mouse_" && target.visible) {
+                    const currentMousePosition = ScratchInterface.getMousePosition();
                     // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
-                    if (currentMousePosition.x !== target.x || currentMousePosition.y !== target.y) {
+                    if (target.isTouchingPoint(currentMousePosition.x, currentMousePosition.y)) {
                         eventList.push(new MouseMoveToEvent(target.x, target.y, target.sprite.name));
                     }
                     eventList.push(new MouseMoveEvent());

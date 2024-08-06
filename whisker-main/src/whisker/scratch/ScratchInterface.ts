@@ -12,7 +12,12 @@ export class ScratchInterface {
         return new ScratchPosition(target.x, target.y);
     }
 
-    public static getBoundsOfTarget(target: RenderedTarget): { left: number, right: number, top: number, bottom: number } {
+    public static getBoundsOfTarget(target: RenderedTarget): {
+        left: number,
+        right: number,
+        top: number,
+        bottom: number
+    } {
         return target.getBounds();
     }
 
@@ -32,13 +37,15 @@ export class ScratchInterface {
 
     public static getMousePosition(): ScratchPosition {
         const mouse = Container.vm.runtime.ioDevices[`mouse`];
-        return new ScratchPosition(mouse._x, mouse._y);
+        return new ScratchPosition(mouse._clientX, mouse._clientY);
     }
 
     public static setMousePosition(position: ScratchPosition): void {
         const mouse = Container.vm.runtime.ioDevices[`mouse`];
-        mouse._x = position.x;
-        mouse._y = position.y;
+        mouse._scratchX = position.x;
+        mouse._scratchY = position.y;
+        mouse._clientX = position.x;
+        mouse._clientY = position.y;
     }
 
     /**
@@ -115,7 +122,7 @@ export class ScratchInterface {
         };
     }
 
-    public static getStageDiameter(): number{
+    public static getStageDiameter(): number {
         const bounds = this.getStageBounds();
         return Math.hypot(bounds.top - bounds.bottom, bounds.right - bounds.left);
     }

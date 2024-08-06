@@ -22,6 +22,8 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
+import {ScratchInterface} from "../../scratch/ScratchInterface";
+import {ScratchPosition} from "../../scratch/ScratchPosition";
 
 
 export class MouseMoveEvent extends ScratchEvent {
@@ -36,7 +38,7 @@ export class MouseMoveEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.mouseMove(this._x, this._y);
+        ScratchInterface.setMousePosition(new ScratchPosition(this._x, this._y));
     }
 
     public toJavaScript(): string {
