@@ -111,7 +111,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 if (value == "_mouse_" && target.visible) {
                     const currentMousePosition = ScratchInterface.getMousePosition();
                     // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
-                    if (target.isTouchingPoint(currentMousePosition.x, currentMousePosition.y)) {
+                    if (!target.isTouchingPoint(currentMousePosition.x, currentMousePosition.y)) {
                         eventList.push(new MouseMoveToEvent(target.x, target.y, target.sprite.name));
                     }
                     eventList.push(new MouseMoveEvent());
