@@ -44,8 +44,10 @@ export class ScratchInterface {
         const mouse = Container.vm.runtime.ioDevices[`mouse`];
         mouse._scratchX = position.x;
         mouse._scratchY = position.y;
-        mouse._clientX = position.x;
-        mouse._clientY = position.y;
+
+        const clientCoordinates = Container.vmWrapper.getClientCoords(position.x, position.y);
+        mouse._clientX = clientCoordinates.x;
+        mouse._clientY = clientCoordinates.y;
     }
 
     /**
