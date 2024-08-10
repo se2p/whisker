@@ -23,13 +23,13 @@ describe('User model', () => {
     });
 
     test("User model: coverage without run", () => {
-        let edges = {};
+        const edges = {};
         edges["1"] = new UserModelEdge("1", "label", "graphID", "from", "to", -1, -1);
         edges["2"] = new UserModelEdge("2", "label", "graphID", "from", "to", 1000, -1);
         edges["3"] = new UserModelEdge("3", "label", "graphID", "from", "to", -1, 200);
         edges["4"] = new UserModelEdge("4", "label", "graphID", "from", "to", 1, 200);
 
-        let p = new UserModel("id", "start", {start: new ModelNode("start", "label")},
+        const p = new UserModel("id", "start", {start: new ModelNode("start", "label")},
             edges, [], []);
 
         expect(() => {
@@ -38,8 +38,8 @@ describe('User model', () => {
     });
 
     test("User model: functions", () => {
-        let p = new UserModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
-        expect(p.stopped() == false);
+        const p = new UserModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
+        expect(p.stopped()).toBe(false);
         expect(() => {
             p.reset();
         }).not.toThrow();
@@ -47,7 +47,7 @@ describe('User model', () => {
             p.simplifyForSave();
         }).not.toThrow();
         p.setTransitionsStartTo(3);
-        expect(p.lastTransitionStep == 3);
-        expect(p.secondLastTransitionStep == 3);
+        expect(p.lastTransitionStep).toBe(3);
+        expect(p.secondLastTransitionStep).toBe(3);
     });
 });

@@ -188,7 +188,7 @@ describe('ModelUtil tests', function () {
     });
 
     test("ModelUtil getDependencies variable 2", () => {
-        let func = "(t) => {" +
+        const func = "(t) => {" +
             "let sprite = t.getSprite('apple');" +
             "let variable = sprite.getVariable('test');" +
             "}";
@@ -200,7 +200,7 @@ describe('ModelUtil tests', function () {
     });
 
     test("ModelUtil getDependencies two sprites", () => {
-        let func = "(t) => {" +
+        const func = "(t) => {" +
             "let sprite = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');" +
             "let variable = sprite.getVariable('test');}";
@@ -211,7 +211,7 @@ describe('ModelUtil tests', function () {
     });
 
     test("ModelUtil getDependencies both attribute and variable", () => {
-        let func = "(t) => {" +
+        const func = "(t) => {" +
             "let x = t.getSprite('apple').x;" +
             "sprite = t.getSprite('bananas');" +
             "let variable = sprite.getVariable('test');}";
@@ -222,7 +222,7 @@ describe('ModelUtil tests', function () {
     });
 
     test("ModelUtil getDependencies nothing", () => {
-        let func = "(t) => {" +
+        const func = "(t) => {" +
             "let x = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');}";
         expect(ModelUtil.getDependencies(func)).toStrictEqual({
@@ -252,7 +252,7 @@ describe('ModelUtil tests', function () {
     });
 
     test("ModelUtil getDependencies crossed use", () => {
-        let func = "(t) => {" +
+        const func = "(t) => {" +
             "let apple = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');" +
             "let variable = sprite.getVariable('test');" +
@@ -264,7 +264,7 @@ describe('ModelUtil tests', function () {
     });
 
     test("ModelUtil getDependencies crossed use 2", () => {
-        let func = "(t) => {" +
+        const func = "(t) => {" +
             "let apple = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');" +
             "let variable = sprite.getVariable('test');" +

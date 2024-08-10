@@ -23,22 +23,33 @@ describe('Program model', () => {
     });
 
     test("Program model: coverage without run", () => {
-        let edges = {};
+        const edges = {};
         edges["1"] = new ProgramModelEdge("1", "label", "graphID", "from", "to", -1, -1);
         edges["2"] = new ProgramModelEdge("2", "label", "graphID", "from", "to", 1000, -1);
         edges["3"] = new ProgramModelEdge("3", "label", "graphID", "from", "to", -1, 200);
         edges["4"] = new ProgramModelEdge("4", "label", "graphID", "from", "to", 1, 200);
 
-        let p = new ProgramModel("id", "start", {start: new ModelNode("start", "label")},
+        const p = new ProgramModel("id", "start", {start: new ModelNode("start", "label")},
             edges, [], []);
-        let coverage = p.getCoverageCurrentRun();
-        expect(coverage.covered.length == 0);
-        expect(coverage.total == 4);
+        const coverage = p.getCoverageCurrentRun();
+        expect(coverage.covered.length).toBe(0);
+        expect(coverage.total).toBe(4);
 
-        let totalCoverage = p.getTotalCoverage();
-        expect(totalCoverage.covered.length == 0);
-        expect(totalCoverage.total == 4);
-        expect(totalCoverage.missedEdges.length == 0);
+        const totalCoverage = p.getTotalCoverage();
+        expect(totalCoverage.covered.length).toBe(0);
+        expect(totalCoverage.total).toBe(4);
+        // expect(totalCoverage.missedEdges.length).toBe(0); // original test tested for equality with 0 instead of 4.
+        expect(totalCoverage.missedEdges.length).toBe(4);
+        /*
+        This should be a bug in the test case. The code of `ProgramModel.getTotalCoverage()` groups the keys in two set.
+        One set is the covered set and the other the missed edges set. Covered is the amount of total unique keys/edges,
+        covered are the keys/edges that are covered and missedEdges are those that are not covered. Each is added to
+        either one of these maps in an if-else statement. Since there should be no duplicate keys (might be wrong due
+        to not being familiar with TypeScript syntax) the following should hold:
+        `totalCoverage.total == totalCoverage.covered.length + totalCoverage.missedEdges.length`
+        Therefore if `totalCoverage.covered.length == 0 && totalCoverage.total == 4` then
+        `totalCoverage.covered.length` should evaluate to `4`.
+        */
 
         expect(() => {
             p.simplifyForSave();
@@ -46,9 +57,9 @@ describe('Program model', () => {
     });
 
     test("Program model: functions", () => {
-        let p = new ProgramModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
-        expect(p.stopped() == false);
-        expect(p.haltAllModels() == false);
+        const p = new ProgramModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
+        expect(p.stopped()).toBe(false);
+        expect(p.haltAllModels()).toBe(false);
         expect(() => {
             p.reset();
         }).not.toThrow();
@@ -56,7 +67,7 @@ describe('Program model', () => {
             p.simplifyForSave();
         }).not.toThrow();
         p.setTransitionsStartTo(3);
-        expect(p.secondLastTransitionStep == 3);
-        expect(p.lastTransitionStep == 3);
+        expect(p.secondLastTransitionStep).toBe(3);
+        expect(p.lastTransitionStep).toBe(3);
     });
 });

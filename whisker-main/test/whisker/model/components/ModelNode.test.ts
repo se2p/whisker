@@ -9,12 +9,12 @@ describe('Model node', () => {
         expect(() => {
             new ModelNode(undefined, "label");
         }).toThrow();
-        let node = new ModelNode("id", undefined);
-        expect(node.label == "id");
+        const node = new ModelNode("id", undefined);
+        expect(node.label).toBe("id");
     });
 
     test("Model node functions", () => {
-        let edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", 1000, -1);
+        const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", 1000, -1);
         let node = new ModelNode("id", "label");
         expect(() => {
             node.addOutgoingEdge(edge);
@@ -23,7 +23,7 @@ describe('Model node', () => {
         expect(() => {
             node.addOutgoingEdge(edge);
         }).not.toThrow();
-        expect(node.edges.length == 1);
+        expect(node.edges.length).toBe(1);
 
         expect(() => {
             node.reset();

@@ -18,11 +18,11 @@ describe('Condition', () => {
         expect(() => {
             new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"]);
         }).not.toThrow();
-        let c = new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"]);
-        expect(c.id == "test");
-        expect(c.negated == true);
-        expect(c.name == CheckName.BackgroundChange);
-        expect(c.args[0] == "test");
+        const c = new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"]);
+        expect(c.id).toBe("test");
+        expect(c.negated).toBe(true);
+        expect(c.name).toBe(CheckName.BackgroundChange);
+        expect(c.args[0]).toBe("test");
 
         expect(() => {
             c.simplifyForSave();
@@ -227,7 +227,7 @@ describe('Condition', () => {
         }).not.toThrow();
 
         expect(() => {
-            let condition = new Condition("id", "edgeID", CheckName.AttrChange, false, ["test", "attr", "-"]);
+            const condition = new Condition("id", "edgeID", CheckName.AttrChange, false, ["test", "attr", "-"]);
             condition.check(1, 1);
         }).toThrow();
     });
