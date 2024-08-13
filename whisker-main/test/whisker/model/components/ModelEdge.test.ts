@@ -37,24 +37,7 @@ describe('Model edges', () => {
 
     test("Model edge functions", () => {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", -1, -1);
-
-        // expect(edge.lastTransition).toBe(0); // this makes the test fail which is what was "supposed" to be tested.
-        expect(edge.lastTransition).toBe(undefined); // with this the test passed -> should probably be removed
-        expect(edge._lastTransition).toBe(0); // with this the test also passes.
-        /*
-        The problem here is that instead of the attribute `ProgramModelEdge._lastTransition` instead the set method
-        `ProgramModelEdge.lastTransition` is tested for equality with 0. I suggest the intent was to check if the
-        attribute `ProgramModelEdge._lastTransition` has the value `0` which it does have during runtime. I am not too
-        familiar with TypeScript, so I am not sure what to do in this case. My suggestion is that here again the test
-        should be updated to check for equality of
-                `ProgramModelEdge._lastTransition`
-        and not `ProgramModelEdge.lastTransition`.
-        When checking for occurrences of both the set method and the attribute it seems like in all other cases they
-        were used as intended. The set method is only called directly followed by the assignment operator and the
-        attribute only in expressions where the value of the attribute is queried. This test is the only case where
-        this did not match (at least according to the WebStorm "show usages" feature)
-        */
-
+        expect(edge.lastTransition).toBe(0);
         expect(edge.getEndNodeId()).toBe("to");
         const condition = new Condition("id","label", CheckName.BackgroundChange, false, ["test"]);
         edge.addCondition(condition);
