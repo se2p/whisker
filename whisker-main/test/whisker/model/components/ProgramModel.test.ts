@@ -38,18 +38,7 @@ describe('Program model', () => {
         const totalCoverage = p.getTotalCoverage();
         expect(totalCoverage.covered.length).toBe(0);
         expect(totalCoverage.total).toBe(4);
-        // expect(totalCoverage.missedEdges.length).toBe(0); // original test tested for equality with 0 instead of 4.
-        expect(totalCoverage.missedEdges.length).toBe(4);
-        /*
-        This should be a bug in the test case. The code of `ProgramModel.getTotalCoverage()` groups the keys in two set.
-        One set is the covered set and the other the missed edges set. Covered is the amount of total unique keys/edges,
-        covered are the keys/edges that are covered and missedEdges are those that are not covered. Each is added to
-        either one of these maps in an if-else statement. Since there should be no duplicate keys (might be wrong due
-        to not being familiar with TypeScript syntax) the following should hold:
-        `totalCoverage.total == totalCoverage.covered.length + totalCoverage.missedEdges.length`
-        Therefore if `totalCoverage.covered.length == 0 && totalCoverage.total == 4` then
-        `totalCoverage.covered.length` should evaluate to `4`.
-        */
+    expect(totalCoverage.missedEdges.length).toBe(4);
 
         expect(() => {
             p.simplifyForSave();
