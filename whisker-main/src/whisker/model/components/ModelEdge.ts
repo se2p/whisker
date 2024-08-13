@@ -118,7 +118,7 @@ export abstract class ModelEdge {
     }
 
     get lastTransition(): number {
-        return this._lastTransition
+        return this._lastTransition;
     }
 
 
