@@ -205,18 +205,18 @@ describe('Effect', () => {
         }).not.toThrow();
 
         expect(() => {
-            let effect = new Effect("id", "edgeID", CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+            const effect = new Effect("id", "edgeID", CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
             effect.contradicts(null);
         }).toThrow();
 
         expect(() => {
-            let effect = new Effect("id", "edgeID", CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+            const effect = new Effect("id", "edgeID", CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
             effect.check(0, 0);
         }).toThrow();
     });
 
     test("contradictions I", () => {
-        let effects = [];
+        const effects = [];
         effects.push(new Effect("id", "edgeID", CheckName.Output, true, ["sprite", "hi"]));
         effects.push(new Effect("id", "edgeID", CheckName.VarChange, true, ["test", "var", "+"]));
         effects.push(new Effect("id", "edgeID", CheckName.AttrChange, true, ["test", "attr", "-"]));
@@ -249,8 +249,8 @@ describe('Effect', () => {
     });
 
     test("contradictions random value", () => {
-        let randomValue = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite","x"]);
-        let other = new Effect("id", "edgeID", CheckName.AttrChange, false, ["sprite","x","+"]);
+        const randomValue = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite","x"]);
+        const other = new Effect("id", "edgeID", CheckName.AttrChange, false, ["sprite","x","+"]);
         expect(randomValue.contradicts(other)).toBeFalsy();
         expect(other.contradicts(randomValue)).toBeFalsy();
 
@@ -268,7 +268,7 @@ describe('Effect', () => {
     });
 
     test("contradictions output", () => {
-        let output = new Effect("id", "edgeID", CheckName.Output, true, ["sprite", "hi"]);
+        const output = new Effect("id", "edgeID", CheckName.Output, true, ["sprite", "hi"]);
         let output2 = new Effect("id", "edgeID", CheckName.Output, true, ["sprite1", "hi"]);
         expect(output.contradicts(output2)).toBeFalsy();
         output2 = new Effect("id", "edgeID", CheckName.Output, true, ["sprite", "hi"]);
@@ -278,7 +278,7 @@ describe('Effect', () => {
     });
 
     test("contradictions function", () => {
-        let functionE = new Effect("id", "edgeID", CheckName.Function, true, ["test"]);
+        const functionE = new Effect("id", "edgeID", CheckName.Function, true, ["test"]);
         let functionE2 = new Effect("id", "edgeID", CheckName.Function, true, ["testblabla"]);
         expect(functionE.contradicts(functionE2)).toBeFalsy();
         functionE2 = new Effect("id", "edgeID", CheckName.Function, true, ["test"]);
@@ -286,7 +286,7 @@ describe('Effect', () => {
     });
 
     test("contradictions background", () => {
-        let background = new Effect("id", "edgeID", CheckName.BackgroundChange, true, ["test"]);
+        const background = new Effect("id", "edgeID", CheckName.BackgroundChange, true, ["test"]);
         let background2 = new Effect("id", "edgeID", CheckName.BackgroundChange, true, ["test"]);
         expect(background.contradicts(background2)).toBeFalsy();
         background2 = new Effect("id", "edgeID", CheckName.BackgroundChange, true, ["test2"]);
@@ -786,7 +786,7 @@ describe('Effect', () => {
     });
 
     test("contradiction: click", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.Click, true, ["sprite1"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.Click, true, ["sprite1"]);
         let effect2 = new Effect("id", "edgeID", CheckName.Click, true, ["sprite2"]);
         expect(effect1.contradicts(effect2)).toBeTruthy();
         expect(effect2.contradicts(effect1)).toBeTruthy();
@@ -796,7 +796,7 @@ describe('Effect', () => {
     });
 
     test("contradiction: key", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.Key, true, ["left"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.Key, true, ["left"]);
         let effect2 = new Effect("id", "edgeID", CheckName.Key, true, ["right"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
@@ -806,7 +806,7 @@ describe('Effect', () => {
     });
 
     test("contradiction: sprite color", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.SpriteColor, true, ["sprite1", "0", "0", "0"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.SpriteColor, true, ["sprite1", "0", "0", "0"]);
         let effect2 = new Effect("id", "edgeID", CheckName.SpriteColor, true, ["sprite2", "0", "0", "0"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
@@ -817,7 +817,7 @@ describe('Effect', () => {
     });
 
     test("contradiction: sprite touching", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["sprite1", "sprite2"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["sprite1", "sprite2"]);
         let effect2 = new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["sprite2", "sprite3"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
@@ -827,7 +827,7 @@ describe('Effect', () => {
     });
 
     test("contradiction: expr", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.Expr, true, ["whatever"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.Expr, true, ["whatever"]);
         let effect2 = new Effect("id", "edgeID", CheckName.Expr, true, ["whatever2"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
@@ -838,7 +838,7 @@ describe('Effect', () => {
 
     // actually an effect with probability result is quite dumb to have....
     test("contradiction: probability", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.Probability, true, ["1"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.Probability, true, ["1"]);
         let effect2 = new Effect("id", "edgeID", CheckName.Probability, true, ["9"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
@@ -905,7 +905,7 @@ describe('Effect', () => {
     });
 
     test("contradiction: expr", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
         let effect2 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite2"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
@@ -915,7 +915,7 @@ describe('Effect', () => {
     });
 
     test("contradiction negation", () => {
-        let effect1 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
+        const effect1 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
         let effect2 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         effect2 = new Effect("id", "edgeID", CheckName.TouchingEdge, false, ["sprite2"]);

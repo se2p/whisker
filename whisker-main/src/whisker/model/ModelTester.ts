@@ -43,6 +43,9 @@ export class ModelTester extends EventEmitter {
             this.onTestEndModels = result.onTestEndModels;
             this.emit(ModelTester.MODEL_ON_LOAD);
         } catch (e) {
+            this.programModels = [];
+            this.userModels = [];
+            this.onTestEndModels = [];
             this.emit(ModelTester.MODEL_LOAD_ERROR, e.message);
             throw e;
         }

@@ -117,6 +117,11 @@ export abstract class ModelEdge {
         this._lastTransition = transition;
     }
 
+    get lastTransition(): number {
+        return this._lastTransition;
+    }
+
+
     private getTimeLimitFailedOutput(condition: Condition, t: TestDriver) {
         if (this.forceTestAtSteps != -1 && this.forceTestAtSteps <= t.getTotalStepsExecuted()) {
             return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt);

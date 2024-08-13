@@ -3,30 +3,30 @@ import {ModelTester} from "../../../src/whisker/model/ModelTester";
 describe('ModelTester', () => {
     test("Model Tester Load models", () => {
         let modelTester = new ModelTester();
-        expect(modelTester.programModelsLoaded() == false);
-        expect(modelTester.someModelLoaded() == false);
+        expect(modelTester.programModelsLoaded()).toBe(false);
+        expect(modelTester.someModelLoaded()).toBe(false);
         expect(() => {
             modelTester.load(model1);
         }).not.toThrow();
-        expect(modelTester.programModelsLoaded() == true);
-        expect(modelTester.userModelsLoaded() == false);
-        expect(modelTester.someModelLoaded() == true);
+        expect(modelTester.programModelsLoaded()).toBe(true);
+        expect(modelTester.userModelsLoaded()).toBe(false);
+        expect(modelTester.someModelLoaded()).toBe(true);
         expect(() => {
             modelTester.load(faultyModel);
         }).toThrow();
-        expect(modelTester.programModelsLoaded() == false);
-        expect(modelTester.someModelLoaded() == false);
+        expect(modelTester.programModelsLoaded()).toBe(false);
+        expect(modelTester.someModelLoaded()).toBe(false);
         expect(() => {
             modelTester.load(userModel);
         }).not.toThrow();
-        expect(modelTester.programModelsLoaded() == false);
-        expect(modelTester.userModelsLoaded() == true);
-        expect(modelTester.someModelLoaded() == true);
-        expect(modelTester.running() == false);
+        expect(modelTester.programModelsLoaded()).toBe(false);
+        expect(modelTester.userModelsLoaded()).toBe(true);
+        expect(modelTester.someModelLoaded()).toBe(true);
+        expect(modelTester.running()).toBe(false);
     });
 
     test("ModelTester get all models", () => {
-        let modelTester = new ModelTester();
+        const modelTester = new ModelTester();
 
         modelTester.load(modelAll);
         expect(() => {
@@ -35,7 +35,7 @@ describe('ModelTester', () => {
     });
 
     test("Model Tester coverages", () => {
-        let modelTester = new ModelTester();
+        const modelTester = new ModelTester();
         modelTester.load(modelAll);
         expect(() => {
             modelTester.getTotalCoverage();
