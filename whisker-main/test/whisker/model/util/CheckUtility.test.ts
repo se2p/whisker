@@ -6,8 +6,8 @@ describe('CheckUtility', () => {
     test("split event strings", () => {
         let eventString = "SpriteColor:Sprite1:255:0:0";
         let result = CheckUtility.splitEventString(eventString);
-        expect(result.name == CheckName.SpriteColor);
-        expect(result.negated == false);
+        expect(result.name).toBe(CheckName.SpriteColor);
+        expect(result.negated).toBe(false);
         expect(result.args).toEqual(["Sprite1", "255", "0", "0"]);
 
         eventString = "SpriteTouching:Sprite1:Sprite2";
