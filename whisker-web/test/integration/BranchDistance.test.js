@@ -131,7 +131,7 @@ describe('Fitness tests', () => {
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());
         const log = await readFitnessLog();
-        await expect(log.uncoveredBlocks.length === 2);
+        await expect(log.uncoveredBlocks.length === 2).toBe(true);
         const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;

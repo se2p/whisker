@@ -138,6 +138,6 @@ describe("BiasedVariableLengthMutation Test", () => {
             }
         }
 
-        expect(sorted && notAllTheSame);
+        expect(sorted && notAllTheSame).toBe(true);
     });
 });
