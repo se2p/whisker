@@ -2,7 +2,7 @@ import {ModelTester} from "../../../src/whisker/model/ModelTester";
 
 describe('ModelTester', () => {
     test("Model Tester Load models", () => {
-        let modelTester = new ModelTester();
+        const modelTester = new ModelTester();
         expect(modelTester.programModelsLoaded()).toBe(false);
         expect(modelTester.someModelLoaded()).toBe(false);
         expect(() => {
