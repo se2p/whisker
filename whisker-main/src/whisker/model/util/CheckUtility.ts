@@ -204,7 +204,7 @@ export class CheckUtility extends EventEmitter {
     /**
      * Get a string defining the event of a listener.
      */
-    static getEventString(name: CheckName, negated: boolean, ...args): string {
+    static getEventString(name: CheckName, negated: boolean, ...args:ArgType[]): string {
         let string = negated ? "!" + name : name;
         for (let i = 0; i < args.length; i++) {
             string += ":" + args[i];

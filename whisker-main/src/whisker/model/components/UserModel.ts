@@ -36,8 +36,8 @@ export class UserModel {
     protected readonly nodes: Record<string,ModelNode>;
     protected readonly edges: Record<string,UserModelEdge>;
 
-    lastTransitionStep: number = 0;
-    secondLastTransitionStep: number = 0;
+    lastTransitionStep = 0;
+    secondLastTransitionStep = 0;
     stepNbrOfProgramEnd: number;
     protected currentState: ModelNode;
 
