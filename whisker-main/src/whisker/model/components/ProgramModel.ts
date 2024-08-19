@@ -1,8 +1,27 @@
-import {ModelNode} from "./ModelNode";
-import {ModelEdge, ProgramModelEdge} from "./ModelEdge";
+import {ModelNode, SimpleModelNode} from "./ModelNode";
+import {ModelEdge, ProgramModelEdge, SimpleProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {start} from "repl";
+
+export interface CoverageResult {
+    total: number;
+    covered: string[]
+}
+
+export interface ExtendedCoverageResult extends CoverageResult {
+    total: number;
+    covered: string[];
+    missedEdges: string[];
+}
+
+export interface SimpleProgramModel {
+    id: string;
+    nodes: SimpleModelNode[];
+    edges: SimpleProgramModelEdge[];
+    startNodeId: string;
+    stopNodeIds: string[];
+    stopAllNodeIds: string[]
+}
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -24,14 +43,14 @@ export class ProgramModel {
     protected readonly stopNodeIds: string[];
     protected readonly stopAllNodeIds: string[];
 
-    protected readonly nodes: { [key: string]: ModelNode };
-    protected readonly edges: { [key: string]: ProgramModelEdge };
+    protected readonly nodes: Record<string, ModelNode>;
+    protected readonly edges: Record<string, ProgramModelEdge>;
 
-    protected coverageCurrentRun: { [key: string]: boolean } = {};
-    protected coverageTotal: { [key: string]: boolean } = {};
+    protected coverageCurrentRun: Record<string, boolean> = {};
+    protected coverageTotal: Record<string, boolean> = {};
 
-    lastTransitionStep: number = 0;
-    secondLastTransitionStep: number = 0;
+    lastTransitionStep = 0;
+    secondLastTransitionStep = 0;
     programEndStep: number;
     currentState: ModelNode;
 
@@ -101,8 +120,8 @@ export class ProgramModel {
     /**
      * Get the coverage of this model of the last run.
      */
-    getCoverageCurrentRun() {
-        let covered = [];
+    getCoverageCurrentRun(): CoverageResult {
+        const covered: string[] = [];
         for (const key in this.coverageCurrentRun) {
             if (this.coverageCurrentRun[key]) {
                 covered.push(key);
@@ -117,9 +136,9 @@ export class ProgramModel {
     /**
      * Get the coverage of all test runs with this model. Resets the total coverage.
      */
-    getTotalCoverage(): {covered: ProgramModelEdge[], total: number, missedEdges: ProgramModelEdge[]} {
-        let covered = [];
-        let missedEdges = [];
+    getTotalCoverage(): ExtendedCoverageResult {
+        const covered: string[] = [];
+        const missedEdges: string[] = [];
         for (const key in this.edges) {
             if (this.coverageTotal[key]) {
                 covered.push(key);
@@ -138,14 +157,14 @@ export class ProgramModel {
     /**
      * Whether the model is in a stop state.
      */
-    stopped() {
+    stopped(): boolean {
         return this.currentState.isStopNode;
     }
 
     /**
      * Whether all models should stop.
      */
-    haltAllModels() {
+    haltAllModels(): boolean {
         return this.currentState.isStopAllNode;
     }
 
@@ -167,33 +186,33 @@ export class ProgramModel {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
+    registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(cu, testDriver, caseSensitive);
         });
     }
 
-    setTransitionsStartTo(steps: number) {
+    setTransitionsStartTo(steps: number): void {
         this.lastTransitionStep = steps;
         this.secondLastTransitionStep = steps;
     }
 
-    simplifyForSave() {
-        let edges = [];
-        for (let edgesKey in this.edges) {
-            edges.push(this.edges[edgesKey].simplifyForSave());
-        }
-        let nodes = [];
-        for (let nodesKey in this.nodes) {
-            nodes.push(this.nodes[nodesKey].simplifyForSave());
-        }
+    simplifyForSave(): SimpleProgramModel {
         return {
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: nodes,
-            edges: edges
+            nodes: ProgramModel.mapValuesToArray(this.nodes, (node: ModelNode) => node.simplifyForSave()),
+            edges: ProgramModel.mapValuesToArray(this.edges, (node: ProgramModelEdge) => node.simplifyForSave())
         };
+    }
+
+    public static mapValuesToArray<A, B>(map: Record<string | number | symbol, A>, mapper: (a: A) => B): B[] {
+        const ret: B[] = [];
+        for (const value in map) {
+            ret.push(mapper(map[value]));
+        }
+        return ret;
     }
 }

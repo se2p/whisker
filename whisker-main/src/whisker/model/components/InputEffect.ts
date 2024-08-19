@@ -5,6 +5,7 @@ import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
+import {ArgType} from "./Check";
 
 export enum InputEffectName {
     InputClickSprite = "InputClickSprite", // sprite name
@@ -15,6 +16,12 @@ export enum InputEffectName {
     InputText = "InputText" // answer| text
 }
 
+export interface SimpleInputEffect {
+    id: string
+    name: InputEffectName;
+    args: ArgType[];
+}
+
 /**
  * Class for giving the Scratch VM immediate inputs.
  */
@@ -22,7 +29,7 @@ export class InputEffect {
     id: string;
     name: InputEffectName;
     private inputEffect: (t: TestDriver) => void;
-    private readonly args: any[];
+    private readonly args: ArgType[];
 
     /**
      * Get an input effect. Checks the length of the arguments based on the input type.
@@ -30,7 +37,7 @@ export class InputEffect {
      * @param name Type of the input effect
      * @param args Arguments for this input effect.
      */
-    constructor(id: string, name: InputEffectName, args: any[]) {
+    constructor(id: string, name: InputEffectName, args: ArgType[]) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -38,7 +45,8 @@ export class InputEffect {
         this.id = id;
         this.args = args;
 
-        let _testArgs = function (length) {
+        // Todo: refactor this code
+        let _testArgs = function (length: number) {
             if (args.length != length) {
                 return false;
             }
@@ -66,25 +74,25 @@ export class InputEffect {
                 break;
         }
         if (!isOK) {
-            throw  new Error("Wrong number of arguments for input effect " + name + ".");
+            throw new Error("Wrong number of arguments for input effect " + name + ".");
         }
     }
 
     /**
      * Input the saved input effects of this instance to the test driver.
      */
-    inputImmediate(t: TestDriver) {
+    inputImmediate(t: TestDriver): void {
         this.inputEffect(t);
     }
 
     /**
      * Register the test driver and convert the saved input arguments to an executable input function for fast input.
      */
-    registerComponents(t: TestDriver, caseSensitive: boolean) {
+    registerComponents(t: TestDriver, caseSensitive: boolean): void {
         this.inputEffect = this.getInputDataFunction(t, caseSensitive, this.args);
     }
 
-    simplifyForSave() {
+    simplifyForSave(): SimpleInputEffect {
         return {
             id: this.id,
             name: this.name,
@@ -92,7 +100,7 @@ export class InputEffect {
         };
     }
 
-    private getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: any[]) {
+    private getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: ArgType[]) {
         switch (this.name) {
             case InputEffectName.InputKey:
                 return () => {
@@ -106,7 +114,7 @@ export class InputEffect {
                     mouseEvent.apply();
                 };
             case InputEffectName.InputText:
-                let textEvent = new TypeTextEvent(arg[0]);
+                let textEvent = new TypeTextEvent(String(arg[0]));
                 return () => {
                     textEvent.apply();
                 };
@@ -122,7 +130,7 @@ export class InputEffect {
                     clickStageEvent.apply();
                 };
             case InputEffectName.InputClickSprite:
-                let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, arg[0]);
+                let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, String(arg[0]));
                 let clickSpriteEvent = new ClickSpriteEvent(sprite._target);
                 return () => {
                     clickSpriteEvent.apply();
