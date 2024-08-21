@@ -98,6 +98,11 @@ module.exports = [
             path: path.resolve(__dirname, 'dist'),
             filename: '[name].js',
         },
+        devServer: {
+            static: path.resolve(__dirname, 'dist'),
+            host: 'localhost',
+            port: process.env.PORT || 8605
+        },
         module: {
             rules: [
                 {

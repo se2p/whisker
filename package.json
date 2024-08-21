@@ -14,6 +14,7 @@
         "servant"
     ],
     "scripts": {
+        "start": "yarn --cwd whisker-web start",
         "build": "yarn --cwd whisker-main build && yarn --cwd whisker-web build",
         "build:watch": "concurrently --names \"whisker-main,whisker-web\" \"yarn --cwd whisker-main build:watch\" \"yarn --cwd whisker-web build:watch\"",
         "build:clean": "yarn --cwd whisker-main build:clean && yarn --cwd whisker-web build:clean",
