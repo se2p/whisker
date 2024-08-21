@@ -23,6 +23,8 @@ interface Expression extends Dependencies {
     expr: string
 }
 
+type ParamType = string | number | boolean | string[];
+
 export abstract class ModelUtil {
 
     private static getRegexParts(caseSensitive: boolean, regex: string): string[] {
@@ -170,7 +172,7 @@ export abstract class ModelUtil {
     /**
      * Test whether a value is a number.
      */
-    static testNumber(value: string | number | string[]): number {
+    static testNumber(value: ParamType): number {
         if (value == null || value === '' || isNaN(Number(value.toString()))) {
             throw getNotANumericalValueError(value.toString());
         }
@@ -183,24 +185,34 @@ export abstract class ModelUtil {
      * @param value2 Value on the right side of the comparison equation.
      * @param comparison Comparison mode, =|==, <, <=, >=, >
      */
-    static compare(value1: string | number, value2: string | number, comparison: string): boolean {
+    static compare(value1: ParamType, value2: ParamType, comparison: string): boolean {
         if (value1 == undefined || value2 == undefined) {
             throw new Error("comparison with undefined value");
         }
         if (comparison === "=" || comparison === "==") {
+            if (value1 == "true") {
+                value1 = true;
+            } else if (value1 == "false") {
+                value1 = false;
+            }
+            if (value2 == "true") {
+                value2 = true;
+            } else if (value2 == "false") {
+                value2 = false;
+            }
             return value1 == value2;
         }
-        const value1Number: number = this.testNumber(value1);
-        const value2Number: number = this.testNumber(value2);
+        value1 = this.testNumber(value1);
+        value2 = this.testNumber(value2);
 
         if (comparison === ">") {
-            return value1Number > value2Number;
+            return value1 > value2;
         } else if (comparison === "<") {
-            return value1Number < value2Number;
+            return value1 < value2;
         } else if (comparison === "<=") {
-            return value1Number <= value2Number;
+            return value1 <= value2;
         } else if (comparison === ">=") {
-            return value1Number >= value2Number;
+            return value1 >= value2;
         }
 
         throw getComparisonNotKnownError(comparison);
