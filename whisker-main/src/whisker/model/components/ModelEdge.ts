@@ -249,7 +249,7 @@ export class ProgramModelEdge extends ModelEdge {
     override simplifyForSave(): SimpleProgramModelEdge {
         return {
             ...super.simplifyForSave(),
-            effects: this.effects.map((effect: Effect) => effect.simplifyForSave())
+            effects: this.effects.map(effect => effect.simplifyForSave())
         };
     }
 
@@ -363,7 +363,7 @@ export class UserModelEdge extends ModelEdge {
     override simplifyForSave(): SimpleUserModelEdge {
         return {
             ...super.simplifyForSave(),
-            effects: this.inputEffects.map((value: InputEffect) => value.simplifyForSave())
+            effects: this.inputEffects.map(value => value.simplifyForSave())
         };
     }
 }

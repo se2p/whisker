@@ -124,8 +124,8 @@ export class UserModel {
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: ProgramModel.mapValuesToArray(this.nodes, (node: ModelNode) => node.simplifyForSave()),
-            edges: ProgramModel.mapValuesToArray(this.edges, (edge: UserModelEdge) => edge.simplifyForSave())
+            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.simplifyForSave()),
+            edges: ProgramModel.mapValuesToArray(this.edges, edge => edge.simplifyForSave())
         };
     }
 }

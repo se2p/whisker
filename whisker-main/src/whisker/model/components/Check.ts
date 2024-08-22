@@ -224,7 +224,7 @@ export class Check {
     }
 
     private arrayEquals<T>(a: T[], b: T[]): boolean {
-        return a.length === b.length && a.every((val: T, index: number): boolean => val === b[index]);
+        return a.length === b.length && a.every((val, index): boolean => val === b[index]);
     }
 
     isInvertedOf(check: Check): boolean {
