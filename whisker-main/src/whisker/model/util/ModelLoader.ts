@@ -1,5 +1,6 @@
-import {ModelNode, SimpleModelNode} from "../components/ModelNode";
+import {ModelNode, NodeID, SimpleModelNode} from "../components/ModelNode";
 import {
+    EdgeID,
     ModelEdge,
     ProgramModelEdge,
     SimpleProgramModelEdge,
@@ -20,10 +21,10 @@ interface Attributes {
 }
 
 interface StoredModelEdge {
-    id: string;
+    id: EdgeID;
     label: string;
-    from: string;
-    to: string;
+    from: NodeID;
+    to: NodeID;
     forceTestAt: number;
     forceTestAfter: number
     conditions: SimpleCheck[];
@@ -35,13 +36,13 @@ interface StoredModelEdge {
 interface StoredModel {
     usage: string,
     _attributes: Attributes,
-    nodeIds?: string[],
+    nodeIds?: NodeID[],
     id: string;
     nodes: SimpleModelNode[];
     edges: StoredModelEdge[];
-    startNodeId: string;
-    stopNodeIds: string[];
-    stopAllNodeIds: string[]
+    startNodeId: NodeID;
+    stopNodeIds: NodeID[];
+    stopAllNodeIds: NodeID[]
 }
 
 
