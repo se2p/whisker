@@ -33,8 +33,8 @@ export class UserModel {
     protected readonly stopNodeIds: string[];
     protected readonly stopAllNodeIds: string[];
 
-    protected readonly nodes: Record<string,ModelNode>;
-    protected readonly edges: Record<string,UserModelEdge>;
+    protected readonly nodes: Record<string, ModelNode>;
+    protected readonly edges: Record<string, UserModelEdge>;
 
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
@@ -52,9 +52,7 @@ export class UserModel {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: { [key: string]: ModelNode }, edges: {
-                    [key: string]: UserModelEdge
-                },
+    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>, edges: Record<string, UserModelEdge>,
                 stopNodeIds: string[], stopAllNodeIds: string[]) {
         if (!id) {
             throw new Error("No id given.");

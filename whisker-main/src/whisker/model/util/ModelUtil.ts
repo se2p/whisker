@@ -334,7 +334,7 @@ export abstract class ModelUtil {
         let varDependencies: { spriteName: string, varName: string }[] = [];
         let attrDependencies: { spriteName: string, attrName: string }[] = [];
 
-        let spriteMap: { [key: string]: number } = {};
+        let spriteMap: Record<string,number> = {};
 
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
             endIndex = toEval.indexOf(this.EXPR_END);
@@ -393,13 +393,13 @@ export abstract class ModelUtil {
             return {varDependencies: [], attrDependencies: []};
         }
 
-        let attrDependencies: { [key: string]: string[] } = {};
-        let varDependencies: { [key: string]: string[] } = {};
+        let attrDependencies: Record<string,string[]> = {};
+        let varDependencies: Record<string,string[]> = {};
         const spriteGetter = /(?:let\s)?([A-Za-z0-9]+)\s?=\s?t.getSprite\(['"]([A-Za-z0-9]+)['"]\);/g;
         let spriteLines = functionCode.match(spriteGetter);
 
         // from  bound variable name to sprite name
-        let allSprites: { [key: string]: string } = {};
+        let allSprites: Record<string,string> = {};
 
         // there are lines as let apple = t.getSprite("Apple");
         if (spriteLines != null) {

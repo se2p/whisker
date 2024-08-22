@@ -310,7 +310,7 @@ export class CheckUtility extends EventEmitter {
         this.modelResult.addError(output);
     }
 
-    private failOrError(output: string, failureList: { [key: string]: number }) {
+    private failOrError(output: string, failureList: Record<string,number>) {
         if (!this.logsInConsole) {
             return;
         }

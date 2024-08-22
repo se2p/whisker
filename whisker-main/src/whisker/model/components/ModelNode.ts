@@ -2,8 +2,10 @@ import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import {CheckUtility} from "../util/CheckUtility";
 
+export type NodeID = string;
+
 export interface SimpleModelNode {
-    id: string;
+    id: NodeID;
     label: string
 }
 

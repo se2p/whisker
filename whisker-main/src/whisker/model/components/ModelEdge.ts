@@ -5,13 +5,15 @@ import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {InputEffect, SimpleInputEffect} from "./InputEffect";
 import {Check, SimpleCheck} from "./Check";
+import {NodeID} from "./ModelNode";
 
+export type EdgeID = string;
 
 export interface SimpleModelEdge {
-    id: string;
+    id: EdgeID;
     label: string;
-    from: string;
-    to: string;
+    from: NodeID;
+    to: NodeID;
     forceTestAt: number;
     forceTestAfter: number
     conditions: SimpleCheck[];

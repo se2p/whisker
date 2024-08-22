@@ -1,17 +1,15 @@
 import {ModelNode, SimpleModelNode} from "./ModelNode";
-import {ModelEdge, ProgramModelEdge, SimpleProgramModelEdge} from "./ModelEdge";
+import {EdgeID, ModelEdge, ProgramModelEdge, SimpleProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 
 export interface CoverageResult {
     total: number;
-    covered: string[]
+    covered: EdgeID[]
 }
 
 export interface ExtendedCoverageResult extends CoverageResult {
-    total: number;
-    covered: string[];
-    missedEdges: string[];
+    missedEdges: EdgeID[];
 }
 
 export interface SimpleProgramModel {
@@ -65,8 +63,8 @@ export class ProgramModel {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: { [key: string]: ModelNode },
-                edges: { [key: string]: ProgramModelEdge }, stopNodeIds: string[], stopAllNodeIds: string[]) {
+    constructor(id: string, startNodeId: string, nodes: Record<string,ModelNode>,
+                edges: Record<string,ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -209,10 +207,6 @@ export class ProgramModel {
     }
 
     public static mapValuesToArray<A, B>(map: Record<string | number | symbol, A>, mapper: (a: A) => B): B[] {
-        const ret: B[] = [];
-        for (const value in map) {
-            ret.push(mapper(map[value]));
-        }
-        return ret;
+        return Object.values(map).map((v) => mapper(v));
     }
 }
