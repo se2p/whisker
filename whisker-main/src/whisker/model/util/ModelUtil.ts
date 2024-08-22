@@ -1,16 +1,16 @@
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {
-    geExprEvalError,
-    getAttributeNotFoundError,
-    getChangeComparisonNotKnownError,
-    getComparisonNotKnownError,
-    getEmptyExpressionError,
-    getExpressionEndTagMissingError,
-    getExpressionEnterError,
-    getNotANumericalValueError,
-    getSpriteNotFoundError,
-    getVariableNotFoundError
+    AttributeNotFoundError,
+    ChangeComparisonNotKnownError,
+    ComparisonNotKnownError,
+    EmptyExpressionError,
+    ExpressionEndTagMissingError,
+    ExpressionEnterError,
+    ExprEvalError,
+    NotANumericalValueError,
+    SpriteNotFoundError,
+    VariableNotFoundError
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 
@@ -67,7 +67,7 @@ export abstract class ModelUtil {
             }
         })[0];
         if (!sprite) {
-            throw getSpriteNotFoundError(spriteNameRegex);
+            throw new SpriteNotFoundError(spriteNameRegex);
         }
         return sprite;
     }
@@ -110,7 +110,7 @@ export abstract class ModelUtil {
         }
 
         // There is no variable with that regex name on any sprite...
-        throw getVariableNotFoundError(variableNameRegex, sprite.name);
+        throw new VariableNotFoundError(variableNameRegex, sprite.name);
     }
 
     /**
@@ -121,7 +121,7 @@ export abstract class ModelUtil {
      */
     static checkAttributeExistence(testDriver: TestDriver, spriteName: string, attrName: string): void {
         if (!this.isAnAttribute(attrName)) {
-            throw getAttributeNotFoundError(attrName, spriteName);
+            throw new AttributeNotFoundError(attrName, spriteName);
         }
     }
 
@@ -165,7 +165,7 @@ export abstract class ModelUtil {
             case '-=':
                 return oldValueNumber >= newValueNumber;
             default:
-                throw getChangeComparisonNotKnownError(change);
+                throw new ChangeComparisonNotKnownError(change);
         }
     }
 
@@ -174,7 +174,7 @@ export abstract class ModelUtil {
      */
     static testNumber(value: ParamType): number {
         if (value == null || value === '' || isNaN(Number(value.toString()))) {
-            throw getNotANumericalValueError(value.toString());
+            throw new NotANumericalValueError(value.toString());
         }
         return Number(value.toString());
     }
@@ -215,7 +215,7 @@ export abstract class ModelUtil {
             return value1 >= value2;
         }
 
-        throw getComparisonNotKnownError(comparison);
+        throw new ComparisonNotKnownError(comparison);
     }
 
 
@@ -226,6 +226,7 @@ export abstract class ModelUtil {
         let name = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
         return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
             + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + spriteName + "');\n}\n";
+        // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
     private static getVariableString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string, varName: string): string {
@@ -234,6 +235,7 @@ export abstract class ModelUtil {
         return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
             " (variable" + index
             + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
+        // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
     private static isAnAttribute(attrName: string): boolean {
@@ -269,7 +271,7 @@ export abstract class ModelUtil {
             try {
                 eval(toEval);
             } catch (e) {
-                throw geExprEvalError(e);
+                throw new ExprEvalError(e);
             }
 
             let expr: string;
@@ -286,7 +288,7 @@ export abstract class ModelUtil {
         }
 
         if (toEval.indexOf("\n") != -1) {
-            throw getExpressionEnterError();
+            throw new ExpressionEnterError();
         }
 
         let expression = this._getExpression(t, caseSensitive, toEval);
@@ -334,15 +336,15 @@ export abstract class ModelUtil {
         let varDependencies: { spriteName: string, varName: string }[] = [];
         let attrDependencies: { spriteName: string, attrName: string }[] = [];
 
-        let spriteMap: Record<string,number> = {};
+        let spriteMap: Record<string, number> = {};
 
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
             endIndex = toEval.indexOf(this.EXPR_END);
 
             if (endIndex == -1) {
-                throw getExpressionEndTagMissingError();
+                throw new ExpressionEndTagMissingError();
             } else if (startIndex + 2 >= endIndex - 1) {
-                throw getEmptyExpressionError();
+                throw new EmptyExpressionError();
             }
 
             let fillerBetween = toEval.substring(0, startIndex);
@@ -393,13 +395,13 @@ export abstract class ModelUtil {
             return {varDependencies: [], attrDependencies: []};
         }
 
-        let attrDependencies: Record<string,string[]> = {};
-        let varDependencies: Record<string,string[]> = {};
+        let attrDependencies: Record<string, string[]> = {};
+        let varDependencies: Record<string, string[]> = {};
         const spriteGetter = /(?:let\s)?([A-Za-z0-9]+)\s?=\s?t.getSprite\(['"]([A-Za-z0-9]+)['"]\);/g;
         let spriteLines = functionCode.match(spriteGetter);
 
         // from  bound variable name to sprite name
-        let allSprites: Record<string,string> = {};
+        let allSprites: Record<string, string> = {};
 
         // there are lines as let apple = t.getSprite("Apple");
         if (spriteLines != null) {

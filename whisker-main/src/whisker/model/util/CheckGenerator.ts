@@ -2,11 +2,11 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
 import {ModelUtil} from "./ModelUtil";
 import {
-    getComparisonNotKnownError,
-    getErrorForAttribute,
-    getErrorForVariable,
-    getFunctionEvalError,
-    getRGBRangeError
+    ComparisonNotKnownError,
+    ErrorForAttribute,
+    ErrorForVariable,
+    FunctionEvalError,
+    RGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
 import {CheckName} from "../components/Check";
@@ -90,7 +90,7 @@ export abstract class CheckGenerator {
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
             && comparison != "<" && comparison != "<=") {
-            throw getComparisonNotKnownError(comparison);
+            throw new ComparisonNotKnownError(comparison);
         }
 
         function check() {
@@ -99,7 +99,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(variable.value, varValue, comparison);
             } catch (e) {
-                throw getErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
             }
         }
 
@@ -132,7 +132,7 @@ export abstract class CheckGenerator {
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
-            throw getComparisonNotKnownError(comparison);
+            throw new ComparisonNotKnownError(comparison);
         }
 
         // on movement listener
@@ -158,7 +158,7 @@ export abstract class CheckGenerator {
                     }
                 }
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
             return negated;
         };
@@ -180,7 +180,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
@@ -194,7 +194,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
@@ -208,7 +208,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
@@ -240,7 +240,7 @@ export abstract class CheckGenerator {
         try {
             fun = eval(f);
         } catch (e) {
-            throw getFunctionEvalError(e);
+            throw new FunctionEvalError(e);
         }
 
         let dependencies = ModelUtil.getDependencies(f);
@@ -337,7 +337,7 @@ export abstract class CheckGenerator {
                                        spriteNameRegex: string, r: number, g: number, b: number): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
-            throw getRGBRangeError();
+            throw new RGBRangeError();
         }
         const eventString = CheckUtility.getEventString(CheckName.SpriteColor, negated, spriteNameRegex, r, g, b);
         // on movement check sprite color
@@ -430,7 +430,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(variable.old.value, variable.value, change);
             } catch (e) {
-                throw getErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
             }
         }
 
@@ -486,7 +486,7 @@ export abstract class CheckGenerator {
                     }
                 }
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
             return negated;
         };
@@ -504,7 +504,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
@@ -516,7 +516,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
@@ -540,7 +540,7 @@ export abstract class CheckGenerator {
                 }
             } catch (e) {
                 // should not even happen...
-                throw getErrorForAttribute("Stage", "costume", e.message);
+                throw new ErrorForAttribute("Stage", "costume", e.message);
             }
             return negated;
         };
@@ -643,7 +643,7 @@ export abstract class CheckGenerator {
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
-            throw getComparisonNotKnownError(comparison);
+            throw new ComparisonNotKnownError(comparison);
         }
 
         let spriteCondition: (sprite: Sprite) => boolean;
