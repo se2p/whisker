@@ -49,7 +49,7 @@ export abstract class CheckGenerator {
                                  spriteNameRegex: string): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         return () => {
-            const sprites = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false);
+            const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             let anyTouchingMouse = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].visible && t.isMouseDown() && sprites[i].isTouchingMouse()) {
@@ -306,7 +306,7 @@ export abstract class CheckGenerator {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it,
         // also test clones of spriteName1
         return () => {
-            const sprites = t.getSprites((s: Sprite) => s.name == spriteName1, false);
+            const sprites = t.getSprites((s: Sprite) => s.name === spriteName1, false);
             let anyTouchingSprite = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].visible && sprites[i].isTouchingSprite(spriteName2)) {
@@ -348,7 +348,7 @@ export abstract class CheckGenerator {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         // also test clones of spriteName
         return () => {
-            const sprites = t.getSprites((s: Sprite) => s.name == spriteName, false);
+            const sprites = t.getSprites((s: Sprite) => s.name === spriteName, false);
             let anyTouchingColor = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].visible && sprites[i].isTouchingColor([r, g, b])) {
@@ -382,7 +382,7 @@ export abstract class CheckGenerator {
             return !negated == (sayText && sayText.indexOf(eval(expression)(t)) != -1);
         });
         return () => {
-            const sprites = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false);
+            const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             let anySayText = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].sayText) {
