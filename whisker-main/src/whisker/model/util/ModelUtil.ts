@@ -13,6 +13,7 @@ import {
     VariableNotFoundError
 } from "./ModelError";
 import Variable from "../../../vm/variable";
+import {ArgType} from "../components/Check";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -49,9 +50,10 @@ export abstract class ModelUtil {
      * Check the existence of a sprite.
      * @param testDriver Instance of the test driver.
      * @param caseSensitive Whether the names should be checked with case sensitivity or not.
-     * @param spriteNameRegex Name of the sprite.
+     * @param pSpriteNameRegex Name of the sprite.
      */
-    static checkSpriteExistence(testDriver: TestDriver, caseSensitive: boolean, spriteNameRegex: string): Sprite {
+    static checkSpriteExistence(testDriver: TestDriver, caseSensitive: boolean, pSpriteNameRegex: ArgType): Sprite {
+        const spriteNameRegex = String(pSpriteNameRegex);
         if (spriteNameRegex.indexOf("Stage") != -1 || spriteNameRegex.indexOf("stage") != -1) {
             return testDriver.getStage();
         }
@@ -77,10 +79,11 @@ export abstract class ModelUtil {
      * @param t Instance of the test driver.
      * @param caseSensitive Whether the names should be checked with case sensitivity or not.
      * @param sprite Sprite instance.
-     * @param variableNameRegex Name of the variable.
+     * @param pVariableNameRegex Name of the variable.
      */
-    static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, variableNameRegex: string):
+    static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, pVariableNameRegex: ArgType):
         { sprite: Sprite, variable: Variable } {
+        const variableNameRegex = String(pVariableNameRegex);
         let regexParts = ModelUtil.getRegexParts(caseSensitive, variableNameRegex);
 
         function getVariable(variable: { name: string; }) {
@@ -117,9 +120,10 @@ export abstract class ModelUtil {
      * Check the attribute name.
      * @param testDriver Instance of the test driver.
      * @param spriteName Sprite's name.
-     * @param attrName Name of the attribute e.g. x.
+     * @param pAttrName Name of the attribute e.g. x.
      */
-    static checkAttributeExistence(testDriver: TestDriver, spriteName: string, attrName: string): void {
+    static checkAttributeExistence(testDriver: TestDriver, spriteName: string, pAttrName: ArgType): void {
+        const attrName = String(pAttrName);
         if (!this.isAnAttribute(attrName)) {
             throw new AttributeNotFoundError(attrName, spriteName);
         }
@@ -129,12 +133,13 @@ export abstract class ModelUtil {
      * Test whether a value changed.
      * @param oldValue Old value.
      * @param newValue New value.
-     * @param change For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='. "+=" for
+     * @param pChange For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='. "+=" for
      * increase or staying the same."-=" for decrease or staying the same. For a numerical
      * change by an exact value '+<number>' or '<number>' or '-<number>'.
      * "+=" for increase or staying the same."-=" for decrease or staying the same.
      */
-    static testChange(oldValue: string | string[], newValue: string | string[], change: string): boolean {
+    static testChange(oldValue: string | string[], newValue: string | string[], pChange: ArgType): boolean {
+        let change = String(pChange);
         if (oldValue == undefined || newValue == undefined || change == undefined) {
             throw new Error("Undefined value.");
         }
@@ -185,7 +190,7 @@ export abstract class ModelUtil {
      * @param value2 Value on the right side of the comparison equation.
      * @param comparison Comparison mode, =|==, <, <=, >=, >
      */
-    static compare(value1: ParamType, value2: ParamType, comparison: string): boolean {
+    static compare(value1: ParamType, value2: ParamType, comparison: ArgType): boolean {
         if (value1 == undefined || value2 == undefined) {
             throw new Error("comparison with undefined value");
         }
@@ -257,10 +262,11 @@ export abstract class ModelUtil {
      * sprites and their attributes or values and combining the original expression parts.
      * @param t Instance of the test driver.
      * @param caseSensitive Whether the names of sprites and variables should be tested case-sensitive.
-     * @param toEval Expression to evaluate and make into a function.
+     * @param pToEval Expression to evaluate and make into a function.
      */
-    static getExpressionForEval(t: TestDriver, caseSensitive: boolean, toEval: string): Expression {
+    static getExpressionForEval(t: TestDriver, caseSensitive: boolean, pToEval: ArgType): Expression {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
+        let toEval = String(pToEval);
         if (toEval.indexOf((this.EXPR_START)) == -1) {
             if (!toEval.startsWith("'")) {
                 toEval = "'" + toEval + "'";

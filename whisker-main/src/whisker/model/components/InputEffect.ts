@@ -130,7 +130,7 @@ export class InputEffect {
                     clickStageEvent.apply();
                 };
             case InputEffectName.InputClickSprite:
-                let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, String(arg[0]));
+                let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, arg[0]);
                 let clickSpriteEvent = new ClickSpriteEvent(sprite._target);
                 return () => {
                     clickSpriteEvent.apply();

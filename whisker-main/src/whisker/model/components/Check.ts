@@ -132,63 +132,63 @@ export class Check {
         switch (this._name) {
             case CheckName.AttrComp:
                 return CheckGenerator.getAttributeComparisonCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, String(this._args[0]), String(this._args[1]), String(this._args[2]), String(this._args[3]));
+                    caseSensitive, this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.AttrChange:
                 return CheckGenerator.getAttributeChangeCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, String(this._args[0]), String(this._args[1]), String(this._args[2]));
+                    caseSensitive, this._args[0], this._args[1], this._args[2]);
             case CheckName.BackgroundChange:
-                return CheckGenerator.getBackgroundChangeCheck(t, cu, this._edgeLabel, this._negated, String(this._args[0]));
+                return CheckGenerator.getBackgroundChangeCheck(t, cu, this._edgeLabel, this._negated, this._args[0]);
             case CheckName.Function:
                 return CheckGenerator.getFunctionCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    String(this._args[0]));
+                    this._args[0]);
             case CheckName.Output:
                 return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, String(this._args[0]), String(this._args[1]));
+                    caseSensitive, this._args[0], this._args[1]);
             case CheckName.VarChange:
                 return CheckGenerator.getVariableChangeCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, String(this._args[0]), String(this._args[1]), String(this._args[2]));
+                    caseSensitive, this._args[0], this._args[1], this._args[2]);
             case CheckName.VarComp:
                 return CheckGenerator.getVariableComparisonCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, String(this._args[0]), String(this._args[1]), String(this._args[2]), String(this._args[3]));
+                    caseSensitive, this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.SpriteTouching:
                 return CheckGenerator.getSpriteTouchingCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, String(this._args[0]), String(this._args[1]));
+                    caseSensitive, this._args[0], this._args[1]);
             case CheckName.SpriteColor:
                 return CheckGenerator.getSpriteColorTouchingCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, String(this._args[0]), Number(this._args[1]), Number(this._args[2]), Number(this._args[3]));
+                    caseSensitive, this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.Key:
-                return CheckGenerator.getKeyDownCheck(t, cu, this._negated, String(this._args[0]));
+                return CheckGenerator.getKeyDownCheck(t, cu, this._negated, this._args[0]);
             case CheckName.Click:
-                return CheckGenerator.getSpriteClickedCheck(t, this._negated, caseSensitive, String(this._args[0]));
+                return CheckGenerator.getSpriteClickedCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.Expr:
                 return CheckGenerator.getExpressionCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    String(this._args[0]));
+                    this._args[0]);
             case CheckName.Probability:
-                return CheckGenerator.getProbabilityCheck(t, this._negated, String(this._args[0]));
+                return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             case CheckName.TimeElapsed:
-                return CheckGenerator.getTimeElapsedCheck(t, this._negated, String(this._args[0]));
+                return CheckGenerator.getTimeElapsedCheck(t, this._negated, this._args[0]);
             case CheckName.TimeBetween:
-                return CheckGenerator.getTimeBetweenCheck(t, this._negated, String(this._args[0]));
+                return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0]);
             case CheckName.NbrOfClones:
                 return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, false,
-                    String(this._args[0]), String(this._args[1]), String(this._args[2]));
+                    this._args[0], this._args[1], this._args[2]);
             case CheckName.NbrOfVisibleClones:
                 return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, true,
-                    String(this._args[0]), String(this._args[1]), String(this._args[2]));
+                    this._args[0], this._args[1], this._args[2]);
             case CheckName.TouchingEdge:
                 return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    String(this._args[0]));
+                    this._args[0]);
             case CheckName.TouchingHorizEdge:
                 return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    String(this._args[0]), false);
+                    this._args[0], false);
             case CheckName.TouchingVerticalEdge:
                 return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    String(this._args[0]), true, false);
+                    this._args[0], true, false);
             case CheckName.TimeAfterEnd:
-                return CheckGenerator.getTimeAfterEndCheck(t, this._negated, String(this._args[0]));
+                return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
             case CheckName.RandomValue:
                 return CheckGenerator.getRandomValueCheck(t, cu, this._edgeLabel, graphID, this.negated, caseSensitive,
-                    String(this.args[0]), String(this.args[1]));
+                    this.args[0], this.args[1]);
             default:
                 return undefined;
         }
@@ -280,13 +280,13 @@ export class Check {
                 comp1 = check1.args[2];
                 comp2 = check2.args[2];
                 if (check1.negated) {
-                    comp1 = this.getInvertedCompOp(String(comp1));
+                    comp1 = this.getInvertedCompOp(comp1);
                 }
                 if (check2.negated) {
-                    comp2 = this.getInvertedCompOp(String(comp2));
+                    comp2 = this.getInvertedCompOp(comp2);
                 }
 
-                return this.checkComparison(String(comp1), String(comp2), String(check1.args[3]), String(check2.args[3]));
+                return this.checkComparison(comp1, comp2, check1.args[3], check2.args[3]);
             case CheckName.NbrOfVisibleClones:
             case CheckName.NbrOfClones:
                 if (check1.args[0] != check2.args[0]) {
@@ -296,13 +296,13 @@ export class Check {
                 comp1 = check1.args[1];
                 comp2 = check2.args[1];
                 if (check1.negated) {
-                    comp1 = this.getInvertedCompOp(String(comp1));
+                    comp1 = this.getInvertedCompOp(comp1);
                 }
                 if (check2.negated) {
-                    comp2 = this.getInvertedCompOp(String(comp2));
+                    comp2 = this.getInvertedCompOp(comp2);
                 }
 
-                return this.checkComparison(String(comp1), String(comp2), String(check1.args[2]), String(check2.args[2]));
+                return this.checkComparison(comp1, comp2, check1.args[2], check2.args[2]);
 
             default:
                 return false;
@@ -339,7 +339,7 @@ export class Check {
         return change == "+=" ? "-" : "+";
     }
 
-    private static getInvertedCompOp(comp: string): string {
+    private static getInvertedCompOp(comp: ArgType): string {
         if (comp == "=" || comp == "==") {
             return "!=";
         } else if (comp == "<") {
@@ -354,7 +354,13 @@ export class Check {
         throw new Error("unknown comparison");
     }
 
-    private static checkComparison(comparison1: string, comparison2: string, value1: string, value2: string): boolean {
+    private static checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
+        const comparison1 = String(pComparison1);
+        const comparison2 = String(pComparison2);
+        const value1 = String(pValue1);
+        const value2 = String(pValue2);
+
+
         if (comparison1 == "!=" || comparison2 == "!=") {
             return false;
         }

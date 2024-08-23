@@ -2,7 +2,7 @@
 import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
 import {Condition} from "../components/Condition";
-import {CheckName} from "../components/Check";
+import {ArgType, CheckName} from "../components/Check";
 
 function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     let conditions = edge.conditions;
@@ -116,7 +116,7 @@ export class SpriteNotFoundError extends Error {
 }
 
 export class ComparisonNotKnownError extends Error {
-    constructor(comparison: string) {
+    constructor(comparison: ArgType) {
         super("Comparison not known: " + comparison);
     }
 }
@@ -158,7 +158,7 @@ export class RGBRangeError extends Error {
 }
 
 export class ErrorForVariable extends Error {
-    constructor(spriteName: string, varName: string, error: string) {
+    constructor(spriteName: ArgType, varName: ArgType, error: string) {
         super(spriteName + "." + varName + ": " + error);
     }
 }
@@ -170,7 +170,7 @@ export class NotANumericalValueError extends Error {
 }
 
 export class ErrorForAttribute extends Error {
-    constructor(spriteName: string, attrName: string, error: string) {
+    constructor(spriteName: ArgType, attrName: ArgType, error: string) {
         super(spriteName + "." + attrName + ": " + error);
     }
 }
