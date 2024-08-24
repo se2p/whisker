@@ -29,6 +29,15 @@ export enum CheckName {
     RandomValue = "RandomValue" // sprite name regex, attrName
 }
 
+export type ArgType = string | number;
+
+export interface SimpleCheck {
+    id: string
+    name: CheckName;
+    negated: boolean;
+    args: ArgType[];
+}
+
 /**
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
@@ -36,7 +45,7 @@ export enum CheckName {
 export class Check {
     protected readonly _id: string;
     protected readonly _name: CheckName;
-    protected readonly _args: any[];
+    protected readonly _args: ArgType[];
     protected readonly _negated: boolean;
     protected readonly _edgeLabel: string;
 
@@ -49,7 +58,7 @@ export class Check {
      * @param negated Whether the check is negated.
      * @protected
      */
-    protected constructor(id: string, edgeLabel: string, name: CheckName, args: any[], negated: boolean) {
+    protected constructor(id: string, edgeLabel: string, name: CheckName, args: ArgType[], negated: boolean) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -59,7 +68,8 @@ export class Check {
         this._id = id;
         this._edgeLabel = edgeLabel;
 
-        let _testArgs = function (length) {
+        // Todo: refactor this code
+        let _testArgs = function (length: number) {
             let error = new Error("Wrong number of arguments for check " + name + ".");
             if (args.length != length) {
                 throw error;
@@ -118,7 +128,7 @@ export class Check {
      * @param graphID ID of the parent graph of the check.
      */
     checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string):
-        (...any) => boolean {
+        (...any: ArgType[]) => boolean {
         switch (this._name) {
             case CheckName.AttrComp:
                 return CheckGenerator.getAttributeComparisonCheck(t, cu, this._edgeLabel, graphID, this._negated,
@@ -192,7 +202,7 @@ export class Check {
         return this._name;
     }
 
-    get args(): any[] {
+    get args(): ArgType[] {
         return this._args;
     }
 
@@ -200,7 +210,7 @@ export class Check {
         return this._negated;
     }
 
-    simplifyForSave() {
+    simplifyForSave(): SimpleCheck {
         return {
             id: this.id,
             name: this.name,
@@ -209,19 +219,19 @@ export class Check {
         };
     }
 
-    equals(check: Check) {
+    equals(check: Check): boolean {
         return this.name == check.name && this.negated == check.negated && this.arrayEquals(this.args, check.args);
     }
 
-    private arrayEquals(a, b) {
-        return a.length === b.length && a.every((val, index) => val === b[index]);
+    private arrayEquals<T>(a: T[], b: T[]): boolean {
+        return a.length === b.length && a.every((val, index): boolean => val === b[index]);
     }
 
-    isInvertedOf(check: Check) {
+    isInvertedOf(check: Check): boolean {
         return this.name == check.name && this.negated != check.negated && this.arrayEquals(this.args, check.args);
     }
 
-    static testForContradictingWithEvents(check1: Check, eventStrings: string[]) {
+    static testForContradictingWithEvents(check1: Check, eventStrings: string[]): boolean {
         for (let i = 0; i < eventStrings.length; i++) {
             let event = eventStrings[i];
             let {negated, name, args} = CheckUtility.splitEventString(event);
@@ -236,7 +246,7 @@ export class Check {
     /**
      * Test whether the checks are contradicting each other.
      */
-    static testForContradicting(check1: Check, check2: Check) {
+    static testForContradicting(check1: Check, check2: Check): boolean {
         if (check1.name != check2.name || check1.equals(check2)) {
             return false;
         }
@@ -244,7 +254,7 @@ export class Check {
             return true;
         }
 
-        let comp1, comp2;
+        let comp1:ArgType, comp2:ArgType;
         switch (check1.name) {
             case CheckName.Click:
                 // you cant click on two different sprites at the same time
@@ -299,9 +309,9 @@ export class Check {
         }
     }
 
-    private static checkChange(check1: Check, check2: Check) {
-        let change1 = check1.args[2];
-        let change2 = check2.args[2];
+    private static checkChange(check1: Check, check2: Check): boolean {
+        let change1 = String(check1.args[2]);
+        let change2 = String(check2.args[2]);
         let negated1 = check1.negated;
         let negated2 = check2.negated;
 
@@ -325,11 +335,11 @@ export class Check {
     }
 
     // only for += and -=
-    private static getInvertedChangeOp(change): string {
+    private static getInvertedChangeOp(change: string): string {
         return change == "+=" ? "-" : "+";
     }
 
-    private static getInvertedCompOp(comp): string {
+    private static getInvertedCompOp(comp: ArgType): string {
         if (comp == "=" || comp == "==") {
             return "!=";
         } else if (comp == "<") {
@@ -344,7 +354,13 @@ export class Check {
         throw new Error("unknown comparison");
     }
 
-    private static checkComparison(comparison1: string, comparison2: string, value1: string, value2: string): boolean {
+    private static checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
+        const comparison1 = String(pComparison1);
+        const comparison2 = String(pComparison2);
+        const value1 = String(pValue1);
+        const value2 = String(pValue2);
+
+
         if (comparison1 == "!=" || comparison2 == "!=") {
             return false;
         }

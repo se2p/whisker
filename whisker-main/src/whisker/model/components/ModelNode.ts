@@ -2,6 +2,13 @@ import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import {CheckUtility} from "../util/CheckUtility";
 
+export type NodeID = string;
+
+export interface SimpleModelNode {
+    id: NodeID;
+    label: string
+}
+
 /**
  * Node structure for a model.
  */
@@ -15,7 +22,7 @@ export class ModelNode {
     isStopAllNode = false;
 
     /**
-     * Node of a graph with an unique id identifier.
+     * Node of a graph with a unique id identifier.
      * @param id Id of the node
      * @param label Label of the node
      */
@@ -43,7 +50,7 @@ export class ModelNode {
     }
 
     /**
-     * Returns an model edge if one has its conditions for traversing the edge fulfilled or else null.
+     * Returns a model edge if one has its conditions for traversing the edge fulfilled or else null.
      * @param testDriver Instance of the test driver.
      * @param cu Check listener.
      * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
@@ -68,7 +75,7 @@ export class ModelNode {
      * Check the edges for a transition based on fired events.
      */
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                 eventStrings: string[]) {
+                 eventStrings: string[]): ModelEdge | null {
         for (let i = 0; i < this.edges.length; i++) {
             const result = this.edges[i].checkConditionsOnEvent(t, cu, stepsSinceLastTransition, stepsSinceEnd,
                 eventStrings);
@@ -84,7 +91,7 @@ export class ModelNode {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
         this.edges.forEach(edge => {
             edge.registerComponents(checkListener, testDriver, caseSensitive);
         });
@@ -93,13 +100,13 @@ export class ModelNode {
     /**
      * Reset all edge's states that belong to one test run.
      */
-    reset() {
+    reset(): void {
         this.edges.forEach(edge => {
             edge.reset();
         });
     }
 
-    simplifyForSave() {
+    simplifyForSave(): SimpleModelNode {
         return {
             id: this.id,
             label: this.label

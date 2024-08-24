@@ -3,8 +3,29 @@ import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
-import {InputEffect} from "./InputEffect";
-import {Check} from "./Check";
+import {InputEffect, SimpleInputEffect} from "./InputEffect";
+import {Check, SimpleCheck} from "./Check";
+import {NodeID} from "./ModelNode";
+
+export type EdgeID = string;
+
+export interface SimpleModelEdge {
+    id: EdgeID;
+    label: string;
+    from: NodeID;
+    to: NodeID;
+    forceTestAt: number;
+    forceTestAfter: number
+    conditions: SimpleCheck[];
+}
+
+export interface SimpleProgramModelEdge extends SimpleModelEdge {
+    effects: SimpleCheck[];
+}
+
+export interface SimpleUserModelEdge extends SimpleModelEdge {
+    effects: SimpleInputEffect[];
+}
 
 /**
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
@@ -20,7 +41,7 @@ export abstract class ModelEdge {
     /* Id of the target node*/
     readonly to: string;
     conditions: Condition[] = [];
-    _lastTransition: number = 0;
+    _lastTransition = 0;
 
     readonly forceTestAfter: number;
     readonly forceTestAt: number;
@@ -69,7 +90,7 @@ export abstract class ModelEdge {
             return this.conditions;
         }
 
-        let failedConditions = [];
+        let failedConditions: Condition[] = [];
 
         // times up... force testing of conditions and if they are not fulfilled make add as failed
         if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
@@ -122,7 +143,7 @@ export abstract class ModelEdge {
     }
 
 
-    private getTimeLimitFailedOutput(condition: Condition, t: TestDriver) {
+    private getTimeLimitFailedOutput(condition: Condition, t: TestDriver): string {
         if (this.forceTestAtSteps != -1 && this.forceTestAtSteps <= t.getTotalStepsExecuted()) {
             return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt);
         } else {
@@ -133,7 +154,7 @@ export abstract class ModelEdge {
     /**
      * Returns the id of the target node of this edge.
      */
-    getEndNodeId() {
+    getEndNodeId(): string {
         return this.to;
     }
 
@@ -167,11 +188,7 @@ export abstract class ModelEdge {
         this.lastTransition = 0;
     }
 
-    simplifyForSave() {
-        let conditions = [];
-        this.conditions.forEach(condition => {
-            conditions.push(condition.simplifyForSave());
-        });
+    simplifyForSave(): SimpleModelEdge {
         return {
             id: this.id,
             label: this.label,
@@ -179,7 +196,7 @@ export abstract class ModelEdge {
             to: this.to,
             forceTestAfter: this.forceTestAfter,
             forceTestAt: this.forceTestAt,
-            conditions: conditions
+            conditions: this.conditions.map((condition: Condition) => condition.simplifyForSave())
         };
     }
 }
@@ -229,23 +246,19 @@ export class ProgramModelEdge extends ModelEdge {
         });
     }
 
-    override simplifyForSave() {
-        let effects = [];
-        this.effects.forEach(effect => {
-            effects.push(effect.simplifyForSave());
-        });
+    override simplifyForSave(): SimpleProgramModelEdge {
         return {
             ...super.simplifyForSave(),
-            effects: effects
+            effects: this.effects.map(effect => effect.simplifyForSave())
         };
     }
 
     /**
-     * Check the conditions and effects for checks that are depending on the check listeners and the fired events.
+     * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Function:true Checks.
      */
     override checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                           eventStrings: string[]): Condition[] {
+                                    eventStrings: string[]): Condition[] {
         if (this.failedForcedTest) {
             return this.conditions;
         }
@@ -291,7 +304,7 @@ export class ProgramModelEdge extends ModelEdge {
             if (eventStrings.indexOf(eventString) != -1) {
                 return true;
             } else if (Check.testForContradictingWithEvents(this.effects[i], eventStrings)) {
-                // tests whether a event contradicting an effect (of a true condition edge) is there
+                // tests whether an event contradicting an effect (of a true condition edge) is there
                 return true;
             }
         }
@@ -331,7 +344,7 @@ export class UserModelEdge extends ModelEdge {
     /**
      * Start the input effects of this edge.
      */
-    inputImmediate(t: TestDriver) {
+    inputImmediate(t: TestDriver): void {
         this.inputEffects.forEach(inputEffect => {
             inputEffect.inputImmediate(t);
         });
@@ -347,14 +360,10 @@ export class UserModelEdge extends ModelEdge {
         });
     }
 
-    override simplifyForSave() {
-        let inputEffects = [];
-        this.inputEffects.forEach(effect => {
-            inputEffects.push(effect.simplifyForSave());
-        });
+    override simplifyForSave(): SimpleUserModelEdge {
         return {
             ...super.simplifyForSave(),
-            effects: inputEffects
+            effects: this.inputEffects.map(value => value.simplifyForSave())
         };
     }
 }

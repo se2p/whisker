@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Check, CheckName} from "./Check";
+import {ArgType, Check, CheckName} from "./Check";
 
 /**
  * Defining an edge condition.
@@ -16,14 +16,14 @@ export class Condition extends Check {
      * @param negated Whether the condition is negated.
      * @param args The arguments for the condition to check later on.
      */
-    constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: any[]) {
+    constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: ArgType[]) {
         super(id, edgeLabel, name, args, negated);
     }
 
     /**
      * Register the check listener and test driver and check the condition for errors.
      */
-    registerComponents(cu: CheckUtility, t: TestDriver, caseSensitive: boolean, graphID: string) {
+    registerComponents(cu: CheckUtility, t: TestDriver, caseSensitive: boolean, graphID: string):void {
         try {
             this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
         } catch (e) {

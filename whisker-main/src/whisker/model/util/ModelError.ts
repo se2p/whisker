@@ -2,18 +2,18 @@
 import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
 import {Condition} from "../components/Condition";
-import {CheckName} from "../components/Check";
+import {ArgType, CheckName} from "../components/Check";
 
-function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
+function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     let conditions = edge.conditions;
-    let containsAfterTime;
-    let containsElapsed;
+    let containsAfterTime: string;
+    let containsElapsed: string;
 
     for (let i = 0; i < conditions.length; i++) {
         if (conditions[i].name == CheckName.TimeBetween || conditions[i].name == CheckName.TimeAfterEnd) {
-            containsAfterTime = conditions[i].args[0];
+            containsAfterTime = conditions[i].args[0].toString();
         } else if (conditions[i].name == CheckName.TimeElapsed) {
-            containsElapsed = conditions[i].args[0];
+            containsElapsed = conditions[i].args[0].toString();
         }
     }
 
@@ -27,74 +27,158 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
     return result;
 }
 
-function getTimeLimitFailedAfterOutput(edge: ModelEdge, condition: Condition, ms: number) {
+function getTimeLimitFailedAfterOutput(edge: ModelEdge, condition: Condition, ms: number): string {
     return edge.graphID + "-" + edge.label + ": " + condition.toString() + " after " + ms + "ms";
 }
 
-function getTimeLimitFailedAtOutput(edge: ModelEdge, condition: Condition, ms: number) {
+function getTimeLimitFailedAtOutput(edge: ModelEdge, condition: Condition, ms: number): string {
     return edge.graphID + "-" + edge.label + ": " + condition.toString() + " at " + ms + "ms";
 }
 
-function getErrorOnEdgeOutput(edgeLabel: string, graphLabel: string, error: string) {
+function getErrorOnEdgeOutput(edgeLabel: string, graphLabel: string, error: string): string {
     return "Error " + graphLabel + "-" + edgeLabel + ": " + error;
 }
 
 // ----- Variables, sprites, attributes not found and other initialization errors
 
-function getVariableNotFoundError(variableName: string, spriteName: string) {
-    return new Error("Variable not found: " + spriteName + "." + variableName);
+function getVariableNotFoundError(variableName: string, spriteName: string): Error {
+    return new VariableNotFoundError(variableName, spriteName);
 }
 
-function getAttributeNotFoundError(attrName: string, spriteName: string) {
-    return new Error("Attribute not found: " + spriteName + "." + attrName);
+function getAttributeNotFoundError(attrName: string, spriteName: string): AttributeNotFoundError {
+    return new AttributeNotFoundError(attrName, spriteName);
 }
 
-function getSpriteNotFoundError(spriteName: string) {
-    return new Error("Sprite not found: " + spriteName);
+function getSpriteNotFoundError(spriteName: string): SpriteNotFoundError {
+    return new SpriteNotFoundError(spriteName);
 }
 
-function getComparisonNotKnownError(comparison: string) {
-    return new Error("Comparison not known: " + comparison);
+function getComparisonNotKnownError(comparison: string): ComparisonNotKnownError {
+    return new ComparisonNotKnownError(comparison);
 }
 
-function getFunctionEvalError(error: Error) {
-    return new Error("Function cannot be evaluated:\n" + error.message);
+function getFunctionEvalError(error: Error): FunctionEvalError {
+    return new FunctionEvalError(error);
 }
 
-function geExprEvalError(error: Error) {
-    return new Error("Expression cannot be evaluated:\n" + error.message);
+function geExprEvalError(error: Error): ExprEvalError {
+    return new ExprEvalError(error);
 }
 
-function getExpressionEndTagMissingError() {
-    return new Error("Sprite/variable expression missing closing tag ')'");
+function getExpressionEndTagMissingError(): ExpressionEndTagMissingError {
+    return new ExpressionEndTagMissingError();
 }
 
-function getEmptyExpressionError() {
-    return new Error("Sprite/variable expression empty.");
+function getEmptyExpressionError(): EmptyExpressionError {
+    return new EmptyExpressionError();
 }
 
-function getExpressionEnterError() {
-    return new Error("Sprite/variable expression may not contain new line element.");
+function getExpressionEnterError(): ExpressionEnterError {
+    return new ExpressionEnterError();
 }
 
-function getRGBRangeError() {
-    return new Error("RGB ranges not correct.");
+function getRGBRangeError(): RGBRangeError {
+    return new RGBRangeError();
 }
 
-function getErrorForVariable(spriteName: string, varName: string, error: string) {
-    return new Error(spriteName + "." + varName + ": " + error);
+function getErrorForVariable(spriteName: string, varName: string, error: string): ErrorForVariable {
+    return new ErrorForVariable(spriteName, varName, error);
 }
 
-function getErrorForAttribute(spriteName: string, attrName: string, error: string) {
-    return new Error(spriteName + "." + attrName + ": " + error);
+function getErrorForAttribute(spriteName: string, attrName: string, error: string): ErrorForAttribute {
+    return new ErrorForAttribute(spriteName, attrName, error);
 }
 
-function getNotANumericalValueError(value: string) {
-    return new Error("Is not a numerical value to compare:" + value);
+function getNotANumericalValueError(value: string): NotANumericalValueError {
+    return new NotANumericalValueError(value);
 }
 
-function getChangeComparisonNotKnownError(value: string) {
-    throw new Error("Change Comparison not known: " + value);
+function getChangeComparisonNotKnownError(value: string): ChangeComparisonNotKnownError {
+    throw new ChangeComparisonNotKnownError(value);
+}
+
+export class VariableNotFoundError extends Error {
+    constructor(variableName: string, spriteName: string) {
+        super("Variable not found: " + spriteName + "." + variableName);
+    }
+}
+
+export class AttributeNotFoundError extends Error {
+    constructor(attrName: string, spriteName: string) {
+        super("Attribute not found: " + spriteName + "." + attrName);
+    }
+}
+
+export class SpriteNotFoundError extends Error {
+    constructor(spriteName: string) {
+        super("Sprite not found: " + spriteName);
+    }
+}
+
+export class ComparisonNotKnownError extends Error {
+    constructor(comparison: ArgType) {
+        super("Comparison not known: " + comparison);
+    }
+}
+
+export class FunctionEvalError extends Error {
+    constructor(error: Error) {
+        super("Function cannot be evaluated:\n" + error.message);
+    }
+}
+
+export class ExprEvalError extends Error {
+    constructor(error: Error) {
+        super("Expression cannot be evaluated:\n" + error.message);
+    }
+}
+
+export class ExpressionEndTagMissingError extends Error {
+    constructor() {
+        super("Sprite/variable expression missing closing tag ')'");
+    }
+}
+
+export class EmptyExpressionError extends Error {
+    constructor() {
+        super("Sprite/variable expression empty.");
+    }
+}
+
+export class ExpressionEnterError extends Error {
+    constructor() {
+        super("Sprite/variable expression may not contain new line element.");
+    }
+}
+
+export class RGBRangeError extends Error {
+    constructor() {
+        super("RGB ranges not correct.");
+    }
+}
+
+export class ErrorForVariable extends Error {
+    constructor(spriteName: ArgType, varName: ArgType, error: string) {
+        super(spriteName + "." + varName + ": " + error);
+    }
+}
+
+export class NotANumericalValueError extends Error {
+    constructor(value: string) {
+        super("Is not a numerical value to compare:" + value);
+    }
+}
+
+export class ErrorForAttribute extends Error {
+    constructor(spriteName: ArgType, attrName: ArgType, error: string) {
+        super(spriteName + "." + attrName + ": " + error);
+    }
+}
+
+export class ChangeComparisonNotKnownError extends Error {
+    constructor(value: string) {
+        super("Change Comparison not known: " + value);
+    }
 }
 
 export {

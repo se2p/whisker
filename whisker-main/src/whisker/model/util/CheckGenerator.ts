@@ -2,14 +2,16 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
 import {ModelUtil} from "./ModelUtil";
 import {
-    getComparisonNotKnownError,
-    getErrorForAttribute,
-    getErrorForVariable,
-    getFunctionEvalError,
-    getRGBRangeError
+    ComparisonNotKnownError,
+    ErrorForAttribute,
+    ErrorForVariable,
+    FunctionEvalError,
+    RGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
-import {CheckName} from "../components/Check";
+import {ArgType, CheckName} from "../components/Check";
+import Sprite from "../../../vm/sprite";
+import Variable from "../../../vm/variable";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -30,9 +32,9 @@ export abstract class CheckGenerator {
      * @param key Name of the key.
      * @param negated Whether this check is negated.
      */
-    static getKeyDownCheck(t: TestDriver, cu: CheckUtility, negated: boolean, key: string): () => boolean {
+    static getKeyDownCheck(t: TestDriver, cu: CheckUtility, negated: boolean, key: ArgType): () => boolean {
         return () => {
-            return !negated == cu.isKeyDown(key);
+            return !negated == cu.isKeyDown(String(key));
         };
     }
 
@@ -44,10 +46,10 @@ export abstract class CheckGenerator {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getSpriteClickedCheck(t: TestDriver, negated: boolean, caseSensitive: boolean,
-                                 spriteNameRegex: string): () => boolean {
+                                 spriteNameRegex: ArgType): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         return () => {
-            const sprites = t.getSprites(sprite => sprite.name == spriteName, false);
+            const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             let anyTouchingMouse = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].visible && t.isMouseDown() && sprites[i].isTouchingMouse()) {
@@ -74,8 +76,8 @@ export abstract class CheckGenerator {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getVariableComparisonCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
-                                      negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
-                                      varNameRegex: string, comparison: string, varValue: string): () => boolean {
+                                      negated: boolean, caseSensitive: boolean, spriteNameRegex: ArgType,
+                                      varNameRegex: ArgType, comparison: ArgType, varValue: ArgType): () => boolean {
         const {
             sprite: foundSprite,
             variable: foundVar
@@ -88,16 +90,16 @@ export abstract class CheckGenerator {
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
             && comparison != "<" && comparison != "<=") {
-            throw getComparisonNotKnownError(comparison);
+            throw new ComparisonNotKnownError(comparison);
         }
 
         function check() {
-            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+            const sprite = t.getSprites((sprite: Sprite) => sprite.name.includes(spriteName), false)[0];
             const variable = sprite.getVariable(variableName);
             try {
                 return !negated == ModelUtil.compare(variable.value, varValue, comparison);
             } catch (e) {
-                throw getErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
             }
         }
 
@@ -120,23 +122,23 @@ export abstract class CheckGenerator {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getAttributeComparisonCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
-                                       negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
-                                       attrName: string, comparison: string, attrValue: string): () => boolean {
+                                       negated: boolean, caseSensitive: boolean, spriteNameRegex: ArgType,
+                                       attrName: ArgType, comparison: ArgType, attrValue: ArgType): () => boolean {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, String(spriteNameRegex)).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
-            throw getComparisonNotKnownError(comparison);
+            throw new ComparisonNotKnownError(comparison);
         }
 
         // on movement listener
         if (attrName == "x" || attrName == "y") {
-            CheckGenerator.attributeCompOnMove(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex, attrName,
-                comparison, attrValue);
+            CheckGenerator.attributeCompOnMove(cu, edgeLabel, graphID, negated, spriteName, String(spriteNameRegex), attrName,
+                comparison, String(attrValue));
         } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
             || attrName == "currentCostumeName" || attrName == "rotationStyle") {
             CheckGenerator.attributeCompOnVisual(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex, attrName,
@@ -156,16 +158,16 @@ export abstract class CheckGenerator {
                     }
                 }
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
             return negated;
         };
     }
 
     private static attributeCompOnVisual(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                         spriteName: string, spriteNameRegex: string, attrName: string,
-                                         comparison: string, attrValue: string) {
-        let eventString;
+                                         spriteName: string, spriteNameRegex: ArgType, attrName: string,
+                                         comparison: string, attrValue: ArgType): void {
+        let eventString: string;
         if (attrName == "currentCostumeName") {
             eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, "costume",
                 comparison, attrValue);
@@ -178,35 +180,35 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
 
     private static attributeCompOnMove(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                        spriteName: string, spriteNameRegex: string, attrName: string,
-                                       comparison: string, attrValue: string) {
+                                       comparison: string, attrValue: string): void {
         const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
             comparison, attrValue);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
 
     private static attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                         spriteName: string, spriteNameRegex: string, attrName: string,
-                                         comparison: string, attrValue: string) {
+                                         spriteName: string, spriteNameRegex: ArgType, attrName: string,
+                                         comparison: string, attrValue: ArgType): void {
         const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
             comparison, attrValue);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
@@ -217,14 +219,14 @@ export abstract class CheckGenerator {
      * @param cu Listener for checks.
      * @param edgeLabel Label of the parent edge of the check.
      * @param graphID ID of the parent graph of the check.
-     * @param caseSensitive Whether the sprite and variable names are case sensitive.
+     * @param caseSensitive Whether the sprite and variable names are case-sensitive.
      * @param negated Whether it should be negated.
-     * @param f the function as a string.
+     * @param pF the function as a string.
      */
     static getFunctionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                            caseSensitive: boolean, f: string): () => boolean {
-        let fun;
-
+                            caseSensitive: boolean, pF: ArgType): () => boolean {
+        let fun: (t: TestDriver) => boolean;
+        const f = String(pF);
         if (f == "true" && negated || f == "false" && !negated) {
             return () => {
                 return false;
@@ -238,21 +240,24 @@ export abstract class CheckGenerator {
         try {
             fun = eval(f);
         } catch (e) {
-            throw getFunctionEvalError(e);
+            throw new FunctionEvalError(e);
         }
 
-        let {varDependencies, attrDependencies} = ModelUtil.getDependencies(f);
+        let dependencies = ModelUtil.getDependencies(f);
         let eventString = CheckUtility.getEventString(CheckName.Function, negated, f);
-        this.setupDependencies(cu, eventString, edgeLabel, graphID, varDependencies, attrDependencies, () => {
-            return !negated == fun(t);
-        });
+        this.setupDependencies(cu, eventString, edgeLabel, graphID, dependencies.varDependencies,
+            dependencies.attrDependencies, () => {
+                return !negated == fun(t);
+            });
         return () => {
             return !negated == fun(t);
         };
     }
 
     private static setupDependencies(cu: CheckUtility, eventString: string, edgeLabel: string, graphID: string,
-                                     varDependencies, attrDependencies, predicate: (...sprite) => boolean) {
+                                     varDependencies: { spriteName: string, varName: string }[],
+                                     attrDependencies: { spriteName: string, attrName: string }[],
+                                     predicate: (...sprite: Sprite[]) => boolean) {
         if (varDependencies.length > 0) {
             varDependencies.forEach(({spriteName, varName}) => {
                 cu.registerVarEvent(varName, eventString, edgeLabel, graphID, predicate);
@@ -285,8 +290,8 @@ export abstract class CheckGenerator {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getSpriteTouchingCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                  caseSensitive: boolean, spriteName1Regex: string,
-                                  spriteName2Regex: string): () => boolean {
+                                  caseSensitive: boolean, spriteName1Regex: ArgType,
+                                  spriteName2Regex: ArgType): () => boolean {
         const spriteName1 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName1Regex).name;
         const spriteName2 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName2Regex).name;
 
@@ -301,7 +306,7 @@ export abstract class CheckGenerator {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it,
         // also test clones of spriteName1
         return () => {
-            const sprites = t.getSprites(s => s.name == spriteName1, false);
+            const sprites = t.getSprites((s: Sprite) => s.name === spriteName1, false);
             let anyTouchingSprite = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].visible && sprites[i].isTouchingSprite(spriteName2)) {
@@ -320,19 +325,23 @@ export abstract class CheckGenerator {
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
      * @param graphID ID of the parent graph of the check.
-     * @param spriteNameRegex  Regex describing the name of the sprite.
-     * @param r RGB red color value.
-     * @param g RGB green color value.
-     * @param b RGB blue color value.
+     * @param pSpriteNameRegex  Regex describing the name of the sprite.
+     * @param pR RGB red color value.
+     * @param pG RGB green color value.
+     * @param pB RGB blue color value.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getSpriteColorTouchingCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
                                        negated: boolean, caseSensitive: boolean,
-                                       spriteNameRegex: string, r: number, g: number, b: number): () => boolean {
+                                       pSpriteNameRegex: ArgType, pR: ArgType, pG: ArgType, pB: ArgType): () => boolean {
+        const r = ModelUtil.testNumber(pR);
+        const g = ModelUtil.testNumber(pG);
+        const b = ModelUtil.testNumber(pB);
+        const spriteNameRegex = String(pSpriteNameRegex);
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
-            throw getRGBRangeError();
+            throw new RGBRangeError();
         }
         const eventString = CheckUtility.getEventString(CheckName.SpriteColor, negated, spriteNameRegex, r, g, b);
         // on movement check sprite color
@@ -343,7 +352,7 @@ export abstract class CheckGenerator {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         // also test clones of spriteName
         return () => {
-            const sprites = t.getSprites(s => s.name == spriteName, false);
+            const sprites = t.getSprites((s: Sprite) => s.name === spriteName, false);
             let anyTouchingColor = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].visible && sprites[i].isTouchingColor([r, g, b])) {
@@ -367,7 +376,7 @@ export abstract class CheckGenerator {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                  caseSensitive: boolean, spriteNameRegex: string, output: string): () => boolean {
+                                  caseSensitive: boolean, spriteNameRegex: ArgType, output: ArgType): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         const expression = ModelUtil.getExpressionForEval(t, caseSensitive, output).expr;
 
@@ -377,7 +386,7 @@ export abstract class CheckGenerator {
             return !negated == (sayText && sayText.indexOf(eval(expression)(t)) != -1);
         });
         return () => {
-            const sprites = t.getSprites(sprite => sprite.name == spriteName, false);
+            const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             let anySayText = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].sayText) {
@@ -407,8 +416,8 @@ export abstract class CheckGenerator {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getVariableChangeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                  caseSensitive: boolean, spriteNameRegex: string, varNameRegex: string,
-                                  change): () => boolean {
+                                  caseSensitive: boolean, spriteNameRegex: ArgType, varNameRegex: ArgType,
+                                  change: ArgType): () => boolean {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         let {
             sprite: foundSprite,
@@ -419,13 +428,13 @@ export abstract class CheckGenerator {
         const variableName = foundVar.name;
         const eventString = CheckUtility.getEventString(CheckName.VarChange, negated, spriteNameRegex, varNameRegex, change);
 
-        function check() {
-            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            const variable = sprite.getVariable(variableName);
+        function check(): boolean {
+            const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name.includes(spriteName), false)[0];
+            const variable: Variable = sprite.getVariable(variableName);
             try {
                 return !negated == ModelUtil.testChange(variable.old.value, variable.value, change);
             } catch (e) {
-                throw getErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
             }
         }
 
@@ -441,7 +450,7 @@ export abstract class CheckGenerator {
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
      * @param graphID ID of the parent graph of the check.
-     * @param spriteNameRegex  Regex describing the name of the sprite having the variable.
+     * @param pSpriteNameRegex  Regex describing the name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
      * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
@@ -451,7 +460,8 @@ export abstract class CheckGenerator {
      */
     static getAttributeChangeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
                                    negated: boolean, caseSensitive: boolean,
-                                   spriteNameRegex: string, attrName: string, change): () => boolean {
+                                   pSpriteNameRegex: ArgType, attrName: ArgType, change: ArgType): () => boolean {
+        const spriteNameRegex = String(pSpriteNameRegex);
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
@@ -481,15 +491,15 @@ export abstract class CheckGenerator {
                     }
                 }
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
             return negated;
         };
     }
 
     private static registerOnVisualAttrChange(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                              spriteName: string, spriteNameRegex: string, attrName: string, change) {
-        let eventString;
+                                              spriteName: string, spriteNameRegex: string, attrName: string, change: ArgType) {
+        let eventString: string;
         if (attrName == "currentCostumeName") {
             eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, "costume", change);
         } else {
@@ -499,19 +509,19 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
 
     private static registerOnMoveAttrChange(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                            spriteName: string, spriteNameRegex: string, attrName: string, change) {
+                                            spriteName: string, spriteNameRegex: string, attrName: string, change: ArgType) {
         const eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, attrName, change);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
-                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         });
     }
@@ -525,7 +535,7 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      */
     static getBackgroundChangeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, negated: boolean,
-                                    newBackground: string): () => boolean {
+                                    newBackground: ArgType): () => boolean {
         // without movement
         return () => {
             const stage = t.getStage();
@@ -535,7 +545,7 @@ export abstract class CheckGenerator {
                 }
             } catch (e) {
                 // should not even happen...
-                throw getErrorForAttribute("Stage", "costume", e.message);
+                throw new ErrorForAttribute("Stage", "costume", e.message);
             }
             return negated;
         };
@@ -552,19 +562,15 @@ export abstract class CheckGenerator {
      * @param expr The expression string.
      */
     static getExpressionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                              caseSensitive: boolean, expr: string) {
-        let {
-            expr: expression,
-            varDependencies,
-            attrDependencies
-        } = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
+                              caseSensitive: boolean, expr: ArgType): () => boolean {
+        let e = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
 
         let eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
-        this.setupDependencies(cu, eventString, edgeLabel, graphID, varDependencies, attrDependencies, () => {
-            return !negated == eval(expression)(t);
+        this.setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, () => {
+            return !negated == eval(e.expr)(t);
         });
         return () => {
-            return !negated == eval(expression)(t);
+            return !negated == eval(e.expr)(t);
         };
     }
 
@@ -574,7 +580,7 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param probability The probability e.g. 0.5.
      */
-    static getProbabilityCheck(t: TestDriver, negated: boolean, probability: string) {
+    static getProbabilityCheck(t: TestDriver, negated: boolean, probability: ArgType): () => boolean {
         const prob = ModelUtil.testNumber(probability);
         return () => {
             return !negated == (Randomness.getInstance().nextDouble() <= prob);
@@ -587,7 +593,7 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param timeInMS Time in milliseconds.
      */
-    static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string) {
+    static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: ArgType): () => boolean {
         const time = ModelUtil.testNumber(timeInMS);
         const steps = t.vmWrapper.convertFromTimeToSteps(time);
         return () => {
@@ -601,7 +607,7 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param timeInMS Time in milliseconds.
      */
-    static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string) {
+    static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: ArgType): (steps: number) => boolean {
         const time = ModelUtil.testNumber(timeInMS);
         const steps = t.vmWrapper.convertFromTimeToSteps(time);
         return (stepsSinceLastTransition) => {
@@ -615,7 +621,8 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param timeInMS Time in milliseconds.
      */
-    static getTimeAfterEndCheck(t: TestDriver, negated: boolean, timeInMS: string) {
+    static getTimeAfterEndCheck(t: TestDriver, negated: boolean, timeInMS: ArgType):
+        (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         const time = ModelUtil.testNumber(timeInMS);
         const steps = t.vmWrapper.convertFromTimeToSteps(time);
         return (stepsSinceLastTransition, stepsSinceEnd) => {
@@ -634,17 +641,17 @@ export abstract class CheckGenerator {
      * @param nbr Number of clones.
      */
     static getNumberOfClonesCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, clonesVisible: boolean,
-                                  spriteNameRegex: string, comparison: string, nbr: string) {
+                                  spriteNameRegex: ArgType, comparison: ArgType, nbr: ArgType): () => boolean {
         const toCheckNbr = ModelUtil.testNumber(nbr);
         const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         const spriteName = sprite.name;
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
-            throw getComparisonNotKnownError(comparison);
+            throw new ComparisonNotKnownError(comparison);
         }
 
-        let spriteCondition;
+        let spriteCondition: (sprite: Sprite) => boolean;
         if (!clonesVisible) {
             spriteCondition = sprite => sprite.name.includes(spriteName);
         } else {
@@ -669,17 +676,17 @@ export abstract class CheckGenerator {
      * @param horizEdge Whether the horizontal edges should be considered for the check.
      * */
     static getTouchingEdgeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                caseSensitive: boolean, spriteNameRegex: string, verticalEdge = true,
-                                horizEdge = true) {
+                                caseSensitive: boolean, spriteNameRegex: ArgType, verticalEdge = true,
+                                horizEdge = true): () => boolean {
         if (!verticalEdge && !horizEdge) {
             throw new Error("Check touching edge not valid. Either vertical, horizontal or both.");
         }
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
 
-        let check = sprite => sprite.visible && sprite.isTouchingEdge();
+        let check = (sprite: Sprite) => sprite.visible && sprite.isTouchingEdge();
         let eventString = CheckUtility.getEventString(CheckName.TouchingEdge, negated, spriteNameRegex);
         if (!verticalEdge) {
-            check = sprite => sprite.visible && sprite.isTouchingHorizEdge();
+            check = (sprite: Sprite) => sprite.visible && sprite.isTouchingHorizEdge();
             eventString = CheckUtility.getEventString(CheckName.TouchingHorizEdge, negated, spriteNameRegex);
         } else if (!horizEdge) {
             check = sprite => sprite.visible && sprite.isTouchingVerticalEdge();
@@ -715,7 +722,7 @@ export abstract class CheckGenerator {
      * @param attrName Attribute name, x or y.
      */
     static getRandomValueCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                               caseSensitive: boolean, spriteNameRegex: string, attrName: string) {
+                               caseSensitive: boolean, spriteNameRegex: ArgType, attrName: ArgType): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
 
         if (attrName != "x" && attrName != "y") {
@@ -725,7 +732,7 @@ export abstract class CheckGenerator {
         let oldValues = [];
 
         // updates value on move
-        let check = (sprite) => {
+        let check = (sprite: Sprite) => {
             // ignore it the value did not change
             if (oldValues.length && oldValues.length > 0 && oldValues[oldValues.length - 1] == sprite[attrName]) {
                 return !negated;

@@ -1,22 +1,34 @@
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {
-    geExprEvalError,
-    getAttributeNotFoundError,
-    getChangeComparisonNotKnownError,
-    getComparisonNotKnownError,
-    getEmptyExpressionError,
-    getExpressionEndTagMissingError,
-    getExpressionEnterError,
-    getNotANumericalValueError,
-    getSpriteNotFoundError,
-    getVariableNotFoundError
+    AttributeNotFoundError,
+    ChangeComparisonNotKnownError,
+    ComparisonNotKnownError,
+    EmptyExpressionError,
+    ExpressionEndTagMissingError,
+    ExpressionEnterError,
+    ExprEvalError,
+    NotANumericalValueError,
+    SpriteNotFoundError,
+    VariableNotFoundError
 } from "./ModelError";
 import Variable from "../../../vm/variable";
+import {ArgType} from "../components/Check";
+
+export interface Dependencies {
+    varDependencies: { spriteName: string, varName: string }[],
+    attrDependencies: { spriteName: string, attrName: string }[]
+}
+
+interface Expression extends Dependencies {
+    expr: string
+}
+
+type ParamType = string | number | boolean | string[];
 
 export abstract class ModelUtil {
 
-    private static getRegexParts(caseSensitive: boolean, regex: string) {
+    private static getRegexParts(caseSensitive: boolean, regex: string): string[] {
         if (regex.indexOf("/") == -1) {
             return [regex, caseSensitive ? "" : "i"];
         }
@@ -38,9 +50,10 @@ export abstract class ModelUtil {
      * Check the existence of a sprite.
      * @param testDriver Instance of the test driver.
      * @param caseSensitive Whether the names should be checked with case sensitivity or not.
-     * @param spriteNameRegex Name of the sprite.
+     * @param pSpriteNameRegex Name of the sprite.
      */
-    static checkSpriteExistence(testDriver: TestDriver, caseSensitive: boolean, spriteNameRegex: string): Sprite {
+    static checkSpriteExistence(testDriver: TestDriver, caseSensitive: boolean, pSpriteNameRegex: ArgType): Sprite {
+        const spriteNameRegex = String(pSpriteNameRegex);
         if (spriteNameRegex.indexOf("Stage") != -1 || spriteNameRegex.indexOf("stage") != -1) {
             return testDriver.getStage();
         }
@@ -48,7 +61,7 @@ export abstract class ModelUtil {
         // console.log(regexParts);
 
         const regex = new RegExp(regexParts[0], regexParts[1]);
-        let sprite = testDriver.getSprites(s => {
+        let sprite = testDriver.getSprites((s: Sprite) => {
             if (caseSensitive) {
                 return s.isOriginal && s.name.match(regex);
             } else {
@@ -56,7 +69,7 @@ export abstract class ModelUtil {
             }
         })[0];
         if (!sprite) {
-            throw getSpriteNotFoundError(spriteNameRegex);
+            throw new SpriteNotFoundError(spriteNameRegex);
         }
         return sprite;
     }
@@ -66,13 +79,14 @@ export abstract class ModelUtil {
      * @param t Instance of the test driver.
      * @param caseSensitive Whether the names should be checked with case sensitivity or not.
      * @param sprite Sprite instance.
-     * @param variableNameRegex Name of the variable.
+     * @param pVariableNameRegex Name of the variable.
      */
-    static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, variableNameRegex: string):
+    static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, pVariableNameRegex: ArgType):
         { sprite: Sprite, variable: Variable } {
+        const variableNameRegex = String(pVariableNameRegex);
         let regexParts = ModelUtil.getRegexParts(caseSensitive, variableNameRegex);
 
-        function getVariable(variable) {
+        function getVariable(variable: { name: string; }) {
             if (caseSensitive) {
                 return variable.name.match(regex);
             } else {
@@ -99,18 +113,19 @@ export abstract class ModelUtil {
         }
 
         // There is no variable with that regex name on any sprite...
-        throw getVariableNotFoundError(variableNameRegex, sprite.name);
+        throw new VariableNotFoundError(variableNameRegex, sprite.name);
     }
 
     /**
      * Check the attribute name.
      * @param testDriver Instance of the test driver.
      * @param spriteName Sprite's name.
-     * @param attrName Name of the attribute e.g. x.
+     * @param pAttrName Name of the attribute e.g. x.
      */
-    static checkAttributeExistence(testDriver: TestDriver, spriteName: string, attrName: string) {
+    static checkAttributeExistence(testDriver: TestDriver, spriteName: string, pAttrName: ArgType): void {
+        const attrName = String(pAttrName);
         if (!this.isAnAttribute(attrName)) {
-            throw getAttributeNotFoundError(attrName, spriteName);
+            throw new AttributeNotFoundError(attrName, spriteName);
         }
     }
 
@@ -118,12 +133,13 @@ export abstract class ModelUtil {
      * Test whether a value changed.
      * @param oldValue Old value.
      * @param newValue New value.
-     * @param change For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='. "+=" for
+     * @param pChange For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='. "+=" for
      * increase or staying the same."-=" for decrease or staying the same. For a numerical
      * change by an exact value '+<number>' or '<number>' or '-<number>'.
      * "+=" for increase or staying the same."-=" for decrease or staying the same.
      */
-    static testChange(oldValue, newValue, change) {
+    static testChange(oldValue: string | string[], newValue: string | string[], pChange: ArgType): boolean {
+        let change = String(pChange);
         if (oldValue == undefined || newValue == undefined || change == undefined) {
             throw new Error("Undefined value.");
         }
@@ -131,39 +147,39 @@ export abstract class ModelUtil {
         if (change == '=' || change == '==') {
             return oldValue == newValue;
         }
-        oldValue = this.testNumber(oldValue);
-        newValue = this.testNumber(newValue);
+        const oldValueNumber = this.testNumber(oldValue);
+        const newValueNumber = this.testNumber(newValue);
 
         if (change != "" && change != "+=" && change.startsWith("+") && change.length > 1) {
             change = change.substring(1, change.length);
         }
 
         if (!isNaN(Number(change.toString()))) {
-            return oldValue + Number(change) === newValue;
+            return oldValueNumber + Number(change) === newValueNumber;
         }
 
         switch (change) {
             case '+':
             case '++':
-                return oldValue < newValue;
+                return oldValueNumber < newValueNumber;
             case '-':
             case '--':
-                return oldValue > newValue;
+                return oldValueNumber > newValueNumber;
             case '+=':
-                return oldValue <= newValue;
+                return oldValueNumber <= newValueNumber;
             case '-=':
-                return oldValue >= newValue;
+                return oldValueNumber >= newValueNumber;
             default:
-                throw getChangeComparisonNotKnownError(change);
+                throw new ChangeComparisonNotKnownError(change);
         }
     }
 
     /**
      * Test whether a value is a number.
      */
-    static testNumber(value): number {
-        if (!((value != null) && (value !== '') && !isNaN(Number(value.toString())))) {
-            throw getNotANumericalValueError(value);
+    static testNumber(value: ParamType): number {
+        if (value == null || value === '' || isNaN(Number(value.toString()))) {
+            throw new NotANumericalValueError(value.toString());
         }
         return Number(value.toString());
     }
@@ -174,7 +190,7 @@ export abstract class ModelUtil {
      * @param value2 Value on the right side of the comparison equation.
      * @param comparison Comparison mode, =|==, <, <=, >=, >
      */
-    static compare(value1, value2, comparison) {
+    static compare(value1: ParamType, value2: ParamType, comparison: ArgType): boolean {
         if (value1 == undefined || value2 == undefined) {
             throw new Error("comparison with undefined value");
         }
@@ -204,33 +220,35 @@ export abstract class ModelUtil {
             return value1 >= value2;
         }
 
-        throw getComparisonNotKnownError(comparison);
+        throw new ComparisonNotKnownError(comparison);
     }
 
 
     static readonly EXPR_START = "$(";
     static readonly EXPR_END = ")";
 
-    private static getSpriteString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string) {
+    private static getSpriteString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string): string {
         let name = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
         return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
             + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + spriteName + "');\n}\n";
+        // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
-    private static getVariableString(t: TestDriver, caseSensitive: boolean, index, spriteName: string, varName: string) {
+    private static getVariableString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string, varName: string): string {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
         let name = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).variable.name;
         return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
             " (variable" + index
             + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
+        // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
-    private static isAnAttribute(attrName: string) {
+    private static isAnAttribute(attrName: string): boolean {
         return this.testAttributeName(attrName) ||
             (attrName.startsWith('old.') && this.testAttributeName(attrName.substring(4)));
     }
 
-    private static testAttributeName(attrName: string) {
+    private static testAttributeName(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
         return attrName === "effects" || attrName === "x" || attrName === "y" || attrName === "pos"
             || attrName === "direction" || attrName === "visible" || attrName === "size"
@@ -243,15 +261,12 @@ export abstract class ModelUtil {
      * Returns a function needing a test driver instance that evaluates the expression by getting the correct
      * sprites and their attributes or values and combining the original expression parts.
      * @param t Instance of the test driver.
-     * @param caseSensitive Whether the names of sprites and variables should be tested case sensitive.
-     * @param toEval Expression to evaluate and make into a function.
+     * @param caseSensitive Whether the names of sprites and variables should be tested case-sensitive.
+     * @param pToEval Expression to evaluate and make into a function.
      */
-    static getExpressionForEval(t: TestDriver, caseSensitive: boolean, toEval: string):
-        {
-            expr: string, varDependencies: { spriteName: string, varName: string }[],
-            attrDependencies: { spriteName: string, attrName: string }[]
-        } {
+    static getExpressionForEval(t: TestDriver, caseSensitive: boolean, pToEval: ArgType): Expression {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
+        let toEval = String(pToEval);
         if (toEval.indexOf((this.EXPR_START)) == -1) {
             if (!toEval.startsWith("'")) {
                 toEval = "'" + toEval + "'";
@@ -262,10 +277,10 @@ export abstract class ModelUtil {
             try {
                 eval(toEval);
             } catch (e) {
-                throw geExprEvalError(e);
+                throw new ExprEvalError(e);
             }
 
-            let expr;
+            let expr: string;
             if (!caseSensitive) {
                 expr = "(t) => {return " + toEval.toLowerCase() + "}";
             } else {
@@ -279,31 +294,28 @@ export abstract class ModelUtil {
         }
 
         if (toEval.indexOf("\n") != -1) {
-            throw getExpressionEnterError();
+            throw new ExpressionEnterError();
         }
 
-        let {expr, varDependencies, attrDependencies} = this._getExpression(t, caseSensitive, toEval);
+        let expression = this._getExpression(t, caseSensitive, toEval);
 
         // all texts in "" to lower case
         if (!caseSensitive) {
-            expr = ModelUtil.toLowerCaseTexts(expr);
+            expression.expr = ModelUtil.toLowerCaseTexts(expression.expr);
         }
 
+        // Todo: refactor this code
         // test it beforehand
         try {
-            eval(expr)(t);
+            eval(expression.expr)(t);
         } catch (e) {
             throw e;
         }
 
-        return {
-            expr: expr,
-            varDependencies: varDependencies,
-            attrDependencies: attrDependencies
-        };
+        return expression;
     }
 
-    private static toLowerCaseTexts(expr: string) {
+    private static toLowerCaseTexts(expr: string): string {
         // all texts in "" to lower case
         let temp = expr.split("\"");
         if (temp.length > 2) {
@@ -320,29 +332,25 @@ export abstract class ModelUtil {
         return expr;
     }
 
-    private static _getExpression(t: TestDriver, caseSensitive: boolean, toEval: string):
-        {
-            expr: string, varDependencies: { spriteName: string, varName: string }[],
-            attrDependencies: { spriteName: string, attrName: string }[]
-        } {
-        let startIndex;
-        let endIndex;
+    private static _getExpression(t: TestDriver, caseSensitive: boolean, toEval: string): Expression {
+        let startIndex: number;
+        let endIndex: number;
         let expression = "return ";
         let inits = "(t) => {\n";
-        let subexpression;
+        let subexpression: string;
         let index = 0;
-        let varDependencies = [];
-        let attrDependencies = [];
+        let varDependencies: { spriteName: string, varName: string }[] = [];
+        let attrDependencies: { spriteName: string, attrName: string }[] = [];
 
-        let spriteMap: { [key: string]: number } = {};
+        let spriteMap: Record<string, number> = {};
 
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
             endIndex = toEval.indexOf(this.EXPR_END);
 
             if (endIndex == -1) {
-                throw getExpressionEndTagMissingError();
+                throw new ExpressionEndTagMissingError();
             } else if (startIndex + 2 >= endIndex - 1) {
-                throw getEmptyExpressionError();
+                throw new EmptyExpressionError();
             }
 
             let fillerBetween = toEval.substring(0, startIndex);
@@ -388,22 +396,18 @@ export abstract class ModelUtil {
      * Get all dependencies in a js function given as a string. A dependency is a sprite
      * @param functionCode
      */
-    static getDependencies(functionCode: string):
-        {
-            varDependencies: { spriteName: string, varName: string }[],
-            attrDependencies: { spriteName: string, attrName: string }[]
-        } {
+    static getDependencies(functionCode: string): Dependencies {
         if (functionCode.indexOf('getSprite') == -1) {
             return {varDependencies: [], attrDependencies: []};
         }
 
-        let attrDependencies: { [key: string]: string[] } = {};
-        let varDependencies: { [key: string]: string[] } = {};
+        let attrDependencies: Record<string, string[]> = {};
+        let varDependencies: Record<string, string[]> = {};
         const spriteGetter = /(?:let\s)?([A-Za-z0-9]+)\s?=\s?t.getSprite\(['"]([A-Za-z0-9]+)['"]\);/g;
         let spriteLines = functionCode.match(spriteGetter);
 
         // from  bound variable name to sprite name
-        let allSprites: { [key: string]: string } = {};
+        let allSprites: Record<string, string> = {};
 
         // there are lines as let apple = t.getSprite("Apple");
         if (spriteLines != null) {

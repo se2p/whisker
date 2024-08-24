@@ -1,7 +1,17 @@
-import {ModelNode} from "./ModelNode";
-import {ModelEdge, UserModelEdge} from "./ModelEdge";
+import {ModelNode, SimpleModelNode} from "./ModelNode";
+import {ModelEdge, SimpleUserModelEdge, UserModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
+import {ProgramModel} from "./ProgramModel";
+
+export interface SimpleUserModel {
+    id: string;
+    nodes: SimpleModelNode[];
+    edges: SimpleUserModelEdge[];
+    startNodeId: string;
+    stopNodeIds: string[];
+    stopAllNodeIds: string[]
+}
 
 /**
  *  Graph structure for a user model representing the user's behaviour when playing a Scratch program.
@@ -23,11 +33,11 @@ export class UserModel {
     protected readonly stopNodeIds: string[];
     protected readonly stopAllNodeIds: string[];
 
-    protected readonly nodes: { [key: string]: ModelNode };
-    protected readonly edges: { [key: string]: UserModelEdge };
+    protected readonly nodes: Record<string, ModelNode>;
+    protected readonly edges: Record<string, UserModelEdge>;
 
-    lastTransitionStep: number = 0;
-    secondLastTransitionStep: number = 0;
+    lastTransitionStep = 0;
+    secondLastTransitionStep = 0;
     stepNbrOfProgramEnd: number;
     protected currentState: ModelNode;
 
@@ -42,7 +52,7 @@ export class UserModel {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: { [key: string]: ModelNode }, edges: { [key: string]: UserModelEdge },
+    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>, edges: Record<string, UserModelEdge>,
                 stopNodeIds: string[], stopAllNodeIds: string[]) {
         if (!id) {
             throw new Error("No id given.");
@@ -78,7 +88,7 @@ export class UserModel {
     /**
      * Whether the model is in a stop state.
      */
-    stopped() {
+    stopped(): boolean {
         return this.currentState.isStopNode;
     }
 
@@ -97,33 +107,25 @@ export class UserModel {
     /**
      * Register the check listener and test driver on all node's edges.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(checkListener, testDriver, caseSensitive);
         });
     }
 
-    setTransitionsStartTo(steps: number) {
+    setTransitionsStartTo(steps: number): void {
         this.lastTransitionStep = steps;
         this.secondLastTransitionStep = steps;
     }
 
-    simplifyForSave() {
-        let edges = [];
-        for (let edgesKey in this.edges) {
-            edges.push(this.edges[edgesKey].simplifyForSave());
-        }
-        let nodes = [];
-        for (let nodesKey in this.nodes) {
-            nodes.push(this.nodes[nodesKey].simplifyForSave());
-        }
+    simplifyForSave(): SimpleUserModel {
         return {
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: nodes,
-            edges: edges
+            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.simplifyForSave()),
+            edges: ProgramModel.mapValuesToArray(this.edges, edge => edge.simplifyForSave())
         };
     }
 }

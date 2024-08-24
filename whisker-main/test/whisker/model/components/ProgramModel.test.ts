@@ -38,7 +38,7 @@ describe('Program model', () => {
         const totalCoverage = p.getTotalCoverage();
         expect(totalCoverage.covered.length).toBe(0);
         expect(totalCoverage.total).toBe(4);
-    expect(totalCoverage.missedEdges.length).toBe(4);
+        expect(totalCoverage.missedEdges.length).toBe(4);
 
         expect(() => {
             p.simplifyForSave();
