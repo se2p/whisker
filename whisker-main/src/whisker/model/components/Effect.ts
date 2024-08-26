@@ -51,7 +51,7 @@ export class Effect extends Check {
 
     /**
      * Get the effect function that evaluates whether the effect is fulfilled. This function is fixed on (and depends)
-     * on the test driver that was given by registerComponents(..) previously.
+     * on the test driver that was given by registerComponents(...) previously.
      */
     get effect(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         return this._effect;

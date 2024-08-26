@@ -43,7 +43,7 @@ export class Condition extends Check {
 
     /**
      * Get the condition function that evaluates whether the condition holds. This function is fixed on (and depends)
-     * on the test driver that was given by registerComponents(..) previously.
+     * on the test driver that was given by registerComponents(...) previously.
      */
     get condition(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         return this._condition;

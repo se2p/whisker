@@ -117,7 +117,7 @@ export abstract class CheckGenerator {
      * @param spriteNameRegex Regex describing the name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param comparison  Mode of comparison, e.g. =, <, >, <=, >=
-     * @param attrValue Value to compare to the attributes's current value.
+     * @param attrValue Value to compare to the attribute's current value.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
@@ -243,8 +243,8 @@ export abstract class CheckGenerator {
             throw new FunctionEvalError(e);
         }
 
-        let dependencies = ModelUtil.getDependencies(f);
-        let eventString = CheckUtility.getEventString(CheckName.Function, negated, f);
+        const dependencies = ModelUtil.getDependencies(f);
+        const eventString = CheckUtility.getEventString(CheckName.Function, negated, f);
         this.setupDependencies(cu, eventString, edgeLabel, graphID, dependencies.varDependencies,
             dependencies.attrDependencies, () => {
                 return !negated == fun(t);
@@ -259,8 +259,8 @@ export abstract class CheckGenerator {
                                      attrDependencies: { spriteName: string, attrName: string }[],
                                      predicate: (...sprite: Sprite[]) => boolean) {
         if (varDependencies.length > 0) {
-            varDependencies.forEach(({spriteName, varName}) => {
-                cu.registerVarEvent(varName, eventString, edgeLabel, graphID, predicate);
+            varDependencies.forEach(dependency => {
+                cu.registerVarEvent(dependency.varName, eventString, edgeLabel, graphID, predicate);
             });
         }
         if (attrDependencies.length > 0) {
@@ -382,7 +382,7 @@ export abstract class CheckGenerator {
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, spriteNameRegex, output);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
-            let sayText = !caseSensitive ? sprite.sayText.toLowerCase() : sprite.sayText;
+            const sayText = !caseSensitive ? sprite.sayText.toLowerCase() : sprite.sayText;
             return !negated == (sayText && sayText.indexOf(eval(expression)(t)) != -1);
         });
         return () => {
@@ -390,7 +390,7 @@ export abstract class CheckGenerator {
             let anySayText = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].sayText) {
-                    let sayText = !caseSensitive ? sprites[i].sayText.toLowerCase() : sprites[i].sayText;
+                    const sayText = !caseSensitive ? sprites[i].sayText.toLowerCase() : sprites[i].sayText;
                     if (sayText.indexOf(eval(expression)(t)) != -1) {
                         anySayText = true;
                         break;
@@ -419,7 +419,7 @@ export abstract class CheckGenerator {
                                   caseSensitive: boolean, spriteNameRegex: ArgType, varNameRegex: ArgType,
                                   change: ArgType): () => boolean {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
-        let {
+        const {
             sprite: foundSprite,
             variable: foundVar
         } = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varNameRegex);
@@ -472,7 +472,7 @@ export abstract class CheckGenerator {
         // is not a numerical value and e.g. an increase (+) on a string is not desired to be representable. An
         // AttributeChange predicate with sayText fails in the execution with e.g.
         // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
-        // Therefore no instrumentation is done here for the sayText attribute.
+        // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
             CheckGenerator.registerOnMoveAttrChange(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
                 attrName, change);
@@ -563,9 +563,9 @@ export abstract class CheckGenerator {
      */
     static getExpressionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                               caseSensitive: boolean, expr: ArgType): () => boolean {
-        let e = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
+        const e = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
 
-        let eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
+        const eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
         this.setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, () => {
             return !negated == eval(e.expr)(t);
         });
@@ -729,10 +729,10 @@ export abstract class CheckGenerator {
             throw new Error("Random value check only implemented for x and y value at the moment...");
         }
 
-        let oldValues = [];
+        const oldValues = [];
 
         // updates value on move
-        let check = (sprite: Sprite) => {
+        const check = (sprite: Sprite) => {
             // ignore it the value did not change
             if (oldValues.length && oldValues.length > 0 && oldValues[oldValues.length - 1] == sprite[attrName]) {
                 return !negated;
@@ -753,7 +753,7 @@ export abstract class CheckGenerator {
             if (sprites.length > 1) {
                 return !negated;
             }
-            let currentValue = oldValues[oldValues.length - 1];
+            const currentValue = oldValues[oldValues.length - 1];
 
             // the current value is on the last index of the list (by on moved set), if the previous two are also
             // the same value it is not random

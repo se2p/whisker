@@ -244,13 +244,13 @@ export class CheckUtility extends EventEmitter {
      * Check the registered effects of this step.
      */
     checkEffects(): Effect[] {
-        let contradictingEffects = [];
-        let doNotCheck = {};
-        let newEffects = [];
+        const contradictingEffects = [];
+        const doNotCheck = {};
+        const newEffects = [];
 
         // check for contradictions in effects and only test an effect if it does not contradict another one
         for (let i = 0; i < this.effectChecks.length; i++) {
-            let effect = this.effectChecks[i].effect;
+            const effect = this.effectChecks[i].effect;
             for (let j = i + 1; j < this.effectChecks.length; j++) {
                 if (effect.contradicts(this.effectChecks[j].effect)) {
                     doNotCheck[i] = true;
@@ -259,9 +259,9 @@ export class CheckUtility extends EventEmitter {
             }
 
             if (!doNotCheck[i]) {
-                let model = this.effectChecks[i].model;
-                let effect = this.effectChecks[i].effect;
-                let stepsSinceLastTransition = model.lastTransitionStep - model.secondLastTransitionStep + 1;
+                const model = this.effectChecks[i].model;
+                const effect = this.effectChecks[i].effect;
+                const stepsSinceLastTransition = model.lastTransitionStep - model.secondLastTransitionStep + 1;
                 try {
                     if (!effect.check(stepsSinceLastTransition, model.programEndStep)) {
                         newEffects.push(this.effectChecks[i]);
@@ -293,7 +293,7 @@ export class CheckUtility extends EventEmitter {
      * @param effect Effect that failed.
      */
     addFailOutput(edge: ModelEdge, effect: Effect): void {
-        let output = getEffectFailedOutput(edge, effect);
+        const output = getEffectFailedOutput(edge, effect);
         this.failOrError(output, this.failOutputs);
         this.modelResult.addFail(output);
     }
@@ -305,7 +305,7 @@ export class CheckUtility extends EventEmitter {
      * @param e Error that was thrown
      */
     addErrorOutput(edgeLabel: string, graphID: string, e: Error): void {
-        let output = getErrorOnEdgeOutput(edgeLabel, graphID, e.message);
+        const output = getErrorOnEdgeOutput(edgeLabel, graphID, e.message);
         this.failOrError(output, this.errorOutputs);
         this.modelResult.addError(output);
     }
@@ -363,10 +363,10 @@ export class CheckUtility extends EventEmitter {
 
     private check(checks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[]):
         { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] {
-        let newFailedList = [];
+        const newFailedList = [];
         for (let i = 0; i < checks.length; i++) {
-            let effect = checks[i].effect;
-            let stepsSinceLastTransition = checks[i].model.lastTransitionStep
+            const effect = checks[i].effect;
+            const stepsSinceLastTransition = checks[i].model.lastTransitionStep
                 - checks[i].model.secondLastTransitionStep + 1;
             try {
                 if (!effect.check(stepsSinceLastTransition, checks[i].model.programEndStep)) {

@@ -34,7 +34,7 @@ export abstract class ModelUtil {
         }
 
         let firstPart = regex.substring(1, regex.length);
-        let secondSlashIndex = firstPart.indexOf("/");
+        const secondSlashIndex = firstPart.indexOf("/");
         if (secondSlashIndex == -1) {
             return [firstPart, caseSensitive ? "" : "i"];
         }
@@ -57,11 +57,11 @@ export abstract class ModelUtil {
         if (spriteNameRegex.indexOf("Stage") != -1 || spriteNameRegex.indexOf("stage") != -1) {
             return testDriver.getStage();
         }
-        let regexParts = ModelUtil.getRegexParts(caseSensitive, spriteNameRegex);
+        const regexParts = ModelUtil.getRegexParts(caseSensitive, spriteNameRegex);
         // console.log(regexParts);
 
         const regex = new RegExp(regexParts[0], regexParts[1]);
-        let sprite = testDriver.getSprites((s: Sprite) => {
+        const sprite = testDriver.getSprites((s: Sprite) => {
             if (caseSensitive) {
                 return s.isOriginal && s.name.match(regex);
             } else {
@@ -84,7 +84,7 @@ export abstract class ModelUtil {
     static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, pVariableNameRegex: ArgType):
         { sprite: Sprite, variable: Variable } {
         const variableNameRegex = String(pVariableNameRegex);
-        let regexParts = ModelUtil.getRegexParts(caseSensitive, variableNameRegex);
+        const regexParts = ModelUtil.getRegexParts(caseSensitive, variableNameRegex);
 
         function getVariable(variable: { name: string; }) {
             if (caseSensitive) {
@@ -103,9 +103,9 @@ export abstract class ModelUtil {
 
         // The variable is not defined on the sprite, search for the same variable name on other sprites and
         // take that one....
-        let sprites = t.getSprites(() => true, false);
+        const sprites = t.getSprites(() => true, false);
         for (let i = 0; i < sprites.length; i++) {
-            let sprite = sprites[i];
+            const sprite = sprites[i];
             variable = sprite.getVariables(getVariable)[0];
             if (variable) {
                 return {sprite, variable};
@@ -228,15 +228,15 @@ export abstract class ModelUtil {
     static readonly EXPR_END = ")";
 
     private static getSpriteString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string): string {
-        let name = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
+        const name = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
         return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
             + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + spriteName + "');\n}\n";
         // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
     private static getVariableString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string, varName: string): string {
-        let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
-        let name = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).variable.name;
+        const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
+        const name = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).variable.name;
         return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
             " (variable" + index
             + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
@@ -297,19 +297,18 @@ export abstract class ModelUtil {
             throw new ExpressionEnterError();
         }
 
-        let expression = this._getExpression(t, caseSensitive, toEval);
+        const expression = this._getExpression(t, caseSensitive, toEval);
 
         // all texts in "" to lower case
         if (!caseSensitive) {
             expression.expr = ModelUtil.toLowerCaseTexts(expression.expr);
         }
 
-        // Todo: refactor this code
         // test it beforehand
         try {
             eval(expression.expr)(t);
         } catch (e) {
-            throw e;
+            throw new ExprEvalError(e);
         }
 
         return expression;
@@ -317,7 +316,7 @@ export abstract class ModelUtil {
 
     private static toLowerCaseTexts(expr: string): string {
         // all texts in "" to lower case
-        let temp = expr.split("\"");
+        const temp = expr.split("\"");
         if (temp.length > 2) {
             // (0) return => (1) "Hello (2) "
             expr = temp[0];
@@ -339,10 +338,10 @@ export abstract class ModelUtil {
         let inits = "(t) => {\n";
         let subexpression: string;
         let index = 0;
-        let varDependencies: { spriteName: string, varName: string }[] = [];
-        let attrDependencies: { spriteName: string, attrName: string }[] = [];
+        const varDependencies: { spriteName: string, varName: string }[] = [];
+        const attrDependencies: { spriteName: string, attrName: string }[] = [];
 
-        let spriteMap: Record<string, number> = {};
+        const spriteMap: Record<string, number> = {};
 
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
             endIndex = toEval.indexOf(this.EXPR_END);
@@ -361,12 +360,12 @@ export abstract class ModelUtil {
 
             subexpression = toEval.substring(startIndex + 2, endIndex);
             toEval = toEval.substring(endIndex + 1, toEval.length);
-            let pointIndex = subexpression.indexOf(".");
-            let spriteName = subexpression.substring(0, pointIndex);
-            let attrName = subexpression.substring(pointIndex + 1, subexpression.length);
+            const pointIndex = subexpression.indexOf(".");
+            const spriteName = subexpression.substring(0, pointIndex);
+            const attrName = subexpression.substring(pointIndex + 1, subexpression.length);
 
             if (spriteMap[spriteName] == undefined) {
-                let spriteString = this.getSpriteString(t, caseSensitive, index, spriteName);
+                const spriteString = this.getSpriteString(t, caseSensitive, index, spriteName);
                 spriteMap[spriteName] = index;
                 inits += spriteString;
                 index++;
@@ -401,19 +400,19 @@ export abstract class ModelUtil {
             return {varDependencies: [], attrDependencies: []};
         }
 
-        let attrDependencies: Record<string, string[]> = {};
-        let varDependencies: Record<string, string[]> = {};
+        const attrDependencies: Record<string, string[]> = {};
+        const varDependencies: Record<string, string[]> = {};
         const spriteGetter = /(?:let\s)?([A-Za-z0-9]+)\s?=\s?t.getSprite\(['"]([A-Za-z0-9]+)['"]\);/g;
-        let spriteLines = functionCode.match(spriteGetter);
+        const spriteLines = functionCode.match(spriteGetter);
 
         // from  bound variable name to sprite name
-        let allSprites: Record<string, string> = {};
+        const allSprites: Record<string, string> = {};
 
         // there are lines as let apple = t.getSprite("Apple");
         if (spriteLines != null) {
             const nameGetter = /(?:let\s)?([A-Za-z0-9]+)\s?=\s?t.getSprite\(['"]([A-Za-z0-9]+)['"]\)/i;
             for (let i = 0; i < spriteLines.length; i++) {
-                let names = spriteLines[i].match(nameGetter);
+                const names = spriteLines[i].match(nameGetter);
                 allSprites[names[1]] = names[2];
                 attrDependencies[names[2]] = [];
                 varDependencies[names[2]] = [];
@@ -422,11 +421,11 @@ export abstract class ModelUtil {
 
         // Attribute used with getSprite
         const spriteWithAttrGetter = /t.getSprite\(['"](\w+)['"]\)\.(?!getVariable)(\w+)(\s|;|\n)?/g;
-        let spriteAndAttr = functionCode.match(spriteWithAttrGetter);
+        const spriteAndAttr = functionCode.match(spriteWithAttrGetter);
         if (spriteAndAttr != null) {
             const spriteAndAttrGetter2 = /t.getSprite\(['"](\w+)['"]\)\.(?!getVariable)(\w+)(\s|;|\n)?/;
             for (let i = 0; i < spriteAndAttr.length; i++) {
-                let match = spriteAndAttr[i].match(spriteAndAttrGetter2);
+                const match = spriteAndAttr[i].match(spriteAndAttrGetter2);
                 if (attrDependencies[match[1]] == undefined) {
                     attrDependencies[match[1]] = [match[2]];
                 } else {
@@ -437,11 +436,11 @@ export abstract class ModelUtil {
 
         // Variable used with getSprite
         const spriteWithVarGetter = /t.getSprite\(['"](\w+)['"]\)\.getVariable\(['"](\w+)['"]\)/g;
-        let spriteAndVar = functionCode.match(spriteWithVarGetter);
+        const spriteAndVar = functionCode.match(spriteWithVarGetter);
         if (spriteAndVar != null) {
             const detailedGetter = /t.getSprite\(['"](\w+)['"]\)\.getVariable\(['"](\w+)['"]\)/;
             for (let i = 0; i < spriteAndVar.length; i++) {
-                let match = spriteAndVar[i].match(detailedGetter);
+                const match = spriteAndVar[i].match(detailedGetter);
                 if (varDependencies[match[1]] == undefined) {
                     varDependencies[match[1]] = [match[2]];
                 } else {
@@ -452,43 +451,43 @@ export abstract class ModelUtil {
 
         const variableGetter = "\\.getVariable\\(['\"](\\w+)['\"]\\)";
         const variableNameGetter = /.getVariable\(['"](\w+)['"]\)/;
-        for (let allSpritesKey in allSprites) {
+        for (const allSpritesKey in allSprites) {
             // get all variables of this sprite used
             const regex = new RegExp(allSpritesKey + variableGetter, "g");
-            let matches = functionCode.match(regex);
+            const matches = functionCode.match(regex);
             if (matches != null) {
                 for (let i = 0; i < matches.length; i++) {
-                    let name = matches[i].match(variableNameGetter);
+                    const name = matches[i].match(variableNameGetter);
                     varDependencies[allSprites[allSpritesKey]].push(name[1]);
                 }
             }
         }
 
         const attributeGetter = "\\.(?!getVariable)(\\w+)";
-        for (let allSpritesKey in allSprites) {
+        for (const allSpritesKey in allSprites) {
             // get all variables of this sprite used
             const regex = new RegExp(allSpritesKey + attributeGetter, "g");
-            let matches = functionCode.match(regex);
+            const matches = functionCode.match(regex);
             if (matches != null) {
                 for (let i = 0; i < matches.length; i++) {
-                    let name = matches[i].substring(matches[i].indexOf(".") + 1, matches[i].length);
+                    const name = matches[i].substring(matches[i].indexOf(".") + 1, matches[i].length);
                     attrDependencies[allSprites[allSpritesKey]].push(name);
                 }
             }
         }
 
-        let newAttrDep = [];
-        let newVarDep = [];
+        const newAttrDep = [];
+        const newVarDep = [];
 
-        for (let spriteName in attrDependencies) {
-            let attributes = new Set(attrDependencies[spriteName]);
+        for (const spriteName in attrDependencies) {
+            const attributes = new Set(attrDependencies[spriteName]);
             attributes.forEach(x => {
                 newAttrDep.push({spriteName, attrName: x});
 
             });
         }
         for (const spriteName in varDependencies) {
-            let variables = new Set(varDependencies[spriteName]);
+            const variables = new Set(varDependencies[spriteName]);
             variables.forEach(x => {
                 newVarDep.push({spriteName, varName: x});
             });

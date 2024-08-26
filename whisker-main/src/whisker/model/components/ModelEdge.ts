@@ -90,7 +90,7 @@ export abstract class ModelEdge {
             return this.conditions;
         }
 
-        let failedConditions: Condition[] = [];
+        const failedConditions: Condition[] = [];
 
         // times up... force testing of conditions and if they are not fulfilled make add as failed
         if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
@@ -127,7 +127,7 @@ export abstract class ModelEdge {
     }
 
     /**
-     * Do nothing.. Only on subtype ProgramModelEdge.
+     * Do nothing... Only on subtype ProgramModelEdge.
      */
     checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                            eventStrings: string[]): Condition[] {
@@ -283,9 +283,9 @@ export class ProgramModelEdge extends ModelEdge {
             return this.conditions;
         }
 
-        let failed = [];
+        const failed = [];
         for (let j = 0; j < this.conditions.length; j++) {
-            let cond = this.conditions[j];
+            const cond = this.conditions[j];
             const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
 
             if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
