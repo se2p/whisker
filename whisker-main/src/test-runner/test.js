@@ -10,11 +10,18 @@ class Test {
         }
 
         defaults(this, props, {
-            test: () => {},
             name: null,
             description: null,
             categories: [],
-            skip: false
+            skip: false,
+            type: null, // 'Whisker' || null => Whisker test, 'BBT' => Block-Based test
+
+            test: () => {}, // Whisker tests contain a function that describes the actual test
+
+            // Block-Based tests contain the Scratch hat block ID
+            // and the Scratch target ID it refers to
+            hatBlockId: null,
+            containingSpriteId: null
         });
     }
 
@@ -30,6 +37,13 @@ class Test {
      */
     static get FAIL () {
         return 'fail';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static get TIMEOUT () {
+        return 'timeout';
     }
 
     /**

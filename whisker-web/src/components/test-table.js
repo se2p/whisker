@@ -2,13 +2,20 @@ const {$} = require('../web-libs');
 const index = require('../index');
 const Test = require('whisker-main/src/test-runner/test.js');
 const TestRunner = require('whisker-main/src/test-runner/test-runner.js');
+
+const FAIL_SIGN = '\u2717';
+const SKIP_SIGN = '\u26A0';
+const ERROR_SIGN = '\u26A0'; // same as skip, is just colored differently
+const PASS_SIGN = '\u2713';
+const TIMEOUT_SIGN = '\u231B';
+
 /**
  * <div>
  *     <table></table>
  * </div>
  */
 class TestTable {
-    constructor (div, runTests, testRunner) {
+    constructor (div, runSingleTest, testRunner) {
         this.div = div;
         this.table = $(div).find('table');
         this.dataTable = null;
@@ -26,6 +33,19 @@ class TestTable {
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
         testRunner.on(TestRunner.TEST_ERROR, this._onTestDone);
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
+
+        window.Whisker.scratch.vm.on('BBT_TEST_STARTED',
+            this.onBBTTestStarted.bind(this));
+        window.Whisker.scratch.vm.on('BBT_TEST_FINISHED_NATURALLY',
+            this.onBBTTestFinishedNaturally.bind(this));
+        window.Whisker.scratch.vm.on('BBT_TEST_TIMEOUT',
+            this.onBBTTestTimeout.bind(this));
+        window.Whisker.scratch.vm.on('BBT_ERROR_OCCURRED',
+            this.onBBTErrorOccurred.bind(this));
+        window.Whisker.scratch.vm.on('PROJECT_RUN_STOP',
+            this.onProjectRunStop.bind(this));
+        window.Whisker.scratch.vm.on('BBT_ASSERTION_SUCCESS',
+            this.onBBTAssertionSuccess.bind(this));
 
         this.table.on('click', '.toggle-details', event => {
             const row = this.dataTable.row($(event.target).closest('tr'));
@@ -46,10 +66,16 @@ class TestTable {
         });
 
         this.table.on('click', '.run-test', event => {
+
+            if (window.Whisker.scratch.vm.runtime.bbtTestRunning) {
+                console.error('Cannot start a test while another is already running!');
+                return;
+            }
+
             const tr = $(event.target).closest('tr');
             const row = this.dataTable.row(tr);
             const test = row.data();
-            runTests([test]);
+            runSingleTest(test);
         });
         this.table.on('click', '.debug-test', event => {
             const tr = $(event.target).closest('tr');
@@ -105,10 +131,6 @@ class TestTable {
      * @param {TestResult} result .
      */
     onTestDone(result) {
-        const failSign = '\u2717';
-        const skipSign = '\u26A0';
-        const errorSign = '\u26A0'; // same as skip, is just colored differently
-        const passSign = '\u2713';
         if (result.test) {
             let test = result.test;
             let status = result.status;
@@ -119,22 +141,209 @@ class TestTable {
             test.log = result.log;
             switch (status) {
                 case Test.FAIL:
-                    test.testResultSign = failSign;
+                    test.testResultSign = FAIL_SIGN;
                     break;
                 case Test.SKIP:
-                    test.testResultSign = skipSign;
+                    test.testResultSign = SKIP_SIGN;
                     break;
                 case Test.PASS:
-                    test.testResultSign = passSign;
+                    test.testResultSign = PASS_SIGN;
                     break;
                 case Test.ERROR:
-                    test.testResultSign = errorSign;
+                    test.testResultSign = ERROR_SIGN;
             }
             this.updateTest(test);
         }
         if (result.modelResult) {
            // todo adapt for model
         }
+    }
+
+    /**
+     * Update the test table to show the spinning icon
+     * while the BBT test is running.
+     *
+     * @param {object} data Contains the ID of the BBT test.
+     */
+    onBBTTestStarted (data) {
+        if (!window.Whisker.bbtTests) {
+            return;
+        }
+
+        const test = window.Whisker.bbtTests.get(data.id);
+
+        if (!test) {
+            return;
+        }
+
+        this.updateTest(test);
+    }
+
+    /**
+     * Update the test attributes to represent its result.
+     *
+     * @param {string} bbtTestID The ID of the BBT test.
+     */
+    onBBTTestFinishedNaturally (bbtTestID) {
+        if (!window.Whisker.bbtTests) {
+            return;
+        }
+
+        const test = window.Whisker.bbtTests.get(bbtTestID);
+
+        if (!test) {
+            return;
+        }
+
+        if (!test.isRunning) {
+            // For timed-out tests, a BBT_FINISHED_NATURALLY event
+            // is still emitted when the respective thread is retired, ignore.
+            return;
+        }
+
+        test.isRunning = false;
+        this.registerBBTTestResult(test);
+    }
+
+    /**
+     * Update the test attributes to represent the timeout.
+     *
+     * @param {string} bbtTestID the ID of the BBT test
+     */
+    onBBTTestTimeout (bbtTestID) {
+        if (!window.Whisker.bbtTests) {
+            return;
+        }
+
+        const test = window.Whisker.bbtTests.get(bbtTestID);
+
+        if (!test) {
+            return;
+        }
+
+        test.isRunning = false;
+        test.testResultSign = TIMEOUT_SIGN;
+        test.testResultClass = Test.FAIL;
+        test.translatedTestResult = index.i18n.t(Test.TIMEOUT);
+        test.error = {
+            name: index.i18n.t(Test.TIMEOUT)
+        };
+
+        const logMsg = `Block-Based Test "${test.name}": Test Result: Timeout!`;
+        window.Whisker.outputLog.println(logMsg);
+        window.Whisker.outputRun.println(logMsg);
+
+        this.updateTest(test);
+    }
+
+    /**
+     * Increment the error counter for the respective error that has occurred.
+     *
+     * @param {object} errorObject information about the error as emitted by the VM
+     */
+    onBBTErrorOccurred (errorObject) {
+        if (!window.Whisker.bbtTests) {
+            return;
+        }
+
+        const test = window.Whisker.bbtTests.get(errorObject.testId);
+
+        if (!test) {
+            return;
+        }
+
+        if (!test.bbtError) {
+            test.bbtError = {};
+        }
+
+        if (Object.hasOwn(test.bbtError, errorObject.type)) {
+            test.bbtError[errorObject.type] += 1;
+        } else {
+            test.bbtError[errorObject.type] = 1;
+        }
+
+        const logMsg = `Block-Based Test "${test.name}": Error: ${errorObject.type}`;
+        window.Whisker.outputLog.println(logMsg);
+        window.Whisker.outputRun.println(logMsg);
+    }
+
+    /**
+     * Register test execution abortion for BBT tests.
+     */
+    onProjectRunStop () {
+        if (!window.Whisker.bbtTests) {
+            return;
+        }
+
+        window.Whisker.bbtTests.forEach(bbtTest => {
+
+            if (bbtTest.isRunning) {
+                bbtTest.isRunning = false;
+
+                bbtTest.testResultSign = ERROR_SIGN;
+                bbtTest.testResultClass = Test.ERROR;
+                bbtTest.translatedTestResult = index.i18n.t(Test.ERROR);
+                bbtTest.error = {
+                    name: index.i18n.t(Test.ERROR)
+                };
+
+                const logMsg = `Block-Based Test "${bbtTest.name}" was aborted!`;
+                window.Whisker.outputLog.println(logMsg);
+                window.Whisker.outputRun.println(logMsg);
+
+                this.updateTest(bbtTest);
+            }
+        });
+    }
+
+    /**
+     * Increment the passing assertion counter.
+     *
+     * @param {object} data contains the test ID
+     */
+    onBBTAssertionSuccess (data) {
+        if (!window.Whisker.bbtTests) {
+            return;
+        }
+
+        const test = window.Whisker.bbtTests.get(data.testId);
+
+        if (!test) {
+            return;
+        }
+
+        if (Object.hasOwn(test, 'bbtPassingAssertionCount')) {
+            test.bbtPassingAssertionCount += 1;
+        } else {
+            test.bbtPassingAssertionCount = 1;
+        }
+    }
+
+    /**
+     * Determines the test result and updates the data table.
+     *
+     * @param {object} test the test to be evaluated
+     */
+    registerBBTTestResult (test) {
+        if (!window.Whisker.bbtTests || !test) {
+            return;
+        }
+
+        if (test.error || test.bbtError) {
+            test.testResultSign = FAIL_SIGN;
+            test.testResultClass = Test.FAIL;
+            test.translatedTestResult = index.i18n.t(Test.FAIL);
+        } else {
+            test.testResultSign = PASS_SIGN;
+            test.testResultClass = Test.PASS;
+            test.translatedTestResult = index.i18n.t(Test.PASS);
+        }
+
+        const logMsg = `Block-Based Test "${test.name}": Test Result: ${test.testResultClass}`;
+        window.Whisker.outputLog.println(logMsg);
+        window.Whisker.outputRun.println(logMsg);
+
+        this.updateTest(test);
     }
 
     /**
@@ -337,6 +546,24 @@ class TestTable {
                 } else {
                     result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
                 }
+            }
+        }
+
+        if (test.type === 'BBT' &&
+            Object.hasOwn(test, 'testResultSign') &&
+            test.testResultSign !== null) {
+
+            result += `<td>${index.i18n.t('passing-assertion-count')}</td>
+                       <td>${test.bbtPassingAssertionCount}</td>\n</tr>`;
+        }
+
+        if (test.type === 'BBT' &&
+            Object.hasOwn(test, 'bbtError') &&
+            test.bbtError !== null) {
+
+            for (const [key, value] of Object.entries(test.bbtError)) {
+                result += `<td>${index.i18n.t(key)}</td>
+                       <td>${value}</td>\n</tr>`;
             }
         }
 
