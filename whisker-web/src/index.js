@@ -57,6 +57,30 @@ const initialParams = new URLSearchParams(window.location.search); // This is on
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 let testsRunning = false;
+
+/**
+ * Combines both Whisker and block-based tests into a single array.
+ *
+ * @return {(Test[]|string)} the combined array
+ */
+const getCombinedWhiskerAndBBTTests = function () {
+    if (typeof Whisker.tests === 'string') {
+        return Whisker.tests;
+    }
+
+    let combined = [];
+
+    if (Whisker.bbtTests) {
+        combined = combined.concat(Array.from(Whisker.bbtTests.values()));
+    }
+
+    if (Array.isArray(Whisker.tests)) {
+        combined = combined.concat(Whisker.tests);
+    }
+
+    return combined;
+};
+
 const loadModelFromString = function (models) {
     try {
         Whisker.modelTester.load(models);
@@ -113,8 +137,96 @@ const loadTestsFromString = async function (string) {
     Whisker.tests = tests;
     Whisker.testsString = string;
     Whisker.testEditor.setValue(string);
-    Whisker.testTable.setTests(tests);
+
+    Whisker.testTable.setTests(getCombinedWhiskerAndBBTTests());
+
     return tests;
+};
+
+/**
+ * Load Block-Based Tests into Whisker and the test table.
+ *
+ * @param {Map<string, Test>} bbtTests A map of Block-Based Tests to load.
+ */
+const loadBBTTests = function (bbtTests) {
+    Whisker.bbtTests = bbtTests;
+
+    // only update the test table if the project contains
+    // BBT tests and Whisker.tests does not contain
+    // Neuroevolution TestSuites (-> string)
+    if (bbtTests.size > 0 && typeof Whisker.tests !== 'string') {
+        Whisker.testTable.setTests(getCombinedWhiskerAndBBTTests());
+    }
+};
+
+/**
+ * Run a Block-Based Test.
+ * Can be awaited for to continue after the test has ended.
+ * Test result evaluation is not done here, but in test-table.js!
+ *
+ * @param {object} bbtTest A BBT test object.
+ */
+const runBBTTest = async function (bbtTest) {
+    await new Promise(resolve => {
+
+        if (Whisker.scratch.vm.runtime.bbtTestRunning) {
+            console.error('runBBTTest aborted: bbtTestRunning!');
+            resolve();
+        }
+
+        if (bbtTest.isRunning) {
+            console.error('runBBTTest aborted: this BBT test is already running!');
+            resolve();
+        }
+
+        // I'm unsure why stopping and starting the VM is necessary.
+        // For individual test runs, the VM of course must be running/started.
+        // However, stopping is also necessary? BBT tests restore the original state
+        // after execution, but here it does not work without the stop instruction.
+        Whisker.scratch.stop();
+        Whisker.scratch.start();
+
+        bbtTest.isRunning = true;
+        bbtTest.testResultClass = null;
+        bbtTest.testResultSign = null;
+        bbtTest.translatedTestResult = null;
+        bbtTest.error = null;
+        bbtTest.bbtError = null;
+        bbtTest.log = [];
+        bbtTest.bbtPassingAssertionCount = 0;
+
+        const handleTestEnd = topBlockId => {
+            if (topBlockId === bbtTest.hatBlockId) {
+                // eslint-disable-next-line no-use-before-define
+                removeListeners();
+                bbtTest.isRunning = false;
+                resolve();
+            }
+        };
+
+        const handleTestAbort = () => {
+            // eslint-disable-next-line no-use-before-define
+            removeListeners();
+            // bbtTest.isRunning is set to false in test-table.js,
+            // as tests that were running at the time of the abortion must be detectable somehow!
+            resolve();
+        };
+
+        const removeListeners = () => {
+            Whisker.scratch.vm.removeListener('BBT_TEST_FINISHED_NATURALLY', handleTestEnd);
+            Whisker.scratch.vm.removeListener('BBT_TEST_TIMEOUT', handleTestEnd);
+            Whisker.scratch.vm.removeListener('PROJECT_RUN_STOP', handleTestAbort);
+        };
+
+        Whisker.scratch.vm.addListener('BBT_TEST_FINISHED_NATURALLY', handleTestEnd);
+        Whisker.scratch.vm.addListener('BBT_TEST_TIMEOUT', handleTestEnd);
+        Whisker.scratch.vm.addListener('PROJECT_RUN_STOP', handleTestAbort);
+
+        // This is where the BBT test is actually started:
+        // the hat block is pushed for execution in a thread by the VM.
+        Whisker.scratch.vm.runtime._pushThread(bbtTest.hatBlockId,
+            Whisker.scratch.vm.runtime.getTargetById(bbtTest.containingSpriteId), null);
+    });
 };
 
 const enableVMRelatedButtons = function () {
@@ -159,147 +271,178 @@ const runSearch = async function () {
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
-    if (testsRunning) {
-        testsRunning = false;
-        _showRunIcon();
-        _enableVMRelatedButtons();
-        Whisker.scratch.stop();
-        Whisker.testRunner.abort();
-        Whisker.testTable.updateAfterAbort();
-    } else {
-        _disableVMRelatedButtons('#run-all-tests');
-        testsRunning = true;
-        _showStopIcon();
-        $('#green-flag').prop('disabled', true);
-        $('#reset').prop('disabled', true);
-        $('#record').prop('disabled', true);
 
-        // Activate listener for tracing executed blocks
-        const traceBlocks = document.querySelector('#container').traceBlocks;
-        if (traceBlocks) {
-            Whisker.testRunner.on(TestRunner.RUN_END, () => {
-                const blob = new Blob([JSON.stringify(Whisker.testRunner.blockTraces)],
-                    {type: 'application/json;charset=utf-8'});
-                FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
-            });
-        }
-
-        let summary;
-        let csvResults;
-        let coverage;
-        let coverageModels = {};
-        accSlider.slider('disable');
-
-        const setMutators = document.querySelector('#container').mutators;
-        const mutantDownload = document.querySelector('#container').downloadMutants;
-
-        let duration = Number(document.querySelector('#model-duration').value);
-        if (duration) {
-            duration = duration * 1000;
-        }
-        const repetitions = Number(document.querySelector('#model-repetitions').value);
-        const caseSensitive = $('#model-case-sensitive').is(':checked');
-
-        const props = {
-            accelerationFactor: $('#acceleration-value').text(),
-            seed: document.getElementById('seed').value,
-            projectName: Whisker.projectFileSelect.getName(),
-            mutators: !setMutators || setMutators === '' ? ['NONE'] : setMutators,
-            mutationBudget: document.querySelector('#container').mutationBudget,
-            maxMutants: document.querySelector('#container').maxMutants,
-            mutantDownload: mutantDownload,
-            traceBlocks: traceBlocks,
-            log: true,
-            useSaveStates: $('#use-save-states').is(':checked'),
-        };
-
-        let mutantPrograms = [];
-        try {
-            if (props.useSaveStates) {
-                // Loading the project again seems unnecessary here. But removing
-                // this line can cause occasional crashes in the renderer when
-                // restoring the save state between test executions. See issue #217.
-                await vm.loadProject(project);
-            }
-
-            vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
-
-            CoverageGenerator.prepareVM(vm);
-
-            [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-                Whisker.modelTester, props, {duration, repetitions, caseSensitive});
-            coverage = CoverageGenerator.getCoverage();
-            Whisker.outputLog.println(csvResults);
-
-            // Download generated mutants if desired.
-            if (mutantDownload && mutantPrograms.length > 0){
-                await downloadMutants(mutantPrograms);
-            }
-
-            if (Whisker.modelTester.programModelsLoaded()) {
-                coverageModels = Whisker.modelTester.getTotalCoverage();
-            }
-
-            if (typeof window.messageServantCallback === 'function') {
-                const coveredBlockIdsPerSprite =
-                    [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-                const blockIdsPerSprite =
-                    [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-
-                const modelCoverage = [];
-                if (Whisker.modelTester.programModelsLoaded()) {
-                    for (const modelName in coverageModels) {
-                        const content = [];
-                        const elem = coverageModels[modelName];
-                        content.push({key: 'covered', values: elem.covered});
-                        content.push({key: 'total', values: elem.total});
-                        content.push({key: 'missedEdges', values: elem.missedEdges});
-                        modelCoverage.push({key: modelName, values: content});
-                    }
-                }
-                const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-                const serializableModelCoverage = {modelCoverage};
-                window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
-            }
-        } finally {
-            _showRunIcon();
-            enableVMRelatedButtons();
-            accSlider.slider('enable');
-            testsRunning = false;
-        }
-
-        if (summary === null) {
-            return;
-        }
-
-        const formattedSummary = TAP13Formatter.formatSummary(summary);
-        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-
-        const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
-        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-
-        let modelCoverageString = '';
-
-        // Add model coverage if we have model-based results
-        if (Object.keys(coverageModels).length > 0) {
-            const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-            modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
-        }
-
-        Whisker.outputRun.println([
-            summaryString,
-            coverageString,
-            modelCoverageString
-        ].join('\n'));
+    // Activate listener for tracing executed blocks
+    const traceBlocks = document.querySelector('#container').traceBlocks;
+    if (traceBlocks) {
+        Whisker.testRunner.on(TestRunner.RUN_END, () => {
+            const blob = new Blob([JSON.stringify(Whisker.testRunner.blockTraces)],
+                {type: 'application/json;charset=utf-8'});
+            FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
+        });
     }
+
+    let summary;
+    let csvResults;
+    let coverage;
+    let coverageModels = {};
+
+    const setMutators = document.querySelector('#container').mutators;
+    const mutantDownload = document.querySelector('#container').downloadMutants;
+
+    let duration = Number(document.querySelector('#model-duration').value);
+    if (duration) {
+        duration = duration * 1000;
+    }
+    const repetitions = Number(document.querySelector('#model-repetitions').value);
+    const caseSensitive = $('#model-case-sensitive').is(':checked');
+
+    const props = {
+        accelerationFactor: $('#acceleration-value').text(),
+        seed: document.getElementById('seed').value,
+        projectName: Whisker.projectFileSelect.getName(),
+        mutators: !setMutators || setMutators === '' ? ['NONE'] : setMutators,
+        mutationBudget: document.querySelector('#container').mutationBudget,
+        maxMutants: document.querySelector('#container').maxMutants,
+        mutantDownload: mutantDownload,
+        traceBlocks: traceBlocks,
+        log: true,
+        useSaveStates: $('#use-save-states').is(':checked'),
+    };
+
+    let mutantPrograms = [];
+    try {
+        if (props.useSaveStates) {
+            // Loading the project again seems unnecessary here. But removing
+            // this line can cause occasional crashes in the renderer when
+            // restoring the save state between test executions. See issue #217.
+            await vm.loadProject(project);
+        }
+
+        vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
+
+        CoverageGenerator.prepareVM(vm);
+
+        [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
+            Whisker.modelTester, props, {duration, repetitions, caseSensitive});
+        coverage = CoverageGenerator.getCoverage();
+        Whisker.outputLog.println(csvResults);
+
+        // Download generated mutants if desired.
+        if (mutantDownload && mutantPrograms.length > 0){
+            await downloadMutants(mutantPrograms);
+        }
+
+        if (Whisker.modelTester.programModelsLoaded()) {
+            coverageModels = Whisker.modelTester.getTotalCoverage();
+        }
+
+        if (typeof window.messageServantCallback === 'function') {
+            const coveredBlockIdsPerSprite =
+                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+            const blockIdsPerSprite =
+                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+
+            const modelCoverage = [];
+            if (Whisker.modelTester.programModelsLoaded()) {
+                for (const modelName in coverageModels) {
+                    const content = [];
+                    const elem = coverageModels[modelName];
+                    content.push({key: 'covered', values: elem.covered});
+                    content.push({key: 'total', values: elem.total});
+                    content.push({key: 'missedEdges', values: elem.missedEdges});
+                    modelCoverage.push({key: modelName, values: content});
+                }
+            }
+            const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+            const serializableModelCoverage = {modelCoverage};
+            window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
+        }
+    } finally {
+        _showRunIcon();
+        enableVMRelatedButtons();
+        accSlider.slider('enable');
+        testsRunning = false;
+    }
+
+    if (summary === null) {
+        return;
+    }
+
+    const formattedSummary = TAP13Formatter.formatSummary(summary);
+    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+
+    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+    let modelCoverageString = '';
+
+    // Add model coverage if we have model-based results
+    if (Object.keys(coverageModels).length > 0) {
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+        modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+    }
+
+    Whisker.outputRun.println([
+        summaryString,
+        coverageString,
+        modelCoverageString
+    ].join('\n'));
 };
 
-const runTests = async function (tests) {
+const runTest = async function (test) {
     Whisker.scratch.stop();
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, [test], Whisker.testRunner);
+};
+
+/**
+ * Runs a single test. Detects if it's a Whisker test or a block-based test.
+ *
+ * @param {object} test The test object to run.
+ */
+const runSingleTest = async function (test) {
+    if (typeof test.type !== 'undefined' && test.type === 'BBT') {
+        await runBBTTest(test);
+    } else {
+        await runTest(test);
+    }
+};
+
+const runAllBBTTests = async function () {
+    const bbtTests = Array.from(Whisker.bbtTests.values());
+
+    for (const bbtTest of bbtTests) {
+        if (!testsRunning) {
+            // Test chain execution might have been stopped,
+            // don't continue starting new tests.
+            return;
+        }
+
+        await runBBTTest(bbtTest);
+    }
+};
+
+/**
+ * Abort running all tests.
+ */
+const abortRunAllTests = function () {
+    if (!testsRunning) {
+        return;
+    }
+    testsRunning = false;
+
+    Whisker.outputLog.println('Stop-Button pressed, aborting...');
+    Whisker.outputRun.println('Stop-Button pressed, aborting...');
+
+    Whisker.scratch.stop();
+    Whisker.testRunner.abort();
+    Whisker.testTable.updateAfterAbort();
+    accSlider.slider('enable');
+    _showRunIcon();
+    _enableVMRelatedButtons();
 };
 
 const runAllTests = async function () {
@@ -311,7 +454,9 @@ const runAllTests = async function () {
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
+    if ((!Whisker.bbtTests || Whisker.bbtTests.size === 0) &&
+        (Whisker.tests === undefined || Whisker.tests.length === 0) &&
+        !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t('test-execution'), i18next.t('no-tests'));
         return;
     } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
@@ -379,7 +524,39 @@ const runAllTests = async function () {
             const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
             Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
             Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-            await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+
+            _disableVMRelatedButtons('#run-all-tests');
+            testsRunning = true;
+            _showStopIcon();
+            $('#green-flag').prop('disabled', true);
+            $('#reset').prop('disabled', true);
+            $('#record').prop('disabled', true);
+            accSlider.slider('disable');
+
+            // Test chain execution might have been stopped, therefore check testsRunning
+            if (testsRunning && Whisker.bbtTests && Whisker.bbtTests.size > 0) {
+                Whisker.outputRun.println(`${Whisker.bbtTests.size} Block-Based Tests found in project!`);
+                Whisker.outputLog.println(`${Whisker.bbtTests.size} Block-Based Tests found in project!`);
+                await runAllBBTTests();
+                Whisker.outputRun.println('Block-Based Tests have finished!');
+                Whisker.outputLog.println('Block-Based Tests have finished!');
+            }
+
+            if (testsRunning &&  // Test chain execution might have been stopped
+                (Whisker.tests !== undefined && Whisker.tests.length > 0) ||
+                Whisker.modelTester.someModelLoaded()) {
+
+                await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+            }
+
+            testsRunning = false;
+            _showRunIcon();
+            _enableVMRelatedButtons();
+            $('#green-flag').prop('disabled', false);
+            $('#reset').prop('disabled', false);
+            $('#record').prop('disabled', false);
+            accSlider.slider('enable');
+
             Whisker.outputRun.println();
             Whisker.outputLog.println();
         }
@@ -402,7 +579,8 @@ const initComponents = function () {
 
     Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0],
         fileSelect => fileSelect.loadAsArrayBuffer()
-            .then(project => Whisker.scratch.loadProject(project)));
+            .then(project => Whisker.scratch.loadProject(project))
+            .then(() => loadBBTTests(Whisker.scratch.getBBTTests())));
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
         fileSelect => fileSelect.loadAsString()
             .then(string => loadTestsFromString(string)));
@@ -414,7 +592,7 @@ const initComponents = function () {
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
-    Whisker.testTable = new TestTable($('#test-table')[0], runTests, Whisker.testRunner);
+    Whisker.testTable = new TestTable($('#test-table')[0], runSingleTest, Whisker.testRunner);
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
@@ -780,11 +958,15 @@ i18next
 function _showRunIcon () {
     $('#run-tests-icon').show();
     $('#stop-tests-icon').hide();
+    $('#run-all-tests').off('click');
+    $('#run-all-tests').on('click', runAllTests);
 }
 
 function _showStopIcon () {
     $('#run-tests-icon').hide();
     $('#stop-tests-icon').show();
+    $('#run-all-tests').off('click');
+    $('#run-all-tests').on('click', abortRunAllTests);
 }
 
 const _enableVMRelatedButtons = function () {

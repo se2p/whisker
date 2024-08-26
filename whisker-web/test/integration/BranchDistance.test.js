@@ -196,7 +196,7 @@ describe('Fitness tests', () => {
         await expect(branchDistance).toBe(42);
     }, timeout);
 
-    test('Test repeat until distance', async () => {
+    test('Test repeat until true distance', async () => {
         await loadProject('test/integration/branchDistance/RepeatUntilTrueDistance.sb3')
         const runSearch = await page.$('#run-search');
         await runSearch.evaluate(t => t.click());

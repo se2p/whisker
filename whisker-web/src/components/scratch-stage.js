@@ -44,6 +44,49 @@ class Scratch extends EventEmitter {
         this.vm.runtime._step();
     }
 
+    /**
+     * Extract Block-Based Tests contained in a loaded Scratch project from the VM.
+     *
+     * @return {Map<string, Test>} A map that maps the hat block ID of a BBT to its data.
+     */
+    getBBTTests () {
+        const bbtTests = new Map();
+
+        for (const target of this.vm.runtime.targets) {
+
+            const bbtTestHatBlocks = Object.values(target.blocks._blocks)
+                .filter(block => block.opcode === 'bbt_testHat');
+
+            for (const bbtTestHatBlock of bbtTestHatBlocks) {
+
+                // input block: where the test name can be entered
+                const correspondingInputBlock = target.blocks._blocks[bbtTestHatBlock.inputs.testName.block];
+                const correspondingComment = target.comments[bbtTestHatBlock.comment];
+
+                if (!correspondingInputBlock) {
+                    console.error('BBT test hat block without input block?');
+                    continue;
+                }
+
+                const testObject = {
+                    id: bbtTestHatBlock.id,
+                    type: 'BBT',
+                    categories: ['BBT'],
+                    skip: false,
+                    name: correspondingInputBlock.fields.TEXT.value,
+                    description: correspondingComment ? correspondingComment.text : '-',
+                    containingSpriteId: target.id,
+                    hatBlockId: bbtTestHatBlock.id
+                };
+
+                bbtTests.set(bbtTestHatBlock.id, testObject);
+
+            }
+        }
+
+        return bbtTests;
+    }
+
     async reset () {
         return await this.loadProject(this.project);
     }
