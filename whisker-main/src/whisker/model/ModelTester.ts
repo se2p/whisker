@@ -121,7 +121,7 @@ export class ModelTester extends EventEmitter {
         this.testDriver = t;
         Container.testDriver = t;
 
-        let allModels = [...this.programModels, ...this.userModels, ...this.onTestEndModels];
+        const allModels = [...this.programModels, ...this.userModels, ...this.onTestEndModels];
         this.result = new ModelResult();
         this.checkUtility = new CheckUtility(t, allModels.length, this.result);
         this.checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this.onVMEvent.bind(this));
@@ -145,22 +145,24 @@ export class ModelTester extends EventEmitter {
         this.isRunning = true;
     }
 
+    private doOneStepOnProgramModel(model:ProgramModel, notStoppedModels:ProgramModel[]){
+        const takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility);
+        if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
+            this.checkUtility.registerEffectCheck(takenEdge, model);
+            this.edgeTrace(takenEdge);
+        }
+        if (!model.stopped()) {
+            notStoppedModels.push(model);
+        }
+    }
+
     private getModelStepFunction() {
         let checkProgramModels = [...this.programModels];
         return () => {
             this.checkUtility.makeFailedOutputs();
-            let notStoppedModels = [];
-            checkProgramModels.forEach(model => {
-                let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility);
-                if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
-                    this.checkUtility.registerEffectCheck(takenEdge, model);
-                    this.edgeTrace(takenEdge);
-                }
-                if (!model.stopped()) {
-                    notStoppedModels.push(model);
-                }
-            });
-            let contradictingEffects = this.checkUtility.checkEffects();
+            const notStoppedModels: ProgramModel[] = [];
+            checkProgramModels.forEach(model => this.doOneStepOnProgramModel(model, notStoppedModels));
+            const contradictingEffects = this.checkUtility.checkEffects();
             if (contradictingEffects && contradictingEffects.length != 0) {
                 this.printContradictingEffects(contradictingEffects);
             }
@@ -189,7 +191,7 @@ export class ModelTester extends EventEmitter {
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
         if (this.onTestEndModels.length > 0) {
-            let steps = this.testDriver.getTotalStepsExecuted() + 1;
+            const steps = this.testDriver.getTotalStepsExecuted() + 1;
             this.onTestEndModels.forEach(model => {
                 model.setTransitionsStartTo(steps);
                 model.programEndStep = steps;
@@ -205,18 +207,9 @@ export class ModelTester extends EventEmitter {
         let afterStopModels = [...this.onTestEndModels];
         return () => {
             this.checkUtility.makeFailedOutputs();
-            let notStoppedModels = [];
-            afterStopModels.forEach(model => {
-                let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility);
-                if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
-                    this.checkUtility.registerEffectCheck(takenEdge, model);
-                    this.edgeTrace(takenEdge);
-                }
-                if (!model.stopped()) {
-                    notStoppedModels.push(model);
-                }
-            });
-            let contradictingEffects = this.checkUtility.checkEffects();
+            const notStoppedModels: ProgramModel[] = [];
+            afterStopModels.forEach(model => this.doOneStepOnProgramModel(model, notStoppedModels));
+            const contradictingEffects = this.checkUtility.checkEffects();
             if (contradictingEffects && contradictingEffects.length != 0) {
                 this.printContradictingEffects(contradictingEffects);
             }
@@ -237,10 +230,10 @@ export class ModelTester extends EventEmitter {
     private userInputGen() {
         if (this.userModelsLoaded()) {
             let userModels = [...this.userModels];
-            let userInputFun = () => {
-                let notStoppedUserModels = [];
+            const userInputFun = () => {
+                const notStoppedUserModels: UserModel[] = [];
                 userModels.forEach(model => {
-                    let edge = model.makeOneTransition(this.testDriver, this.checkUtility);
+                    const edge = model.makeOneTransition(this.testDriver, this.checkUtility);
                     if (edge != null && edge instanceof UserModelEdge) {
                         edge.inputImmediate(this.testDriver);
                     }
@@ -254,7 +247,7 @@ export class ModelTester extends EventEmitter {
                     callback.disable();
                 }
             };
-            let callback = this.addModelCallback(userInputFun, false, "inputOfUserModel");
+            const callback = this.addModelCallback(userInputFun, false, "inputOfUserModel");
             return callback;
         }
     }
@@ -266,14 +259,14 @@ export class ModelTester extends EventEmitter {
     private onVMEvent(eventStrings: string[]) {
         if (this.isRunning) {
             // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
-            let models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
+            const models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
 
             for (let i = 0; i < models.length; i++) {
                 if (!this.isRunning) {
                     return; //stop the complete testing if the run is ending
                 }
                 const model = models[i];
-                let edge = model.testForEvent(this.testDriver, this.checkUtility, eventStrings);
+                const edge = model.testForEvent(this.testDriver, this.checkUtility, eventStrings);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     this.checkUtility.registerEffectCheck(edge, model);
                     this.edgeTrace(edge);
@@ -303,8 +296,8 @@ export class ModelTester extends EventEmitter {
     }
 
     private edgeTrace(transition: ModelEdge) {
-        let edgeID = transition.id;
-        let conditions = transition.conditions;
+        const edgeID = transition.id;
+        const conditions = transition.conditions;
         let edgeTrace = "'" + edgeID + "':";
         for (let i = 0; i < conditions.length; i++) {
             edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
@@ -333,7 +326,7 @@ export class ModelTester extends EventEmitter {
         this.modelStepCallback.disable();
         this.onTestEndCallback.disable();
         this.haltAllCallback.disable();
-        let models = [...this.programModels, ...this.onTestEndModels];
+        const models = [...this.programModels, ...this.onTestEndModels];
         models.forEach(model => {
             if (model.stopped()) {
                 // console.log("Model '" + model.id + "' stopped.");
@@ -342,12 +335,12 @@ export class ModelTester extends EventEmitter {
             }
         });
         const sprites = testDriver.getSprites(() => true, false);
-        let log = [];
+        const log = [];
         log.push("--- State of variables:");
 
         sprites.forEach((sprite: Sprite) => {
             sprite.getVariables().forEach(variable => {
-                let varOutput = sprite.name + "." + variable.name + " = " + variable.value;
+                const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
                 this.result.state.push(varOutput);
                 log.push("--- " + varOutput);
             });
@@ -356,11 +349,11 @@ export class ModelTester extends EventEmitter {
             this.emit(ModelTester.MODEL_LOG, log.join("\n"));
         }
 
-        let coverages = {covered: [], total: 0};
+        const coverages = {covered: [], total: 0};
 
-        let programModels = [...this.programModels, ...this.onTestEndModels];
+        const programModels = [...this.programModels, ...this.onTestEndModels];
         programModels.forEach(model => {
-            let currentCov = model.getCoverageCurrentRun();
+            const currentCov = model.getCoverageCurrentRun();
             coverages.covered.push(currentCov.covered);
             coverages.total += currentCov.total;
             this.result.coverage[model.id] = currentCov;

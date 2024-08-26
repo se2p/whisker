@@ -111,7 +111,7 @@ export class ModelLoader {
     }
 
     private loadGraph(graph: StoredModel) {
-        let graphID = graph.id;
+        const graphID = graph.id;
         if (graph.startNodeId == undefined) {
             throw new Error(graphID + ": Start node id of the graph is undefined");
         } else if (Array.isArray(graph.startNodeId)) {
@@ -148,7 +148,7 @@ export class ModelLoader {
         }
         this.graphIDs.push(graphID);
 
-        // create all nodes, allowed are either a 'nodeIds' string array or an array 'nodes' with{id:string,
+        // create all nodes, allowed is either a 'nodeIds' string array or an array 'nodes' with{id:string,
         // label:string}
         const nodeIDs = graph.nodeIds;
         const nodes = graph.nodes;

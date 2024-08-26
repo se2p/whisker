@@ -46,7 +46,7 @@ export class InputEffect {
         this.args = args;
 
         // Todo: refactor this code
-        let _testArgs = function (length: number) {
+        const _testArgs = function (length: number) {
             if (args.length != length) {
                 return false;
             }
@@ -106,35 +106,40 @@ export class InputEffect {
                 return () => {
                     t.inputImmediate({device: "keyboard", key: arg[0], isDown: true, steps: 1});
                 };
-            case InputEffectName.InputMouseMove:
+            case InputEffectName.InputMouseMove: {
                 arg[0] = ModelUtil.testNumber(arg[0]);
                 arg[1] = ModelUtil.testNumber(arg[1]);
-                let mouseEvent = new MouseMoveEvent(arg[0], arg[1]);
+                const mouseEvent = new MouseMoveEvent(arg[0], arg[1]);
                 return () => {
                     mouseEvent.apply();
                 };
-            case InputEffectName.InputText:
-                let textEvent = new TypeTextEvent(String(arg[0]));
+            }
+            case InputEffectName.InputText: {
+                const textEvent = new TypeTextEvent(String(arg[0]));
                 return () => {
                     textEvent.apply();
                 };
-            case InputEffectName.InputMouseDown:
-                let boolVal = arg[0] == "true";
-                let mouseDownEvent = new MouseDownEvent(boolVal);
+            }
+            case InputEffectName.InputMouseDown: {
+                const boolVal = arg[0] == "true";
+                const mouseDownEvent = new MouseDownEvent(boolVal);
                 return () => {
                     mouseDownEvent.apply();
                 };
-            case InputEffectName.InputClickStage:
-                let clickStageEvent = new ClickStageEvent();
+            }
+            case InputEffectName.InputClickStage: {
+                const clickStageEvent = new ClickStageEvent();
                 return () => {
                     clickStageEvent.apply();
                 };
-            case InputEffectName.InputClickSprite:
-                let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, arg[0]);
-                let clickSpriteEvent = new ClickSpriteEvent(sprite._target);
+            }
+            case InputEffectName.InputClickSprite: {
+                const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, arg[0]);
+                const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
                 return () => {
                     clickSpriteEvent.apply();
                 };
+            }
             default:
                 // should not happen
                 throw new Error("Input type not recognized: " + this.name);

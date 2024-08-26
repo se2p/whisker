@@ -5,7 +5,7 @@ import {Condition} from "../components/Condition";
 import {ArgType, CheckName} from "../components/Check";
 
 function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
-    let conditions = edge.conditions;
+    const conditions = edge.conditions;
     let containsAfterTime: string;
     let containsElapsed: string;
 

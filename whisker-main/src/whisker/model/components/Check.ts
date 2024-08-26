@@ -69,8 +69,8 @@ export class Check {
         this._edgeLabel = edgeLabel;
 
         // Todo: refactor this code
-        let _testArgs = function (length: number) {
-            let error = new Error("Wrong number of arguments for check " + name + ".");
+        const _testArgs = function (length: number) {
+            const error = new Error("Wrong number of arguments for check " + name + ".");
             if (args.length != length) {
                 throw error;
             }
@@ -233,9 +233,9 @@ export class Check {
 
     static testForContradictingWithEvents(check1: Check, eventStrings: string[]): boolean {
         for (let i = 0; i < eventStrings.length; i++) {
-            let event = eventStrings[i];
-            let {negated, name, args} = CheckUtility.splitEventString(event);
-            let checkDummy = new Check("dummy", "dummyEdge", name, args, negated);
+            const event = eventStrings[i];
+            const {negated, name, args} = CheckUtility.splitEventString(event);
+            const checkDummy = new Check("dummy", "dummyEdge", name, args, negated);
             if (Check.testForContradicting(check1, checkDummy)) {
                 return true;
             }
