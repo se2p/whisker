@@ -1,40 +1,45 @@
-import {InputEffect, InputEffectName} from "../../../../src/whisker/model/components/InputEffect";
+import {InputEffect, InputEffectName, SimpleInputEffect} from "../../../../src/whisker/model/components/InputEffect";
+import {ArgType} from "../../../../src/whisker/model/components/Check";
 
 describe('InputEffect', () => {
-    test("constructor, getters", () => {
-        expect(() => {
-            new InputEffect("id", InputEffectName.InputKey, ["left"]);
-        }).not.toThrow();
+
+    test("constructor throws for undefined id", () => {
         expect(() => {
             new InputEffect(undefined, InputEffectName.InputKey, ["left"]);
         }).toThrow();
     });
 
-    test("not enough arguments", () => {
-        expect(() => {
-            new InputEffect("test", InputEffectName.InputKey, []);
-        }).toThrow();
-        expect(() => {
-            new InputEffect("test", InputEffectName.InputClickSprite, []);
-        }).toThrow();
-        expect(() => {
-            new InputEffect("test", InputEffectName.InputText, []);
-        }).toThrow();
-        expect(() => {
-            new InputEffect("test", InputEffectName.InputMouseDown, []);
-        }).toThrow();
+    describe("not enough arguments", () => {
+        const constructorArguments: [InputEffectName, ArgType[]][] = [
+            [InputEffectName.InputKey, []],
+            [InputEffectName.InputClickSprite, []],
+            [InputEffectName.InputText, []],
+            [InputEffectName.InputMouseDown, []],
+            [InputEffectName.InputMouseMove, []],
+            [InputEffectName.InputMouseMove, [0]],
+        ];
+        it.each(constructorArguments)('constructor throws for (%s, %s)', (name: InputEffectName, args: ArgType[]) => {
+            expect(() => {
+                new InputEffect("test", name, args);
+            }).toThrow();
+        });
+    });
+
+    test("constructor does not need args for InputEffectName.InputClickStage", () => {
         expect(() => {
             new InputEffect("test", InputEffectName.InputClickStage, []);
         }).not.toThrow();
-        expect(() => {
-            new InputEffect("test", InputEffectName.InputMouseMove, []);
-        }).toThrow();
-        expect(() => {
-            new InputEffect("test", InputEffectName.InputMouseMove, [0]);
-        }).toThrow();
-
-        expect(() => {
-            new InputEffect("test", InputEffectName.InputKey, ["left"]).simplifyForSave();
-        }).not.toThrow();
     });
+
+    test("SimplifyForSave()", () => {
+        const effect = new InputEffect("test", InputEffectName.InputKey, ["left"]);
+        const actual = effect.simplifyForSave();
+        const expected: SimpleInputEffect = {
+            id: "test",
+            name: InputEffectName.InputKey,
+            args: ["left"]
+        };
+        expect(actual).toStrictEqual(expected);
+    });
+
 });

@@ -18,20 +18,20 @@ describe('ModelUtil tests', function () {
             ModelUtil.testChange("0", "string", "+");
         }).toThrow();
 
-        expect(ModelUtil.testChange("0", "-1", "-")).toBeTruthy();
-        expect(ModelUtil.testChange("-1", "0", "-")).toBeFalsy();
-        expect(ModelUtil.testChange("1", "1", "-")).toBeFalsy();
+        expect(ModelUtil.testChange("0", "-1", "-")).toBe(true);
+        expect(ModelUtil.testChange("-1", "0", "-")).toBe(false);
+        expect(ModelUtil.testChange("1", "1", "-")).toBe(false);
 
-        expect(ModelUtil.testChange("0", "-1", "+5")).toBeFalsy();
-        expect(ModelUtil.testChange("-1", "0", "+")).toBeTruthy();
-        expect(ModelUtil.testChange("1", "1", "+")).toBeFalsy();
+        expect(ModelUtil.testChange("0", "-1", "+5")).toBe(false);
+        expect(ModelUtil.testChange("-1", "0", "+")).toBe(true);
+        expect(ModelUtil.testChange("1", "1", "+")).toBe(false);
 
-        expect(ModelUtil.testChange("0", "-1", "=")).toBeFalsy();
-        expect(ModelUtil.testChange("-1", "0", "=")).toBeFalsy();
-        expect(ModelUtil.testChange("1", "1", "=")).toBeTruthy();
+        expect(ModelUtil.testChange("0", "-1", "=")).toBe(false);
+        expect(ModelUtil.testChange("-1", "0", "=")).toBe(false);
+        expect(ModelUtil.testChange("1", "1", "=")).toBe(true);
 
-        expect(ModelUtil.testChange("0", "-1", "+=")).toBeFalsy();
-        expect(ModelUtil.testChange("0", "-1", "-=")).toBeTruthy();
+        expect(ModelUtil.testChange("0", "-1", "+=")).toBe(false);
+        expect(ModelUtil.testChange("0", "-1", "-=")).toBe(true);
 
         expect(() => {
             ModelUtil.testChange("0", "1", "anything");
@@ -91,32 +91,32 @@ describe('ModelUtil tests', function () {
     });
 
     test("ModelUtil test compare", () => {
-        expect(ModelUtil.compare("0", "-1", "<")).toBeFalsy();
-        expect(ModelUtil.compare("-1", "0", "<")).toBeTruthy();
-        expect(ModelUtil.compare("1", "1", "<")).toBeFalsy();
+        expect(ModelUtil.compare("0", "-1", "<")).toBe(false);
+        expect(ModelUtil.compare("-1", "0", "<")).toBe(true);
+        expect(ModelUtil.compare("1", "1", "<")).toBe(false);
 
-        expect(ModelUtil.compare("0", "-1", "<=")).toBeFalsy();
-        expect(ModelUtil.compare("-1", "0", "<=")).toBeTruthy();
-        expect(ModelUtil.compare("1", "1", "<=")).toBeTruthy();
+        expect(ModelUtil.compare("0", "-1", "<=")).toBe(false);
+        expect(ModelUtil.compare("-1", "0", "<=")).toBe(true);
+        expect(ModelUtil.compare("1", "1", "<=")).toBe(true);
 
-        expect(ModelUtil.compare("0", "-1", ">")).toBeTruthy();
-        expect(ModelUtil.compare("-1", "0", ">")).toBeFalsy();
-        expect(ModelUtil.compare("1", "1", ">")).toBeFalsy();
+        expect(ModelUtil.compare("0", "-1", ">")).toBe(true);
+        expect(ModelUtil.compare("-1", "0", ">")).toBe(false);
+        expect(ModelUtil.compare("1", "1", ">")).toBe(false);
 
-        expect(ModelUtil.compare("0", "-1", ">=")).toBeTruthy();
-        expect(ModelUtil.compare("-1", "0", ">=")).toBeFalsy();
-        expect(ModelUtil.compare("1", "1", ">=")).toBeTruthy();
+        expect(ModelUtil.compare("0", "-1", ">=")).toBe(true);
+        expect(ModelUtil.compare("-1", "0", ">=")).toBe(false);
+        expect(ModelUtil.compare("1", "1", ">=")).toBe(true);
 
-        expect(ModelUtil.compare("0", "-1", "=")).toBeFalsy();
-        expect(ModelUtil.compare("-1", "0", "=")).toBeFalsy();
-        expect(ModelUtil.compare("1", "1", "=")).toBeTruthy();
-        expect(ModelUtil.compare("hallo", "hallo", "=")).toBeTruthy();
-        expect(ModelUtil.compare("1", "hallo", "=")).toBeFalsy();
+        expect(ModelUtil.compare("0", "-1", "=")).toBe(false);
+        expect(ModelUtil.compare("-1", "0", "=")).toBe(false);
+        expect(ModelUtil.compare("1", "1", "=")).toBe(true);
+        expect(ModelUtil.compare("hallo", "hallo", "=")).toBe(true);
+        expect(ModelUtil.compare("1", "hallo", "=")).toBe(false);
 
-        expect(ModelUtil.compare("true", "true", "=")).toBeTruthy();
-        expect(ModelUtil.compare("false", "false", "=")).toBeTruthy();
-        expect(ModelUtil.compare("true", "false", "=")).toBeFalsy();
-        expect(ModelUtil.compare("false", "true", "=")).toBeFalsy();
+        expect(ModelUtil.compare("true", "true", "=")).toBe(true);
+        expect(ModelUtil.compare("false", "false", "=")).toBe(true);
+        expect(ModelUtil.compare("true", "false", "=")).toBe(false);
+        expect(ModelUtil.compare("false", "true", "=")).toBe(false);
     });
 
     test("ModelUtil test number", () => {
