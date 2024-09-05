@@ -1,4 +1,4 @@
-import {ProgramModel, SimpleProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
+import {CoverageResult, ProgramModel, SimpleProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 
@@ -128,5 +128,75 @@ describe('Program model', () => {
         p.setTransitionsStartTo(3);
         expect(p.secondLastTransitionStep).toBe(3);
         expect(p.lastTransitionStep).toBe(3);
+    });
+
+    test("Reset() resets transition steps", () => {
+        const model = getValidProgramModelForCoverage();
+        model.setTransitionsStartTo(3);
+        model.reset();
+        expect(model.lastTransitionStep).toBe(0);
+        expect(model.secondLastTransitionStep).toBe(0);
+    });
+
+    test("Reset() resets start node", () => {
+        const nodes: Record<string, ModelNode> = {
+            start: new ModelNode("start", "label"),
+            n1: new ModelNode("n1", "n1"),
+            n2: new ModelNode("n1", "n2")
+        };
+        const model = new ProgramModel("model", "start", nodes, {}, [], []);
+        model.currentState = nodes["n2"];
+        model.reset();
+        expect(model.currentState).toBe(nodes["start"]);
+    });
+
+    class MockedModelNode extends ModelNode {
+        private readonly fn: jest.Mock;
+
+        constructor(id: string, label: string, fn: jest.Mock) {
+            super(id, label);
+            this.fn = fn;
+        }
+
+        override reset() {
+            this.fn();
+            super.reset();
+        }
+    }
+
+    test("Reset() calls node.reset() for every node", () => {
+        const fn = jest.fn();
+        const nodes: Record<string, ModelNode> = {
+            start: new MockedModelNode("start", "label", fn),
+            n1: new MockedModelNode("n1", "n1", fn),
+            n2: new MockedModelNode("n1", "n2", fn)
+        };
+        const model = new ProgramModel("model", "start", nodes, {}, [], []);
+        model.reset();
+        expect(fn).toBeCalledTimes(3);
+    });
+
+    class MockedProgram extends ProgramModel {
+        setCoverageForKey(key: string) {
+            this.coverageCurrentRun[key] = true;
+        }
+    }
+
+    test("Reset() calls node.reset() for every node", () => {
+        const nodes: Record<string, ModelNode> = {
+            start: new ModelNode("start", "label"),
+            n1: new ModelNode("n1", "n1"),
+            n2: new ModelNode("n2", "n2")
+        };
+        const edges: Record<string, ProgramModelEdge> = {
+            "edgeID": new ProgramModelEdge("edgeId", "edgeID", "model", "n1", "n2", -1, -1)
+        };
+        const model = new MockedProgram("model", "start", nodes, edges, [], []);
+        model.setCoverageForKey("edgeID");
+        let expected: CoverageResult = {total: 1, covered: ["edgeID"]};
+        expect(model.getCoverageCurrentRun()).toStrictEqual(expected);
+        model.reset();
+        expected = {total: 1, covered: []};
+        expect(model.getCoverageCurrentRun()).toStrictEqual(expected);
     });
 });
