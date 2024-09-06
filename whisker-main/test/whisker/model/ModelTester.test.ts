@@ -4,6 +4,7 @@ import {ModelNode} from "../../../src/whisker/model/components/ModelNode";
 import {ProgramModelEdge} from "../../../src/whisker/model/components/ModelEdge";
 import {Condition} from "../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../src/whisker/model/components/Check";
+import {readFileSync} from "fs";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
@@ -71,7 +72,7 @@ describe('ModelTester', () => {
         test("GetAllModels returns the correct amount of models", () => {
             const modelTester = new ModelTester();
 
-            modelTester.load(modelAll);
+            modelTester.load(allModels);
             const models = modelTester.getAllModels();
             expect(models).toHaveLength(3);
         });
@@ -79,7 +80,7 @@ describe('ModelTester', () => {
         test("GetAllModels() loads ProgramModel correctly", () => {
             const modelTester = new ModelTester();
 
-            modelTester.load(modelAll);
+            modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[0];
             const expectedProgramModel = new ProgramModel("bowl", "init", expectedNodes,
                 {}, ["end"], []);
@@ -93,7 +94,7 @@ describe('ModelTester', () => {
         test("GetAllModels() loads UserModel correctly", () => {
             const modelTester = new ModelTester();
 
-            modelTester.load(modelAll);
+            modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[1];
             const expectedProgramModel = new ProgramModel("bowl2", "init", expectedNodesExtended,
                 {}, ["end"], ["end"]);
@@ -106,7 +107,7 @@ describe('ModelTester', () => {
 
         test("GetAllModels() loads OnTestEndModel correctly", () => {
             const modelTester = new ModelTester();
-            modelTester.load(modelAll);
+            modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[2];
             const expectedEdge = new ProgramModelEdge("init", "init", "bowl3", "init", "start", -1, -1);
             expectedEdge.addCondition(new Condition("condition1", undefined, CheckName.Function, false, ["true"]));
@@ -122,7 +123,7 @@ describe('ModelTester', () => {
 
     test("Model Tester coverages", () => {
         const modelTester = new ModelTester();
-        modelTester.load(modelAll);
+        modelTester.load(allModels);
         const result = modelTester.getTotalCoverage();
         expect(Object.keys(result)).toHaveLength(2);
         expect(result["bowl"]).toStrictEqual({
@@ -136,66 +137,7 @@ describe('ModelTester', () => {
     });
 });
 
-const programModel = `[{
-    "usage": "program",
-    "id": "bowl",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": ["end"],
-    "nodeIds": ["init", "start", "text", "end"],
-    "edges": []
-}]`;
-
-const faultyModel = `[{
-    "usage": "a",
-    "id": "bowl",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": ["end"],
-    "nodeIds": ["init", "start", "text", "end"],
-    "edges": []
-}]`;
-
-const userModel = `[{
-    "usage": "user",
-    "id": "bowl",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": ["end"],
-    "nodeIds": ["init", "start", "text", "end"],
-    "edges": []
-}]`;
-
-const modelAll = `[{
-    "usage": "program",
-    "id": "bowl",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": [],
-    "nodeIds": ["init", "end"],
-    "edges": []
-}, {
-    "usage": "user",
-    "id": "bowl2",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": ["end"],
-    "nodeIds": ["init", "start", "text", "end"],
-    "edges": []
-}, {
-    "usage": "end",
-    "id": "bowl3",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": ["end"],
-    "nodeIds": ["init", "start", "text", "end"],
-    "edges": [{
-        "id": "init",
-        "from": "init",
-        "to": "start",
-        "forceTestAfter": -1,
-        "forceTestAt": -1,
-        "conditions": [{"id": "condition1", "name": "Function", "args": ["true"], "negated": false}],
-        "effects": []
-    }]
-}]`;
+const programModel = readFileSync('test/whisker/model/models/programModel.json', 'utf8');
+const faultyModel = readFileSync('test/whisker/model/models/faultyModel.json', 'utf8');
+const userModel = readFileSync('test/whisker/model/models/userModel.json', 'utf8');
+const allModels = readFileSync('test/whisker/model/models/allModels.json', 'utf8');
