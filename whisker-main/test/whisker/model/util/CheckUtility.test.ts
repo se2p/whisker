@@ -35,7 +35,7 @@ describe('CheckUtility', () => {
             [new Effect("test", "dummy", CheckName.SpriteTouching, false, ["sprite1", "sprite2"]), "SpriteTouching:sprite1:sprite2"],
             [new Effect("test", "dummy", CheckName.AttrComp, false, ["sprite1", "costume", "=", "costume2"]), "AttrComp:sprite1:costume:=:costume2"]
         ];
-        it.each(effects)('', (check: Effect, expected: string) => {
+        it.each(effects)('getEventString() with attributes of Effect: %s', (check: Effect, expected: string) => {
             expect(CheckUtility.getEventString(check.name, check.negated, ...check.args)).toBe(expected);
         });
     });
