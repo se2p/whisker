@@ -41,10 +41,10 @@ describe('Effect', () => {
     function getEffectsCombinationsFor(id: string, edgeLabel: string, first: CheckName, optionsFirst: string[],
                                        second: CheckName, optionsSecond: string[]): [Effect, Effect, boolean][] {
         const effects: [Effect, Effect, boolean][] = [];
-        for (const f in optionsFirst) {
-            const effect1 = new Effect(id, edgeLabel, first, true, [id, edgeLabel, optionsFirst[f], "0"]);
-            for (const s in optionsSecond) {
-                const effect2 = new Effect(id, edgeLabel, second, true, [id, edgeLabel, optionsSecond[s]]);
+        for (const option1 of optionsFirst) {
+            const effect1 = new Effect(id, edgeLabel, first, true, [id, edgeLabel, option1, "0"]);
+            for (const option2 of optionsSecond) {
+                const effect2 = new Effect(id, edgeLabel, second, true, [id, edgeLabel, option2]);
                 effects.push([effect1, effect2, false]);
             }
         }
