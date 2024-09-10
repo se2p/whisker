@@ -164,7 +164,7 @@ export class ErrorForVariable extends Error {
 }
 
 export class NotANumericalValueError extends Error {
-    constructor(value: string) {
+    constructor(value: ArgType) {
         super("Is not a numerical value to compare:" + value);
     }
 }

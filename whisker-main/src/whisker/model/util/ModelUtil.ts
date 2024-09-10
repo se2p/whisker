@@ -178,8 +178,8 @@ export abstract class ModelUtil {
      * Test whether a value is a number.
      */
     static testNumber(value: ParamType): number {
-        if (value == null || value === '' || isNaN(Number(value.toString()))) {
-            throw new NotANumericalValueError(value.toString());
+        if (value == null || value === '' || isNaN(Number(value))) {
+            throw new NotANumericalValueError(String(value));
         }
         return Number(value.toString());
     }

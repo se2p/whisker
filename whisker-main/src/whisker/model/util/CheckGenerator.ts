@@ -50,6 +50,10 @@ export abstract class CheckGenerator {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
+            //TODO check if it is intended that multiple sprites can be checked here (docs suggest not i guess)
+            // e.g. spriteNameRegex "apple" will check for "pineapple" and "apple" to be clicked
+            // Depending on the order the value of the local variable spriteName might be "pineapple" and therefore
+            // apple will not be checked. This does not sound right
             let anyTouchingMouse = false;
             for (let i = 0; i < sprites.length; i++) {
                 if (sprites[i].visible && t.isMouseDown() && sprites[i].isTouchingMouse()) {

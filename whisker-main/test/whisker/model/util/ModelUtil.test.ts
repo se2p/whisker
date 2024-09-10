@@ -270,4 +270,21 @@ describe('ModelUtil tests', function () {
             it.each(table)('%s', (name, func, dependencies) => checkDependenciesCorrect(func, dependencies));
         });
     });
+
+    describe('checkAttributeExistence()', () => {
+        const validNames = [
+            "effects", "x", "y", "pos", "direction", "visible", "size", "currentCostume",
+            "costume", "currentCostumeName", "volume", "layerOrder", "sayText", "rotationStyle"
+        ];
+        it.each(validNames)('checkAttributeForExistence("%s")', (name) => {
+            expect(() => ModelUtil.checkAttributeExistence(null, "sprite", name)).not.toThrow();
+        });
+        it.each(validNames)('checkAttributeForExistence("%s") does not throw', (name) => {
+            expect(() => ModelUtil.checkAttributeExistence(null, "sprite", "old." + name)).not.toThrow();
+        });
+        const nonValidNames = ["test", "something", "variable", "DIRECTION", "X", "Y", "Z", "z", "old.X"];
+        it.each(nonValidNames)('checkAttributeForExistence("%s") does throw', (name) => {
+            expect(() => ModelUtil.checkAttributeExistence(null, "sprite", + name)).toThrow();
+        });
+    });
 });
