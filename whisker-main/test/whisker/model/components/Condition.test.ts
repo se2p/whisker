@@ -1,5 +1,7 @@
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {ArgType, CheckName, SimpleCheck} from "../../../../src/whisker/model/components/Check";
+import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
+import {Effect} from "../../../../src/whisker/model/components/Effect";
 
 describe('Condition', () => {
 
@@ -176,5 +178,42 @@ describe('Condition', () => {
             const condition = new Condition("id", "edgeID", CheckName.AttrChange, false, ["test", "attr", "-"]);
             condition.check(1, 1);
         }).toThrow();
+    });
+
+    const pressedKeys: Record<string, boolean> = {
+        "a": true,
+        "b": false,
+        "c": true,
+    };
+    const cu = {
+        isKeyDown: (key: string) => pressedKeys[key] == true
+    } as unknown as CheckUtility;
+
+    test('registerComponent() calculates correct effect', () => {
+        const effect = new Condition("id", "edgeID", CheckName.Key, true, ["a"]);
+        effect.registerComponents(cu, null, false, "graphID");
+        const func = effect.condition;
+        pressedKeys["a"] = false;
+        expect(func(0, 0)).toEqual(true);
+        pressedKeys["a"] = true;
+        expect(func(0, 0)).toEqual(false);
+    });
+
+    test('registerComponent() clears effect in error case', () => {
+        const condition = new Condition("id", "edgeID", CheckName.Key, true, ["a"]);
+        const error = new Error("this is a message");
+        condition.registerComponents(cu, null, false, "graphID");
+        condition.checkArgsWithTestDriver = (t, cu, cs, args) => {
+            throw error;
+        };
+        const fn = jest.fn();
+        cu.addErrorOutput = fn;
+        condition.registerComponents(cu, null, false, "graphID");
+        const func = condition.condition;
+        pressedKeys["a"] = false;
+        expect(func(0, 0)).toEqual(false);
+        pressedKeys["a"] = false;
+        expect(func(0, 0)).toEqual(false);
+        expect(fn).toHaveBeenCalledWith("edgeID", "graphID", error);
     });
 });

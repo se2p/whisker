@@ -562,4 +562,41 @@ describe('Effect', () => {
                 "sprite", "var", "<=", "2")])).toBe(false);
         });
     });
+
+    const pressedKeys: Record<string, boolean> = {
+        "a": true,
+        "b": false,
+        "c": true,
+    };
+    const cu = {
+        isKeyDown: (key: string) => pressedKeys[key] == true
+    } as unknown as CheckUtility;
+
+    test('registerComponent() calculates correct effect', () => {
+        const effect = new Effect(id, edgeID, CheckName.Key, true, ["a"]);
+        effect.registerComponents(null, cu, false, "graphID");
+        const func = effect.effect;
+        pressedKeys["a"] = false;
+        expect(func(0, 0)).toEqual(true);
+        pressedKeys["a"] = true;
+        expect(func(0, 0)).toEqual(false);
+    });
+
+    test('registerComponent() clears effect in error case', () => {
+        const effect = new Effect(id, edgeID, CheckName.Key, true, ["a"]);
+        const error = new Error("this is a message");
+        effect.registerComponents(null, cu, false, "graphID");
+        effect.checkArgsWithTestDriver = (t, cu, cs, args) => {
+            throw error;
+        };
+        const fn = jest.fn();
+        cu.addErrorOutput = fn;
+        effect.registerComponents(null, cu, false, "graphID");
+        const func = effect.effect;
+        pressedKeys["a"] = false;
+        expect(func(0, 0)).toEqual(false);
+        pressedKeys["a"] = false;
+        expect(func(0, 0)).toEqual(false);
+        expect(fn).toHaveBeenCalledWith(edgeID, "graphID", error);
+    });
 });
