@@ -1,6 +1,66 @@
 import {CoverageResult, ProgramModel, SimpleProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
+import TestDriver from "../../../../src/test/test-driver";
+import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
+
+export class MockedModelNode extends ModelNode {
+    private readonly fn: jest.Mock;
+
+    constructor(id: string, label: string, fn: jest.Mock) {
+        super(id, label);
+        this.fn = fn;
+    }
+
+    override reset() {
+        this.fn();
+        super.reset();
+    }
+}
+
+function getValidProgramModelForCoverage(): MockedProgram {
+    const edges: Record<string, ProgramModelEdge> = {};
+    edges["1"] = new ProgramModelEdge("1", "label", "graphID", "from", "to", -1, -1);
+    edges["2"] = new ProgramModelEdge("2", "label", "graphID", "from", "to", 1000, -1);
+    edges["3"] = new ProgramModelEdge("3", "label", "graphID", "from", "to", -1, 200);
+    edges["4"] = new ProgramModelEdge("4", "label", "graphID", "from", "to", 1, 200);
+
+    return new MockedProgram("id", "start", {start: new ModelNode("start", "label")},
+        edges, [], []);
+}
+
+class MockedProgram extends ProgramModel {
+    setCoverageForKey(key: string) {
+        this.coverageCurrentRun[key] = true;
+    }
+
+    setTotalCoverageForKey(key: string) {
+        this.coverageTotal[key] = true;
+    }
+}
+
+function getNodesAndEdgesForBiggerModel() : [Record<string, ModelNode>, Record<string, ProgramModelEdge>]{
+    const nodes: Record<string, ModelNode> = {
+        start: new ModelNode("start", undefined),
+        n1: new ModelNode("n1", undefined),
+        n2: new ModelNode("n2", undefined),
+        n3: new ModelNode("n3", undefined),
+        end: new ModelNode("end", undefined),
+    };
+    const edges: Record<string, ProgramModelEdge> = {
+        "1": new ProgramModelEdge("1", "e1", "graphID", "start", "n1", -1, -1),
+        "2": new ProgramModelEdge("2", "e2", "graphID", "n1", "n2", 1000, -1),
+        "3": new ProgramModelEdge("3", "e3", "graphID", "n2", "n3", -1, 200),
+        "4": new ProgramModelEdge("4", "e4", "graphID", "n3", "n1", 1, 200),
+        "5": new ProgramModelEdge("5", "e5", "graphID", "n3", "end", 1, 200),
+    };
+    return [nodes, edges];
+}
+
+function getBiggerModel(): [ProgramModel, Record<string, ModelNode>, Record<string, ProgramModelEdge>] {
+    const [nodes, edges] = getNodesAndEdgesForBiggerModel();
+    return [new ProgramModel("id", "start", nodes, edges, ["end"], []), nodes, edges];
+}
 
 describe('Program model', () => {
     describe('Invalid constructor calls', () => {
@@ -27,17 +87,6 @@ describe('Program model', () => {
         });
     });
 
-    function getValidProgramModelForCoverage(): ProgramModel {
-        const edges: Record<string, ProgramModelEdge> = {};
-        edges["1"] = new ProgramModelEdge("1", "label", "graphID", "from", "to", -1, -1);
-        edges["2"] = new ProgramModelEdge("2", "label", "graphID", "from", "to", 1000, -1);
-        edges["3"] = new ProgramModelEdge("3", "label", "graphID", "from", "to", -1, 200);
-        edges["4"] = new ProgramModelEdge("4", "label", "graphID", "from", "to", 1, 200);
-
-        return new ProgramModel("id", "start", {start: new ModelNode("start", "label")},
-            edges, [], []);
-    }
-
     test("Coverage without run", () => {
         const p = getValidProgramModelForCoverage();
         const coverage = p.getCoverageCurrentRun();
@@ -51,6 +100,16 @@ describe('Program model', () => {
         expect(totalCoverage.covered.length).toBe(0);
         expect(totalCoverage.total).toBe(4);
         expect(totalCoverage.missedEdges.length).toBe(4);
+    });
+
+    test("Total coverage with run", () => {
+        const p = getValidProgramModelForCoverage();
+        p.setTotalCoverageForKey("2");
+        p.setTotalCoverageForKey("3");
+        const totalCoverage = p.getTotalCoverage();
+        expect(totalCoverage.covered.length).toBe(2);
+        expect(totalCoverage.total).toBe(4);
+        expect(totalCoverage.missedEdges.length).toBe(2);
     });
 
     test("SimplifyForSave", () => {
@@ -138,7 +197,7 @@ describe('Program model', () => {
         expect(model.secondLastTransitionStep).toBe(0);
     });
 
-    test("Reset() resets start node", () => {
+    test("Reset() resets to start node", () => {
         const nodes: Record<string, ModelNode> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
@@ -149,20 +208,6 @@ describe('Program model', () => {
         model.reset();
         expect(model.currentState).toBe(nodes["start"]);
     });
-
-    class MockedModelNode extends ModelNode {
-        private readonly fn: jest.Mock;
-
-        constructor(id: string, label: string, fn: jest.Mock) {
-            super(id, label);
-            this.fn = fn;
-        }
-
-        override reset() {
-            this.fn();
-            super.reset();
-        }
-    }
 
     test("Reset() calls node.reset() for every node", () => {
         const fn = jest.fn();
@@ -176,13 +221,7 @@ describe('Program model', () => {
         expect(fn).toBeCalledTimes(3);
     });
 
-    class MockedProgram extends ProgramModel {
-        setCoverageForKey(key: string) {
-            this.coverageCurrentRun[key] = true;
-        }
-    }
-
-    test("Reset() calls node.reset() for every node", () => {
+    test("Reset() clears coverage", () => {
         const nodes: Record<string, ModelNode> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
@@ -198,5 +237,52 @@ describe('Program model', () => {
         model.reset();
         expected = {total: 1, covered: []};
         expect(model.getCoverageCurrentRun()).toStrictEqual(expected);
+    });
+
+    test("MakeOneTransition()", () => {
+        const [model, nodes, edges] = getBiggerModel();
+        let stepCount = 0;
+        const t = {getTotalStepsExecuted: () => ++stepCount} as TestDriver;
+        const fn = jest.fn();
+        nodes["start"].testEdgeConditions = (t, cu, s1, s2) => {
+            fn(t, cu, s1, s2);
+            return edges["1"];
+        };
+        model.programEndStep = 5;
+        model.makeOneTransition(t, null);
+        expect(fn).toHaveBeenCalledWith(t, null, 2, 5);
+        expect(model.currentState).toBe(nodes["n1"]);
+    });
+
+    test("TestForEvent()", () => {
+        const [model, nodes, edges] = getBiggerModel();
+        let stepCount = 0;
+        const t = {getTotalStepsExecuted: () => ++stepCount} as TestDriver;
+        const fn = jest.fn();
+        nodes["start"].testForEvent = (t, cu, s1, s2) => {
+            fn(t, cu, s1, s2);
+            return edges["1"];
+        };
+        model.programEndStep = 7;
+        model.testForEvent(t, null, [""]);
+        expect(fn).toHaveBeenCalledWith(t, null, 2, 7);
+        expect(model.currentState).toBe(nodes["n1"]);
+    });
+
+    test("registerComponents() registers all nodes", () => {
+        const fn = jest.fn();
+        const nodes: Record<string, ModelNode> = {
+            start: new ModelNode("start", "label"),
+            n1: new ModelNode("n1", "n1"),
+            n2: new ModelNode("n2", "n2"),
+            n3: new ModelNode("n3", "n3"),
+        };
+        Object.values(nodes).forEach(n => n.registerComponents = fn);
+        const model = new ProgramModel("model", "start", nodes, {}, [], []);
+        const cu = {} as unknown as CheckUtility;
+        const t = {} as unknown as TestDriver;
+        model.registerComponents(cu, t, false);
+        expect(fn).toBeCalledTimes(4);
+        expect(fn).toHaveBeenCalledWith(cu, t, false);
     });
 });
