@@ -1,7 +1,7 @@
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {
-    ComparisonNotKnownError, NotANumericalValueError,
+    ComparisonNotKnownError, FunctionEvalError, NotANumericalValueError,
     RGBRangeError,
     SpriteNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
@@ -265,6 +265,32 @@ describe('CheckGenerator', () => {
             kiwi.clones.forEach(c => c.updateSprite());
             const res = CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", negated, false, "kiwi", "x", ">", "15");
             expect(res()).toEqual(!negated);
+        });
+    });
+
+    describe('getFunctionCheck()', () => {
+        it.each([[false, false], [false, true], [true, false], [true, true]])(
+            'Returns constant function for negated: %s, param: %s', (negated, value) => {
+                const f = CheckGenerator.getFunctionCheck(null, null, "", "", negated, false, String(value));
+                expect(f()).toBe(negated ? !value : value);
+            });
+
+        test('Throws Exception when function cannot be evaluated', () => {
+            expect(() => {
+                CheckGenerator.getFunctionCheck(null, null, "", "", false, true, "throw new Error(\"this is an error\");");
+            }).toThrow(FunctionEvalError);
+        });
+
+        test('Returned function actually uses TestDriver', () => {
+            const apple = new SpriteMock("apple");
+            const kiwi = new SpriteMock("kiwi");
+            const tdMock = new TestDriverMock([apple, kiwi]);
+            const cu = {} as unknown as CheckUtility;
+            const fn = "(t) => t.getSprites(s => s.name == \"apple\").length == 1";
+            const f = CheckGenerator.getFunctionCheck(tdMock.getTestDriver(), cu, "label", "graphID", false, true, fn);
+            expect(f()).toBe(true);
+            tdMock.currentSprites = {"kiwi": kiwi.sprite};
+            expect(f()).toBe(false);
         });
     });
 });
