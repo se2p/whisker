@@ -1,91 +1,13 @@
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
-import Sprite from "../../../../src/vm/sprite";
-import TestDriver from "../../../../src/test/test-driver";
 import {
-    ComparisonNotKnownError, getComparisonNotKnownError,
-    NotANumericalValueError,
+    ComparisonNotKnownError, NotANumericalValueError,
     RGBRangeError,
     SpriteNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
 import {ArgType} from "../../../../src/whisker/model/components/Check";
-
-class TestDriverMock {
-    public currentSprites: Record<string, Sprite>;
-    public stage: Sprite;
-    public isMouseDown: boolean;
-
-    constructor(currentSprites: SpriteMock[] = [], stage: Sprite = null, isMouseDown = true) {
-        this.currentSprites = toSpriteMockMap(currentSprites);
-        this.stage = stage;
-        this.isMouseDown = isMouseDown;
-    }
-
-    public getTestDriver(): TestDriver {
-        return {
-            getSprites: (filter: ((s: Sprite) => boolean), skipStage = true) => {
-                return Object.values(this.currentSprites).filter(s => filter(s) && (s != this.stage || !skipStage));
-            },
-            getStage: () => this.stage,
-            isMouseDown: () => this.isMouseDown,
-        } as unknown as TestDriver;
-    }
-}
-
-class SpriteMock {
-    public readonly name: string;
-    public touchingMouse: boolean;
-    public touchingColor: boolean;
-    public touchingSprite: boolean;
-    public variables: any;
-    private _original: boolean;
-    private _visible: boolean;
-    private _sprite: Sprite;
-
-    constructor(name: string, isOriginal = true, isTouchingMouse = true, visible = true,
-                isTouchingColor = true, touchingSprite = true, variables = null) {
-        this.name = name;
-        this._original = isOriginal;
-        this.touchingMouse = isTouchingMouse;
-        this._visible = visible;
-        this.touchingColor = isTouchingColor;
-        this.touchingSprite = touchingSprite;
-        this.variables = variables;
-        this.createSprite();
-    }
-
-    private createSprite() {
-        this._sprite = {
-            name: this.name,
-            isOriginal: this._original,
-            visible: this._visible,
-            isTouchingMouse: () => this.touchingMouse,
-            isTouchingColor: (colors: number[]) => this.touchingColor,
-            isTouchingSprite: (sprite: Sprite) => this.touchingSprite,
-            getVariables: (key: string) => this.variables,
-            getVariable: (key: string) => this.variables[0],
-        } as unknown as Sprite;
-    }
-
-    get sprite() {
-        return this._sprite;
-    }
-
-    set visible(value: boolean) {
-        this._visible = value;
-        // this.createSprite();
-        // TODO check if there is a possibility to change the attribute of the sprite after creation
-    }
-}
-
-
-function toSpriteMockMap(array: SpriteMock[]): Record<string, Sprite> {
-    const map: Record<string, Sprite> = {};
-    for (const sprite of array) {
-        map[sprite.name] = sprite.sprite;
-    }
-    return map;
-}
+import {SpriteMock} from "../SpriteMock";
+import {TestDriverMock} from "../TestDriverMock";
 
 describe('CheckGenerator', () => {
     describe('getKeyDownCheck()', () => {
@@ -139,7 +61,7 @@ describe('CheckGenerator', () => {
 
         it.each([true, false])('returns correct sprite if possible (negated: %s)', (negated: boolean) => {
             const apple = new SpriteMock("apple");
-            tdMock.currentSprites = toSpriteMockMap([
+            tdMock.currentSprites = SpriteMock.toSpriteMockMap([
                 new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("kiwi"), apple
                 // when adding new SpriteMock("pineapple") the test fails. This does not seem right -> potential bug
             ]);
@@ -193,7 +115,7 @@ describe('CheckGenerator', () => {
 
         it.each([true, false])('returned function depends on touchingColor (negated: %s)', (negated: boolean) => {
             const kiwi = new SpriteMock("kiwi");
-            tdMock.currentSprites = toSpriteMockMap([
+            tdMock.currentSprites = SpriteMock.toSpriteMockMap([
                 new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("apple"), kiwi
             ]);
             kiwi.touchingColor = true;
@@ -289,6 +211,7 @@ describe('CheckGenerator', () => {
             {name: "size", value: 10},
             {name: "sayText", value: "this is some text"}
         ];
+        kiwi.updateSprite();
 
         it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (c: string) => {
             expect(() => {
@@ -322,6 +245,26 @@ describe('CheckGenerator', () => {
             expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:sayText:==:some other text", "label", "graphId", expect.anything());
         });
 
+        it.each([false, true])('Returned function includes original sprite (negated: %s)', (negated) => {
+            const fn = jest.fn();
+            const cu = {registerOnMoveEvent: fn} as unknown as CheckUtility;
+            kiwi.clones = [new SpriteMock("kiwi")];
+            kiwi.clones[0].variables = [{name: "x", value: 4}];
+            kiwi.clones[0].updateSprite();
+            const res = CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", negated, false, "kiwi", "x", "<", "3");
+            expect(res()).toEqual(!negated);
+        });
 
+        it.each([false, true])('Returned function includes clones (negated: %s)', (negated) => {
+            const fn = jest.fn();
+            const cu = {registerOnMoveEvent: fn} as unknown as CheckUtility;
+            kiwi.clones = [new SpriteMock("kiwi"), new SpriteMock("kiwi"), new SpriteMock("kiwi")];
+            kiwi.clones[0].variables = [{name: "x", value: 4}];
+            kiwi.clones[1].variables = [{name: "x", value: 8}];
+            kiwi.clones[2].variables = [{name: "x", value: 16}];
+            kiwi.clones.forEach(c => c.updateSprite());
+            const res = CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", negated, false, "kiwi", "x", ">", "15");
+            expect(res()).toEqual(!negated);
+        });
     });
 });
