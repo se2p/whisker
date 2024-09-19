@@ -6,6 +6,7 @@ export class TestDriverMock {
     public currentSprites: Record<string, Sprite>;
     public stage: Sprite;
     public isMouseDown: boolean;
+    public totalStepsExecuted = 0;
 
     constructor(currentSprites: SpriteMock[] = [], stage: Sprite = null, isMouseDown = true) {
         this.currentSprites = SpriteMock.toSpriteMockMap(currentSprites);
@@ -21,6 +22,7 @@ export class TestDriverMock {
             getSprite: (key: string) => Object.values(this.currentSprites).find(s => s.name == key),
             getStage: () => this.stage,
             isMouseDown: () => this.isMouseDown,
+            getTotalStepsExecuted: () => this.totalStepsExecuted,
         } as unknown as TestDriver;
     }
 
