@@ -6,6 +6,7 @@ export class SpriteMock {
     public touchingColor: boolean;
     public touchingSprite: boolean;
     public variables: any;
+    public currentCostumeName: string;
     public clones: SpriteMock[];
     private _original: boolean;
     private _visible: boolean;
@@ -28,6 +29,7 @@ export class SpriteMock {
         this._sprite = {
             name: this.name,
             x: this.variables == null ? 0 : this.variables.find(v => v.name == "x").value,
+            currentCostumeName: this.currentCostumeName,
             isOriginal: this._original,
             visible: this._visible,
             isTouchingMouse: () => this.touchingMouse,

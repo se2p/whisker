@@ -7,6 +7,9 @@ import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {InputEffect, InputEffectName} from "../../../../src/whisker/model/components/InputEffect";
+import {TestDriverMock} from "../TestDriverMock";
+import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
+import {SpriteMock} from "../SpriteMock";
 
 describe('Model edges', () => {
     const id = "id";
@@ -127,5 +130,105 @@ describe('Model edges', () => {
             effects: [inputEffect.simplifyForSave()],
         };
         expect(actual).toStrictEqual(expected);
+    });
+
+    describe('checkConditions()', () => {
+        test("checkConditions() returns conditions when no step happened", () => {
+            const tdMock = new TestDriverMock([], 10);
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
+            edge.lastTransition = 11;
+            edge.addCondition(new Condition(id, label, CheckName.BackgroundChange, false, ["test"]));
+            edge.addCondition(new Condition(id, label, CheckName.Key, false, ["a"]));
+            edge.addCondition(new Condition(id, label, CheckName.SpriteTouching, false, ["apple", "bowl"]));
+            const result = edge.checkConditions(tdMock.getTestDriver(), null, 5, 7);
+            expect(result).toBe(edge.conditions);
+        });
+
+        test("checkConditions() returns failed conditions (no time limit)", () => {
+            const errorFn = jest.fn();
+            const cu = {addErrorOutput: errorFn} as unknown as CheckUtility;
+            const tdMock = new TestDriverMock([], 5);
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
+            const conditions = [
+                {id: "cond0", check: (s1, s2) => true} as unknown as Condition,
+                {id: "cond1", check: (s1, s2) => false} as unknown as Condition,
+                {id: "cond2", check: (s1, s2) => true} as unknown as Condition,
+                {id: "cond3", check: (s1, s2) => true} as unknown as Condition,
+                {id: "cond4", check: (s1, s2) => false} as unknown as Condition,
+                {
+                    id: "cond5", check: (s1, s2) => {
+                        throw new Error("this should happen");
+                    }
+                } as unknown as Condition,
+            ];
+            conditions.forEach(condition => edge.addCondition(condition));
+            const result = edge.checkConditions(tdMock.getTestDriver(), cu, 5, 7);
+            expect(result).toStrictEqual([conditions[1], conditions[4], conditions[5]]);
+        });
+
+        test("checkConditions() returns failed conditions (total steps exceeded)", () => {
+            const errorFn = jest.fn();
+            const timeFn = jest.fn();
+            const cu = {addErrorOutput: errorFn, addTimeLimitFailOutput: timeFn} as unknown as CheckUtility;
+            const tdMock = new TestDriverMock([], 43);
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, 42);
+            const conditions = [
+                {
+                    id: "cond00",
+                    check: (s1, s2) => false,
+                    registerComponents: jest.fn,
+                    toString: () => "cond00.toString()"
+                } as unknown as Condition,
+
+                {id: "cond10", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
+                {id: "cond20", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
+                {id: "cond30", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
+                {
+                    id: "cond40",
+                    check: (s1, s2) => {
+                        throw new Error("this should happen");
+                    },
+                    registerComponents: jest.fn
+                } as unknown as Condition,
+                {id: "cond50", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
+            ];
+            conditions.forEach(condition => edge.addCondition(condition));
+            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            const result = edge.checkConditions(tdMock.getTestDriver(), cu, 5, 7);
+            expect(result).toStrictEqual([conditions[0], conditions[4]]);
+            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() at 42ms");
+        });
+    });
+
+    describe("checkConditionsOnEvent()", () => {
+        test("checkConditionsOnEvent() returns conditions when event string not contained", () => {
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
+            edge.addCondition(new Condition(id, label, CheckName.BackgroundChange, false, ["test"]));
+            edge.addCondition(new Condition(id, label, CheckName.Key, false, ["a"]));
+            edge.addCondition(new Condition(id, label, CheckName.SpriteTouching, false, ["apple", "bowl"]));
+            const eventStrings = ["BackgroundChange:differentArg", "Key:w", "Function:false"];
+            const result = edge.checkConditionsOnEvent(null, null, 5, 7, eventStrings);
+            expect(result).toBe(edge.conditions);
+        });
+
+        test("checkConditionsOnEvent() returns conditions when event string not contained", () => {
+            const cu = {
+                isKeyDown: (key) => true,
+                addErrorOutput: (...args: any[]) => jest.fn(),
+            } as unknown as CheckUtility;
+            const tdMock = new TestDriverMock();
+            const stage = new SpriteMock("stage");
+            stage.currentCostumeName = "stage";
+            stage.updateSprite();
+            tdMock.stage = stage.sprite;
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
+            edge.addCondition(new Condition(id, label, CheckName.BackgroundChange, false, ["newBackground"]));
+            edge.addCondition(new Condition(id, label, CheckName.Key, false, ["d"]));
+            edge.addCondition(new Condition(id, label, CheckName.SpriteTouching, false, ["banana", "bowl"]));
+            const eventStrings = ["BackgroundChange:test", "Key:d", "Function:true"];
+            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            const result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 5, 7, eventStrings);
+            expect(result).toStrictEqual([edge.conditions[0]]);
+        });
     });
 });

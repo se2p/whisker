@@ -290,7 +290,7 @@ export class ProgramModelEdge extends ModelEdge {
 
             if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
                 failed.push(cond);
-                break;
+                break; // TODO check if this break should be here
             }
         }
         return failed;
