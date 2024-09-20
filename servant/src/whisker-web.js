@@ -1,5 +1,5 @@
 const puppeteer = require("puppeteer");
-const logger = require("../logger");
+const logger = require("./logger");
 const {consoleForwarded, headless, whiskerUrl} = require("./cli").opts;
 
 // Workaround for Whisker issue #241

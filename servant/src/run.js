@@ -1,5 +1,5 @@
 const fs = require("fs");
-const logger = require("../logger");
+const logger = require("./logger");
 const {modelPath, csvFile} = require("./cli").opts;
 const {runTestsOnFile, getProjectsInScratchPath} = require("./common");
 

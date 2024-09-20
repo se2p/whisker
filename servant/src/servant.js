@@ -1,8 +1,8 @@
 const logger = require("./logger");
-const {subcommand} = require('./src/cli');
+const {subcommand} = require('./cli');
 const {resolve} = require('path');
-const {openNewBrowser, openNewPage} = require("./src/whisker-web");
-const {relativeToServantDir} = require("./util");
+const {openNewBrowser, openNewPage} = require("./whisker-web");
+const {relativeToServantDir} = require("../util");
 const fs = require("fs");
 const path = require("path");
 
