@@ -1,7 +1,7 @@
 const logger = require("./logger");
-const {subcommand} = require('./cli');
+const {subcommand} = require('./src/cli');
 const {resolve} = require('path');
-const {openNewBrowser, openNewPage} = require("./whisker-web");
+const {openNewBrowser, openNewPage} = require("./src/whisker-web");
 const {relativeToServantDir} = require("./util");
 const fs = require("fs");
 const path = require("path");
@@ -22,7 +22,7 @@ void async function main() {
             fs.unlinkSync(prettifyPath)
         }
 
-        return await require(resolve(relativeToServantDir(subcommand)))(openNewPage.bind(null, browser));
+        return await require(resolve(relativeToServantDir("src/" + subcommand)))(openNewPage.bind(null, browser));
     } catch (e) {
         logger.error(e);
         return Promise.reject(e);
