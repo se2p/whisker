@@ -4,9 +4,9 @@ const rimraf = require("rimraf");
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require("./witness-util");
 const fs = require("fs");
 const {basename, resolve} = require("path");
-const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
-const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
-const logger = require('./logger');
+const TAP13Formatter = require('../../whisker-main/src/test-runner/tap13-formatter');
+const CoverageGenerator = require('../../whisker-main/src/coverage/coverage');
+const logger = require('../logger');
 
 const {
     testPath,
