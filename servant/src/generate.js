@@ -1,4 +1,4 @@
-const logger = require("../logger");
+const logger = require("./logger");
 const fs = require("fs");
 const rimraf = require("rimraf");
 const {tmpDir, switchToProjectTab} = require("./common");
