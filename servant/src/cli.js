@@ -1,8 +1,8 @@
 const {Command, InvalidArgumentError} = require('commander');
-const util = require('../util');
+const util = require('./util');
 // eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('../../package.json');
-const {relativeToServantDir} = require("../util");
+const {relativeToServantDir} = require("./util");
 
 /**
  * The name of the Whisker subcommand that was invoked.

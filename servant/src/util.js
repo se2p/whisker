@@ -11,7 +11,7 @@ function asAbsolutePath(path) {
 }
 
 function relativeToServantDir(path) {
-    return resolve(__dirname, path);
+    return resolve(__dirname, "..", path);
 }
 
 /*
