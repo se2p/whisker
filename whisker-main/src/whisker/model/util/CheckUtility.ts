@@ -8,6 +8,8 @@ import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
 import {ArgType, CheckName} from "../components/Check";
 
+type EffectCheck = { effect: Effect, edge: ProgramModelEdge, model: ProgramModel };
+
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
  */
@@ -29,8 +31,8 @@ export class CheckUtility extends EventEmitter {
 
     private eventStrings: string[] = [];
 
-    private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
-    private failedOutputsEvents: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
+    private effectChecks: EffectCheck[] = [];
+    private failedOutputsEvents: EffectCheck[] = [];
 
     // how often the errors or fails happened, change this boolean for printing all or only ten occurrences per error
     private onlyTenOutputs = true;
@@ -204,7 +206,7 @@ export class CheckUtility extends EventEmitter {
     /**
      * Get a string defining the event of a listener.
      */
-    static getEventString(name: CheckName, negated: boolean, ...args:ArgType[]): string {
+    static getEventString(name: CheckName, negated: boolean, ...args: ArgType[]): string {
         let string = negated ? "!" + name : name;
         for (let i = 0; i < args.length; i++) {
             string += ":" + args[i];
@@ -244,9 +246,9 @@ export class CheckUtility extends EventEmitter {
      * Check the registered effects of this step.
      */
     checkEffects(): Effect[] {
-        const contradictingEffects = [];
-        const doNotCheck = {};
-        const newEffects = [];
+        const contradictingEffects: Effect[] = [];
+        const doNotCheck: Record<number, boolean> = {};
+        const newEffects: EffectCheck[] = [];
 
         // check for contradictions in effects and only test an effect if it does not contradict another one
         for (let i = 0; i < this.effectChecks.length; i++) {
@@ -310,7 +312,7 @@ export class CheckUtility extends EventEmitter {
         this.modelResult.addError(output);
     }
 
-    private failOrError(output: string, failureList: Record<string,number>) {
+    private failOrError(output: string, failureList: Record<string, number>) {
         if (!this.logsInConsole) {
             return;
         }
@@ -361,8 +363,7 @@ export class CheckUtility extends EventEmitter {
         this.failedOutputsEvents = this.check(this.failedOutputsEvents);
     }
 
-    private check(checks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[]):
-        { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] {
+    private check(checks: EffectCheck[]): EffectCheck[] {
         const newFailedList = [];
         for (let i = 0; i < checks.length; i++) {
             const effect = checks[i].effect;

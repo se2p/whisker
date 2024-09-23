@@ -7,6 +7,11 @@ export class TestDriverMock {
     public stage: Sprite;
     public isMouseDown: boolean;
     public totalStepsExecuted = 0;
+    public inputImmediate: (...args: any[]) => void;
+    public typeText: (text: string) => void;
+    public mouseDown: (value: boolean) => void;
+    public clickStage: () => void;
+    public clickSprite: (name: string, steps: number) => void;
 
     constructor(currentSprites: SpriteMock[] = [], steps = 0, stage: Sprite = null, isMouseDown = true) {
         this.currentSprites = SpriteMock.toSpriteMockMap(currentSprites);
@@ -25,8 +30,11 @@ export class TestDriverMock {
             getStage: () => this.stage,
             isMouseDown: () => this.isMouseDown,
             getTotalStepsExecuted: () => this.totalStepsExecuted,
+            inputImmediate: (...args: any[]) => this.inputImmediate(args),
+            typeText: (text: string) => this.typeText(text),
+            mouseDown: (value: boolean) => this.mouseDown(value),
+            clickStage: () => this.clickStage(),
+            clickSprite: (name: string, steps: number) => this.clickSprite(name, steps),
         } as unknown as TestDriver;
     }
-
-
 }

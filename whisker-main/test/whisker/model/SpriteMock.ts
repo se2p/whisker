@@ -37,6 +37,8 @@ export class SpriteMock {
             isOriginal: this._original,
             visible: this._visible,
             old: this.old == null ? null : this.old._sprite,
+            sprite: this._sprite,
+            _target: {sprite: this._sprite, isOriginal: this._original},
             isTouchingMouse: () => this.touchingMouse,
             isTouchingColor: (colors: number[]) => this.touchingColor,
             isTouchingSprite: (sprite: Sprite) => this.touchingSprite,
@@ -67,5 +69,9 @@ export class SpriteMock {
             map[sprite.name] = sprite.sprite;
         }
         return map;
+    }
+
+    public static stringsToSpriteMockMap(array: string[]): Record<string, Sprite> {
+        return SpriteMock.toSpriteMockMap(array.map(s => new SpriteMock(s)));
     }
 }
