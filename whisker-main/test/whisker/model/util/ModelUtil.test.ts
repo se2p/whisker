@@ -1,5 +1,10 @@
 import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 import {ArgType} from "../../../../src/whisker/model/components/Check";
+import {ExpressionEnterError, ExprEvalError} from "../../../../src/whisker/model/util/ModelError";
+import {TestDriverMock} from "../TestDriverMock";
+import {SpriteMock} from "../SpriteMock";
+import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
+import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
@@ -284,7 +289,56 @@ describe('ModelUtil tests', function () {
         });
         const nonValidNames = ["test", "something", "variable", "DIRECTION", "X", "Y", "Z", "z", "old.X"];
         it.each(nonValidNames)('checkAttributeForExistence("%s") does throw', (name) => {
-            expect(() => ModelUtil.checkAttributeExistence(null, "sprite", + name)).toThrow();
+            expect(() => ModelUtil.checkAttributeExistence(null, "sprite", +name)).toThrow();
+        });
+    });
+
+    describe('getExpressionForEval', () => {
+        test('throws exception when expression cannot be evaluated', () => {
+            const tdMock = new TestDriverMock();
+            // const expr = "throw new Exception(\"this is supposed to happen\")";
+            const expr = "\"some wrong syntax'\"";
+            expect(() => {
+                ModelUtil.getExpressionForEval(tdMock.getTestDriver(), false, expr);
+            }).toThrow(ExprEvalError);
+        });
+
+        test('Escapes input so expression is not evaluated', () => {
+            const apple = new SpriteMock("apple");
+            const kiwi = new SpriteMock("kiwi");
+            const tdMock = new TestDriverMock([apple, kiwi]);
+            const t = tdMock.getTestDriver();
+            const expr = "t.getSprites(s => s.name == \"apple\").length == 1";
+            const result = ModelUtil.getExpressionForEval(t, true, expr);
+            const f = eval(result.expr);
+            expect(f(t)).toBe(expr);
+        });
+
+        test('Expression cannot contain newlines', () => {
+            const t = new TestDriverMock().getTestDriver();
+            const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))\n==10";
+            expect(() => {
+                ModelUtil.getExpressionForEval(t, true, expr);
+            }).toThrow(ExpressionEnterError);
+        });
+
+        test('Evaluated expression correct with dependencies', () => {
+            const apple = new SpriteMock("Apple");
+            const kiwi = new SpriteMock("Banana");
+            const bowl = new SpriteMock("Bowl");
+            bowl.variables = [{name: "x", value: 10}];
+            const oldBowl = new SpriteMock("Bowl");
+            oldBowl.variables = [{name: "x", value: 5}];
+            bowl.old = oldBowl;
+            const tdMock = new TestDriverMock([apple, kiwi, bowl]);
+            const t = tdMock.getTestDriver();
+            const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))==10";
+            const result = ModelUtil.getExpressionForEval(t, true, expr);
+            const f = eval(result.expr);
+            expect(f(t)).toBe(false);
+            bowl.variables = [{name: "x", value: 15}];
+            tdMock.currentSprites = SpriteMock.toSpriteMockMap([apple, kiwi, bowl]);
+            expect(f(t)).toBe(true);
         });
     });
 });

@@ -8,6 +8,7 @@ export class SpriteMock {
     public variables: any;
     public currentCostumeName: string;
     public clones: SpriteMock[];
+    public old: SpriteMock;
     private _original: boolean;
     private _visible: boolean;
     private _sprite: Sprite;
@@ -25,13 +26,17 @@ export class SpriteMock {
         this.updateSprite();
     }
 
-    public updateSprite() {
+    public updateSprite(): void {
+        if (this.old != null) {
+            this.old.updateSprite();
+        }
         this._sprite = {
             name: this.name,
             x: this.variables == null ? 0 : this.variables.find(v => v.name == "x").value,
             currentCostumeName: this.currentCostumeName,
             isOriginal: this._original,
             visible: this._visible,
+            old: this.old == null ? null : this.old._sprite,
             isTouchingMouse: () => this.touchingMouse,
             isTouchingColor: (colors: number[]) => this.touchingColor,
             isTouchingSprite: (sprite: Sprite) => this.touchingSprite,
@@ -45,7 +50,7 @@ export class SpriteMock {
         } as unknown as Sprite;
     }
 
-    get sprite() {
+    get sprite(): Sprite {
         return this._sprite;
     }
 
@@ -58,6 +63,7 @@ export class SpriteMock {
     public static toSpriteMockMap(array: SpriteMock[]): Record<string, Sprite> {
         const map: Record<string, Sprite> = {};
         for (const sprite of array) {
+            sprite.updateSprite();
             map[sprite.name] = sprite.sprite;
         }
         return map;

@@ -268,6 +268,7 @@ export abstract class ModelUtil {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
         let toEval = String(pToEval);
         if (toEval.indexOf((this.EXPR_START)) == -1) {
+            // TODO check if this should be more robust ("\"some wrong syntax'\"" as pToEval creates an error)
             if (!toEval.startsWith("'")) {
                 toEval = "'" + toEval + "'";
             } else if (!toEval.endsWith("'")) {
