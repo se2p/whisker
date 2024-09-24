@@ -1,5 +1,5 @@
 const exec = require('child_process').exec;
-const {relativeToServantDir} = require('../util');
+const {relativeToServantDir} = require('../src/util');
 
 /**
  * Runs a headless servant with the provided arguments.
