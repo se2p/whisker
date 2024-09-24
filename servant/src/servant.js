@@ -22,7 +22,7 @@ void async function main() {
             fs.unlinkSync(prettifyPath)
         }
 
-        return await require(resolve(relativeToServantDir("src/" + subcommand)))(openNewPage.bind(null, browser));
+        return await require(resolve(relativeToServantDir("src"), subcommand))(openNewPage.bind(null, browser));
     } catch (e) {
         logger.error(e);
         return Promise.reject(e);
