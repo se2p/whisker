@@ -1,74 +1,22 @@
 /* eslint-disable node/no-unpublished-require */
 
-const rimraf = require("rimraf");
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require("./witness-util");
 const fs = require("fs");
 const {basename, resolve} = require("path");
 const TAP13Formatter = require('../../whisker-main/src/test-runner/tap13-formatter');
-const CoverageGenerator = require('../../whisker-main/src/coverage/coverage');
 const logger = require('./logger');
 
 const {
     testPath,
-    seed,
-    acceleration,
-    modelPath,
-    modelRepetition,
-    modelDuration,
-    modelCaseSensitive,
     addRandomInputs,
-    mutators,
-    downloadMutants,
     errorWitnessPath,
     numberOfJobs,
     scratchPath,
-    mutationBudget,
-    maxMutants,
-    traceBlocks,
-    useSaveStates,
 } = require("./cli").opts;
 const {subcommand} = require("./cli");
 
 const tmpDir = './.tmpWorkingDir';
 
-async function runTestsOnFile(openNewPage, targetProject) {
-    const start = Date.now();
-
-    const csvs = [];
-
-    if (testPath) {
-        const paths = prepareTestFiles();
-        await Promise.all(paths.map((path, index) => runTests(path, openNewPage, index, targetProject)))
-            .then(results => {
-                const summaries = results.map(({summary}) => summary);
-                const coverages = results.map(({coverage}) => coverage);
-                const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
-                csvs.push(...results.map(({csv}) => csv));
-
-                if (summaries[0] !== undefined) {
-                    printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-                        modelCoverage[0]);
-                }
-                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-            })
-            .catch(errors => logger.error('Error on executing tests: ', errors))
-            .finally(() => rimraf.sync(tmpDir));
-
-    } else {
-        // model path given, test only by model
-        await runTests(undefined, openNewPage, 0, targetProject)
-            .then(result => {
-                csvs.push(result.csv);
-
-                printTestResultsFromCoverageGenerator([result.summary],
-                    CoverageGenerator.mergeCoverage([result.coverage]), result.modelCoverage);
-                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-            })
-            .catch(errors => logger.error('Error on executing tests: ', errors))
-            .finally(() => rimraf.sync(tmpDir));
-    }
-    return csvs;
-}
 
 /**
  * Switches to the project tab, which is necessary to start the test run. Additionally, to click on the start test
@@ -104,135 +52,6 @@ async function switchToUploadTab(page) {
 async function toggleExtendedView(page) {
     const toggleExtendedView = await page.$('#extendedView');
     await toggleExtendedView.evaluate(t => t.click());
-}
-
-async function runTests(path, openNewPage, index, targetProject) {
-    const page = await openNewPage();
-
-    /**
-     * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
-     * was loaded.
-     */
-    async function configureWhiskerWebInstance() {
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
-        await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
-        await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
-        await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
-        await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
-        await page.evaluate(tb => document.querySelector('#container').traceBlocks = tb, traceBlocks);
-
-        await (await page.$('#fileselect-project')).uploadFile(targetProject);
-        if (path) {
-            await (await page.$('#fileselect-tests')).uploadFile(path);
-        }
-        if (modelPath) {
-            await (await page.$('#fileselect-models')).uploadFile(modelPath);
-            await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, modelRepetition);
-            await page.evaluate(factor => document.querySelector('#model-duration').value = factor, modelDuration);
-            if (modelCaseSensitive === "true") {
-                await (await page.$('#model-case-sensitive')).click();
-            }
-        }
-        await switchToProjectTab(page, false);
-    }
-
-    /**
-     * Executes the tests, by clicking the button.
-     */
-    async function executeTests() {
-        await (await page.$('#run-all-tests')).click();
-    }
-
-    /**
-     * Observes the log output, waiting for the csv summary to be written to the log, which indicates the end of the
-     * entire test run.
-     * @returns {Promise<string>}
-     */
-    async function readTestOutput() {
-        const logOutput = await page.$('#output-log .output-content');
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-            if (currentLog.includes('projectName')) {
-                break;
-            }
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-        // Get CSV-Output
-        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-        const coverageLogLines = outputLog.split('\n');
-        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
-        const endIndex = coverageLogLines.indexOf("", csvHeaderIndex);
-        return coverageLogLines.slice(csvHeaderIndex, endIndex).join("\n")
-    }
-
-    /**
-     * Generates a coverage object based on the coveredBlockIdsPerSprite and blockIdsPerSprite from the
-     * CoverageGenerator used in serializeAndReturnCoverageObject.
-     *
-     * @param {*} serializedCoverage  The coverage object, using array and objects instead of maps and sets, as it was
-     *                                serialized by puppeteer
-     * @returns {coverage}            The coverage object
-     */
-    function convertSerializedCoverageToCoverage(serializedCoverage) {
-        const coveredBlockIdsPerSprite = new Map();
-        serializedCoverage.coveredBlockIdsPerSprite
-            .forEach(({key, values}) => coveredBlockIdsPerSprite.set(key, new Set(values)));
-        const blockIdsPerSprite = new Map();
-        serializedCoverage.blockIdsPerSprite.forEach(({key, values}) => blockIdsPerSprite.set(key, new Set(values)));
-        return {coveredBlockIdsPerSprite, blockIdsPerSprite};
-    }
-
-    /**
-     * Generates a model coverage object based on the coveragePerModel and missedEdges.
-     *
-     * @param {*} serializedCoverage  The model coverage object using array and objects instead of maps and sets, as it was
-     *                                serialized by puppeter
-     */
-    function convertSerializedModelCoverage(serializedCoverage) {
-        const modelCoverage = {};
-        serializedCoverage.modelCoverage.forEach(({key, values}) => {
-            const coverageObject = {};
-            values.forEach(({key, values}) => {
-                coverageObject[key] = values;
-            });
-            modelCoverage[key] = coverageObject;
-        });
-        return modelCoverage;
-    }
-
-    /**
-     * Uses the CoverageGenerator, which is attached to the window object in the whisker-web/index.js to get the coverage
-     * of the test run and transfer it from the Whisker instance in the browser to this script.
-     * The original Maps and Sets have to be reworked to be a collection of objects and arrays, otherwise the coverage raw
-     * data cannot be transferred from the Chrome instance to the nodejs instance.
-     */
-    async function onFinishedCallback() {
-        return page.evaluate(() => new Promise(resolve => {
-            document.defaultView.messageServantCallback = message => resolve(message);
-        }));
-    }
-
-    try {
-        await configureWhiskerWebInstance();
-        const promise = onFinishedCallback();
-        await executeTests();
-
-        const csvRow = await readTestOutput();
-        const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
-
-        await page.close();
-
-        return Promise.resolve({
-            summary, coverage: convertSerializedCoverageToCoverage(serializableCoverageObject),
-            csv: csvRow, modelCoverage: convertSerializedModelCoverage(serializableModelCoverage)
-        });
-    } catch (e) {
-        logger.error(e);
-        return Promise.reject(e);
-    }
 }
 
 /**
@@ -388,11 +207,11 @@ function getProjectsInScratchPath() {
 
 
 module.exports = {
-    runTestsOnFile,
     switchToProjectTab,
     switchToUploadTab,
     toggleExtendedView,
     tmpDir,
     prepareTestFiles,
     getProjectsInScratchPath,
+    printTestResultsFromCoverageGenerator
 };
