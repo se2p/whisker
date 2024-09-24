@@ -14,7 +14,7 @@ describe('Model node', () => {
         expect(node.label).toBe("id");
     });
 
-    test("Can't add edge with wrong from node", () => {
+    test("Can't add edge with wrong \"from\"-node (source node)", () => {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", 1000, -1);
         const node = new ModelNode("id", "label");
         expect(() => {
@@ -68,7 +68,7 @@ describe('Model node', () => {
         expect(fn).toHaveBeenCalledTimes(5);
     });
 
-    test("testEdgeConditions returns null if no condition matches", () => {
+    test("testEdgeConditions returns the correct edge", () => {
         const tdMock = new TestDriverMock();
         tdMock.totalStepsExecuted = 342342;
         const fn = jest.fn();
@@ -99,7 +99,7 @@ describe('Model node', () => {
         expect(fn).toHaveBeenCalledTimes(3);
     });
 
-    test("testEdgeConditions returns null if no condition matches", () => {
+    test("testForEvent returns the correct edge", () => {
         const tdMock = new TestDriverMock();
         tdMock.totalStepsExecuted = 99999;
         const fn = jest.fn().mockReturnValue(null);
@@ -120,7 +120,7 @@ describe('Model node', () => {
         expect(correctEdge.lastTransition).toBe(100000);
     });
 
-    test("testEdgeConditions returns null if no condition matches", () => {
+    test("registerComponents calls register components of all outgoing edges", () => {
         const fn = jest.fn();
         const node = new ModelNode("id", "label");
         const count = 13;
