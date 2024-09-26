@@ -4,10 +4,10 @@
     "description": "Servant for Whisker",
     "main": "src/servant.js",
     "dependencies": {
-        "chalk": "^4.1.2",
         "commander": "^9.3.0",
         "csv-stringify": "^5.6.5",
         "js-yaml": "^4.1.0",
+        "minilog": "^3.1.0",
         "puppeteer": "^22.12.1",
         "rimraf": "3.0.2",
         "whisker-web": "0.8.0",

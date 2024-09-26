@@ -2,6 +2,7 @@
 const Parser = require('tap-parser');
 const csvStringify = require('csv-stringify/lib/sync');
 const yaml = require('js-yaml');
+const logger = require("logger");
 
 const testNames = new Map();
 const useNames = true; // use the names of tests instead of their id in the CSV header
@@ -25,7 +26,7 @@ const convertToCsv = function (str) {
             if (!testNames.has(test.id)) {
                 testNames.set(test.id, test.name);
             } else if (testNames.get(test.id) !== test.name) {
-                console.error('Error: Inconsistent test names or test order between projects.');
+                logger.error('Error: Inconsistent test names or test order between projects.');
                 process.exit(1);
             }
 
@@ -154,7 +155,7 @@ const rowsToCsv = function (rows, modelPath) {
                 csvLine.push(row.testResults.get(test[0]));
             } else {
                 csvLine.push(null);
-                console.error('Warning: Inconsistent test ids between projects.');
+                logger.error('Warning: Inconsistent test ids between projects.');
             }
         }
 

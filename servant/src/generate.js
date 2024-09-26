@@ -24,7 +24,7 @@ async function generateTests(openNewPage) {
         logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         // Save results in CSV-file if specified
         if (csvFile) {
-            console.info(`Creating CSV summary in ${csvFile}`);
+            logger.info(`Creating CSV summary in ${csvFile}`);
             fs.writeFileSync(csvFile, csv);
         }
     } catch (e) {
@@ -50,7 +50,7 @@ async function runGeneticSearch(openNewPage) {
         if (groundTruth) {
             await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
         }
-        console.log('Whisker-Web: Web Instance Configuration Complete');
+        logger.info('Whisker-Web: Web Instance Configuration Complete');
     }
 
     async function readTestOutput() {

@@ -216,7 +216,7 @@ async function run(openNewPage) {
     }
 
     if (csvFile) {
-        console.info(`Creating CSV summary in ${csvFile}`);
+        logger.info(`Creating CSV summary in ${csvFile}`);
 
         // There can only be multiple headers if there is more than one csv result.
         if (csvs.length > 1) {

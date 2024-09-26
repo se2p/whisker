@@ -166,10 +166,10 @@ function formatStackTrace(msg) {
 async function openNewPage(browser) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', (error) => {
-        logger.error(error);
+        console.error(error);
         return Promise.reject(error);
     }).on('pageerror', (error) => {
-        logger.error(error);
+        console.error(error);
         return Promise.reject(error);
     });
 
@@ -186,35 +186,35 @@ async function openNewPage(browser) {
                 // 99.9% of the cases. If not (e.g., because the actual error message is "JSHandle@error", but maybe
                 // in other cases, too), we fall back to just printing "JSHandle@error".
                 try {
-                    logger.error('Forwarded:', ...await forwardJSHandleError(msg));
+                    console.error(...await forwardJSHandleError(msg));
                 } catch {
                     // Unable to forward the JSHandle@error
-                    logger.error('Forwarded: JSHandle@error');
+                    console.error('Forwarded: JSHandle@error');
                 }
                 return;
             }
 
             switch (msg.type()) {
                 case 'warning':
-                    logger.warn('Forwarded:', msg.text());
+                    console.warn(msg.text());
                     break;
                 case 'log':
-                    logger.info('Forwarded:', msg.text());
+                    console.log(msg.text());
                     break;
                 case 'trace':
-                    logger.error('Forwarded:', formatStackTrace(msg));
+                    console.error(formatStackTrace(msg));
                     break;
                 case 'table':
                     try {
-                        logger.info('Forwarded:');
+                        console.info('Forwarded:');
                         console.table(...await evaluateMsgArgsInExecutionContext(msg));
                     } catch {
-                        logger.info('Forwarded:', msg.text());
+                        console.info('Forwarded:', msg.text());
                     }
                     break;
                 default:
                     // Assume error
-                    logger.error('Forwarded:', msg.text());
+                    console.error(msg.text());
             }
         });
     }

@@ -4,7 +4,6 @@ const {resolve} = require('path');
 const {openNewBrowser, openNewPage} = require("./whisker-web");
 const {relativeToServantDir} = require("./util");
 const fs = require("fs");
-const path = require("path");
 
 void async function main() {
     // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
@@ -17,7 +16,7 @@ void async function main() {
         // Since this is a purely visual feature and does not harm the test execution in any way,
         // we simply remove the file when calling the servant.
         // TODO Find better fix for that.
-        const prettifyPath = path.resolve(__dirname, "../whisker-web/dist/includes/prettify.js");
+        const prettifyPath = resolve(relativeToServantDir(".."), "whisker-web/dist/includes/prettify.js");
         if (fs.existsSync(prettifyPath)) {
             fs.unlinkSync(prettifyPath)
         }
