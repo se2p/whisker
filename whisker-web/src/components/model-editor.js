@@ -4,6 +4,7 @@ const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep')
 const {i18n} = require("../index");
 const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require("./model-editor-labelCodes");
+const logger = require("../logger");
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -1246,7 +1247,7 @@ class ModelEditor {
         }
 
         if (args.length !== argNames.length) {
-            console.error('Loaded model has a check with wrong number of arguments. Check.id:' + id);
+            logger.error('Loaded model has a check with wrong number of arguments. Check.id:' + id);
         }
         $(ModelEditor.CHECK_ARGS_DIV).children().remove();
 

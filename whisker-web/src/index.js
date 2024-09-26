@@ -44,6 +44,7 @@ const Header = require('./components/header');
 const ModelEditor = require('./components/model-editor');
 
 const {showModal, escapeHtml} = require('./utils.js');
+const logger = require("./logger");
 const Whisker = window.Whisker = {};
 window.$ = $;
 
@@ -86,7 +87,7 @@ const loadModelFromString = function (models) {
         Whisker.modelTester.load(models);
     } catch (err) {
         Whisker.outputLog.println(`ERROR: ${err.message}`);
-        console.error(err);
+        logger.error(err);
         const message = `${err.name}: ${err.message}`;
         showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
@@ -127,7 +128,7 @@ const loadTestsFromString = async function (string) {
             })();
         `);
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         const message = `${err.name}: ${err.message}`;
         showModal('Test Loading', `An error occurred while parsing the test code:<br>
             <div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
@@ -170,12 +171,12 @@ const runBBTTest = async function (bbtTest) {
     await new Promise(resolve => {
 
         if (Whisker.scratch.vm.runtime.bbtTestRunning) {
-            console.error('runBBTTest aborted: bbtTestRunning!');
+            logger.error('runBBTTest aborted: bbtTestRunning!');
             resolve();
         }
 
         if (bbtTest.isRunning) {
-            console.error('runBBTTest aborted: this BBT test is already running!');
+            logger.error('runBBTTest aborted: this BBT test is already running!');
             resolve();
         }
 
@@ -250,7 +251,7 @@ const runSearch = async function () {
         Whisker.configFileSelect.hasName() ?
             Whisker.configFileSelect.getName() :
             'mio.json';
-    console.log(`Whisker-Web: loading project ${projectName}`);
+    logger.info(`loading project ${projectName}`);
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
@@ -590,7 +591,7 @@ const initComponents = function () {
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
-    Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
+    Whisker.testRunner.on(TestRunner.TEST_ERROR, result => logger.error(result.error));
 
     Whisker.testTable = new TestTable($('#test-table')[0], runSingleTest, Whisker.testRunner);
     Whisker.testTable.setTests([]);

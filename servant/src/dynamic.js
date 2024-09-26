@@ -45,7 +45,7 @@ async function runDynamicTestSuite(openNewPage, path) {
         await page.evaluate(at => document.querySelector('#container').activationTraceRepetitions = at, activationTraces);
         await page.evaluate(m => document.querySelector('#container').minimiseSuite = m, minimiseSuite);
 
-        logger.info('Whisker-Web: Web Instance Configuration Complete');
+        logger.info('Web Instance Configuration Complete');
     }
 
     /**

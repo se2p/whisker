@@ -50,7 +50,7 @@ async function runGeneticSearch(openNewPage) {
         if (groundTruth) {
             await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
         }
-        logger.info('Whisker-Web: Web Instance Configuration Complete');
+        logger.info('Web Instance Configuration Complete');
     }
 
     async function readTestOutput() {

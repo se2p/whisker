@@ -2,6 +2,7 @@ const {$} = require('../web-libs');
 const index = require('../index');
 const Test = require('whisker-main/src/test-runner/test.js');
 const TestRunner = require('whisker-main/src/test-runner/test-runner.js');
+const logger = require("../logger");
 
 const FAIL_SIGN = '\u2717';
 const SKIP_SIGN = '\u26A0';
@@ -68,7 +69,7 @@ class TestTable {
         this.table.on('click', '.run-test', event => {
 
             if (window.Whisker.scratch.vm.runtime.bbtTestRunning) {
-                console.error('Cannot start a test while another is already running!');
+                logger.error('Cannot start a test while another is already running!');
                 return;
             }
 
