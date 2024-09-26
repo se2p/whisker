@@ -142,7 +142,7 @@ describe('Test NEAT', () => {
         let generation = 0;
         let speciesString = "Current fitness Target: XOR\n";
         while (!found) {
-            // console.log("Generation: " + generation);
+            // logger.debug("Generation: " + generation);
             for (const network of population.networks) {
                 let error_sum = 0;
                 for (let i = 0; i < 2; i++) {
@@ -164,7 +164,7 @@ describe('Test NEAT', () => {
                 network.fitness = (4 - error_sum) ** 2;
                 if (network.fitness >= 15.8) {
                     found = true;
-                    // console.log(network.toString());
+                    // logger.debug(network.toString());
                     break;
                 }
             }
@@ -181,7 +181,7 @@ describe('Test NEAT', () => {
             population.evolve();
             generation++;
         }
-        // console.log(speciesString);
+        // logger.debug(speciesString);
         expect(population.populationChampion.fitness).toBeGreaterThan(15.7);
     });
 

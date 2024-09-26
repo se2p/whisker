@@ -4,6 +4,7 @@ import {ScratchProgram} from "../ScratchInterface";
 import {OperatorFilter} from "scratch-analysis/src/block-filter";
 import uid from "scratch-vm/src/util/uid";
 import {Randomness} from "../../utils/Randomness";
+import logger from "../../../util/logger";
 
 export class NegateConditionalMutation extends ScratchMutation {
 
@@ -46,7 +47,7 @@ export class NegateConditionalMutation extends ScratchMutation {
                     parent['inputs']['OPERAND2'][1] = not_block['id'];
                 }
             } else {
-                console.log(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
+                logger.warn(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
                 return false;
             }
         }
@@ -57,7 +58,7 @@ export class NegateConditionalMutation extends ScratchMutation {
         if (sourceTarget !== undefined) {
             sourceTarget.blocks[not_block['id']] = not_block;
         } else {
-            console.log(`Unknown source target ${targetName} for program ${mutantProgram.name}`);
+            logger.warn(`Unknown source target ${targetName} for program ${mutantProgram.name}`);
             return false;
         }
         return true;

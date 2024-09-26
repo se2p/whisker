@@ -6,6 +6,7 @@ import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
 import {Container} from "../../utils/Container";
+import logger from "../../../util/logger";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -359,7 +360,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // Safety check.
         if (network1 === undefined || network2 === undefined) {
-            console.error("Undefined network in compatDistance Calculation");
+            logger.error("Undefined network in compatDistance Calculation");
             return Number.MAX_SAFE_INTEGER;
         }
 

@@ -19,6 +19,7 @@ import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
+import logger from "../../../util/logger";
 
 
 export class DynamicNetworkSuite {
@@ -257,7 +258,7 @@ export class DynamicNetworkSuite {
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
         if (this.properties['log'] === true) {
-            Container.debugLog = (...data: unknown[]) => console.log('DEBUG:', ...data);
+            Container.debugLog = (...data: unknown[]) => logger.debug(...data);
         } else {
             Container.debugLog = () => { /* No operation */ };
         }

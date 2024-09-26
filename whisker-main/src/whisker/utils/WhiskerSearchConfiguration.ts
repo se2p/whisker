@@ -61,6 +61,7 @@ import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/Nove
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
+import logger from "../../util/logger";
 
 
 class ConfigException implements Error {
@@ -692,7 +693,7 @@ export class WhiskerSearchConfiguration {
 
     public getLoggingFunction(): typeof console.log {
         if (this._config["debugLogging"] == true) {
-            return (...data) => console.log('DEBUG:', ...data);
+            return (...data) => logger.debug(...data);
         } else {
             return () => {
                 /* no-op */

@@ -20,6 +20,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import seed from 'seed-random';
+import logger from '../../util/logger';
 
 
 /**
@@ -90,7 +91,7 @@ export class Randomness {
      */
     public static setInitialRNGSeed(seed: (number | string)): void {
         const convertedSeed = this.convertSeed(seed);
-        console.log(`Seeding the RNG to ${convertedSeed}`);
+        logger.info(`Seeding the RNG to ${convertedSeed}`);
         Randomness._initialRNGSeed = convertedSeed;
         Randomness.getInstance()._RNGSeed = Randomness._initialRNGSeed; // In case the class instance already exists
     }
@@ -103,7 +104,7 @@ export class Randomness {
     public static setScratchSeed(seed: (number | string), silence = false): void {
         const convertedSeed = this.convertSeed(seed);
         if (!silence) {
-            console.log(`Seeding the Scratch-VM to ${convertedSeed}`);
+            logger.info(`Seeding the Scratch-VM to ${convertedSeed}`);
         }
         Randomness._scratchSeed = convertedSeed;
     }

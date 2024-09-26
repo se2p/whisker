@@ -1,6 +1,7 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {ScratchPosition} from "./ScratchPosition";
 import {ScratchInterface} from "./ScratchInterface";
+import logger from "../../util/logger";
 
 export class PathFinder {
 
@@ -35,7 +36,7 @@ export class PathFinder {
         const startNode = new AStarNode(startingPosition, null, 0, startingDistance);
         openSet.push(startNode);
 
-        console.log(`Starting search for path from ${startingPosition} to ${targetPosition}`);
+        logger.info(`Starting search for path from ${startingPosition} to ${targetPosition}`);
         // Within the loop we keep searching for as long as we have nodes worth visiting.
         while (openSet.length > 0) {
             let current = openSet[0];
@@ -53,7 +54,7 @@ export class PathFinder {
                     path.push(current.position);
                 }
                 path.reverse();
-                console.log("Found valid Path!");
+                logger.info("Found valid Path!");
                 return path;
             }
             // Keep searching if we haven't found our target yet.

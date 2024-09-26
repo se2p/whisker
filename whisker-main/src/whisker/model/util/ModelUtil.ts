@@ -58,7 +58,7 @@ export abstract class ModelUtil {
             return testDriver.getStage();
         }
         const regexParts = ModelUtil.getRegexParts(caseSensitive, spriteNameRegex);
-        // console.log(regexParts);
+        // logger.debug(regexParts);
 
         const regex = new RegExp(regexParts[0], regexParts[1]);
         const sprite = testDriver.getSprites((s: Sprite) => {

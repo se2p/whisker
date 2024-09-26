@@ -13,6 +13,7 @@ import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
 import {InputEffect, InputEffectName, SimpleInputEffect} from "../components/InputEffect";
 import {ArgType, CheckName, SimpleCheck} from "../components/Check";
+import logger from "../../../util/logger";
 
 export type ModelType = "program" | "user" | "end";
 
@@ -121,13 +122,13 @@ export class ModelLoader {
 
         this.stopNodeIds = graph.stopNodeIds;
         if (graph.stopNodeIds == undefined || !Array.isArray(graph.stopNodeIds)) {
-            console.warn("Warning: Graph without stop node ids.");
+            logger.warn("Warning: Graph without stop node ids.");
             this.stopNodeIds = [];
         }
 
         this.stopAllNodeIds = graph.stopAllNodeIds;
         if (graph.stopAllNodeIds == undefined || !Array.isArray(graph.stopAllNodeIds)) {
-            console.warn("Warning: Graph without stop-all node ids.");
+            logger.warn("Warning: Graph without stop-all node ids.");
             this.stopAllNodeIds = [];
         }
         this.nodesMap = {};
@@ -141,10 +142,10 @@ export class ModelLoader {
         if (graphID == undefined) {
             graphID = ModelLoader.ID_UNDEFINED + this.idUndefined;
             this.idUndefined++;
-            console.warn("Warning: A graph id was not given. Defining as " + graphID);
+            logger.warn("Warning: A graph id was not given. Defining as " + graphID);
         } else if (this.graphIDs.indexOf(graphID) != -1) {
             graphID = graphID + "_dup" + this.graphIDs.length;
-            console.warn("Warning: Model id '" + graph._attributes.id + "' already defined.");
+            logger.warn("Warning: Model id '" + graph._attributes.id + "' already defined.");
         }
         this.graphIDs.push(graphID);
 
@@ -228,10 +229,10 @@ export class ModelLoader {
         if (edge.id == undefined) {
             edgeID = "edge-undef-" + this.idUndefined;
             this.idUndefined++;
-            console.warn("Warning: ID for an edge not given.");
+            logger.warn("Warning: ID for an edge not given.");
         } else if ((this.edgesMapProgram)[edge.id]) {
             edgeID = edge.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
-            console.warn("Warning: ID '" + edge.id + "' already defined.");
+            logger.warn("Warning: ID '" + edge.id + "' already defined.");
         } else {
             edgeID = edge.id;
         }
@@ -318,7 +319,7 @@ export class ModelLoader {
 
             if (id == undefined) {
                 id = "condition" + this.idUndefined;
-                console.warn("Warning: " + newEdge.id + " ID for an condition not given.");
+                logger.warn("Warning: " + newEdge.id + " ID for an condition not given.");
                 this.idUndefined++;
             }
 
@@ -348,7 +349,7 @@ export class ModelLoader {
 
             if (id == undefined) {
                 id = "condition" + this.idUndefined;
-                console.warn("Warning: " + newEdge.id + " ID for an effect not given.");
+                logger.warn("Warning: " + newEdge.id + " ID for an effect not given.");
                 this.idUndefined++;
             }
 
@@ -389,7 +390,7 @@ export class ModelLoader {
 
             if (id == undefined) {
                 id = "condition" + this.idUndefined;
-                console.warn("Warning: " + newEdge.id + " ID for an input effect not given.");
+                logger.warn("Warning: " + newEdge.id + " ID for an input effect not given.");
                 this.idUndefined++;
             }
 

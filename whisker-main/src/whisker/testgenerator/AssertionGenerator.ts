@@ -17,6 +17,7 @@ import {VolumeAssertion} from "./assertions/VolumeAssertion";
 import {CloneCountAssertion} from "./assertions/CloneCountAssertion";
 import {TouchingAssertion} from "./assertions/TouchingAssertion";
 import {TouchingEdgeAssertion} from "./assertions/TouchingEdgeAssertion";
+import logger from "../../util/logger";
 
 export class AssertionGenerator {
 
@@ -47,7 +48,7 @@ export class AssertionGenerator {
 
             // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
             if (trace == null) {
-                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                logger.error("Mismatching behaviour for this test. Skipping assertion generation");
                 continue;
             }
 
@@ -80,7 +81,7 @@ export class AssertionGenerator {
 
             // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
             if (trace == null) {
-                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                logger.error("Mismatching behaviour for this test. Skipping assertion generation");
                 continue;
             }
 

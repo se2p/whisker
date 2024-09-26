@@ -31,6 +31,7 @@ import {TestExecutor} from "../testcase/TestExecutor";
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import Arrays from "../utils/Arrays";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
+import logger from '../../util/logger';
 
 /**
  * A naive approach to generating tests by always selecting a random event from the set of available events
@@ -99,7 +100,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
 
         while (!(await stoppingCondition.isFinished(this))) {
-            console.log(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
+            logger.info(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
             const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
             const randomEventChromosome = new TestChromosome([], undefined, undefined);
             await randomTestExecutor.executeRandomEvents(randomEventChromosome, numberOfEvents);
@@ -127,7 +128,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
                 }
                 this._archive.set(fitnessFunctionKey, chromosome);
                 this._tests = Arrays.distinct(this._archive.values());
-                console.log(`Found test for goal: ${fitnessFunction}`);
+                logger.info(`Found test for goal: ${fitnessFunction}`);
             }
         }
     }
