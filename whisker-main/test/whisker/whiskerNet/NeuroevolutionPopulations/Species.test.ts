@@ -7,12 +7,12 @@ import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEve
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import Arrays from "../../../../src/whisker/utils/Arrays";
 import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {generateInputs} from "../Algorithms/NEAT.test";
+import logger from "../../../../src/util/logger";
 
 describe("Species Test", () => {
 
@@ -24,7 +24,7 @@ describe("Species Test", () => {
     let properties: NeuroevolutionTestGenerationParameter;
 
     beforeEach(() => {
-        Container.debugLog = () => { /* suppress output */};
+        logger.suggest.deny(/.*/, "debug");
         const crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,

@@ -1,7 +1,7 @@
 import {ActivationTrace} from "./ActivationTrace";
 import Statistics from "../../utils/Statistics";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {Container} from "../../utils/Container";
+import logger from "../../../util/logger";
 
 export class NetworkAnalysis {
 
@@ -91,7 +91,7 @@ export class NetworkAnalysis {
 
                 // Check if the test AT for the given step and node is surprising.
                 if (LSA > threshold) {
-                    Container.debugLog(`Suspicious at step ${step} with node ${nodeId} and a value of ${LSA} vs Threshold ${threshold}`);
+                    logger.debug(`Suspicious at step ${step} with node ${nodeId} and a value of ${LSA} vs Threshold ${threshold}`);
                     surpriseMap.get(step).set(nodeId, true);
                     susNodes.add(nodeId);
                     surpriseCount++;

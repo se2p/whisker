@@ -2,7 +2,6 @@ import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
@@ -18,6 +17,7 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {generateInputs} from "./NEAT.test";
+import logger from "../../../../src/util/logger";
 
 describe('Test Neatest', () => {
 
@@ -50,7 +50,7 @@ describe('Test Neatest', () => {
     };
 
     beforeEach(() => {
-        Container.debugLog = () => { /* suppress output */};
+        logger.suggest.deny(/.*/, "debug");
         const mock = new VMWrapperMock();
         mock.init();
         const inputFeatures = generateInputs();

@@ -7,6 +7,7 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
+import logger from "../../../util/logger";
 
 
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -115,7 +116,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         network.trace = trace;
         network.coverage = coverage;
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
-        Container.debugLog(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`);
+        logger.debug(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`);
     }
 
     /**
@@ -162,7 +163,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             stateKeys.slice(stateKeys.indexOf(randomKey), 1);
         }
 
-        Container.debugLog(`Picked ${extractionSize} data points and increased Dataset size to ${Container.backpropagationInstance.training_data.size}`);
+        logger.debug(`Picked ${extractionSize} data points and increased Dataset size to ${Container.backpropagationInstance.training_data.size}`);
     }
 
     /**

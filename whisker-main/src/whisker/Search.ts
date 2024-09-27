@@ -167,6 +167,11 @@ export class Search {
         logger.info("Starting Search based algorithm");
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
+
+        if (!configJson["debugLogging"]) {
+            logger.suggest.deny(/.*/, "debug");
+        }
+
         const config = new WhiskerSearchConfiguration(configJson);
 
         Container.config = config;
@@ -175,7 +180,6 @@ export class Search {
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
-        Container.debugLog = config.getLoggingFunction();
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }

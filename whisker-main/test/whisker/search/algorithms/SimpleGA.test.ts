@@ -32,6 +32,7 @@ import {RankSelection} from "../../../../src/whisker/search/operators/RankSelect
 import {TournamentSelection} from "../../../../src/whisker/search/operators/TournamentSelection";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
+import logger from "../../../../src/util/logger";
 
 describe('SimpleGA', () => {
 
@@ -41,8 +42,7 @@ describe('SimpleGA', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */
-        };
+        logger.suggest.deny(/.*/, "debug");
     });
 
     test('Trivial bitstring with SimpleGA', async () => {

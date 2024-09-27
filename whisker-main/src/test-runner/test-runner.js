@@ -10,7 +10,6 @@ const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/S
 const CoverageGenerator = require("../coverage/coverage");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
 const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
-const {Container} = require("../whisker/utils/Container");
 const logger = require("../util/logger");
 
 class TestRunner extends EventEmitter {
@@ -44,11 +43,8 @@ class TestRunner extends EventEmitter {
             props.extend = {};
         }
 
-        // Initialise debug logging if set to true.
-        if (props['log'] === true) {
-            Container.debugLog = (...data) => logger.debug(...data);
-        } else {
-            Container.debugLog = () => { /* No operation */ };
+        if (!props['log']) {
+            logger.suggest.deny(/.*/, "debug");
         }
 
         // Count number of assertions across all test cases and define a sampleTest used for setting the seed.

@@ -61,7 +61,6 @@ import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/Nove
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
-import logger from "../../util/logger";
 
 
 class ConfigException implements Error {
@@ -689,13 +688,6 @@ export class WhiskerSearchConfiguration {
         } else {
             return undefined;
         }
-    }
-
-    public getLoggingFunction(): typeof console.log {
-        if (!this._config["debugLogging"]) {
-            logger.suggest.deny(/.*/, "debug");
-        }
-        return (...data) => logger.debug(...data);
     }
 
     public getNeuroevolutionEventSelection(): NeuroevolutionEventSelection {
