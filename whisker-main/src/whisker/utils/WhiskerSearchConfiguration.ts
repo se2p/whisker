@@ -692,13 +692,10 @@ export class WhiskerSearchConfiguration {
     }
 
     public getLoggingFunction(): typeof console.log {
-        if (this._config["debugLogging"] == true) {
-            return (...data) => logger.debug(...data);
-        } else {
-            return () => {
-                /* no-op */
-            };
+        if (!this._config["debugLogging"]) {
+            logger.suggest.deny(/.*/, "debug");
         }
+        return (...data) => logger.debug(...data);
     }
 
     public getNeuroevolutionEventSelection(): NeuroevolutionEventSelection {
