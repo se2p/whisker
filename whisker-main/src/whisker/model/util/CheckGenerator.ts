@@ -154,7 +154,7 @@ export abstract class CheckGenerator {
 
         // without movement
         return () => {
-            const sprites = t.getSprite(spriteName).getClones(true);
+            const sprites: Sprite[] = t.getSprites(s => s.name == spriteName, false)[0].getClones(true);
             try {
                 for (let i = 0; i < sprites.length; i++) {
                     if (ModelUtil.compare(sprites[i][attrName], attrValue, comparison)) {
@@ -568,7 +568,6 @@ export abstract class CheckGenerator {
     static getExpressionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                               caseSensitive: boolean, expr: ArgType): () => boolean {
         const e = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
-
         const eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
         this.setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, () => {
             return !negated == eval(e.expr)(t);
