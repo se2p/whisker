@@ -1,3 +1,8 @@
+const transformWhitelistedModules = [
+    "scratch-analysis",
+    // "scratch-vm"
+].join('|');
+
 module.exports = {
     globals: {
         'ts-jest': {
@@ -13,7 +18,7 @@ module.exports = {
         "^.+\\.(js|jsx|mjs)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-        "<rootDir>/node_modules/(?!scratch-analysis|scratch-vm)"
+        `/node_modules/(?!(${transformWhitelistedModules}))`
     ],
 
     testMatch: ['**/test/**/*.test.(ts|js)'],
