@@ -258,7 +258,7 @@ export class DynamicNetworkSuite {
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
         if (!this.properties['log']) {
-            logger.suggest.deny(/.*/, "debug");
+            logger.suggest.deny("", "debug");
         }
     }
 

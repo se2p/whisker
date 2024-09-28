@@ -20,7 +20,7 @@ describe("Network Analysis", () => {
     let network: NeatChromosome;
 
     beforeEach(() => {
-        logger.suggest.deny(/.*/, "debug");
+        logger.suggest.deny("", "debug");
         referenceNodeTrace = [];
         for (let step = 0; step < 10; step++) {
             const stepTrace: NodeGene[][] = [];

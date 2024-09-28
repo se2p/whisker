@@ -24,7 +24,7 @@ describe("Species Test", () => {
     let properties: NeuroevolutionTestGenerationParameter;
 
     beforeEach(() => {
-        logger.suggest.deny(/.*/, "debug");
+        logger.suggest.deny("", "debug");
         const crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,

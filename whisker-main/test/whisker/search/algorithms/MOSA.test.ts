@@ -53,7 +53,7 @@ describe('MOSA', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        logger.suggest.deny(/.*/, "debug");
+        logger.suggest.deny("", "debug");
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mosa');
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations),

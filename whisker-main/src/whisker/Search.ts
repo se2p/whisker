@@ -169,7 +169,7 @@ export class Search {
         const configJson = JSON.parse(configRaw);
 
         if (!configJson["debugLogging"]) {
-            logger.suggest.deny(/.*/, "debug");
+            logger.suggest.deny("", "debug");
         }
 
         const config = new WhiskerSearchConfiguration(configJson);
