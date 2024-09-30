@@ -44,7 +44,7 @@ class TestRunner extends EventEmitter {
         }
 
         if (!props['log']) {
-            logger.suggest.deny("", "debug");
+            logger.suggest.deny("whisker-main", "debug");
         }
 
         // Count number of assertions across all test cases and define a sampleTest used for setting the seed.
