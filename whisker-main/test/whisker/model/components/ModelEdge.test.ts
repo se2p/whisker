@@ -150,13 +150,14 @@ describe('Model edges', () => {
             const tdMock = new TestDriverMock([], 5);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             const conditions = [
-                {id: "cond0", check: (s1, s2) => true} as unknown as Condition,
-                {id: "cond1", check: (s1, s2) => false} as unknown as Condition,
-                {id: "cond2", check: (s1, s2) => true} as unknown as Condition,
-                {id: "cond3", check: (s1, s2) => true} as unknown as Condition,
-                {id: "cond4", check: (s1, s2) => false} as unknown as Condition,
+                {id: "cond0", check: jest.fn().mockReturnValue(true)} as unknown as Condition,
+                {id: "cond1", check: jest.fn().mockReturnValue(false)} as unknown as Condition,
+                {id: "cond2", check: jest.fn().mockReturnValue(true)} as unknown as Condition,
+                {id: "cond3", check: jest.fn().mockReturnValue(true)} as unknown as Condition,
+                {id: "cond4", check: jest.fn().mockReturnValue(false)} as unknown as Condition,
                 {
-                    id: "cond5", check: (s1, s2) => {
+                    id: "cond5",
+                    check: (s1, s2) => {
                         throw new Error("this should happen");
                     }
                 } as unknown as Condition,
@@ -175,14 +176,14 @@ describe('Model edges', () => {
             const conditions = [
                 {
                     id: "cond00",
-                    check: (s1, s2) => false,
+                    check: jest.fn().mockReturnValue(false),
                     registerComponents: jest.fn,
                     toString: () => "cond00.toString()"
                 } as unknown as Condition,
 
-                {id: "cond10", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
-                {id: "cond20", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
-                {id: "cond30", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
+                {id: "cond10", check: jest.fn().mockReturnValue(true), registerComponents: jest.fn} as unknown as Condition,
+                {id: "cond20", check: jest.fn().mockReturnValue(true), registerComponents: jest.fn} as unknown as Condition,
+                {id: "cond30", check: jest.fn().mockReturnValue(true), registerComponents: jest.fn} as unknown as Condition,
                 {
                     id: "cond40",
                     check: (s1, s2) => {
@@ -190,7 +191,11 @@ describe('Model edges', () => {
                     },
                     registerComponents: jest.fn
                 } as unknown as Condition,
-                {id: "cond50", check: (s1, s2) => true, registerComponents: jest.fn} as unknown as Condition,
+                {
+                    id: "cond50",
+                    check: jest.fn().mockReturnValue(true),
+                    registerComponents: jest.fn
+                } as unknown as Condition,
             ];
             conditions.forEach(condition => edge.addCondition(condition));
             edge.registerComponents(cu, tdMock.getTestDriver(), false);
@@ -213,8 +218,8 @@ describe('Model edges', () => {
 
         test("checkConditionsOnEvent() returns conditions when event string not contained", () => {
             const cu = {
-                isKeyDown: (key) => true,
-                addErrorOutput: (...args: any[]) => jest.fn(),
+                isKeyDown: jest.fn().mockReturnValue(true),
+                addErrorOutput: jest.fn(),
             } as unknown as CheckUtility;
             const tdMock = new TestDriverMock();
             const stage = new SpriteMock("stage");
@@ -233,7 +238,7 @@ describe('Model edges', () => {
 
         test("checkConditionsOnEvent() returns conditions when true is condition and edge has no effect", () => {
             const cu = {
-                addErrorOutput: (...args: any[]) => jest.fn(),
+                addErrorOutput: jest.fn(),
             } as unknown as CheckUtility;
             const tdMock = new TestDriverMock();
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
