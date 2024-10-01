@@ -230,5 +230,51 @@ describe('Model edges', () => {
             const result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 5, 7, eventStrings);
             expect(result).toStrictEqual([edge.conditions[0]]);
         });
+
+        test("checkConditionsOnEvent() returns conditions when true is condition and edge has no effect", () => {
+            const cu = {
+                addErrorOutput: (...args: any[]) => jest.fn(),
+            } as unknown as CheckUtility;
+            const tdMock = new TestDriverMock();
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
+            edge.addCondition(new Condition(id, label, CheckName.BackgroundChange, false, ["newBackground"]));
+            edge.addCondition(new Condition(id, label, CheckName.Key, false, ["a"]));
+            edge.addCondition(new Condition(id, label, CheckName.Function, false, ["true"]));
+            edge.addEffect(new Effect(id, label, CheckName.SpriteTouching, false, ["apple", "bowl"]));
+            const eventStrings = ["BackgroundChange:stage", "Key:d"];
+            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            const result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 5, 7, eventStrings);
+            expect(result).toStrictEqual(edge.conditions);
+        });
+    });
+
+    test("ProgramModelEdge.registerComponents calls registerComponents on effects", () => {
+        const edge = new ProgramModelEdge("id", "label", "graphId", "from", "to", -1, -1);
+        const fn = jest.fn();
+        edge.addEffect({registerComponents: fn} as unknown as Effect);
+        edge.addEffect({registerComponents: fn} as unknown as Effect);
+        edge.addEffect({registerComponents: fn} as unknown as Effect);
+        edge.registerComponents(null, null, false);
+        expect(fn).toHaveBeenCalledTimes(3);
+    });
+
+    test("UserModelEdge.registerComponents calls registerComponents on effects", () => {
+        const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
+        const fn = jest.fn();
+        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
+        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
+        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
+        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
+        edge.registerComponents(null, null, false);
+        expect(fn).toHaveBeenCalledTimes(4);
+    });
+
+    test("UserModelEdge.inputImmediate calls registerComponents on effects", () => {
+        const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
+        const fn = jest.fn();
+        edge.addInputEffect({inputImmediate: fn} as unknown as InputEffect);
+        edge.addInputEffect({inputImmediate: fn} as unknown as InputEffect);
+        edge.inputImmediate(null);
+        expect(fn).toHaveBeenCalledTimes(2);
     });
 });

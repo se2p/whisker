@@ -3,8 +3,6 @@ import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {ExpressionEnterError, ExprEvalError} from "../../../../src/whisker/model/util/ModelError";
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
-import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
