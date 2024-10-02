@@ -3,6 +3,7 @@ import {Container} from "../../utils/Container";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {NoveltyFitness} from "./NoveltyFitness";
 import {ScratchPosition} from "../../scratch/ScratchPosition";
+import logger from "../../../util/logger";
 
 export class NoveltyTargetNetworkFitness extends NoveltyFitness {
 
@@ -71,7 +72,7 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
         if (this._behaviourArchive.length < 1 ||
             (sparseNess > this._archiveThreshold && this.isNewPoint(playerPosition))) {
             this._behaviourArchive.push(playerPosition);
-            console.log(`New Point: ${playerPosition.x}/${playerPosition.y}`);
+            logger.info(`New Point: ${playerPosition.x}/${playerPosition.y}`);
         }
     }
 

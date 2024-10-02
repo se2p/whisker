@@ -5,7 +5,7 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
-import {Container} from "../../utils/Container";
+import logger from "../../../util/logger";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -235,7 +235,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // If there is a stagnation in fitness, refocus the search
         if (this.highestFitnessLastChanged > this.hyperParameter.penalizingAge + 5) {
-            Container.debugLog("Refocusing the search on the two most promising species");
+            logger.debug("Refocusing the search on the two most promising species");
             this.highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize / 2;
 
@@ -359,7 +359,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // Safety check.
         if (network1 === undefined || network2 === undefined) {
-            console.error("Undefined network in compatDistance Calculation");
+            logger.error("Undefined network in compatDistance Calculation");
             return Number.MAX_SAFE_INTEGER;
         }
 

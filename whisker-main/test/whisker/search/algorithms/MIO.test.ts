@@ -34,6 +34,7 @@ import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingcon
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import Arrays from "../../../../src/whisker/utils/Arrays";
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
+import logger from "../../../../src/util/logger";
 
 describe('MIO', () => {
 
@@ -46,8 +47,7 @@ describe('MIO', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */
-        };
+        logger.suggest.deny("", "debug");
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mio');
 
@@ -155,5 +155,4 @@ describe('MIO', () => {
         searchAlgo.setHeuristicFunctions(heuristicFunctions);
         expect(searchAlgo["_heuristicFunctions"]).toBe(heuristicFunctions);
     });
-
 });

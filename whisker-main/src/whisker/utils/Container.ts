@@ -16,7 +16,6 @@ export class Container {
     static acceleration: number;
     static pathToGoal: ScratchPosition[];
     static isNeuroevolution: boolean
-    static debugLog: typeof console.log;
     static cfg: ControlFlowGraph;
     static cdg: ControlDependenceGraph;
     static statementFitnessFunctions: StatementFitnessFunction[];

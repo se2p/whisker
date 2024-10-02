@@ -21,6 +21,7 @@ import WhiskerUtil from "../../../test/whisker-util";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import {TestChromosome} from "../../testcase/TestChromosome";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
+import logger from "../../../util/logger";
 
 
 export class StateActionRecorder extends EventEmitter {
@@ -354,7 +355,7 @@ export class StateActionRecorder extends EventEmitter {
                 parameter = {};
                 break;
             default:
-                console.log("Missing event handler: ", event);
+                logger.warn("Missing event handler: ", event);
         }
 
         // Reduce the required storage capacity by rounding action parameter.

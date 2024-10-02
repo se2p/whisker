@@ -17,6 +17,7 @@ import {VolumeAssertion} from "./assertions/VolumeAssertion";
 import {CloneCountAssertion} from "./assertions/CloneCountAssertion";
 import {TouchingAssertion} from "./assertions/TouchingAssertion";
 import {TouchingEdgeAssertion} from "./assertions/TouchingEdgeAssertion";
+import logger from "../../util/logger";
 
 export class AssertionGenerator {
 
@@ -38,7 +39,7 @@ export class AssertionGenerator {
 
     public async addAssertions(tests: WhiskerTest[]): Promise<void> {
 
-        Container.debugLog("Adding assertions");
+        logger.debug("Adding assertions");
 
         // determine relevant attributes?
         for (const test of tests) {
@@ -47,16 +48,16 @@ export class AssertionGenerator {
 
             // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
             if (trace == null) {
-                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                logger.error("Mismatching behaviour for this test. Skipping assertion generation");
                 continue;
             }
 
 
             // trace should have the same length as events in test
             const numEvents = test.getEventsCount();
-            Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
+            logger.debug("Adding assertions to test " + test + " of length " + numEvents);
 
-            Container.debugLog("Trace length: " + trace.length);
+            logger.debug("Trace length: " + trace.length);
             // for each event
             for (let position = 0; position < trace.length; position++) {
                 for (const assertionFactory of this.assertionFactories) {
@@ -66,12 +67,12 @@ export class AssertionGenerator {
                     }
                 }
             }
-            Container.debugLog("Resulting test: " + test);
+            logger.debug("Resulting test: " + test);
         }
     }
 
     public async addStateChangeAssertions(tests: WhiskerTest[]): Promise<void> {
-        Container.debugLog("Adding State change Assertions");
+        logger.debug("Adding State change Assertions");
 
         // determine relevant attributes?
         for (const test of tests) {
@@ -80,15 +81,15 @@ export class AssertionGenerator {
 
             // TODO: Not a fix for the underlying issue, which is probably related to flaky touching blocks.
             if (trace == null) {
-                console.log("Mismatching behaviour for this test. Skipping assertion generation");
+                logger.error("Mismatching behaviour for this test. Skipping assertion generation");
                 continue;
             }
 
             // trace should have the same length as events in test
             const numEvents = test.getEventsCount();
-            Container.debugLog("Adding assertions to test " + test + " of length " + numEvents);
+            logger.debug("Adding assertions to test " + test + " of length " + numEvents);
 
-            Container.debugLog("Trace length: " + trace.length);
+            logger.debug("Trace length: " + trace.length);
             // for each event
             for (let position = 0; position < trace.length - 1; position++) {
                 const stateBefore = trace[position];
@@ -102,7 +103,7 @@ export class AssertionGenerator {
                     }
                 }
             }
-            Container.debugLog("Resulting test: " + test);
+            logger.debug("Resulting test: " + test);
         }
     }
 

@@ -10,6 +10,7 @@ import {VariableReplacementMutation} from "./VariableReplacementMutation";
 import {ScratchMutation} from "./ScratchMutation";
 import {ScratchProgram} from "../ScratchInterface";
 import {Randomness} from "../../utils/Randomness";
+import logger from '../../../util/logger';
 
 export class MutationFactory {
 
@@ -37,7 +38,7 @@ export class MutationFactory {
         this.initialiseMutationOperators(vm, specifiedMutators);
         for (const operator of this._mutators.values()) {
             const operatorCandidates = operator.getMutationCandidates();
-            console.log(`Operator ${operator} corresponds to ${operatorCandidates.length} mutation candidates`);
+            logger.info(`Operator ${operator} corresponds to ${operatorCandidates.length} mutation candidates`);
             operatorCandidates.forEach(candidate => this._candidates.add(`${operator}-${candidate}`));
         }
     }

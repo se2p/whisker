@@ -9,8 +9,8 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {generateInputs} from "../Algorithms/NEAT.test";
+import logger from "../../../../src/util/logger";
 
 describe("Network Analysis", () => {
 
@@ -20,7 +20,7 @@ describe("Network Analysis", () => {
     let network: NeatChromosome;
 
     beforeEach(() => {
-        Container.debugLog = () => { /* Do Nothing */ };
+        logger.suggest.deny("", "debug");
         referenceNodeTrace = [];
         for (let step = 0; step < 10; step++) {
             const stepTrace: NodeGene[][] = [];

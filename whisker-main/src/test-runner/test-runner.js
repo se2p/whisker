@@ -10,7 +10,7 @@ const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/S
 const CoverageGenerator = require("../coverage/coverage");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
 const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
-const {Container} = require("../whisker/utils/Container");
+const logger = require("../util/logger");
 
 class TestRunner extends EventEmitter {
 
@@ -43,11 +43,8 @@ class TestRunner extends EventEmitter {
             props.extend = {};
         }
 
-        // Initialise debug logging if set to true.
-        if (props['log'] === true) {
-            Container.debugLog = (...data) => console.log('DEBUG:', ...data);
-        } else {
-            Container.debugLog = () => { /* No operation */ };
+        if (!props['log']) {
+            logger.suggest.deny("whisker-main", "debug");
         }
 
         // Count number of assertions across all test cases and define a sampleTest used for setting the seed.
@@ -100,7 +97,7 @@ class TestRunner extends EventEmitter {
                     }
                 }
                 const projectMutation = `${projectName}-${mutant.name}`;
-                console.log(`Analysing mutant ${i}: ${projectMutation}`);
+                logger.info(`Analysing mutant ${i}: ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
                 this.saveState = this.vmWrapper._recordInitialState();
                 this._initialiseFitnessTargets(vm);
@@ -251,7 +248,7 @@ class TestRunner extends EventEmitter {
      */
     _checkSeed(test){
         if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()){
-            console.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
+            logger.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
 
@@ -535,7 +532,7 @@ class TestRunner extends EventEmitter {
                 }
             } catch (e) {
                 // probably run aborted
-                console.error(e);
+                logger.error(e);
                 result.modelResult = modelTester.stopAndGetModelResult(testDriver);
                 result.status = Test.ERROR;
             }

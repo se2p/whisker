@@ -21,7 +21,7 @@ const {
 async function generateDynamicTests(openNewPage) {
     const output = await runDynamicTestSuite(openNewPage, scratchPath.path);
     if (csvFile) {
-        console.info("Creating CSV summary in " + csvFile);
+        logger.info("Creating CSV summary in " + csvFile);
         fs.writeFileSync(csvFile, output);
     }
 
@@ -45,7 +45,7 @@ async function runDynamicTestSuite(openNewPage, path) {
         await page.evaluate(at => document.querySelector('#container').activationTraceRepetitions = at, activationTraces);
         await page.evaluate(m => document.querySelector('#container').minimiseSuite = m, minimiseSuite);
 
-        console.log('Whisker-Web: Web Instance Configuration Complete');
+        logger.info('Web Instance Configuration Complete');
     }
 
     /**

@@ -19,6 +19,7 @@ import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
+import logger from "../../../util/logger";
 
 
 export class DynamicNetworkSuite {
@@ -126,7 +127,7 @@ export class DynamicNetworkSuite {
     protected async testSingleProject(): Promise<void> {
         // Execute all networks on the single project.
         for (let i = 0; i < this.testCases.length; i++) {
-            Container.debugLog(`Executing test ${i}`);
+            logger.debug(`Executing test ${i}`);
             await this.executeTestCase(this.testCases[i], true);
         }
         await this.updateTestStatistics(this.testCases, this.projectName, this.testName);
@@ -154,12 +155,12 @@ export class DynamicNetworkSuite {
 
             // Execute test suite on mutant
             const projectMutation = `${this.projectName}-${mutant.name}`;
-            Container.debugLog(`Analysing mutant ${i}: ${projectMutation}`);
+            logger.debug(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
             this.statementArchive.clear();
             this.branchArchive.clear();
             for (let i = 0; i < this.testCases.length; i++) {
-                Container.debugLog(`Executing test ${i}`);
+                logger.debug(`Executing test ${i}`);
                 const test = this.testCases[i];
                 // We clone the network since it might get changed due to specific mutations.
                 const testClone = test.cloneAsTestCase();
@@ -167,7 +168,7 @@ export class DynamicNetworkSuite {
                 await this.executeTestCase(testClone, true);
                 executedTests.push(testClone);
                 if (this.isMutant(testClone, test, false)) {
-                    Container.debugLog("Mutant detected; Stop testing for this mutant...");
+                    logger.debug("Mutant detected; Stop testing for this mutant...");
                     break;
                 }
             }
@@ -187,7 +188,7 @@ export class DynamicNetworkSuite {
         const scratchSeeds = Array(repetitions).fill(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER)).map(
             () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
         for (let i = 0; i < this.testCases.length; i++) {
-            Container.debugLog(`Recording Trace for test ${i + 1} / ${this.testCases.length}`);
+            logger.debug(`Recording Trace for test ${i + 1} / ${this.testCases.length}`);
             const test = this.testCases[i];
             for (const seed of scratchSeeds) {
                 Randomness.setScratchSeed(seed, true);
@@ -223,17 +224,17 @@ export class DynamicNetworkSuite {
 
         // Record activation traces
         if (Number(this.properties.activationTraceRepetitions) > 0) {
-            Container.debugLog("Recording Activation Trace");
+            logger.debug("Recording Activation Trace");
             await this.collectActivationTrace();
         }
 
         if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
-            Container.debugLog("Performing Mutation Analysis");
+            logger.debug("Performing Mutation Analysis");
             await this.testSingleProject();     // Execute the original program to obtain reference data
             const mutants = await this.mutationAnalysis();
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutants];
         } else {
-            Container.debugLog("Testing Single Project");
+            logger.debug("Testing Single Project");
             await this.testSingleProject();
             return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
         }
@@ -256,10 +257,8 @@ export class DynamicNetworkSuite {
         Container.vmWrapper = vmWrapper;
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
-        if (this.properties['log'] === true) {
-            Container.debugLog = (...data: unknown[]) => console.log('DEBUG:', ...data);
-        } else {
-            Container.debugLog = () => { /* No operation */ };
+        if (!this.properties['log']) {
+            logger.suggest.deny("whisker-main", "debug");
         }
     }
 
@@ -304,7 +303,7 @@ export class DynamicNetworkSuite {
      * Minimises the test suite to only contain tests required for reaching the maximum amount of coverage.
      */
     protected async minimiseSuite(): Promise<void> {
-        Container.debugLog("Minimising Test Suite....");
+        logger.debug("Minimising Test Suite....");
         for (const test of this.testCases) {
             await this.executeTestCase(test, false);
             await test.determineCoveredObjectives([...this.branchMap.values()]);
@@ -329,7 +328,7 @@ export class DynamicNetworkSuite {
                 break;
             }
         }
-        Container.debugLog(`Minimised from ${this.testCases.length} tests to ${shortenedTestCases.length} tests`);
+        logger.debug(`Minimised from ${this.testCases.length} tests to ${shortenedTestCases.length} tests`);
         this.testCases = shortenedTestCases;
         this.branchArchive.clear();
     }
@@ -422,7 +421,7 @@ export class DynamicNetworkSuite {
         if (newEvents.length > 0) {
             if (printReason) {
                 for (const newEvent of newEvents) {
-                    Container.debugLog(`New Event ${newEvent}`);
+                    logger.debug(`New Event ${newEvent}`);
                 }
             }
             return true;
@@ -431,7 +430,7 @@ export class DynamicNetworkSuite {
         // If we encounter surprising node activations we suspect a mutant.
         if (executedTest.surpriseCount > 0) {
             if (printReason) {
-                Container.debugLog(`Surprising node activation count of ${executedTest.surpriseCount}`);
+                logger.debug(`Surprising node activation count of ${executedTest.surpriseCount}`);
             }
             return true;
         }

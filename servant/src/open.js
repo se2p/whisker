@@ -9,6 +9,7 @@ const {
     time,
     useSaveStates,
 } = require("./cli").opts;
+const logger = require("./logger");
 
 
 async function open(openNewPage) {
@@ -18,7 +19,7 @@ async function open(openNewPage) {
     if (recordProject) {
         await toggleExtendedView(page);
         await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
-        console.log(`Start Recording ${recordProject.path} for ${time} seconds`);
+        logger.info(`Start Recording ${recordProject.path} for ${time} seconds`);
 
         // Upload File
         await switchToUploadTab(page);

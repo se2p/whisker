@@ -34,6 +34,7 @@ import {Container} from "../../../../src/whisker/utils/Container";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import Arrays from "../../../../src/whisker/utils/Arrays";
+import logger from "../../../../src/util/logger";
 
 describe('MOSA', () => {
 
@@ -52,8 +53,7 @@ describe('MOSA', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */
-        };
+        logger.suggest.deny("", "debug");
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mosa');
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations),

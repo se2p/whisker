@@ -4,13 +4,13 @@ import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import Arrays from "../../utils/Arrays";
-import {Container} from "../../utils/Container";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {Randomness} from "../../utils/Randomness";
 
 import lodashClonedeep from 'lodash.clonedeep';
 import Statistics from "../../utils/Statistics";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
+import logger from "../../../util/logger";
 
 export class GradientDescent {
 
@@ -80,15 +80,15 @@ export class GradientDescent {
 
         // If necessary, update the prepared ground truth data for the given statement.
         if (!this._parameter.combinePlayerRecordings || this._current_target !== statement) {
-            Container.debugLog(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
+            logger.debug(`Collecting gradient descent data with augmentation set to ${this._augmentationParameter.doAugment}`);
             this._training_data = this.extractDataForStatement(statement);
-            Container.debugLog(`Starting with ${this.training_data.size} recordings.`);
+            logger.debug(`Starting with ${this.training_data.size} recordings.`);
             this._current_target = statement;
         }
 
         // Check if we have some ground truth data available for the current target statement.
         if (this._training_data.size <= 0) {
-            Container.debugLog(`No data for statement: ${statement}`);
+            logger.debug(`No data for statement: ${statement}`);
             return undefined;
         }
 
@@ -104,7 +104,7 @@ export class GradientDescent {
         for (let i = 0; i < this._parameter.epochs; i++) {
             let loss = this._trainingEpoch(network, trainingSet, i);  // Train
             if (loss === undefined) {
-                Container.debugLog("Classification node missing in Training; Falling back to weight mutation");
+                logger.debug("Classification node missing in Training; Falling back to weight mutation");
                 return undefined;
             }
 
@@ -112,7 +112,7 @@ export class GradientDescent {
             if (validationSet.length > 0) {
                 loss = this._validationEpoch(network, validationSet);   // Validate
                 if (loss === undefined) {
-                    Container.debugLog("Classification node missing in Validation; Falling back to weight mutation");
+                    logger.debug("Classification node missing in Validation; Falling back to weight mutation");
                     return undefined;
                 }
             }
@@ -127,7 +127,7 @@ export class GradientDescent {
             }
 
             if (epochsWithoutImprovement >= GradientDescent.EARLY_STOPPING_THRESHOLD) {
-                Container.debugLog(`Early stopping at epoch ${i}`);
+                logger.debug(`Early stopping at epoch ${i}`);
                 this._training_epochs.push(i);
                 break;
             }
@@ -141,7 +141,7 @@ export class GradientDescent {
             network.connections[j].weight = bestWeights[j];
         }
 
-        Container.debugLog(`ValidationLoss: ${bestValidationLoss}`);
+        logger.debug(`ValidationLoss: ${bestValidationLoss}`);
         return bestValidationLoss;
     }
 
@@ -451,7 +451,7 @@ export class GradientDescent {
                 // Pick a random player recording to be used.
                 const player = Randomness.getInstance().pick(Object.keys(this._groundTruth));
                 stateActionRecord = this._extractDataForStatementFromPlayer(statement, this._groundTruth[player] as Record<string, unknown>);
-                Container.debugLog(`Using recording of player ${player}`);
+                logger.debug(`Using recording of player ${player}`);
             }
         } else {
             // If there is only one player recording, use it as a training dataset.
@@ -584,7 +584,7 @@ export class GradientDescent {
         const random = Randomness.getInstance();
         const desiredAugments = this._augmentationParameter.augmentFactor * data.size;
 
-        Container.debugLog(`Augmenting dataset from ${data.size} to ${desiredAugments} data points`);
+        logger.debug(`Augmenting dataset from ${data.size} to ${desiredAugments} data points`);
         while (data.size < desiredAugments) {
             const randomState = random.pick(keys);
             const stateClone = lodashClonedeep(randomState) as ObjectInputFeatures;

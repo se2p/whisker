@@ -30,6 +30,7 @@ import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgor
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
+import logger from "../../../../src/util/logger";
 
 describe('RandomSearch', () => {
 
@@ -39,8 +40,7 @@ describe('RandomSearch', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */
-        };
+        logger.suggest.deny("", "debug");
     });
 
     test('Trivial bitstring with OneMax', async () => {

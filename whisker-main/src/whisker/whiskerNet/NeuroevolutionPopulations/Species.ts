@@ -3,7 +3,7 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
-import {Container} from "../../utils/Container";
+import logger from "../../../util/logger";
 
 export class Species<C extends NeatChromosome> {
 
@@ -115,7 +115,7 @@ export class Species<C extends NeatChromosome> {
             // Penalize fitness if it has not improved for a certain number of ages
             if (ageDept >= 1) {
                 network.sharedFitness = network.sharedFitness * 0.01;
-                Container.debugLog(`Penalizing stagnant species ${this.uID}`);
+                logger.debug(`Penalizing stagnant species ${this.uID}`);
             }
 
             // Boost fitness for young generations to give them a chance to evolve for some generations.

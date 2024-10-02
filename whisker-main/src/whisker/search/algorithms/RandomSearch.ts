@@ -24,9 +24,9 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 import {Selection} from "../Selection";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import logger from '../../../util/logger';
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -79,7 +79,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             }
             this.updateStatistics();
             this._iterations++;
-            Container.debugLog(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
+            logger.debug(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
         }
         return this._archive;
     }

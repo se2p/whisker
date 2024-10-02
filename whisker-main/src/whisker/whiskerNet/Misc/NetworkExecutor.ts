@@ -17,6 +17,7 @@ import {ParameterType} from "../../testcase/events/ParameterType";
 import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
+import logger = require("../../../util/logger.js");
 
 export class NetworkExecutor {
 
@@ -92,7 +93,7 @@ export class NetworkExecutor {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (this.availableEvents.length === 0) {
-                console.log("Whisker-Main: No events available for project.");
+                logger.warn("No events available for project.");
                 break;
             }
 
@@ -107,7 +108,7 @@ export class NetworkExecutor {
 
             // Stop if our network is defect.
             if (defect) {
-                console.log("Defect network:", network.toString());
+                logger.warn("Defect network:", network.toString());
                 break;
             }
 

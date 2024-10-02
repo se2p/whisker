@@ -9,8 +9,8 @@ import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/In
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
+import logger from "../../../../src/util/logger";
 
 describe("Test NeatCrossover", () => {
 
@@ -47,7 +47,7 @@ describe("Test NeatCrossover", () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
 
-        Container.debugLog = () => { /*No operation */ };
+        logger.suggest.deny("", "debug");
 
         // Create Nodes of first network
         const iNode1 = new InputNode(0, "Sprite1", "X-Position");

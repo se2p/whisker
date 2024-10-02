@@ -6,8 +6,8 @@ export class WhiskerTestListWithSummary {
     private _networkPopulation: string;
 
     constructor(testList: WhiskerTest[], summary: string){
-        // console.log('constructing a WhiskerTestListWithSummary, testList: ', testList);
-        // console.log('summary: ', summary);
+        // logger.debug('constructing a WhiskerTestListWithSummary, testList: ', testList);
+        // logger.debug('summary: ', summary);
         this._testList = testList;
         this._summary = summary;
     }

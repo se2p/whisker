@@ -32,6 +32,7 @@ import {
     ControlFilter,
     CustomFilter
 } from 'scratch-analysis';
+import logger from '../../../util/logger';
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -187,7 +188,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
                     const controlNode = Container.cdg.getNode(blockTrace.id);
                     if (controlNode === undefined) {
-                        console.warn("Traced block not found in CDG: " + blockTrace.id);
+                        logger.warn("Traced block not found in CDG: " + blockTrace.id);
                         continue;
                     }
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -298,7 +299,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
             //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
-            console.warn('Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
+            logger.warn('Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
                 + targetNode.block.opcode + " with id " + targetNode.block.id);
             return [];
         }
@@ -547,7 +548,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
         const cdg = Container.cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
-        Container.debugLog(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`);
+        logger.debug(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`);
         for (const statement of uncoveredStatements) {
             const parents = StatementFitnessFunction.getCDGParent(statement._targetNode);
             if (!parents) {

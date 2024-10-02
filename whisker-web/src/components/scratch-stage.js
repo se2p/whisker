@@ -5,6 +5,7 @@ const ScratchRender = require('scratch-render');
 const ScratchSVGRenderer = require('scratch-svg-renderer');
 const AudioEngine = require('scratch-audio');
 const VirtualMachine = require('scratch-vm');
+const logger = require("../logger");
 
 const ASSET_SERVER = 'https://cdn.assets.scratch.mit.edu';
 const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
@@ -64,7 +65,7 @@ class Scratch extends EventEmitter {
                 const correspondingComment = target.comments[bbtTestHatBlock.comment];
 
                 if (!correspondingInputBlock) {
-                    console.error('BBT test hat block without input block?');
+                    logger.error('BBT test hat block without input block?');
                     continue;
                 }
 
