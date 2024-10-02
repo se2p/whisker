@@ -307,7 +307,6 @@ export class ModelLoader {
         }
     }
 
-
     private loadConditions(newEdge: ModelEdge, conditions: SimpleCheck[]): void {
         let id: string, name: CheckName, negated: boolean, args: ArgType[];
         conditions.forEach(condition => {
