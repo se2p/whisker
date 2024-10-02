@@ -57,12 +57,12 @@ describe('ModelTester', () => {
     });
 
     describe('GetAllModels()', () => {
-        const expectedNodes : Record<string, ModelNode> = {
+        const expectedNodes: Record<string, ModelNode> = {
             "init": new ModelNode("init", undefined),
             "end": new ModelNode("end", undefined)
         };
 
-        const expectedNodesExtended : Record<string, ModelNode> = {
+        const expectedNodesExtended: Record<string, ModelNode> = {
             "init": new ModelNode("init", undefined),
             "start": new ModelNode("start", undefined),
             "text": new ModelNode("text", undefined),
@@ -137,7 +137,8 @@ describe('ModelTester', () => {
     });
 });
 
-const programModel = readFileSync('test/whisker/model/models/programModel.json', 'utf8');
-const faultyModel = readFileSync('test/whisker/model/models/faultyModel.json', 'utf8');
-const userModel = readFileSync('test/whisker/model/models/userModel.json', 'utf8');
-const allModels = readFileSync('test/whisker/model/models/allModels.json', 'utf8');
+const path = 'test/whisker/model/models/ModelTester/';
+const programModel = readFileSync(path + 'programModel.json', 'utf8');
+const faultyModel = readFileSync(path + 'faultyModel.json', 'utf8');
+const userModel = readFileSync(path + 'userModel.json', 'utf8');
+const allModels = readFileSync(path + 'allModels.json', 'utf8');
