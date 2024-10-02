@@ -181,7 +181,7 @@ function forwardConsoleMessages(page) {
                 }
 
                 try {
-                    return await arg.jsonValue()
+                    return await arg.jsonValue();
                 } catch {
                     return arg.toString();
                 }
