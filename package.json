@@ -22,8 +22,8 @@
         "build-web": "yarn --cwd whisker-web build",
         "ci:prepare-downstream-build": "node .prepare-downstream-build.js",
         "servant": "yarn --cwd servant node servant.js",
-        "test": "yarn --cwd whisker-main test",
-        "integrationtest": "yarn --cwd whisker-web test && yarn --cwd servant test"
+        "test": "yarn --cwd whisker-main test && yarn --cwd servant unittest",
+        "integrationtest": "yarn --cwd whisker-web test && yarn --cwd servant integrationtest"
     },
     "devDependencies": {
         "@babel/core": "^7.15.5",

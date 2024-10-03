@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicNetworkSuite';
 import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
+import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
 import {FileSaver} from './web-libs';
 
 /* Translation resources */
@@ -149,7 +150,7 @@ const loadTestsFromString = async function (string) {
  *
  * @param {Map<string, Test>} bbtTests A map of Block-Based Tests to load.
  */
-const loadBBTTests = function (bbtTests) {
+const setBBTTests = function (bbtTests) {
     Whisker.bbtTests = bbtTests;
 
     // only update the test table if the project contains
@@ -185,6 +186,14 @@ const runBBTTest = async function (bbtTest) {
         // However, stopping is also necessary? BBT tests restore the original state
         // after execution, but here it does not work without the stop instruction.
         Whisker.scratch.stop();
+
+        const seed = document.getElementById('seed').value;
+
+        if (seed) {
+            Randomness.setInitialSeeds(seed);
+            Randomness.seedScratch(Whisker.scratch.vm);
+        }
+
         Whisker.scratch.start();
 
         bbtTest.isRunning = true;
@@ -405,7 +414,7 @@ const runTest = async function (test) {
  * @param {object} test The test object to run.
  */
 const runSingleTest = async function (test) {
-    if (typeof test.type !== 'undefined' && test.type === 'BBT') {
+    if (test.type && test.type === 'BBT') {
         await runBBTTest(test);
     } else {
         await runTest(test);
@@ -456,11 +465,11 @@ const runAllTests = async function () {
     }
 
     if ((!Whisker.bbtTests || Whisker.bbtTests.size === 0) &&
-        (Whisker.tests === undefined || Whisker.tests.length === 0) &&
+        (!Whisker.tests || Whisker.tests.length === 0) &&
         !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t('test-execution'), i18next.t('no-tests'));
         return;
-    } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+    } else if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
         showModal(i18next.t('test-execution'), i18next.t('no-project'));
         return;
     }
@@ -543,9 +552,9 @@ const runAllTests = async function () {
                 Whisker.outputLog.println('Block-Based Tests have finished!');
             }
 
-            if (testsRunning &&  // Test chain execution might have been stopped
-                (Whisker.tests !== undefined && Whisker.tests.length > 0) ||
-                Whisker.modelTester.someModelLoaded()) {
+            if (testsRunning && // Test chain execution might have been stopped
+                ((Whisker.tests && Whisker.tests.length > 0) ||
+                Whisker.modelTester.someModelLoaded())) {
 
                 await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
             }
@@ -569,22 +578,197 @@ const initScratch = function () {
     Whisker.stateActionRecorder = new StateActionRecorder(Whisker.scratch);
 };
 
+/**
+ * Extracts Block-Based Tests contained in the provided Scratch project.
+ * Note that this loads the provided project into the VM!
+ * @param {object} project the Scratch project to extract BBTs from
+ */
+const loadProjectAndExtractBlockBasedTests = async function (project) {
+
+    // Cannot use a separate "dummy" VM for this, as VM instances have ties to window
+    await Whisker.scratch.vm.loadProject(project);
+
+    const newTestStore = {
+        globalVariables: [],
+        targetsWithTests: {}
+    };
+
+    newTestStore.globalVariables = Whisker.scratch.vm.runtime.getTargetForStage().variables;
+
+    const originalTargets = Whisker.scratch.vm.runtime.targets.filter(target => target.isOriginal);
+
+    for (const target of originalTargets) {
+        let targetContainsTests = false;
+        const spriteName = target.sprite.name;
+
+        for (const script of target.blocks.getScripts()) {
+            const topBlock = target.blocks.getBlock(script);
+
+            if (!topBlock || topBlock.opcode !== 'bbt_testHat') {
+                continue;
+            }
+
+            targetContainsTests = true;
+
+            if (!(spriteName in newTestStore.targetsWithTests)) {
+                newTestStore.targetsWithTests[spriteName] = {
+                    comments: {},
+                    localVariables: {},
+                    testScripts: []
+                };
+            }
+
+            const xmlString = target.blocks.blockToXML(script, target.comments);
+            newTestStore.targetsWithTests[spriteName].testScripts.push(xmlString);
+        }
+
+        if (targetContainsTests) {
+
+            newTestStore.targetsWithTests[spriteName].localVariables =
+                Object.assign({}, Whisker.scratch.vm.runtime.getSpriteTargetByName(spriteName).variables);
+
+            newTestStore.targetsWithTests[spriteName].comments =
+                Object.assign({}, Whisker.scratch.vm.runtime.getSpriteTargetByName(spriteName).comments);
+        }
+    }
+
+    Whisker.bbtTestStore = newTestStore;
+};
+
+/**
+ * Removes all Block-Based Tests from the currently loaded project.
+ * @return {number} the number of BBTs before removing
+ */
+const removeAllBBTTestsFromCurrentProject = function () {
+    let numberOfBBTsBeforeRemoving = 0;
+
+    for (const target of Whisker.scratch.vm.runtime.targets) {
+
+        Object.values(target.blocks._blocks)
+            .filter(block => block.opcode === 'bbt_testHat')
+            .forEach(bbtTestHatBlock => {
+                numberOfBBTsBeforeRemoving++;
+                target.blocks.deleteBlock(bbtTestHatBlock.id);
+            });
+    }
+
+    return numberOfBBTsBeforeRemoving;
+};
+
+/**
+ * Injects (previously extracted from another project) Block-Based Tests
+ * into the currently loaded project. Reads from Whisker.bbtTestStore.
+ */
+const injectTestsFromTestStore = function () {
+    const stage = Whisker.scratch.vm.runtime.getTargetForStage();
+
+    for (const gv of Object.values(Whisker.bbtTestStore.globalVariables)) {
+        stage.createVariable(gv.id, gv.name, gv.type, gv.isCloud);
+    }
+
+    for (const spriteName of Object.keys(Whisker.bbtTestStore.targetsWithTests)) {
+
+        const currTarget = Whisker.scratch.vm.runtime.getSpriteTargetByName(spriteName);
+
+        for (const comment of Object.values(Whisker.bbtTestStore.targetsWithTests[spriteName].comments)) {
+            currTarget.createComment(comment.id, comment.blockId, comment.text,
+                comment.x, comment.y, comment.width, comment.height, comment.minimized);
+        }
+
+        for (const localVariable of Object.values(Whisker.bbtTestStore.targetsWithTests[spriteName].localVariables)) {
+            currTarget.createVariable(localVariable.id, localVariable.name, localVariable.type);
+        }
+
+        for (const testScript of Whisker.bbtTestStore.targetsWithTests[spriteName].testScripts) {
+            Whisker.scratch.vm.createBlocksFromDomString(currTarget, testScript);
+        }
+    }
+};
+
+/**
+ * Handles the onload event of the project file FileSelect element.
+ * @param {FileSelect} fileSelect the FileSelect element for project files
+ */
+const handleOnLoadProjectFile = async function (fileSelect) {
+    const project = await fileSelect.loadAsArrayBuffer();
+    await Whisker.scratch.loadProject(project);
+
+    // BBTs contained in _project_ files are not respected!
+    const numberOfContainedBBTs = removeAllBBTTestsFromCurrentProject();
+    if (numberOfContainedBBTs > 0) {
+        document.getElementById('project-contains-bbts-tooltip-link').click();
+    }
+
+    if (Whisker.bbtTestStore) {
+        // Test store contains tests, this means a project file
+        // containing BBTs was provided earlier as _test_ file.
+        injectTestsFromTestStore();
+        setBBTTests(Whisker.scratch.getBBTTestsOfCurrentProject());
+
+    } else if (Array.isArray(Whisker.tests)) {
+        Whisker.tests.forEach(whiskerTest => {
+            Whisker.testTable.resetRunDataAndShow(whiskerTest);
+        });
+    }
+};
+
+/**
+ * Handles the onload event of the test file FileSelect element.
+ * @param {FileSelect} fileSelect the FileSelect element for test files
+ */
+const handleOnLoadTestFile = async function (fileSelect) {
+    const fileExtension = fileSelect.files[0].name.split('.').pop();
+
+    if (fileExtension === 'sb3') {
+
+        const project = await fileSelect.loadAsArrayBuffer();
+        await loadProjectAndExtractBlockBasedTests(project);
+
+        if (Whisker.projectFileSelect.files.length > 0) {
+            await Whisker.scratch.loadProject(await Whisker.projectFileSelect.loadAsArrayBuffer());
+        }
+
+        const bbtTestStoreContainsTests = Object.keys(Whisker.bbtTestStore.targetsWithTests).length > 0;
+
+        if (!bbtTestStoreContainsTests) {
+            // a .sb3 file is loaded as test file, but it does not contain BBTs!
+            document.getElementById('no-bbts-tooltip-link').click();
+            return;
+        }
+
+        if (!Whisker.scratch.project) {
+            // no project loaded
+            return;
+        }
+
+        // clear regular Whisker tests, BBT tests are replaced during setBBTTests(..)
+        Whisker.tests = null;
+        Whisker.testsString = null;
+        Whisker.testEditor.setDefaultValue();
+
+        injectTestsFromTestStore();
+        setBBTTests(Whisker.scratch.getBBTTestsOfCurrentProject());
+
+    } else {
+
+        // clear BBT tests, regular Whisker tests are replaced during loadTestsFromString(..)
+        Whisker.bbtTests = null;
+        Whisker.bbtTestStore = null;
+
+        await fileSelect.loadAsString()
+            .then(string => loadTestsFromString(string));
+    }
+};
+
 const initComponents = function () {
     Whisker.outputRun = new Output($('#output-run')[0]);
-    Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
-    Whisker.outputLog.hide();
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
     Whisker.testEditor.show();
 
-    Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0],
-        fileSelect => fileSelect.loadAsArrayBuffer()
-            .then(project => Whisker.scratch.loadProject(project))
-            .then(() => loadBBTTests(Whisker.scratch.getBBTTests())));
-    Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
-        fileSelect => fileSelect.loadAsString()
-            .then(string => loadTestsFromString(string)));
+    Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0], handleOnLoadProjectFile);
+    Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0], handleOnLoadTestFile);
     Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
         fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string)));
 
@@ -625,7 +809,7 @@ const initEvents = function () {
             $('#acceleration-value').text(clickEvt.value.newValue);
         });
     $('#green-flag').on('click', () => {
-        if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+        if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t('test-generation'), i18next.t('no-project'));
         } else {
             Whisker.scratch.greenFlag();
@@ -645,9 +829,9 @@ const initEvents = function () {
     });
     $('#reset').on('click', () => {
         $('#reset').tooltip('hide');
-        if (Whisker.tests === undefined || Whisker.tests.length === 0) {
+        if (!Whisker.tests || Whisker.tests.length === 0) {
             showModal(i18next.t('test-execution'), i18next.t('no-tests'));
-        } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+        } else if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t('test-execution'), i18next.t('no-project'));
         } else {
             Whisker.scratch.reset().then();
@@ -791,7 +975,7 @@ const initEvents = function () {
     });
     $('#run-search')
         .click('click', () => {
-            if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+            if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t('test-generation'), i18next.t('no-project'));
             } else {
                 $('#run-search').hide();

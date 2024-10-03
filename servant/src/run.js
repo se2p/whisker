@@ -6,6 +6,7 @@ const rimraf = require("rimraf");
 const logger = require("./logger");
 const CoverageGenerator = require("../../whisker-main/src/coverage/coverage");
 
+const testByBlockBasedTests = require('./run-bbt');
 const {
     prepareTestFiles,
     getProjectsInScratchPath,
@@ -196,15 +197,22 @@ async function runTests(path, openNewPage, index, targetProject) {
 }
 
 // Entry point for the "run" command.
-// Supports Whisker TestSuites and Model-based testing.
+// Supports Whisker TestSuites, Model-based testing and Block-Based Testing.
 async function run(openNewPage) {
     const csvs = [];
 
     if (testPath) {
-        // Whisker TestSuite
-        for (const project of getProjectsInScratchPath()) {
-            logger.info(`Testing project ${project} by Whisker test suite`);
-            csvs.push(...await testByWhiskerTestsuite(openNewPage, project));
+
+        if (testPath.endsWith(".sb3")) {
+            // Block-Based Testing
+            await testByBlockBasedTests(openNewPage);
+
+        } else {
+            // Whisker TestSuite
+            for (const project of getProjectsInScratchPath()) {
+                logger.info(`Testing project ${project} by Whisker test suite`);
+                csvs.push(...await testByWhiskerTestsuite(openNewPage, project));
+            }
         }
 
     } else {

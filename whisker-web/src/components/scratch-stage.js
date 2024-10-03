@@ -42,15 +42,17 @@ class Scratch extends EventEmitter {
         // Note: this _step() is necessary to update the canvas. Otherwise, it remains blank, or it still shows the
         // previously loaded project. The test runner will also re-load the project before execution, because it needs
         // to undo the effects of the _step() taken here.
+        // TODO: check if this approach can be addressed with this.vm.renderer.draw(),
+        //  also check why the loadProject() call doesn't already take care of this
         this.vm.runtime._step();
     }
 
     /**
-     * Extract Block-Based Tests contained in a loaded Scratch project from the VM.
+     * Extract Block-Based Tests contained in the currently loaded Scratch project from the VM.
      *
      * @return {Map<string, Test>} A map that maps the hat block ID of a BBT to its data.
      */
-    getBBTTests () {
+    getBBTTestsOfCurrentProject () {
         const bbtTests = new Map();
 
         for (const target of this.vm.runtime.targets) {

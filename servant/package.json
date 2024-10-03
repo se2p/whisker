@@ -17,7 +17,9 @@
         "build": "webpack --color --bail",
         "build:watch": "webpack --color --watch",
         "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
-        "test": "jest --runInBand"
+        "test": "jest --runInBand",
+        "unittest": "jest test/unit/*.test.js --runInBand",
+        "integrationtest": "jest test/integration/*.test.js --runInBand"
     },
     "author": "",
     "license": "ISC",
