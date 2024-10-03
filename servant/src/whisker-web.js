@@ -131,7 +131,7 @@ async function logGraphicsFeatureStatus(browser) {
             return [status, driverInfo];
         });
 
-        logger.info(`Grahpics Feature Status:\n${status}`);
+        logger.info(`Graphics Feature Status:\n${status}`);
         logger.info(`GPU Driver Information:\n${driverInfo}`);
     } catch (e) {
         logger.error(`Could not retrieve GPU information. Reason: ${e}`);

@@ -257,7 +257,7 @@ class TestTable {
             test.bbtError = {};
         }
 
-        if (Object.hasOwn(test.bbtError, errorObject.type)) {
+        if (errorObject.type in test.bbtError) {
             test.bbtError[errorObject.type] += 1;
         } else {
             test.bbtError[errorObject.type] = 1;
@@ -313,7 +313,7 @@ class TestTable {
             return;
         }
 
-        if (Object.hasOwn(test, 'bbtPassingAssertionCount')) {
+        if ('bbtPassingAssertionCount' in test) {
             test.bbtPassingAssertionCount += 1;
         } else {
             test.bbtPassingAssertionCount = 1;
@@ -551,16 +551,14 @@ class TestTable {
         }
 
         if (test.type === 'BBT' &&
-            Object.hasOwn(test, 'testResultSign') &&
-            test.testResultSign !== null) {
+            'testResultSign' in test && test.testResultSign !== null) {
 
             result += `<td>${index.i18n.t('passing-assertion-count')}</td>
                        <td>${test.bbtPassingAssertionCount}</td>\n</tr>`;
         }
 
         if (test.type === 'BBT' &&
-            Object.hasOwn(test, 'bbtError') &&
-            test.bbtError !== null) {
+            'bbtError' in test && test.bbtError !== null) {
 
             for (const [key, value] of Object.entries(test.bbtError)) {
                 result += `<td>${index.i18n.t(key)}</td>

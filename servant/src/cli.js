@@ -101,11 +101,53 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    requireTestPathForRun() {
+        customChecks.push(function checkBBTLimitations() {
+            if (!(opts.testPath && opts.testPath.endsWith('.sb3'))) {
+                return;
+            }
+
+            if (opts.acceleration !== 1) {
+                throw new InvalidArgumentError('Test acceleration can only be used with Whisker tests!');
+            }
+
+            if (opts.numberOfJobs !== 1) {
+                throw new InvalidArgumentError('Parallel execution can only be used with Whisker tests!');
+            }
+
+            const validBBTOptions = [
+                // always present
+                'acceleration',
+                'numberOfJobs',
+
+                // actually valid BBT options
+                'headless',
+                'scratchPath',
+                'testPath',
+                'csvFile',
+                'seed',
+                'consoleForwarded'
+            ];
+
+            for (const key of Object.keys(opts)) {
+                if (!validBBTOptions.includes(key)) {
+                    throw new InvalidArgumentError(`When using block-based tests, only these options are currently supported: ${validBBTOptions.join(', ')}`);
+                }
+            }
+        });
+
+        return this.requiredOption(
+            '-t, --test-path <Path>',
+            'path to Whisker tests (".js") or a project containing Block-Based Tests (".sb3") to run',
+            (testPath) => util.processFilePathExists(testPath, ['.js', '.sb3'])
+        );
+    }
+
     requireTestPath() {
         return this.requiredOption(
             '-t, --test-path <Path>',
-            'path to Whisker tests to run (".js")',
-            (testPath) => util.processFilePathExists(testPath, '.js'),
+            'path to Whisker tests (".js") to run',
+            (testPath) => util.processFilePathExists(testPath, '.js')
         );
     }
 
@@ -279,11 +321,10 @@ const subCommands = [
         .optionRecordProject()
         .optionRecordingTime(),
 
-
     newSubCommand('run')
-        .description('run Whisker tests')
+        .description('run Whisker tests or block-based tests')
         .requireScratchPath()
-        .requireTestPath()
+        .requireTestPathForRun()
         .optionNumberOfJobs()
         .optionMutators()
         .optionMutantsDownloadPath()
