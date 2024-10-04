@@ -218,7 +218,10 @@ function rejectOnError(page) {
 
 async function openNewPage(browser) {
     const page = await browser.newPage({context: Date.now()});
+    return await configureWhiskerWeb(page);
+}
 
+async function configureWhiskerWeb(page, {waitUntil = "networkidle0"} = {}) {
     rejectOnError(page);
 
     if (consoleForwarded) {
@@ -228,7 +231,7 @@ async function openNewPage(browser) {
     // Set navigation timeout to 5 min
     page.setDefaultNavigationTimeout(300000);
 
-    await page.goto(whiskerUrl, {waitUntil: "networkidle0"});
+    await page.goto(whiskerUrl, {waitUntil});
 
     return page;
 }
@@ -236,4 +239,5 @@ async function openNewPage(browser) {
 module.exports = {
     openNewBrowser,
     openNewPage,
+    configureWhiskerWeb
 };
