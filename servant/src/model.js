@@ -1,3 +1,1 @@
-module.exports = async function (openNewPage) {
-    await require("./run")(openNewPage);
-};
+module.exports = require("./run");

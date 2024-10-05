@@ -1,33 +1,35 @@
+const Whiskers = require("./whiskers");
 const logger = require("./logger");
-const {subcommand} = require('./cli');
-const {resolve} = require('path');
-const {openNewBrowser, openNewPage} = require("./whisker-web");
 const {relativeToServantDir} = require("./util");
-const fs = require("fs");
+const fs = require("node:fs");
+const {resolve} = require("path");
+const {subcommand} = require("./cli");
 
-void async function main() {
-    // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
-    // The module must only export a function accepting the "openNewPage" callback.
-    let browser = null;
+// The prettify.js file keeps running into a null exception when puppeteer opens a new page.
+// Since this is a purely visual feature and does not harm the test execution in any way,
+// we simply remove the file when calling the servant.
+// TODO Find better fix for that.
+const prettifyPath = resolve(relativeToServantDir(".."), "whisker-web/dist/includes/prettify.js");
+if (fs.existsSync(prettifyPath)) {
+    fs.unlinkSync(prettifyPath)
+}
+
+(async function main() {
+    let pool = null;
+
     try {
-        browser = await openNewBrowser();
+        pool = new Whiskers();
+        await pool.start();
 
-        // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
-        // Since this is a purely visual feature and does not harm the test execution in any way,
-        // we simply remove the file when calling the servant.
-        // TODO Find better fix for that.
-        const prettifyPath = resolve(relativeToServantDir(".."), "whisker-web/dist/includes/prettify.js");
-        if (fs.existsSync(prettifyPath)) {
-            fs.unlinkSync(prettifyPath)
-        }
-
-        return await require(resolve(relativeToServantDir("src"), subcommand))(openNewPage.bind(null, browser));
+        // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
+        // The module must export a single function "accepting the "pool" argument.
+        const module = resolve(relativeToServantDir("src"), subcommand);
+        return await require(module)(pool);
     } catch (e) {
         logger.error(e);
-        return Promise.reject(e);
     } finally {
-        if (browser) {
-            await browser.close();
+        if (pool !== null) {
+            await pool.shutdown();
         }
     }
-}();
+})();

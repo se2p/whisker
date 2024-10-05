@@ -32,12 +32,12 @@ const {
 } = require("./cli").opts;
 
 
-async function testByWhiskerTestsuite(openNewPage, targetProject) {
+async function testByWhiskerTestsuite(pool, targetProject) {
     const start = Date.now();
 
     const csvs = [];
     const paths = prepareTestFiles();
-    await Promise.all(paths.map((path, index) => runTests(path, openNewPage, index, targetProject)))
+    await Promise.all(paths.map((path, index) => pool.run(({page}) => runTests(path, page, index, targetProject))))
         .then(results => {
             const summaries = results.map(({summary}) => summary);
             const coverages = results.map(({coverage}) => coverage);
@@ -56,11 +56,11 @@ async function testByWhiskerTestsuite(openNewPage, targetProject) {
     return csvs;
 }
 
-async function testByModel(openNewPage, targetProject) {
+async function testByModel(pool, targetProject) {
     const start = Date.now();
     let resultCsv;
 
-    await runTests(undefined, openNewPage, 0, targetProject)
+    await pool.run(({page}) => runTests(undefined, page, 0, targetProject))
         .then(result => {
             resultCsv = result.csv;
 
@@ -74,9 +74,7 @@ async function testByModel(openNewPage, targetProject) {
     return resultCsv;
 }
 
-async function runTests(path, openNewPage, index, targetProject) {
-    const page = await openNewPage();
-
+async function runTests(path, page, index, targetProject) {
     /**
      * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
      * was loaded.
@@ -198,20 +196,20 @@ async function runTests(path, openNewPage, index, targetProject) {
 
 // Entry point for the "run" command.
 // Supports Whisker TestSuites, Model-based testing and Block-Based Testing.
-async function run(openNewPage) {
+async function run(pool) {
     const csvs = [];
 
     if (testPath) {
 
         if (testPath.endsWith(".sb3")) {
             // Block-Based Testing
-            await testByBlockBasedTests(openNewPage);
+            await testByBlockBasedTests(pool);
 
         } else {
             // Whisker TestSuite
             for (const project of getProjectsInScratchPath()) {
                 logger.info(`Testing project ${project} by Whisker test suite`);
-                csvs.push(...await testByWhiskerTestsuite(openNewPage, project));
+                csvs.push(...await testByWhiskerTestsuite(pool, project));
             }
         }
 
@@ -219,7 +217,7 @@ async function run(openNewPage) {
         // Model-based testing
         for (const project of getProjectsInScratchPath()) {
             logger.info(`Testing project ${project} by model`);
-            csvs.push(await testByModel(openNewPage, project));
+            csvs.push(await testByModel(pool, project));
         }
     }
 

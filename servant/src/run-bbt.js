@@ -54,21 +54,20 @@ function analyzeLog(log) {
     };
 }
 
-async function evaluateProjects(openNewPage, projects, testPath) {
+async function evaluateProjects(pool, projects, testPath) {
     const results = new Map();
-    const page = await openNewPage();
 
-    // prevent fancybox tooltip from opening
-    await page.evaluate(() => {
-        const tooltipLink = document.getElementById('project-contains-bbts-tooltip-link');
-        const dummyLink = document.createElement('a');
-        dummyLink.setAttribute('id', 'project-contains-bbts-tooltip-link')
-        tooltipLink.replaceWith(dummyLink);
-    });
+    await Promise.all(projects.map((project) => pool.run(async ({page}) => {
+        // prevent fancybox tooltip from opening
+        await page.evaluate(() => {
+            const tooltipLink = document.getElementById('project-contains-bbts-tooltip-link');
+            const dummyLink = document.createElement('a');
+            dummyLink.setAttribute('id', 'project-contains-bbts-tooltip-link')
+            tooltipLink.replaceWith(dummyLink);
+        });
 
-    await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
 
-    for (const project of projects) {
         logger.info(`Testing project: ${project}`);
         const start = Date.now();
 
@@ -92,7 +91,7 @@ async function evaluateProjects(openNewPage, projects, testPath) {
         summaryString += `└─ Timed Out Tests: ${result.counters.timeout}\n`;
 
         logger.info(summaryString);
-    }
+    })));
 
     return results;
 }
@@ -128,11 +127,11 @@ function writeCsv(results) {
     });
 }
 
-async function testByBlockBasedTests(openNewPage) {
+async function testByBlockBasedTests(pool) {
     const projects = getProjectsInScratchPath();
 
     logger.info(`Testing ${projects.length} project(s) against the test file.`);
-    const results = await evaluateProjects(openNewPage, projects, testPath);
+    const results = await evaluateProjects(pool, projects, testPath);
 
     if (csvFile) {
         writeCsv(results);

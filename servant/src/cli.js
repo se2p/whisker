@@ -419,8 +419,9 @@ whiskerCLI.parse(process.argv);
 customChecks.forEach((check) => check());
 
 opts = {
+    whiskerUrl: `file://${relativeToServantDir('../whisker-web/dist/index.html')}`,
+    numberOfJobs: 1,
     ...opts,
-    whiskerUrl: `file://${relativeToServantDir('../whisker-web/dist/index.html')}`
 };
 
 // The current Whisker mode (i.e., the name of the subcommand) and all given command line options are available in any
