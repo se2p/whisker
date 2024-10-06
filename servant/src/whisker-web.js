@@ -142,15 +142,16 @@ async function logGraphicsFeatureStatus(browser) {
     }
 }
 
-function forwardConsoleMessages(page) {
+function forwardConsoleMessages(page, id = "") {
     const loggers = [
         "whisker-main",
         "whisker-web",
         "vm",
         "", // anything that is unidentified
-    ].map((namespace) =>
-        ({namespace: namespace && (namespace + " "), logger: Minilog(namespace || "[forwarded]")})
-    );
+    ].map((namespace) => ({
+        namespace: namespace && (namespace + " "),
+        logger: Minilog((namespace || "[forwarded]") + (id && ` ${id}`))
+    }));
 
     function getLogger(str) {
         for (const logger of loggers) {
@@ -221,11 +222,11 @@ async function openNewPage(browser) {
     return await configureWhiskerWeb(page);
 }
 
-async function configureWhiskerWeb(page, {waitUntil = "networkidle0"} = {}) {
+async function configureWhiskerWeb(page, {waitUntil = "networkidle0", id = ""} = {}) {
     rejectOnError(page);
 
     if (consoleForwarded) {
-        forwardConsoleMessages(page);
+        forwardConsoleMessages(page, id);
     }
 
     // Set navigation timeout to 5 min

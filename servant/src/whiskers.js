@@ -64,14 +64,14 @@ class Whisker {
         let before = Date.now();
         const browser = await openNewBrowser();
         timings.openBrowser = Date.now() - before;
-        logger.info("Browser opened after", timings.openBrowser, "ms");
+        logger.info(`Browser #${id} opened after ${timings.openBrowser} ms`);
 
         // Configure the page and load Whisker Web.
         const page = (await browser.pages())[0];
         before = Date.now();
-        await configureWhiskerWeb(page, {waitUntil: "load", id: String(id)});
+        await configureWhiskerWeb(page, {waitUntil: "load", id: `#${id}`});
         timings.loadWhiskerWeb = Date.now() - before;
-        logger.info("Whisker Web loaded after", timings.loadWhiskerWeb, "ms");
+        logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
 
         // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
         // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
