@@ -18,6 +18,26 @@ describe('Model edges', () => {
     const from = "from";
     const to = "to";
 
+    function mockCondition(name: string, value: boolean): Condition {
+        return {
+            id: name,
+            check: jest.fn().mockReturnValue(value),
+            registerComponents: jest.fn(),
+            toString: () => name + ".toString()"
+        } as unknown as Condition;
+    }
+
+    function mockConditionWithError(name: string, value: string): Condition {
+        return {
+            id: name,
+            check: (s1, s2) => {
+                throw new Error(value);
+            },
+            registerComponents: jest.fn(),
+            toString: () => name + ".toString()"
+        } as unknown as Condition;
+    }
+
     describe("constructor", () => {
         const params: [number, number][] = [
             [-1, -1],
@@ -150,17 +170,12 @@ describe('Model edges', () => {
             const tdMock = new TestDriverMock([], 5);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             const conditions = [
-                {id: "cond0", check: jest.fn().mockReturnValue(true)} as unknown as Condition,
-                {id: "cond1", check: jest.fn().mockReturnValue(false)} as unknown as Condition,
-                {id: "cond2", check: jest.fn().mockReturnValue(true)} as unknown as Condition,
-                {id: "cond3", check: jest.fn().mockReturnValue(true)} as unknown as Condition,
-                {id: "cond4", check: jest.fn().mockReturnValue(false)} as unknown as Condition,
-                {
-                    id: "cond5",
-                    check: (s1, s2) => {
-                        throw new Error("this should happen");
-                    }
-                } as unknown as Condition,
+                mockCondition("cond0", true),
+                mockCondition("cond1", false),
+                mockCondition("cond2", true),
+                mockCondition("cond3", true),
+                mockCondition("cond4", false),
+                mockConditionWithError("cond5", "this should happen")
             ];
             conditions.forEach(condition => edge.addCondition(condition));
             const result = edge.checkConditions(tdMock.getTestDriver(), cu, 5, 7);
@@ -174,28 +189,12 @@ describe('Model edges', () => {
             const tdMock = new TestDriverMock([], 43);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, 42);
             const conditions = [
-                {
-                    id: "cond00",
-                    check: jest.fn().mockReturnValue(false),
-                    registerComponents: jest.fn,
-                    toString: () => "cond00.toString()"
-                } as unknown as Condition,
-
-                {id: "cond10", check: jest.fn().mockReturnValue(true), registerComponents: jest.fn} as unknown as Condition,
-                {id: "cond20", check: jest.fn().mockReturnValue(true), registerComponents: jest.fn} as unknown as Condition,
-                {id: "cond30", check: jest.fn().mockReturnValue(true), registerComponents: jest.fn} as unknown as Condition,
-                {
-                    id: "cond40",
-                    check: (s1, s2) => {
-                        throw new Error("this should happen");
-                    },
-                    registerComponents: jest.fn
-                } as unknown as Condition,
-                {
-                    id: "cond50",
-                    check: jest.fn().mockReturnValue(true),
-                    registerComponents: jest.fn
-                } as unknown as Condition,
+                mockCondition("cond00", false),
+                mockCondition("cond10", true),
+                mockCondition("cond20", true),
+                mockCondition("cond30", true),
+                mockConditionWithError("cond40", "this should happen"),
+                mockCondition("cond50", true),
             ];
             conditions.forEach(condition => edge.addCondition(condition));
             edge.registerComponents(cu, tdMock.getTestDriver(), false);
