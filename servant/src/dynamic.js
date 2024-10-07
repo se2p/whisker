@@ -18,18 +18,17 @@ const {
 } = require('./cli').opts
 
 // Dynamic Test suite using Neuroevolution
-async function generateDynamicTests(openNewPage) {
-    const output = await runDynamicTestSuite(openNewPage, scratchPath.path);
-    if (csvFile) {
-        logger.info("Creating CSV summary in " + csvFile);
-        fs.writeFileSync(csvFile, output);
-    }
-
+async function generateDynamicTests(pool) {
+    await pool.run(async ({page}) => {
+        const output = await runDynamicTestSuite(page, scratchPath.path);
+        if (csvFile) {
+            logger.info("Creating CSV summary in " + csvFile);
+            fs.writeFileSync(csvFile, output);
+        }
+    });
 }
 
-async function runDynamicTestSuite(openNewPage, path) {
-    const page = await openNewPage();
-
+async function runDynamicTestSuite(page, path) {
     async function configureWhiskerWebInstance() {
         await (await page.$('#fileselect-project')).uploadFile(path);
         await (await page.$('#fileselect-config')).uploadFile(configPath);

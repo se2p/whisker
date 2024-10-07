@@ -15,12 +15,12 @@ const {
 } = require("./cli").opts;
 
 // Test generation
-async function generateTests(openNewPage) {
+async function generateTests({page}) {
     const start = Date.now();
 
     // Todo use correct config
     try {
-        const csv = await runGeneticSearch(openNewPage);
+        const csv = await runGeneticSearch(page);
         logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         // Save results in CSV-file if specified
         if (csvFile) {
@@ -34,9 +34,7 @@ async function generateTests(openNewPage) {
     }
 }
 
-async function runGeneticSearch(openNewPage) {
-    const page = await openNewPage();
-
+async function runGeneticSearch(page) {
     async function configureWhiskerWebInstance() {
         await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
@@ -100,4 +98,4 @@ async function runGeneticSearch(openNewPage) {
     }
 }
 
-module.exports = generateTests;
+module.exports = (pool) => pool.run(generateTests);

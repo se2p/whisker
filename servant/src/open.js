@@ -12,9 +12,7 @@ const {
 const logger = require("./logger");
 
 
-async function open(openNewPage) {
-    const page = await openNewPage();
-
+async function open({page}) {
     // Procedure for generating game recordings.
     if (recordProject) {
         await toggleExtendedView(page);
@@ -82,4 +80,4 @@ async function open(openNewPage) {
     }
 }
 
-module.exports = open;
+module.exports = (pool) => pool.run(open);
