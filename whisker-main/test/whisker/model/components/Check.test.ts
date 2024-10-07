@@ -1,9 +1,8 @@
-import TestDriver from "../../../../src/test/test-driver";
 import {ArgType, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {TestDriverMock} from "../TestDriverMock";
+import {getDummyCheckUtility} from "../CheckUtilityMock";
 
 describe('Check', () => {
     const backUp = [];
@@ -57,7 +56,7 @@ describe('Check', () => {
     });
 
     const t = new TestDriverMock().getTestDriver();
-    const cu = {} as unknown as CheckUtility;
+    const cu = getDummyCheckUtility();
     const graphID = "graphID";
     const negated = false;
     const caseSensitive = false;

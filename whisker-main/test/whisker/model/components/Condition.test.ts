@@ -1,7 +1,6 @@
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {ArgType, CheckName, SimpleCheck} from "../../../../src/whisker/model/components/Check";
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
-import {Effect} from "../../../../src/whisker/model/components/Effect";
+import {CheckUtilityMock} from "../CheckUtilityMock";
 
 describe('Condition', () => {
 
@@ -180,22 +179,16 @@ describe('Condition', () => {
         }).toThrow();
     });
 
-    const pressedKeys: Record<string, boolean> = {
-        "a": true,
-        "b": false,
-        "c": true,
-    };
-    const cu = {
-        isKeyDown: (key: string) => pressedKeys[key] == true
-    } as unknown as CheckUtility;
+    const cuMock = new CheckUtilityMock({"a": true, "b": false, "c": true,});
+    const cu = cuMock.getCheckUtility();
 
     test('registerComponent() calculates correct effect', () => {
         const effect = new Condition("id", "edgeID", CheckName.Key, true, ["a"]);
         effect.registerComponents(cu, null, false, "graphID");
         const func = effect.condition;
-        pressedKeys["a"] = false;
+        cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(true);
-        pressedKeys["a"] = true;
+        cuMock.pressedKeys["a"] = true;
         expect(func(0, 0)).toEqual(false);
     });
 
@@ -210,9 +203,9 @@ describe('Condition', () => {
         cu.addErrorOutput = fn;
         condition.registerComponents(cu, null, false, "graphID");
         const func = condition.condition;
-        pressedKeys["a"] = false;
+        cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);
-        pressedKeys["a"] = false;
+        cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);
         expect(fn).toHaveBeenCalledWith("edgeID", "graphID", error);
     });

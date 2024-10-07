@@ -8,8 +8,8 @@ import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {InputEffect, InputEffectName} from "../../../../src/whisker/model/components/InputEffect";
 import {TestDriverMock} from "../TestDriverMock";
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {SpriteMock} from "../SpriteMock";
+import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 
 describe('Model edges', () => {
     const id = "id";
@@ -174,7 +174,9 @@ describe('Model edges', () => {
 
         test("checkConditions() returns failed conditions (no time limit)", () => {
             const errorFn = jest.fn();
-            const cu = {addErrorOutput: errorFn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.addErrorOutput = errorFn;
+            const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock([], 5);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             const conditions = [
@@ -193,7 +195,10 @@ describe('Model edges', () => {
         test("checkConditions() returns failed conditions (total steps exceeded)", () => {
             const errorFn = jest.fn();
             const timeFn = jest.fn();
-            const cu = {addErrorOutput: errorFn, addTimeLimitFailOutput: timeFn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.addErrorOutput = errorFn;
+            cuMock.addTimeLimitFailOutput = timeFn;
+            const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock([], 43);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, 42);
             const conditions = [
@@ -224,10 +229,9 @@ describe('Model edges', () => {
         });
 
         test("checkConditionsOnEvent() returns conditions when event string not contained", () => {
-            const cu = {
-                isKeyDown: jest.fn().mockReturnValue(true),
-                addErrorOutput: jest.fn(),
-            } as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.constIsKeyDown = true;
+            const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock();
             const stage = new SpriteMock("stage");
             stage.currentCostumeName = "stage";
@@ -244,9 +248,7 @@ describe('Model edges', () => {
         });
 
         test("checkConditionsOnEvent() returns conditions when true is condition and edge has no effect", () => {
-            const cu = {
-                addErrorOutput: jest.fn(),
-            } as unknown as CheckUtility;
+            const cu = getDummyCheckUtility();
             const tdMock = new TestDriverMock();
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             edge.addCondition(new Condition(id, label, CheckName.BackgroundChange, false, ["newBackground"]));

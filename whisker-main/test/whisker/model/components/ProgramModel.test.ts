@@ -2,7 +2,8 @@ import {CoverageResult, ProgramModel, SimpleProgramModel} from "../../../../src/
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import TestDriver from "../../../../src/test/test-driver";
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
+import {getDummyCheckUtility} from "../CheckUtilityMock";
+import {TestDriverMock} from "../TestDriverMock";
 
 export class MockedModelNode extends ModelNode {
     private readonly fn: jest.Mock;
@@ -12,7 +13,7 @@ export class MockedModelNode extends ModelNode {
         this.fn = fn;
     }
 
-    override reset() {
+    override reset():void {
         this.fn();
         super.reset();
     }
@@ -279,8 +280,8 @@ describe('Program model', () => {
         };
         Object.values(nodes).forEach(n => n.registerComponents = fn);
         const model = new ProgramModel("model", "start", nodes, {}, [], []);
-        const cu = {} as unknown as CheckUtility;
-        const t = {} as unknown as TestDriver;
+        const cu = getDummyCheckUtility();
+        const t = new TestDriverMock().getTestDriver();
         model.registerComponents(cu, t, false);
         expect(fn).toBeCalledTimes(4);
         expect(fn).toHaveBeenCalledWith(cu, t, false);

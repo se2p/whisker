@@ -1,9 +1,10 @@
 import {SimpleUserModel, UserModel} from "../../../../src/whisker/model/components/UserModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import {UserModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import TestDriver from "../../../../src/test/test-driver";
 import {MockedModelNode} from "./ProgramModel.test";
+import {getDummyCheckUtility} from "../CheckUtilityMock";
+import {TestDriverMock} from "../TestDriverMock";
 
 function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode>, Record<string, UserModelEdge>] {
     const nodes: Record<string, ModelNode> = {
@@ -150,8 +151,8 @@ describe('User model', () => {
         };
         Object.values(nodes).forEach(n => n.registerComponents = fn);
         const model = new UserModel("model", "start", nodes, {}, [], []);
-        const cu = {} as unknown as CheckUtility;
-        const t = {} as unknown as TestDriver;
+        const cu = getDummyCheckUtility();
+        const t = new TestDriverMock().getTestDriver();
         model.registerComponents(cu, t, false);
         expect(fn).toBeCalledTimes(4);
         expect(fn).toHaveBeenCalledWith(cu, t, false);

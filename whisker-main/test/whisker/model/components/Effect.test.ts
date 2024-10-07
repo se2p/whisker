@@ -2,6 +2,7 @@ import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {ArgType, Check, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {Pair} from "../../../../src/whisker/utils/Pair";
+import {CheckUtilityMock} from "../CheckUtilityMock";
 
 describe('Effect', () => {
 
@@ -563,22 +564,16 @@ describe('Effect', () => {
         });
     });
 
-    const pressedKeys: Record<string, boolean> = {
-        "a": true,
-        "b": false,
-        "c": true,
-    };
-    const cu = {
-        isKeyDown: (key: string) => pressedKeys[key] == true
-    } as unknown as CheckUtility;
+    const cuMock = new CheckUtilityMock({"a": true, "b": false, "c": true,});
+    const cu = cuMock.getCheckUtility();
 
     test('registerComponent() calculates correct effect', () => {
         const effect = new Effect(id, edgeID, CheckName.Key, true, ["a"]);
         effect.registerComponents(null, cu, false, "graphID");
         const func = effect.effect;
-        pressedKeys["a"] = false;
+        cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(true);
-        pressedKeys["a"] = true;
+        cuMock.pressedKeys["a"] = true;
         expect(func(0, 0)).toEqual(false);
     });
 
@@ -593,9 +588,9 @@ describe('Effect', () => {
         cu.addErrorOutput = fn;
         effect.registerComponents(null, cu, false, "graphID");
         const func = effect.effect;
-        pressedKeys["a"] = false;
+        cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);
-        pressedKeys["a"] = false;
+        cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);
         expect(fn).toHaveBeenCalledWith(edgeID, "graphID", error);
     });

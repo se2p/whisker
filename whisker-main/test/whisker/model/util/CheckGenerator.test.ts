@@ -1,4 +1,3 @@
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {
     ComparisonNotKnownError, FunctionEvalError, NotANumericalValueError,
@@ -8,17 +7,12 @@ import {
 import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {SpriteMock} from "../SpriteMock";
 import {TestDriverMock} from "../TestDriverMock";
+import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 
 describe('CheckGenerator', () => {
     describe('getKeyDownCheck()', () => {
-        const pressedKeys: Record<string, boolean> = {
-            "a": true,
-            "b": false,
-            "c": true,
-        };
-        const cu = {
-            isKeyDown: (key: string) => pressedKeys[key] == true
-        } as unknown as CheckUtility;
+        const cuMock = new CheckUtilityMock({"a": true, "b": false, "c": true,});
+        const cu = cuMock.getCheckUtility();
 
         test('Has the correct return type', () => {
             const result = CheckGenerator.getKeyDownCheck(null, cu, false, "a");
@@ -27,9 +21,9 @@ describe('CheckGenerator', () => {
 
         test('Returned Function evaluates to the correct values', () => {
             const result = CheckGenerator.getKeyDownCheck(null, cu, false, "a");
-            pressedKeys["a"] = true;
+            cuMock.pressedKeys["a"] = true;
             expect(result()).toEqual(true);
-            pressedKeys["a"] = false;
+            cuMock.pressedKeys["a"] = false;
             expect(result()).toEqual(false);
         });
     });
@@ -78,7 +72,7 @@ describe('CheckGenerator', () => {
         const tdMock = new TestDriverMock();
         tdMock.currentSprites = {"apple": new SpriteMock("apple").sprite};
         const t = tdMock.getTestDriver();
-        const dummyCU = {registerOnMoveEvent: jest.fn()} as unknown as CheckUtility;
+        const dummyCU = getDummyCheckUtility();
 
         describe('Throws for wrong RGB values', () => {
             const colorsWrongBounds: [ArgType, ArgType, ArgType][] = [
@@ -101,9 +95,9 @@ describe('CheckGenerator', () => {
 
         test('cu.registerOnMoveEvent() is called with correct params', () => {
             const fn = jest.fn();
-            const cu = {
-                registerOnMoveEvent: fn
-            } as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnMoveEvent = fn();
+            const cu = getDummyCheckUtility();
             CheckGenerator.getSpriteColorTouchingCheck(t, cu, "label", "graphID", false, false, "(apple)", 255, 0, 0);
             expect(fn).toHaveBeenCalledTimes(1);
         });
@@ -132,13 +126,13 @@ describe('CheckGenerator', () => {
         const banana = new SpriteMock("banana");
         const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), kiwi, apple]);
         const t = tdMock.getTestDriver();
-        const dummyCU = {registerOnMoveEvent: jest.fn()} as unknown as CheckUtility;
+        const dummyCU = getDummyCheckUtility();
 
         test('cu.registerOnMoveEvent() is called with correct params', () => {
             const fn = jest.fn();
-            const cu = {
-                registerOnMoveEvent: fn
-            } as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnMoveEvent = fn;
+            const cu = cuMock.getCheckUtility();
             CheckGenerator.getSpriteTouchingCheck(t, cu, "label", "graphID", false, false, "(kiwi)", "(banana)");
             expect(fn).toHaveBeenCalledTimes(1);
         });
@@ -164,7 +158,7 @@ describe('CheckGenerator', () => {
         const banana = new SpriteMock("banana");
         const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), kiwi, apple, stage]);
         const t = tdMock.getTestDriver();
-        const dummyCU = {registerVarEvent: jest.fn()} as unknown as CheckUtility;
+        const dummyCU = getDummyCheckUtility();
         apple.variables = [{name: "x", value: 2}];
         stage.variables = [{name: "x", value: 10}];
         tdMock.stage = stage.sprite;
@@ -182,7 +176,9 @@ describe('CheckGenerator', () => {
 
         test('VarEvent is registered on CheckUtil', () => {
             const fn = jest.fn();
-            const cu = {registerVarEvent: fn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnVarEvent = fn;
+            const cu = cuMock.getCheckUtility();
             const res = CheckGenerator.getVariableComparisonCheck(t, cu, "label", "graphId", false, false, "(apple)", "(x)", "==", "2");
             expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, "VarComp:(apple):(x):==:2", "label", "graphId", res);
         });
@@ -201,11 +197,7 @@ describe('CheckGenerator', () => {
         const banana = new SpriteMock("banana");
         const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), kiwi, apple]);
         const t = tdMock.getTestDriver();
-        const dummyCU = {
-            registerOnVisualChange: jest.fn(),
-            registerOnMoveChange: jest.fn(),
-            registerOnMoveEvent: jest.fn(),
-        } as unknown as CheckUtility;
+        const dummyCU = getDummyCheckUtility();
         kiwi.variables = [
             {name: "x", value: 2},
             {name: "size", value: 10},
@@ -226,28 +218,36 @@ describe('CheckGenerator', () => {
 
         test('OnMoveEvent is registered on CheckUtil', () => {
             const fn = jest.fn();
-            const cu = {registerOnMoveEvent: fn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnMoveEvent = fn;
+            const cu = cuMock.getCheckUtility();
             CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", false, false, "kiwi", "x", "==", "7");
             expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:x:==:7", "label", "graphId", expect.anything());
         });
 
         test('OnVisualChange is registered on CheckUtil', () => {
             const fn = jest.fn();
-            const cu = {registerOnVisualChange: fn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnVisualChange = fn;
+            const cu = cuMock.getCheckUtility();
             CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", false, false, "kiwi", "size", "<", "42");
             expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:size:<:42", "label", "graphId", expect.anything());
         });
 
         test('Output is registered on CheckUtil', () => {
             const fn = jest.fn();
-            const cu = {registerOutput: fn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOutput = fn;
+            const cu = cuMock.getCheckUtility();
             CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", false, false, "kiwi", "sayText", "==", "some other text");
             expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:sayText:==:some other text", "label", "graphId", expect.anything());
         });
 
         it.each([false, true])('Returned function includes original sprite (negated: %s)', (negated) => {
             const fn = jest.fn();
-            const cu = {registerOnMoveEvent: fn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnMoveEvent = fn;
+            const cu = cuMock.getCheckUtility();
             kiwi.clones = [new SpriteMock("kiwi")];
             kiwi.clones[0].variables = [{name: "x", value: 4}];
             kiwi.clones[0].updateSprite();
@@ -257,7 +257,9 @@ describe('CheckGenerator', () => {
 
         it.each([false, true])('Returned function includes clones (negated: %s)', (negated) => {
             const fn = jest.fn();
-            const cu = {registerOnMoveEvent: fn} as unknown as CheckUtility;
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnMoveEvent = fn;
+            const cu = cuMock.getCheckUtility();
             kiwi.clones = [new SpriteMock("kiwi"), new SpriteMock("kiwi"), new SpriteMock("kiwi")];
             kiwi.clones[0].variables = [{name: "x", value: 4}];
             kiwi.clones[1].variables = [{name: "x", value: 8}];
@@ -285,7 +287,7 @@ describe('CheckGenerator', () => {
             const apple = new SpriteMock("apple");
             const kiwi = new SpriteMock("kiwi");
             const tdMock = new TestDriverMock([apple, kiwi]);
-            const cu = {} as unknown as CheckUtility;
+            const cu = getDummyCheckUtility();
             const fn = "(t) => t.getSprites(s => s.name == \"apple\").length == 1";
             const f = CheckGenerator.getFunctionCheck(tdMock.getTestDriver(), cu, "label", "graphID", false, true, fn);
             expect(f()).toBe(true);
