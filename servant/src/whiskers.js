@@ -265,7 +265,7 @@ class Whisker {
             this._reason = `Evaluation time limit of ${ms} ms reached`;
 
             /*
-             * FIXME: find a better way to stop test execution!
+             * FIXME: Issue #219: find a better way to stop test execution!
              *  There should be a timeout parameter for runTestsWithRepair. It needs to be propagated all the way to
              *  vm-wrapper.js. It has to check the timeout after every single step in its run() method. Using
              *  whisker.page.evaluate(() => window.Whisker.abortTestRun()) does not work with acceleration factor
