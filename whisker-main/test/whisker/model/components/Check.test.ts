@@ -3,6 +3,7 @@ import {ArgType, CheckName} from "../../../../src/whisker/model/components/Check
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {Condition} from "../../../../src/whisker/model/components/Condition";
+import {TestDriverMock} from "../TestDriverMock";
 
 describe('Check', () => {
     const backUp = [];
@@ -55,7 +56,7 @@ describe('Check', () => {
         CheckGenerator.getRandomValueCheck = backUp[21];
     });
 
-    const t = {} as unknown as TestDriver;
+    const t = new TestDriverMock().getTestDriver();
     const cu = {} as unknown as CheckUtility;
     const graphID = "graphID";
     const negated = false;

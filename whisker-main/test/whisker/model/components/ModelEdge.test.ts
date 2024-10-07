@@ -38,6 +38,14 @@ describe('Model edges', () => {
         } as unknown as Condition;
     }
 
+    function mockEffect(fn: jest.Mock): Effect {
+        return {registerComponents: fn} as unknown as Effect;
+    }
+
+    function mockInputEffectRegister(register: jest.Mock, inputImmediate: jest.Mock): InputEffect {
+        return {registerComponents: register, inputImmediate: inputImmediate} as unknown as InputEffect;
+    }
+
     describe("constructor", () => {
         const params: [number, number][] = [
             [-1, -1],
@@ -255,9 +263,9 @@ describe('Model edges', () => {
     test("ProgramModelEdge.registerComponents calls registerComponents on effects", () => {
         const edge = new ProgramModelEdge("id", "label", "graphId", "from", "to", -1, -1);
         const fn = jest.fn();
-        edge.addEffect({registerComponents: fn} as unknown as Effect);
-        edge.addEffect({registerComponents: fn} as unknown as Effect);
-        edge.addEffect({registerComponents: fn} as unknown as Effect);
+        edge.addEffect(mockEffect(fn));
+        edge.addEffect(mockEffect(fn));
+        edge.addEffect(mockEffect(fn));
         edge.registerComponents(null, null, false);
         expect(fn).toHaveBeenCalledTimes(3);
     });
@@ -265,10 +273,10 @@ describe('Model edges', () => {
     test("UserModelEdge.registerComponents calls registerComponents on effects", () => {
         const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
         const fn = jest.fn();
-        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
-        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
-        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
-        edge.addInputEffect({registerComponents: fn} as unknown as InputEffect);
+        edge.addInputEffect(mockInputEffectRegister(fn, null));
+        edge.addInputEffect(mockInputEffectRegister(fn, null));
+        edge.addInputEffect(mockInputEffectRegister(fn, null));
+        edge.addInputEffect(mockInputEffectRegister(fn, null));
         edge.registerComponents(null, null, false);
         expect(fn).toHaveBeenCalledTimes(4);
     });
@@ -276,8 +284,8 @@ describe('Model edges', () => {
     test("UserModelEdge.inputImmediate calls registerComponents on effects", () => {
         const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
         const fn = jest.fn();
-        edge.addInputEffect({inputImmediate: fn} as unknown as InputEffect);
-        edge.addInputEffect({inputImmediate: fn} as unknown as InputEffect);
+        edge.addInputEffect(mockInputEffectRegister(null, fn));
+        edge.addInputEffect(mockInputEffectRegister(null, fn));
         edge.inputImmediate(null);
         expect(fn).toHaveBeenCalledTimes(2);
     });

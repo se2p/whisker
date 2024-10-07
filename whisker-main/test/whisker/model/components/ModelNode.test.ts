@@ -3,6 +3,17 @@ import {ModelEdge, ProgramModelEdge} from "../../../../src/whisker/model/compone
 import {TestDriverMock} from "../TestDriverMock";
 
 describe('Model node', () => {
+    function mockModelEdge(id: string, checkConditions: jest.Mock, lastTransition = 0,
+                           registerComponents: jest.Mock = jest.fn(), checkConditionsOnEvent: jest.Mock = jest.fn()): ModelEdge {
+        return {
+            from: id,
+            checkConditions: checkConditions,
+            registerComponents: registerComponents,
+            checkConditionsOnEvent: checkConditionsOnEvent,
+            lastTransition: lastTransition
+        } as unknown as ModelEdge;
+    }
+
     test("constructor throws for undefined id", () => {
         expect(() => {
             new ModelNode(undefined, "label");
@@ -58,11 +69,11 @@ describe('Model node', () => {
         const fn = jest.fn();
         fn.mockReturnValue(null);
         const node = new ModelNode("id", "label");
-        node.addOutgoingEdge({from: "id", checkConditions: fn} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditions: fn} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditions: fn} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditions: fn} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditions: fn} as unknown as ModelEdge);
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
         const result = node.testEdgeConditions(null, null, 0, 0);
         expect(result).toBeNull();
         expect(fn).toHaveBeenCalledTimes(5);
@@ -76,12 +87,12 @@ describe('Model node', () => {
         const correctEdgeFn = jest.fn();
         correctEdgeFn.mockReturnValue([]);
         const node = new ModelNode("id", "label");
-        const correctEdge = {from: "id", checkConditions: correctEdgeFn, lastTransition: 0} as unknown as ModelEdge;
-        node.addOutgoingEdge({from: "id", checkConditions: fn, lastTransition: 0} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditions: fn, lastTransition: 0} as unknown as ModelEdge);
+        const correctEdge = mockModelEdge("id", correctEdgeFn, 0);
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
         node.addOutgoingEdge(correctEdge);
-        node.addOutgoingEdge({from: "id", checkConditions: fn, lastTransition: 0} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditions: fn, lastTransition: 0} as unknown as ModelEdge);
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
+        node.addOutgoingEdge(mockModelEdge("id", fn, 0));
         const result = node.testEdgeConditions(tdMock.getTestDriver(), null, 0, 0);
         expect(result).toStrictEqual(correctEdge);
         expect(fn).toHaveBeenCalledTimes(2);
@@ -91,9 +102,9 @@ describe('Model node', () => {
     test("testForEvent returns null if no event matches", () => {
         const fn = jest.fn().mockReturnValue(null);
         const node = new ModelNode("id", "label");
-        node.addOutgoingEdge({from: "id", checkConditionsOnEvent: fn} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditionsOnEvent: fn} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditionsOnEvent: fn} as unknown as ModelEdge);
+        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
+        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
+        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         const result = node.testForEvent(null, null, 0, 0, []);
         expect(result).toBeNull();
         expect(fn).toHaveBeenCalledTimes(3);
@@ -105,15 +116,11 @@ describe('Model node', () => {
         const fn = jest.fn().mockReturnValue(null);
         const correctEdgeFn = jest.fn().mockReturnValue([]);
         const node = new ModelNode("id", "label");
-        const correctEdge = {
-            from: "id",
-            checkConditionsOnEvent: correctEdgeFn,
-            lastTransition: 0
-        } as unknown as ModelEdge;
-        node.addOutgoingEdge({from: "id", checkConditionsOnEvent: fn, lastTransition: 0} as unknown as ModelEdge);
+        const correctEdge = mockModelEdge("id", jest.fn(), 0, jest.fn(), correctEdgeFn);
+        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(correctEdge);
-        node.addOutgoingEdge({from: "id", checkConditionsOnEvent: fn, lastTransition: 0} as unknown as ModelEdge);
-        node.addOutgoingEdge({from: "id", checkConditionsOnEvent: fn, lastTransition: 0} as unknown as ModelEdge);
+        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
+        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         const result = node.testForEvent(tdMock.getTestDriver(), null, 0, 0, []);
         expect(result).toStrictEqual(correctEdge);
         expect(fn).toHaveBeenCalledTimes(1);
@@ -125,7 +132,7 @@ describe('Model node', () => {
         const node = new ModelNode("id", "label");
         const count = 13;
         for (let i = 0; i < count; ++i) {
-            node.addOutgoingEdge({from: "id", registerComponents: fn} as unknown as ModelEdge);
+            node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, fn));
         }
         node.registerComponents(null, null, false);
         expect(fn).toHaveBeenCalledTimes(count);
