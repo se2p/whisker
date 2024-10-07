@@ -1,5 +1,6 @@
 import {readFileSync} from 'fs';
 import {ModelLoader} from "../../../../src/whisker/model/util/ModelLoader";
+import * as path from "node:path";
 
 /**
  * Test for errors for the moment
@@ -17,7 +18,7 @@ describe('ModelLoader', () => {
         ];
         it.each(table)('%s',
             (name: string, file: string, pmCount: number, umCount: number, otemCount: number) => {
-                const text = readFileSync("test/whisker/model/models/" + file, 'utf8');
+                const text = readFileSync(path.join("test/whisker/model/models/", file), 'utf8');
                 const loader = new ModelLoader();
                 const result = loader.loadModels(text);
                 expect(result.programModels.length).toBe(pmCount);
@@ -28,7 +29,7 @@ describe('ModelLoader', () => {
 
     describe('Loading invalid Models fails', () => {
         function checkThrowsException(subfolder: string, file: string) {
-            const text = readFileSync("test/whisker/model/models/faultyModels/" + subfolder + file, 'utf8');
+            const text = readFileSync(path.join("test/whisker/model/models/faultyModels", subfolder, file), 'utf8');
             const loader = new ModelLoader();
             expect(function () {
                 loader.loadModels(text);
@@ -45,7 +46,7 @@ describe('ModelLoader', () => {
                 ["Condition has no name.", 'SimpleGraph-error-condition-no-name.json'],
                 ["Condition.negated is not a boolean value.", 'SimpleGraph-error-condition-negated-not-boolean.json'],
             ];
-            it.each(table)("%s", (name: string, file: string) => checkThrowsException("condition/", file));
+            it.each(table)("%s", (name: string, file: string) => checkThrowsException("condition", file));
         });
 
         describe('Invalid Effect', () => {
@@ -55,7 +56,7 @@ describe('ModelLoader', () => {
                 ["Effect has invalid name.", 'SimpleGraph-error-effect-invalid-name.json'],
                 ["Effect.negated is not a boolean value.", 'SimpleGraph-error-effect-negated-not-boolean.json'],
             ];
-            it.each(table)("%s", (name: string, file: string) => checkThrowsException("effect/", file));
+            it.each(table)("%s", (name: string, file: string) => checkThrowsException("effect", file));
         });
 
         describe('Invalid InputEffect', () => {
@@ -63,7 +64,7 @@ describe('ModelLoader', () => {
                 ["No args for InputEffect", 'SimpleGraph-error-inputEffect-no-args.json'],
                 ["Args are not an array for InputEffect.", 'SimpleGraph-error-inputEffect-args-not-array.json'],
             ];
-            it.each(table)("%s", (name: string, file: string) => checkThrowsException("inputEffect/", file));
+            it.each(table)("%s", (name: string, file: string) => checkThrowsException("inputEffect", file));
         });
 
         const table: [string, string][] = [
@@ -75,8 +76,8 @@ describe('ModelLoader', () => {
             ["No start node of edge", 'SimpleGraph-error-edge-has-no-from-node.json'],
             ["No end node of edge", 'SimpleGraph-error-edge-has-no-to-node.json'],
             ["No node id", 'SimpleGraph-error-no-node-id.json'],
-            ["A SimpleNode has no id",'SimpleGraph-simpleNode-without-label.json'],
-            ["Graph without nodes",'SimpleGraph-no-nodes.json']
+            ["A SimpleNode has no id", 'SimpleGraph-simpleNode-without-label.json'],
+            ["Graph without nodes", 'SimpleGraph-no-nodes.json']
         ];
         it.each(table)('%s', (name: string, file: string) => checkThrowsException("", file));
     });

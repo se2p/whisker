@@ -5,6 +5,7 @@ import {ProgramModelEdge} from "../../../src/whisker/model/components/ModelEdge"
 import {Condition} from "../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../src/whisker/model/components/Check";
 import {readFileSync} from "fs";
+import * as path from "node:path";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
@@ -137,8 +138,8 @@ describe('ModelTester', () => {
     });
 });
 
-const path = 'test/whisker/model/models/ModelTester/';
-const programModel = readFileSync(path + 'programModel.json', 'utf8');
-const faultyModel = readFileSync(path + 'faultyModel.json', 'utf8');
-const userModel = readFileSync(path + 'userModel.json', 'utf8');
-const allModels = readFileSync(path + 'allModels.json', 'utf8');
+const baseDir = 'test/whisker/model/models/ModelTester/';
+const programModel = readFileSync(path.join(baseDir, 'programModel.json'), 'utf8');
+const faultyModel = readFileSync(path.join(baseDir, 'faultyModel.json'), 'utf8');
+const userModel = readFileSync(path.join(baseDir, 'userModel.json'), 'utf8');
+const allModels = readFileSync(path.join(baseDir, 'allModels.json'), 'utf8');
