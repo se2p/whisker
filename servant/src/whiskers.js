@@ -191,7 +191,7 @@ class Whisker {
      * if this happens. Calling `keepAlive()` will have no effect unless this method is invoked first.
      */
     async enableKeepaliveWatchdog() {
-        if (!this._pool._keepaliveTimeout) {
+        if (this._pool._keepaliveTimeout < 1) {
             return;
         }
 
