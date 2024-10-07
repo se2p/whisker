@@ -191,11 +191,11 @@ class Whisker {
      * if this happens. Calling `keepAlive()` will have no effect unless this method is invoked first.
      */
     async enableKeepaliveWatchdog() {
-        await this._page.exposeFunction(whiskerKeepaliveExposedName, () => this.keepAlive());
-
         if (!this._pool._keepaliveTimeout) {
             return;
         }
+
+        await this._page.exposeFunction(whiskerKeepaliveExposedName, () => this.keepAlive());
 
         this._keepaliveWatchdogEnabled = true;
 
