@@ -185,6 +185,17 @@ describe('Fitness tests', () => {
         await expect(branchDistance).toBe(42);
     }, timeout);
 
+    test('Test list contains distance', async () => {
+        await loadProject('test/integration/branchDistance/ListContainsFalse.sb3')
+        const runSearch = await page.$('#run-search');
+        await runSearch.evaluate(t => t.click());
+        const log = await readFitnessLog();
+        const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
+        await expect(approachLevel).toBe(0);
+        const branchDistance = log.uncoveredBlocks[0].BranchDistance;
+        await expect(branchDistance).toBe(1);
+    }, timeout);
+
     test('Test repeat until distance', async () => {
         await loadProject('test/integration/branchDistance/RepeatUntilDistance.sb3')
         const runSearch = await page.$('#run-search');
