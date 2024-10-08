@@ -19,26 +19,37 @@
  */
 
 /**
- * An enum that shows all available types of fitness functions that can be used.
+ * An enum that shows all available types of network fitness functions that can be used.
  */
-export enum FitnessFunctionType {
+export enum NetworkFitnessFunctionType {
     /**
-     * Value for 'One Max' fitness.
+     * Value for 'score' network fitness.
      */
-    ONE_MAX,
+    SCORE,
 
     /**
-     * Value for 'Single bit' fitness.
+     * Value for 'survive' network fitness.
      */
-    SINGLE_BIT,
+    SURVIVE,
 
     /**
-     * Value for 'Statement' fitness.
+     * Value for 'reliableStatement' network fitness.
      */
-    STATEMENT,
+    RELIABLE_STATEMENT,
 
     /**
-     * Value for 'Branch' coverage fitness
+     * Value for 'cosineNovelty' network fitness.
      */
-    BRANCH
+    NOVELTY_COSINE,
+
+    /**
+     * Value for 'eventNovelty' network fitness.
+     */
+    NOVELTY_EVENTS,
+
+    /**
+     * Default value if no network fitness type is set.
+     * This is a valid scenario, e.g. when executing already generated dynamic test cases.
+     */
+    NONE
 }

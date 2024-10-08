@@ -148,7 +148,7 @@ export default class Statistics {
         return Statistics.levenshteinDistance(aStr, bStr);
     }
 
-    public static levenshteinDistance<T extends string | string[]>(a: T, b: T): number {
+    public static levenshteinDistance<T extends ArrayLike<unknown>>(a: T, b: T): number {
         // Trivial case: If either one of both strings has a length of 0 return the length of the other string.
         if (!a || a.length === 0) return b.length;
         if (!b || b.length === 0) return a.length;

@@ -6,8 +6,8 @@ import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEv
 
 describe("Statistics", () => {
 
-    let equalValues;
-    let differentValues;
+    let equalValues: number[];
+    let differentValues: number[];
 
     beforeEach(() => {
         equalValues = [10, 10, 10, 10];
@@ -75,7 +75,7 @@ describe("Statistics", () => {
     });
 
     test("L2-Norm", () => {
-        expect(Statistics.L2Norm([3,4])).toBe(5);
+        expect(Statistics.L2Norm([3, 4])).toBe(5);
     });
 
     test("Levenshtein Distance Trivial Case", () => {
@@ -133,10 +133,21 @@ describe('Levenshtein distance', () => {
         expect(Statistics.levenshteinDistance(word, word)).toStrictEqual(0);
     });
 
+    it('is 0 for equal int arrays', () => {
+        const integers = [1, 2, 42];
+        expect(Statistics.levenshteinDistance(integers, integers)).toStrictEqual(0);
+    });
+
     it('is the difference in length for a string and a substring', () => {
         const s1 = 'substring';
         const s2 = 'string';
         expect(Statistics.levenshteinDistance(s1, s2)).toStrictEqual(s1.length - s2.length);
+    });
+
+    it('is the difference in length for a integer array and its subarray', () => {
+        const i1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        const i2 = [1, 2, 3, 4, 5, 6, 7];
+        expect(Statistics.levenshteinDistance(i1, i2)).toStrictEqual(i1.length - i2.length);
     });
 
     it('is the length of the non-empty string given the empty string', () => {
@@ -145,10 +156,22 @@ describe('Levenshtein distance', () => {
         expect(Statistics.levenshteinDistance(s1, s2)).toStrictEqual(s2.length);
     });
 
+    it('is the length of the non-empty int array given the empty int array', () => {
+        const i1 = [];
+        const i2 = [1, 2, 3, 4, 5];
+        expect(Statistics.levenshteinDistance(i1, i2)).toStrictEqual(i2.length);
+    });
+
     it('at most the length of the longer string', () => {
         const s1 = 'yes';
         const s2 = 'no';
         expect(Statistics.levenshteinDistance(s1, s2)).toStrictEqual(Math.max(s1.length, s2.length));
+    });
+
+    it('at most the length of the longer int array', () => {
+        const i1 = [-1, -2, -3];
+        const i2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        expect(Statistics.levenshteinDistance(i1, i2)).toStrictEqual(Math.max(i1.length, i2.length));
     });
 
     const table = [

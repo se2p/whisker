@@ -70,8 +70,10 @@ export class InputExtraction {
     private static _extractStageFeatures(vm: VirtualMachine, target: RenderedTarget): FeatureGroup {
         const stageFeatures = new Map<string, number>();
         for (const variable of Object.values(target.variables)) {
-            if (typeof variable['value'] === 'number') {
-                stageFeatures.set(`VAR${variable['name']}`, InputExtraction._normaliseUnknownBounds(variable['value'], 10));
+            // Extract the variable if we can parse it to a number.
+            if (!isNaN(parseFloat(variable['value']))) {
+                const value = parseFloat(variable['value']);
+                stageFeatures.set(`VAR${variable['name']}`, InputExtraction._normaliseUnknownBounds(value));
             }
         }
 
@@ -167,10 +169,11 @@ export class InputExtraction {
         const normalisedSize = InputExtraction.mapValueIntoRange(target.size, minBound, upperBound);
         spriteFeatures.set('Size', normalisedSize);
 
-        // Extract variables
+        // Extract variables that we can parse to numbers
         for (const variable of Object.values(target.variables)) {
-            if (typeof variable['value'] === 'number') {
-                spriteFeatures.set(`VAR${variable['name']}`, InputExtraction._normaliseUnknownBounds(variable['value'], 10));
+            if (!isNaN(parseFloat(variable['value']))) {
+                const value = parseFloat(variable['value']);
+                spriteFeatures.set(`VAR${variable['name']}`, InputExtraction._normaliseUnknownBounds(value));
             }
         }
 

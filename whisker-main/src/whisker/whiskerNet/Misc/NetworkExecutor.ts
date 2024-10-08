@@ -16,8 +16,9 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "../../testcase/events/ParameterType";
 import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
-import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
+import {NetworkFitnessFunctionType} from "../NetworkFitness/NetworkFitnessFunctionType";
 import logger = require("../../../util/logger.js");
+import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class NetworkExecutor {
 
@@ -157,11 +158,16 @@ export class NetworkExecutor {
 
         // Set score and play time.
         network.score = ScoreFitness.gatherPoints(this._vm);
-        network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
+        network.playTime = Date.now() - startTime;
 
         // Save the executed Trace and the covered blocks
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, events);
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
+        // Saves the final state of the network if we want to compute a state-based novelty score.
+        if (Container.config.getNetworkFitnessFunctionType() === NetworkFitnessFunctionType.NOVELTY_COSINE) {
+            network.finalState = InputExtraction.extractFeatures(this._vm);
+        }
 
         // Stop VM and remove listeners.
         this._vm.runtime.off(Runtime.PROJECT_STOP_ALL, _onRunStop);
@@ -221,7 +227,7 @@ export class NetworkExecutor {
 
         // Set score and play time.
         network.score = ScoreFitness.gatherPoints(this._vm);
-        network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
+        network.playTime = Date.now() - startTime;
 
         // Save the executed Trace and the covered blocks
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, eventTrace);

@@ -140,7 +140,7 @@ export class Species<C extends NeatChromosome> {
      */
     public markParents(): void {
         // Sort the networks contained in the species based on their fitness in decreasing order.
-        this.sortNetworks();
+        NeatPopulation.sortPopulation(this.networks);
         const champion = this.networks[0];
         this.champion = champion;
         this.champion.isSpeciesChampion = true;
@@ -234,7 +234,7 @@ export class Species<C extends NeatChromosome> {
 
         const children: C[] = [];
 
-        this.sortNetworks();
+        NeatPopulation.sortPopulation(this.networks);
         this.champion = this.networks[0];
 
         // Breed the assigned number of children.
@@ -330,7 +330,7 @@ export class Species<C extends NeatChromosome> {
         let child = parent1.crossover(parent2)[0];
 
         // We may get a defect network. Restart the breeding process for this child.
-        if(!child){
+        if (!child) {
             return undefined;
         }
 
@@ -343,12 +343,6 @@ export class Species<C extends NeatChromosome> {
         return child;
     }
 
-    /**
-     * Sorts the species' networks in decreasing order according to their fitness values.
-     */
-    public sortNetworks(): void {
-        this.networks.sort((a, b) => b.fitness - a.fitness);
-    }
 
     /**
      * Calculates the average fitness across all members of the species.
