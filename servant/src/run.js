@@ -1,7 +1,6 @@
 /* eslint-disable node/no-unpublished-require */
 
 const fs = require("fs");
-const rimraf = require("rimraf");
 
 const logger = require("./logger");
 const CoverageGenerator = require("../../whisker-main/src/coverage/coverage");
@@ -10,8 +9,9 @@ const testByBlockBasedTests = require('./run-bbt');
 const {
     getProjectsInScratchPath,
     printTestResultsFromCoverageGenerator,
-    switchToProjectTab, tmpDir
+    switchToProjectTab
 } = require("./common");
+const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require("./witness-util");
 
 const {
     testPath,
@@ -28,14 +28,32 @@ const {
     maxMutants,
     traceBlocks,
     useSaveStates,
+    addRandomInputs,
+    errorWitnessPath,
 } = require("./cli").opts;
 
+function prepareTestFiles(tmpDir) {
+    // Seems to be only used by witness.js
+
+    let whiskerTestPath = testPath;
+
+    if (addRandomInputs) {
+        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir, addRandomInputs);
+    }
+
+    if (errorWitnessPath) {
+        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, tmpDir, whiskerTestPath);
+    }
+
+    return whiskerTestPath;
+}
 
 async function testByWhiskerTestsuite(pool) {
-    const promises = getProjectsInScratchPath().map((project) => pool.run(async ({page, id}) => {
+    const promises = getProjectsInScratchPath().map((project) => pool.run(async ({page, id, tmpDir}) => {
         logger.info(`Testing project ${project} by Whisker test suite`);
         const start = Date.now();
-        const result = await runTests(testPath, page, project);
+        const whiskerTestPath = prepareTestFiles(tmpDir);
+        const result = await runTests(whiskerTestPath, page, project);
         logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
         return result;
     }));

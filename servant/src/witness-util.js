@@ -201,11 +201,6 @@ function replaceInFile(filePath, searchValue, replacement, outputFileSuffix, tmp
     const fileWithReplacement = fs.readFileSync(filePath, {encoding: 'utf8'})
         .toString().replace(searchValue, replacement);
 
-    if (fs.existsSync(tmpDir)) {
-        fs.rmdirSync(tmpDir, {recursive: true});
-    }
-    fs.mkdirSync(tmpDir);
-
     const path = `${tmpDir}/${basename(filePath)}${outputFileSuffix}`;
     fs.writeFileSync(path, fileWithReplacement, {encoding: 'utf8'});
     return path;
