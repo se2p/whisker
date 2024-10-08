@@ -121,6 +121,16 @@ export abstract class NetworkChromosome extends Chromosome {
     private _trace: ExecutionTrace;
 
     /**
+     * Saves the final state of the problem domain after the network was executed in it.
+     */
+    private _finalState: InputFeatures;
+
+    /**
+     * The novelty score of the network used as a secondary fitness criterion if a novelty-based fitness metric is used.
+     */
+    private _noveltyScore = 0;
+
+    /**
      * Saves the achieved coverage of the chromosome during the playthrough.
      */
     private _coverage = new Set<string>();
@@ -395,10 +405,10 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
 
                 // Collect Node values
-                const classNodeValues:number[] = [];
+                const classNodeValues: number[] = [];
                 for (const node of this.classificationNodes.values()) {
                     if (node.activatedFlag) {
-                       classNodeValues.push(node.nodeValue);
+                        classNodeValues.push(node.nodeValue);
                     }
                 }
 
@@ -845,6 +855,22 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set coverage(value: Set<string>) {
         this._coverage = value;
+    }
+
+    get finalState(): InputFeatures {
+        return this._finalState;
+    }
+
+    set finalState(value: InputFeatures) {
+        this._finalState = value;
+    }
+
+    get noveltyScore(): number {
+        return this._noveltyScore;
+    }
+
+    set noveltyScore(value: number) {
+        this._noveltyScore = value;
     }
 
     set codons(value: number[]) {

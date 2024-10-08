@@ -8,6 +8,7 @@ import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutio
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 import logger from "../../../util/logger";
+import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 
 
 export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -70,10 +71,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     private async checkStableCoverage(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<void> {
         // Save some values to recover them later
         const originalSeed = Randomness.scratchSeed;
-        const originalPlayTime = network.playTime;
-        const originalScore = network.score;
-        const trace = network.trace.clone();
-        const coverage = new Set(network.coverage);
+        const {playTime, score, trace, finalState, coverage} = this.copyNetworkAttributes(network);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
         const repetitionSeeds = Array(this.stableCount - 1).fill(0).map(
             () => this._random.nextInt(0, Number.MAX_SAFE_INTEGER));
@@ -111,12 +109,41 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
         // Reset to the old Scratch seed and network attributes.
         Randomness.setScratchSeed(originalSeed, true);
-        network.playTime = originalPlayTime;
-        network.score = originalScore;
-        network.trace = trace;
-        network.coverage = coverage;
+        this.restoreNetworkAttributes(network, playTime, score, trace, finalState, coverage);
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
         logger.debug(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`);
+    }
+
+    /**
+     * Makes a copy of relevant network attributes to restore them afterwards.
+     * @param network hosting the relevant network attributes to be copied.
+     */
+    private copyNetworkAttributes(network: NetworkChromosome) {
+        const playTime = network.playTime;
+        const score = network.score;
+        const trace = network.trace.clone();
+        const finalState = new Map(network.finalState);
+        const coverage = new Set(network.coverage);
+        return {playTime, score, trace, finalState, coverage};
+    }
+
+    /**
+     * Restores the supplied network attributes.
+     * @param network whose attributes will be restored.
+     * @param playTime the time the network spent playing the game.
+     * @param score the score the network achieved while playing.
+     * @param trace the generated execution trace during the playthrough.
+     * @param finalState the final program state reached after the playthrough.
+     * @param coverage the set of blocks covered during the playthrough.
+     */
+    private restoreNetworkAttributes(network: NetworkChromosome, playTime: number, score: number,
+                                     trace: ExecutionTrace, finalState: Map<string, Map<string, number>>,
+                                     coverage: Set<string>) {
+        network.playTime = playTime;
+        network.score = score;
+        network.trace = trace;
+        network.finalState = finalState;
+        network.coverage = coverage;
     }
 
     /**

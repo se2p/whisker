@@ -212,7 +212,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Find the population champion and reward him with additional children.
-        this.sortPopulation();
+        NeatPopulation.sortPopulation(this.networks);
         this.sortSpecies();
         this.populationChampion = this.networks[0];
         this.populationChampion.isPopulationChampion = true;
@@ -461,10 +461,21 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
-     * Sorts the networks of the population according to their fitness values in decreasing order.
+     * Sorts the networks of a given population according to their fitness values
+     * in decreasing order using the novelty score as a tiebreaker.
+     * @param population The population to be sorted.
      */
-    protected sortPopulation(): void {
-        this.networks.sort((a, b) => b.fitness - a.fitness);
+    public static sortPopulation(population: NeatChromosome[]): void {
+        population.sort((a, b) => {
+            // Use fitness as a first criterion.
+            if (a.fitness !== b.fitness) {
+                return b.fitness - a.fitness;
+            }
+
+            // If both fitness values are equal, sort individuals based on the novelty score.
+            // Note: Novelty is set to 0 as default, so if no novelty score is computed, no decision can be made.
+            return b.noveltyScore - a.noveltyScore;
+        });
     }
 
     /**

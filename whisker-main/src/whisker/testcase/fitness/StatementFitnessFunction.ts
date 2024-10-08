@@ -548,7 +548,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
         const cdg = Container.cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
-        logger.debug(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`);
         for (const statement of uncoveredStatements) {
             const parents = StatementFitnessFunction.getCDGParent(statement._targetNode);
             if (!parents) {

@@ -14,13 +14,10 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
      * @returns Promise<number> the survived time in seconds.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
-        const start = Date.now();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
-        // Calculate time survived, transform it into seconds and include acceleration.
-        const surviveTime = Math.trunc((Date.now() - start)) / 1000 * Container.acceleration;
-        network.fitness = surviveTime;
+        network.fitness = network.playTime;
         await executor.resetState();
-        return surviveTime;
+        return network.playTime;
     }
 }
