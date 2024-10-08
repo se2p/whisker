@@ -53,22 +53,26 @@ async function testByWhiskerTestsuite(pool) {
     return results.map(({csv}) => csv);
 }
 
-async function testByModel(pool, targetProject) {
-    const start = Date.now();
-    let resultCsv;
+async function testByModel(pool) {
+    const promises = getProjectsInScratchPath().map((project) => pool.run(async ({page, id}) => {
+        logger.info(`Testing project ${project} by model`);
+        const start = Date.now();
+        const result = await runTests(undefined, page, project);
+        logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+        return result;
+    }));
+    const results = await Promise.all(promises);
 
-    await pool.run(({page}) => runTests(undefined, page, targetProject))
-        .then(result => {
-            resultCsv = result.csv;
+    const summaries = results.map(({summary}) => summary);
+    const coverages = results.map(({coverage}) => coverage);
+    const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
 
-            printTestResultsFromCoverageGenerator([result.summary],
-                CoverageGenerator.mergeCoverage([result.coverage]), result.modelCoverage);
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-        })
-        .catch(errors => logger.error('Error on executing tests: ', errors))
-        .finally(() => rimraf.sync(tmpDir));
+    if (summaries[0] !== undefined) {
+        printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+            modelCoverage[0]);
+    }
 
-    return resultCsv;
+    return results.map(({csv}) => csv);
 }
 
 async function runTests(path, page, targetProject) {
@@ -207,10 +211,7 @@ async function run(pool) {
 
     } else {
         // Model-based testing
-        for (const project of getProjectsInScratchPath()) {
-            logger.info(`Testing project ${project} by model`);
-            csvs.push(await testByModel(pool, project));
-        }
+        csvs.push(...(await testByModel(pool)));
     }
 
     if (csvFile) {
