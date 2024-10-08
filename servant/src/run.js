@@ -37,7 +37,7 @@ async function testByWhiskerTestsuite(pool, targetProject) {
 
     const csvs = [];
     const paths = prepareTestFiles();
-    await Promise.all(paths.map((path, index) => pool.run(({page}) => runTests(path, page, index, targetProject))))
+    await Promise.all(paths.map((path) => pool.run(({page}) => runTests(path, page, targetProject))))
         .then(results => {
             const summaries = results.map(({summary}) => summary);
             const coverages = results.map(({coverage}) => coverage);
@@ -60,7 +60,7 @@ async function testByModel(pool, targetProject) {
     const start = Date.now();
     let resultCsv;
 
-    await pool.run(({page}) => runTests(undefined, page, 0, targetProject))
+    await pool.run(({page}) => runTests(undefined, page, targetProject))
         .then(result => {
             resultCsv = result.csv;
 
@@ -74,7 +74,7 @@ async function testByModel(pool, targetProject) {
     return resultCsv;
 }
 
-async function runTests(path, page, index, targetProject) {
+async function runTests(path, page, targetProject) {
     /**
      * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
      * was loaded.
