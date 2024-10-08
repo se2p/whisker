@@ -339,11 +339,11 @@ class Whisker {
 
         this._useCount++;
 
-        return (
-            this._browser !== null &&
-            this._page !== null &&
-            this._tmpDir !== null
-        );
+        if (this._browser === null || this._page === null || this._tmpDir === null) {
+            return false;
+        }
+
+        return !this._page.isClosed();
     }
 }
 
