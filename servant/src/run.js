@@ -31,48 +31,26 @@ const {
 } = require("./cli").opts;
 
 async function testByWhiskerTestsuite(pool) {
-    const promises = getProjectsInScratchPath().map((project) => pool.run(async ({page, id, tmpDir}) => {
-        logger.info(`Testing project ${project} by Whisker test suite`);
-        const start = Date.now();
-        const whiskerTestPath = prepareTestFiles(tmpDir);
-        const result = await runTests(whiskerTestPath, page, project);
-        logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
-        return result;
-    }));
-    const results = await Promise.all(promises);
-
-    const summaries = results.map(({summary}) => summary);
-    const coverages = results.map(({coverage}) => coverage);
-    const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
-
-    if (summaries[0] !== undefined) {
-        printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-            modelCoverage[0]);
-    }
-
-    return results.map(({csv}) => csv);
+    return Promise.all(getProjectsInScratchPath().map((project) =>
+        pool.run(async ({page, id, tmpDir}) => {
+            logger.info(`Testing project ${project} by Whisker test suite`);
+            const start = Date.now();
+            const whiskerTestPath = prepareTestFiles(tmpDir);
+            const result = await runTests(whiskerTestPath, page, project);
+            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            return result;
+        })));
 }
 
 async function testByModel(pool) {
-    const promises = getProjectsInScratchPath().map((project) => pool.run(async ({page, id}) => {
-        logger.info(`Testing project ${project} by model`);
-        const start = Date.now();
-        const result = await runTests(undefined, page, project);
-        logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
-        return result;
-    }));
-    const results = await Promise.all(promises);
-
-    const summaries = results.map(({summary}) => summary);
-    const coverages = results.map(({coverage}) => coverage);
-    const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
-
-    if (summaries[0] !== undefined) {
-        printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-            modelCoverage[0]);
-    }
-
-    return results.map(({csv}) => csv);
+    return Promise.all(getProjectsInScratchPath().map((project) =>
+        pool.run(async ({page, id}) => {
+            logger.info(`Testing project ${project} by model`);
+            const start = Date.now();
+            const result = await runTests(undefined, page, project);
+            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            return result;
+        })));
 }
 
 async function runTests(path, page, targetProject) {
@@ -193,10 +171,22 @@ async function runTests(path, page, targetProject) {
     }
 }
 
+function processResults(results) {
+    const summaries = results.map(({summary}) => summary);
+    const coverages = results.map(({coverage}) => coverage);
+    const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
+
+    if (summaries[0] !== undefined) {
+        printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+            modelCoverage[0]);
+    }
+    return results.map(({csv}) => csv);
+}
+
 // Entry point for the "run" command.
 // Supports Whisker TestSuites, Model-based testing and Block-Based Testing.
 async function run(pool) {
-    const csvs = [];
+    let csvs = [];
 
     if (testPath) {
 
@@ -206,12 +196,14 @@ async function run(pool) {
 
         } else {
             // Whisker TestSuite
-            csvs.push(...(await testByWhiskerTestsuite(pool)));
+            const results = await testByWhiskerTestsuite(pool);
+            csvs = processResults(results);
         }
 
     } else {
         // Model-based testing
-        csvs.push(...(await testByModel(pool)));
+        const results = await testByModel(pool);
+        csvs = processResults(results);
     }
 
     if (csvFile) {
