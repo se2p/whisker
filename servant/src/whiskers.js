@@ -472,7 +472,7 @@ class Whiskers {
 
     /**
      * Hand back the resource to the pool.
-     * @param whisker The resource to hand back.
+     * @param {Whisker} whisker The resource to hand back.
      * @return {Promise<void>}
      */
     async release(whisker) {
@@ -486,6 +486,14 @@ class Whiskers {
         whisker._timings.loadWhiskerWeb = 0;
 
         whisker.disableEvaluationTimeout();
+
+        if (whisker.page.isClosed()) {
+            logger.warn([
+                `It seems you closed the page for Whisker #${whisker.id} manually.`,
+                'It is generally not recommended to do so, because it prevents reusing the page objects.',
+                'Please check your code for unintended operations such as "page.close()" to avoid this warning.',
+            ].join("\n"));
+        }
 
         if (this._pool.isBorrowedResource(whisker)) {
             await this._pool.release(whisker);
