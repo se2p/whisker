@@ -32,28 +32,26 @@ const {
 } = require("./cli").opts;
 
 
-async function testByWhiskerTestsuite(pool, targetProject) {
-    const start = Date.now();
+async function testByWhiskerTestsuite(pool) {
+    const promises = getProjectsInScratchPath().map((project) => pool.run(async ({page, id}) => {
+        logger.info(`Testing project ${project} by Whisker test suite`);
+        const start = Date.now();
+        const result = await runTests(testPath, page, project);
+        logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+        return result;
+    }));
+    const results = await Promise.all(promises);
 
-    const csvs = [];
-    const paths = prepareTestFiles();
-    await Promise.all(paths.map((path) => pool.run(({page}) => runTests(path, page, targetProject))))
-        .then(results => {
-            const summaries = results.map(({summary}) => summary);
-            const coverages = results.map(({coverage}) => coverage);
-            const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
-            csvs.push(...results.map(({csv}) => csv));
+    const summaries = results.map(({summary}) => summary);
+    const coverages = results.map(({coverage}) => coverage);
+    const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
 
-            if (summaries[0] !== undefined) {
-                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-                    modelCoverage[0]);
-            }
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-        })
-        .catch(errors => logger.error('Error on executing tests: ', errors))
-        .finally(() => rimraf.sync(tmpDir));
+    if (summaries[0] !== undefined) {
+        printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+            modelCoverage[0]);
+    }
 
-    return csvs;
+    return results.map(({csv}) => csv);
 }
 
 async function testByModel(pool, targetProject) {
@@ -182,8 +180,6 @@ async function runTests(path, page, targetProject) {
         const csvRow = await readTestOutput();
         const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
 
-        await page.close();
-
         return Promise.resolve({
             summary, coverage: convertSerializedCoverageToCoverage(serializableCoverageObject),
             csv: csvRow, modelCoverage: convertSerializedModelCoverage(serializableModelCoverage)
@@ -207,10 +203,7 @@ async function run(pool) {
 
         } else {
             // Whisker TestSuite
-            for (const project of getProjectsInScratchPath()) {
-                logger.info(`Testing project ${project} by Whisker test suite`);
-                csvs.push(...await testByWhiskerTestsuite(pool, project));
-            }
+            csvs.push(...(await testByWhiskerTestsuite(pool)));
         }
 
     } else {
