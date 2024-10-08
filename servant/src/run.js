@@ -11,7 +11,7 @@ const {
     printTestResultsFromCoverageGenerator,
     switchToProjectTab
 } = require("./common");
-const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require("./witness-util");
+const {prepareTestFiles} = require("./witness-util");
 
 const {
     testPath,
@@ -28,25 +28,7 @@ const {
     maxMutants,
     traceBlocks,
     useSaveStates,
-    addRandomInputs,
-    errorWitnessPath,
 } = require("./cli").opts;
-
-function prepareTestFiles(tmpDir) {
-    // Seems to be only used by witness.js
-
-    let whiskerTestPath = testPath;
-
-    if (addRandomInputs) {
-        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir, addRandomInputs);
-    }
-
-    if (errorWitnessPath) {
-        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, tmpDir, whiskerTestPath);
-    }
-
-    return whiskerTestPath;
-}
 
 async function testByWhiskerTestsuite(pool) {
     const promises = getProjectsInScratchPath().map((project) => pool.run(async ({page, id, tmpDir}) => {
