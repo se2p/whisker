@@ -3,7 +3,12 @@ const logger = require("./logger");
 const {relativeToServantDir} = require("./util");
 const fs = require("node:fs");
 const {resolve} = require("path");
-const {subcommand} = require("./cli");
+const {subcommand, opts} = require("./cli");
+const {name, version} = require("./meta");
+
+logger.info(`${name} v${version}`);
+logger.debug(`Running subcommand "${subcommand}"`);
+logger.debug(`Command line options:`, opts);
 
 // The prettify.js file keeps running into a null exception when puppeteer opens a new page.
 // Since this is a purely visual feature and does not harm the test execution in any way,
