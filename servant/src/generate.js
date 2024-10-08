@@ -1,7 +1,6 @@
 const logger = require("./logger");
 const fs = require("fs");
-const rimraf = require("rimraf");
-const {tmpDir, switchToProjectTab} = require("./common");
+const {switchToProjectTab} = require("./common");
 const {
     csvFile,
     testDownloadDir,
@@ -29,8 +28,6 @@ async function generateTests({page}) {
         }
     } catch (e) {
         logger.error('Error on generating tests: ', e)
-    } finally {
-        rimraf.sync(tmpDir);
     }
 }
 
