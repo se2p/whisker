@@ -8,7 +8,6 @@ const CoverageGenerator = require("../../whisker-main/src/coverage/coverage");
 
 const testByBlockBasedTests = require('./run-bbt');
 const {
-    prepareTestFiles,
     getProjectsInScratchPath,
     printTestResultsFromCoverageGenerator,
     switchToProjectTab, tmpDir
