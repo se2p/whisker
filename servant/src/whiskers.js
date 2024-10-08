@@ -513,7 +513,7 @@ class Whiskers {
         let whisker = null;
         try {
             whisker = await this.acquire();
-            return callback(whisker);
+            return await callback(whisker);
         } catch (e) {
             logger.error(e);
         } finally {
