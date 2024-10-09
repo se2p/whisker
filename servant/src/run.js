@@ -45,23 +45,25 @@ async function configureWhiskerWebInstance(page) {
         return;
     }
 
-    await page.evaluate(async (opts) => {
+    await page.evaluate((opts) => {
         document.querySelector('#container').mutators = opts.mutators;
         document.querySelector('#container').mutationBudget = opts.mutationBudget;
         document.querySelector('#container').maxMutants = opts.maxMutants;
         document.querySelector('#container').downloadMutants = opts.downloadMutants;
         document.querySelector('#container').traceBlocks = opts.traceBlocks;
+    }, opts);
 
-        if (opts.modelPath) {
-            await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
+    if (opts.modelPath) {
+        await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
+        await page.evaluate((opts) => {
             document.querySelector('#model-repetitions').value = opts.modelRepetition;
             document.querySelector('#model-duration').value = opts.modelDuration;
+        }, opts);
 
-            if (opts.modelCaseSensitive === "true") {
-                await (await page.$('#model-case-sensitive')).click();
-            }
+        if (opts.modelCaseSensitive === "true") {
+            await (await page.$('#model-case-sensitive')).click();
         }
-    }, opts);
+    }
 }
 
 async function runTests(path, page, targetProject) {
