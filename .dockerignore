@@ -20,7 +20,7 @@ config/*
 # Whitelist source codes for servant.
 !servant
 servant/*
-!servant/*.js
+!servant/src
 !servant/*.json
 !servant/*.sh
 
