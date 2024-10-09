@@ -29,6 +29,7 @@ const {
     maxMutants,
     traceBlocks,
     useSaveStates,
+    numberOfJobs,
 } = require("./cli").opts;
 
 async function testByWhiskerTestsuite(pool) {
@@ -236,4 +237,6 @@ function removeDuplicateHeaders([first, ...rest]) {
     return [firstHeader, firstData, ...restData];
 }
 
-module.exports = () => Whiskers.withNewPool(null, (pool) => run(pool));
+module.exports = () => Whiskers.withNewPool({
+    whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs)
+}, (pool) => run(pool));
