@@ -63,7 +63,7 @@ async function initPage(pool, page) {
         if (opts.seed) document.querySelector('#seed').value = opts.seed;
         if (opts.acceleration) document.querySelector('#acceleration-value').innerText = opts.acceleration;
         if (opts.useSaveStates) document.querySelector("#use-save-states").checked = opts.useSaveStates;
-    }, opts);
+    }, {...opts, acceleration: String(opts.acceleration)}); // Infinity (as number) is not JSON serializable.
 
     // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
     // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
