@@ -28,8 +28,8 @@ const {opts} = require("./cli");
  * @property {number} [ttl] - How often a resource can be handed out before it is destroyed. Use 0 to disable.
  * @property {number} [keepaliveTimeout] - Destroys the browser if it has been unresponsive for the given number of
  *                                         milliseconds. Use 0 to disable.
- * @property {function(Page): Promise<void>} [initPage] - A function that performs additional initialization of a browser
- *                                                        page when it is first created by the pool.
+ * @property {function(Page): Promise<void>} [initPageOnce] - A function that performs additional initialization of a
+ *                                                            browser page when it is first created by the pool.
  */
 
 /**
@@ -55,7 +55,7 @@ const whiskerKeepaliveExposedName = "__whisker_keepalive__";
  * @param page {Page} The page to initialize, assumes Whisker Web is already loaded.
  * @return Promise<void>
  */
-async function initPage(pool, page) {
+async function initPageOnce(pool, page) {
     /*
      * Page initialization code common to all use cases.
      */
@@ -72,7 +72,7 @@ async function initPage(pool, page) {
     /*
      * Page initialization code specific to the current Whisker subcommand.
      */
-    await pool._initPage(page);
+    await pool._initPageOnce(page);
 }
 
 /**
@@ -106,7 +106,7 @@ class Whisker {
         before = Date.now();
         await configureWhiskerWeb(page, {waitUntil: "load", id: `#${id}`});
         timings.loadWhiskerWeb = Date.now() - before;
-        await initPage(pool, page);
+        await initPageOnce(pool, page);
         logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
 
         const whisker = new Whisker(pool, id, browser, page, timings);
@@ -387,7 +387,7 @@ const defaultPoolOptions = {
     whiskers: numberOfJobs,
     ttl: 0,
     keepaliveTimeout: 0,
-    initPage: (_page) => {
+    initPageOnce: (_page) => {
         /* noop, but users can provide a custom function. */
     },
 };
@@ -461,7 +461,7 @@ class Whiskers {
          * @type {function(Page): Promise<void>}
          * @private
          */
-        this._initPage = opts.initPage.bind(null);
+        this._initPageOnce = opts.initPageOnce.bind(null);
     }
 
     /**

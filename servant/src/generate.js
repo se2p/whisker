@@ -87,5 +87,5 @@ async function runGeneticSearch(page) {
 }
 
 module.exports = () => Whiskers.withNewPool({
-    initPage: (page) => configureWhiskerWebInstance(page),
+    initPageOnce: (page) => configureWhiskerWebInstance(page),
 }, (pool) => pool.run(generateTests));
