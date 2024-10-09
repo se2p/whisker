@@ -12,6 +12,7 @@ const {
     groundTruth,
     useSaveStates,
 } = require("./cli").opts;
+const Whiskers = require("./whiskers");
 
 // Test generation
 async function generateTests({page}) {
@@ -95,4 +96,4 @@ async function runGeneticSearch(page) {
     }
 }
 
-module.exports = (pool) => pool.run(generateTests);
+module.exports = () => Whiskers.withNewPool(null, (pool) => pool.run(generateTests));

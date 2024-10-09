@@ -12,6 +12,7 @@ const {
     switchToProjectTab
 } = require("./common");
 const {prepareTestFiles} = require("./witness-util");
+const Whiskers = require("./whiskers");
 
 const {
     testPath,
@@ -235,4 +236,4 @@ function removeDuplicateHeaders([first, ...rest]) {
     return [firstHeader, firstData, ...restData];
 }
 
-module.exports = run;
+module.exports = () => Whiskers.withNewPool(null, (pool) => run(pool));

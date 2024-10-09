@@ -1,4 +1,3 @@
-const Whiskers = require("./whiskers");
 const logger = require("./logger");
 const {relativeToServantDir} = require("./util");
 const fs = require("node:fs");
@@ -20,21 +19,9 @@ if (fs.existsSync(prettifyPath)) {
 }
 
 (async function main() {
-    let pool = null;
-
-    try {
-        pool = new Whiskers();
-        await pool.start();
-
-        // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
-        // The module must export a single function "accepting the "pool" argument.
-        const module = resolve(relativeToServantDir("src"), subcommand);
-        return await require(module)(pool);
-    } catch (e) {
-        logger.error(e);
-    } finally {
-        if (pool !== null) {
-            await pool.shutdown();
-        }
-    }
+    // The convention is to put the code for a Whisker subcommand "cmd" into a JavaScript module "cmd.js".
+    // The module must export a single function "accepting the "pool" argument.
+    const module = resolve(relativeToServantDir("src"), subcommand);
+    const runSubcommand = require(module);
+    await runSubcommand();
 })();

@@ -10,9 +10,9 @@ const {
     useSaveStates,
 } = require("./cli").opts;
 const logger = require("./logger");
+const Whiskers = require("./whiskers");
 
-
-async function open({page}) {
+async function open(page) {
     // Procedure for generating game recordings.
     if (recordProject) {
         await toggleExtendedView(page);
@@ -80,4 +80,4 @@ async function open({page}) {
     }
 }
 
-module.exports = (pool) => pool.run(open);
+module.exports = Whiskers.withNewPool(null, (pool) => open(pool.page));

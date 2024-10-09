@@ -16,6 +16,7 @@ const {
     minimiseSuite,
     useSaveStates,
 } = require('./cli').opts
+const Whiskers = require("./whiskers");
 
 // Dynamic Test suite using Neuroevolution
 async function generateDynamicTests(pool) {
@@ -88,4 +89,4 @@ async function runDynamicTestSuite(page, path) {
     }
 }
 
-module.exports = generateDynamicTests;
+module.exports = () => Whiskers.withNewPool(null, (pool) => generateDynamicTests(pool));
