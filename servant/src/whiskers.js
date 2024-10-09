@@ -373,7 +373,7 @@ class Whiskers {
 
     /**
      * Creates a new resource pool of Whisker instances.
-     * @param {PoolOptions} opts Configuration object for the pool.
+     * @param {?PoolOptions} opts Configuration object for the pool. Pass `null` for default options.
      */
     constructor(opts = {}) {
         opts = {
@@ -553,7 +553,7 @@ class Whiskers {
      * Creates a new Whiskers pool with the given options, and executes the callback. Includes automatic error handling
      * and cleanup of the pool.
      *
-     * @param opts {PoolOptions} The options for the pool
+     * @param opts {?PoolOptions} The options for the pool. Use `null` for default options.
      * @param callback {WithNewPoolCallback} The callback to execute with the pool
      * @return {Promise<*>} The result of the callback
      */
