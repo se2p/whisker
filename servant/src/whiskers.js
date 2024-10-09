@@ -10,6 +10,12 @@ const {numberOfJobs} = require("./cli").opts;
 const {Mutex} = require('async-mutex');
 
 /**
+ * @typedef {import("generic-pool").Pool} Pool
+ * @typedef {import("puppeteer").Browser} Browser
+ * @typedef {import("puppeteer").Page} Page
+ */
+
+/**
  * @typedef {Object} Timings
  * @property {number} openBrowser - How long it took to open a new browser window, in milliseconds
  * @property {number} loadWhiskerWeb - How long it took to load Whisker Web, in milliseconds
@@ -21,17 +27,18 @@ const {Mutex} = require('async-mutex');
  * @property {number} ttl - How often a resource can be handed out before it is destroyed. Use 0 to disable.
  * @property {number} keepaliveTimeout - Destroys the browser if it has been unresponsive for the given number of
  *                                       milliseconds. Use 0 to disable.
- */
-
-/**
- * @typedef {import("generic-pool").Pool} Pool
- * @typedef {import("puppeteer").Browser} Browser
- * @typedef {import("puppeteer").Page} Page
+ * @property {function(Page): Promise<void>} initPage - A function that performs additional initialization of a browser
+ *                                                      page when it is first created by the pool.
  */
 
 /**
  * @callback RunCallback
  * @param {Whisker}
+ */
+
+/**
+ * @callback WithNewPoolCallback
+ * @param {Whiskers}
  */
 
 /**
@@ -76,6 +83,8 @@ class Whisker {
         // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
         // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
         await switchToProjectTab(page, true);
+
+        await pool._initPage(page);
 
         const whisker = new Whisker(pool, id, browser, page, timings);
         await whisker.enableKeepaliveWatchdog();
@@ -355,6 +364,9 @@ const defaultPoolOptions = {
     whiskers: numberOfJobs,
     ttl: 0,
     keepaliveTimeout: 0,
+    initPage: (_page) => {
+        /* noop, but users can provide a custom function. */
+    },
 };
 
 class Whiskers {
@@ -363,7 +375,7 @@ class Whiskers {
      * Creates a new resource pool of Whisker instances.
      * @param {PoolOptions} opts Configuration object for the pool.
      */
-    constructor(opts= {}) {
+    constructor(opts = {}) {
         opts = {
             ...defaultPoolOptions,
             ...opts
@@ -419,6 +431,14 @@ class Whiskers {
          * @private
          */
         this._mutex = new Mutex();
+
+        /**
+         * A function for additional custom initialization of browser pages. Will be executed once, when first creating
+         * a new resource. Does nothing by default.
+         * @type {function(Page): Promise<void>}
+         * @private
+         */
+        this._initPage = opts.initPage.bind(null);
     }
 
     /**
@@ -433,7 +453,7 @@ class Whiskers {
         logger.info(`Creating Whisker #${id}...`);
         const before = Date.now();
         // Sequentializing browser creation prevents issues #241 and #242.
-        const whisker = await this._mutex.runExclusive( () => {
+        const whisker = await this._mutex.runExclusive(() => {
             logger.info(`Lock for Whisker #${id} acquired after`, Date.now() - before, "ms");
             return Whisker.create(this, id);
         });
@@ -526,6 +546,33 @@ class Whiskers {
             logger.error(e);
         } finally {
             await this.release(whisker);
+        }
+    }
+
+    /**
+     * Creates a new Whiskers pool with the given options, and executes the callback. Includes automatic error handling
+     * and cleanup of the pool.
+     *
+     * @param opts {PoolOptions} The options for the pool
+     * @param callback {WithNewPoolCallback} The callback to execute with the pool
+     * @return {Promise<*>} The result of the callback
+     */
+    static async withNewPool(opts, callback) {
+        /**
+         * @type {Whiskers}
+         */
+        let pool = null;
+
+        try {
+            pool = new Whiskers(opts);
+            await pool.start();
+            return await callback(pool);
+        } catch (e) {
+            logger.error(e);
+        } finally {
+            if (pool !== null) {
+                await pool.shutdown();
+            }
         }
     }
 }
