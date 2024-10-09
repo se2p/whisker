@@ -11,7 +11,6 @@
         "js-yaml": "^4.1.0",
         "minilog": "^3.1.0",
         "puppeteer": "^22.12.1",
-        "rimraf": "3.0.2",
         "whisker-web": "0.8.0",
         "yaml": "^1.10.2"
     },

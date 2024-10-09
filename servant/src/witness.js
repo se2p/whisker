@@ -1,9 +1,10 @@
-const {prepareTestFiles} = require("./common");
+const {prepareTestFiles} = require("./witness-util");
+const {relativeToServantDir} = require("./util");
 const {generateWitnessOnly} = require("./cli").opts;
 
 module.exports = async function (pool) {
     if (generateWitnessOnly) {
-        prepareTestFiles();
+        prepareTestFiles(relativeToServantDir(".."));
     } else {
         await require("./run")(pool);
     }

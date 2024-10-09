@@ -1,6 +1,7 @@
 const fs = require('fs');
 const {basename} = require('path');
 const logger = require('./logger');
+const {testPath, addRandomInputs, errorWitnessPath} = require("./cli").opts;
 
 const primitivesArrayPrefix = 't.vm.runtime._primitives';
 const indentation = ' '.repeat(4);
@@ -201,14 +202,23 @@ function replaceInFile(filePath, searchValue, replacement, outputFileSuffix, tmp
     const fileWithReplacement = fs.readFileSync(filePath, {encoding: 'utf8'})
         .toString().replace(searchValue, replacement);
 
-    if (fs.existsSync(tmpDir)) {
-        fs.rmdirSync(tmpDir, {recursive: true});
-    }
-    fs.mkdirSync(tmpDir);
-
     const path = `${tmpDir}/${basename(filePath)}${outputFileSuffix}`;
     fs.writeFileSync(path, fileWithReplacement, {encoding: 'utf8'});
     return path;
 }
 
-module.exports = {attachErrorWitnessReplayToTest, attachRandomInputsToTest}
+function prepareTestFiles(outDir) {
+    let whiskerTestPath = testPath;
+
+    if (addRandomInputs) {
+        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, outDir, addRandomInputs);
+    }
+
+    if (errorWitnessPath) {
+        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, outDir, whiskerTestPath);
+    }
+
+    return whiskerTestPath;
+}
+
+module.exports = {prepareTestFiles}

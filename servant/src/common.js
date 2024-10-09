@@ -1,22 +1,11 @@
 /* eslint-disable node/no-unpublished-require */
 
-const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require("./witness-util");
 const fs = require("fs");
-const {basename, resolve} = require("path");
+const {resolve} = require("path");
 const TAP13Formatter = require('../../whisker-main/src/test-runner/tap13-formatter');
 const logger = require('./logger');
 
-const {
-    testPath,
-    addRandomInputs,
-    errorWitnessPath,
-    numberOfJobs,
-    scratchPath,
-} = require("./cli").opts;
-const {subcommand} = require("./cli");
-
-const tmpDir = './.tmpWorkingDir';
-
+const {scratchPath} = require("./cli").opts;
 
 /**
  * Switches to the project tab, which is necessary to start the test run. Additionally, to click on the start test
@@ -55,97 +44,6 @@ async function toggleExtendedView(page) {
 }
 
 /**
- * Wrapper for the test file preparation, creating the temporary working directory and reading, distributing and writing
- * the files.
- *
- * @param {*} whiskerTestPath  Path to the whisker test file
- * @returns {Array}            The paths of the temporary test files
- */
-function prepareTestFiles(whiskerTestPath = testPath) {
-    if (addRandomInputs) {
-        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir, addRandomInputs);
-    }
-
-    if (errorWitnessPath) {
-        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, whiskerTestPath, tmpDir);
-    }
-
-    const {evaledTest, testSourceWithoutExportArray} = prepareTestSource(whiskerTestPath);
-    const singleTestSources = splitTestsSourceCodeIntoSingleTestSources(evaledTest);
-    const numberOfTabs = subcommand === "model" ? 1 : numberOfJobs;
-    const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfTabs, singleTestSources);
-
-    if (fs.existsSync(tmpDir)) {
-        fs.rmdirSync(tmpDir, {recursive: true});
-    }
-    fs.mkdirSync(tmpDir);
-
-    return testSourcesPerTab.map((testSources, index) => {
-        const path = `${tmpDir}/${basename(whiskerTestPath)}_${index + 1}.js`;
-        fs.writeFileSync(path, `${testSourceWithoutExportArray} [${testSources}]`, {encoding: 'utf8'});
-        return path;
-    });
-}
-
-/**
- * Takes the evaled test declarations and returns them as parseable javascript code.
- *
- * @param {*} tests     The evaled code of the test declarations
- * @returns {Array<string>}     The test declarations as parseable javascript
- */
-function splitTestsSourceCodeIntoSingleTestSources(tests) {
-    return tests.map((test) => {
-        /*
-            This will remove the "test" property from the object, since its value is a function, resulting in:
-
-            {
-              "name": "...",
-              "description": "...",
-              "categories": [...]
-            }
-         */
-        const testDescription = JSON.parse(JSON.stringify(test));
-
-        // Stringify the object again, but with newlines between the properties. Split the string at each newline.
-        // This gives an array where each entry is exactly one line. Drop the first and last line ("{" and "}").
-        const space = 2;
-        const jsonLines = JSON.stringify(testDescription, null, space).split('\n').slice(1, -1);
-
-        // Add the "test" property again, with the name of the test NOT wrapped in quotes.
-        const indent = " ".repeat(space);
-        return ['{', `${indent}"test": ${test.test.name},`, ...jsonLines, '}'].join('\n');
-    });
-}
-
-/**
- * Distributes the tests over the tabs / pages of the chrome instance.
- *
- * @param {number} tabs          The number of tabs puppeteer will open
- * @param {*} singleTestSources  A parseable test declaration
- * @returns {Array}              An array with the length of the amount of tabs that will be started, containing a
- *                               collection of test declarations for each of the tabs
- */
-function distributeTestSourcesOverTabs(tabs, singleTestSources) {
-    let index = 0;
-    const testSourcesPerTab = [];
-
-    while (singleTestSources.length) {
-        testSourcesPerTab[index] = testSourcesPerTab[index] ?
-            testSourcesPerTab[index].concat(', ')
-                .concat(singleTestSources.shift()) :
-            singleTestSources.shift();
-
-        index++;
-
-        if (index > tabs - 1) {
-            index = 0;
-        }
-    }
-
-    return testSourcesPerTab;
-}
-
-/**
  * Logs the coverage and results (number of fails, pass or skip) to the console in a more readable way.
  *
  * @param {string} summaries The summaries from the whisker-web instance test run
@@ -167,31 +65,6 @@ function printTestResultsFromCoverageGenerator(summaries, coverage, modelCoverag
     logger.info(`\nModel coverage:\n ${modelCoverageString}`);
 }
 
-/**
- * Prepares the test source code, by evaluating the tests and returning the source code of the tests without the
- * `modules.export` statement at the end.
- *
- * @param {*} path        The path to the file where the original tests are defined in
- * @returns {object}      The evaluated tests and source code of the tests without the `modules.export` statement
- */
-function prepareTestSource(path) {
-    const exportStatement = 'module.exports =';
-    const test = fs.readFileSync(path, {encoding: 'utf8'});
-    const testArrayStartIndex = test.indexOf(exportStatement) + exportStatement.length;
-    const testSourceWithoutExportArray = test.substring(0, testArrayStartIndex);
-    const evaledTest = require(path);
-
-    // eslint-disable-next-line no-eval
-    // const evaledTest = eval(`
-    //     (function () {
-    //         ${test};
-    //         return module.exports;
-    //     })();
-    // `);
-
-    return {evaledTest, testSourceWithoutExportArray};
-}
-
 function getProjectsInScratchPath() {
     const {path, isDirectory} = scratchPath;
 
@@ -210,8 +83,6 @@ module.exports = {
     switchToProjectTab,
     switchToUploadTab,
     toggleExtendedView,
-    tmpDir,
-    prepareTestFiles,
     getProjectsInScratchPath,
     printTestResultsFromCoverageGenerator
 };

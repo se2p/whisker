@@ -159,6 +159,8 @@ function forwardConsoleMessages(page, id = "") {
                 return logger;
             }
         }
+
+        return logger;
     }
 
     function getArgsOrText(msg) {

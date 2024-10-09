@@ -1,18 +1,17 @@
 /* eslint-disable node/no-unpublished-require */
 
 const fs = require("fs");
-const rimraf = require("rimraf");
 
 const logger = require("./logger");
 const CoverageGenerator = require("../../whisker-main/src/coverage/coverage");
 
 const testByBlockBasedTests = require('./run-bbt');
 const {
-    prepareTestFiles,
     getProjectsInScratchPath,
     printTestResultsFromCoverageGenerator,
-    switchToProjectTab, tmpDir
+    switchToProjectTab
 } = require("./common");
+const {prepareTestFiles} = require("./witness-util");
 
 const {
     testPath,
@@ -31,50 +30,30 @@ const {
     useSaveStates,
 } = require("./cli").opts;
 
-
-async function testByWhiskerTestsuite(pool, targetProject) {
-    const start = Date.now();
-
-    const csvs = [];
-    const paths = prepareTestFiles();
-    await Promise.all(paths.map((path, index) => pool.run(({page}) => runTests(path, page, index, targetProject))))
-        .then(results => {
-            const summaries = results.map(({summary}) => summary);
-            const coverages = results.map(({coverage}) => coverage);
-            const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
-            csvs.push(...results.map(({csv}) => csv));
-
-            if (summaries[0] !== undefined) {
-                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-                    modelCoverage[0]);
-            }
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-        })
-        .catch(errors => logger.error('Error on executing tests: ', errors))
-        .finally(() => rimraf.sync(tmpDir));
-
-    return csvs;
+async function testByWhiskerTestsuite(pool) {
+    return Promise.all(getProjectsInScratchPath().map((project) =>
+        pool.run(async ({page, id, tmpDir}) => {
+            logger.info(`Testing project ${project} by Whisker test suite`);
+            const start = Date.now();
+            const whiskerTestPath = prepareTestFiles(tmpDir);
+            const result = await runTests(whiskerTestPath, page, project);
+            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            return result;
+        })));
 }
 
-async function testByModel(pool, targetProject) {
-    const start = Date.now();
-    let resultCsv;
-
-    await pool.run(({page}) => runTests(undefined, page, 0, targetProject))
-        .then(result => {
-            resultCsv = result.csv;
-
-            printTestResultsFromCoverageGenerator([result.summary],
-                CoverageGenerator.mergeCoverage([result.coverage]), result.modelCoverage);
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-        })
-        .catch(errors => logger.error('Error on executing tests: ', errors))
-        .finally(() => rimraf.sync(tmpDir));
-
-    return resultCsv;
+async function testByModel(pool) {
+    return Promise.all(getProjectsInScratchPath().map((project) =>
+        pool.run(async ({page, id}) => {
+            logger.info(`Testing project ${project} by model`);
+            const start = Date.now();
+            const result = await runTests(undefined, page, project);
+            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            return result;
+        })));
 }
 
-async function runTests(path, page, index, targetProject) {
+async function runTests(path, page, targetProject) {
     /**
      * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
      * was loaded.
@@ -182,8 +161,6 @@ async function runTests(path, page, index, targetProject) {
         const csvRow = await readTestOutput();
         const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
 
-        await page.close();
-
         return Promise.resolve({
             summary, coverage: convertSerializedCoverageToCoverage(serializableCoverageObject),
             csv: csvRow, modelCoverage: convertSerializedModelCoverage(serializableModelCoverage)
@@ -194,10 +171,22 @@ async function runTests(path, page, index, targetProject) {
     }
 }
 
+function processResults(results) {
+    const summaries = results.map(({summary}) => summary);
+    const coverages = results.map(({coverage}) => coverage);
+    const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
+
+    if (summaries[0] !== undefined) {
+        printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+            modelCoverage[0]);
+    }
+    return results.map(({csv}) => csv);
+}
+
 // Entry point for the "run" command.
 // Supports Whisker TestSuites, Model-based testing and Block-Based Testing.
 async function run(pool) {
-    const csvs = [];
+    let csvs = [];
 
     if (testPath) {
 
@@ -207,18 +196,14 @@ async function run(pool) {
 
         } else {
             // Whisker TestSuite
-            for (const project of getProjectsInScratchPath()) {
-                logger.info(`Testing project ${project} by Whisker test suite`);
-                csvs.push(...await testByWhiskerTestsuite(pool, project));
-            }
+            const results = await testByWhiskerTestsuite(pool);
+            csvs = processResults(results);
         }
 
     } else {
         // Model-based testing
-        for (const project of getProjectsInScratchPath()) {
-            logger.info(`Testing project ${project} by model`);
-            csvs.push(await testByModel(pool, project));
-        }
+        const results = await testByModel(pool);
+        csvs = processResults(results);
     }
 
     if (csvFile) {
