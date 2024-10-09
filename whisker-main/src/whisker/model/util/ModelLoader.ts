@@ -160,6 +160,7 @@ export class ModelLoader {
         } else {
             this.loadNodesFromIds(nodeIDs);
         }
+        this.setupNodes();
 
         // Load the edges
         try {
@@ -210,7 +211,6 @@ export class ModelLoader {
             }
             (this.nodesMap)[id] = new ModelNode(id, id);
         });
-        this.setupNodes();
     }
 
     private setupNodes() {
