@@ -1,7 +1,7 @@
 const {Command, InvalidArgumentError} = require('commander');
 const util = require('./util');
 // eslint-disable-next-line node/no-unpublished-require
-const {version, description} = require('../../package.json');
+const {version, description} = require('./meta');
 const {relativeToServantDir} = require("./util");
 
 /**
