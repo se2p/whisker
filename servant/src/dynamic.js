@@ -1,18 +1,14 @@
 const fs = require("fs");
 const logger = require("./logger");
+const opts = require('./cli').opts
+const Whiskers = require("./whiskers");
+
 const {
     scratchPath,
     csvFile,
     configPath,
     testPath,
-    mutators,
-    mutationBudget,
-    maxMutants,
-    downloadMutants,
-    activationTraces,
-    minimiseSuite,
-} = require('./cli').opts
-const Whiskers = require("./whiskers");
+} = opts;
 
 // Dynamic Test suite using Neuroevolution
 async function generateDynamicTests(pool) {
@@ -25,21 +21,23 @@ async function generateDynamicTests(pool) {
     });
 }
 
+async function configureWhiskerWebInstance(page) {
+    await (await page.$('#fileselect-config')).uploadFile(configPath);
+    await (await page.$('#fileselect-tests')).uploadFile(testPath);
+
+    await page.evaluate((opts) => {
+        document.querySelector('#container').mutators = opts.mutators;
+        document.querySelector('#container').mutationBudget = opts.mutationBudget;
+        document.querySelector('#container').maxMutants = opts.maxMutants;
+        document.querySelector('#container').downloadMutants = opts.downloadMutants;
+        document.querySelector('#container').activationTraceRepetitions = opts.activationTraces;
+        document.querySelector('#container').minimiseSuite = opts.minimiseSuite;
+    }, opts);
+
+    logger.info('Web Instance Configuration Complete');
+}
+
 async function runDynamicTestSuite(page, path) {
-    async function configureWhiskerWebInstance() {
-        await (await page.$('#fileselect-project')).uploadFile(path);
-        await (await page.$('#fileselect-config')).uploadFile(configPath);
-        await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
-        await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
-        await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
-        await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
-        await page.evaluate(at => document.querySelector('#container').activationTraceRepetitions = at, activationTraces);
-        await page.evaluate(m => document.querySelector('#container').minimiseSuite = m, minimiseSuite);
-
-        logger.info('Web Instance Configuration Complete');
-    }
-
     /**
      * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
      * run is over.
@@ -70,7 +68,7 @@ async function runDynamicTestSuite(page, path) {
     }
 
     try {
-        await configureWhiskerWebInstance();
+        await (await page.$('#fileselect-project')).uploadFile(path);
         logger.debug("Dynamic TestSuite");
         await executeTests();
         const csvOutput = await readTestOutput();
@@ -81,4 +79,6 @@ async function runDynamicTestSuite(page, path) {
     }
 }
 
-module.exports = () => Whiskers.withNewPool(null, (pool) => generateDynamicTests(pool));
+module.exports = () => Whiskers.withNewPool({
+    initPage: (page) => configureWhiskerWebInstance(page),
+}, (pool) => generateDynamicTests(pool));

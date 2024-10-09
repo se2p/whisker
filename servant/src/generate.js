@@ -1,6 +1,5 @@
 const logger = require("./logger");
 const fs = require("fs");
-const {switchToProjectTab} = require("./common");
 const {
     csvFile,
     testDownloadDir,
@@ -29,19 +28,19 @@ async function generateTests({page}) {
     }
 }
 
-async function runGeneticSearch(page) {
-    async function configureWhiskerWebInstance() {
-        await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
-        await (await page.$('#fileselect-config')).uploadFile(configPath);
-        if (testPath) {
-            await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        }
-        if (groundTruth) {
-            await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
-        }
-        logger.info('Web Instance Configuration Complete');
+async function configureWhiskerWebInstance(page) {
+    await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
+    await (await page.$('#fileselect-config')).uploadFile(configPath);
+    if (testPath) {
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
     }
+    if (groundTruth) {
+        await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
+    }
+    logger.info('Web Instance Configuration Complete');
+}
 
+async function runGeneticSearch(page) {
     async function readTestOutput() {
         const logOutput = await page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
@@ -76,7 +75,6 @@ async function runGeneticSearch(page) {
     }
 
     try {
-        await configureWhiskerWebInstance();
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
@@ -89,4 +87,6 @@ async function runGeneticSearch(page) {
     }
 }
 
-module.exports = () => Whiskers.withNewPool(null, (pool) => pool.run(generateTests));
+module.exports = () => Whiskers.withNewPool({
+    initPage: (page) => configureWhiskerWebInstance(page),
+}, (pool) => pool.run(generateTests));

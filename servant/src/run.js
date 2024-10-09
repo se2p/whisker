@@ -4,30 +4,17 @@ const fs = require("fs");
 
 const logger = require("./logger");
 const CoverageGenerator = require("../../whisker-main/src/coverage/coverage");
-
 const testByBlockBasedTests = require('./run-bbt');
-const {
-    getProjectsInScratchPath,
-    printTestResultsFromCoverageGenerator,
-    switchToProjectTab
-} = require("./common");
+const {getProjectsInScratchPath, printTestResultsFromCoverageGenerator,} = require("./common");
 const {prepareTestFiles} = require("./witness-util");
 const Whiskers = require("./whiskers");
 
+const opts = require("./cli").opts;
 const {
     testPath,
     csvFile,
-    modelPath,
-    modelRepetition,
-    modelDuration,
-    modelCaseSensitive,
-    mutators,
-    downloadMutants,
-    mutationBudget,
-    maxMutants,
-    traceBlocks,
     numberOfJobs,
-} = require("./cli").opts;
+} = opts;
 
 async function testByWhiskerTestsuite(pool) {
     return Promise.all(getProjectsInScratchPath().map((project) =>
@@ -52,30 +39,36 @@ async function testByModel(pool) {
         })));
 }
 
-async function runTests(path, page, targetProject) {
-    /**
-     * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
-     * was loaded.
-     */
-    async function configureWhiskerWebInstance() {
-        await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
-        await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
-        await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
-        await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
-        await page.evaluate(tb => document.querySelector('#container').traceBlocks = tb, traceBlocks);
+async function configureWhiskerWebInstance(page) {
+    if (testPath && testPath.endsWith(".sb3")) {
+        // No initialization code for block-based testing.
+        return;
+    }
 
-        await (await page.$('#fileselect-project')).uploadFile(targetProject);
-        if (path) {
-            await (await page.$('#fileselect-tests')).uploadFile(path);
-        }
-        if (modelPath) {
-            await (await page.$('#fileselect-models')).uploadFile(modelPath);
-            await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, modelRepetition);
-            await page.evaluate(factor => document.querySelector('#model-duration').value = factor, modelDuration);
-            if (modelCaseSensitive === "true") {
+    await page.evaluate(async (opts) => {
+        document.querySelector('#container').mutators = opts.mutators;
+        document.querySelector('#container').mutationBudget = opts.mutationBudget;
+        document.querySelector('#container').maxMutants = opts.maxMutants;
+        document.querySelector('#container').downloadMutants = opts.downloadMutants;
+        document.querySelector('#container').traceBlocks = opts.traceBlocks;
+
+        if (opts.modelPath) {
+            await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
+            document.querySelector('#model-repetitions').value = opts.modelRepetition;
+            document.querySelector('#model-duration').value = opts.modelDuration;
+
+            if (opts.modelCaseSensitive === "true") {
                 await (await page.$('#model-case-sensitive')).click();
             }
         }
+    }, opts);
+}
+
+async function runTests(path, page, targetProject) {
+    await (await page.$('#fileselect-project')).uploadFile(targetProject);
+
+    if (path) {
+        await (await page.$('#fileselect-tests')).uploadFile(path);
     }
 
     /**
@@ -149,7 +142,6 @@ async function runTests(path, page, targetProject) {
     }
 
     try {
-        await configureWhiskerWebInstance();
         const promise = onFinishedCallback();
         await (await page.$('#run-all-tests')).click();
 
@@ -230,6 +222,10 @@ function removeDuplicateHeaders([first, ...rest]) {
     return [firstHeader, firstData, ...restData];
 }
 
-module.exports = () => Whiskers.withNewPool({
-    whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs)
-}, (pool) => run(pool));
+const poolOptions = {
+    // Avoid opening more browser windows than necessary.
+    whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs),
+    initPage: (page) => configureWhiskerWebInstance(page),
+};
+
+module.exports = () => Whiskers.withNewPool(poolOptions, (pool) => run(pool));
