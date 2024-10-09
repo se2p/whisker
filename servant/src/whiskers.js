@@ -23,12 +23,12 @@ const {Mutex} = require('async-mutex');
 
 /**
  * @typedef {Object} PoolOptions
- * @property {number} whiskers - How many Whisker instances the pool should have
- * @property {number} ttl - How often a resource can be handed out before it is destroyed. Use 0 to disable.
- * @property {number} keepaliveTimeout - Destroys the browser if it has been unresponsive for the given number of
- *                                       milliseconds. Use 0 to disable.
- * @property {function(Page): Promise<void>} initPage - A function that performs additional initialization of a browser
- *                                                      page when it is first created by the pool.
+ * @property {number} [whiskers] - How many Whisker instances the pool should have
+ * @property {number} [ttl] - How often a resource can be handed out before it is destroyed. Use 0 to disable.
+ * @property {number} [keepaliveTimeout] - Destroys the browser if it has been unresponsive for the given number of
+ *                                         milliseconds. Use 0 to disable.
+ * @property {function(Page): Promise<void>} [initPage] - A function that performs additional initialization of a browser
+ *                                                        page when it is first created by the pool.
  */
 
 /**
