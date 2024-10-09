@@ -341,11 +341,6 @@ const subCommands = [
             'path to directory for generated tests',
             (testDir) => util.processDirPathExists(testDir),
             __dirname)
-        .option(
-            '-r, --add-random-inputs <Integer>',
-            'add random inputs to the test and wait the given number of seconds for its completion',
-            (seconds) => util.processPositiveInt(seconds),
-            10)
         .optionGroundTruthPath(),
 
     newSubCommand('dynamic')
@@ -397,6 +392,11 @@ const subCommands = [
             '-w, --error-witness-path <Path>',
             'error witness to replay (".json")',
             (witnessPath) => util.processFilePathExists(witnessPath, '.json'))
+        .option(
+            '-r, --add-random-inputs <Integer>',
+            'add random inputs to the test and wait the given number of seconds for its completion',
+            (seconds) => util.processPositiveInt(seconds),
+            10)
         .option('-x, --generate-witness-only', 'generate error witness replay without executing it'),
 ];
 
