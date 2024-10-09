@@ -1,20 +1,16 @@
 const fs = require("fs");
 const logger = require("./logger");
-const {switchToProjectTab} = require("./common");
 const {
     scratchPath,
     csvFile,
     configPath,
     testPath,
-    acceleration,
-    seed,
     mutators,
     mutationBudget,
     maxMutants,
     downloadMutants,
     activationTraces,
     minimiseSuite,
-    useSaveStates,
 } = require('./cli').opts
 const Whiskers = require("./whiskers");
 
@@ -34,10 +30,6 @@ async function runDynamicTestSuite(page, path) {
         await (await page.$('#fileselect-project')).uploadFile(path);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        await switchToProjectTab(page, false);
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);

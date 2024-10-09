@@ -7,10 +7,7 @@ const {
     testPath,
     scratchPath,
     configPath,
-    acceleration,
-    seed,
     groundTruth,
-    useSaveStates,
 } = require("./cli").opts;
 const Whiskers = require("./whiskers");
 
@@ -39,10 +36,6 @@ async function runGeneticSearch(page) {
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(testPath);
         }
-        await switchToProjectTab(page, true);
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         if (groundTruth) {
             await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
         }

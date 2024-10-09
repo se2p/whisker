@@ -74,7 +74,6 @@ async function evaluateProjects(pool, projects, testPath) {
         await (await page.$('#tabUpload')).click();
         await (await page.$('#fileselect-project')).uploadFile(project);
         await (await page.$('#tabProject')).click();
-        await page.evaluate(() => document.querySelector('#seed').value = seed);
         await (await page.$('#run-all-tests')).click();
 
         const log = await getOutputLogWhenBBTTestsAreDone(page, true);

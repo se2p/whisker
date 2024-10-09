@@ -16,8 +16,6 @@ const Whiskers = require("./whiskers");
 
 const {
     testPath,
-    seed,
-    acceleration,
     csvFile,
     modelPath,
     modelRepetition,
@@ -28,7 +26,6 @@ const {
     mutationBudget,
     maxMutants,
     traceBlocks,
-    useSaveStates,
     numberOfJobs,
 } = require("./cli").opts;
 
@@ -61,9 +58,6 @@ async function runTests(path, page, targetProject) {
      * was loaded.
      */
     async function configureWhiskerWebInstance() {
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
         await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
         await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
@@ -82,7 +76,6 @@ async function runTests(path, page, targetProject) {
                 await (await page.$('#model-case-sensitive')).click();
             }
         }
-        await switchToProjectTab(page, false);
     }
 
     /**

@@ -8,6 +8,7 @@ const os = require("os");
 const {clearTimeout} = require("node:timers");
 const {numberOfJobs} = require("./cli").opts;
 const {Mutex} = require('async-mutex');
+const {opts} = require("./cli");
 
 /**
  * @typedef {import("generic-pool").Pool} Pool
@@ -48,6 +49,33 @@ const {Mutex} = require('async-mutex');
 const whiskerKeepaliveExposedName = "__whisker_keepalive__";
 
 /**
+ * Initializes Whisker Web.
+ *
+ * @param pool {Whiskers} The pool that manages the page.
+ * @param page {Page} The page to initialize, assumes Whisker Web is already loaded.
+ * @return Promise<void>
+ */
+async function initPage(pool, page) {
+    /*
+     * Page initialization code common to all use cases.
+     */
+    await page.evaluate((opts) => {
+        if (opts.seed) document.querySelector('#seed').value = opts.seed;
+        if (opts.acceleration) document.querySelector('#acceleration-value').innerText = opts.acceleration;
+        if (opts.useSaveStates) document.querySelector("#use-save-states").checked = opts.useSaveStates;
+    }, opts);
+
+    // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
+    // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
+    await switchToProjectTab(page, true);
+
+    /*
+     * Page initialization code specific to the current Whisker subcommand.
+     */
+    await pool._initPage(page);
+}
+
+/**
  * The resource that will be handed out by the pool.
  */
 class Whisker {
@@ -78,13 +106,8 @@ class Whisker {
         before = Date.now();
         await configureWhiskerWeb(page, {waitUntil: "load", id: `#${id}`});
         timings.loadWhiskerWeb = Date.now() - before;
+        await initPage(pool, page);
         logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
-
-        // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
-        // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
-        await switchToProjectTab(page, true);
-
-        await pool._initPage(page);
 
         const whisker = new Whisker(pool, id, browser, page, timings);
         await whisker.enableKeepaliveWatchdog();

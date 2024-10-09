@@ -1,13 +1,10 @@
-const {switchToProjectTab, switchToUploadTab, toggleExtendedView} = require("./common");
+const {switchToProjectTab, toggleExtendedView} = require("./common");
 const {
     scratchPath,
-    acceleration,
-    seed,
     stateActionRecorder,
     configPath,
     recordProject,
     time,
-    useSaveStates,
 } = require("./cli").opts;
 const logger = require("./logger");
 const Whiskers = require("./whiskers");
@@ -20,7 +17,6 @@ async function open(page) {
         logger.info(`Start Recording ${recordProject.path} for ${time} seconds`);
 
         // Upload File
-        await switchToUploadTab(page);
         await (await page.$('#fileselect-project')).uploadFile(recordProject.path);
 
         // Switch to Project tab and specify the required parameters.
@@ -63,9 +59,6 @@ async function open(page) {
         }
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await switchToProjectTab(page, true);
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         if (stateActionRecorder) {
             await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
         }
