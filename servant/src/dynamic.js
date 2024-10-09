@@ -72,7 +72,6 @@ async function runDynamicTestSuite(page, path) {
         logger.debug("Dynamic TestSuite");
         await executeTests();
         const csvOutput = await readTestOutput();
-        await page.close();
         return Promise.resolve(csvOutput);
     } catch (e) {
         return Promise.reject(e);

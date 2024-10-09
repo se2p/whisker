@@ -80,7 +80,6 @@ async function runGeneticSearch(page) {
         const output = await readTestOutput();
         logger.debug(`Downloading tests to ${testDownloadDir}`);
         await downloadTests();
-        await page.close();
         return Promise.resolve(output);
     } catch (e) {
         return Promise.reject(e);
