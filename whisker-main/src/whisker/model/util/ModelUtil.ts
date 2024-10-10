@@ -320,14 +320,12 @@ export abstract class ModelUtil {
         const temp = expr.split("\"");
         if (temp.length > 2) {
             // (0) return => (1) "Hello (2) "
-            expr = temp[0];
             for (let i = 1; i < temp.length; i++) {
-                if (i % 2 == 0) {
-                    expr += temp[i].toLowerCase();
-                } else {
-                    expr += temp[i];
+                if (i % 2 != 0) {
+                    temp[i] = temp[i].toLowerCase();
                 }
             }
+            expr = temp.join("\"");
         }
         return expr;
     }

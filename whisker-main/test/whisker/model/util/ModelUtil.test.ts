@@ -330,8 +330,8 @@ describe('ModelUtil tests', function () {
             bowl.old = oldBowl;
             const tdMock = new TestDriverMock([apple, kiwi, bowl]);
             const t = tdMock.getTestDriver();
-            const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))==10";
-            const result = ModelUtil.getExpressionForEval(t, true, expr);
+            const expr = "$(Bowl.name)!=\"ApPle\"&&Math.abs($(Bowl.old.x)-$(Bowl.x))==10";
+            const result = ModelUtil.getExpressionForEval(t, false, expr);
             const f = eval(result.expr);
             expect(f(t)).toBe(false);
             bowl.variables = [{name: "x", value: 15}];
