@@ -9,6 +9,7 @@ export class SpriteMock {
     public currentCostumeName: string;
     public clones: SpriteMock[];
     public old: SpriteMock;
+    public sayText: string;
     private _original: boolean;
     private _visible: boolean;
     private _sprite: Sprite;
@@ -34,6 +35,7 @@ export class SpriteMock {
             name: this.name,
             x: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("x"),
             y: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("y"),
+            sayText: this.sayText,
             currentCostumeName: this.currentCostumeName,
             isOriginal: this._original,
             visible: this._visible,

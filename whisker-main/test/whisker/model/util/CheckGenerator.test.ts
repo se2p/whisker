@@ -191,6 +191,41 @@ describe('CheckGenerator', () => {
         });
     });
 
+    describe('getVariableChangeCheck', () => {
+        const dummyCU = getDummyCheckUtility();
+        const stage = new SpriteMock("stage");
+        const oldStage = new SpriteMock("stage");
+        const apple = new SpriteMock("apple");
+        const banana = new SpriteMock("banana");
+        stage.variables = [{name: "Punkte", value: 9, old: {name: "Punkte", value: 10}}];
+        stage.old = oldStage;
+        apple.variables = [{name: "x", value: 2}];
+        const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), apple, stage]);
+        tdMock.stage = stage.sprite;
+        const t = tdMock.getTestDriver();
+
+        test('Has the correct return type', () => {
+            const result = CheckGenerator.getVariableComparisonCheck(t, dummyCU, "label", "graphId", false, false, "(apple)", "(x)", "<", "3");
+            expect(typeof result).toEqual(typeof (() => false));
+        });
+
+        test('VarEvent is registered on CheckUtil', () => {
+            const fn = jest.fn();
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnVarEvent = fn;
+            const cu = cuMock.getCheckUtility();
+            const res = CheckGenerator.getVariableChangeCheck(t, cu, "label", "graphId", false, false, "(apple)", "(x)", "+");
+            expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, "VarChange:(apple):(x):+", "label", "graphId", res);
+        });
+
+        test('Check works for stage', () => {
+            const res = CheckGenerator.getVariableChangeCheck(t, dummyCU, "label", "graphId", false, false, "stage", "Punkte", "-");
+            expect(res()).toEqual(true);
+            stage.variables = [{name: "Punkte", value: 10, old: {name: "Punkte", value: 9}}];
+            expect(res()).toEqual(false);
+        });
+    });
+
     describe('getAttributeComparisonCheck', () => {
         const kiwi = new SpriteMock("kiwi");
         const apple = new SpriteMock("apple");
@@ -294,5 +329,18 @@ describe('CheckGenerator', () => {
             tdMock.currentSprites = {"kiwi": kiwi.sprite};
             expect(f()).toBe(false);
         });
+    });
+
+    test('getOutputOnSpriteCheck generates check compares actual output correctly', () => {
+        const dummyCU = getDummyCheckUtility();
+        const banana = new SpriteMock("Banana");
+        banana.sayText = "this is some text";
+        const tdMock = new TestDriverMock([banana]);
+        const t = tdMock.getTestDriver();
+        const result = CheckGenerator.getOutputOnSpriteCheck(t, dummyCU, "label", "graphID", false, false, "(Banana)", "this is some text");
+        expect(result()).toEqual(true);
+        banana.sayText = "this is a different text";
+        tdMock.currentSprites = SpriteMock.toSpriteMockMap([banana]);
+        expect(result()).toEqual(false);
     });
 });
