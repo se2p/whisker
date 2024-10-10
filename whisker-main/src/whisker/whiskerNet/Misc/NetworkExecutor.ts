@@ -35,7 +35,7 @@ export class NetworkExecutor {
     /**
      * The initial state of the Scratch-VM
      */
-    private _initialState = {};
+    private readonly _initialState = {};
 
     /**
      * True if the project is currently running.

@@ -1,6 +1,5 @@
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
-import {Species} from "../NeuroevolutionPopulations/Species";
 import {InputConnectionMethod, NetworkChromosome, NetworkLayer} from "./NetworkChromosome";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
@@ -30,11 +29,6 @@ export class NeatChromosome extends NetworkChromosome {
      * Fitness value of the chromosome shared within its species.
      */
     private _sharedFitness = 0;
-
-    /**
-     * The species this network belongs to.
-     */
-    private _species: Species<NeatChromosome>;
 
     /**
      * Marks the best member of a species.
@@ -87,13 +81,10 @@ export class NeatChromosome extends NetworkChromosome {
     clone(): NeatChromosome {
         const clone = this.cloneStructure(false);
         clone.uID = this.uID;
-        clone.trace = this.trace;
-        clone.coverage = this.coverage;
         clone.fitness = this.fitness;
         clone.sharedFitness = this.sharedFitness;
         clone.targetFitness = this.targetFitness;
         clone.openStatementTargets = this.openStatementTargets;
-        clone.species = this.species;
         clone.isSpeciesChampion = this.isSpeciesChampion;
         clone.isPopulationChampion = this.isPopulationChampion;
         clone.isParent = this.isParent;
@@ -399,14 +390,6 @@ export class NeatChromosome extends NetworkChromosome {
 
     set sharedFitness(value: number) {
         this._sharedFitness = value;
-    }
-
-    get species(): Species<NeatChromosome> {
-        return this._species;
-    }
-
-    set species(value: Species<NeatChromosome>) {
-        this._species = value;
     }
 
     get isSpeciesChampion(): boolean {

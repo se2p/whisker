@@ -219,6 +219,13 @@ export class Neatest extends NEAT {
                 this._neuroevolutionProperties.eventSelection);
             await this.updateArchive(network);
 
+            // Free memory if the network was not added to the archive.
+            if (![...this._archive.values()].includes(network)){
+                network.trace = null;
+                network.coverage = null;
+                network.codons = null;
+            }
+
             // Check if we just covered the greenFlag event, and if so, save the number of blocks that are covered
             // by only clicking on the greenFlag.
             // This is ensured since we stopped the execution as soon as
@@ -286,11 +293,9 @@ export class Neatest extends NEAT {
      * @returns boolean which is true if the statement was covered.
      */
     private async isCovered(fitnessFunctionKey: number, network: NeatChromosome): Promise<boolean> {
-        const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
         const coverageStableCount = network.openStatementTargets.get(fitnessFunctionKey);
-        const statementFitness = await fitnessFunction.getFitness(network);
-        return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount && !this._archive.has(fitnessFunctionKey)) ||
-            (this._neuroevolutionProperties.coverageStableCount == 0 && await fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey));
+        return !this._archive.has(fitnessFunctionKey) &&
+            coverageStableCount >= this._neuroevolutionProperties.coverageStableCount;
     }
 
     /**

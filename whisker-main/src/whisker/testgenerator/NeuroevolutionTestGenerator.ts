@@ -84,8 +84,6 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             // Saves some values to retrieve them later.
             const score = network.score;
             const originalPlayTime = network.playTime;
-            const trace = network.trace.clone();
-            const coverage = new Set(network.coverage);
 
             // Execute the network and save the activation trace
             network.recordNetworkStatistics = true;
@@ -100,8 +98,6 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             // Restore the saved values
             network.score = score;
             network.playTime = originalPlayTime;
-            network.trace = trace;
-            network.coverage = coverage;
         }
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueEvaluations;
     }
