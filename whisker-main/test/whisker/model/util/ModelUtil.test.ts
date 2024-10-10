@@ -1,6 +1,10 @@
 import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 import {ArgType} from "../../../../src/whisker/model/components/Check";
-import {ExpressionEnterError, ExprEvalError} from "../../../../src/whisker/model/util/ModelError";
+import {
+    ExpressionEnterError,
+    ExprEvalError,
+    VariableNotFoundError
+} from "../../../../src/whisker/model/util/ModelError";
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 
@@ -340,7 +344,6 @@ describe('ModelUtil tests', function () {
         });
 
 
-
         test('Produces the correct sting for multiple variables and sprites', () => {
             const expectedOutput = `(t) => {
 const sprite0 = t.getSprites(sprite => sprite.name.includes('Kiwi'), false)[0];
@@ -362,7 +365,7 @@ return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
             const oldBowl = new SpriteMock("Bowl");
             kiwi.variables = [{name: "x", value: 7}, {name: "name", value: "Kiwi"}];
             bowl.variables = [{name: "x", value: 17}];
-            oldBowl.variables = [{name: "x", value: 5},{name: "y", value: 9}];
+            oldBowl.variables = [{name: "x", value: 5}, {name: "y", value: 9}];
             bowl.old = oldBowl;
             const tdMock = new TestDriverMock([bowl, kiwi]);
             const t = tdMock.getTestDriver();
@@ -372,5 +375,16 @@ return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
             const f = eval(result.expr);
             expect(f(t)).toBe("Kiwi-8");
         });
+    });
+
+    test("checkVariableExistence() throws exception if variable does not exist", () => {
+        const bowl = new SpriteMock("Bowl");
+        const kiwi = new SpriteMock("Kiwi");
+        kiwi.variables = [{name: "x", value: 7}, {name: "name", value: "Kiwi"}];
+        bowl.variables = [{name: "y", value: 17}];
+        const tdMock = new TestDriverMock([bowl, kiwi]);
+        expect(() => {
+            ModelUtil.checkVariableExistence(tdMock.getTestDriver(), false, kiwi.sprite, "xy");
+        }).toThrow(VariableNotFoundError);
     });
 });
