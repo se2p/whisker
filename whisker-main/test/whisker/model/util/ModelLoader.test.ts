@@ -12,7 +12,11 @@ describe('ModelLoader', () => {
             ["Edge with two conditions", 'SimpleGraph-multiple-edge-conditions.json', 2, 0, 0],
             ["Duplicated graph id", 'SimpleGraph-error-dup-graph-id.json', 2, 0, 0],
             ["Duplicated edge id", 'SimpleGraph-error-dup-edge-id.json', 1, 0, 0],
+            ["Duplicated edge id", 'SimpleGraph-error-dup-graph-id.json', 2, 0, 0],
             ["No edge id.", 'SimpleGraph-noterror-no-edge-id.json', 2, 0, 0],
+            ["No stopNodes as attribute.", 'SimpleGraph-noterror-no-stopNodes.json', 1, 0, 0],
+            ["No stopAllNodes as attribute.", 'SimpleGraph-noterror-no-stopAllNodes.json', 1, 0, 0],
+            ["No graph id given.", 'SimpleGraph-noterror-no-graph-id.json', 1, 0, 0],
             ["Loading big file with multipleModels", 'fruitcatcher-random-fruit.json', 19, 1, 1],
             ["Loading big file with multipleModels (and new Nodes with Labels)", 'spaceshipModels.json', 1, 0, 1]
         ];
