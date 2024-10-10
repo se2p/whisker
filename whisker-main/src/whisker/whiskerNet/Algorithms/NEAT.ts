@@ -124,6 +124,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      */
     protected reportOfCurrentIteration(population: NeatPopulation): void {
         logger.debug(`Iteration:  ${this._iterations}`);
+        logger.debug(`Population Size: ${this.getPopulation().networks.length}`);
         logger.debug(`Best Network Fitness:  ${population.bestFitness}`);
         logger.debug(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
         logger.debug(`Average Network Fitness: ${population.averageFitness}`);

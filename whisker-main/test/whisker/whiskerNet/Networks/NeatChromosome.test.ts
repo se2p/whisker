@@ -8,7 +8,6 @@ import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/In
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
 import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
-import {Species} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStageEvent";
@@ -120,20 +119,17 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.getMutationOperator() instanceof NeatMutation).toBeTruthy();
         expect(chromosome.fitness).toEqual(0);
         expect(chromosome.sharedFitness).toEqual(0);
-        expect(chromosome.species).toEqual(undefined);
         expect(chromosome.isSpeciesChampion).toBeFalsy();
         expect(chromosome.isPopulationChampion).toBeFalsy();
         expect(chromosome.isParent).toBeFalsy();
         expect(chromosome.expectedOffspring).toEqual(0);
         expect(chromosome.numberOffspringPopulationChamp).toEqual(undefined);
         expect(chromosome.trace).toEqual(undefined);
-        expect(chromosome.coverage.size).toEqual(0);
         expect(chromosome.codons.length).toBe(0);
         expect(chromosome.layers.get(1)[0].incomingConnections.length).toBeGreaterThanOrEqual(1);
     });
 
     test("Test getter and setter", () => {
-        const species = new Species(1, true, properties);
         const sampleNode = new HiddenNode(101, 0.5, ActivationFunction.TANH);
         const refUncertainty = new Map<number, number>();
         refUncertainty.set(10, 0.3);
@@ -141,7 +137,6 @@ describe('Test NeatChromosome', () => {
         chromosome.uID = 1234;
         chromosome.fitness = 4;
         chromosome.sharedFitness = 2;
-        chromosome.species = species;
         chromosome.isSpeciesChampion = true;
         chromosome.isPopulationChampion = true;
         chromosome.isParent = true;
@@ -149,7 +144,6 @@ describe('Test NeatChromosome', () => {
         chromosome.numberOffspringPopulationChamp = 2;
         chromosome.trace = undefined;
         chromosome.codons = [1, 2, 3];
-        chromosome.coverage = new Set<string>("B");
         chromosome.score = 10;
         chromosome.playTime = 30;
         chromosome.referenceActivationTrace = new ActivationTrace([sampleNode]);
@@ -164,7 +158,6 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.uID).toBe(1234);
         expect(chromosome.fitness).toEqual(4);
         expect(chromosome.sharedFitness).toEqual(2);
-        expect(chromosome.species).toEqual(species);
         expect(chromosome.isSpeciesChampion).toBeTruthy();
         expect(chromosome.isPopulationChampion).toBeTruthy();
         expect(chromosome.isParent).toBeTruthy();
@@ -173,7 +166,6 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.trace).toEqual(undefined);
         expect(chromosome.codons).toEqual([1, 2, 3]);
         expect(chromosome.getLength()).toEqual(3);
-        expect(chromosome.coverage).toContain("B");
         expect(chromosome.score).toEqual(10);
         expect(chromosome.playTime).toEqual(30);
         expect(chromosome.referenceActivationTrace.tracedNodes.length).toEqual(1);
@@ -194,12 +186,10 @@ describe('Test NeatChromosome', () => {
         const clone = chromosome.clone();
         expect(clone.uID).toEqual(chromosome.uID);
         expect(clone.trace).toEqual(chromosome.trace);
-        expect(clone.coverage).toEqual(chromosome.coverage);
         expect(clone.fitness).toEqual(chromosome.fitness);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
         expect(clone.targetFitness).toEqual(chromosome.targetFitness);
         expect(clone.openStatementTargets).toEqual(chromosome.openStatementTargets);
-        expect(clone.species).toEqual(chromosome.species);
         expect(clone.isSpeciesChampion).toEqual(chromosome.isSpeciesChampion);
         expect(clone.isPopulationChampion).toEqual(chromosome.isPopulationChampion);
         expect(clone.isParent).toEqual(chromosome.isParent);
