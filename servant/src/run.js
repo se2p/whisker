@@ -1,12 +1,13 @@
 /* eslint-disable node/no-unpublished-require */
 
 const fs = require("fs");
-
 const logger = require("./logger");
 const CoverageGenerator = require("../../whisker-main/src/coverage/coverage");
 const testByBlockBasedTests = require('./run-bbt');
-const {getProjectsInScratchPath, printTestResultsFromCoverageGenerator,} = require("./common");
-const {prepareTestFiles} = require("./witness-util");
+const {
+    getProjectsInScratchPath,
+    printTestResultsFromCoverageGenerator,
+} = require("./common");
 const Whiskers = require("./whiskers");
 
 const opts = require("./cli").opts;
@@ -18,11 +19,10 @@ const {
 
 async function testByWhiskerTestsuite(pool) {
     return Promise.all(getProjectsInScratchPath().map((project) =>
-        pool.run(async ({page, id, tmpDir}) => {
+        pool.run(async ({page, id}) => {
             logger.info(`Testing project ${project} by Whisker test suite`);
             const start = Date.now();
-            const whiskerTestPath = prepareTestFiles(tmpDir);
-            const result = await runTests(whiskerTestPath, page, project);
+            const result = await runTests(page, project);
             logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
@@ -33,7 +33,7 @@ async function testByModel(pool) {
         pool.run(async ({page, id}) => {
             logger.info(`Testing project ${project} by model`);
             const start = Date.now();
-            const result = await runTests(undefined, page, project);
+            const result = await runTests(page, project);
             logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
@@ -53,6 +53,10 @@ async function configureWhiskerWebInstance(page) {
         document.querySelector('#container').traceBlocks = opts.traceBlocks;
     }, opts);
 
+    if (testPath) {
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
+    }
+
     if (opts.modelPath) {
         await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
         await page.evaluate((opts) => {
@@ -66,18 +70,14 @@ async function configureWhiskerWebInstance(page) {
     }
 }
 
-async function runTests(path, page, targetProject) {
+async function runTests(page, targetProject) {
     await (await page.$('#fileselect-project')).uploadFile(targetProject);
 
-    if (path) {
-        await (await page.$('#fileselect-tests')).uploadFile(path);
-    }
-
     // Wait until project and tests finished loading.
-    await page.waitForFunction((path) => window.Whisker.scratch.project && (!path || window.Whisker.tests) , {
+    await page.waitForFunction(() => window.Whisker.scratch.project, {
         polling: 50,
         timeout: 10000,
-    }, path);
+    });
 
     /**
      * Observes the log output, waiting for the csv summary to be written to the log, which indicates the end of the
