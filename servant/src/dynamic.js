@@ -78,6 +78,6 @@ async function runDynamicTestSuite(page, path) {
     }
 }
 
-module.exports = () => Whiskers.withNewPool({
+module.exports = () => Whiskers.withNewPool((pool) => generateDynamicTests(pool), {
     initPageOnce: (page) => configureWhiskerWebInstance(page),
-}, (pool) => generateDynamicTests(pool));
+});

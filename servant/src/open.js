@@ -73,4 +73,4 @@ async function open(page) {
     }
 }
 
-module.exports = Whiskers.withNewPool(null, (pool) => open(pool.page));
+module.exports = Whiskers.withNewPool((pool) => open(pool.page));
