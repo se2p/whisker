@@ -73,6 +73,12 @@ async function runTests(path, page, targetProject) {
         await (await page.$('#fileselect-tests')).uploadFile(path);
     }
 
+    // Wait until project and tests finished loading.
+    await page.waitForFunction((path) => window.Whisker.scratch.project && (!path || window.Whisker.tests) , {
+        polling: 50,
+        timeout: 10000,
+    }, path);
+
     /**
      * Observes the log output, waiting for the csv summary to be written to the log, which indicates the end of the
      * entire test run.
