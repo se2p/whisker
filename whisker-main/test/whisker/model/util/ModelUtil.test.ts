@@ -324,7 +324,7 @@ describe('ModelUtil tests', function () {
             const apple = new SpriteMock("Apple");
             const kiwi = new SpriteMock("Banana");
             const bowl = new SpriteMock("Bowl");
-            bowl.variables = [{name: "x", value: 10}];
+            bowl.variables = [{name: "x", value: 10}, {name: "name", value: "Bowl"}];
             const oldBowl = new SpriteMock("Bowl");
             oldBowl.variables = [{name: "x", value: 5}];
             bowl.old = oldBowl;
@@ -334,9 +334,43 @@ describe('ModelUtil tests', function () {
             const result = ModelUtil.getExpressionForEval(t, false, expr);
             const f = eval(result.expr);
             expect(f(t)).toBe(false);
-            bowl.variables = [{name: "x", value: 15}];
+            bowl.variables = [{name: "x", value: 15}, {name: "name", value: "Bowl"}];
             tdMock.currentSprites = SpriteMock.toSpriteMockMap([apple, kiwi, bowl]);
             expect(f(t)).toBe(true);
+        });
+
+
+
+        test('Produces the correct sting for multiple variables and sprites', () => {
+            const expectedOutput = `(t) => {
+const sprite0 = t.getSprites(sprite => sprite.name.includes('Kiwi'), false)[0];
+if (sprite0 == undefined) {
+    throw getSpriteNotFoundError('Kiwi');
+}
+const variable0 = sprite0.getVariable('name', false).value;
+ if (variable0 == undefined) {
+   throw getVariableNotFoundError('name');
+}
+const sprite1 = t.getSprites(sprite => sprite.name.includes('Bowl'), false)[0];
+if (sprite1 == undefined) {
+    throw getSpriteNotFoundError('Bowl');
+}
+return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
+}`;
+            const bowl = new SpriteMock("Bowl");
+            const kiwi = new SpriteMock("Kiwi");
+            const oldBowl = new SpriteMock("Bowl");
+            kiwi.variables = [{name: "x", value: 7}, {name: "name", value: "Kiwi"}];
+            bowl.variables = [{name: "x", value: 17}];
+            oldBowl.variables = [{name: "x", value: 5},{name: "y", value: 9}];
+            bowl.old = oldBowl;
+            const tdMock = new TestDriverMock([bowl, kiwi]);
+            const t = tdMock.getTestDriver();
+            const expr = "$(Kiwi.name)+(-1*Math.abs($(Bowl.old.y)-$(Bowl.x))).toString()";
+            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            expect(result.expr).toBe(expectedOutput);
+            const f = eval(result.expr);
+            expect(f(t)).toBe("Kiwi-8");
         });
     });
 });

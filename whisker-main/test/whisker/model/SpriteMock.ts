@@ -32,7 +32,8 @@ export class SpriteMock {
         }
         this._sprite = {
             name: this.name,
-            x: this.variables == null ? 0 : this.variables.find(v => v.name == "x").value,
+            x: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("x"),
+            y: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("y"),
             currentCostumeName: this.currentCostumeName,
             isOriginal: this._original,
             visible: this._visible,
@@ -42,14 +43,19 @@ export class SpriteMock {
             isTouchingMouse: () => this.touchingMouse,
             isTouchingColor: (colors: number[]) => this.touchingColor,
             isTouchingSprite: (sprite: Sprite) => this.touchingSprite,
-            getVariables: (key: string) => this.variables,
-            getVariable: (key: string) => this.variables[0],
+            getVariables: (predicate) => !this.variables ? this.variables : this.variables.filter(v => predicate(v)),
+            getVariable: (key: string) => !this.variables ? this.variables : this.variables.filter(v => v.name == key)[0],
             getClones: (withClones: boolean) => {
                 return withClones
                     ? [this._sprite, ...this.clones.map(c => c._sprite)]
                     : [...this.clones.map(c => c._sprite)];
             }
         } as unknown as Sprite;
+    }
+
+    private getValueOfVariableOrUndefined(key: string): any {
+        const variable = this.variables.find(v => v.name == key);
+        return variable == undefined ? undefined : variable.value;
     }
 
     get sprite(): Sprite {
