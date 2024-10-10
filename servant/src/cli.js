@@ -1,6 +1,5 @@
 const {Command, InvalidArgumentError} = require('commander');
 const util = require('./util');
-// eslint-disable-next-line node/no-unpublished-require
 const {version, description} = require('./meta');
 const {relativeToServantDir} = require("./util");
 
@@ -382,22 +381,6 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants(),
-
-    newSubCommand('witness')
-        .description('generate and replay error witnesses')
-        .requireTestPath()
-        .optionScratchPath()
-        .optionNumberOfJobs()
-        .requiredOption(
-            '-w, --error-witness-path <Path>',
-            'error witness to replay (".json")',
-            (witnessPath) => util.processFilePathExists(witnessPath, '.json'))
-        .option(
-            '-r, --add-random-inputs <Integer>',
-            'add random inputs to the test and wait the given number of seconds for its completion',
-            (seconds) => util.processPositiveInt(seconds),
-            10)
-        .option('-x, --generate-witness-only', 'generate error witness replay without executing it'),
 ];
 
 // Common configuration for Whisker and all subcommands:

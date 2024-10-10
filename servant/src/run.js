@@ -11,7 +11,6 @@ const {
     printTestResultsFromCoverageGenerator,
     switchToProjectTab
 } = require("./common");
-const {prepareTestFiles} = require("./witness-util");
 
 const {
     testPath,
@@ -32,11 +31,10 @@ const {
 
 async function testByWhiskerTestsuite(pool) {
     return Promise.all(getProjectsInScratchPath().map((project) =>
-        pool.run(async ({page, id, tmpDir}) => {
+        pool.run(async ({page, id}) => {
             logger.info(`Testing project ${project} by Whisker test suite`);
             const start = Date.now();
-            const whiskerTestPath = prepareTestFiles(tmpDir);
-            const result = await runTests(whiskerTestPath, page, project);
+            const result = await runTests(page, project);
             logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
@@ -47,13 +45,13 @@ async function testByModel(pool) {
         pool.run(async ({page, id}) => {
             logger.info(`Testing project ${project} by model`);
             const start = Date.now();
-            const result = await runTests(undefined, page, project);
+            const result = await runTests(page, project);
             logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
 }
 
-async function runTests(path, page, targetProject) {
+async function runTests(page, targetProject) {
     /**
      * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
      * was loaded.
@@ -69,8 +67,8 @@ async function runTests(path, page, targetProject) {
         await page.evaluate(tb => document.querySelector('#container').traceBlocks = tb, traceBlocks);
 
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
-        if (path) {
-            await (await page.$('#fileselect-tests')).uploadFile(path);
+        if (testPath) {
+            await (await page.$('#fileselect-tests')).uploadFile(testPath);
         }
         if (modelPath) {
             await (await page.$('#fileselect-models')).uploadFile(modelPath);
