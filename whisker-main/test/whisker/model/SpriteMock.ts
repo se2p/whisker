@@ -27,7 +27,7 @@ export class SpriteMock {
         this.updateSprite();
     }
 
-    public updateSprite(): void {
+    public updateSprite(): Sprite {
         if (this.old != null) {
             this.old.updateSprite();
         }
@@ -53,6 +53,7 @@ export class SpriteMock {
                     : [...this.clones.map(c => c._sprite)];
             }
         } as unknown as Sprite;
+        return this._sprite;
     }
 
     private getValueOfVariableOrUndefined(key: string): any {
@@ -70,16 +71,11 @@ export class SpriteMock {
         // TODO check if there is a possibility to change the attribute of the sprite after creation
     }
 
-    public static toSpriteMockMap(array: SpriteMock[]): Record<string, Sprite> {
-        const map: Record<string, Sprite> = {};
-        for (const sprite of array) {
-            sprite.updateSprite();
-            map[sprite.name] = sprite.sprite;
-        }
-        return map;
+    public static toSpriteArray(array: SpriteMock[]): Sprite[] {
+        return array.map(m => m.updateSprite());
     }
 
-    public static stringsToSpriteMockMap(array: string[]): Record<string, Sprite> {
-        return SpriteMock.toSpriteMockMap(array.map(s => new SpriteMock(s)));
+    public static stringsToSpriteArray(array: string[]): Sprite[] {
+        return SpriteMock.toSpriteArray(array.map(s => new SpriteMock(s)));
     }
 }

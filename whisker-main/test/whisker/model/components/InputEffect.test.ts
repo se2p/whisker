@@ -105,7 +105,7 @@ describe('InputEffect', () => {
 
         test("Click stage input effect", () => {
             Container.config = {getClickDuration: () => 42} as unknown as WhiskerSearchConfiguration;
-            tdMock.currentSprites = SpriteMock.stringsToSpriteMockMap(["apple", "bowl"]);
+            tdMock.currentSprites = SpriteMock.stringsToSpriteArray(["apple", "bowl"]);
             tdMock.clickSprite = jest.fn();
             const effect = new InputEffect("test", InputEffectName.InputClickSprite, ["bowl"]);
             effect.registerComponents(t, false);

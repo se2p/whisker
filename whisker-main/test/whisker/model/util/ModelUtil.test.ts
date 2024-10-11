@@ -339,7 +339,7 @@ describe('ModelUtil tests', function () {
             const f = eval(result.expr);
             expect(f(t)).toBe(false);
             bowl.variables = [{name: "x", value: 15}, {name: "name", value: "Bowl"}];
-            tdMock.currentSprites = SpriteMock.toSpriteMockMap([apple, kiwi, bowl]);
+            tdMock.currentSprites = SpriteMock.toSpriteArray([apple, kiwi, bowl]);
             expect(f(t)).toBe(true);
         });
 

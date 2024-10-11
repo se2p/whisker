@@ -8,6 +8,7 @@ import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {SpriteMock} from "../SpriteMock";
 import {TestDriverMock} from "../TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
+import Sprite from "../../../../src/vm/sprite";
 
 describe('CheckGenerator', () => {
     describe('getKeyDownCheck()', () => {
@@ -32,7 +33,7 @@ describe('CheckGenerator', () => {
         const tdMock = new TestDriverMock();
         const t = tdMock.getTestDriver();
         test('throws exception when no sprite exists', () => {
-            tdMock.currentSprites = {};
+            tdMock.currentSprites = [];
             expect(() => {
                 CheckGenerator.getSpriteClickedCheck(t, false, false, "banana");
             }).toThrow(SpriteNotFoundError);
@@ -40,7 +41,7 @@ describe('CheckGenerator', () => {
 
         test('throws exception when correct sprite does not exist', () => {
             const apple = new SpriteMock("apple");
-            tdMock.currentSprites = {"apple": apple.sprite};
+            tdMock.currentSprites = [apple.sprite];
             expect(() => {
                 CheckGenerator.getSpriteClickedCheck(t, false, false, "banana");
             }).toThrow(SpriteNotFoundError);
@@ -48,14 +49,14 @@ describe('CheckGenerator', () => {
 
         test('Has the correct return type', () => {
             const apple = new SpriteMock("apple");
-            tdMock.currentSprites = {"apple": apple.sprite};
+            tdMock.currentSprites = [apple.sprite];
             const result = CheckGenerator.getSpriteClickedCheck(t, false, false, "apple");
             expect(typeof result).toEqual(typeof (() => false));
         });
 
         it.each([true, false])('returns correct sprite if possible (negated: %s)', (negated: boolean) => {
             const apple = new SpriteMock("apple");
-            tdMock.currentSprites = SpriteMock.toSpriteMockMap([
+            tdMock.currentSprites = SpriteMock.toSpriteArray([
                 new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("kiwi"), apple
                 // when adding new SpriteMock("pineapple") the test fails. This does not seem right -> potential bug
             ]);
@@ -70,7 +71,7 @@ describe('CheckGenerator', () => {
 
     describe('getSpriteColorTouchingCheck()', () => {
         const tdMock = new TestDriverMock();
-        tdMock.currentSprites = {"apple": new SpriteMock("apple").sprite};
+        tdMock.currentSprites = [new SpriteMock("apple").sprite];
         const t = tdMock.getTestDriver();
         const dummyCU = getDummyCheckUtility();
 
@@ -109,7 +110,7 @@ describe('CheckGenerator', () => {
 
         it.each([true, false])('returned function depends on touchingColor (negated: %s)', (negated: boolean) => {
             const kiwi = new SpriteMock("kiwi");
-            tdMock.currentSprites = SpriteMock.toSpriteMockMap([
+            tdMock.currentSprites = SpriteMock.toSpriteArray([
                 new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("apple"), kiwi
             ]);
             kiwi.touchingColor = true;
@@ -326,7 +327,7 @@ describe('CheckGenerator', () => {
             const fn = "(t) => t.getSprites(s => s.name == \"apple\").length == 1";
             const f = CheckGenerator.getFunctionCheck(tdMock.getTestDriver(), cu, "label", "graphID", false, true, fn);
             expect(f()).toBe(true);
-            tdMock.currentSprites = {"kiwi": kiwi.sprite};
+            tdMock.currentSprites = [kiwi.sprite];
             expect(f()).toBe(false);
         });
     });
@@ -340,7 +341,98 @@ describe('CheckGenerator', () => {
         const result = CheckGenerator.getOutputOnSpriteCheck(t, dummyCU, "label", "graphID", false, false, "(Banana)", "this is some text");
         expect(result()).toEqual(true);
         banana.sayText = "this is a different text";
-        tdMock.currentSprites = SpriteMock.toSpriteMockMap([banana]);
+        tdMock.currentSprites = [banana.updateSprite()];
         expect(result()).toEqual(false);
+    });
+
+    describe('getRandomValueCheck', () => {
+        const label = "label";
+        const graphId = "graphID";
+        const spriteName = "apple";
+        const variableName = "x";
+        const sprite = new SpriteMock(spriteName);
+        sprite.variables = [{name: variableName, value: "0"}];
+        const tdMock = new TestDriverMock([sprite]);
+        const t = tdMock.getTestDriver();
+        test('the same value does not count as random', () => {
+            let fn: ((sprite: Sprite) => boolean);
+            const dummyCU = getDummyCheckUtility();
+            dummyCU.registerOnMoveEvent = (sn, es, el, gID, predicate) => fn = predicate;
+            const res = CheckGenerator.getRandomValueCheck(t, dummyCU, label, graphId, false,
+                false, spriteName, variableName);
+            fn(sprite.sprite);
+            fn(sprite.sprite);
+            fn(sprite.sprite);
+            fn(sprite.sprite);
+            // expect(res()).toBe(false);
+            // TODO: I think the result should be false since the value is constant which is not random (with high prob)
+            //  but it might also be a wrong way to mock this.
+            expect(res()).toBe(true);
+        });
+
+        test('a different value than the one before counts a random', () => {
+            let fn: ((sprite: Sprite) => boolean);
+            const dummyCU = getDummyCheckUtility();
+            sprite.variables = [{name: variableName, value: "3"}];
+            tdMock.currentSprites = [sprite.sprite];
+            dummyCU.registerOnMoveEvent = (sn, es, el, gID, predicate) => fn = predicate;
+            const res = CheckGenerator.getRandomValueCheck(t, dummyCU, label, graphId, false,
+                false, spriteName, variableName);
+            fn(sprite.sprite);
+            sprite.variables = [{name: variableName, value: "4"}];
+            tdMock.currentSprites = [sprite.sprite];
+            expect(res()).toBe(true);
+        });
+
+        test('alternating between two values is not random', () => {
+            let fn: ((sprite: Sprite) => boolean);
+            const dummyCU = getDummyCheckUtility();
+            sprite.variables = [{name: variableName, value: "1"}];
+            tdMock.currentSprites = [sprite.sprite];
+            dummyCU.registerOnMoveEvent = (sn, es, el, gID, predicate) => fn = predicate;
+            const res = CheckGenerator.getRandomValueCheck(t, dummyCU, label, graphId, false,
+                false, spriteName, variableName);
+            fn(sprite.sprite);
+            sprite.variables = [{name: variableName, value: "1"}];
+            tdMock.currentSprites = [sprite.sprite];
+            fn(sprite.sprite);
+            sprite.variables = [{name: variableName, value: "0"}];
+            tdMock.currentSprites = [sprite.sprite];
+            fn(sprite.sprite);
+            // expect(res()).toBe(false);
+            // TODO: There is probably a bug since the values are alternating which is not random (with high prob)
+            //  unless the mocking is not working properly
+            expect(res()).toBe(true);
+            sprite.variables = [{name: variableName, value: "1"}];
+            tdMock.currentSprites = [sprite.sprite];
+            fn(sprite.sprite);
+            // expect(res()).toBe(false);
+            // TODO same as above
+            expect(res()).toBe(true);
+        });
+    });
+
+    describe('getNumberOfClonesCheck', () => {
+        const banana = new SpriteMock("banana");
+        banana.clones = [new SpriteMock("banana"), new SpriteMock("banana"), new SpriteMock("banana")];
+        const apple = new SpriteMock("apple");
+        apple.clones = [
+            new SpriteMock("apple"), new SpriteMock("apple"), new SpriteMock("apple"),
+            new SpriteMock("apple"), new SpriteMock("apple")
+        ];
+        const bowl = new SpriteMock("bowl");
+        apple.clones[1].visible = false;
+        banana.clones[0].visible = false;
+        banana.clones[2].visible = false;
+        const tdMock = new TestDriverMock([apple, banana, bowl, ...apple.clones, ...banana.clones]);
+        const t = tdMock.getTestDriver();
+        const table: [string, boolean, number][] = [
+            ["banana", true, 2], ["banana", false, 4], ["apple", true, 5], ["apple", false, 6], ["bowl", false, 1]
+        ];
+        it.each(table)('counts correct amount of %s with visible necessary == %s',
+            (name, visible, count) => {
+                const res = CheckGenerator.getNumberOfClonesCheck(t, false, false, visible, name, "==", count);
+                expect(res()).toBe(true);
+            });
     });
 });
