@@ -1,6 +1,6 @@
 const fs = require("fs");
 const logger = require("./logger");
-const {testPath, csvFile, seed} = require("./cli").opts;
+const {testPath, csvFile} = require("./cli").opts;
 const {getProjectsInScratchPath} = require("./common");
 
 async function getOutputLogWhenBBTTestsAreDone(page, clearLogAfterFinished = false) {
