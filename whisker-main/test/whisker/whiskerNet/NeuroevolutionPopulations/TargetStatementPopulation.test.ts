@@ -22,7 +22,7 @@ describe("Test TargetStatementPopulation", () => {
     let size: number;
 
     beforeEach(() => {
-        logger.suggest.deny("", "debug");
+        logger.suggest.deny(/.*/, "debug");
         NeatPopulation.innovations = [];
         size = 500;
         const crossoverConfig = {

@@ -50,7 +50,7 @@ describe('Test Neatest', () => {
     };
 
     beforeEach(() => {
-        logger.suggest.deny("", "debug");
+        logger.suggest.deny(/.*/, "debug");
         const mock = new VMWrapperMock();
         mock.init();
         const inputFeatures = generateInputs();
