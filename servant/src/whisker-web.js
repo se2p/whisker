@@ -2,7 +2,8 @@ const puppeteer = require("puppeteer");
 const Minilog = require('minilog');
 const {format} = require("util");
 const logger = require("./logger");
-const {consoleForwarded, headless, whiskerUrl} = require("./cli").opts;
+const opts = require("./cli").opts;
+const {consoleForwarded, headless, whiskerUrl} = opts;
 
 // Workaround for Whisker issue #241
 async function openNewBrowserWithRetry(options) {

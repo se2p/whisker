@@ -1,6 +1,6 @@
 const fs = require("fs");
 const logger = require("./logger");
-const {testPath, csvFile, seed} = require("./cli").opts;
+const {testPath, csvFile} = require("./cli").opts;
 const {getProjectsInScratchPath} = require("./common");
 
 async function getOutputLogWhenBBTTestsAreDone(page, clearLogAfterFinished = false) {
@@ -74,7 +74,6 @@ async function evaluateProjects(pool, projects, testPath) {
         await (await page.$('#tabUpload')).click();
         await (await page.$('#fileselect-project')).uploadFile(project);
         await (await page.$('#tabProject')).click();
-        await page.evaluate(() => document.querySelector('#seed').value = seed);
         await (await page.$('#run-all-tests')).click();
 
         const log = await getOutputLogWhenBBTTestsAreDone(page, true);

@@ -1,85 +1,78 @@
 /* eslint-disable node/no-unpublished-require */
 
 const fs = require("fs");
-
 const logger = require("./logger");
 const CoverageGenerator = require("../../whisker-main/src/coverage/coverage");
-
 const testByBlockBasedTests = require('./run-bbt');
 const {
     getProjectsInScratchPath,
     printTestResultsFromCoverageGenerator,
-    switchToProjectTab
 } = require("./common");
+const Whiskers = require("./whiskers");
 
+const opts = require("./cli").opts;
 const {
     testPath,
-    seed,
-    acceleration,
     csvFile,
-    modelPath,
-    modelRepetition,
-    modelDuration,
-    modelCaseSensitive,
-    mutators,
-    downloadMutants,
-    mutationBudget,
-    maxMutants,
-    traceBlocks,
-    useSaveStates,
-} = require("./cli").opts;
+    numberOfJobs,
+} = opts;
 
 async function testByWhiskerTestsuite(pool) {
     return Promise.all(getProjectsInScratchPath().map((project) =>
-        pool.run(async ({page, id}) => {
+        pool.run(async (whisker) => {
             logger.info(`Testing project ${project} by Whisker test suite`);
             const start = Date.now();
-            const result = await runTests(page, project);
-            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            const result = await runTests(whisker, project);
+            logger.debug(`Duration #${whisker.id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
 }
 
 async function testByModel(pool) {
     return Promise.all(getProjectsInScratchPath().map((project) =>
-        pool.run(async ({page, id}) => {
+        pool.run(async (whisker) => {
             logger.info(`Testing project ${project} by model`);
             const start = Date.now();
-            const result = await runTests(page, project);
-            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            const result = await runTests(whisker, project);
+            logger.debug(`Duration #${whisker.id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
 }
 
-async function runTests(page, targetProject) {
-    /**
-     * Configure the Whisker instance, by setting the application file, test file and acceleration, after the page
-     * was loaded.
-     */
-    async function configureWhiskerWebInstance() {
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
-        await page.evaluate(m => document.querySelector('#container').mutators = m, mutators);
-        await page.evaluate(b => document.querySelector('#container').mutationBudget = b, mutationBudget);
-        await page.evaluate(m => document.querySelector('#container').maxMutants = m, maxMutants);
-        await page.evaluate(d => document.querySelector('#container').downloadMutants = d, downloadMutants);
-        await page.evaluate(tb => document.querySelector('#container').traceBlocks = tb, traceBlocks);
-
-        await (await page.$('#fileselect-project')).uploadFile(targetProject);
-        if (testPath) {
-            await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        }
-        if (modelPath) {
-            await (await page.$('#fileselect-models')).uploadFile(modelPath);
-            await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, modelRepetition);
-            await page.evaluate(factor => document.querySelector('#model-duration').value = factor, modelDuration);
-            if (modelCaseSensitive === "true") {
-                await (await page.$('#model-case-sensitive')).click();
-            }
-        }
-        await switchToProjectTab(page, false);
+async function configureWhiskerWebInstance(page) {
+    if (testPath && testPath.endsWith(".sb3")) {
+        // No initialization code for block-based testing.
+        return;
     }
+
+    await page.evaluate((opts) => {
+        document.querySelector('#container').mutators = opts.mutators;
+        document.querySelector('#container').mutationBudget = opts.mutationBudget;
+        document.querySelector('#container').maxMutants = opts.maxMutants;
+        document.querySelector('#container').downloadMutants = opts.downloadMutants;
+        document.querySelector('#container').traceBlocks = opts.traceBlocks;
+    }, opts);
+
+    if (testPath) {
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
+    }
+
+    if (opts.modelPath) {
+        await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
+        await page.evaluate((opts) => {
+            document.querySelector('#model-repetitions').value = opts.modelRepetition;
+            document.querySelector('#model-duration').value = opts.modelDuration;
+        }, opts);
+
+        if (opts.modelCaseSensitive === "true") {
+            await (await page.$('#model-case-sensitive')).click();
+        }
+    }
+}
+
+async function runTests(whisker, targetProject) {
+    await whisker.uploadProject(targetProject);
+    const page = whisker.page;
 
     /**
      * Observes the log output, waiting for the csv summary to be written to the log, which indicates the end of the
@@ -152,7 +145,6 @@ async function runTests(page, targetProject) {
     }
 
     try {
-        await configureWhiskerWebInstance();
         const promise = onFinishedCallback();
         await (await page.$('#run-all-tests')).click();
 
@@ -233,4 +225,8 @@ function removeDuplicateHeaders([first, ...rest]) {
     return [firstHeader, firstData, ...restData];
 }
 
-module.exports = run;
+module.exports = () => Whiskers.withNewPool((pool) => run(pool), {
+    // Avoid opening more browser windows than necessary.
+    whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs),
+    initWhiskerOnce: ({page}) => configureWhiskerWebInstance(page),
+});

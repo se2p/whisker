@@ -8,6 +8,14 @@ const os = require("os");
 const {clearTimeout} = require("node:timers");
 const {numberOfJobs} = require("./cli").opts;
 const {Mutex} = require('async-mutex');
+const {opts} = require("./cli");
+
+/**
+ * @typedef {import("generic-pool").Pool} Pool
+ * @typedef {import("puppeteer").Browser} Browser
+ * @typedef {import("puppeteer").Page} Page
+ * @typedef {import("puppeteer").FrameWaitForFunctionOptions} FrameWaitForFunctionOptions
+ */
 
 /**
  * @typedef {Object} Timings
@@ -17,16 +25,12 @@ const {Mutex} = require('async-mutex');
 
 /**
  * @typedef {Object} PoolOptions
- * @property {number} whiskers - How many Whisker instances the pool should have
- * @property {number} ttl - How often a resource can be handed out before it is destroyed. Use 0 to disable.
- * @property {number} keepaliveTimeout - Destroys the browser if it has been unresponsive for the given number of
- *                                       milliseconds. Use 0 to disable.
- */
-
-/**
- * @typedef {import("generic-pool").Pool} Pool
- * @typedef {import("puppeteer").Browser} Browser
- * @typedef {import("puppeteer").Page} Page
+ * @property {number} [whiskers] - How many Whisker instances the pool should have
+ * @property {number} [ttl] - How often a resource can be handed out before it is destroyed. Use 0 to disable.
+ * @property {number} [keepaliveTimeout] - Destroys the browser if it has been unresponsive for the given number of
+ *                                         milliseconds. Use 0 to disable.
+ * @property {function(Whisker): Promise<void>} [initWhiskerOnce] - A function that performs additional initialization
+ *                                                                  of Whisker Web when it is first created by the pool.
  */
 
 /**
@@ -35,10 +39,44 @@ const {Mutex} = require('async-mutex');
  */
 
 /**
+ * @callback WithNewPoolCallback
+ * @param {Whiskers}
+ */
+
+/**
  * The name under which the keepAlive() function of the Whisker resource will be exposed to browser pages.
  * @type {string}
  */
 const whiskerKeepaliveExposedName = "__whisker_keepalive__";
+
+/**
+ * Initializes Whisker Web.
+ *
+ * @param pool {Whiskers} The pool that manages the page.
+ * @param whisker {Whisker} The Whisker Web instance to initialize
+ * @return Promise<void>
+ */
+async function initWhiskerOnce(pool, whisker) {
+    const page = whisker._page;
+
+    /*
+     * Page initialization code common to all use cases.
+     */
+    await page.evaluate((opts) => {
+        if (opts.seed) document.querySelector('#seed').value = opts.seed;
+        if (opts.acceleration) document.querySelector('#acceleration-value').innerText = opts.acceleration;
+        if (opts.useSaveStates) document.querySelector("#use-save-states").checked = opts.useSaveStates;
+    }, {...opts, acceleration: String(opts.acceleration)}); // Infinity (as number) is not JSON serializable.
+
+    // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
+    // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
+    await switchToProjectTab(page, true);
+
+    /*
+     * Page initialization code specific to the current Whisker subcommand.
+     */
+    await pool._initWhiskerOnce(whisker);
+}
 
 /**
  * The resource that will be handed out by the pool.
@@ -70,15 +108,12 @@ class Whisker {
         const page = (await browser.pages())[0];
         before = Date.now();
         await configureWhiskerWeb(page, {waitUntil: "load", id: `#${id}`});
+        const whisker = new Whisker(pool, id, browser, page, timings);
+        await whisker.enableKeepaliveWatchdog();
+        await initWhiskerOnce(pool, whisker);
         timings.loadWhiskerWeb = Date.now() - before;
         logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
 
-        // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
-        // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
-        await switchToProjectTab(page, true);
-
-        const whisker = new Whisker(pool, id, browser, page, timings);
-        await whisker.enableKeepaliveWatchdog();
         return whisker;
     }
 
@@ -184,6 +219,28 @@ class Whisker {
 
     get timings() {
         return this._timings;
+    }
+
+    /**
+     * Uploads the Scratch project (given by its path, which should end in *.sb3) to this Whisker Web page. By default,
+     * also waits up to 10 seconds for the project to actually finish uploading. Throws an error if this times out.
+     *
+     * @param projectPath {string} The path to the Scratch project (*.sb3) to upload
+     * @param options {?FrameWaitForFunctionOptions} Options for configuring waiting behavor
+     * @return {Promise<void>}
+     */
+    async uploadProject(projectPath, options = null) {
+        options = {
+            ...options,
+            polling: 50,
+            timeout: 10000,
+        };
+
+        const before = Date.now();
+        await this._page.evaluate(() => window.Whisker.scratch.project = null); // To avoid issue #217
+        await (await this._page.$('#fileselect-project')).uploadFile(projectPath);
+        await this._page.waitForFunction(() => window.Whisker.scratch.project, options);
+        logger.info(`Whisker Web #${this._id} finished uploading project after`, Date.now() - before, "ms");
     }
 
     /**
@@ -355,15 +412,18 @@ const defaultPoolOptions = {
     whiskers: numberOfJobs,
     ttl: 0,
     keepaliveTimeout: 0,
+    initWhiskerOnce: (_whisker) => {
+        /* noop, but users can provide a custom function. */
+    },
 };
 
 class Whiskers {
 
     /**
      * Creates a new resource pool of Whisker instances.
-     * @param {PoolOptions} opts Configuration object for the pool.
+     * @param {PoolOptions} opts Configuration object for the pool. Omit for default options.
      */
-    constructor(opts= {}) {
+    constructor(opts = {}) {
         opts = {
             ...defaultPoolOptions,
             ...opts
@@ -419,6 +479,14 @@ class Whiskers {
          * @private
          */
         this._mutex = new Mutex();
+
+        /**
+         * A function for additional custom initialization of browser pages. Will be executed once, when first creating
+         * a new resource. Does nothing by default.
+         * @type {function(Whisker): Promise<void>}
+         * @private
+         */
+        this._initWhiskerOnce = opts.initWhiskerOnce.bind(null);
     }
 
     /**
@@ -433,7 +501,7 @@ class Whiskers {
         logger.info(`Creating Whisker #${id}...`);
         const before = Date.now();
         // Sequentializing browser creation prevents issues #241 and #242.
-        const whisker = await this._mutex.runExclusive( () => {
+        const whisker = await this._mutex.runExclusive(() => {
             logger.info(`Lock for Whisker #${id} acquired after`, Date.now() - before, "ms");
             return Whisker.create(this, id);
         });
@@ -526,6 +594,33 @@ class Whiskers {
             logger.error(e);
         } finally {
             await this.release(whisker);
+        }
+    }
+
+    /**
+     * Creates a new Whiskers pool with the given options, and executes the callback. Includes automatic error handling
+     * and cleanup of the pool.
+     *
+     * @param callback {WithNewPoolCallback} The callback to execute with the pool
+     * @param opts {PoolOptions} The options for the pool. Omit for default options.
+     * @return {Promise<*>} The result of the callback
+     */
+    static async withNewPool(callback, opts = {}) {
+        /**
+         * @type {Whiskers}
+         */
+        let pool = null;
+
+        try {
+            pool = new Whiskers(opts);
+            await pool.start();
+            return await callback(pool);
+        } catch (e) {
+            logger.error(e);
+        } finally {
+            if (pool !== null) {
+                await pool.shutdown();
+            }
         }
     }
 }

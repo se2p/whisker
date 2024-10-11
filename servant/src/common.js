@@ -8,6 +8,10 @@ const logger = require('./logger');
 const {scratchPath} = require("./cli").opts;
 
 /**
+ * @typedef {import("puppeteer").Page} Page
+ */
+
+/**
  * Switches to the project tab, which is necessary to start the test run. Additionally, to click on the start test
  * generation button for test generation runs, we have to toggle the extended view.
  * @param {Page} page
