@@ -28,8 +28,8 @@ const {opts} = require("./cli");
  * @property {number} [ttl] - How often a resource can be handed out before it is destroyed. Use 0 to disable.
  * @property {number} [keepaliveTimeout] - Destroys the browser if it has been unresponsive for the given number of
  *                                         milliseconds. Use 0 to disable.
- * @property {function(Page): Promise<void>} [initPageOnce] - A function that performs additional initialization of a
- *                                                            browser page when it is first created by the pool.
+ * @property {function(Whisker): Promise<void>} [initWhiskerOnce] - A function that performs additional initialization
+ *                                                                  of Whisker Web when it is first created by the pool.
  */
 
 /**
@@ -52,10 +52,12 @@ const whiskerKeepaliveExposedName = "__whisker_keepalive__";
  * Initializes Whisker Web.
  *
  * @param pool {Whiskers} The pool that manages the page.
- * @param page {Page} The page to initialize, assumes Whisker Web is already loaded.
+ * @param whisker {Whisker} The Whisker Web instance to initialize
  * @return Promise<void>
  */
-async function initPageOnce(pool, page) {
+async function initWhiskerOnce(pool, whisker) {
+    const page = whisker._page;
+
     /*
      * Page initialization code common to all use cases.
      */
@@ -72,7 +74,7 @@ async function initPageOnce(pool, page) {
     /*
      * Page initialization code specific to the current Whisker subcommand.
      */
-    await pool._initPageOnce(page);
+    await pool._initWhiskerOnce(whisker);
 }
 
 /**
@@ -105,12 +107,12 @@ class Whisker {
         const page = (await browser.pages())[0];
         before = Date.now();
         await configureWhiskerWeb(page, {waitUntil: "load", id: `#${id}`});
-        timings.loadWhiskerWeb = Date.now() - before;
-        await initPageOnce(pool, page);
-        logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
-
         const whisker = new Whisker(pool, id, browser, page, timings);
         await whisker.enableKeepaliveWatchdog();
+        await initWhiskerOnce(pool, whisker);
+        timings.loadWhiskerWeb = Date.now() - before;
+        logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
+
         return whisker;
     }
 
@@ -387,7 +389,7 @@ const defaultPoolOptions = {
     whiskers: numberOfJobs,
     ttl: 0,
     keepaliveTimeout: 0,
-    initPageOnce: (_page) => {
+    initWhiskerOnce: (_whisker) => {
         /* noop, but users can provide a custom function. */
     },
 };
@@ -458,10 +460,10 @@ class Whiskers {
         /**
          * A function for additional custom initialization of browser pages. Will be executed once, when first creating
          * a new resource. Does nothing by default.
-         * @type {function(Page): Promise<void>}
+         * @type {function(Whisker): Promise<void>}
          * @private
          */
-        this._initPageOnce = opts.initPageOnce.bind(null);
+        this._initWhiskerOnce = opts.initWhiskerOnce.bind(null);
     }
 
     /**

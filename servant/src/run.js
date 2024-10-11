@@ -233,5 +233,5 @@ function removeDuplicateHeaders([first, ...rest]) {
 module.exports = () => Whiskers.withNewPool((pool) => run(pool), {
     // Avoid opening more browser windows than necessary.
     whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs),
-    initPageOnce: (page) => configureWhiskerWebInstance(page),
+    initWhiskerOnce: ({page}) => configureWhiskerWebInstance(page),
 });
