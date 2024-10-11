@@ -9,7 +9,9 @@ const {
 const logger = require("./logger");
 const Whiskers = require("./whiskers");
 
-async function open(page) {
+async function open(whisker) {
+    const page = whisker.page;
+
     // Procedure for generating game recordings.
     if (recordProject) {
         await toggleExtendedView(page);
@@ -17,7 +19,7 @@ async function open(page) {
         logger.info(`Start Recording ${recordProject.path} for ${time} seconds`);
 
         // Upload File
-        await (await page.$('#fileselect-project')).uploadFile(recordProject.path);
+        await whisker.uploadProject(recordProject.path);
 
         // Switch to Project tab and specify the required parameters.
         await switchToProjectTab(page, false);
@@ -55,7 +57,7 @@ async function open(page) {
 
     } else {
         if (scratchPath) {
-            await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
+            await whisker.uploadProject(scratchPath.path);
         }
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await switchToProjectTab(page, true);
@@ -73,4 +75,4 @@ async function open(page) {
     }
 }
 
-module.exports = Whiskers.withNewPool((pool) => open(pool.page));
+module.exports = Whiskers.withNewPool((pool) => pool.run((whisker) => open(whisker)));

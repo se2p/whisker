@@ -28,8 +28,9 @@ async function generateTests({page}) {
     }
 }
 
-async function configureWhiskerWebInstance(page) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
+async function configureWhiskerWebInstance(whisker) {
+    await whisker.uploadProject(scratchPath.path);
+    const page = whisker.page;
     await (await page.$('#fileselect-config')).uploadFile(configPath);
     if (testPath) {
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
@@ -87,5 +88,5 @@ async function runGeneticSearch(page) {
 }
 
 module.exports = () => Whiskers.withNewPool((pool) => pool.run(generateTests), {
-    initWhiskerOnce: ({page}) => configureWhiskerWebInstance(page),
+    initWhiskerOnce: (whisker) => configureWhiskerWebInstance(whisker),
 });

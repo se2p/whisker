@@ -19,22 +19,22 @@ const {
 
 async function testByWhiskerTestsuite(pool) {
     return Promise.all(getProjectsInScratchPath().map((project) =>
-        pool.run(async ({page, id}) => {
+        pool.run(async (whisker) => {
             logger.info(`Testing project ${project} by Whisker test suite`);
             const start = Date.now();
-            const result = await runTests(page, project);
-            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            const result = await runTests(whisker, project);
+            logger.debug(`Duration #${whisker.id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
 }
 
 async function testByModel(pool) {
     return Promise.all(getProjectsInScratchPath().map((project) =>
-        pool.run(async ({page, id}) => {
+        pool.run(async (whisker) => {
             logger.info(`Testing project ${project} by model`);
             const start = Date.now();
-            const result = await runTests(page, project);
-            logger.debug(`Duration #${id}: ${(Date.now() - start) / 1000} Seconds`);
+            const result = await runTests(whisker, project);
+            logger.debug(`Duration #${whisker.id}: ${(Date.now() - start) / 1000} Seconds`);
             return result;
         })));
 }
@@ -70,14 +70,9 @@ async function configureWhiskerWebInstance(page) {
     }
 }
 
-async function runTests(page, targetProject) {
-    await (await page.$('#fileselect-project')).uploadFile(targetProject);
-
-    // Wait until project and tests finished loading.
-    await page.waitForFunction(() => window.Whisker.scratch.project, {
-        polling: 50,
-        timeout: 10000,
-    });
+async function runTests(whisker, targetProject) {
+    await whisker.uploadProject(targetProject);
+    const page = whisker.page;
 
     /**
      * Observes the log output, waiting for the csv summary to be written to the log, which indicates the end of the

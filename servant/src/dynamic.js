@@ -12,8 +12,8 @@ const {
 
 // Dynamic Test suite using Neuroevolution
 async function generateDynamicTests(pool) {
-    await pool.run(async ({page}) => {
-        const output = await runDynamicTestSuite(page, scratchPath.path);
+    await pool.run(async (whisker) => {
+        const output = await runDynamicTestSuite(whisker, scratchPath.path);
         if (csvFile) {
             logger.info("Creating CSV summary in " + csvFile);
             fs.writeFileSync(csvFile, output);
@@ -37,13 +37,13 @@ async function configureWhiskerWebInstance(page) {
     logger.info('Web Instance Configuration Complete');
 }
 
-async function runDynamicTestSuite(page, path) {
+async function runDynamicTestSuite(whisker, path) {
     /**
      * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
      * run is over.
      */
     async function readTestOutput() {
-        const logOutput = await page.$('#output-log .output-content');
+        const logOutput = await whisker.page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
@@ -64,11 +64,11 @@ async function runDynamicTestSuite(page, path) {
      * Executes the tests, by clicking the button.
      */
     async function executeTests() {
-        await (await page.$('#run-all-tests')).click();
+        await (await whisker.page.$('#run-all-tests')).click();
     }
 
     try {
-        await (await page.$('#fileselect-project')).uploadFile(path);
+        await whisker.uploadProject(path);
         logger.debug("Dynamic TestSuite");
         await executeTests();
         const csvOutput = await readTestOutput();

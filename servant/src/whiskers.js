@@ -14,6 +14,7 @@ const {opts} = require("./cli");
  * @typedef {import("generic-pool").Pool} Pool
  * @typedef {import("puppeteer").Browser} Browser
  * @typedef {import("puppeteer").Page} Page
+ * @typedef {import("puppeteer").FrameWaitForFunctionOptions} FrameWaitForFunctionOptions
  */
 
 /**
@@ -218,6 +219,28 @@ class Whisker {
 
     get timings() {
         return this._timings;
+    }
+
+    /**
+     * Uploads the Scratch project (given by its path, which should end in *.sb3) to this Whisker Web page. By default,
+     * also waits up to 10 seconds for the project to actually finish uploading. Throws an error if this times out.
+     *
+     * @param projectPath {string} The path to the Scratch project (*.sb3) to upload
+     * @param options {?FrameWaitForFunctionOptions} Options for configuring waiting behavor
+     * @return {Promise<void>}
+     */
+    async uploadProject(projectPath, options = null) {
+        options = {
+            ...options,
+            polling: 50,
+            timeout: 10000,
+        };
+
+        const before = Date.now();
+        await this._page.evaluate(() => window.Whisker.scratch.project = null); // To avoid issue #217
+        await (await this._page.$('#fileselect-project')).uploadFile(projectPath);
+        await this._page.waitForFunction(() => window.Whisker.scratch.project, options);
+        logger.info(`Whisker Web #${this._id} finished uploading project after`, Date.now() - before, "ms");
     }
 
     /**
