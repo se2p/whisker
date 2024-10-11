@@ -4,6 +4,34 @@ const {version, description} = require('./meta');
 const {relativeToServantDir} = require("./util");
 
 /**
+ * @typedef {Object} Opts
+ * @property {number} acceleration Accelerate Scratch VM by the given factor
+ * @property {string} [csvFile] Path to CSV file with results
+ * @property {string} [seed] Seed for the Scratch VM
+ * @property {boolean} headless Run in headless mode
+ * @property {boolean} [consoleForwarded] Forward browser log messages to the console
+ * @property {boolean} [liveLog] Print new log output regularly
+ * @property {boolean} [liveOutputCoverage] Print new coverage output regularly
+ * @property {boolean} [useSaveStates] Reset project using save states, rather than by reloading it
+ * @property {string} [scratchPath] Path to Scratch file or folder with Scratch files
+ * @property {string} [testPath] Path to Whisker test suite or BBT project
+ * @property {string} [groundTruth] Path to ground truth data for Neatest + Backpropagation
+ * @property {string} [configPath] Path to Whisker configuration file
+ * @property {number} numberOfJobs Number of parallel test executions
+ * @property {boolean} [minimiseSuite] Minimises network suite based on branch coverage
+ * @property {string[]} [mutators] Mutation operators to apply for mutation testing
+ * @property {string} [downloadMutants] Download the generated mutants
+ * @property {number} [mutationBudget] Timeout for mutation analysis
+ * @property {number} [maxMutants] Upper bound of analysed mutations during mutation analysis
+ * @property {number} [activationTraces] Number of activation traces for surprise adequacy based error detection
+ * @property {boolean} [traceBlocks] Activates recording of block traces
+ * @property {boolean} [stateActionRecorder] Records executed scratch events and maps them to the current program state
+ * @property {string} [recordProject] Executes procedure for collecting recording data of single project
+ * @property {number} [time] Sets the time for how long gameplay should be recorded in seconds
+ * @property {string} whiskerUrl Path to index.html of Whisker Web
+ */
+
+/**
  * The name of the Whisker subcommand that was invoked.
  *
  * @type {string}
@@ -13,7 +41,7 @@ let subcommand = '';
 /**
  * The command-line options given to servant.js, parsed as an object of key-value pairs.
  *
- * @type {Object.<string, unknown>}
+ * @type {Opts}
  */
 let opts = {};
 
