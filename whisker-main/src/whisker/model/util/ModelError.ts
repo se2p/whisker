@@ -9,11 +9,11 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     let containsAfterTime: string;
     let containsElapsed: string;
 
-    for (let i = 0; i < conditions.length; i++) {
-        if (conditions[i].name == CheckName.TimeBetween || conditions[i].name == CheckName.TimeAfterEnd) {
-            containsAfterTime = conditions[i].args[0].toString();
-        } else if (conditions[i].name == CheckName.TimeElapsed) {
-            containsElapsed = conditions[i].args[0].toString();
+    for (const c of conditions) {
+        if (c.name == CheckName.TimeBetween || c.name == CheckName.TimeAfterEnd) {
+            containsAfterTime = c.args[0].toString();
+        } else if (c.name == CheckName.TimeElapsed) {
+            containsElapsed = c.args[0].toString();
         }
     }
 

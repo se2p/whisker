@@ -75,10 +75,8 @@ export class Check {
                 throw error;
             }
 
-            for (let i = 0; i < length; i++) {
-                if (args[i] == undefined) {
-                    throw error;
-                }
+            if (args.some((arg) => arg == undefined)) {
+                throw error;
             }
         };
 
@@ -220,27 +218,23 @@ export class Check {
     }
 
     equals(check: Check): boolean {
-        return this.name == check.name && this.negated == check.negated && this.arrayEquals(this.args, check.args);
+        return this.name == check.name && this.negated == check.negated && this._arrayEquals(this.args, check.args);
     }
 
-    private arrayEquals<T>(a: T[], b: T[]): boolean {
+    private _arrayEquals<T>(a: T[], b: T[]): boolean {
         return a.length === b.length && a.every((val, index): boolean => val === b[index]);
     }
 
     isInvertedOf(check: Check): boolean {
-        return this.name == check.name && this.negated != check.negated && this.arrayEquals(this.args, check.args);
+        return this.name == check.name && this.negated != check.negated && this._arrayEquals(this.args, check.args);
     }
 
     static testForContradictingWithEvents(check1: Check, eventStrings: string[]): boolean {
-        for (let i = 0; i < eventStrings.length; i++) {
-            const event = eventStrings[i];
-            const {negated, name, args} = CheckUtility.splitEventString(event);
+        return eventStrings.some((e) => {
+            const {negated, name, args} = CheckUtility.splitEventString(e);
             const checkDummy = new Check("dummy", "dummyEdge", name, args, negated);
-            if (Check.testForContradicting(check1, checkDummy)) {
-                return true;
-            }
-        }
-        return false;
+            return Check.testForContradicting(check1, checkDummy);
+        });
     }
 
     /**
@@ -270,7 +264,7 @@ export class Check {
                     return false;
                 }
 
-                return Check.checkChange(check1, check2);
+                return Check._checkChange(check1, check2);
             case CheckName.VarComp:
             case CheckName.AttrComp:
                 if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
@@ -280,13 +274,13 @@ export class Check {
                 comp1 = check1.args[2];
                 comp2 = check2.args[2];
                 if (check1.negated) {
-                    comp1 = this.getInvertedCompOp(comp1);
+                    comp1 = this._getInvertedCompOp(comp1);
                 }
                 if (check2.negated) {
-                    comp2 = this.getInvertedCompOp(comp2);
+                    comp2 = this._getInvertedCompOp(comp2);
                 }
 
-                return this.checkComparison(comp1, comp2, check1.args[3], check2.args[3]);
+                return this._checkComparison(comp1, comp2, check1.args[3], check2.args[3]);
             case CheckName.NbrOfVisibleClones:
             case CheckName.NbrOfClones:
                 if (check1.args[0] != check2.args[0]) {
@@ -296,20 +290,20 @@ export class Check {
                 comp1 = check1.args[1];
                 comp2 = check2.args[1];
                 if (check1.negated) {
-                    comp1 = this.getInvertedCompOp(comp1);
+                    comp1 = this._getInvertedCompOp(comp1);
                 }
                 if (check2.negated) {
-                    comp2 = this.getInvertedCompOp(comp2);
+                    comp2 = this._getInvertedCompOp(comp2);
                 }
 
-                return this.checkComparison(comp1, comp2, check1.args[2], check2.args[2]);
+                return this._checkComparison(comp1, comp2, check1.args[2], check2.args[2]);
 
             default:
                 return false;
         }
     }
 
-    private static checkChange(check1: Check, check2: Check): boolean {
+    private static _checkChange(check1: Check, check2: Check): boolean {
         let change1 = String(check1.args[2]);
         let change2 = String(check2.args[2]);
         let negated1 = check1.negated;
@@ -319,42 +313,47 @@ export class Check {
             // += & +=, -= & -= are not getting until here, caught before call to checkChange
             // += & -=, -= & += only tested here
             return check1.negated == check2.negated;
-        } else if (change1.length == 2) {
-            change1 = Check.getInvertedChangeOp(change1);
+        }
+
+        if (change1.length == 2) {
+            change1 = Check._getInvertedChangeOp(change1);
             negated1 = !negated1;
         } else if (change2.length == 2) {
-            change2 = Check.getInvertedChangeOp(change2);
+            change2 = Check._getInvertedChangeOp(change2);
             negated2 = !negated2;
         }
 
         if (change1 == change2) {
             return negated1 != negated2;
-        } else {
-            return !negated1 && !negated2;
         }
+
+        return !negated1 && !negated2;
     }
 
     // only for += and -=
-    private static getInvertedChangeOp(change: string): string {
+    private static _getInvertedChangeOp(change: string): string {
         return change == "+=" ? "-" : "+";
     }
 
-    private static getInvertedCompOp(comp: ArgType): string {
-        if (comp == "=" || comp == "==") {
-            return "!=";
-        } else if (comp == "<") {
-            return ">=";
-        } else if (comp == ">") {
-            return "<=";
-        } else if (comp == ">=") {
-            return "<";
-        } else if (comp == "<=") {
-            return ">";
+    private static _getInvertedCompOp(comp: ArgType): string {
+        switch (comp) {
+            case "=":
+            case "==":
+                return "!=";
+            case "<":
+                return ">=";
+            case ">":
+                return "<=";
+            case ">=":
+                return "<";
+            case "<=":
+                return ">";
+            default:
+                throw new Error("unknown comparison");
         }
-        throw new Error("unknown comparison");
     }
 
-    private static checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
+    private static _checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
         const comparison1 = String(pComparison1);
         const comparison2 = String(pComparison2);
         const value1 = String(pValue1);
@@ -368,11 +367,16 @@ export class Check {
         // =
         if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
             return value1 != value2;
-        } else if (comparison1 == '=' || comparison1 == '==') {
+        }
+
+        if (comparison1 == '=' || comparison1 == '==') {
             return !eval(value1 + comparison2 + value2);
-        } else if (comparison2 == '=' || comparison2 == '==') {
+        }
+
+        if (comparison2 == '=' || comparison2 == '==') {
             return !eval(value2 + comparison1 + value1);
         }
+
         // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
         if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
             return false;
