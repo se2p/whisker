@@ -78,7 +78,7 @@ describe('Test Gradient Descent', () => {
     let augmentationParameter: augmentationParameter;
     const statement = "}Gp_.7).xv-]IUt.!E1/-Bowl"; // Catching the apple for 30 seconds.
 
-    logger.suggest.deny("", "debug");
+    logger.suggest.deny(/.*/, "debug");
 
     beforeEach(() => {
         augmentationParameter = {

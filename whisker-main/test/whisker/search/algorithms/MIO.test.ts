@@ -47,7 +47,7 @@ describe('MIO', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        logger.suggest.deny("", "debug");
+        logger.suggest.deny(/.*/, "debug");
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mio');
 

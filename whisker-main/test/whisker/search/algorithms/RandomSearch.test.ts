@@ -40,7 +40,7 @@ describe('RandomSearch', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        logger.suggest.deny("", "debug");
+        logger.suggest.deny(/.*/, "debug");
     });
 
     test('Trivial bitstring with OneMax', async () => {

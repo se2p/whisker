@@ -47,7 +47,7 @@ describe("Test NeatCrossover", () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
 
-        logger.suggest.deny("", "debug");
+        logger.suggest.deny(/.*/, "debug");
 
         // Create Nodes of first network
         const iNode1 = new InputNode(0, "Sprite1", "X-Position");

@@ -32,7 +32,7 @@ describe("Test NeatPopulation", () => {
     let crossover: NeatCrossover;
 
     beforeEach(() => {
-        logger.suggest.deny("", "debug");
+        logger.suggest.deny(/.*/, "debug");
         size = 10;
         numberOfSpecies = 5;
         NeatPopulation.innovations = [];
