@@ -28,8 +28,8 @@ export interface SimpleInputEffect {
 export class InputEffect {
     id: string;
     name: InputEffectName;
-    private inputEffect: (t: TestDriver) => void;
-    private readonly args: ArgType[];
+    private _inputEffect: (t: TestDriver) => void;
+    private readonly _args: ArgType[];
 
     /**
      * Get an input effect. Checks the length of the arguments based on the input type.
@@ -43,7 +43,7 @@ export class InputEffect {
         }
         this.name = name;
         this.id = id;
-        this.args = args;
+        this._args = args;
 
         // Todo: refactor this code
         const _testArgs = function (length: number) {
@@ -51,12 +51,7 @@ export class InputEffect {
                 return false;
             }
 
-            for (let i = 0; i < length; i++) {
-                if (args[i] == undefined) {
-                    return false;
-                }
-            }
-            return true;
+            return args.every((arg) => arg != undefined);
         };
         let isOK = true;
         switch (name) {
@@ -82,25 +77,25 @@ export class InputEffect {
      * Input the saved input effects of this instance to the test driver.
      */
     inputImmediate(t: TestDriver): void {
-        this.inputEffect(t);
+        this._inputEffect(t);
     }
 
     /**
      * Register the test driver and convert the saved input arguments to an executable input function for fast input.
      */
     registerComponents(t: TestDriver, caseSensitive: boolean): void {
-        this.inputEffect = this.getInputDataFunction(t, caseSensitive, this.args);
+        this._inputEffect = this._getInputDataFunction(t, caseSensitive, this._args);
     }
 
     simplifyForSave(): SimpleInputEffect {
         return {
             id: this.id,
             name: this.name,
-            args: this.args
+            args: this._args
         };
     }
 
-    private getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: ArgType[]) {
+    private _getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: ArgType[]) {
         switch (this.name) {
             case InputEffectName.InputKey:
                 return () => {

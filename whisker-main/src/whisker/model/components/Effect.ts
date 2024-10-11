@@ -22,7 +22,7 @@ export class Effect extends Check {
         if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
             this.dependsOnSayText = true;
         } else if (name == CheckName.Function || name == CheckName.Expr) {
-            this.dependsOnSayText = String(args[0]).indexOf(".sayText") != -1;
+            this.dependsOnSayText = String(args[0]).includes(".sayText");
         } else {
             this.dependsOnSayText = false;
         }
