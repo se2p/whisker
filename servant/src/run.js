@@ -79,7 +79,7 @@ async function runTests(whisker, targetProject) {
      * entire test run.
      * @returns {Promise<string>}
      */
-    async function readTestOutput() {
+    async function readTestResults() {
         const logOutput = await page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -148,7 +148,7 @@ async function runTests(whisker, targetProject) {
         const promise = onFinishedCallback();
         await (await page.$('#run-all-tests')).click();
 
-        const csvRow = await readTestOutput();
+        const csvRow = await readTestResults();
         const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
 
         return Promise.resolve({

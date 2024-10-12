@@ -13,10 +13,10 @@ const {
 // Dynamic Test suite using Neuroevolution
 async function generateDynamicTests(pool) {
     await pool.run(async (whisker) => {
-        const output = await runDynamicTestSuite(whisker, scratchPath.path);
+        const results = await runDynamicTestSuite(whisker, scratchPath.path);
         if (csvFile) {
             logger.info("Creating CSV summary in " + csvFile);
-            fs.writeFileSync(csvFile, output);
+            fs.writeFileSync(csvFile, results);
         }
     });
 }
@@ -42,7 +42,7 @@ async function runDynamicTestSuite(whisker, path) {
      * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
      * run is over.
      */
-    async function readTestOutput() {
+    async function readTestResults() {
         const logOutput = await whisker.page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -71,8 +71,8 @@ async function runDynamicTestSuite(whisker, path) {
         await whisker.uploadProject(path);
         logger.debug("Dynamic TestSuite");
         await executeTests();
-        const csvOutput = await readTestOutput();
-        return Promise.resolve(csvOutput);
+        const results = await readTestResults();
+        return Promise.resolve(results);
     } catch (e) {
         return Promise.reject(e);
     }

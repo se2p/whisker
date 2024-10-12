@@ -42,7 +42,7 @@ async function configureWhiskerWebInstance(whisker) {
 }
 
 async function runGeneticSearch(page) {
-    async function readTestOutput() {
+    async function readTestResults() {
         const logOutput = await page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -78,10 +78,10 @@ async function runGeneticSearch(page) {
     try {
         logger.debug("Executing search");
         await executeSearch();
-        const output = await readTestOutput();
+        const results = await readTestResults();
         logger.debug(`Downloading tests to ${testDownloadDir}`);
         await downloadTests();
-        return Promise.resolve(output);
+        return Promise.resolve(results);
     } catch (e) {
         return Promise.reject(e);
     }
