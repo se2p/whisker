@@ -1,7 +1,7 @@
 const logger = require("./logger");
 const fs = require("fs");
 const {
-    csvFile,
+    output,
     testDownloadDir,
     testPath,
     scratchPath,
@@ -19,9 +19,9 @@ async function generateTests({page}) {
         const csv = await runGeneticSearch(page);
         logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         // Save results in CSV-file if specified
-        if (csvFile) {
-            logger.info(`Creating CSV summary in ${csvFile}`);
-            fs.writeFileSync(csvFile, csv);
+        if (output) {
+            logger.info(`Creating CSV summary in ${output}`);
+            fs.writeFileSync(output, csv);
         }
     } catch (e) {
         logger.error('Error on generating tests: ', e)

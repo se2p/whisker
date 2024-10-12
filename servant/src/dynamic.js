@@ -5,7 +5,7 @@ const Whiskers = require("./whiskers");
 
 const {
     scratchPath,
-    csvFile,
+    output,
     configPath,
     testPath,
 } = opts;
@@ -14,9 +14,9 @@ const {
 async function generateDynamicTests(pool) {
     await pool.run(async (whisker) => {
         const results = await runDynamicTestSuite(whisker, scratchPath.path);
-        if (csvFile) {
-            logger.info("Creating CSV summary in " + csvFile);
-            fs.writeFileSync(csvFile, results);
+        if (output) {
+            logger.info("Creating CSV summary in " + output);
+            fs.writeFileSync(output, results);
         }
     });
 }

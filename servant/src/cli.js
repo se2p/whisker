@@ -6,7 +6,7 @@ const {relativeToServantDir} = require("./util");
 /**
  * @typedef {Object} Opts
  * @property {number} acceleration Accelerate Scratch VM by the given factor
- * @property {string} [csvFile] Path to CSV file with results
+ * @property {string} [output] Path to CSV file with results
  * @property {string} [seed] Seed for the Scratch VM
  * @property {boolean} headless Run in headless mode
  * @property {boolean} [useSaveStates] Reset project using save states, rather than by reloading it
@@ -89,7 +89,7 @@ class WhiskerSubCommand extends Command {
             (factor) => util.processPositiveInt(factor, true),
             1);
         this.option(
-            '-v, --csv-file <Path>',
+            '-o, --output <Path>',
             'create CSV file with results',
             (csvPath) => util.processFilePathNotExists(csvPath));
         this.option(
@@ -145,7 +145,7 @@ class WhiskerSubCommand extends Command {
                 'headless',
                 'scratchPath',
                 'testPath',
-                'csvFile',
+                'output',
                 'seed',
             ];
 

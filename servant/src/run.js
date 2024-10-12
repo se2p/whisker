@@ -13,7 +13,7 @@ const Whiskers = require("./whiskers");
 const opts = require("./cli").opts;
 const {
     testPath,
-    csvFile,
+    output,
     numberOfJobs,
 } = opts;
 
@@ -196,14 +196,14 @@ async function run(pool) {
         csvs = processResults(results);
     }
 
-    if (csvFile) {
-        logger.info(`Creating CSV summary in ${csvFile}`);
+    if (output) {
+        logger.info(`Creating CSV summary in ${output}`);
 
         // There can only be multiple headers if there is more than one csv result.
         if (csvs.length > 1) {
-            fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join('\n'));
+            fs.writeFileSync(output, removeDuplicateHeaders(csvs).join('\n'));
         } else {
-            fs.writeFileSync(csvFile, csvs.toString());
+            fs.writeFileSync(output, csvs.toString());
         }
     }
 }

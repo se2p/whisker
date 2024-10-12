@@ -90,7 +90,7 @@ Options:
   -m, --mutators <String...>        mutation operators to apply
   -s, --scratch-path <Path>         path to file (".sb3") or folder with scratch application(s)
   -t, --test-path <Path>            path to Whisker tests to run (".js")
-  -v, --csv-file <Path>             create CSV file with results
+  -o, --output <Path>               create CSV file with results
   -z, --seed <String>               custom seed for Scratch-VM
   -tb, --trace-blocks               whether block traces should be recorded and downloaded (default: false)
 ```
