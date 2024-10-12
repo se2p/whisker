@@ -139,14 +139,9 @@ class WhiskerSubCommand extends Command {
                 throw new InvalidArgumentError('Test acceleration can only be used with Whisker tests!');
             }
 
-            if (opts.numberOfJobs !== 1) {
-                throw new InvalidArgumentError('Parallel execution can only be used with Whisker tests!');
-            }
-
             const validBBTOptions = [
                 // always present
                 'acceleration',
-                'numberOfJobs',
 
                 // actually valid BBT options
                 'headless',
@@ -155,6 +150,7 @@ class WhiskerSubCommand extends Command {
                 'output',
                 'seed',
                 'verbose',
+                'numberOfJobs',
             ];
 
             for (const key of Object.keys(opts)) {
