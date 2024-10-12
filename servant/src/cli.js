@@ -330,7 +330,14 @@ class WhiskerSubCommand extends Command {
  * and validate CLI arguments if needed, for example, to convert a string into a number, or to make sure a file exists.
  */
 
+/**
+ * Creates a new Whisker subcommand of the given name.
+ *
+ * @param name {string} The name of the subcommand
+ * @return {WhiskerSubCommand}
+ */
 function newSubCommand(name) {
+    // noinspection JSValidateTypes
     return whiskerCLI.command(name);
 }
 
