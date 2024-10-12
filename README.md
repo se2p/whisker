@@ -88,9 +88,7 @@ Options:
   -h, --help                        display help for command
   -j, --number-of-jobs <Integer>    number of jobs (Chromium tabs) for test execution (default: 1)
   -k, --console-forwarded           forward browser console output
-  -l, --live-log                    print new log output regularly
   -m, --mutators <String...>        mutation operators to apply
-  -o, --live-output-coverage        print new coverage output regularly
   -s, --scratch-path <Path>         path to file (".sb3") or folder with scratch application(s)
   -t, --test-path <Path>            path to Whisker tests to run (".js")
   -v, --csv-file <Path>             create CSV file with results
