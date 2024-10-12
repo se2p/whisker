@@ -55,7 +55,7 @@ const whiskerCLI = new class extends Command {
 
         this.name(invocation);
         this.version(version);
-        this.description(description);
+        this.description(`Whisker: ${description}`);
     }
 
     createCommand(name) {
