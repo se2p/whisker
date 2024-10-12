@@ -258,7 +258,7 @@ class VMWrapper {
                 this._totalTimeElapsed = this.vm.runtime.currentMSecs;
                 this._runTimeElapsed = this._totalTimeElapsed - timeBefore;
 
-                const realTimeAfter = Date.now()
+                const realTimeAfter = Date.now();
                 this._realTotalTimeElapsed = realTimeAfter - this._realStartTime;
                 this._realRunTimeElapsed = realTimeAfter - realTimeBefore;
 

@@ -60,7 +60,7 @@ class TestRunner extends EventEmitter {
         this._setRNGSeeds(props['seed'], sampleTest, vm);
 
         // Load the project and establish an initial save state
-        vm.setInterrogativeDebuggerSupported(false)
+        vm.setInterrogativeDebuggerSupported(false);
         this.util = await this._loadProject(vm, project, props);
         this.vmWrapper.useSaveStates = props.useSaveStates;
         this.saveState = this.vmWrapper._recordInitialState();

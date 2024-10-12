@@ -103,7 +103,7 @@ class Input {
                 this._inputs.vmWrapper.vm.runtime.emit('ANSWER', data.answer);
                 break;
             case 'drag':
-                this._inputs.vmWrapper.sprites.getSprite(data.sprite).getScratchTarget().setXY(data.x, data.y)
+                this._inputs.vmWrapper.sprites.getSprite(data.sprite).getScratchTarget().setXY(data.x, data.y);
                 break;
             case 'microphone':
                 this._inputs.vmWrapper.vm.runtime.virtualSound = data.volume;

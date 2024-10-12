@@ -28,7 +28,7 @@ class ModelResult {
         /**
          * @type {string[]}
          */
-        this.edgeTrace = []
+        this.edgeTrace = [];
 
         /**
          * States of the variables
