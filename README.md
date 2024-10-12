@@ -87,7 +87,6 @@ Options:
   -dm, --download-mutants           downloads the generated mutants
   -h, --help                        display help for command
   -j, --number-of-jobs <Integer>    number of jobs (Chromium tabs) for test execution (default: 1)
-  -k, --console-forwarded           forward browser console output
   -m, --mutators <String...>        mutation operators to apply
   -s, --scratch-path <Path>         path to file (".sb3") or folder with scratch application(s)
   -t, --test-path <Path>            path to Whisker tests to run (".js")

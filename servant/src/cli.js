@@ -9,7 +9,6 @@ const {relativeToServantDir} = require("./util");
  * @property {string} [csvFile] Path to CSV file with results
  * @property {string} [seed] Seed for the Scratch VM
  * @property {boolean} headless Run in headless mode
- * @property {boolean} [consoleForwarded] Forward browser log messages to the console
  * @property {boolean} [useSaveStates] Reset project using save states, rather than by reloading it
  * @property {string} [scratchPath] Path to Scratch file or folder with Scratch files
  * @property {string} [testPath] Path to Whisker test suite or BBT project
@@ -100,7 +99,6 @@ class WhiskerSubCommand extends Command {
             '-d, --headless',
             'run headless ("d" like in "decapitated")',
             false); // Has to be false, not undefined, as Puppeteer will not work properly otherwise.
-        this.option('-k, --console-forwarded', 'forward browser console output');
         this.option(
             '--use-save-states',
             'Whether to reset a project by using save states rather than reloading it.'
@@ -149,7 +147,6 @@ class WhiskerSubCommand extends Command {
                 'testPath',
                 'csvFile',
                 'seed',
-                'consoleForwarded'
             ];
 
             for (const key of Object.keys(opts)) {

@@ -3,7 +3,7 @@ const Minilog = require('minilog');
 const {format} = require("util");
 const logger = require("./logger");
 const opts = require("./cli").opts;
-const {consoleForwarded, headless, whiskerUrl} = opts;
+const {headless, whiskerUrl} = opts;
 
 // Workaround for Whisker issue #241
 async function openNewBrowserWithRetry(options) {
@@ -227,10 +227,7 @@ async function openNewPage(browser) {
 
 async function configureWhiskerWeb(page, {waitUntil = "networkidle0", id = ""} = {}) {
     rejectOnError(page);
-
-    if (consoleForwarded) {
-        forwardConsoleMessages(page, id);
-    }
+    forwardConsoleMessages(page, id);
 
     // Set navigation timeout to 5 min
     page.setDefaultNavigationTimeout(300000);
