@@ -26,6 +26,7 @@ const {relativeToServantDir} = require("./util");
  * @property {string} [recordProject] Executes procedure for collecting recording data of single project
  * @property {number} [time] Sets the time for how long gameplay should be recorded in seconds
  * @property {string} whiskerUrl Path to index.html of Whisker Web
+ * @property {number} verbose The verbosity level
  */
 
 /**
@@ -103,6 +104,12 @@ class WhiskerSubCommand extends Command {
             '--use-save-states',
             'Whether to reset a project by using save states rather than reloading it.'
         );
+        this.option(
+            '-v, --verbose',
+            'Verbose mode. Prints debug messages. Multiple -v increase verbosity. The maximum is 2.',
+            (_, v) => v === 2 ? v : v + 1,
+            0
+        );
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -147,6 +154,7 @@ class WhiskerSubCommand extends Command {
                 'testPath',
                 'output',
                 'seed',
+                'verbose',
             ];
 
             for (const key of Object.keys(opts)) {

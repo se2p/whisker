@@ -93,6 +93,7 @@ Options:
   -o, --output <Path>               create CSV file with results
   -z, --seed <String>               custom seed for Scratch-VM
   -tb, --trace-blocks               whether block traces should be recorded and downloaded (default: false)
+  -v, --verbose                     Verbose mode. Prints debug messages. Multiple -v increase verbosity.
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
