@@ -13,7 +13,7 @@ const Whiskers = require("./whiskers");
 const opts = require("./cli").opts;
 const {
     testPath,
-    csvFile,
+    output,
     numberOfJobs,
 } = opts;
 
@@ -79,7 +79,7 @@ async function runTests(whisker, targetProject) {
      * entire test run.
      * @returns {Promise<string>}
      */
-    async function readTestOutput() {
+    async function readTestResults() {
         const logOutput = await page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -148,7 +148,7 @@ async function runTests(whisker, targetProject) {
         const promise = onFinishedCallback();
         await (await page.$('#run-all-tests')).click();
 
-        const csvRow = await readTestOutput();
+        const csvRow = await readTestResults();
         const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
 
         return Promise.resolve({
@@ -196,14 +196,14 @@ async function run(pool) {
         csvs = processResults(results);
     }
 
-    if (csvFile) {
-        logger.info(`Creating CSV summary in ${csvFile}`);
+    if (output) {
+        logger.info(`Creating CSV summary in ${output}`);
 
         // There can only be multiple headers if there is more than one csv result.
         if (csvs.length > 1) {
-            fs.writeFileSync(csvFile, removeDuplicateHeaders(csvs).join('\n'));
+            fs.writeFileSync(output, removeDuplicateHeaders(csvs).join('\n'));
         } else {
-            fs.writeFileSync(csvFile, csvs.toString());
+            fs.writeFileSync(output, csvs.toString());
         }
     }
 }

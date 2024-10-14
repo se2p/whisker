@@ -6,12 +6,9 @@ const {relativeToServantDir} = require("./util");
 /**
  * @typedef {Object} Opts
  * @property {number} acceleration Accelerate Scratch VM by the given factor
- * @property {string} [csvFile] Path to CSV file with results
+ * @property {string} [output] Path to CSV file with results
  * @property {string} [seed] Seed for the Scratch VM
  * @property {boolean} headless Run in headless mode
- * @property {boolean} [consoleForwarded] Forward browser log messages to the console
- * @property {boolean} [liveLog] Print new log output regularly
- * @property {boolean} [liveOutputCoverage] Print new coverage output regularly
  * @property {boolean} [useSaveStates] Reset project using save states, rather than by reloading it
  * @property {string} [scratchPath] Path to Scratch file or folder with Scratch files
  * @property {string} [testPath] Path to Whisker test suite or BBT project
@@ -29,6 +26,7 @@ const {relativeToServantDir} = require("./util");
  * @property {string} [recordProject] Executes procedure for collecting recording data of single project
  * @property {number} [time] Sets the time for how long gameplay should be recorded in seconds
  * @property {string} whiskerUrl Path to index.html of Whisker Web
+ * @property {number} verbose The verbosity level
  */
 
 /**
@@ -57,7 +55,7 @@ const whiskerCLI = new class extends Command {
 
         this.name(invocation);
         this.version(version);
-        this.description(description);
+        this.description(`Whisker: ${description}`);
     }
 
     createCommand(name) {
@@ -92,7 +90,7 @@ class WhiskerSubCommand extends Command {
             (factor) => util.processPositiveInt(factor, true),
             1);
         this.option(
-            '-v, --csv-file <Path>',
+            '-o, --output <Path>',
             'create CSV file with results',
             (csvPath) => util.processFilePathNotExists(csvPath));
         this.option(
@@ -102,12 +100,15 @@ class WhiskerSubCommand extends Command {
             '-d, --headless',
             'run headless ("d" like in "decapitated")',
             false); // Has to be false, not undefined, as Puppeteer will not work properly otherwise.
-        this.option('-k, --console-forwarded', 'forward browser console output');
-        this.option('-l, --live-log', 'print new log output regularly');
-        this.option('-o, --live-output-coverage', 'print new coverage output regularly');
         this.option(
             '--use-save-states',
             'Whether to reset a project by using save states rather than reloading it.'
+        );
+        this.option(
+            '-v, --verbose',
+            'Verbose mode. Prints debug messages. Multiple -v increase verbosity. The maximum is 2.',
+            (_, v) => v === 2 ? v : v + 1,
+            0
         );
     }
 
@@ -138,22 +139,18 @@ class WhiskerSubCommand extends Command {
                 throw new InvalidArgumentError('Test acceleration can only be used with Whisker tests!');
             }
 
-            if (opts.numberOfJobs !== 1) {
-                throw new InvalidArgumentError('Parallel execution can only be used with Whisker tests!');
-            }
-
             const validBBTOptions = [
                 // always present
                 'acceleration',
-                'numberOfJobs',
 
                 // actually valid BBT options
                 'headless',
                 'scratchPath',
                 'testPath',
-                'csvFile',
+                'output',
                 'seed',
-                'consoleForwarded'
+                'verbose',
+                'numberOfJobs',
             ];
 
             for (const key of Object.keys(opts)) {
@@ -334,7 +331,14 @@ class WhiskerSubCommand extends Command {
  * and validate CLI arguments if needed, for example, to convert a string into a number, or to make sure a file exists.
  */
 
+/**
+ * Creates a new Whisker subcommand of the given name.
+ *
+ * @param name {string} The name of the subcommand
+ * @return {WhiskerSubCommand}
+ */
 function newSubCommand(name) {
+    // noinspection JSValidateTypes
     return whiskerCLI.command(name);
 }
 

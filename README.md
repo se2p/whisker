@@ -87,15 +87,13 @@ Options:
   -dm, --download-mutants           downloads the generated mutants
   -h, --help                        display help for command
   -j, --number-of-jobs <Integer>    number of jobs (Chromium tabs) for test execution (default: 1)
-  -k, --console-forwarded           forward browser console output
-  -l, --live-log                    print new log output regularly
   -m, --mutators <String...>        mutation operators to apply
-  -o, --live-output-coverage        print new coverage output regularly
   -s, --scratch-path <Path>         path to file (".sb3") or folder with scratch application(s)
   -t, --test-path <Path>            path to Whisker tests to run (".js")
-  -v, --csv-file <Path>             create CSV file with results
+  -o, --output <Path>               create CSV file with results
   -z, --seed <String>               custom seed for Scratch-VM
   -tb, --trace-blocks               whether block traces should be recorded and downloaded (default: false)
+  -v, --verbose                     Verbose mode. Prints debug messages. Multiple -v increase verbosity.
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an

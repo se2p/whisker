@@ -1,14 +1,14 @@
 const fs = require("fs");
 const logger = require("./logger");
-const {testPath, csvFile} = require("./cli").opts;
+const {testPath, output} = require("./cli").opts;
 const {getProjectsInScratchPath} = require("./common");
 
 async function getOutputLogWhenBBTTestsAreDone(page, clearLogAfterFinished = false) {
-    const output = await page.$('#output-log .output-content');
+    const logOutput = await page.$('#output-log .output-content');
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        const log = await (await output.getProperty('innerHTML')).jsonValue();
+        const log = await (await logOutput.getProperty('innerHTML')).jsonValue();
 
         if (log.includes('Block-Based Tests have finished!')) {
 
@@ -96,7 +96,7 @@ async function evaluateProjects(pool, projects, testPath) {
 }
 
 function writeCsv(results) {
-    console.info(`Creating CSV summary in ${csvFile}`);
+    console.info(`Creating CSV summary in ${output}`);
 
     let headersWritten = false;
 
@@ -118,7 +118,7 @@ function writeCsv(results) {
         }
         line = line.slice(0, -1) + "\n";
 
-        fs.writeFile(csvFile, line, {encoding: "utf8", flag: "a"}, (err) => {
+        fs.writeFile(output, line, {encoding: "utf8", flag: "a"}, (err) => {
             if (err) {
                 logger.error(err);
             }
@@ -132,7 +132,7 @@ async function testByBlockBasedTests(pool) {
     logger.info(`Testing ${projects.length} project(s) against the test file.`);
     const results = await evaluateProjects(pool, projects, testPath);
 
-    if (csvFile) {
+    if (output) {
         writeCsv(results);
     }
 }

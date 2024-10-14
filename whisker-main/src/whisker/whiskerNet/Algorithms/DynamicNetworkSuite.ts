@@ -245,7 +245,6 @@ export class DynamicNetworkSuite {
      * for creating a csv file with the results of the test execution.
      */
     private async initialiseCommonVariables(): Promise<void> {
-
         // Set up Scratch VM.
         const util = new WhiskerUtil(this.vm, this.project);
         const vmWrapper = util.getVMWrapper();
@@ -257,9 +256,6 @@ export class DynamicNetworkSuite {
         Container.vmWrapper = vmWrapper;
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = this.properties['acceleration'] as number;
-        if (!this.properties['log']) {
-            logger.suggest.deny("whisker-main", "debug");
-        }
     }
 
     /**

@@ -1,7 +1,7 @@
 const logger = require("./logger");
 const fs = require("fs");
 const {
-    csvFile,
+    output,
     testDownloadDir,
     testPath,
     scratchPath,
@@ -19,9 +19,9 @@ async function generateTests({page}) {
         const csv = await runGeneticSearch(page);
         logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         // Save results in CSV-file if specified
-        if (csvFile) {
-            logger.info(`Creating CSV summary in ${csvFile}`);
-            fs.writeFileSync(csvFile, csv);
+        if (output) {
+            logger.info(`Creating CSV summary in ${output}`);
+            fs.writeFileSync(output, csv);
         }
     } catch (e) {
         logger.error('Error on generating tests: ', e)
@@ -42,7 +42,7 @@ async function configureWhiskerWebInstance(whisker) {
 }
 
 async function runGeneticSearch(page) {
-    async function readTestOutput() {
+    async function readTestResults() {
         const logOutput = await page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -78,10 +78,10 @@ async function runGeneticSearch(page) {
     try {
         logger.debug("Executing search");
         await executeSearch();
-        const output = await readTestOutput();
+        const results = await readTestResults();
         logger.debug(`Downloading tests to ${testDownloadDir}`);
         await downloadTests();
-        return Promise.resolve(output);
+        return Promise.resolve(results);
     } catch (e) {
         return Promise.reject(e);
     }

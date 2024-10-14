@@ -167,11 +167,6 @@ export class Search {
         logger.info("Starting Search based algorithm");
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
-
-        if (!configJson["debugLogging"]) {
-            logger.suggest.deny("whisker-main", "debug");
-        }
-
         const config = new WhiskerSearchConfiguration(configJson);
 
         Container.config = config;
