@@ -37,6 +37,11 @@ class Scratch extends EventEmitter {
     async loadProject (project) {
         this.project = project;
         this.vm.clear();
+
+        // Wait until a previous call to load the project finishes to avoid duplicate block ids.
+        while (this.vm.isLoading){
+            await new Promise(r => setTimeout(r, 2000));
+        }
         await this.vm.loadProject(project);
 
         // Note: this _step() is necessary to update the canvas. Otherwise, it remains blank, or it still shows the
