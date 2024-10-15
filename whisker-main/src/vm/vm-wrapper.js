@@ -404,6 +404,7 @@ class VMWrapper {
         // never call start() it needs to be initialized manually. Otherwise, blocks like "sensing loudness" break.
         this.vm.runtime.currentStepTime = STEP_TIME;
 
+        await this.waitForProjectLoadFinished();
         const returnValue = await this.vm.loadProject(project);
         await this._yield();
         return returnValue;
@@ -561,6 +562,17 @@ class VMWrapper {
         this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange);
     }
 
+
+    /**
+     * Wait until a previous call to load the project finishes to avoid duplicate block ids.
+     * @returns {Promise<void>}
+     */
+    async waitForProjectLoadFinished() {
+        while (this.vm.isLoading) {
+            await new Promise(r => setTimeout(r, 1000));
+        }
+    }
+
     /**
      * Resets the VM state to the state of the original .sb3 file by reloading it.
      * This approach has lead to page crashes before (see #217), but with !396 merged it should be fixed.
@@ -568,6 +580,7 @@ class VMWrapper {
      * @returns {Promise<void>}
      */
     async resetVM() {
+        await this.waitForProjectLoadFinished();
         await this.vm.loadProject(this._originalProjectJSON);
     }
 
