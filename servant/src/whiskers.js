@@ -237,9 +237,11 @@ class Whisker {
         };
 
         const before = Date.now();
-        await this._page.evaluate(() => window.Whisker.scratch.project = null); // To avoid issue #217
         await (await this._page.$('#fileselect-project')).uploadFile(projectPath);
-        await this._page.waitForFunction(() => window.Whisker.scratch.project, options);
+
+        // To avoid issues #217 and #321.
+        await this._page.waitForFunction(() => !window.Whisker.scratch.vm.isLoading, options);
+
         logger.info(`Whisker Web #${this._id} finished uploading project after`, Date.now() - before, "ms");
     }
 
