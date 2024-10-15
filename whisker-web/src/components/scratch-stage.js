@@ -40,7 +40,7 @@ class Scratch extends EventEmitter {
 
         // Wait until a previous call to load the project finishes to avoid duplicate block ids.
         while (this.vm.isLoading){
-            await new Promise(r => setTimeout(r, 2000));
+            await new Promise(r => setTimeout(r, 1000));
         }
         await this.vm.loadProject(project);
 
