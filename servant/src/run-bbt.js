@@ -96,7 +96,7 @@ async function evaluateProjects(pool, projects, testPath) {
 }
 
 function writeCsv(results) {
-    console.info(`Creating CSV summary in ${output}`);
+    logger.info(`Creating CSV summary in ${output}`);
 
     let headersWritten = false;
 
