@@ -1,5 +1,5 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
-const log = require('minilog')('vm-wrapper');
+const logger = require('../util/logger');
 const Sprites = require('./sprites');
 const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
@@ -338,7 +338,7 @@ class VMWrapper {
     abort() {
         this.cancelScratchRun();
         this.aborted = true;
-        log.warn("Run aborted");
+        logger.warn("Run aborted");
     }
 
     /**
