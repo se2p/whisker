@@ -365,8 +365,8 @@ export class DynamicNetworkSuite {
      * @param projectName the name of the executed project.
      * @param testName the name of the executed test file.
      */
-    protected async updateTestStatistics(testCases: readonly NeatChromosome[], projectName: Readonly<string>,
-                                         testName: Readonly<string>): Promise<void> {
+    protected async updateTestStatistics(testCases: readonly NeatChromosome[], projectName: string,
+                                         testName: string): Promise<void> {
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
             const statements = [...this.statementMap.keys()].length;

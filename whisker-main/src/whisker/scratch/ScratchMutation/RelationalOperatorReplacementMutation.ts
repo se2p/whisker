@@ -1,6 +1,6 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchProgram} from "../ScratchInterface";
+import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
 import {OperatorFilter} from "scratch-analysis/src/block-filter";
 import {Randomness} from "../../utils/Randomness";
 
@@ -17,19 +17,18 @@ export class RelationalOperatorReplacementMutation extends ScratchMutation {
      * chosen different one.
      * @param mutationBlockId the id of the block whose relational operation should be replaced.
      * @param mutantProgram the mutant program in which the relational operation will be replaced.
-     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
+    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
         const originalOpcode = mutationBlock['opcode'];
         let mutantOpcode = Randomness.getInstance().pick(RelationalOperatorReplacementMutation.RELATIONAL_OPCODES);
         while (mutantOpcode === originalOpcode) {
             mutantOpcode = Randomness.getInstance().pick(RelationalOperatorReplacementMutation.RELATIONAL_OPCODES);
         }
         mutationBlock['opcode'] = mutantOpcode;
-        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
-        mutantProgram.name = `ROR:${originalOpcode}-${mutantOpcode}-${blockId}`.replace(/,/g, '');
+        const mutantId = this.getMutantId(mutationBlockId);
+        mutantProgram.name = `ROR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 
@@ -51,7 +50,7 @@ export class RelationalOperatorReplacementMutation extends ScratchMutation {
      * String representation of a given mutator.
      * @returns string representation of the mutator.
      */
-    public toString():string{
+    public toString(): string {
         return 'ROR';
     }
 }
