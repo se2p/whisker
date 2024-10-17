@@ -2,21 +2,25 @@
     "name": "servant",
     "version": "0.8.0",
     "description": "Servant for Whisker",
-    "main": "servant.js",
+    "main": "src/servant.js",
     "dependencies": {
-        "chalk": "^4.1.2",
+        "async-mutex": "^0.5.0",
         "commander": "^9.3.0",
         "csv-stringify": "^5.6.5",
+        "generic-pool": "^3.9.0",
         "js-yaml": "^4.1.0",
+        "minilog": "^3.1.0",
         "puppeteer": "^22.12.1",
-        "rimraf": "3.0.2",
         "whisker-web": "0.8.0",
         "yaml": "^1.10.2"
     },
     "scripts": {
         "build": "webpack --color --bail",
         "build:watch": "webpack --color --watch",
-        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail"
+        "build:clean": "if [ -d dist ]; then rm -rf dist; fi && webpack --color --bail",
+        "test": "jest --runInBand",
+        "unittest": "jest test/unit/*.test.js --runInBand",
+        "integrationtest": "jest test/integration/*.test.js --runInBand"
     },
     "author": "",
     "license": "ISC",

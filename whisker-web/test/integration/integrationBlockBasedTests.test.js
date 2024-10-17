@@ -7,19 +7,18 @@ const URL = "dist/index.html";
 
 const timeout = 30000;
 
-async function loadProjectAndSwitchToProjectTab(scratchPath) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    const projectTab = await page.$('#tabProject');
-    await projectTab.evaluate(t => t.click());
-}
-
-async function getOutputLogWhenBBTTestsAreDone() {
+async function getOutputLogWhenBBTTestsAreDone(clearLogAfterFinished = false) {
     const output = await page.$('#output-log .output-content');
 
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
 
         if (log.includes('Block-Based Tests have finished!')) {
+
+            if (clearLogAfterFinished) {
+                await page.$eval('#output-log .output-content', logElement => logElement.innerHTML = '');
+            }
+
             return log;
         }
 
@@ -48,12 +47,25 @@ beforeEach(async () => {
         });
 
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
+
+    // prevent fancybox tooltip from opening
+    await page.evaluate(() => {
+        const tooltipLink = document.getElementById('project-contains-bbts-tooltip-link');
+        const dummyLink = document.createElement('a');
+        dummyLink.setAttribute('id', 'project-contains-bbts-tooltip-link')
+        tooltipLink.replaceWith(dummyLink);
+    });
 });
 
-describe('Block-Based Tests', () => {
+describe('Block-Based Tests Integration', () => {
 
     test('A small testing project that contains 4 Block-Based Tests (~6sec)', async () => {
-        await loadProjectAndSwitchToProjectTab('test/integration/blockBasedTesting/bbt-tests.sb3');
+
+        const projectWithBBTs = 'test/integration/blockBasedTesting/bbt-tests.sb3';
+
+        await (await page.$('#fileselect-project')).uploadFile(projectWithBBTs);
+        await (await page.$('#fileselect-tests')).uploadFile(projectWithBBTs);
+        await (await page.$('#tabProject')).click();
         await (await page.$('#run-all-tests')).click();
         const outputLog = await getOutputLogWhenBBTTestsAreDone();
 
@@ -71,6 +83,111 @@ describe('Block-Based Tests', () => {
             "\n";
 
         expect(outputLog).toEqual(expectedLog);
+    }, timeout);
+
+
+    test('Batch Evaluation', async () => {
+
+        await (await page.$('#fileselect-tests')).uploadFile('test/integration/blockBasedTesting/batchEval/bbt-batcheval-solution.sb3');
+
+        const projects = [
+            'test/integration/blockBasedTesting/batchEval/bbt-batcheval-correct-submission.sb3',
+            'test/integration/blockBasedTesting/batchEval/bbt-batcheval-wrong-submission.sb3',
+            'test/integration/blockBasedTesting/batchEval/bbt-batcheval-cheating-submission.sb3'
+        ];
+
+        const logs = [];
+
+        for (const project of projects) {
+            await (await page.$('#tabUpload')).click();
+            await (await page.$('#fileselect-project')).uploadFile(project);
+            await (await page.$('#tabProject')).click();
+            await (await page.$('#run-all-tests')).click();
+            logs.push(await getOutputLogWhenBBTTestsAreDone(true));
+        }
+
+        const expectedLog =
+            [
+                "# project: bbt-batcheval-correct-submission.sb3\n" +
+                "1 Block-Based Tests found in project!\n" +
+                "Block-Based Test \"move 50 steps on green flag click\": Test Result: pass\n" +
+                "Block-Based Tests have finished!\n" +
+                "\n",
+
+                "# project: bbt-batcheval-wrong-submission.sb3\n" +
+                "1 Block-Based Tests found in project!\n" +
+                "Block-Based Test \"move 50 steps on green flag click\": Error: CONDITION_IS_FALSE\n" +
+                "Block-Based Test \"move 50 steps on green flag click\": Test Result: fail\n" +
+                "Block-Based Tests have finished!\n" +
+                "\n",
+
+                "# project: bbt-batcheval-cheating-submission.sb3\n" +
+                "1 Block-Based Tests found in project!\n" +
+                "Block-Based Test \"move 50 steps on green flag click\": Error: CONDITION_IS_FALSE\n" +
+                "Block-Based Test \"move 50 steps on green flag click\": Test Result: fail\n" +
+                "Block-Based Tests have finished!\n" +
+                "\n"
+            ];
+
+        expect(logs).toEqual(expectedLog);
+
+    }, timeout);
+
+    test('Test seeding', async () => {
+
+        const logs = [];
+
+        // This project contains a single test that compares a random number to a hardcoded value.
+        const projectPath = 'test/integration/blockBasedTesting/bbt-test-seed-98765.sb3';
+
+        await (await page.$('#fileselect-project')).uploadFile(projectPath);
+        await (await page.$('#fileselect-tests')).uploadFile(projectPath);
+
+        await (await page.$('#tabProject')).click();
+
+        // no seed
+        await (await page.$('#run-all-tests')).click();
+        logs.push(await getOutputLogWhenBBTTestsAreDone(true));
+
+        // wrong seed (333)
+        await page.$eval('#seed', seedInput => seedInput.value = '333');
+        await (await page.$('#run-all-tests')).click();
+        logs.push(await getOutputLogWhenBBTTestsAreDone(true));
+
+        // correct seed (98765)
+        await page.$eval('#seed', seedInput => seedInput.value = '98765');
+        await (await page.$('#run-all-tests')).click();
+        logs.push(await getOutputLogWhenBBTTestsAreDone(true));
+
+
+        const expectedLog =
+            [
+                // no seed
+                "# project: bbt-test-seed-98765.sb3\n" +
+                "1 Block-Based Tests found in project!\n" +
+                "Block-Based Test \"Check if random number equals hardcoded value\": Error: ASSERTION_NOT_EQUAL\n" +
+                "Block-Based Test \"Check if random number equals hardcoded value\": Test Result: fail\n" +
+                "Block-Based Tests have finished!\n" +
+                "\n",
+
+                // wrong seed (333)
+                "# project: bbt-test-seed-98765.sb3\n" +
+                "1 Block-Based Tests found in project!\n" +
+                "Block-Based Test \"Check if random number equals hardcoded value\": Error: ASSERTION_NOT_EQUAL\n" +
+                "Block-Based Test \"Check if random number equals hardcoded value\": Test Result: fail\n" +
+                "Block-Based Tests have finished!\n" +
+                "\n",
+
+                // correct seed (98765)
+                "# project: bbt-test-seed-98765.sb3\n" +
+                "1 Block-Based Tests found in project!\n" +
+                "Block-Based Test \"Check if random number equals hardcoded value\": Test Result: pass\n" +
+                "Block-Based Tests have finished!\n" +
+                "\n"
+            ];
+
+        expect(logs).toEqual(expectedLog);
+
     }, timeout);
 
 });

@@ -32,6 +32,7 @@ import {TestMinimizer} from "./TestMinimizer";
 import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
 import {AssertionGenerator} from './AssertionGenerator';
+import logger from '../../util/logger';
 
 export abstract class TestGenerator {
 
@@ -110,7 +111,7 @@ export abstract class TestGenerator {
             Number.POSITIVE_INFINITY : Container.config.getMinimizationTimeBudget();
         const startTime = Date.now();
 
-        Container.debugLog(`Starting minimization for ${nTestsPreMinimization} tests and a time-limit of ${timeBudget}`);
+        logger.debug(`Starting minimization for ${nTestsPreMinimization} tests and a time-limit of ${timeBudget}`);
 
         // Sort by depth as leaves in the CDG cover all previous targets.
         const sortedFitnessFunctions = new Map<number, FitnessFunction<TestChromosome>>([...this._fitnessFunctions].sort((a, b) =>
@@ -154,7 +155,7 @@ export abstract class TestGenerator {
         }
 
         StatisticsCollector.getInstance().minimizedTests = nTestsPreMinimization - minimizedSuite.length;
-        Container.debugLog(`Minimization finished with a difference of ${minimizedSuite.length - nTestsPreMinimization} tests and a duration of ${Date.now() - startTime} ms`);
+        logger.debug(`Minimization finished with a difference of ${minimizedSuite.length - nTestsPreMinimization} tests and a duration of ${Date.now() - startTime} ms`);
         return minimizedSuite;
     }
 

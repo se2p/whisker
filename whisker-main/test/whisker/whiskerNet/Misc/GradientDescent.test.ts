@@ -14,11 +14,11 @@ import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNe
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkLoader";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
 import {TypeNumberEvent} from "../../../../src/whisker/testcase/events/TypeNumberEvent";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import Statistics from "../../../../src/whisker/utils/Statistics";
+import logger from "../../../../src/util/logger";
 
 
 const generateNetwork = () => {
@@ -78,8 +78,7 @@ describe('Test Gradient Descent', () => {
     let augmentationParameter: augmentationParameter;
     const statement = "}Gp_.7).xv-]IUt.!E1/-Bowl"; // Catching the apple for 30 seconds.
 
-    Container.debugLog = () => { /* suppress output */
-    };
+    logger.suggest.deny(/.*/, "debug");
 
     beforeEach(() => {
         augmentationParameter = {

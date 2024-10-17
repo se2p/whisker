@@ -92,7 +92,7 @@ class CoverageGenerator {
     static _coverBlock (blockId) {
         if (blockId) {
             // if (!_coveredBlockIds.has(blockId)) {
-            //     console.log(_blockDescriptions.get(blockId));
+            //     logger.debug(_blockDescriptions.get(blockId));
             // }
             _coveredBlockIds.add(blockId);
         }

@@ -2,6 +2,7 @@ const {$} = require('../web-libs');
 const index = require('../index');
 const Test = require('whisker-main/src/test-runner/test.js');
 const TestRunner = require('whisker-main/src/test-runner/test-runner.js');
+const logger = require("../logger");
 
 const FAIL_SIGN = '\u2717';
 const SKIP_SIGN = '\u26A0';
@@ -68,7 +69,7 @@ class TestTable {
         this.table.on('click', '.run-test', event => {
 
             if (window.Whisker.scratch.vm.runtime.bbtTestRunning) {
-                console.error('Cannot start a test while another is already running!');
+                logger.error('Cannot start a test while another is already running!');
                 return;
             }
 
@@ -256,7 +257,7 @@ class TestTable {
             test.bbtError = {};
         }
 
-        if (Object.hasOwn(test.bbtError, errorObject.type)) {
+        if (errorObject.type in test.bbtError) {
             test.bbtError[errorObject.type] += 1;
         } else {
             test.bbtError[errorObject.type] = 1;
@@ -312,7 +313,7 @@ class TestTable {
             return;
         }
 
-        if (Object.hasOwn(test, 'bbtPassingAssertionCount')) {
+        if ('bbtPassingAssertionCount' in test) {
             test.bbtPassingAssertionCount += 1;
         } else {
             test.bbtPassingAssertionCount = 1;
@@ -550,16 +551,14 @@ class TestTable {
         }
 
         if (test.type === 'BBT' &&
-            Object.hasOwn(test, 'testResultSign') &&
-            test.testResultSign !== null) {
+            'testResultSign' in test && test.testResultSign !== null) {
 
             result += `<td>${index.i18n.t('passing-assertion-count')}</td>
                        <td>${test.bbtPassingAssertionCount}</td>\n</tr>`;
         }
 
         if (test.type === 'BBT' &&
-            Object.hasOwn(test, 'bbtError') &&
-            test.bbtError !== null) {
+            'bbtError' in test && test.bbtError !== null) {
 
             for (const [key, value] of Object.entries(test.bbtError)) {
                 result += `<td>${index.i18n.t(key)}</td>

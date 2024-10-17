@@ -48,19 +48,26 @@ import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLoc
 import {ClusteringEventSelector, EventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
 import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
-import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
-import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
-import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {
+    BiasedVariableLengthConstrainedChromosomeMutation
+} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {BasicNeuroevolutionParameter, NeuroevolutionEventSelection} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
+import {
+    NeuroevolutionTestGenerationParameter
+} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {
+    BasicNeuroevolutionParameter,
+    NeuroevolutionEventSelection
+} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
-import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
+import {EventSequenceNovelty} from "../whiskerNet/NetworkFitness/Novelty/EventSequenceNovelty";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
+import {CosineStateNovelty} from "../whiskerNet/NetworkFitness/Novelty/CosineStateNovelty";
+import {NetworkFitnessFunctionType} from "../whiskerNet/NetworkFitness/NetworkFitnessFunctionType";
 
 
 class ConfigException implements Error {
@@ -562,6 +569,28 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getNetworkFitnessFunctionType(): NetworkFitnessFunctionType {
+        // A network fitness function may not be specified, e.g. when executing already generated dynamic tests.
+        if (!("networkFitness" in this._config)) {
+            return NetworkFitnessFunctionType.NONE;
+        }
+        const fitnessFunction = this._config["networkFitness"]["type"];
+        switch (fitnessFunction) {
+            case 'score':
+                return NetworkFitnessFunctionType.SCORE;
+            case 'survive':
+                return NetworkFitnessFunctionType.SURVIVE;
+            case 'reliableStatement':
+                return NetworkFitnessFunctionType.RELIABLE_STATEMENT;
+            case 'cosineNovelty':
+                return NetworkFitnessFunctionType.NOVELTY_COSINE;
+            case 'eventNovelty':
+                return NetworkFitnessFunctionType.NOVELTY_EVENTS;
+            default:
+                return NetworkFitnessFunctionType.NONE;
+        }
+    }
+
     public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NetworkChromosome> {
         const networkFitnessDef = fitnessFunction['type'];
         switch (networkFitnessDef) {
@@ -574,20 +603,25 @@ export class WhiskerSearchConfiguration {
                 const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
                 return new ReliableStatementFitness(stableCount, earlyStop);
             }
-            case 'noveltyReliableStatement': {
-                const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
-                const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
-                return new NoveltyReliableStatementFitness(stableCount, earlyStop);
+            case 'cosineNovelty': {
+                const [stableCount, neighbours, archiveProb, noveltyWeight] = this.extractNoveltyParameter(fitnessFunction);
+                return new CosineStateNovelty(stableCount, neighbours, archiveProb, noveltyWeight);
             }
-            case 'target':
-                return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
-                    fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
-            case 'novelty':
-                return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
-                    fitnessFunction['archiveThreshold']);
+            case 'eventNovelty': {
+                const [stableCount, neighbours, archiveProb, noveltyWeight] = this.extractNoveltyParameter(fitnessFunction);
+                return new EventSequenceNovelty(stableCount, neighbours, archiveProb, noveltyWeight);
+            }
             default:
                 throw new ConfigException(`Unknown network fitness function ${networkFitnessDef}`);
         }
+    }
+
+    private extractNoveltyParameter(fitnessConfig: Record<string, number | undefined>): [number, number, number, number] {
+        const stableCount = fitnessConfig['stableCount'] !== undefined ? fitnessConfig['stableCount'] : 1;
+        const neighbours = fitnessConfig['neighbours'] !== undefined ? fitnessConfig['neighbours'] : 1;
+        const archiveProb = fitnessConfig['archiveProb'] !== undefined ? fitnessConfig['archiveProb'] : 1;
+        const noveltyWeight = fitnessConfig['noveltyWeight'] !== undefined ? fitnessConfig['noveltyWeight'] : 1;
+        return [stableCount, neighbours, archiveProb, noveltyWeight];
     }
 
 
@@ -687,16 +721,6 @@ export class WhiskerSearchConfiguration {
             return this._config["seed"];
         } else {
             return undefined;
-        }
-    }
-
-    public getLoggingFunction(): typeof console.log {
-        if (this._config["debugLogging"] == true) {
-            return (...data) => console.log('DEBUG:', ...data);
-        } else {
-            return () => {
-                /* no-op */
-            };
         }
     }
 

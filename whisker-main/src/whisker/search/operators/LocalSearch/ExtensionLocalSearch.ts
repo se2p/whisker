@@ -34,6 +34,7 @@ import VMWrapper = require("../../../../vm/vm-wrapper.js");
 import {TestExecutor} from "../../../testcase/TestExecutor";
 import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 import {TypeNumberEvent} from "../../../testcase/events/TypeNumberEvent";
+import logger = require('../../../../util/logger');
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
@@ -132,7 +133,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         while (numCodon < codons.length) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.length === 0) {
-                console.log("Whisker-Main: No events available for project.");
+                logger.warn("No events available for project.");
                 break;
             }
             // Selects and sends the next Event ot the VM.
@@ -170,7 +171,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
             // If we have no events available, we can only stop.
             if (availableEvents.length === 0) {
-                console.log("Whisker-Main: No events available for project.");
+                logger.warn("No events available for project.");
                 break;
             }
 

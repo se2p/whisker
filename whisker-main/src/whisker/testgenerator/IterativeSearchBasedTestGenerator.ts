@@ -25,6 +25,7 @@ import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import Arrays from "../utils/Arrays";
 import {Container} from "../utils/Container";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
+import logger from '../../util/logger';
 
 /**
  * To generate a test suite using single-objective search,
@@ -51,11 +52,11 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         const totalGoals = this._fitnessFunctions.size;
         let createdTestsToReachFullCoverage = 0;
         for (const fitnessFunction of this._fitnessFunctions.keys()) {
-            console.log(`Current goal ${numGoal}/${totalGoals}:${this._fitnessFunctions.get(fitnessFunction)}`);
+            logger.info(`Current goal ${numGoal}/${totalGoals}:${this._fitnessFunctions.get(fitnessFunction)}`);
             numGoal++;
             if (this._archive.has(fitnessFunction)) {
                 // If already covered, we don't need to search again
-                console.log(`Goal ${fitnessFunction} already covered, skipping.`);
+                logger.info(`Goal ${fitnessFunction} already covered, skipping.`);
                 continue;
             }
             // Generate searchAlgorithm responsible for covering the selected target statement.

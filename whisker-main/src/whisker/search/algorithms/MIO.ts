@@ -29,7 +29,7 @@ import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import {TestChromosome} from "../../testcase/TestChromosome";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
-import {Container} from "../../utils/Container";
+import logger from "../../../util/logger";
 import {Selection} from '../Selection';
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
@@ -251,7 +251,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();
             }
-            Container.debugLog(`Iteration ${this._iterations}, covered goals total: ${this._archiveCovered.size}/${this._fitnessFunctions.size}, \
+            logger.debug(`Iteration ${this._iterations}, covered goals total: ${this._archiveCovered.size}/${this._fitnessFunctions.size}, \
 open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
         }
         return this._archiveCovered;
@@ -346,7 +346,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
                         this._archiveUncovered.delete(fitnessFunctionKey);
                     }
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
-                    Container.debugLog(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
+                    logger.debug(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
                     if (this._archiveCovered.size == this._fitnessFunctions.size) {
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;

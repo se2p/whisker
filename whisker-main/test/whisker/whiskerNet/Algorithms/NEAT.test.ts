@@ -16,7 +16,6 @@ import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEve
 import {
     NeuroevolutionTestGenerationParameter
 } from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
@@ -26,7 +25,7 @@ import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionP
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {ParameterType} from "../../../../src/whisker/testcase/events/ParameterType";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
-import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
+import logger from "../../../../src/util/logger";
 
 export const generateInputs = (): InputFeatures => {
     const genInputs: InputFeatures = new Map<string, Map<string, number>>();
@@ -79,7 +78,7 @@ describe('Test NEAT', () => {
     };
 
     beforeEach(() => {
-        Container.debugLog = () => { /* suppress output */};
+        logger.suggest.deny(/.*/, "debug");
         const mock = new VMWrapperMock();
         mock.init();
         const inputFeatures = generateInputs();
@@ -142,7 +141,7 @@ describe('Test NEAT', () => {
         let generation = 0;
         let speciesString = "Current fitness Target: XOR\n";
         while (!found) {
-            // console.log("Generation: " + generation);
+            // logger.debug("Generation: " + generation);
             for (const network of population.networks) {
                 let error_sum = 0;
                 for (let i = 0; i < 2; i++) {
@@ -164,7 +163,7 @@ describe('Test NEAT', () => {
                 network.fitness = (4 - error_sum) ** 2;
                 if (network.fitness >= 15.8) {
                     found = true;
-                    // console.log(network.toString());
+                    // logger.debug(network.toString());
                     break;
                 }
             }
@@ -181,7 +180,7 @@ describe('Test NEAT', () => {
             population.evolve();
             generation++;
         }
-        // console.log(speciesString);
+        // logger.debug(speciesString);
         expect(population.populationChampion.fitness).toBeGreaterThan(15.7);
     });
 

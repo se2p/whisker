@@ -17,7 +17,7 @@ whisker() {
     # Make sure to use `exec` here (instead of `eval`). This allows Whisker to receive any
     # Unix signals sent to this wrapper script. See:
     # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
-    exec node /whisker/servant "$@" -d -k -l
+    exec node /whisker/servant "$@" -d -vv
 }
 
 print_info() {

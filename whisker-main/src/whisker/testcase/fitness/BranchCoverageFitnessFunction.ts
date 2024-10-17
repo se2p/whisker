@@ -23,7 +23,7 @@ import {GraphNode} from 'scratch-analysis';
 import {StatementFitnessFunction} from "./StatementFitnessFunction";
 import {TestChromosome} from "../TestChromosome";
 import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
-import {Container} from "../../utils/Container";
+import logger from '../../../util/logger';
 
 export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
 
@@ -41,7 +41,7 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
         // Otherwise, compute the distance toward the desired branch.
         const blockTrace = Object.values(chromosome.trace.blockTraces).find(block => block.id === this._targetNode.block.id);
         if (!blockTrace){   // If we cannot find the block trace return a default value of 1.
-            Container.debugLog(`No block trace found for ${this.toString()}`, chromosome.trace.blockTraces);
+            logger.debug(`No block trace found for ${this.toString()}`, chromosome.trace.blockTraces);
             return 1;
         }
         if (this._isTrueBranch) {
@@ -78,6 +78,6 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
     }
 
     public override getNodeId(): string {
-        return `${this._targetNode.id}-${this._isTrueBranch}`;
+        return `${this._targetNode.id}->${this._isTrueBranch}`;
     }
 }

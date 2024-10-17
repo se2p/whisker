@@ -1,7 +1,7 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ControlFilter} from "scratch-analysis";
-import {ScratchProgram} from "../ScratchInterface";
+import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
 
 export class ScriptDeletionMutation extends ScratchMutation {
 
@@ -10,24 +10,22 @@ export class ScriptDeletionMutation extends ScratchMutation {
     }
 
     /**
-     * The ScriptDeletionMutation disconnects a hat block from its childs, which basically leads to the deletion of
+     * The ScriptDeletionMutation disconnects a hat block from its children, which basically leads to the deletion of
      * the script since it's no longer reachable.
      * @param mutationBlockId the id of the hat block that will be disconnected.
      * @param mutantProgram the mutant program in which the hat block will be disconnected.
-     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
-        if(mutationBlock['next'] !== null) {
-            const nextBlock = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], target);
+    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
+        if (mutationBlock['next'] !== null) {
+            const nextBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['next']);
             nextBlock['parent'] = null;
             mutationBlock['next'] = null;
-            const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
-            mutantProgram.name = `SDM:${blockId}`.replace(/,/g, '');
+            const mutantId = this.getMutantId(mutationBlockId);
+            mutantProgram.name = `SDM:${mutantId}`.replace(/,/g, '');
             return true;
-        }
-        else{
+        } else {
             return false;
         }
     }
@@ -50,7 +48,7 @@ export class ScriptDeletionMutation extends ScratchMutation {
      * String representation of a given mutator.
      * @returns string representation of the mutator.
      */
-    public toString():string{
+    public toString(): string {
         return 'SDM';
     }
 }

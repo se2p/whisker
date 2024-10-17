@@ -1,6 +1,9 @@
 const puppeteer = require("puppeteer");
+const Minilog = require('minilog');
+const {format} = require("util");
 const logger = require("./logger");
-const {consoleForwarded, headless, whiskerUrl} = require("./cli").opts;
+const opts = require("./cli").opts;
+const {headless, whiskerUrl} = opts;
 
 // Workaround for Whisker issue #241
 async function openNewBrowserWithRetry(options) {
@@ -129,7 +132,7 @@ async function logGraphicsFeatureStatus(browser) {
             return [status, driverInfo];
         });
 
-        logger.info(`Grahpics Feature Status:\n${status}`);
+        logger.info(`Graphics Feature Status:\n${status}`);
         logger.info(`GPU Driver Information:\n${driverInfo}`);
     } catch (e) {
         logger.error(`Could not retrieve GPU information. Reason: ${e}`);
@@ -140,31 +143,74 @@ async function logGraphicsFeatureStatus(browser) {
     }
 }
 
-async function forwardJSHandleError(msg) {
-    // Based on https://github.com/puppeteer/puppeteer/issues/3397#issuecomment-434970058
-    return await Promise.all(msg.args().map((arg) =>
-        arg.evaluate((arg) => {
-            if (arg instanceof Error) {
-                return decodeURIComponent(arg.stack);
+function forwardConsoleMessages(page, id = "") {
+    const loggers = [
+        "whisker-main",
+        "whisker-web",
+        "vm",
+        "", // anything that is unidentified
+    ].map((namespace) => ({
+        namespace: namespace && (namespace + " "),
+        logger: Minilog((namespace || "[forwarded]") + (id && ` ${id}`))
+    }));
+
+    function getLogger(str) {
+        for (const logger of loggers) {
+            if (str.startsWith(logger.namespace)) {
+                return logger;
             }
-            return arg;
-        }, arg)));
-}
+        }
 
-async function evaluateMsgArgsInExecutionContext(msg) {
-    return await Promise.all(msg.args().map((arg) => arg.executionContext().evaluate((arg) => arg, arg)));
-}
+        return logger;
+    }
 
-function formatStackTrace(msg) {
-    const frames = msg.stackTrace().map((frame) => {
-        const {url, lineNumber, columnNumber} = frame;
-        return `  @ ${url || "<unknown>"}:${lineNumber}:${columnNumber}`;
+    function getArgsOrText(msg) {
+        const args = msg.args();
+
+        // Even if args are empty, there might still be text.
+        if (args.length === 0) {
+            return [msg.text()];
+        }
+
+        // Try to convert each arg to its JSON representation. If this fails, fall back to string representation.
+        return Promise.all(args
+            .map(async (arg) => {
+                // Try to extract the stack trace from errors.
+                const a = await arg.evaluate((arg) => arg instanceof Error
+                    ? decodeURIComponent(arg.stack)
+                    : arg, arg);
+
+                if (typeof a === "string") {
+                    return a;
+                }
+
+                try {
+                    return await arg.jsonValue();
+                } catch {
+                    return arg.toString();
+                }
+            }));
+    }
+
+    page.on("console", async (msg) => {
+        const raw = await getArgsOrText(msg);
+
+        // Process format specifiers.
+        const str = format(...raw);
+
+        // Try to detect namespace and which logger to use.
+        const {logger, namespace} = getLogger(str);
+
+        // Remove namespace prefix from message (will be added back by the logger.)
+        const s = str.slice(namespace.length);
+
+        // Log actual message at the appropriate level.
+        const type = msg.type();
+        (logger[type === "warning" ? "warn" : type] ?? logger.debug).bind(logger)(s);
     });
-    return [msg.text(), ...frames].join('\n');
 }
 
-async function openNewPage(browser) {
-    const page = await browser.newPage({context: Date.now()});
+function rejectOnError(page) {
     page.on('error', (error) => {
         logger.error(error);
         return Promise.reject(error);
@@ -172,54 +218,21 @@ async function openNewPage(browser) {
         logger.error(error);
         return Promise.reject(error);
     });
+}
+
+async function openNewPage(browser) {
+    const page = await browser.newPage({context: Date.now()});
+    return await configureWhiskerWeb(page);
+}
+
+async function configureWhiskerWeb(page, {waitUntil = "networkidle0", id = ""} = {}) {
+    rejectOnError(page);
+    forwardConsoleMessages(page, id);
 
     // Set navigation timeout to 5 min
     page.setDefaultNavigationTimeout(300000);
 
-    if (consoleForwarded) {
-        // https://github.com/puppeteer/puppeteer/issues/1512#issuecomment-349784408
-        // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#class-consolemessage
-        page.on('console', async (msg) => {
-            if (msg.text() === "JSHandle@error") {
-                // When the message text is "JSHandle@error", we assume we have something that can be evaluated in
-                // the page context to get the actual stack trace of the error. This assumption probably holds in
-                // 99.9% of the cases. If not (e.g., because the actual error message is "JSHandle@error", but maybe
-                // in other cases, too), we fall back to just printing "JSHandle@error".
-                try {
-                    logger.error('Forwarded:', ...await forwardJSHandleError(msg));
-                } catch {
-                    // Unable to forward the JSHandle@error
-                    logger.error('Forwarded: JSHandle@error');
-                }
-                return;
-            }
-
-            switch (msg.type()) {
-                case 'warning':
-                    logger.warn('Forwarded:', msg.text());
-                    break;
-                case 'log':
-                    logger.info('Forwarded:', msg.text());
-                    break;
-                case 'trace':
-                    logger.error('Forwarded:', formatStackTrace(msg));
-                    break;
-                case 'table':
-                    try {
-                        logger.info('Forwarded:');
-                        console.table(...await evaluateMsgArgsInExecutionContext(msg));
-                    } catch {
-                        logger.info('Forwarded:', msg.text());
-                    }
-                    break;
-                default:
-                    // Assume error
-                    logger.error('Forwarded:', msg.text());
-            }
-        });
-    }
-
-    await page.goto(whiskerUrl, {waitUntil: "networkidle0"});
+    await page.goto(whiskerUrl, {waitUntil});
 
     return page;
 }
@@ -227,4 +240,5 @@ async function openNewPage(browser) {
 module.exports = {
     openNewBrowser,
     openNewPage,
+    configureWhiskerWeb
 };

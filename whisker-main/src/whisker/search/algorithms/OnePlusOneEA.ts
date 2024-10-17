@@ -24,9 +24,9 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 import {Selection} from "../Selection";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import logger from '../../../util/logger';
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -63,7 +63,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         if (!this.isIterativeSearch()) {
             this.initializeStatistics();
         }
-        Container.debugLog("1+1 EA started at " + this._startTime);
+        logger.debug("1+1 EA started at " + this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
         await bestIndividual.evaluate(true);
@@ -80,7 +80,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             await candidateChromosome.evaluate(true);
             await this.updateArchive(candidateChromosome);
             const candidateFitness = await candidateChromosome.getFitness(this._fitnessFunction);
-            Container.debugLog(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
+            logger.debug(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
 ${bestIndividual.toString()}`);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 if (await this._fitnessFunction.isOptimal(candidateFitness)) {
@@ -94,7 +94,7 @@ ${bestIndividual.toString()}`);
             this.updateCoverageTimeLine();
             StatisticsCollector.getInstance().incrementIterationCount();
         }
-        Container.debugLog("1+1 EA completed at " + Date.now());
+        logger.debug("1+1 EA completed at " + Date.now());
         return this._archive;
     }
 

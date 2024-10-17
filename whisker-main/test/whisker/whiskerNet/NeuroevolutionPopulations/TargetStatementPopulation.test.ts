@@ -8,12 +8,12 @@ import {
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {
     TargetStatementPopulation
 } from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/TargetStatementPopulation";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
+import logger from "../../../../src/util/logger";
 
 describe("Test TargetStatementPopulation", () => {
 
@@ -22,8 +22,7 @@ describe("Test TargetStatementPopulation", () => {
     let size: number;
 
     beforeEach(() => {
-        Container.debugLog = () => { /* No operation */
-        };
+        logger.suggest.deny(/.*/, "debug");
         NeatPopulation.innovations = [];
         size = 500;
         const crossoverConfig = {

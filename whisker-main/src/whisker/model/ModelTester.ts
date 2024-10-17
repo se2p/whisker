@@ -15,6 +15,7 @@ import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
 import {Effect} from "./components/Effect";
 import Sprite from "../../vm/sprite";
+import logger from "../../util/logger";
 
 export type SimpleTypedModel = SimpleTypedPModel | SimpleTypedUModel;
 
@@ -116,7 +117,7 @@ export class ModelTester extends EventEmitter {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     async prepareModel(t: TestDriver, caseSensitive: boolean): Promise<void> {
-        // console.log("----Preparing model----");
+        // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
         Container.testDriver = t;
@@ -249,7 +250,7 @@ export class ModelTester extends EventEmitter {
             });
             userModels = notStoppedUserModels;
             if (userModels.length == 0) {
-                // console.log("Input generation per user models stopped.");
+                // logger.debug("Input generation per user models stopped.");
                 callback.disable();
             }
         };
@@ -263,7 +264,7 @@ export class ModelTester extends EventEmitter {
 
     private _onVMEvent(eventStrings: string[]) {
         if (this._isRunning) {
-            // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
+            // logger.debug(eventStrings, this.testDriver.getTotalStepsExecuted());
             const models = this._modelStepCallback.isActive() ? this._programModels : this._onTestEndModels;
 
             for (const m of models) {
@@ -316,7 +317,7 @@ export class ModelTester extends EventEmitter {
         // for debugging...
         // this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
         // if (transition.id.startsWith("points"))
-        //     console.log("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
+        //     logger.debug("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
     }
 
     /**
@@ -331,7 +332,7 @@ export class ModelTester extends EventEmitter {
         const models = [...this._programModels, ...this._onTestEndModels];
         models.forEach(model => {
             if (model.stopped()) {
-                // console.log("Model '" + model.id + "' stopped.");
+                // logger.debug("Model '" + model.id + "' stopped.");
                 this._result.log.push("Model '" + model.id + "' stopped.");
                 this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
             }
@@ -362,7 +363,7 @@ export class ModelTester extends EventEmitter {
         });
 
         this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
-        // console.log("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
+        // logger.debug("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         return this._result;
     }
 
@@ -389,7 +390,7 @@ export class ModelTester extends EventEmitter {
         contradictingEffects.forEach(effect => {
             output += "\n -- " + effect.toString();
         });
-        console.error("EFFECTS CONTRADICTING", output);
+        logger.error("EFFECTS CONTRADICTING", output);
         this._result.log.push("EFFECTS CONTRADICTING" + output);
         this.emit(ModelTester.MODEL_WARNING, output);
     }

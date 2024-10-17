@@ -5,7 +5,8 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import Arrays from "../../utils/Arrays";
-import {Container} from "../../utils/Container";
+import logger from "../../../util/logger";
+import {Randomness} from "../../utils/Randomness";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -92,8 +93,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         const doomedChromosomes = [];
         for (const chromosome of this.networks) {
             if (!chromosome.isParent) {
-                const specie = chromosome.species;
-                specie.removeNetwork(chromosome);
+                this.removeNetworkFromSpecie(chromosome);
                 doomedChromosomes.push(chromosome);
             }
         }
@@ -113,8 +113,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // Remove the parents from the population and the species. The new ones still exist within their species
         for (const chromosome of this.networks) {
-            const specie = chromosome.species;
-            specie.removeNetwork(chromosome);
+            this.removeNetworkFromSpecie(chromosome);
         }
         this.networks.splice(0);
 
@@ -142,6 +141,17 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
+     * Removes the network from the specie it is assigned to if any.
+     * @param chromosome to be removed from the specie.
+     */
+    private removeNetworkFromSpecie(chromosome: NeatChromosome) {
+        const specie = this.getSpeciesOfNetwork(chromosome);
+        if (specie) {
+            specie.removeNetwork(chromosome);
+        }
+    }
+
+    /**
      * Calculates the shared fitness of each species member and infers the number of children each species is allowed
      * to produce during the next breeding process.
      */
@@ -153,7 +163,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
-     * Updates the CompatibilityThreshold with the goal of obtaining the desired amount of species.
+     * Updates the CompatibilityThreshold to come closer to the desired number of species.
      */
     private updateCompatibilityThreshold(): void {
         const compatibilityModifier = 0.3;
@@ -212,17 +222,16 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Find the population champion and reward him with additional children.
-        this.sortPopulation();
+        NeatPopulation.sortPopulation(this.networks);
         this.sortSpecies();
         this.populationChampion = this.networks[0];
         this.populationChampion.isPopulationChampion = true;
         this.populationChampion.numberOffspringPopulationChamp = this.hyperParameter.populationChampionNumberOffspring;
 
-        // Handle lost children due to rounding errors.
+        // Assign lost children due to rounding errors to random population.
         if (totalOffspringExpected < this.populationSize) {
-            // Assign the lost children to the population champion's species.
             const lostChildren = this.populationSize - totalOffspringExpected;
-            this.populationChampion.species.expectedOffspring += lostChildren;
+            Randomness.getInstance().pick(this.species).expectedOffspring += lostChildren;
         }
 
         // Check for fitness stagnation
@@ -235,7 +244,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // If there is a stagnation in fitness, refocus the search
         if (this.highestFitnessLastChanged > this.hyperParameter.penalizingAge + 5) {
-            Container.debugLog("Refocusing the search on the two most promising species");
+            logger.debug("Refocusing the search on the two most promising species");
             this.highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize / 2;
 
@@ -312,7 +321,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             this.speciesCount++;
             this.species.push(newSpecies);
             newSpecies.networks.push(network);
-            network.species = newSpecies;
         } else {
             // If we already have some species,
             // find a compatible one or create a new species for the network if the network
@@ -331,7 +339,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 // representative's species.
                 if (compatDistance < this.compatibilityThreshold) {
                     specie.networks.push(network);
-                    network.species = specie;
                     foundSpecies = true;
                     break;
                 }
@@ -344,7 +351,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 this.speciesCount++;
                 this.species.push(newSpecies);
                 newSpecies.networks.push(network);
-                network.species = newSpecies;
             }
         }
     }
@@ -359,7 +365,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // Safety check.
         if (network1 === undefined || network2 === undefined) {
-            console.error("Undefined network in compatDistance Calculation");
+            logger.error("Undefined network in compatDistance Calculation");
             return Number.MAX_SAFE_INTEGER;
         }
 
@@ -461,10 +467,21 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
-     * Sorts the networks of the population according to their fitness values in decreasing order.
+     * Sorts the networks of a given population according to their fitness values
+     * in decreasing order using the novelty score as a tiebreaker.
+     * @param population The population to be sorted.
      */
-    protected sortPopulation(): void {
-        this.networks.sort((a, b) => b.fitness - a.fitness);
+    public static sortPopulation(population: NeatChromosome[]): void {
+        population.sort((a, b) => {
+            // Use fitness as a first criterion.
+            if (a.fitness !== b.fitness) {
+                return b.fitness - a.fitness;
+            }
+
+            // If both fitness values are equal, sort individuals based on the novelty score.
+            // Note: Novelty is set to 0 as default, so if no novelty score is computed, no decision can be made.
+            return b.noveltyScore - a.noveltyScore;
+        });
     }
 
     /**
@@ -475,17 +492,22 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     }
 
     /**
-     * Removes a network from the current population.
-     * @param network the network that should be removed.
+     * Returns the species of a given network.
+     * @param network whose species should be returned.
+     * @returns the species of the given network or null if the network is not contained in a living species.
      */
-    protected removeNetwork(network: NeatChromosome): void {
-        const index = this.networks.indexOf(network);
-        this.networks.splice(index, 1);
+    private getSpeciesOfNetwork(network: NeatChromosome): Species<NeatChromosome> | null {
+        for (const specie of this.species) {
+            if (specie.networks.includes(network)) {
+                return specie;
+            }
+        }
+        return null;
     }
 
     /**
      * Clones this instance of a NeatPopulation.
-     * @returns NeatPopulation deep clone of this instance of a NeatPopulation.
+     * @returns NeatPopulation deep clone.
      */
     public clone(): NeatPopulation {
         const clone = new NeatPopulation(this.generator, this.hyperParameter);

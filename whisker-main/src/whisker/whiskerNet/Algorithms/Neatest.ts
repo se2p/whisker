@@ -12,7 +12,7 @@ import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/
 import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {UserEventNode} from "scratch-analysis";
-import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
+import logger from "../../../util/logger";
 
 export class Neatest extends NEAT {
 
@@ -63,7 +63,7 @@ export class Neatest extends NEAT {
         const totalGoals = this._fitnessFunctions.size;
         while (this._archive.size != totalGoals && !(await this._stoppingCondition.isFinished(this))) {
             const currentTarget = this.setNextGoal();
-            Container.debugLog(`Next goal ${this._archive.size}/${totalGoals}:${currentTarget}`);
+            logger.debug(`Next goal ${this._archive.size}/${totalGoals}:${currentTarget}`);
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
@@ -73,7 +73,7 @@ export class Neatest extends NEAT {
 
                 // Stop if we managed to cover the current target statement.
                 if (this._archive.has(this._targetKey)) {
-                    Container.debugLog(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
+                    logger.debug(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
                     break;
                 }
 
@@ -88,7 +88,7 @@ export class Neatest extends NEAT {
                     uncoveredUntouchedTargets.length > 0) {
                     const currentTargetId = this._fitnessFunctionMap.get(this._targetKey).getNodeId();
                     this._switchedTargets.add(currentTargetId);
-                    Container.debugLog("Switching Target " + currentTargetId + " due to missing improvement.");
+                    logger.debug("Switching Target " + currentTargetId + " due to missing improvement.");
                     break;
                 }
 
@@ -219,6 +219,13 @@ export class Neatest extends NEAT {
                 this._neuroevolutionProperties.eventSelection);
             await this.updateArchive(network);
 
+            // Free memory if the network was not added to the archive.
+            if (![...this._archive.values()].includes(network)){
+                network.trace = null;
+                network.coverage = null;
+                network.codons = null;
+            }
+
             // Check if we just covered the greenFlag event, and if so, save the number of blocks that are covered
             // by only clicking on the greenFlag.
             // This is ensured since we stopped the execution as soon as
@@ -263,7 +270,7 @@ export class Neatest extends NEAT {
 
             // If we covered a statement, update the archive, statistics and the map of open target statements.
             if (await this.isCovered(fitnessFunctionKey, network)) {
-                Container.debugLog(`Covered Statement ${fitnessFunctionKey}:${fitnessFunction}`);
+                logger.debug(`Covered Statement ${fitnessFunctionKey}:${fitnessFunction}`);
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, network);
                 for (const n of this._population.networks) {
@@ -286,36 +293,34 @@ export class Neatest extends NEAT {
      * @returns boolean which is true if the statement was covered.
      */
     private async isCovered(fitnessFunctionKey: number, network: NeatChromosome): Promise<boolean> {
-        const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
         const coverageStableCount = network.openStatementTargets.get(fitnessFunctionKey);
-        const statementFitness = await fitnessFunction.getFitness(network);
-        return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount && !this._archive.has(fitnessFunctionKey)) ||
-            (this._neuroevolutionProperties.coverageStableCount == 0 && await fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey));
+        return !this._archive.has(fitnessFunctionKey) &&
+            coverageStableCount >= this._neuroevolutionProperties.coverageStableCount;
     }
 
     /**
      * Reports the current state of the search.
      */
     protected override reportOfCurrentIteration(): void {
-        Container.debugLog(`\nTotal Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
-        Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
-        Container.debugLog(`Covered Targets: ${this._archive.size}/${this._fitnessFunctions.size}`);
-        Container.debugLog(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);
-        Container.debugLog(`Covered Branches: ${StatisticsCollector.getInstance().branchCoverage * 100}%`);
-        Container.debugLog(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
-        Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
-        Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
-        Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`);
+        logger.debug(`\nTotal Iteration: ${StatisticsCollector.getInstance().iterationCount}`);
+        logger.debug(`Intermediate Iteration:  ${this._targetIterations}`);
+        logger.debug(`Covered Targets: ${this._archive.size}/${this._fitnessFunctions.size}`);
+        logger.debug(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);
+        logger.debug(`Covered Branches: ${StatisticsCollector.getInstance().branchCoverage * 100}%`);
+        logger.debug(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
+        logger.debug(`Best Network Fitness:  ${this._population.bestFitness}`);
+        logger.debug(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
+        logger.debug(`Average Network Fitness: ${this._population.averageFitness}`);
 
         const sortedSpecies = this._population.species.sort((a, b) => b.uID - a.uID);
-        Container.debugLog(`Population of ${this._population.populationSize} distributed over ${sortedSpecies.length} species`);
-        Container.debugLog("\tID\tage\tsize\tfitness\tshared fitness");
+        logger.debug(`Population of ${this._population.populationSize} distributed over ${sortedSpecies.length} species`);
+        logger.debug("\tID\tage\tsize\tfitness\tshared fitness");
         for (const species of sortedSpecies) {
-            Container.debugLog(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}\t${Math.round(species.averageSharedFitness * 100) / 100}`);
+            logger.debug(`\t${species.uID}\t${species.age}\t${species.networks.length}\t${Math.round(species.averageFitness * 100) / 100}\t${Math.round(species.averageSharedFitness * 100) / 100}`);
         }
-        Container.debugLog(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
-        Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        Container.debugLog("\n-----------------------------------------------------\n");
+        logger.debug(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
+        logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
+        logger.debug("\n-----------------------------------------------------\n");
     }
 
     /**

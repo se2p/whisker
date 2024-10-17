@@ -11,14 +11,14 @@ function asAbsolutePath(path) {
 }
 
 function relativeToServantDir(path) {
-    return resolve(__dirname, path);
+    return resolve(__dirname, "..", path);
 }
 
 /*
  * Assertion functions that throw an error when a requirement is violated.
  */
 
-function mustBeFile(path, extension = "") {
+function mustBeFile(path, allowedExtensions = [""]) {
     if (!fs.existsSync(path)) {
         throw new InvalidArgumentError('File must exist.');
     }
@@ -27,8 +27,12 @@ function mustBeFile(path, extension = "") {
         throw new InvalidArgumentError('Must be a file.')
     }
 
-    if (!path.endsWith(extension)) {
-        throw new InvalidArgumentError(`Must be "${extension}" file.`);
+    if (typeof allowedExtensions === "string") {
+        allowedExtensions = [allowedExtensions];
+    }
+
+    if (!allowedExtensions.some((ext) => path.endsWith(ext))) {
+        throw new InvalidArgumentError(`File must end in one of the following: ${allowedExtensions.join(", ")}`);
     }
 }
 
@@ -60,9 +64,9 @@ function mustBePositiveInt(value) {
  * is important to return the processed input argument when done.
  */
 
-function processFilePathExists(path, extension = '') {
+function processFilePathExists(path, optAllowedExtensions) {
     path = asAbsolutePath(path);
-    mustBeFile(path, extension);
+    mustBeFile(path, optAllowedExtensions);
     return path;
 }
 
@@ -79,19 +83,19 @@ function processDirPathExists(path) {
     return path;
 }
 
-function processFileOrDirPathExists(path, extension = '') {
+function processFileOrDirPathExists(path, optAllowedExtensions) {
     path = asAbsolutePath(path);
     let isDirectory = undefined;
 
     try {
-        mustBeFile(path, extension);
+        mustBeFile(path, optAllowedExtensions);
         isDirectory = false;
     } catch {
         try {
             mustBeDirectory(path);
             isDirectory = true;
         } catch {
-            throw new InvalidArgumentError(`Directory or "${extension}" file must exist.`);
+            throw new InvalidArgumentError(`Directory or file "${path}" must exist.`);
         }
     }
 

@@ -1,59 +1,48 @@
 const logger = require("./logger");
 const fs = require("fs");
-const rimraf = require("rimraf");
-const {tmpDir, switchToProjectTab} = require("./common");
 const {
-    csvFile,
+    output,
     testDownloadDir,
     testPath,
     scratchPath,
     configPath,
-    acceleration,
-    seed,
     groundTruth,
-    useSaveStates,
 } = require("./cli").opts;
+const Whiskers = require("./whiskers");
 
 // Test generation
-async function generateTests(openNewPage) {
+async function generateTests({page}) {
     const start = Date.now();
 
     // Todo use correct config
     try {
-        const csv = await runGeneticSearch(openNewPage);
+        const csv = await runGeneticSearch(page);
         logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         // Save results in CSV-file if specified
-        if (csvFile) {
-            console.info(`Creating CSV summary in ${csvFile}`);
-            fs.writeFileSync(csvFile, csv);
+        if (output) {
+            logger.info(`Creating CSV summary in ${output}`);
+            fs.writeFileSync(output, csv);
         }
     } catch (e) {
         logger.error('Error on generating tests: ', e)
-    } finally {
-        rimraf.sync(tmpDir);
     }
 }
 
-async function runGeneticSearch(openNewPage) {
-    const page = await openNewPage();
-
-    async function configureWhiskerWebInstance() {
-        await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
-        await (await page.$('#fileselect-config')).uploadFile(configPath);
-        if (testPath) {
-            await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        }
-        await switchToProjectTab(page, true);
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
-        if (groundTruth) {
-            await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
-        }
-        console.log('Whisker-Web: Web Instance Configuration Complete');
+async function configureWhiskerWebInstance(whisker) {
+    await whisker.uploadProject(scratchPath.path);
+    const page = whisker.page;
+    await (await page.$('#fileselect-config')).uploadFile(configPath);
+    if (testPath) {
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
     }
+    if (groundTruth) {
+        await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
+    }
+    logger.info('Web Instance Configuration Complete');
+}
 
-    async function readTestOutput() {
+async function runGeneticSearch(page) {
+    async function readTestResults() {
         const logOutput = await page.$('#output-log .output-content');
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -87,17 +76,17 @@ async function runGeneticSearch(openNewPage) {
     }
 
     try {
-        await configureWhiskerWebInstance();
         logger.debug("Executing search");
         await executeSearch();
-        const output = await readTestOutput();
+        const results = await readTestResults();
         logger.debug(`Downloading tests to ${testDownloadDir}`);
         await downloadTests();
-        await page.close();
-        return Promise.resolve(output);
+        return Promise.resolve(results);
     } catch (e) {
         return Promise.reject(e);
     }
 }
 
-module.exports = generateTests;
+module.exports = () => Whiskers.withNewPool((pool) => pool.run(generateTests), {
+    initWhiskerOnce: (whisker) => configureWhiskerWebInstance(whisker),
+});

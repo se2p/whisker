@@ -1,6 +1,7 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
 const Recorder = require('whisker-main/src/vm/recorder');
+const logger = require("../logger");
 
 /**
  * Enables to record user input for test recordings.
@@ -143,7 +144,7 @@ class InputRecorder extends EventEmitter {
             this._onTextInput(data);
             break;
         default:
-            console.error(`Unknown input device: "${data.device}".`);
+            logger.error(`Unknown input device: "${data.device}".`);
             return;
         }
     }

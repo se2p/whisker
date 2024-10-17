@@ -1,7 +1,7 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchMutation} from "./ScratchMutation";
 import {Randomness} from "../../utils/Randomness";
-import {ScratchProgram} from "../ScratchInterface";
+import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
 
 export class KeyReplacementMutation extends ScratchMutation {
 
@@ -21,11 +21,10 @@ export class KeyReplacementMutation extends ScratchMutation {
      * Applies the KeyReplacementMutation, which replaces a key that triggers an event with a randomly chosen new key.
      * @param mutationBlockId the id of the block whose key option will be replaced.
      * @param mutantProgram the mutant program in which the key will be replaced.
-     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target:Readonly<string>): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
+    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
         const originalKeyPress = mutationBlock['fields']['KEY_OPTION'][0];
         let mutantKeyPress = Randomness.getInstance().pick(KeyReplacementMutation.KEY_OPTIONS);
         while (originalKeyPress === mutantKeyPress) {

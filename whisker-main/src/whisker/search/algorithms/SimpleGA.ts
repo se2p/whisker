@@ -27,8 +27,8 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import Arrays from "../../utils/Arrays";
-import {Container} from "../../utils/Container";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import logger from '../../../util/logger';
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -98,7 +98,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
 
-        Container.debugLog(`Simple GA started at ${this._startTime}`);
+        logger.debug(`Simple GA started at ${this._startTime}`);
 
         // Initialise population
         let population = await this.generateInitialPopulation();
@@ -110,7 +110,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
 
         while (!(await this._stoppingCondition.isFinished(this))) {
-            Container.debugLog(`Iteration ${this._iterations}, best fitness: ${this._bestFitness}`);
+            logger.debug(`Iteration ${this._iterations}, best fitness: ${this._bestFitness}`);
 
             const nextGeneration = await this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
@@ -122,7 +122,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this.updateStatistics();
         }
 
-        Container.debugLog(`Simple GA completed at ${Date.now()}`);
+        logger.debug(`Simple GA completed at ${Date.now()}`);
 
         return this._archive;
     }
@@ -167,7 +167,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this._bestFitness = candidateFitness;
             Arrays.clear(this._bestIndividuals);
             this._bestIndividuals.push(bestIndividual);
-            Container.debugLog(`Found new best solution with fitness: ${this._bestFitness}`);
+            logger.debug(`Found new best solution with fitness: ${this._bestFitness}`);
         }
     }
 

@@ -15,10 +15,10 @@ import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponen
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {generateInputs} from "../Algorithms/NEAT.test";
 import {NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
+import logger from "../../../../src/util/logger";
 
 describe("Test NeatPopulation", () => {
 
@@ -32,8 +32,7 @@ describe("Test NeatPopulation", () => {
     let crossover: NeatCrossover;
 
     beforeEach(() => {
-        Container.debugLog = () => { /* No operation */
-        };
+        logger.suggest.deny(/.*/, "debug");
         size = 10;
         numberOfSpecies = 5;
         NeatPopulation.innovations = [];

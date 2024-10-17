@@ -20,10 +20,10 @@
 
 import {TestChromosome} from "../testcase/TestChromosome";
 import {FitnessFunction} from "../search/FitnessFunction";
-import {Container} from "../utils/Container";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import Arrays from "../utils/Arrays";
+import logger from "../../util/logger";
 
 export class TestMinimizer {
 
@@ -47,7 +47,7 @@ export class TestMinimizer {
         newTest.lastImprovedCodon = test.lastImprovedCodon;
         const nEventsPreMinimization = test.getLength();
         const startTime = Date.now();
-        Container.debugLog(`Starting minimization for ${nEventsPreMinimization} events and a time-limit of ${timeBudget}`);
+        logger.debug(`Starting minimization for ${nEventsPreMinimization} events and a time-limit of ${timeBudget}`);
 
         while (changed && Date.now() - startTime < timeBudget) {
             changed = false;
@@ -76,7 +76,7 @@ export class TestMinimizer {
         }
 
         StatisticsCollector.getInstance().addMinimizedEvents(nEventsPreMinimization - newTest.getLength());
-        Container.debugLog(`Test minimization finished with ${nEventsPreMinimization - newTest.getLength()} fewer events and a duration of ${Date.now() - startTime} ms`);
+        logger.debug(`Test minimization finished with ${nEventsPreMinimization - newTest.getLength()} fewer events and a duration of ${Date.now() - startTime} ms`);
         return newTest;
     }
 }

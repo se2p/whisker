@@ -5,6 +5,7 @@ const ScratchRender = require('scratch-render');
 const ScratchSVGRenderer = require('scratch-svg-renderer');
 const AudioEngine = require('scratch-audio');
 const VirtualMachine = require('scratch-vm');
+const logger = require("../logger");
 
 const ASSET_SERVER = 'https://cdn.assets.scratch.mit.edu';
 const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
@@ -36,20 +37,27 @@ class Scratch extends EventEmitter {
     async loadProject (project) {
         this.project = project;
         this.vm.clear();
+
+        // Wait until a previous call to load the project finishes to avoid duplicate block ids.
+        while (this.vm.isLoading){
+            await new Promise(r => setTimeout(r, 1000));
+        }
         await this.vm.loadProject(project);
 
         // Note: this _step() is necessary to update the canvas. Otherwise, it remains blank, or it still shows the
         // previously loaded project. The test runner will also re-load the project before execution, because it needs
         // to undo the effects of the _step() taken here.
+        // TODO: check if this approach can be addressed with this.vm.renderer.draw(),
+        //  also check why the loadProject() call doesn't already take care of this
         this.vm.runtime._step();
     }
 
     /**
-     * Extract Block-Based Tests contained in a loaded Scratch project from the VM.
+     * Extract Block-Based Tests contained in the currently loaded Scratch project from the VM.
      *
      * @return {Map<string, Test>} A map that maps the hat block ID of a BBT to its data.
      */
-    getBBTTests () {
+    getBBTTestsOfCurrentProject () {
         const bbtTests = new Map();
 
         for (const target of this.vm.runtime.targets) {
@@ -64,7 +72,7 @@ class Scratch extends EventEmitter {
                 const correspondingComment = target.comments[bbtTestHatBlock.comment];
 
                 if (!correspondingInputBlock) {
-                    console.error('BBT test hat block without input block?');
+                    logger.error('BBT test hat block without input block?');
                     continue;
                 }
 

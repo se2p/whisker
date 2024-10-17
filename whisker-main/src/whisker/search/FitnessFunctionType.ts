@@ -19,7 +19,7 @@
  */
 
 /**
- * A enum that shows all available types of fitness functions that can be used.
+ * An enum that shows all available types of fitness functions that can be used.
  */
 export enum FitnessFunctionType {
     /**

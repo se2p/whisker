@@ -1,28 +1,25 @@
-const {switchToProjectTab, switchToUploadTab, toggleExtendedView} = require("./common");
+const {switchToProjectTab, toggleExtendedView} = require("./common");
 const {
     scratchPath,
-    acceleration,
-    seed,
     stateActionRecorder,
     configPath,
     recordProject,
     time,
-    useSaveStates,
 } = require("./cli").opts;
+const logger = require("./logger");
+const Whiskers = require("./whiskers");
 
-
-async function open(openNewPage) {
-    const page = await openNewPage();
+async function open(whisker) {
+    const page = whisker.page;
 
     // Procedure for generating game recordings.
     if (recordProject) {
         await toggleExtendedView(page);
         await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
-        console.log(`Start Recording ${recordProject.path} for ${time} seconds`);
+        logger.info(`Start Recording ${recordProject.path} for ${time} seconds`);
 
         // Upload File
-        await switchToUploadTab(page);
-        await (await page.$('#fileselect-project')).uploadFile(recordProject.path);
+        await whisker.uploadProject(recordProject.path);
 
         // Switch to Project tab and specify the required parameters.
         await switchToProjectTab(page, false);
@@ -60,13 +57,10 @@ async function open(openNewPage) {
 
     } else {
         if (scratchPath) {
-            await (await page.$('#fileselect-project')).uploadFile(scratchPath.path);
+            await whisker.uploadProject(scratchPath.path);
         }
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await switchToProjectTab(page, true);
-        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, acceleration);
-        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
-        await page.evaluate(useSaveStates => document.querySelector("#use-save-states").checked = useSaveStates, useSaveStates);
         if (stateActionRecorder) {
             await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
         }
@@ -81,4 +75,4 @@ async function open(openNewPage) {
     }
 }
 
-module.exports = open;
+module.exports = Whiskers.withNewPool((pool) => pool.run((whisker) => open(whisker)));

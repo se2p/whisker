@@ -1,8 +1,33 @@
 const {Command, InvalidArgumentError} = require('commander');
 const util = require('./util');
-// eslint-disable-next-line node/no-unpublished-require
-const {version, description} = require('../package.json');
+const {version, description} = require('./meta');
 const {relativeToServantDir} = require("./util");
+
+/**
+ * @typedef {Object} Opts
+ * @property {number} acceleration Accelerate Scratch VM by the given factor
+ * @property {string} [output] Path to CSV file with results
+ * @property {string} [seed] Seed for the Scratch VM
+ * @property {boolean} headless Run in headless mode
+ * @property {boolean} [useSaveStates] Reset project using save states, rather than by reloading it
+ * @property {string} [scratchPath] Path to Scratch file or folder with Scratch files
+ * @property {string} [testPath] Path to Whisker test suite or BBT project
+ * @property {string} [groundTruth] Path to ground truth data for Neatest + Backpropagation
+ * @property {string} [configPath] Path to Whisker configuration file
+ * @property {number} numberOfJobs Number of parallel test executions
+ * @property {boolean} [minimiseSuite] Minimises network suite based on branch coverage
+ * @property {string[]} [mutators] Mutation operators to apply for mutation testing
+ * @property {string} [downloadMutants] Download the generated mutants
+ * @property {number} [mutationBudget] Timeout for mutation analysis
+ * @property {number} [maxMutants] Upper bound of analysed mutations during mutation analysis
+ * @property {number} [activationTraces] Number of activation traces for surprise adequacy based error detection
+ * @property {boolean} [traceBlocks] Activates recording of block traces
+ * @property {boolean} [stateActionRecorder] Records executed scratch events and maps them to the current program state
+ * @property {string} [recordProject] Executes procedure for collecting recording data of single project
+ * @property {number} [time] Sets the time for how long gameplay should be recorded in seconds
+ * @property {string} whiskerUrl Path to index.html of Whisker Web
+ * @property {number} verbose The verbosity level
+ */
 
 /**
  * The name of the Whisker subcommand that was invoked.
@@ -14,7 +39,7 @@ let subcommand = '';
 /**
  * The command-line options given to servant.js, parsed as an object of key-value pairs.
  *
- * @type {Object.<string, unknown>}
+ * @type {Opts}
  */
 let opts = {};
 
@@ -30,7 +55,7 @@ const whiskerCLI = new class extends Command {
 
         this.name(invocation);
         this.version(version);
-        this.description(description);
+        this.description(`Whisker: ${description}`);
     }
 
     createCommand(name) {
@@ -65,7 +90,7 @@ class WhiskerSubCommand extends Command {
             (factor) => util.processPositiveInt(factor, true),
             1);
         this.option(
-            '-v, --csv-file <Path>',
+            '-o, --output <Path>',
             'create CSV file with results',
             (csvPath) => util.processFilePathNotExists(csvPath));
         this.option(
@@ -75,12 +100,15 @@ class WhiskerSubCommand extends Command {
             '-d, --headless',
             'run headless ("d" like in "decapitated")',
             false); // Has to be false, not undefined, as Puppeteer will not work properly otherwise.
-        this.option('-k, --console-forwarded', 'forward browser console output');
-        this.option('-l, --live-log', 'print new log output regularly');
-        this.option('-o, --live-output-coverage', 'print new coverage output regularly');
         this.option(
             '--use-save-states',
             'Whether to reset a project by using save states rather than reloading it.'
+        );
+        this.option(
+            '-v, --verbose',
+            'Verbose mode. Prints debug messages. Multiple -v increase verbosity. The maximum is 2.',
+            (_, v) => v === 2 ? v : v + 1,
+            0
         );
     }
 
@@ -101,11 +129,49 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    requireTestPathForRun() {
+        customChecks.push(function checkBBTLimitations() {
+            if (!(opts.testPath && opts.testPath.endsWith('.sb3'))) {
+                return;
+            }
+
+            if (opts.acceleration !== 1) {
+                throw new InvalidArgumentError('Test acceleration can only be used with Whisker tests!');
+            }
+
+            const validBBTOptions = [
+                // always present
+                'acceleration',
+
+                // actually valid BBT options
+                'headless',
+                'scratchPath',
+                'testPath',
+                'output',
+                'seed',
+                'verbose',
+                'numberOfJobs',
+            ];
+
+            for (const key of Object.keys(opts)) {
+                if (!validBBTOptions.includes(key)) {
+                    throw new InvalidArgumentError(`When using block-based tests, only these options are currently supported: ${validBBTOptions.join(', ')}`);
+                }
+            }
+        });
+
+        return this.requiredOption(
+            '-t, --test-path <Path>',
+            'path to Whisker tests (".js") or a project containing Block-Based Tests (".sb3") to run',
+            (testPath) => util.processFilePathExists(testPath, ['.js', '.sb3'])
+        );
+    }
+
     requireTestPath() {
         return this.requiredOption(
             '-t, --test-path <Path>',
-            'path to Whisker tests to run (".js")',
-            (testPath) => util.processFilePathExists(testPath, '.js'),
+            'path to Whisker tests (".js") to run',
+            (testPath) => util.processFilePathExists(testPath, '.js')
         );
     }
 
@@ -265,7 +331,14 @@ class WhiskerSubCommand extends Command {
  * and validate CLI arguments if needed, for example, to convert a string into a number, or to make sure a file exists.
  */
 
+/**
+ * Creates a new Whisker subcommand of the given name.
+ *
+ * @param name {string} The name of the subcommand
+ * @return {WhiskerSubCommand}
+ */
 function newSubCommand(name) {
+    // noinspection JSValidateTypes
     return whiskerCLI.command(name);
 }
 
@@ -279,11 +352,10 @@ const subCommands = [
         .optionRecordProject()
         .optionRecordingTime(),
 
-
     newSubCommand('run')
-        .description('run Whisker tests')
+        .description('run Whisker tests or block-based tests')
         .requireScratchPath()
-        .requireTestPath()
+        .requireTestPathForRun()
         .optionNumberOfJobs()
         .optionMutators()
         .optionMutantsDownloadPath()
@@ -300,11 +372,6 @@ const subCommands = [
             'path to directory for generated tests',
             (testDir) => util.processDirPathExists(testDir),
             __dirname)
-        .option(
-            '-r, --add-random-inputs <Integer>',
-            'add random inputs to the test and wait the given number of seconds for its completion',
-            (seconds) => util.processPositiveInt(seconds),
-            10)
         .optionGroundTruthPath(),
 
     newSubCommand('dynamic')
@@ -341,21 +408,11 @@ const subCommands = [
             30)
         .optionTestPath()
         .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive')
+        .optionNumberOfJobs()
         // .optionMutators()    // TODO: Implement ModelTesting + MutationAnalysis
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants(),
-
-    newSubCommand('witness')
-        .description('generate and replay error witnesses')
-        .requireTestPath()
-        .optionScratchPath()
-        .optionNumberOfJobs()
-        .requiredOption(
-            '-w, --error-witness-path <Path>',
-            'error witness to replay (".json")',
-            (witnessPath) => util.processFilePathExists(witnessPath, '.json'))
-        .option('-x, --generate-witness-only', 'generate error witness replay without executing it'),
 ];
 
 // Common configuration for Whisker and all subcommands:
@@ -378,8 +435,9 @@ whiskerCLI.parse(process.argv);
 customChecks.forEach((check) => check());
 
 opts = {
+    whiskerUrl: `file://${relativeToServantDir('../whisker-web/dist/index.html')}`,
+    numberOfJobs: 1,
     ...opts,
-    whiskerUrl: `file://${relativeToServantDir('../whisker-web/dist/index.html')}`
 };
 
 // The current Whisker mode (i.e., the name of the subcommand) and all given command line options are available in any

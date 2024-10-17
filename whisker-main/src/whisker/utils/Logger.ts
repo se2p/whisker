@@ -18,6 +18,8 @@
  *
  */
 
+import logger from "../../util/logger";
+
 export enum LogLevel {
 
     ALWAYS = 0,
@@ -46,11 +48,11 @@ export class ConsoleLogger implements AnalysisLogger {
     }
 
     potentialUnsound(str: string): void {
-        console.warn('UNSOUND: ' + str);
+        logger.warn('UNSOUND: ' + str);
     }
 
     potentialIncomplete(str: string): void {
-        console.warn('INCOMPLETE: ' + str);
+        logger.warn('INCOMPLETE: ' + str);
     }
 
     setLogLevel(logLevel: LogLevel): void {

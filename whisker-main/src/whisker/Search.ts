@@ -41,6 +41,7 @@ import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
 import {SearchAlgorithmBuilder} from "./search/SearchAlgorithmBuilder";
+import logger from "../util/logger";
 
 export class Search {
 
@@ -51,7 +52,7 @@ export class Search {
     }
 
     private async execute(project: ScratchProject, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
-        console.log("Whisker-Main: test generation");
+        logger.info("test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         return await testGenerator.generateTests(project);
@@ -59,9 +60,9 @@ export class Search {
 
     private printTests(tests: WhiskerTest[]): void {
         let i = 0;
-        console.log(`Total number of tests: ${tests.length}`);
+        logger.info(`Total number of tests: ${tests.length}`);
         for (const test of tests) {
-            console.log(`Test ${i}:\n${test.toString()}`);
+            logger.info(`Test ${i}:\n${test.toString()}`);
             i++;
         }
     }
@@ -72,7 +73,7 @@ export class Search {
     }
 
     private handleEmptyProject(): Array<string> {
-        console.log("Cannot find any suitable events for this project, not starting search.");
+        logger.warn("Cannot find any suitable events for this project, not starting search.");
         const stats = StatisticsCollector.getInstance();
         SearchAlgorithmBuilder.initializeCoverageMappings();
 
@@ -86,11 +87,11 @@ export class Search {
             }
         }
         if (!hasBlocks) {
-            console.log("Project contains no code");
+            logger.warn("Project contains no code");
         }
 
         const csvString: string = stats.asCsv();
-        console.log(csvString);
+        logger.info(csvString);
 
         const tests: WhiskerTest[] = [];
         const dummyTest = new TestChromosome([], null, null);
@@ -126,7 +127,7 @@ export class Search {
             }
             // Sample every minute
             const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(60000, upperBound);
-            console.log(csvOutput);
+            logger.info(csvOutput);
             return csvOutput;
         } else {
             stoppingCondition = config.searchAlgorithmProperties.stoppingCondition;
@@ -154,7 +155,7 @@ export class Search {
         } else {
             csvString = StatisticsCollector.getInstance().asCsv();
         }
-        console.log(csvString);
+        logger.info(csvString);
         return csvString;
     }
 
@@ -163,7 +164,7 @@ export class Search {
      */
     public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
                      accelerationFactor: number, seedString: string, groundTruth?: string): Promise<Array<string>> {
-        console.log("Whisker-Main: Starting Search based algorithm");
+        logger.info("Starting Search based algorithm");
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
@@ -174,12 +175,11 @@ export class Search {
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
-        Container.debugLog = config.getLoggingFunction();
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
         config._setReservedCodons(vm);
-        console.log(this.vm);
+        logger.info(this.vm);
 
         await util.prepare(accelerationFactor || 1);
         await util.start();
@@ -189,7 +189,7 @@ export class Search {
         if (seedString !== 'undefined' && seedString !== "") {
             // Prioritize seed set by CLI
             if (configSeed) {
-                console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
+                logger.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
 seed ${configSeed} defined within the config files.`);
             }
             Randomness.setInitialSeeds(seedString);

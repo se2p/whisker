@@ -35,6 +35,7 @@ import {Container} from "../utils/Container";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 import {DragSpriteEvent} from "./events/DragSpriteEvent";
+import logger = require('../../util/logger');
 
 
 export class TestExecutor {
@@ -87,7 +88,7 @@ export class TestExecutor {
         while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(this._eventExtractor.extractEvents(this._vm)))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
-                console.log("Whisker-Main: No events available for project.");
+                logger.warn("No events available for project.");
                 break;
             }
 
@@ -203,7 +204,7 @@ export class TestExecutor {
         while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(this._eventExtractor.extractEvents(this._vm)))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
-                console.log("Whisker-Main: No events available for project.");
+                logger.warn("No events available for project.");
                 break;
             }
 

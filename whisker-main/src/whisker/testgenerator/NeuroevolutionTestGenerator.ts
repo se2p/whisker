@@ -12,6 +12,7 @@ import {NetworkExecutor} from "../whiskerNet/Misc/NetworkExecutor";
 import {Container} from "../utils/Container";
 import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
 import {AssertionGenerator} from "./AssertionGenerator";
+import logger from "../../util/logger";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -25,7 +26,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             (a: NeatChromosome, b: NeatChromosome) => a.toString() === b.toString());
         const hyperParameter = this._config.neuroevolutionProperties;
         if (hyperParameter.activationTraceRepetitions > 0 && hyperParameter.eventSelection === 'activation') {
-            Container.debugLog(`Collecting activation traces for ${testChromosomes.length} networks with a repetition count of ${hyperParameter.activationTraceRepetitions}`);
+            logger.debug(`Collecting activation traces for ${testChromosomes.length} networks with a repetition count of ${hyperParameter.activationTraceRepetitions}`);
             await this.recordActivationTrace(hyperParameter, testChromosomes);
         }
 
@@ -83,8 +84,6 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             // Saves some values to retrieve them later.
             const score = network.score;
             const originalPlayTime = network.playTime;
-            const trace = network.trace.clone();
-            const coverage = new Set(network.coverage);
 
             // Execute the network and save the activation trace
             network.recordNetworkStatistics = true;
@@ -99,8 +98,6 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
             // Restore the saved values
             network.score = score;
             network.playTime = originalPlayTime;
-            network.trace = trace;
-            network.coverage = coverage;
         }
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueEvaluations;
     }
