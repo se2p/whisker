@@ -66,7 +66,7 @@ export class ScratchInterface {
     }
 
     public static getColorAtPosition(position: ScratchPosition, excludeTarget: RenderedTarget = undefined): Uint8ClampedArray {
-        // Collect all touchable objects which might carry the sensed color
+        // Collect all touchable objects that might carry the sensed color
         const renderer = Container.vm.runtime.renderer;
         const touchableObjects = [];
         for (let index = renderer._visibleDrawList.length - 1; index >= 0; index--) {
@@ -127,6 +127,34 @@ export class ScratchInterface {
     public static getStageDiameter(): number {
         const bounds = this.getStageBounds();
         return Math.hypot(bounds.top - bounds.bottom, bounds.right - bounds.left);
+    }
+
+    /**
+     * Extracts a block from a given Scratch program based on its id.
+     * @param program The Scratch program hosting the block in question.
+     * @param blockId The id specifying the block in question.
+     * @returns The block matching the specified id or null if no block in the program matches the supplied id.
+     */
+    public static getBlockFromId(program: ScratchProgram, blockId: string): string | null {
+        for (const target of program.targets) {
+            const targetBlocks = target.blocks;
+
+            if (blockId in targetBlocks) {
+                return targetBlocks[blockId];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extracts the rendered target of a Scratch program that hosts the block with the specified id.
+     * @param program The Scratch program hosting all rendered targets and blocks.
+     * @param blockId The id of the block whose hosting rendered target will be extracted.
+     * @returns The rendered target hosting the specified block or undefined if no target hosts the block.
+     */
+    public static getHostingRenderedTarget(program: ScratchProgram, blockId: string): RenderedTarget | undefined {
+        return program.targets.find(target => blockId in target.blocks);
     }
 }
 

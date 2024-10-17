@@ -1,5 +1,5 @@
 import {ScratchMutation} from "./ScratchMutation";
-import {ScratchProgram} from "../ScratchInterface";
+import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ControlFilter, StatementFilter} from "scratch-analysis";
 
@@ -55,23 +55,22 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * The SingleBlockDeletionMutation removes a single statement block that is neither a hat nor a branching block.
      * @param mutationBlockId the id of the block that should be deleted from the mutant program
      * @param mutantProgram the mutant program from which the mutationBlock will be deleted
-     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
+    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
 
 
         // Since we exclude hat blocks, every block that has no parent is a dead block and removing them is pointless.
         if (mutationBlock['parent'] === null) {
             return false;
         }
-        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], target);
+        const parent = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['parent']);
 
         // On the other hand, the next block can be null if we are about to delete the last block in a script.
         let next: unknown;
         if (mutationBlock['next'] !== null) {
-            next = this.extractBlockFromProgram(mutantProgram, mutationBlock['next'], target);
+            next = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['next']);
         } else {
             next = null;
         }
@@ -106,7 +105,8 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         // Finally, delete the mutationBlock by removing its pointers to the next and parent block.
         mutationBlock['parent'] = null;
         mutationBlock['next'] = null;
-        mutantProgram.name = `SBD:${mutationBlock['opcode']}-${mutationBlockId.slice(0, 4)}-${target}`.replace(/,/g, '');
+        const mutantId = this.getMutantId(mutationBlockId);
+        mutantProgram.name = `SBD:${mutationBlock['opcode']}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 

@@ -1,5 +1,5 @@
 import {ScratchMutation} from "./ScratchMutation";
-import {ScratchProgram} from "../ScratchInterface";
+import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Randomness} from "../../utils/Randomness";
 
@@ -20,11 +20,10 @@ export class VariableReplacementMutation extends ScratchMutation {
      * randomly chosen one.
      * @param mutationBlockId the id of the parent block holding the variable that will be replaced.
      * @param mutantProgram the mutant program in which the variable will be replaced.
-     * @param target the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, target: Readonly<string>): boolean {
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, target);
+    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
 
         // We may have the chance to replace multiple variables within one parent block. We therefore, count how
         // often a given parent has been mutated and always replace the next up to this point untouched variable.
@@ -75,8 +74,8 @@ export class VariableReplacementMutation extends ScratchMutation {
         placeHolderToMutate[1][1] = replaceVariableName;
         placeHolderToMutate[1][2] = replaceVariableID;
 
-        const blockId = `${mutationBlockId.slice(0, 4)}-${target}`;
-        mutantProgram.name = `VRM:${originalVarName}-${replaceVariableName}-${blockId}`.replace(/,/g, '');
+        const mutantId = this.getMutantId(mutationBlockId);
+        mutantProgram.name = `VRM:${originalVarName}-${replaceVariableName}-${mutantId}`.replace(/,/g, '');
         this.processedBlocks.push(mutationBlockId);
         return true;
     }

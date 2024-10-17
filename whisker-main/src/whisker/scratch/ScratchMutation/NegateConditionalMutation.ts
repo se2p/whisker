@@ -1,6 +1,6 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchProgram} from "../ScratchInterface";
+import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
 import {OperatorFilter} from "scratch-analysis/src/block-filter";
 import uid from "scratch-vm/src/util/uid";
 import {Randomness} from "../../utils/Randomness";
@@ -13,21 +13,20 @@ export class NegateConditionalMutation extends ScratchMutation {
     }
 
     /**
-     * The NegateConditionalMutation negates a selected diamond shaped conditional block by inserting a not block.
+     * The NegateConditionalMutation negating a selected diamond shaped conditional block by inserting a not block.
      * @param mutationBlockId the id of the block that will be negated.
      * @param mutantProgram the mutant program in which the conditional block will be negated
-     * @param targetName the name of the target in which the block to mutate resides.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: Readonly<string>, mutantProgram: ScratchProgram, targetName: Readonly<string>): boolean {
-        const blockId = `${mutationBlockId.slice(0, 4)}-${targetName}`;
-        mutantProgram.name = `NCM:${blockId}`.replace(/,/g, '');
+    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+        const mutantId = this.getMutantId(mutationBlockId);
+        mutantProgram.name = `NCM:${mutantId}`.replace(/,/g, '');
 
-        const mutationBlock = this.extractBlockFromProgram(mutantProgram, mutationBlockId, targetName);
-        const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId.split(`-${targetName}`)[0], mutationBlock['parent']);
+        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
+        const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId, mutationBlock['parent']);
 
         // The parent of the mutated block.
-        const parent = this.extractBlockFromProgram(mutantProgram, mutationBlock['parent'], targetName);
+        const parent = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['parent']);
 
         // Only if the parent exists, modify the parent block to point to the wrapping not block instead of the negated
         // conditional diamond block
@@ -52,15 +51,11 @@ export class NegateConditionalMutation extends ScratchMutation {
             }
         }
 
-        // Add the not block to the mutant program
-        const sourceTarget = mutantProgram.targets
-            .find(sourceTarget => this.isTarget(targetName, sourceTarget));
-        if (sourceTarget !== undefined) {
-            sourceTarget.blocks[not_block['id']] = not_block;
-        } else {
-            logger.warn(`Unknown source target ${targetName} for program ${mutantProgram.name}`);
+        const sourceTarget = ScratchInterface.getHostingRenderedTarget(mutantProgram, mutationBlockId);
+        if (sourceTarget === null) {
             return false;
         }
+        sourceTarget.blocks[not_block['id']] = not_block;
         return true;
     }
 
@@ -85,7 +80,7 @@ export class NegateConditionalMutation extends ScratchMutation {
      * @param parentId the id of the parent holding the block to negate
      * @returns not block with the block to negate as operand
      */
-    private static notBlockGenerator(blockToNegateId: Readonly<string>, parentId: Readonly<string>): unknown {
+    private static notBlockGenerator(blockToNegateId: string, parentId: string): unknown {
         return {
             fields: {},
             id: uid(),
