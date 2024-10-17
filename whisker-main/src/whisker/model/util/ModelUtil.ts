@@ -367,7 +367,7 @@ export abstract class ModelUtil {
                 - Math.abs($(sprite.x) - $(sprite.old.x)_)_ + Math.abs(_$_(sprite.x) - $(sprite.old.x)) > 10
             */
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
-            endIndex = toEval.indexOf(this.EXPR_END);
+            endIndex = toEval.indexOf(this.EXPR_END, startIndex);
 
             if (endIndex == -1) {
                 throw new ExpressionEndTagMissingError();

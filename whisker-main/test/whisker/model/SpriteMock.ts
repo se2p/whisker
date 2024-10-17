@@ -14,8 +14,8 @@ export class SpriteMock {
     private _visible: boolean;
     private _sprite: Sprite;
 
-    constructor(name: string, isOriginal = true, isTouchingMouse = true, visible = true,
-                isTouchingColor = true, touchingSprite = true, variables = null, clones: SpriteMock[] = []) {
+    constructor(name: string, variables = null, isOriginal = true, isTouchingMouse = true, visible = true,
+                isTouchingColor = true, touchingSprite = true, clones: SpriteMock[] = []) {
         this.name = name;
         this._original = isOriginal;
         this.touchingMouse = isTouchingMouse;
@@ -35,6 +35,7 @@ export class SpriteMock {
             name: this.name,
             x: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("x"),
             y: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("y"),
+            size: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("size"),
             sayText: this.sayText,
             currentCostumeName: this.currentCostumeName,
             isOriginal: this._original,

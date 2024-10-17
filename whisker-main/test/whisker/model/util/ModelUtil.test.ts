@@ -343,7 +343,6 @@ describe('ModelUtil tests', function () {
             expect(f(t)).toBe(true);
         });
 
-
         test('Produces the correct sting for multiple variables and sprites', () => {
             const expectedOutput = `(t) => {
 const sprite0 = t.getSprites(sprite => sprite.name.includes('Kiwi'), false)[0];
@@ -360,13 +359,9 @@ if (sprite1 == undefined) {
 }
 return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
 }`;
-            const bowl = new SpriteMock("Bowl");
-            const kiwi = new SpriteMock("Kiwi");
-            const oldBowl = new SpriteMock("Bowl");
-            kiwi.variables = [{name: "x", value: 7}, {name: "name", value: "Kiwi"}];
-            bowl.variables = [{name: "x", value: 17}];
-            oldBowl.variables = [{name: "x", value: 5}, {name: "y", value: 9}];
-            bowl.old = oldBowl;
+            const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
+            const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
+            bowl.old = new SpriteMock("Bowl", [{name: "x", value: 5}, {name: "y", value: 9}]);
             const tdMock = new TestDriverMock([bowl, kiwi]);
             const t = tdMock.getTestDriver();
             const expr = "$(Kiwi.name)+(-1*Math.abs($(Bowl.old.y)-$(Bowl.x))).toString()";
@@ -375,6 +370,44 @@ return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
             const f = eval(result.expr);
             expect(f(t)).toBe("Kiwi-8");
         });
+
+        test('Produces correct result with () independent of $-expressions', () => {
+            const expectedOutput = `(t) => {
+const sprite0 = t.getSprites(sprite => sprite.name.includes('Boat'), false)[0];
+if (sprite0 == undefined) {
+    throw getSpriteNotFoundError('Boat');
+}
+const variable0 = sprite0.getVariable('speed', false).value;
+ if (variable0 == undefined) {
+   throw getVariableNotFoundError('speed');
+}
+const sprite1 = t.getSprites(sprite => sprite.name.includes('Gate'), false)[0];
+if (sprite1 == undefined) {
+    throw getSpriteNotFoundError('Gate');
+}
+const sprite2 = t.getSprites(sprite => sprite.name.includes('Stage'), false)[0];
+if (sprite2 == undefined) {
+    throw getSpriteNotFoundError('Stage');
+}
+const variable2 = sprite2.getVariable('score', false).value;
+ if (variable2 == undefined) {
+   throw getVariableNotFoundError('score');
+}
+return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3*(sprite1.size+2) < (2*(variable2-1)+10)/1.5;
+}`;
+            const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
+            const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
+            const stage = new SpriteMock("Stage", [{name: "direction", value: 140}, {name: "score", value: 10}]);
+            const tdMock = new TestDriverMock([boat, gate, stage]);
+            tdMock.stage = stage.sprite;
+            const t = tdMock.getTestDriver();
+            const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
+            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            expect(result.expr).toBe(expectedOutput);
+            const f = eval(result.expr);
+            expect(f(t)).toBe(true);
+        });
+
     });
 
     test("checkVariableExistence() throws exception if variable does not exist", () => {
