@@ -344,7 +344,7 @@ export abstract class ModelUtil {
         const spriteMap: Record<string, number> = {};
 
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
-            endIndex = toEval.indexOf(this.EXPR_END);
+            endIndex = toEval.indexOf(this.EXPR_END, startIndex);
 
             if (endIndex == -1) {
                 throw new ExpressionEndTagMissingError();
