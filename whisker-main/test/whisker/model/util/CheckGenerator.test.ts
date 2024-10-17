@@ -206,7 +206,7 @@ describe('CheckGenerator', () => {
         const t = tdMock.getTestDriver();
 
         test('Has the correct return type', () => {
-            const result = CheckGenerator.getVariableComparisonCheck(t, dummyCU, "label", "graphId", false, false, "(apple)", "(x)", "<", "3");
+            const result = CheckGenerator.getVariableChangeCheck(t, dummyCU, "label", "graphId", false, false, "(apple)", "(x)", "+");
             expect(typeof result).toEqual(typeof (() => false));
         });
 
@@ -304,6 +304,54 @@ describe('CheckGenerator', () => {
             const res = CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", negated, false, "kiwi", "x", ">", "15");
             expect(res()).toEqual(!negated);
         });
+    });
+
+    describe('getAttributeChangeCheck', () => {
+        const dummyCU = getDummyCheckUtility();
+        const stage = new SpriteMock("stage",[{name: "currentCostumeName", value: "win", old: {name: "currentCostumeName", value: "lose"}}]);
+        const oldStage = new SpriteMock("stage", [{name: "currentCostumeName", value: "lose"}]);
+        const apple = new SpriteMock("apple",[{name: "x", value: 2}]);
+        const banana = new SpriteMock("banana");
+        stage.old = oldStage;
+        const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), apple, stage]);
+        tdMock.stage = stage.sprite;
+        const t = tdMock.getTestDriver();
+
+        test('Has the correct return type', () => {
+            const result = CheckGenerator.getAttributeChangeCheck(t, dummyCU, "label", "graphId", false, false, "apple", "x", "-");
+            expect(typeof result).toEqual(typeof (() => false));
+        });
+
+        test('VarEvent is registered on CheckUtil', () => {
+            const fn = jest.fn();
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnVisualChange = fn;
+            const cu = cuMock.getCheckUtility();
+            CheckGenerator.getAttributeChangeCheck(t, cu, "label", "graphId", false, false, "apple", "size", "+");
+            expect(fn).toHaveBeenLastCalledWith(apple.name, "AttrChange:apple:size:+", "label", "graphId", expect.anything());
+        });
+
+        test('Check is not a constant function', () => {
+            const res = CheckGenerator.getAttributeChangeCheck(t, dummyCU, "label", "graphId", true, false, "stage", "currentCostume", "==");
+            expect(res()).toEqual(true);
+            stage.variables = [{name: "currentCostumeName", value: "lose", old: {name: "currentCostumeName", value: "lose"}}];
+            tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
+            expect(res()).toEqual(false);
+        });
+    });
+
+    test('getBackgroundChangeCheck', () => {
+        const dummyCU = getDummyCheckUtility();
+        const stage = new SpriteMock("stage",[{name: "currentCostumeName", value: "win"}]);
+        const tdMock = new TestDriverMock([stage]);
+        tdMock.stage = stage.sprite;
+        const t = tdMock.getTestDriver();
+        const res = CheckGenerator.getBackgroundChangeCheck(t, dummyCU, "label", false, "win");
+        expect(res()).toEqual(true);
+        stage.variables = [{name: "currentCostumeName", value: "lose"}];
+        tdMock.currentSprites = SpriteMock.toSpriteArray([stage]);
+        tdMock.stage = stage.sprite;
+        expect(res()).toEqual(false);
     });
 
     describe('getFunctionCheck()', () => {

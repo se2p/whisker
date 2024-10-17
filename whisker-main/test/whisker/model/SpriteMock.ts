@@ -37,7 +37,7 @@ export class SpriteMock {
             y: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("y"),
             size: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("size"),
             sayText: this.sayText,
-            currentCostumeName: this.currentCostumeName,
+            currentCostumeName: this.currentCostumeName || this.variables == null ? this.currentCostumeName : this.getValueOfVariableOrUndefined("currentCostumeName"),
             isOriginal: this._original,
             visible: this._visible,
             old: this.old == null ? null : this.old._sprite,
