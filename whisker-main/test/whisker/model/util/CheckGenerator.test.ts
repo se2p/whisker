@@ -544,4 +544,67 @@ describe('CheckGenerator', () => {
             expect(res()).toBe(false);
         });
     });
+
+    test('getExpressionCheck()', () => {
+        const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
+        const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
+        const stage = new SpriteMock("Stage", [{name: "direction", value: 140}, {name: "score", value: 10}]);
+        const tdMock = new TestDriverMock([boat, gate, stage]);
+        const cu = getDummyCheckUtility();
+        const varEvent = jest.fn();
+        cu.registerVarEvent = varEvent;
+        const moveEvent = jest.fn();
+        cu.registerOnMoveEvent = moveEvent;
+        const visualEvent = jest.fn();
+        cu.registerOnVisualChange = visualEvent;
+        tdMock.stage = stage.sprite;
+        const t = tdMock.getTestDriver();
+        const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
+        const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
+        expect(res()).toBe(true);
+        expect(varEvent).toHaveBeenCalledTimes(2);
+        expect(moveEvent).toHaveBeenCalledTimes(1);
+        expect(visualEvent).toHaveBeenCalledTimes(1);
+    });
+
+    test('getTimeElapsedCheck', () => {
+        const tdMock = new TestDriverMock();
+        const t = tdMock.getTestDriver();
+        t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
+        const res = CheckGenerator.getTimeElapsedCheck(t, false, 1230);
+        tdMock.totalStepsExecuted = 122;
+        expect(res()).toBe(false);
+        tdMock.totalStepsExecuted = 123;
+        expect(res()).toBe(true);
+        tdMock.totalStepsExecuted = 1000;
+        expect(res()).toBe(true);
+    });
+
+    test('getTimeBetweenCheck', () => {
+        const tdMock = new TestDriverMock();
+        const t = tdMock.getTestDriver();
+        t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
+        const res = CheckGenerator.getTimeBetweenCheck(t, false, 3760);
+        expect(res(375)).toBe(false);
+        expect(res(376)).toBe(true);
+        expect(res(12371298)).toBe(true);
+    });
+
+    describe('getTimeAfterEndCheck', () => {
+        const tdMock = new TestDriverMock();
+        const t = tdMock.getTestDriver();
+        t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 100;
+        const res = CheckGenerator.getTimeAfterEndCheck(t, false, 68800);
+        const table: [boolean, number, number, number][] = [
+            [false, 0, 687, 123],
+            [false, 213, 900, 456],
+            [true, 312, 1000, 789],
+            [true, 4538, 10000, 10]
+        ];
+        it.each(table)('getTimeAfterEndCheck returns %s for %s steps after end and %s total steps',
+            (expected, afterEnd, total, sinceLastTransition) => {
+                tdMock.totalStepsExecuted = total;
+                expect(res(sinceLastTransition, afterEnd)).toBe(expected);
+            });
+    });
 });
