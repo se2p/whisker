@@ -134,7 +134,7 @@ export class CheckUtility extends EventEmitter {
     }
 
     private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, eventString: string,
-                     spriteName: string, edgeLabel: string, graphID: string, predicate: (sprite: Sprite) => boolean) {
+                      spriteName: string, edgeLabel: string, graphID: string, predicate: (sprite: Sprite) => boolean) {
         // no check for this sprite till now
         if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
             predicateChecker[spriteName] = [];

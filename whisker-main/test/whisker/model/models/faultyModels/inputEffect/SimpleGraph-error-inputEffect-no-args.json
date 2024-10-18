@@ -22,7 +22,9 @@
                     {
                         "id": "c0",
                         "name": "Function",
-                        "args": ["true"],
+                        "args": [
+                            "true"
+                        ],
                         "negated": false
                     }
                 ],

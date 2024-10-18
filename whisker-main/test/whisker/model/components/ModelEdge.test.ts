@@ -1,6 +1,7 @@
 import {
     ProgramModelEdge,
-    SimpleProgramModelEdge, SimpleUserModelEdge,
+    SimpleProgramModelEdge,
+    SimpleUserModelEdge,
     UserModelEdge
 } from "../../../../src/whisker/model/components/ModelEdge";
 import {Condition} from "../../../../src/whisker/model/components/Condition";

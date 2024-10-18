@@ -13,7 +13,7 @@ export class MockedModelNode extends ModelNode {
         this.fn = fn;
     }
 
-    override reset():void {
+    override reset(): void {
         this.fn();
         super.reset();
     }
@@ -40,7 +40,7 @@ class MockedProgram extends ProgramModel {
     }
 }
 
-function getNodesAndEdgesForBiggerModel() : [Record<string, ModelNode>, Record<string, ProgramModelEdge>]{
+function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode>, Record<string, ProgramModelEdge>] {
     const nodes: Record<string, ModelNode> = {
         start: new ModelNode("start", undefined),
         n1: new ModelNode("n1", undefined),

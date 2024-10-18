@@ -1,10 +1,5 @@
 import {ModelLoader, ModelType} from "./util/ModelLoader";
-import {
-    CoverageResult,
-    ExtendedCoverageResult,
-    ProgramModel,
-    SimpleProgramModel
-} from "./components/ProgramModel";
+import {CoverageResult, ExtendedCoverageResult, ProgramModel, SimpleProgramModel} from "./components/ProgramModel";
 import {SimpleUserModel, UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";

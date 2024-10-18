@@ -63,8 +63,8 @@ export class ProgramModel {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: Record<string,ModelNode>,
-                edges: Record<string,ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
+    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>,
+                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         if (!id) {
             throw new Error("No id given.");
         }

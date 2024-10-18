@@ -248,7 +248,7 @@ export class Check {
             return true;
         }
 
-        let comp1:ArgType, comp2:ArgType;
+        let comp1: ArgType, comp2: ArgType;
         switch (check1.name) {
             case CheckName.Click:
                 // you cant click on two different sprites at the same time

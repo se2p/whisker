@@ -1,33 +1,71 @@
-[{
-    "usage": "program",
-    "id": "bowl",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": [],
-    "nodeIds": ["init", "end"],
-    "edges": []
-}, {
-    "usage": "user",
-    "id": "bowl2",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": ["end"],
-    "nodeIds": ["init", "start", "text", "end"],
-    "edges": []
-}, {
-    "usage": "end",
-    "id": "bowl3",
-    "startNodeId": "init",
-    "stopNodeIds": ["end"],
-    "stopAllNodeIds": ["end"],
-    "nodeIds": ["init", "start", "text", "end"],
-    "edges": [{
-        "id": "init",
-        "from": "init",
-        "to": "start",
-        "forceTestAfter": -1,
-        "forceTestAt": -1,
-        "conditions": [{"id": "condition1", "name": "Function", "args": ["true"], "negated": false}],
-        "effects": []
-    }]
-}]
+[
+    {
+        "usage": "program",
+        "id": "bowl",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "end"
+        ],
+        "edges": []
+    },
+    {
+        "usage": "user",
+        "id": "bowl2",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "nodeIds": [
+            "init",
+            "start",
+            "text",
+            "end"
+        ],
+        "edges": []
+    },
+    {
+        "usage": "end",
+        "id": "bowl3",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "nodeIds": [
+            "init",
+            "start",
+            "text",
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    }
+]

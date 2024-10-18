@@ -32,13 +32,17 @@
                     {
                         "id": "effect1",
                         "name": "InputKey",
-                        "args": ["up"],
+                        "args": [
+                            "up"
+                        ],
                         "negated": false
                     },
                     {
                         "id": "effect2",
                         "name": "InputKey",
-                        "args": ["down"],
+                        "args": [
+                            "down"
+                        ],
                         "negated": false
                     },
                     {

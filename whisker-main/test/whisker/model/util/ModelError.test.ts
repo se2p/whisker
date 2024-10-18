@@ -2,7 +2,8 @@ import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEd
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {
-    getEffectFailedOutput, getErrorOnEdgeOutput,
+    getEffectFailedOutput,
+    getErrorOnEdgeOutput,
     getTimeLimitFailedAfterOutput,
     getTimeLimitFailedAtOutput
 } from "../../../../src/whisker/model/util/ModelError";
