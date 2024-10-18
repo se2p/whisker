@@ -599,17 +599,18 @@ const loadProjectAndExtractBlockBasedTests = async function (project) {
         targetsWithTests: {}
     };
 
+    // global variables are actually just the (regular/local) variables of the stage!
     newTestStore.globalVariables = Whisker.scratch.vm.runtime.getTargetForStage().variables;
 
     const originalTargets = Whisker.scratch.vm.runtime.targets.filter(target => target.isOriginal);
 
     for (const target of originalTargets) {
         let targetContainsTests = false;
-        const spriteName = target.sprite.name;
+        const spriteName = target.isStage ? '_stage_' : target.sprite.name;
 
         for (const script of target.blocks.getScripts()) {
-            const topBlock = target.blocks.getBlock(script);
 
+            const topBlock = target.blocks.getBlock(script);
             if (!topBlock || topBlock.opcode !== 'bbt_testHat') {
                 continue;
             }
@@ -630,11 +631,14 @@ const loadProjectAndExtractBlockBasedTests = async function (project) {
 
         if (targetContainsTests) {
 
-            newTestStore.targetsWithTests[spriteName].localVariables =
-                Object.assign({}, Whisker.scratch.vm.runtime.getSpriteTargetByName(spriteName).variables);
+            // local variables of the stage == global variables, stored already
+            if (!target.isStage) {
+                newTestStore.targetsWithTests[spriteName].localVariables =
+                    Object.assign({}, target.variables);
+            }
 
             newTestStore.targetsWithTests[spriteName].comments =
-                Object.assign({}, Whisker.scratch.vm.runtime.getSpriteTargetByName(spriteName).comments);
+                Object.assign({}, target.comments);
         }
     }
 
@@ -674,7 +678,13 @@ const injectTestsFromTestStore = function () {
 
     for (const spriteName of Object.keys(Whisker.bbtTestStore.targetsWithTests)) {
 
-        const currTarget = Whisker.scratch.vm.runtime.getSpriteTargetByName(spriteName);
+        const currTarget = spriteName === '_stage_' ? stage :
+            Whisker.scratch.vm.runtime.getSpriteTargetByName(spriteName);
+
+        if (!currTarget) {
+            Whisker.outputLog.println(`ERROR: Target ${spriteName} not found, cannot inject tests!`);
+            continue;
+        }
 
         for (const comment of Object.values(Whisker.bbtTestStore.targetsWithTests[spriteName].comments)) {
             currTarget.createComment(comment.id, comment.blockId, comment.text,
