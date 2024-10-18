@@ -62,7 +62,7 @@ export class TestMinimizer {
                 const newCodons = codonChunks.slice(0, i).concat(codonChunks.slice(i + 1)).flat();
 
                 const newChromosome = newTest.cloneWith(newCodons);
-                newChromosome.trace = new ExecutionTrace([], newEvents);
+                newChromosome.trace = new ExecutionTrace(null, newEvents);
                 await newChromosome.evaluate(false);
 
                 const fitness = await this._fitnessFunction.getFitness(newChromosome);

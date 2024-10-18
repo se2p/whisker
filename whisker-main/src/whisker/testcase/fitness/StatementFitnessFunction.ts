@@ -20,7 +20,6 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {Trace} from "scratch-vm/src/engine/tracing.js";
 import {Container} from "../../utils/Container";
 import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
 import {
@@ -32,6 +31,7 @@ import {
     ControlFilter,
     CustomFilter
 } from 'scratch-analysis';
+import {BranchDistanceTrace} from "scratch-vm/@types/scratch-vm/tracing/branchCoverageTracer";
 import logger from '../../../util/logger';
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
@@ -329,7 +329,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param blockTrace the blockTrace from which we can determine the branch distance.
      * @returns boolean determining if we extract the branchDistance from the given blockTrace.
      */
-    private _canComputeControlDistance(blockTrace: Trace): boolean {
+    private _canComputeControlDistance(blockTrace: BranchDistanceTrace): boolean {
         return !this._targetNode.block.opcode.startsWith("event_when") &&
             this._targetNode.block.opcode !== 'control_start_as_clone' &&
             (blockTrace.opcode.startsWith("control") ||

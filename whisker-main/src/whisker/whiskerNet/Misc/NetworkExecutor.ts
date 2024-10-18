@@ -1,7 +1,7 @@
 import VMWrapper = require("../../../vm/vm-wrapper.js");
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
-import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
+import {CoverageTrace, EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
@@ -149,7 +149,7 @@ export class NetworkExecutor {
             // Keep executing if we are optimising for branch coverage to avoid having a branch only partly covered.
             if (this._stopEarly && coverageObjective !== undefined && coverageObjective.getCDGDepth() > 1 &&
                 !(coverageObjective instanceof BranchCoverageFitnessFunction)) {
-                const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
+                const currentCoverage = this._vm.getTraces().blockCoverage;
                 if (currentCoverage.has(coverageObjective.getTargetNode().id)) {
                     break;
                 }
@@ -161,8 +161,9 @@ export class NetworkExecutor {
         network.playTime = Date.now() - startTime;
 
         // Save the executed Trace and the covered blocks
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, events);
-        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        const coverageTrace: CoverageTrace = this._vm.getTraces();
+        network.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
+        network.coverage = coverageTrace.blockCoverage;
 
         // Saves the final state of the network if we want to compute a state-based novelty score.
         if (Container.config.getNetworkFitnessFunctionType() === NetworkFitnessFunctionType.NOVELTY_COSINE) {
@@ -218,7 +219,7 @@ export class NetworkExecutor {
 
             // Check if we have reached our selected target and stop if this is the case.
             if (this._stopEarly && statementTarget !== undefined) {
-                const currentCoverage: Set<string> = this._vm.runtime.traceInfo.tracer.coverage;
+                const currentCoverage: Set<string> = this._vm.getTraces().blockCoverage;
                 if (currentCoverage.has(statementTarget.getTargetNode().id)) {
                     break;
                 }
@@ -230,8 +231,9 @@ export class NetworkExecutor {
         network.playTime = Date.now() - startTime;
 
         // Save the executed Trace and the covered blocks
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, eventTrace);
-        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        const coverageTrace: CoverageTrace = this._vm.getTraces();
+        network.trace = new ExecutionTrace(coverageTrace.branchDistances, eventTrace);
+        network.coverage = coverageTrace.blockCoverage;
 
         // Stop VM and remove listeners.
         this._vm.off(Runtime.PROJECT_STOP_ALL, _onRunStop);

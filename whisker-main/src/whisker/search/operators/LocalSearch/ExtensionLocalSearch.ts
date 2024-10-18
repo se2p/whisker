@@ -22,7 +22,7 @@ import {Randomness} from '../../../utils/Randomness';
 import {TestChromosome} from "../../../testcase/TestChromosome";
 import {WaitEvent} from "../../../testcase/events/WaitEvent";
 import {Container} from "../../../utils/Container";
-import {EventAndParameters, ExecutionTrace} from "../../../testcase/ExecutionTrace";
+import {CoverageTrace, EventAndParameters, ExecutionTrace} from "../../../testcase/ExecutionTrace";
 import {LocalSearch} from "./LocalSearch";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {TypeTextEvent} from "../../../testcase/events/TypeTextEvent";
@@ -109,8 +109,9 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
         // Create the chromosome resulting from local search.
         const newChromosome = chromosome.cloneWith(newCodons);
-        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
-        newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        const coverageTrace: CoverageTrace = this._vmWrapper.vm.getTraces();
+        newChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, [...events]);
+        newChromosome.coverage = coverageTrace.blockCoverage;
         newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
 
@@ -157,7 +158,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const eventSelector = Container.config.getEventSelector();
         let fitnessValues = await TestExecutor.calculateUncoveredFitnessValues(chromosome);
         let lastImprovedCodon = chromosome.lastImprovedCodon;
-        let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
+        let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.getTraces().branchDistances, [...events]);
 
         // Monitor if the Scratch-VM is still running. If it isn't, stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
@@ -276,8 +277,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             previousEvents = Arrays.clone(availableEvents);
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
-            chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, events);
-            chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+            chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.getTraces().branchDistances, events);
+            chromosome.coverage = this._vmWrapper.vm.getTraces().blockCoverage;
             const newFitnessValues = await TestExecutor.calculateUncoveredFitnessValues(chromosome);
 
             // Check if the latest event has improved the fitness, if yes update properties and keep extending the
@@ -285,7 +286,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
                 if (TestExecutor.doRequireLastImprovedCodon(chromosome)) {
                     lastImprovedCodon = codons.length;
-                    lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
+                    lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.getTraces().branchDistances, [...events]);
                 }
             }
             // Otherwise, stop.

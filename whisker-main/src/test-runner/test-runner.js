@@ -18,10 +18,10 @@ class TestRunner extends EventEmitter {
         super();
 
         /**
-         * Collects traces of executed blocks during the execution of tests.
+         * Collects attributes of sprite after every executed block during the execution of tests.
          * @type {[]}
          */
-        this.blockTraces = [];
+        this.attributeTraces = [];
     }
 
     /**
@@ -30,12 +30,14 @@ class TestRunner extends EventEmitter {
      * @param {Test[]} tests .
      * @param {ModelTester} modelTester
      * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
-     * traceBlocks, log}} props .
+     * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
      * @param {{duration: number, repetitions: number}} modelProps
      * @returns {Promise<[{}, {}, []]>} .
      */
     async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
+
+        this.activateTracing(vm, props);
 
         if (typeof props === 'undefined' || props === null) {
             props = {extend: {}};
@@ -114,7 +116,7 @@ class TestRunner extends EventEmitter {
 
                     } else {
                         // Set timeout of 600000ms = 1min for every test
-                        result = await this._executeTest(vm, mutant, test, modelTester, props, modelProps, 600000);
+                        result = await this._executeTest(vm, test, modelTester, props, modelProps, 600000);
                         testStatusResults.push(result.status);
                         this._propagateTestResults(result, resultRecords);
                     }
@@ -149,7 +151,7 @@ class TestRunner extends EventEmitter {
                 //  However there seem to be timing issues with the models.
                 this.util = await this._loadProject(vm, project, props);
                 const startTime = Date.now();
-                let result = await this._executeTest(vm, project, undefined, modelTester, props, modelProps);
+                let result = await this._executeTest(vm, undefined, modelTester, props, modelProps);
                 result.modelResult.testNbr = i;
                 this.emit(TestRunner.TEST_MODEL, result);
                 testResults.push(result);
@@ -181,7 +183,7 @@ class TestRunner extends EventEmitter {
                     this.emit(TestRunner.TEST_SKIP, result);
 
                 } else {
-                    result = await this._executeTest(vm, project, test, modelTester, props, modelProps);
+                    result = await this._executeTest(vm, test, modelTester, props, modelProps);
                     testStatusResults.push(result.status);
                     this._propagateTestResults(result, resultRecords);
                 }
@@ -426,7 +428,6 @@ class TestRunner extends EventEmitter {
 
     /**
      * @param {VirtualMachine} vm .
-     * @param {string} project .
      * @param {Test} test .
      * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
@@ -436,13 +437,9 @@ class TestRunner extends EventEmitter {
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, project, test, modelTester, props, modelProps, defaultTimeoutPerTest = 0) {
+    async _executeTest(vm, test, modelTester, props,
+                       modelProps, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
-
-        if (props['traceBlocks']) {
-            this.vmWrapper.vm.activateBlockTracing();
-        }
-
         const testDriver = this.util.getTestDriver(
             {
                 extend: {
@@ -508,8 +505,9 @@ class TestRunner extends EventEmitter {
             }
 
             // Set the execution trace and the covered blocks set for computing coverages.
-            test.trace = new ExecutionTrace(this.vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, []);
-            test.coverage = this.vmWrapper.vm.runtime.traceInfo.tracer.coverage;
+            const coverageTrace = this.vmWrapper.vm.getTraces();
+            test.trace = new ExecutionTrace(coverageTrace.branchDistances, []);
+            test.coverage = coverageTrace.blockCoverage;
             await this._determineCoverages(test);
 
         } else if (modelTester && modelTester.someModelLoaded()) {
@@ -535,8 +533,8 @@ class TestRunner extends EventEmitter {
         }
 
         // If desired, save execution trace after executing each block.
-        if (props['traceBlocks']) {
-            this.blockTraces.push(this._extractTraces());
+        if (props['traceAttributes']) {
+            this.attributeTraces.push(this._extractTraces());
         }
 
         this.vmWrapper.end();
@@ -565,14 +563,38 @@ class TestRunner extends EventEmitter {
     }
 
     /**
+     * Activates specified tracers.
+     * @param {VirtualMachine} vm
+     * @param {{traceBlockCoverage:boolean, traceBranchCoverage:boolean, traceAttributes:boolean,
+     * traceDebug:boolean}} props
+     */
+    activateTracing(vm, props) {
+        if (props.traceBlockCoverage && props.traceBranchCoverage) {
+            vm.registerCoverageTracer();
+        } else if (props.traceBlockCoverage) {
+            vm.registerBlockCoverageTracer();
+        } else if (props.traceBranchCoverage) {
+            vm.registerBranchCoverageTracer();
+        }
+
+        if (props.traceAttributes) {
+            vm.registerAttributeTracer();
+        }
+
+        if (props.traceDebug) {
+            vm.registerDebugTracer();
+        }
+    }
+
+    /**
      * Extracts desired trace information for every executed block.
      * @return {{id:string, targets:{}}}
      * @private
      */
     _extractTraces() {
         const traces = [];
-        for (const trace of this.vmWrapper.vm.runtime.traceInfo.tracer.traces) {
-            traces.push({id: trace['id'], opcode: trace['opcode'], sprite: trace['targetsInfo']});
+        for (const trace of this.vmWrapper.vm.getTraces().targetAttributes) {
+            traces.push({id: trace['id'], opcode: trace['opcode'], sprites: trace['attributes']});
         }
         return {...traces};
     }

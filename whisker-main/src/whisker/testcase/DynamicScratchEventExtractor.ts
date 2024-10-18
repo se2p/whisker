@@ -44,7 +44,7 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
     public extractEvents(vm: VirtualMachine): ScratchEvent[] {
         this.currentClickClones = new Map<string, number>();
         let eventList: ScratchEvent[] = [];
-        const lastStepCoveredBlocks: Set<string> = vm.runtime.traceInfo.tracer.lastStepCoverage;
+        const lastStepCoveredBlocks: Set<string> = vm.getTraces().lastStepCoveredBlocks;
 
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.blocks.getScripts()) {

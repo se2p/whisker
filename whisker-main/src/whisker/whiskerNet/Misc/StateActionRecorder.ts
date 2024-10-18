@@ -389,13 +389,13 @@ export class StateActionRecorder extends EventEmitter {
      * Adds an {@link ActionRecord} to the global {@link Recording}.
      */
     public addStateActionRecordsToRecording(): void {
-        const coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        const coverage = this._vm.getTraces().blockCoverage;
 
         // Check for branch Coverage. We have to generate a chromosome stub to work around the fitness interface.
         const branchFactory = new BranchCoverageFitnessFunctionFactory();
         const branchTargets = branchFactory.extractFitnessFunctions(this._vm, []);
         const chromosomeStub = new TestChromosome([], null, null);
-        chromosomeStub.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, undefined);
+        chromosomeStub.trace = new ExecutionTrace(this._vm.getTraces().branchDistances, undefined);
         for (const branchTarget of branchTargets) {
             if (branchTarget.isCovered(chromosomeStub)) {
                 coverage.add(branchTarget.getNodeId());
