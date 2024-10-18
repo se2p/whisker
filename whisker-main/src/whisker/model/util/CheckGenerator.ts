@@ -677,7 +677,7 @@ export abstract class CheckGenerator {
         });
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);
-            const anyTouchingEdge = sprites.some((s) => check(s));
+            const anyTouchingEdge = sprites.some(check);
             return !negated == anyTouchingEdge;
         };
     }

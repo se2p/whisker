@@ -10,6 +10,8 @@ export class SpriteMock {
     public clones: SpriteMock[];
     public old: SpriteMock;
     public sayText: string;
+    public touchingVerticalEdge: boolean;
+    public touchingHorizontalEdge: boolean;
     private _original: boolean;
     private _visible: boolean;
     private _sprite: Sprite;
@@ -46,6 +48,9 @@ export class SpriteMock {
             isTouchingMouse: () => this.touchingMouse,
             isTouchingColor: (colors: number[]) => this.touchingColor,
             isTouchingSprite: (sprite: Sprite) => this.touchingSprite,
+            isTouchingVerticalEdge: () => this.touchingVerticalEdge,
+            isTouchingHorizEdge: () => this.touchingHorizontalEdge,
+            isTouchingEdge: () => this.touchingVerticalEdge || this.touchingHorizontalEdge,
             getVariables: (predicate) => !this.variables ? this.variables : this.variables.filter(v => predicate(v)),
             getVariable: (key: string) => !this.variables ? this.variables : this.variables.filter(v => v.name == key)[0],
             getClones: (withClones: boolean) => {

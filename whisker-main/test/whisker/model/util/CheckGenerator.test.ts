@@ -567,7 +567,7 @@ describe('CheckGenerator', () => {
         expect(visualEvent).toHaveBeenCalledTimes(1);
     });
 
-    test('getTimeElapsedCheck', () => {
+    test('getTimeElapsedCheck()', () => {
         const tdMock = new TestDriverMock();
         const t = tdMock.getTestDriver();
         t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
@@ -580,7 +580,7 @@ describe('CheckGenerator', () => {
         expect(res()).toBe(true);
     });
 
-    test('getTimeBetweenCheck', () => {
+    test('getTimeBetweenCheck()', () => {
         const tdMock = new TestDriverMock();
         const t = tdMock.getTestDriver();
         t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
@@ -590,7 +590,7 @@ describe('CheckGenerator', () => {
         expect(res(12371298)).toBe(true);
     });
 
-    describe('getTimeAfterEndCheck', () => {
+    describe('getTimeAfterEndCheck()', () => {
         const tdMock = new TestDriverMock();
         const t = tdMock.getTestDriver();
         t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 100;
@@ -606,5 +606,58 @@ describe('CheckGenerator', () => {
                 tdMock.totalStepsExecuted = total;
                 expect(res(sinceLastTransition, afterEnd)).toBe(expected);
             });
+    });
+
+    describe('getTouchingEdgeCheck()', () => {
+        const sprite = new SpriteMock("apple");
+        const tdMock = new TestDriverMock([sprite]);
+        const t = tdMock.getTestDriver();
+        const cu = getDummyCheckUtility();
+        const label = "label";
+        const graphID = "graphID";
+        const negated = false;
+        const caseSens = false;
+
+        test('At least one of both edges must be set to true', () => {
+            expect(() => {
+                CheckGenerator.getTouchingEdgeCheck(t, cu, label, graphID, negated, caseSens, sprite.name, false, false);
+            }).toThrow();
+        });
+
+        test('Touching only HorizontalEdgeCheck', () => {
+            const res = CheckGenerator.getTouchingEdgeCheck(t, cu, label, graphID, negated, caseSens, sprite.name, false, true);
+            sprite.touchingVerticalEdge = true;
+            sprite.touchingHorizontalEdge = false;
+            expect(res()).toBe(false);
+            sprite.touchingHorizontalEdge = true;
+            expect(res()).toBe(true);
+            sprite.touchingVerticalEdge = false;
+            expect(res()).toBe(true);
+        });
+
+        test('Touching only VerticalEdgeCheck', () => {
+            const res = CheckGenerator.getTouchingEdgeCheck(t, cu, label, graphID, negated, caseSens, sprite.name, true, false);
+            sprite.touchingVerticalEdge = false;
+            sprite.touchingHorizontalEdge = true;
+            expect(res()).toBe(false);
+            sprite.touchingVerticalEdge = true;
+            expect(res()).toBe(true);
+            sprite.touchingHorizontalEdge = false;
+            expect(res()).toBe(true);
+        });
+
+        test('Touching any edge', () => {
+            const res = CheckGenerator.getTouchingEdgeCheck(t, cu, label, graphID, negated, caseSens, sprite.name, true, true);
+            sprite.touchingVerticalEdge = false;
+            sprite.touchingHorizontalEdge = false;
+            expect(res()).toBe(false);
+            sprite.touchingVerticalEdge = true;
+            expect(res()).toBe(true);
+            sprite.touchingVerticalEdge = false;
+            sprite.touchingHorizontalEdge = true;
+            expect(res()).toBe(true);
+            sprite.touchingVerticalEdge = true;
+            expect(res()).toBe(true);
+        });
     });
 });
