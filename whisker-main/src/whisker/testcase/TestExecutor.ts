@@ -21,7 +21,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
-import {EventAndParameters, ExecutionTrace} from "./ExecutionTrace";
+import {CoverageTrace, EventAndParameters, ExecutionTrace} from "./ExecutionTrace";
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
@@ -96,8 +96,9 @@ export class TestExecutor {
             numCodon = await this.selectAndSendEvent(codons, numCodon, availableEvents, events);
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
-            testChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.branchDistTraces, events);
-            testChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+            const coverageTrace: CoverageTrace = this._vm.getTraces();
+            testChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
+            testChromosome.coverage = coverageTrace.blockCoverage;
 
             // Check if we came closer to cover a specific block.
             // This only makes sense when using a SingleObjective focused Algorithm like MIO.
@@ -123,7 +124,7 @@ export class TestExecutor {
                 // Check if the latest execution of the given event has improved overall fitness.
                 if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
                     testChromosome.lastImprovedCodon = numCodon;
-                    testChromosome.lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, [...events]);
+                    testChromosome.lastImprovedTrace = new ExecutionTrace(this._vm.getTraces().branchDistances, [...events]);
                 }
                 fitnessValues = newFitnessValues;
             }
@@ -138,8 +139,9 @@ export class TestExecutor {
         }
 
         // Set attributes of the testChromosome after executing its genes.
-        testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, events);
-        testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        const coverageTrace: CoverageTrace = this._vm.getTraces();
+        testChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
+        testChromosome.coverage = coverageTrace.blockCoverage;
 
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
@@ -174,8 +176,9 @@ export class TestExecutor {
         }
 
         // Set attributes of the testChromosome after executing its genes.
-        chromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, chromosome.trace.events);
-        chromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        const coverageTrace: CoverageTrace = this._vm.getTraces();
+        chromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, chromosome.trace.events);
+        chromosome.coverage = coverageTrace.blockCoverage;
 
         this._vmWrapper.end();
         await this._vmWrapper.resetProject(this._initialState);
@@ -238,9 +241,11 @@ export class TestExecutor {
 
         }
         const endTime = Date.now() - startTime;
-        const trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.branchDistTraces, events);
-        randomEventChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        randomEventChromosome.trace = trace;
+
+        // Set attributes of the testChromosome after executing its genes.
+        const coverageTrace: CoverageTrace = this._vm.getTraces();
+        randomEventChromosome.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
+        randomEventChromosome.coverage = coverageTrace.blockCoverage;
 
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
@@ -248,7 +253,7 @@ export class TestExecutor {
 
         await this.updateStatistics(endTime, randomEventChromosome);
 
-        return trace;
+        return randomEventChromosome.trace;
     }
 
     /**

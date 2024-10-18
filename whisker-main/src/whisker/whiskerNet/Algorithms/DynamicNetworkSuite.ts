@@ -251,6 +251,9 @@ export class DynamicNetworkSuite {
         await util.prepare(this.properties['acceleration'] as number || 1);
         await util.start();
 
+        // Activate CoverageTracing
+        this.vm.registerCoverageTracer();
+
         // Set up Container variables.
         Container.vm = this.vm;
         Container.vmWrapper = vmWrapper;

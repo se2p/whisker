@@ -92,7 +92,7 @@ Options:
   -t, --test-path <Path>            path to Whisker tests to run (".js")
   -o, --output <Path>               create CSV file with results
   -z, --seed <String>               custom seed for Scratch-VM
-  -tb, --trace-blocks               whether block traces should be recorded and downloaded (default: false)
+  -ta, --trace-attributes           activates tracing of sprite attributes after every executed block (default: false)
   -v, --verbose                     Verbose mode. Prints debug messages. Multiple -v increase verbosity.
 ```
 

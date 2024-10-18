@@ -97,7 +97,7 @@ export class Search {
         const dummyTest = new TestChromosome([], null, null);
         const events: EventAndParameters[] = [];
         events.push(new EventAndParameters(new WaitEvent(), [0]));
-        dummyTest.trace = new ExecutionTrace([], events);
+        dummyTest.trace = new ExecutionTrace(null, events);
 
         tests.push(new WhiskerTest(dummyTest));
         const javaScriptText = this.testsToString(tests);
@@ -172,6 +172,7 @@ export class Search {
         Container.config = config;
         Container.vm = vm;
         vm.setInterrogativeDebuggerSupported(false);
+        vm.registerCoverageTracer();
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;

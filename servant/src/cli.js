@@ -21,7 +21,7 @@ const {relativeToServantDir} = require("./util");
  * @property {number} [mutationBudget] Timeout for mutation analysis
  * @property {number} [maxMutants] Upper bound of analysed mutations during mutation analysis
  * @property {number} [activationTraces] Number of activation traces for surprise adequacy based error detection
- * @property {boolean} [traceBlocks] Activates recording of block traces
+ * @property {boolean} [traceAttributes] Activates recording of sprite attributes after every block execution.
  * @property {boolean} [stateActionRecorder] Records executed scratch events and maps them to the current program state
  * @property {string} [recordProject] Executes procedure for collecting recording data of single project
  * @property {number} [time] Sets the time for how long gameplay should be recorded in seconds
@@ -288,10 +288,10 @@ class WhiskerSubCommand extends Command {
             (activationTraces) => util.processPositiveInt(activationTraces));
     }
 
-    optionTraceBlocks() {
+    optionTraceAttributes() {
         return this.option(
-            '-tb, --trace-blocks',
-            'activates recording of block traces',
+            '-ta, --trace-attributes',
+            'activates recording of sprite attributes after every executed block',
         );
     }
 
@@ -361,7 +361,7 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
-        .optionTraceBlocks(),
+        .optionTraceAttributes(),
 
     newSubCommand('generate')
         .description('generate Whisker test suites')

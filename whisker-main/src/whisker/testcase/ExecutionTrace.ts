@@ -18,8 +18,8 @@
  *
  */
 
-import { Trace } from "scratch-vm/src/engine/tracing.js";
 import { ScratchEvent } from "./events/ScratchEvent";
+import BranchDistanceTrace from "scratch-vm/src/tracing/branchCoverageTracer";
 
 export class EventAndParameters {
     constructor(
@@ -49,11 +49,11 @@ export class EventAndParameters {
  * TODO
  */
 export class ExecutionTrace {
-    private readonly _blockTraces: Trace[];
+    private readonly _blockTraces: CoverageTrace;
 
     private _events: EventAndParameters[];
 
-    constructor(traces: Trace[], events: EventAndParameters[]) {
+    constructor(traces: CoverageTrace, events: EventAndParameters[]) {
         this._blockTraces = traces;
         this._events = events;
     }
@@ -62,7 +62,7 @@ export class ExecutionTrace {
         return new ExecutionTrace(this.blockTraces, [...this.events]);
     }
 
-    get blockTraces(): Trace[] {
+    get blockTraces(): CoverageTrace {
         return this._blockTraces;
     }
 
@@ -73,4 +73,11 @@ export class ExecutionTrace {
     set events(value: EventAndParameters[]) {
         this._events = value;
     }
+}
+
+export interface CoverageTrace {
+    blockCoverage: Set<string>,
+    lastStepCoveredBlocks: Set<string>,
+    branchCoverage: Set<string>,
+    branchDistances: BranchDistanceTrace
 }

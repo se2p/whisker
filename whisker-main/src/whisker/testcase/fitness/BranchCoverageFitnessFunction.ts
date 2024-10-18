@@ -32,7 +32,6 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
     }
 
     override getBranchDistance(chromosome: TestChromosome): number {
-
         // If the control node is not covered, compute branch distance toward the control node.
         if (!chromosome.coverage.has(this._targetNode.id)) {
             return super.getBranchDistance(chromosome);
@@ -44,11 +43,8 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
             logger.debug(`No block trace found for ${this.toString()}`, chromosome.trace.blockTraces);
             return 1;
         }
-        if (this._isTrueBranch) {
-            return blockTrace['distances'][0][0];
-        } else {
-            return blockTrace['distances'][0][1];
-        }
+
+        return this._isTrueBranch ? blockTrace.getTrueDistance() : blockTrace.getFalseDistance();
     }
 
     override async getFitness(chromosome: TestChromosome): Promise<number> {

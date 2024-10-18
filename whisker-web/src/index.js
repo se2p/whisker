@@ -45,7 +45,7 @@ const Header = require('./components/header');
 const ModelEditor = require('./components/model-editor');
 
 const {showModal, escapeHtml} = require('./utils.js');
-const logger = require("./logger");
+const logger = require('./logger');
 const Whisker = window.Whisker = {};
 window.$ = $;
 
@@ -59,6 +59,13 @@ const initialParams = new URLSearchParams(window.location.search); // This is on
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 let testsRunning = false;
+
+const defaultTracerSettings = {
+    traceBlockCoverage: true,
+    traceBranchCoverage: true,
+    traceAttributes: false,
+    traceDebug: false
+};
 
 /**
  * Combines both Whisker and block-based tests into a single array.
@@ -280,13 +287,13 @@ const runSearch = async function () {
     return tests;
 };
 
-const _runTestsWithCoverage = async function (vm, project, tests) {
+const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings) {
 
     // Activate listener for tracing executed blocks
-    const traceBlocks = document.querySelector('#container').traceBlocks;
-    if (traceBlocks) {
+    tracerSettings.traceAttributes = document.querySelector('#container').traceAttributes;
+    if (tracerSettings.traceAttributes) {
         Whisker.testRunner.on(TestRunner.RUN_END, () => {
-            const blob = new Blob([JSON.stringify(Whisker.testRunner.blockTraces)],
+            const blob = new Blob([JSON.stringify(Whisker.testRunner.attributeTraces)],
                 {type: 'application/json;charset=utf-8'});
             FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
         });
@@ -315,9 +322,9 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         mutationBudget: document.querySelector('#container').mutationBudget,
         maxMutants: document.querySelector('#container').maxMutants,
         mutantDownload: mutantDownload,
-        traceBlocks: traceBlocks,
         log: true,
         useSaveStates: $('#use-save-states').is(':checked'),
+        ...tracerSettings
     };
 
     let mutantPrograms = [];
@@ -405,7 +412,7 @@ const runTest = async function (test) {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, [test], Whisker.testRunner);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, [test], Whisker.testRunner, defaultTracerSettings);
 };
 
 /**
@@ -555,7 +562,7 @@ const runAllTests = async function () {
                 ((Whisker.tests && Whisker.tests.length > 0) ||
                 Whisker.modelTester.someModelLoaded())) {
 
-                await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+                await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, defaultTracerSettings);
             }
 
             testsRunning = false;

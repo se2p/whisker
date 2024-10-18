@@ -50,7 +50,7 @@ async function configureWhiskerWebInstance(page) {
         document.querySelector('#container').mutationBudget = opts.mutationBudget;
         document.querySelector('#container').maxMutants = opts.maxMutants;
         document.querySelector('#container').downloadMutants = opts.downloadMutants;
-        document.querySelector('#container').traceBlocks = opts.traceBlocks;
+        document.querySelector('#container').traceAttributes = opts.traceAttributes;
     }, opts);
 
     if (testPath) {
