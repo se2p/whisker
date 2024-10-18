@@ -1,6 +1,8 @@
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {
-    ComparisonNotKnownError, FunctionEvalError, NotANumericalValueError,
+    ComparisonNotKnownError,
+    FunctionEvalError,
+    NotANumericalValueError,
     RGBRangeError,
     SpriteNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
@@ -9,6 +11,7 @@ import {SpriteMock} from "../SpriteMock";
 import {TestDriverMock} from "../TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 import Sprite from "../../../../src/vm/sprite";
+import {Randomness} from "../../../../src/whisker/utils/Randomness";
 
 describe('CheckGenerator', () => {
     describe('getKeyDownCheck()', () => {
@@ -308,9 +311,13 @@ describe('CheckGenerator', () => {
 
     describe('getAttributeChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
-        const stage = new SpriteMock("stage",[{name: "currentCostumeName", value: "win", old: {name: "currentCostumeName", value: "lose"}}]);
+        const stage = new SpriteMock("stage", [{
+            name: "currentCostumeName",
+            value: "win",
+            old: {name: "currentCostumeName", value: "lose"}
+        }]);
         const oldStage = new SpriteMock("stage", [{name: "currentCostumeName", value: "lose"}]);
-        const apple = new SpriteMock("apple",[{name: "x", value: 2}]);
+        const apple = new SpriteMock("apple", [{name: "x", value: 2}]);
         const banana = new SpriteMock("banana");
         stage.old = oldStage;
         const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), apple, stage]);
@@ -334,7 +341,11 @@ describe('CheckGenerator', () => {
         test('Check is not a constant function', () => {
             const res = CheckGenerator.getAttributeChangeCheck(t, dummyCU, "label", "graphId", true, false, "stage", "currentCostume", "==");
             expect(res()).toEqual(true);
-            stage.variables = [{name: "currentCostumeName", value: "lose", old: {name: "currentCostumeName", value: "lose"}}];
+            stage.variables = [{
+                name: "currentCostumeName",
+                value: "lose",
+                old: {name: "currentCostumeName", value: "lose"}
+            }];
             tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
             expect(res()).toEqual(false);
         });
@@ -342,7 +353,7 @@ describe('CheckGenerator', () => {
 
     test('getBackgroundChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
-        const stage = new SpriteMock("stage",[{name: "currentCostumeName", value: "win"}]);
+        const stage = new SpriteMock("stage", [{name: "currentCostumeName", value: "win"}]);
         const tdMock = new TestDriverMock([stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
@@ -482,5 +493,55 @@ describe('CheckGenerator', () => {
                 const res = CheckGenerator.getNumberOfClonesCheck(t, false, false, visible, name, "==", count);
                 expect(res()).toBe(true);
             });
+    });
+
+    describe('getProbabilityCheck()', () => {
+        const repetitions = 1000;
+        test('probability of 1 negated "never" returns true', () => {
+            const res = CheckGenerator.getProbabilityCheck(null, true, 1);
+            for (let i = 0; i < repetitions; ++i) {
+                if (res()) {
+                    fail("with a probability of 0 the result of the function should not be true");
+                }
+            }
+        });
+
+        test('probability of 0 always returns false', () => {
+            const res = CheckGenerator.getProbabilityCheck(null, false, 0);
+            for (let i = 0; i < repetitions; ++i) {
+                if (res()) {
+                    fail("with a probability of 0 the result of the function should not be true");
+                }
+            }
+        });
+
+        test('probability of 0.1 returns false more often than true', () => {
+            const res = CheckGenerator.getProbabilityCheck(null, false, 0.10);
+            let trueCount = 0;
+            let falseCount = 0;
+            for (let i = 0; i < repetitions; ++i) {
+                if (res()) {
+                    ++trueCount;
+                } else {
+                    ++falseCount;
+                }
+            }
+            expect(trueCount).toBeGreaterThan(0);
+            expect(trueCount).toBeLessThan(falseCount / 5);
+        });
+
+        test('Calls Randomness.getInstance().nextDouble()', () => {
+            jest.mock('../../../../src/whisker/utils/Randomness');
+            let value = 0.75;
+            Randomness.getInstance = jest.fn().mockReturnValue({
+                nextDouble: () => value
+            });
+            const res = CheckGenerator.getProbabilityCheck(null, false, 0.3414);
+            expect(res()).toBe(false);
+            value = 0.1;
+            expect(res()).toBe(true);
+            value = 0.42;
+            expect(res()).toBe(false);
+        });
     });
 });
