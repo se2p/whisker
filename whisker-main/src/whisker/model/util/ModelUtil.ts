@@ -229,7 +229,7 @@ export abstract class ModelUtil {
     private static _getSpriteString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string): string {
         const name = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
         return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
-            + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + spriteName + "');\n}\n";
+            + "if (sprite" + index + " == undefined) {\n    throw new SpriteNotFoundError('" + spriteName + "');\n}\n";
         // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
@@ -238,7 +238,7 @@ export abstract class ModelUtil {
         const name = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).variable.name;
         return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
             " (variable" + index
-            + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
+            + " == undefined) {\n   throw new VariableNotFoundError('" + varName + "');\n}\n";
         // Todo check if instead the constructor should be called here so that the method can be removed
     }
 

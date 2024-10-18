@@ -347,15 +347,15 @@ describe('ModelUtil tests', function () {
             const expectedOutput = `(t) => {
 const sprite0 = t.getSprites(sprite => sprite.name.includes('Kiwi'), false)[0];
 if (sprite0 == undefined) {
-    throw getSpriteNotFoundError('Kiwi');
+    throw new SpriteNotFoundError('Kiwi');
 }
 const variable0 = sprite0.getVariable('name', false).value;
  if (variable0 == undefined) {
-   throw getVariableNotFoundError('name');
+   throw new VariableNotFoundError('name');
 }
 const sprite1 = t.getSprites(sprite => sprite.name.includes('Bowl'), false)[0];
 if (sprite1 == undefined) {
-    throw getSpriteNotFoundError('Bowl');
+    throw new SpriteNotFoundError('Bowl');
 }
 return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
 }`;
@@ -375,23 +375,23 @@ return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
             const expectedOutput = `(t) => {
 const sprite0 = t.getSprites(sprite => sprite.name.includes('Boat'), false)[0];
 if (sprite0 == undefined) {
-    throw getSpriteNotFoundError('Boat');
+    throw new SpriteNotFoundError('Boat');
 }
 const variable0 = sprite0.getVariable('speed', false).value;
  if (variable0 == undefined) {
-   throw getVariableNotFoundError('speed');
+   throw new VariableNotFoundError('speed');
 }
 const sprite1 = t.getSprites(sprite => sprite.name.includes('Gate'), false)[0];
 if (sprite1 == undefined) {
-    throw getSpriteNotFoundError('Gate');
+    throw new SpriteNotFoundError('Gate');
 }
 const sprite2 = t.getSprites(sprite => sprite.name.includes('Stage'), false)[0];
 if (sprite2 == undefined) {
-    throw getSpriteNotFoundError('Stage');
+    throw new SpriteNotFoundError('Stage');
 }
 const variable2 = sprite2.getVariable('score', false).value;
  if (variable2 == undefined) {
-   throw getVariableNotFoundError('score');
+   throw new VariableNotFoundError('score');
 }
 return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3*(sprite1.size+2) < (2*(variable2-1)+10)/1.5;
 }`;
@@ -407,7 +407,6 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
             const f = eval(result.expr);
             expect(f(t)).toBe(true);
         });
-
     });
 
     test("checkVariableExistence() throws exception if variable does not exist", () => {
