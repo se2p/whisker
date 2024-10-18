@@ -5,7 +5,7 @@ export class SpriteMock {
     public touchingMouse: boolean;
     public touchingColor: boolean;
     public touchingSprite: boolean;
-    public variables: any;
+    public variables: any[];
     public currentCostumeName: string;
     public clones: SpriteMock[];
     public old: SpriteMock;
@@ -62,7 +62,7 @@ export class SpriteMock {
         return this._sprite;
     }
 
-    private getValueOfVariableOrUndefined(key: string): any {
+    private getValueOfVariableOrUndefined(key: string): number | string {
         const variable = this.variables.find(v => v.name == key);
         return variable == undefined ? undefined : variable.value;
     }
