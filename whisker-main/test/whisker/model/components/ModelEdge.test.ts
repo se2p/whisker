@@ -216,6 +216,32 @@ describe('Model edges', () => {
             expect(result).toStrictEqual([conditions[0], conditions[4]]);
             expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() at 42ms");
         });
+
+        test("checkConditions() returns failed conditions (total steps exceeded)", () => {
+            const errorFn = jest.fn();
+            const timeFn = jest.fn();
+            const cuMock = new CheckUtilityMock();
+            cuMock.addErrorOutput = errorFn;
+            cuMock.addTimeLimitFailOutput = timeFn;
+            const cu = cuMock.getCheckUtility();
+            const tdMock = new TestDriverMock([]);
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, 10, -1);
+            const conditions = [
+                mockConditionWithError("cond40", "this should happen"),
+                mockCondition("cond00", false),
+                mockCondition("cond30", true),
+                mockCondition("cond50", true),
+            ];
+            conditions.forEach(condition => edge.addCondition(condition));
+            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            let result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
+            expect(result).toStrictEqual([conditions[0], conditions[1]]);
+            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 10ms");
+            result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
+            expect(result).toStrictEqual(conditions);
+            result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 11, 9, []);
+            expect(result).toStrictEqual(conditions);
+        });
     });
 
     describe("checkConditionsOnEvent()", () => {

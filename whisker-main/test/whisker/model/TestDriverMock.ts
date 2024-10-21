@@ -38,3 +38,7 @@ export class TestDriverMock {
         } as unknown as TestDriver;
     }
 }
+
+export function getDummyTestDriver(): TestDriver {
+    return new TestDriverMock().getTestDriver();
+}

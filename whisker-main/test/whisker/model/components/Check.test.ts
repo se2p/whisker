@@ -1,7 +1,7 @@
-import {ArgType, CheckName} from "../../../../src/whisker/model/components/Check";
+import {ArgType, Check, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {Condition} from "../../../../src/whisker/model/components/Condition";
-import {TestDriverMock} from "../TestDriverMock";
+import {getDummyTestDriver} from "../TestDriverMock";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 
 describe('Check', () => {
@@ -55,7 +55,7 @@ describe('Check', () => {
         CheckGenerator.getRandomValueCheck = backUp[21];
     });
 
-    const t = new TestDriverMock().getTestDriver();
+    const t = getDummyTestDriver();
     const cu = getDummyCheckUtility();
     const graphID = "graphID";
     const negated = false;
@@ -280,4 +280,14 @@ describe('Check', () => {
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
     });
+
+    test('Invalid comparison throws error', () => {
+        expect(() => {
+            const c1 = new Condition("id", "label", CheckName.AttrComp, true, ["sprite", "var", "comp", "value"]);
+            const c2 = new Condition("id", "label", CheckName.AttrComp, true, ["sprite", "var", ">=", "value"]);
+            Check.testForContradicting(c1, c2);
+        }).toThrow();
+    });
+
+
 });

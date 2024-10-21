@@ -1,6 +1,6 @@
 import {InputEffect, InputEffectName, SimpleInputEffect} from "../../../../src/whisker/model/components/InputEffect";
 import {ArgType} from "../../../../src/whisker/model/components/Check";
-import {TestDriverMock} from "../TestDriverMock";
+import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
 import {ScratchInterface} from "../../../../src/whisker/scratch/ScratchInterface";
 import {ScratchPosition} from "../../../../src/whisker/scratch/ScratchPosition";
 import {Container} from "../../../../src/whisker/utils/Container";
@@ -112,5 +112,13 @@ describe('InputEffect', () => {
             effect.inputImmediate(t);
             expect(tdMock.clickSprite).toHaveBeenCalledWith("bowl", 42);
         });
+    });
+
+    test("Click stage input effect", () => {
+        const effect = new InputEffect("test", InputEffectName.InputClickSprite, ["bowl"]);
+        effect.name = undefined;
+        expect(() => {
+            effect.registerComponents(getDummyTestDriver(), false);
+        }).toThrow();
     });
 });

@@ -3,7 +3,7 @@ import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import TestDriver from "../../../../src/test/test-driver";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
-import {TestDriverMock} from "../TestDriverMock";
+import {getDummyTestDriver} from "../TestDriverMock";
 
 export class MockedModelNode extends ModelNode {
     private readonly fn: jest.Mock;
@@ -281,7 +281,7 @@ describe('Program model', () => {
         Object.values(nodes).forEach(n => n.registerComponents = fn);
         const model = new ProgramModel("model", "start", nodes, {}, [], []);
         const cu = getDummyCheckUtility();
-        const t = new TestDriverMock().getTestDriver();
+        const t = getDummyTestDriver();
         model.registerComponents(cu, t, false);
         expect(fn).toBeCalledTimes(4);
         expect(fn).toHaveBeenCalledWith(cu, t, false);

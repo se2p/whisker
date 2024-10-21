@@ -1,11 +1,13 @@
 import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {
+    EmptyExpressionError,
+    ExpressionEndTagMissingError,
     ExpressionEnterError,
     ExprEvalError,
     VariableNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
-import {TestDriverMock} from "../TestDriverMock";
+import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 
 describe('ModelUtil tests', function () {
@@ -71,7 +73,7 @@ describe('ModelUtil tests', function () {
                 ["0", "string", ">="],
                 ["string", "0", ">="],
 
-                ["string", "0", "<>="]
+                ["1", "0", "<>="]
             ];
             it.each(invalidInputs)('throw exception for: %s; %s, %s',
                 (value1, value2, comparison) => {
@@ -276,6 +278,12 @@ describe('ModelUtil tests', function () {
             ];
             it.each(table)('%s', (name, func, dependencies) => checkDependenciesCorrect(func, dependencies));
         });
+
+        test('empty dependencies if t.getSprites is not called', () => {
+           const res = ModelUtil.getDependencies("Math.exp(-1)");
+           expect(res.attrDependencies).toStrictEqual([]);
+           expect(res.varDependencies).toStrictEqual([]);
+        });
     });
 
     describe('checkAttributeExistence()', () => {
@@ -296,6 +304,7 @@ describe('ModelUtil tests', function () {
     });
 
     describe('getExpressionForEval', () => {
+        const t = getDummyTestDriver();
         test('throws exception when expression cannot be evaluated', () => {
             const tdMock = new TestDriverMock();
             // const expr = "throw new Exception(\"this is supposed to happen\")";
@@ -303,6 +312,39 @@ describe('ModelUtil tests', function () {
             expect(() => {
                 ModelUtil.getExpressionForEval(tdMock.getTestDriver(), false, expr);
             }).toThrow(ExprEvalError);
+        });
+
+        test('throws exception when expression has no end tag', () => {
+            const expr = "$(sprite.name";
+            expect(() => {
+                ModelUtil.getExpressionForEval(t, false, expr);
+            }).toThrow(ExpressionEndTagMissingError);
+        });
+
+        test('throws exception when expression is empty  $()', () => {
+            const expr = "true && $() == 10";
+            expect(() => {
+                ModelUtil.getExpressionForEval(t, false, expr);
+            }).toThrow(EmptyExpressionError);
+        });
+
+        test('does not allow assignment of variables', () => {
+            const tdMock = new TestDriverMock([new SpriteMock("apple", [{name: "x", value: 10}])]);
+            const testDriver = tdMock.getTestDriver();
+            const expr = "const value=$(apple.x);return value == 10";
+            expect(() => {
+                ModelUtil.getExpressionForEval(testDriver, false, expr);
+            }).toThrow(ExprEvalError);
+            // TODO: I think the test should rather look like this because "=" should not be automatically converted to "=="
+            // const result = ModelUtil.getExpressionForEval(testDriver, false, expr);
+            // const f = eval(result.expr);
+            // expect(f(testDriver)).toBe(true);
+        });
+
+        test('adds missing \' at the end of constant expression', () => {
+            const res = ModelUtil.getExpressionForEval(t, false, "'some text");
+            const f = eval(res.expr);
+            expect(f(t)).toBe("some text");
         });
 
         test('Escapes input so expression is not evaluated', () => {
@@ -317,7 +359,7 @@ describe('ModelUtil tests', function () {
         });
 
         test('Expression cannot contain newlines', () => {
-            const t = new TestDriverMock().getTestDriver();
+            const t = getDummyTestDriver();
             const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))\n==10";
             expect(() => {
                 ModelUtil.getExpressionForEval(t, true, expr);
