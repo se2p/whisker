@@ -662,7 +662,8 @@ export abstract class CheckGenerator {
         }
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
 
-        let check = (sprite: Sprite) => sprite.visible && sprite.isTouchingEdge();
+        let check = (sprite: Sprite) =>
+            sprite.visible && sprite.isTouchingEdge();
         let eventString = CheckUtility.getEventString(CheckName.TouchingEdge, negated, spriteNameRegex);
         if (!verticalEdge) {
             check = (sprite: Sprite) => sprite.visible && sprite.isTouchingHorizEdge();
@@ -696,12 +697,10 @@ export abstract class CheckGenerator {
      */
     static getRandomValueCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                caseSensitive: boolean, spriteNameRegex: ArgType, attrName: ArgType): () => boolean {
-        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
-
         if (attrName != "x" && attrName != "y") {
             throw new Error("Random value check only implemented for x and y value at the moment...");
         }
-
+        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         const oldValues = [];
 
         // updates value on move
@@ -710,6 +709,9 @@ export abstract class CheckGenerator {
             if (oldValues.length && oldValues.length > 0 && oldValues[oldValues.length - 1] == sprite[attrName]) {
                 return !negated;
             }
+            // TODO: fix this code. Here the value is ignored if it stays the same but in the check below it can only be
+            // a not random value if the last three consecutive entries in the list are the same which is made impossible
+            // by the three lines above
 
             if (oldValues.length && oldValues.length > 1 && oldValues.indexOf(sprite[attrName]) > oldValues.length - 3) {
                 oldValues.push(sprite[attrName]);

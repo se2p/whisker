@@ -522,6 +522,34 @@ describe('CheckGenerator', () => {
             // TODO same as above
             expect(res()).toBe(true);
         });
+
+        test('only possible for some attributes (e.g. sayText or currentCostume)', () => {
+            const cu = getDummyCheckUtility();
+            expect(() => {
+                CheckGenerator.getRandomValueCheck(t, cu, label, graphId, true, false, "Stage", "currenCostume");
+            }).toThrow();
+            expect(() => {
+                CheckGenerator.getRandomValueCheck(t, cu, label, graphId, true, false, "apple", "sayText");
+            }).toThrow();
+        });
+
+        test('increment counts as random', () => {
+            let fn: ((sprite: Sprite) => boolean);
+            const dummyCU = getDummyCheckUtility();
+            sprite.variables = [{name: variableName, value: "1"}];
+            tdMock.currentSprites = [sprite.sprite];
+            dummyCU.registerOnMoveEvent = (sn, es, el, gID, predicate) => fn = predicate;
+            const res = CheckGenerator.getRandomValueCheck(t, dummyCU, label, graphId, false,
+                false, spriteName, variableName);
+            const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            fn(sprite.sprite);
+            for (const value of values) {
+                sprite.variables = [{name: variableName, value: value}];
+                tdMock.currentSprites = [sprite.updateSprite()];
+                fn(sprite.sprite);
+            }
+            expect(res()).toBe(true);
+        });
     });
 
     describe('getNumberOfClonesCheck', () => {
@@ -546,6 +574,12 @@ describe('CheckGenerator', () => {
                 const res = CheckGenerator.getNumberOfClonesCheck(t, false, false, visible, name, "==", count);
                 expect(res()).toBe(true);
             });
+
+        test('throws exception for invalid comparison', () => {
+            expect(() => {
+                CheckGenerator.getNumberOfClonesCheck(t, true, true, true, "banana", "<=>", 10);
+            }).toThrow(ComparisonNotKnownError);
+        });
     });
 
     describe('getProbabilityCheck()', () => {
@@ -663,6 +697,7 @@ describe('CheckGenerator', () => {
 
     describe('getTouchingEdgeCheck()', () => {
         const sprite = new SpriteMock("apple");
+        sprite.visible = true;
         const tdMock = new TestDriverMock([sprite]);
         const t = tdMock.getTestDriver();
         const cu = getDummyCheckUtility();
@@ -711,6 +746,28 @@ describe('CheckGenerator', () => {
             expect(res()).toBe(true);
             sprite.touchingVerticalEdge = true;
             expect(res()).toBe(true);
+        });
+
+        test('Predicate for CheckUtility is correct', () => {
+            let check: ((sprite: Sprite) => boolean);
+            const cu = getDummyCheckUtility();
+            const fn = jest.fn();
+            cu.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                      predicate: (sprite: Sprite) => boolean): void => {
+                fn();
+                check = predicate;
+            };
+            CheckGenerator.getTouchingEdgeCheck(t, cu, label, graphID, negated, caseSens, sprite.name, true, true);
+            sprite.touchingVerticalEdge = false;
+            sprite.touchingHorizontalEdge = false;
+            expect(fn).toHaveBeenCalledTimes(1);
+            expect(check(sprite.sprite)).toBe(false);
+            sprite.touchingHorizontalEdge = true;
+            sprite.touchingVerticalEdge = true;
+            expect(check(sprite.sprite)).toBe(true);
+            sprite.visible = false;
+            sprite.updateSprite();
+            expect(check(sprite.sprite)).toBe(false);
         });
     });
 });
