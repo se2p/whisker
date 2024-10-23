@@ -1,14 +1,18 @@
 import {CheckUtility} from "../../../src/whisker/model/util/CheckUtility";
+import Sprite from "../../../src/vm/sprite";
+
+type Check = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+              predicate: (sprite: Sprite) => boolean) => void;
 
 export class CheckUtilityMock {
 
     public pressedKeys: Record<string, boolean>;
     public constIsKeyDown: boolean;
     public addErrorOutput: jest.Mock;
-    public registerOnMoveEvent: jest.Mock;
+    public registerOnMoveEvent: Check;
     public registerOnVarEvent: jest.Mock;
-    public registerOnVisualChange: jest.Mock;
-    public registerOutput: jest.Mock;
+    public registerOnVisualChange: Check;
+    public registerOutput: Check;
     public addTimeLimitFailOutput: jest.Mock;
 
     constructor(pressedKeys: Record<string, boolean> = {}, constIsKeyDown: boolean = undefined) {

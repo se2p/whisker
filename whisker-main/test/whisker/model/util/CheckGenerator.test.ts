@@ -273,13 +273,66 @@ describe('CheckGenerator', () => {
             expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:size:<:42", "label", "graphId", expect.anything());
         });
 
-        test('Output is registered on CheckUtil', () => {
+        test('Output is registered on CheckUtil for changing output', () => {
+            let check: ((sprite: Sprite) => boolean);
             const fn = jest.fn();
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOutput = fn;
+            cuMock.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                     predicate: (sprite: Sprite) => boolean) => {
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+                check = predicate;
+            };
             const cu = cuMock.getCheckUtility();
-            CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", false, false, "kiwi", "sayText", "==", "some other text");
-            expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:sayText:==:some other text", "label", "graphId", expect.anything());
+            CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", false, false, "kiwi", "sayText", "==", "this is some text");
+            expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:sayText:==:this is some text", "label", "graphId", check);
+            expect(check(kiwi.sprite)).toBe(true);
+            kiwi.sayText = "the kiwi has nothing to say";
+            kiwi.updateSprite();
+            expect(check(kiwi.sprite)).toBe(false);
+        });
+
+        test('Output is registered on CheckUtil for changing coordinates', () => {
+            const sprite = new SpriteMock("apple", [{name: "x", value: 31415}]);
+            const tdMock = new TestDriverMock([sprite]);
+            const t = tdMock.getTestDriver();
+            let check: ((sprite: Sprite) => boolean);
+            const fn = jest.fn();
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                          predicate: (sprite: Sprite) => boolean) => {
+                check = predicate;
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+            };
+            const cu = cuMock.getCheckUtility();
+            CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", false, false, "apple", "x", "<=", "42");
+            expect(fn).toHaveBeenLastCalledWith("apple", "AttrComp:apple:x:<=:42", "label", "graphId", check);
+            expect(check(sprite.sprite)).toBe(false);
+            sprite.variables = [{name: "x", value: 0}];
+            sprite.updateSprite();
+            expect(check(sprite.sprite)).toBe(true);
+        });
+
+        test('Output is registered on CheckUtil for changing visual', () => {
+            const sprite = new SpriteMock("stage");
+            sprite.currentCostumeName = "defaultStage";
+            const tdMock = new TestDriverMock([sprite]);
+            tdMock.stage = sprite.updateSprite();
+            const t = tdMock.getTestDriver();
+            const fn = jest.fn();
+            let check: ((sprite: Sprite) => boolean);
+            const cuMock = new CheckUtilityMock();
+            cuMock.registerOnVisualChange = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                             predicate: (sprite: Sprite) => boolean) => {
+                check = predicate;
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+            };
+            const cu = cuMock.getCheckUtility();
+            CheckGenerator.getAttributeComparisonCheck(t, cu, "label", "graphId", true, false, "stage", "currentCostume", "==", "win");
+            expect(fn).toHaveBeenLastCalledWith("stage", "!AttrComp:stage:costume:==:win", "label", "graphId", check);
+            expect(check(sprite.sprite)).toBe(true);
+            sprite.currentCostumeName = "win";
+            sprite.updateSprite();
+            expect(check(sprite.sprite)).toBe(false);
         });
 
         it.each([false, true])('Returned function includes original sprite (negated: %s)', (negated) => {
