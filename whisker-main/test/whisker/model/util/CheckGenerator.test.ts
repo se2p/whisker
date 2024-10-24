@@ -99,11 +99,22 @@ describe('CheckGenerator', () => {
 
         test('cu.registerOnMoveEvent() is called with correct params', () => {
             const fn = jest.fn();
-            const cuMock = new CheckUtilityMock();
-            cuMock.registerOnMoveEvent = fn();
+            let check: (sprite: Sprite) => boolean;
             const cu = getDummyCheckUtility();
+            cu.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                      predicate: (sprite: Sprite) => boolean) => {
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+                check = predicate;
+            };
+            const kiwi = new SpriteMock("kiwi");
+            tdMock.currentSprites = SpriteMock.toSpriteArray([
+                new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("apple"), kiwi
+            ]);
             CheckGenerator.getSpriteColorTouchingCheck(t, cu, "label", "graphID", false, false, "(apple)", 255, 0, 0);
             expect(fn).toHaveBeenCalledTimes(1);
+            expect(check(kiwi.sprite)).toEqual(true);
+            kiwi.touchingColor = false;
+            expect(check(kiwi.sprite)).toEqual(false);
         });
 
         test('Has the correct return type', () => {
@@ -134,11 +145,19 @@ describe('CheckGenerator', () => {
 
         test('cu.registerOnMoveEvent() is called with correct params', () => {
             const fn = jest.fn();
+            let check: (sprite: Sprite) => boolean;
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOnMoveEvent = fn;
+            cuMock.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                          predicate: (sprite: Sprite) => boolean) => {
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+                check = predicate;
+            };
             const cu = cuMock.getCheckUtility();
-            CheckGenerator.getSpriteTouchingCheck(t, cu, "label", "graphID", false, false, "(kiwi)", "(banana)");
+            CheckGenerator.getSpriteTouchingCheck(t, cu, "label", "graphID", true, false, "(kiwi)", "(banana)");
             expect(fn).toHaveBeenCalledTimes(1);
+            expect(check(kiwi.sprite)).toEqual(false);
+            kiwi.touchingSprite = false;
+            expect(check(kiwi.sprite)).toEqual(true);
         });
 
         test('Has the correct return type', () => {
@@ -370,7 +389,8 @@ describe('CheckGenerator', () => {
             old: {name: "currentCostumeName", value: "lose"}
         }]);
         const oldStage = new SpriteMock("stage", [{name: "currentCostumeName", value: "lose"}]);
-        const apple = new SpriteMock("apple", [{name: "x", value: 2}]);
+        const apple = new SpriteMock("apple", [{name: "x", value: 2}, {name: "size", value: 10}]);
+        apple.old = new SpriteMock("apple", [{name: "x", value: 42}, {name: "size", value: 20}]);
         const banana = new SpriteMock("banana");
         stage.old = oldStage;
         const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), apple, stage]);
@@ -384,11 +404,30 @@ describe('CheckGenerator', () => {
 
         test('VarEvent is registered on CheckUtil', () => {
             const fn = jest.fn();
-            const cuMock = new CheckUtilityMock();
-            cuMock.registerOnVisualChange = fn;
-            const cu = cuMock.getCheckUtility();
+            const cu = getDummyCheckUtility();
+            let check: (sprite: Sprite) => boolean;
+            cu.registerOnVisualChange = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                         predicate: (sprite: Sprite) => boolean) => {
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+                check = predicate;
+            };
             CheckGenerator.getAttributeChangeCheck(t, cu, "label", "graphId", false, false, "apple", "size", "+");
-            expect(fn).toHaveBeenLastCalledWith(apple.name, "AttrChange:apple:size:+", "label", "graphId", expect.anything());
+            expect(fn).toHaveBeenLastCalledWith(apple.name, "AttrChange:apple:size:+", "label", "graphId", check);
+            expect(check(apple.sprite)).toBe(false);
+        });
+
+        test('MoveEvent is registered on CheckUtil', () => {
+            const fn = jest.fn();
+            const cu = getDummyCheckUtility();
+            let check: (sprite: Sprite) => boolean;
+            cu.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                         predicate: (sprite: Sprite) => boolean) => {
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+                check = predicate;
+            };
+            CheckGenerator.getAttributeChangeCheck(t, cu, "label", "graphId", false, false, "apple", "x", "+");
+            expect(fn).toHaveBeenLastCalledWith(apple.name, "AttrChange:apple:x:+", "label", "graphId", check);
+            expect(check(apple.sprite)).toBe(false);
         });
 
         test('Check is not a constant function', () => {
@@ -464,17 +503,39 @@ describe('CheckGenerator', () => {
         });
     });
 
-    test('getOutputOnSpriteCheck generates check compares actual output correctly', () => {
+    describe('getOutputOnSpriteCheck()', () => {
         const dummyCU = getDummyCheckUtility();
         const banana = new SpriteMock("Banana");
         banana.sayText = "this is some text";
-        const tdMock = new TestDriverMock([banana]);
+        const kiwi = new SpriteMock("Kiwi");
+        kiwi.sayText = "this is a text as well";
+        const tdMock = new TestDriverMock([banana, kiwi]);
         const t = tdMock.getTestDriver();
-        const result = CheckGenerator.getOutputOnSpriteCheck(t, dummyCU, "label", "graphID", false, false, "(Banana)", "this is some text");
-        expect(result()).toEqual(true);
-        banana.sayText = "this is a different text";
-        tdMock.currentSprites = [banana.updateSprite()];
-        expect(result()).toEqual(false);
+
+        test('Generates check compares actual output correctly', () => {
+            const result = CheckGenerator.getOutputOnSpriteCheck(t, dummyCU, "label", "graphID", false, false, "Banana", "this is some text");
+            expect(result()).toEqual(true);
+            banana.sayText = "this is a different text";
+            tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
+            expect(result()).toEqual(false);
+        });
+
+        test('Correct predicate is registered at CheckUtility', () => {
+            const cu = getDummyCheckUtility();
+            const fn = jest.fn();
+            let check: (sprite: Sprite) => boolean;
+            cu.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                 predicate: (sprite: Sprite) => boolean) => {
+                fn(spriteName, eventString, edgeLabel, graphID, predicate);
+                check = predicate;
+            };
+            CheckGenerator.getOutputOnSpriteCheck(t, cu, "label", "graphID", false, false, "kiwi", "this is a text as well");
+            expect(fn).toHaveBeenCalledWith("Kiwi", "Output:kiwi:this is a text as well", "label", "graphID", check);
+            expect(check(kiwi.sprite)).toEqual(true);
+            kiwi.sayText = "this is a different text";
+            tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
+            expect(check(kiwi.sprite)).toEqual(false);
+        });
     });
 
     describe('getRandomValueCheck', () => {
@@ -673,7 +734,7 @@ describe('CheckGenerator', () => {
             cu.registerOnMoveEvent = moveEvent;
             const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
             expect(moveEvent).toHaveBeenCalledTimes(1);
-            expect(moveEvent).toHaveBeenCalledWith("Boat", "Expr:"+expr, "label", "graphID", res);
+            expect(moveEvent).toHaveBeenCalledWith("Boat", "Expr:" + expr, "label", "graphID", res);
         });
 
         test('variable dependencies are correct', () => {
@@ -682,8 +743,8 @@ describe('CheckGenerator', () => {
             cu.registerVarEvent = varEvent;
             const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
             expect(varEvent).toHaveBeenCalledTimes(2);
-            expect(varEvent).toHaveBeenCalledWith("speed", "Expr:"+expr, "label", "graphID", res);
-            expect(varEvent).toHaveBeenCalledWith("score", "Expr:"+expr, "label", "graphID", res);
+            expect(varEvent).toHaveBeenCalledWith("speed", "Expr:" + expr, "label", "graphID", res);
+            expect(varEvent).toHaveBeenCalledWith("score", "Expr:" + expr, "label", "graphID", res);
         });
 
         test('onVisual dependencies are correct', () => {
@@ -692,7 +753,7 @@ describe('CheckGenerator', () => {
             cu.registerOnVisualChange = visualEvent;
             const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
             expect(visualEvent).toHaveBeenCalledTimes(1);
-            expect(visualEvent).toHaveBeenCalledWith("Gate", "Expr:"+expr, "label", "graphID", res);
+            expect(visualEvent).toHaveBeenCalledWith("Gate", "Expr:" + expr, "label", "graphID", res);
         });
     });
 
