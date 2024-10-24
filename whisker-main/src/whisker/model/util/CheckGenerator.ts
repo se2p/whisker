@@ -545,12 +545,9 @@ export abstract class CheckGenerator {
                               caseSensitive: boolean, expr: ArgType): () => boolean {
         const e = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
         const eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
-        this._setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, () => {
-            return !negated == eval(e.expr)(t);
-        });
-        return () => {
-            return !negated == eval(e.expr)(t);
-        };
+        const check: () => boolean = () => !negated == eval(e.expr)(t);
+        this._setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, check);
+        return check;
     }
 
     /**

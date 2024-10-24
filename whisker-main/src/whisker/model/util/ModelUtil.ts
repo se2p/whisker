@@ -445,6 +445,7 @@ export abstract class ModelUtil {
         }
 
         // Attribute used with getSprite
+        // Todo make this Regex work with t.getSprite("...").getVariable("...")
         const spriteWithAttrGetter = /t.getSprite\(['"](\w+)['"]\)\.(?!getVariable)(\w+)(\s|;|\n)?/g;
         const spriteAndAttr = functionCode.match(spriteWithAttrGetter);
         if (spriteAndAttr != null) {

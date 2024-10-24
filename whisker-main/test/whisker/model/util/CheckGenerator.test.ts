@@ -442,6 +442,26 @@ describe('CheckGenerator', () => {
             tdMock.currentSprites = [kiwi.sprite];
             expect(f()).toBe(false);
         });
+
+        test('Registers correct predicate at CheckUtility', () => {
+            const apple = new SpriteMock("apple", [{name: "sayText", value: "I am an apple"}]);
+            const tdMock = new TestDriverMock([apple]);
+            let check: ((sprite: Sprite) => boolean);
+            const mock = jest.fn();
+            const cu = getDummyCheckUtility();
+            cu.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                 predicate: (sprite: Sprite) => boolean): void => {
+                check = predicate;
+                mock(spriteName, eventString, edgeLabel, graphID, predicate);
+            };
+            const fn = "(t) => t.getSprite(\"apple\").sayText == 'I am an apple'";
+            CheckGenerator.getFunctionCheck(tdMock.getTestDriver(), cu, "label", "graphID", false, true, fn);
+            expect(mock).toHaveBeenCalledWith("apple", "Function:(t) => t.getSprite(\"apple\").sayText == 'I am an apple'", "label", "graphID", check);
+            expect(check(apple.sprite)).toBe(true);
+            apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
+            tdMock.currentSprites = [apple.updateSprite()];
+            expect(check(apple.sprite)).toBe(false);
+        });
     });
 
     test('getOutputOnSpriteCheck generates check compares actual output correctly', () => {
@@ -632,26 +652,48 @@ describe('CheckGenerator', () => {
         });
     });
 
-    test('getExpressionCheck()', () => {
+    describe('getExpressionCheck()', () => {
         const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
         const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
         const stage = new SpriteMock("Stage", [{name: "direction", value: 140}, {name: "score", value: 10}]);
         const tdMock = new TestDriverMock([boat, gate, stage]);
         const cu = getDummyCheckUtility();
-        const varEvent = jest.fn();
-        cu.registerVarEvent = varEvent;
-        const moveEvent = jest.fn();
-        cu.registerOnMoveEvent = moveEvent;
-        const visualEvent = jest.fn();
-        cu.registerOnVisualChange = visualEvent;
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
         const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
-        const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
-        expect(res()).toBe(true);
-        expect(varEvent).toHaveBeenCalledTimes(2);
-        expect(moveEvent).toHaveBeenCalledTimes(1);
-        expect(visualEvent).toHaveBeenCalledTimes(1);
+
+        test('returned check is correct', () => {
+            const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
+            expect(res()).toBe(true);
+        });
+
+        test('onMove dependencies are correct', () => {
+            const cu = getDummyCheckUtility();
+            const moveEvent = jest.fn();
+            cu.registerOnMoveEvent = moveEvent;
+            const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
+            expect(moveEvent).toHaveBeenCalledTimes(1);
+            expect(moveEvent).toHaveBeenCalledWith("Boat", "Expr:"+expr, "label", "graphID", res);
+        });
+
+        test('variable dependencies are correct', () => {
+            const cu = getDummyCheckUtility();
+            const varEvent = jest.fn();
+            cu.registerVarEvent = varEvent;
+            const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
+            expect(varEvent).toHaveBeenCalledTimes(2);
+            expect(varEvent).toHaveBeenCalledWith("speed", "Expr:"+expr, "label", "graphID", res);
+            expect(varEvent).toHaveBeenCalledWith("score", "Expr:"+expr, "label", "graphID", res);
+        });
+
+        test('onVisual dependencies are correct', () => {
+            const cu = getDummyCheckUtility();
+            const visualEvent = jest.fn();
+            cu.registerOnVisualChange = visualEvent;
+            const res = CheckGenerator.getExpressionCheck(t, cu, "label", "graphID", false, false, expr);
+            expect(visualEvent).toHaveBeenCalledTimes(1);
+            expect(visualEvent).toHaveBeenCalledWith("Gate", "Expr:"+expr, "label", "graphID", res);
+        });
     });
 
     test('getTimeElapsedCheck()', () => {
