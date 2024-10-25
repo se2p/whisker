@@ -421,7 +421,7 @@ describe('CheckGenerator', () => {
             const cu = getDummyCheckUtility();
             let check: (sprite: Sprite) => boolean;
             cu.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
-                                         predicate: (sprite: Sprite) => boolean) => {
+                                      predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
             };
@@ -543,8 +543,7 @@ describe('CheckGenerator', () => {
         const graphId = "graphID";
         const spriteName = "apple";
         const variableName = "x";
-        const sprite = new SpriteMock(spriteName);
-        sprite.variables = [{name: variableName, value: "0"}];
+        const sprite = new SpriteMock(spriteName, [{name: variableName, value: "0"}]);
         const tdMock = new TestDriverMock([sprite]);
         const t = tdMock.getTestDriver();
         test('the same value does not count as random', () => {
@@ -617,7 +616,7 @@ describe('CheckGenerator', () => {
         test('increment counts as random', () => {
             let fn: ((sprite: Sprite) => boolean);
             const dummyCU = getDummyCheckUtility();
-            sprite.variables = [{name: variableName, value: "1"}];
+            sprite.variables = [{name: variableName, value: 1}];
             tdMock.currentSprites = [sprite.sprite];
             dummyCU.registerOnMoveEvent = (sn, es, el, gID, predicate) => fn = predicate;
             const res = CheckGenerator.getRandomValueCheck(t, dummyCU, label, graphId, false,
@@ -630,6 +629,18 @@ describe('CheckGenerator', () => {
                 fn(sprite.sprite);
             }
             expect(res()).toBe(true);
+        });
+
+        test('always returns true if there is at least one clone', () => {
+            let fn: ((sprite: Sprite) => boolean);
+            const dummyCU = getDummyCheckUtility();
+            const clone = new SpriteMock(spriteName, [{name: variableName, value: 0}]);
+            const clone2 = new SpriteMock(spriteName, [{name: variableName, value: 0}]);
+            clone.clones = [clone2];
+            const t = new TestDriverMock([clone, clone2]).getTestDriver();
+            const res = CheckGenerator.getRandomValueCheck(t, dummyCU, label, graphId, true,
+                false, spriteName, variableName);
+            expect(res()).toBe(false); // negated so should be false despite name of the test case
         });
     });
 

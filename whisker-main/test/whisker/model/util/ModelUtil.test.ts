@@ -451,14 +451,27 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
         });
     });
 
-    test("checkVariableExistence() throws exception if variable does not exist", () => {
-        const bowl = new SpriteMock("Bowl");
-        const kiwi = new SpriteMock("Kiwi");
-        kiwi.variables = [{name: "x", value: 7}, {name: "name", value: "Kiwi"}];
-        bowl.variables = [{name: "y", value: 17}];
-        const tdMock = new TestDriverMock([bowl, kiwi]);
-        expect(() => {
-            ModelUtil.checkVariableExistence(tdMock.getTestDriver(), false, kiwi.sprite, "xy");
-        }).toThrow(VariableNotFoundError);
+    describe('checkVariableExistence()', () => {
+        const bowl = new SpriteMock("Bowl",[{name: "y", value: 17}]);
+        const kiwi = new SpriteMock("Kiwi",[{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
+        const stage = new SpriteMock("Stage", [{name:"Points", value:10}]);
+        const tdMock = new TestDriverMock([bowl, kiwi, stage]);
+        tdMock.stage = stage.sprite;
+        const t = tdMock.getTestDriver();
+        test("throws exception if variable does not exist", () => {
+            expect(() => {
+                ModelUtil.checkVariableExistence(t, true, kiwi.sprite, "X");
+            }).toThrow(VariableNotFoundError);
+        });
+        test("finds variable on other Sprites", () => {
+            const res = ModelUtil.checkVariableExistence(t, true, kiwi.sprite, "Points");
+            expect(res.sprite).toEqual(stage.sprite);
+            expect(res.variable).toEqual(stage.variables[0]);
+        });
+        test("finds variable for regex with flags", () => {
+            const res = ModelUtil.checkVariableExistence(t, true, stage.sprite, "/oin/g");
+            expect(res.sprite).toEqual(stage.sprite);
+            expect(res.variable).toEqual(stage.variables[0]);
+        });
     });
 });
