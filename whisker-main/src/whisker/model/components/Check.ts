@@ -126,7 +126,7 @@ export class Check {
      * @param graphID ID of the parent graph of the check.
      */
     checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string):
-        (...any: ArgType[]) => boolean {
+        ((...any: ArgType[]) => boolean) | ((...args: number[]) => boolean) {
         switch (this._name) {
             case CheckName.AttrComp:
                 return CheckGenerator.getAttributeComparisonCheck(t, cu, this._edgeLabel, graphID, this._negated,
