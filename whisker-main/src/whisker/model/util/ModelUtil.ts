@@ -137,7 +137,7 @@ export abstract class ModelUtil {
      * change by an exact value '+<number>' or '<number>' or '-<number>'.
      * "+=" for increase or staying the same."-=" for decrease or staying the same.
      */
-    static testChange(oldValue: string | string[], newValue: string | string[], pChange: ArgType): boolean {
+    static testChange(oldValue: string | string[] | null, newValue: string | string[] | null, pChange: ArgType): boolean {
         let change = String(pChange);
         if (oldValue == undefined || newValue == undefined || change == undefined) {
             throw new Error("Undefined value.");

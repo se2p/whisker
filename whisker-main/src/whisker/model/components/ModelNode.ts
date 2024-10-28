@@ -57,7 +57,7 @@ export class ModelNode {
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
     testEdgeConditions(testDriver: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number,
-                       stepsSinceEnd: number): ModelEdge {
+                       stepsSinceEnd: number): ModelEdge | null {
 
         // get all edges that have not failing conditions and check for order of events
         for (const e of this.edges) {
