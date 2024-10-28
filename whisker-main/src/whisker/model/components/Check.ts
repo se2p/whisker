@@ -188,7 +188,7 @@ export class Check {
                 return CheckGenerator.getRandomValueCheck(t, cu, this._edgeLabel, graphID, this.negated, caseSensitive,
                     this.args[0], this.args[1]);
             default:
-                return undefined;
+                throw new Error(`Unhandled check name "${this._name}"`);
         }
     }
 
