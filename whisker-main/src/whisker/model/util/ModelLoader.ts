@@ -182,7 +182,7 @@ export class ModelLoader {
         if (nodes) {
             this._loadNodes(nodes);
         } else {
-            this._loadNodesFromIds(nodeIDs);
+            this._loadNodesFromIds(nodeIDs!);
         }
         this._setupNodes();
 

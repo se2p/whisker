@@ -366,14 +366,17 @@ export abstract class CheckGenerator {
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, spriteNameRegex, output);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
-            const sayText = !caseSensitive ? sprite.sayText.toLowerCase() : sprite.sayText;
+            const sayText = !caseSensitive ? sprite.sayText?.toLowerCase() : sprite.sayText;
             return !negated == (sayText && sayText.includes(eval(expression)(t)));
         });
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anySayText = sprites
-                .filter((s: Sprite) => s.sayText)
                 .some((s: Sprite) => {
+                    if (!s.sayText) {
+                        return false;
+                    }
+
                     const sayText = !caseSensitive ? s.sayText.toLowerCase() : s.sayText;
                     return sayText.includes(eval(expression)(t));
                 });
