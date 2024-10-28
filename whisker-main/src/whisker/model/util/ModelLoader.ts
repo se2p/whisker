@@ -80,6 +80,22 @@ export class ModelLoader {
     private _idUndefined = 0;
     private static readonly _ID_UNDEFINED = "id_undefined";
 
+    constructor() {
+        // FIXME: the code from loadModels() should probably be cut and pasted here. Then, delete loadModels(), and
+        //  invoke the constructor instead.
+
+        this._startNodeId = "";
+        this._stopNodeIds = []
+        this._stopAllNodeIds = []
+        this._nodesMap = {}
+        this._edgesMapProgram = {}
+        this._edgesMapUser = {}
+        this._graphIDs = []
+        this._programModels = []
+        this._userModels = []
+        this._onTestEndModels = []
+    }
+
     /**
      * Load the models from a string file content.
      * @param jsonText Content of a json file containing the models.

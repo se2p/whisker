@@ -49,7 +49,7 @@ export class ProgramModel {
 
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
-    programEndStep: number;
+    programEndStep: number = 0;
     currentState: ModelNode;
 
     /**

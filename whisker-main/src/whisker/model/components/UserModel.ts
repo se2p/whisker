@@ -38,7 +38,7 @@ export class UserModel {
 
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
-    stepNbrOfProgramEnd: number;
+    stepNbrOfProgramEnd: number = 0;
     protected currentState: ModelNode;
 
     /**
