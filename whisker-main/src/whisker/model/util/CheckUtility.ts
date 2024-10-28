@@ -2,7 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
 import {ModelEdge, ProgramModelEdge} from "../components/ModelEdge";
-import {getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
+import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
@@ -306,8 +306,9 @@ export class CheckUtility extends EventEmitter {
      * @param graphID ID of the graph, where the error was thrown.
      * @param e Error that was thrown
      */
-    addErrorOutput(edgeLabel: string, graphID: string, e: Error): void {
-        const output = getErrorOnEdgeOutput(edgeLabel, graphID, e.message);
+    addErrorOutput(edgeLabel: string, graphID: string, e: unknown): void {
+        const message = getErrorMessage(e);
+        const output = getErrorOnEdgeOutput(edgeLabel, graphID, message);
         this._failOrError(output, this._errorOutputs);
         this._modelResult.addError(output);
     }

@@ -97,7 +97,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(variable.value, varValue, comparison);
             } catch (e) {
-                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e);
             }
         }
 
@@ -155,7 +155,7 @@ export abstract class CheckGenerator {
                     }
                 }
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
             return negated;
         };
@@ -177,7 +177,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -191,7 +191,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -205,7 +205,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -414,7 +414,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(variable.old.value, variable.value, change);
             } catch (e) {
-                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e);
             }
         }
 
@@ -471,7 +471,7 @@ export abstract class CheckGenerator {
                     }
                 }
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
             return negated;
         };
@@ -489,7 +489,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -501,7 +501,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -525,7 +525,7 @@ export abstract class CheckGenerator {
                 }
             } catch (e) {
                 // should not even happen...
-                throw new ErrorForAttribute("Stage", "costume", e.message);
+                throw new ErrorForAttribute("Stage", "costume", e);
             }
             return negated;
         };

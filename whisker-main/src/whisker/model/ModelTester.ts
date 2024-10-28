@@ -11,6 +11,7 @@ import {Callback} from "../../vm/callbacks";
 import {Effect} from "./components/Effect";
 import Sprite from "../../vm/sprite";
 import logger from "../../util/logger";
+import {getErrorMessage} from "./util/ModelError";
 
 export type SimpleTypedModel = SimpleTypedPModel | SimpleTypedUModel;
 
@@ -75,7 +76,7 @@ export class ModelTester extends EventEmitter {
             this._programModels = [];
             this._userModels = [];
             this._onTestEndModels = [];
-            this.emit(ModelTester.MODEL_LOAD_ERROR, e.message);
+            this.emit(ModelTester.MODEL_LOAD_ERROR, getErrorMessage(e));
             throw e;
         }
     }

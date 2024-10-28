@@ -66,14 +66,14 @@ export class ComparisonNotKnownError extends Error {
 }
 
 export class FunctionEvalError extends Error {
-    constructor(error: Error) {
-        super("Function cannot be evaluated:\n" + error.message);
+    constructor(e: unknown) {
+        super("Function cannot be evaluated:\n" + getErrorMessage(e));
     }
 }
 
 export class ExprEvalError extends Error {
-    constructor(error: Error) {
-        super("Expression cannot be evaluated:\n" + error.message);
+    constructor(e: unknown) {
+        super("Expression cannot be evaluated:\n" + getErrorMessage(e));
     }
 }
 
@@ -102,8 +102,8 @@ export class RGBRangeError extends Error {
 }
 
 export class ErrorForVariable extends Error {
-    constructor(spriteName: ArgType, varName: ArgType, error: string) {
-        super(spriteName + "." + varName + ": " + error);
+    constructor(spriteName: ArgType, varName: ArgType, error: unknown) {
+        super(spriteName + "." + varName + ": " + getErrorMessage(error));
     }
 }
 
@@ -114,8 +114,8 @@ export class NotANumericalValueError extends Error {
 }
 
 export class ErrorForAttribute extends Error {
-    constructor(spriteName: ArgType, attrName: ArgType, error: string) {
-        super(spriteName + "." + attrName + ": " + error);
+    constructor(spriteName: ArgType, attrName: ArgType, error: unknown) {
+        super(spriteName + "." + attrName + ": " + getErrorMessage(error));
     }
 }
 
@@ -125,10 +125,15 @@ class ChangeComparisonNotKnownError extends Error {
     }
 }
 
+function getErrorMessage(e: unknown): string {
+    return e instanceof Error? e.message : String(e);
+}
+
 export {
     getEffectFailedOutput,
     getErrorOnEdgeOutput,
     getTimeLimitFailedAfterOutput,
     getTimeLimitFailedAtOutput,
     ChangeComparisonNotKnownError,
+    getErrorMessage,
 };
