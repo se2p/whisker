@@ -6,8 +6,8 @@ import {ArgType, CheckName} from "../components/Check";
 
 function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     const conditions = edge.conditions;
-    let containsAfterTime: string;
-    let containsElapsed: string;
+    let containsAfterTime: string | null = null;
+    let containsElapsed: string | null = null;
 
     for (const c of conditions) {
         if (c.name == CheckName.TimeBetween || c.name == CheckName.TimeAfterEnd) {
@@ -18,10 +18,10 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     }
 
     let result = edge.graphID + "-" + edge.label + ": " + effect.toString();
-    if (containsElapsed != undefined) {
+    if (containsElapsed != null) {
         result += " before " + containsElapsed + "ms elapsed";
     }
-    if (containsAfterTime != undefined) {
+    if (containsAfterTime != null) {
         result += " after " + containsAfterTime + "ms";
     }
     return result;

@@ -142,7 +142,7 @@ export class CheckUtility extends EventEmitter {
 
         predicateChecker[spriteName].push((sprite) => {
             // todo: refactor this code
-            let predicateResult: boolean;
+            let predicateResult = false;
             try {
                 predicateResult = predicate(sprite);
             } catch (e) {
@@ -170,7 +170,7 @@ export class CheckUtility extends EventEmitter {
                 this._variableChecks[varName] = [];
             }
             this._variableChecks[varName].push(() => {
-                let predicateResult: boolean;
+                let predicateResult = false;
                 try {
                     predicateResult = predicate();
                 } catch (e) {
