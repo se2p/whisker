@@ -20,7 +20,7 @@ class Variable {
         this._sprite = sprite;
 
         /**
-         * @type {Object} The old variable value.
+         * @type {Variable} The old variable value.
          * @private
          */
         this._old = {};
@@ -72,7 +72,7 @@ class Variable {
 
     /**
      * Gives back the old value of the scratch variable.
-     * @returns {object} The old variable.
+     * @returns {Variable} The old variable.
      */
     get old () {
         return {...this._old};
