@@ -698,7 +698,7 @@ export abstract class CheckGenerator {
             throw new Error("Random value check only implemented for x and y value at the moment...");
         }
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
-        const oldValues = [];
+        const oldValues: unknown[] = [];
 
         // updates value on move
         const check = (sprite: Sprite) => {

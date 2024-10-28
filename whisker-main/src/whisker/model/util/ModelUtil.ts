@@ -502,8 +502,8 @@ export abstract class ModelUtil {
             }
         }
 
-        const newAttrDep = [];
-        const newVarDep = [];
+        const newAttrDep: Dependencies['attrDependencies'] = [];
+        const newVarDep: Dependencies['varDependencies'] = [];
 
         for (const spriteName in attrDependencies) {
             const attributes = new Set(attrDependencies[spriteName]);

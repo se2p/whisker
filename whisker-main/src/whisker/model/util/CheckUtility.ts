@@ -226,7 +226,7 @@ export class CheckUtility extends EventEmitter {
         const splits = eventString.split(":");
         return {
             negated: negated,
-            name: CheckName[splits[0]],
+            name: CheckName[splits[0] as CheckName],
             args: splits.slice(1, splits.length)
         };
     }

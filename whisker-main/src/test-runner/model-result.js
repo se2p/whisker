@@ -1,3 +1,10 @@
+/**
+ * @typedef CoverageResult
+ * @type {object}
+ * @property {number} total
+ * @property {string[]} covered
+ */
+
 class ModelResult {
     constructor() {
         /**
@@ -16,7 +23,7 @@ class ModelResult {
         this.fails = [];
 
         /**
-         * type {[key:string]:number}
+         * @type {Object.<string, CoverageResult>}
          */
         this.coverage = {};
 

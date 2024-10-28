@@ -320,7 +320,7 @@ export class ModelTester extends EventEmitter {
         }
     }
 
-    private _onLogEvent(output) {
+    private _onLogEvent(output: unknown) {
         this.emit(ModelTester.MODEL_LOG, output);
     }
 
@@ -376,7 +376,7 @@ export class ModelTester extends EventEmitter {
             this.emit(ModelTester.MODEL_LOG, log.join("\n"));
         }
 
-        const coverages = {covered: [], total: 0};
+        const coverages = {covered: [] as string[][], total: 0};
 
         const programModels = [...this._programModels, ...this._onTestEndModels];
         programModels.forEach(model => {
