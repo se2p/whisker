@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
-import {ModelUtil} from "./ModelUtil";
+import {ModelUtil, ParamType} from "./ModelUtil";
 import {
     ComparisonNotKnownError,
     ErrorForAttribute,
@@ -18,6 +18,10 @@ import Variable from "../../../vm/variable";
 // todo check plays a sound...
 // todo check when getting message
 // todo key check for 'any key' test
+
+function unsafeRead(s: Sprite, property: ArgType): string {
+    return (s as any)[property];
+}
 
 /**
  * Generates methods for different events (e.g. user inputs or sensorial Scratch events) based on a test driver and
@@ -150,7 +154,7 @@ export abstract class CheckGenerator {
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
             try {
                 for (const s of sprites) {
-                    if (ModelUtil.compare(s[attrName], attrValue, comparison)) {
+                    if (ModelUtil.compare(unsafeRead(s, attrName), attrValue, comparison)) {
                         return !negated;
                     }
                 }
@@ -175,7 +179,7 @@ export abstract class CheckGenerator {
 
         cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return !negated == ModelUtil.compare(unsafeRead(sprite, attrName), attrValue, comparison);
             } catch (e) {
                 throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
@@ -189,7 +193,7 @@ export abstract class CheckGenerator {
             comparison, attrValue);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return !negated == ModelUtil.compare(unsafeRead(sprite, attrName), attrValue, comparison);
             } catch (e) {
                 throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
@@ -203,7 +207,7 @@ export abstract class CheckGenerator {
             comparison, attrValue);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return !negated == ModelUtil.compare(unsafeRead(sprite, attrName), attrValue, comparison);
             } catch (e) {
                 throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
@@ -490,7 +494,7 @@ export abstract class CheckGenerator {
         }
         cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !negated == ModelUtil.testChange(unsafeRead(sprite.old, attrName), unsafeRead(sprite, attrName), change);
             } catch (e) {
                 throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
@@ -502,7 +506,7 @@ export abstract class CheckGenerator {
         const eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, attrName, change);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !negated == ModelUtil.testChange(unsafeRead(sprite.old, attrName), unsafeRead(sprite, attrName), change);
             } catch (e) {
                 throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }

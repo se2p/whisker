@@ -74,7 +74,7 @@ class Sprite {
 
     /**
      * Gives back the old value of this {@link Sprite}.
-     * @returns {object} .
+     * @returns {Sprite} .
      */
     get old () {
         return {...this._old};

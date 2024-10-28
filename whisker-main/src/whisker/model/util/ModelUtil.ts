@@ -24,7 +24,7 @@ interface Expression extends Dependencies {
     expr: string
 }
 
-type ParamType = string | number | boolean | string[];
+export type ParamType = string | number | boolean | string[];
 
 export abstract class ModelUtil {
 
