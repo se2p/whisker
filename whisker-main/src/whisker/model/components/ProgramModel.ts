@@ -63,8 +63,8 @@ export class ProgramModel {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: Record<string,ModelNode>,
-                edges: Record<string,ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
+    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>,
+                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -90,7 +90,7 @@ export class ProgramModel {
 
 
         if (edge != null) {
-            this.update(t, edge);
+            this._update(t, edge);
         }
         return edge;
     }
@@ -101,12 +101,12 @@ export class ProgramModel {
             eventStrings);
 
         if (edge != null) {
-            this.update(t, edge);
+            this._update(t, edge);
         }
         return edge;
     }
 
-    private update(t: TestDriver, edge: ModelEdge) {
+    private _update(t: TestDriver, edge: ModelEdge) {
         this.coverageCurrentRun[edge.id] = true;
         this.coverageTotal[edge.id] = true;
         this.currentState = this.nodes[edge.getEndNodeId()];
@@ -119,12 +119,10 @@ export class ProgramModel {
      * Get the coverage of this model of the last run.
      */
     getCoverageCurrentRun(): CoverageResult {
-        const covered: string[] = [];
-        for (const key in this.coverageCurrentRun) {
-            if (this.coverageCurrentRun[key]) {
-                covered.push(key);
-            }
-        }
+        const covered = Object.entries(this.coverageCurrentRun)
+            .filter(([edgeID, covered]) => covered)
+            .map(([edgeID]) => edgeID);
+
         return {
             covered: covered,
             total: Object.keys(this.edges).length

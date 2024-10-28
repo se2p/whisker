@@ -1,0 +1,20 @@
+[
+    {
+        "usage": "a",
+        "id": "bowl",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "nodeIds": [
+            "init",
+            "start",
+            "text",
+            "end"
+        ],
+        "edges": []
+    }
+]

@@ -1,0 +1,241 @@
+[
+    {
+        "usage": "program",
+        "id": "Star",
+        "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "space ship touched"
+            },
+            {
+                "id": "Says some text"
+            },
+            {
+                "id": "hidden",
+                "label": "hidden"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> touches space ship",
+                "label": "touches space ship",
+                "from": "start",
+                "to": "space ship touched",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "starship touches star",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "Raumschiff",
+                            "Stern"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "space ship touched -> Says some text",
+                "label": "shows text",
+                "from": "space ship touched",
+                "to": "Says some text",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "outputsDuSchaffstDas",
+                        "name": "Output",
+                        "args": [
+                            "Stern",
+                            "Du Schaffst Das!"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "Says some text -> hidden",
+                "label": "disappears",
+                "from": "Says some text",
+                "to": "hidden",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "starIsVisible",
+                        "name": "AttrComp",
+                        "args": [
+                            "Stern",
+                            "visible",
+                            "=",
+                            "false"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "hidden -> hidden",
+                "label": "does not move",
+                "from": "hidden",
+                "to": "hidden",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "true",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "star.x_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Stern",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "star.y_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Stern",
+                            "y",
+                            "="
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "end",
+        "id": "end",
+        "startNodeId": "wait",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "wait",
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "stop",
+                "from": "wait",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "2000msElapsed",
+                        "name": "TimeAfterEnd",
+                        "args": [
+                            "2000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "wait",
+                "from": "wait",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "true",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "spaceship.x_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "spaceship.y_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "star.x_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Stern",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "star.y_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Stern",
+                            "y",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "blackHole.x_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "blackHole.y_DoesNotChange",
+                        "name": "AttrChange",
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "="
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -9,11 +9,11 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     let containsAfterTime: string;
     let containsElapsed: string;
 
-    for (let i = 0; i < conditions.length; i++) {
-        if (conditions[i].name == CheckName.TimeBetween || conditions[i].name == CheckName.TimeAfterEnd) {
-            containsAfterTime = conditions[i].args[0].toString();
-        } else if (conditions[i].name == CheckName.TimeElapsed) {
-            containsElapsed = conditions[i].args[0].toString();
+    for (const c of conditions) {
+        if (c.name == CheckName.TimeBetween || c.name == CheckName.TimeAfterEnd) {
+            containsAfterTime = c.args[0].toString();
+        } else if (c.name == CheckName.TimeElapsed) {
+            containsElapsed = c.args[0].toString();
         }
     }
 
@@ -40,62 +40,6 @@ function getErrorOnEdgeOutput(edgeLabel: string, graphLabel: string, error: stri
 }
 
 // ----- Variables, sprites, attributes not found and other initialization errors
-
-function getVariableNotFoundError(variableName: string, spriteName: string): Error {
-    return new VariableNotFoundError(variableName, spriteName);
-}
-
-function getAttributeNotFoundError(attrName: string, spriteName: string): AttributeNotFoundError {
-    return new AttributeNotFoundError(attrName, spriteName);
-}
-
-function getSpriteNotFoundError(spriteName: string): SpriteNotFoundError {
-    return new SpriteNotFoundError(spriteName);
-}
-
-function getComparisonNotKnownError(comparison: string): ComparisonNotKnownError {
-    return new ComparisonNotKnownError(comparison);
-}
-
-function getFunctionEvalError(error: Error): FunctionEvalError {
-    return new FunctionEvalError(error);
-}
-
-function geExprEvalError(error: Error): ExprEvalError {
-    return new ExprEvalError(error);
-}
-
-function getExpressionEndTagMissingError(): ExpressionEndTagMissingError {
-    return new ExpressionEndTagMissingError();
-}
-
-function getEmptyExpressionError(): EmptyExpressionError {
-    return new EmptyExpressionError();
-}
-
-function getExpressionEnterError(): ExpressionEnterError {
-    return new ExpressionEnterError();
-}
-
-function getRGBRangeError(): RGBRangeError {
-    return new RGBRangeError();
-}
-
-function getErrorForVariable(spriteName: string, varName: string, error: string): ErrorForVariable {
-    return new ErrorForVariable(spriteName, varName, error);
-}
-
-function getErrorForAttribute(spriteName: string, attrName: string, error: string): ErrorForAttribute {
-    return new ErrorForAttribute(spriteName, attrName, error);
-}
-
-function getNotANumericalValueError(value: string): NotANumericalValueError {
-    return new NotANumericalValueError(value);
-}
-
-function getChangeComparisonNotKnownError(value: string): ChangeComparisonNotKnownError {
-    throw new ChangeComparisonNotKnownError(value);
-}
 
 export class VariableNotFoundError extends Error {
     constructor(variableName: string, spriteName: string) {
@@ -164,7 +108,7 @@ export class ErrorForVariable extends Error {
 }
 
 export class NotANumericalValueError extends Error {
-    constructor(value: string) {
+    constructor(value: ArgType) {
         super("Is not a numerical value to compare:" + value);
     }
 }
@@ -175,7 +119,7 @@ export class ErrorForAttribute extends Error {
     }
 }
 
-export class ChangeComparisonNotKnownError extends Error {
+class ChangeComparisonNotKnownError extends Error {
     constructor(value: string) {
         super("Change Comparison not known: " + value);
     }
@@ -184,20 +128,7 @@ export class ChangeComparisonNotKnownError extends Error {
 export {
     getEffectFailedOutput,
     getErrorOnEdgeOutput,
-    getVariableNotFoundError,
-    getAttributeNotFoundError,
-    getSpriteNotFoundError,
-    geExprEvalError,
-    getComparisonNotKnownError,
-    getFunctionEvalError,
-    getEmptyExpressionError,
     getTimeLimitFailedAfterOutput,
     getTimeLimitFailedAtOutput,
-    getExpressionEndTagMissingError,
-    getExpressionEnterError,
-    getRGBRangeError,
-    getErrorForVariable,
-    getErrorForAttribute,
-    getNotANumericalValueError,
-    getChangeComparisonNotKnownError
+    ChangeComparisonNotKnownError,
 };

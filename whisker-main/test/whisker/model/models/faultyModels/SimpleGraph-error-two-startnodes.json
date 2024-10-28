@@ -2,7 +2,10 @@
     {
         "usage": "program",
         "id": "g0",
-        "startNodeId": ["n0","n1"],
+        "startNodeId": [
+            "n0",
+            "n1"
+        ],
         "stopNodeIds": [
             "n1"
         ],

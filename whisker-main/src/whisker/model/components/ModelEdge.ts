@@ -45,8 +45,8 @@ export abstract class ModelEdge {
 
     readonly forceTestAfter: number;
     readonly forceTestAt: number;
-    private forceTestAfterSteps: number;
-    private forceTestAtSteps: number;
+    private _forceTestAfterSteps: number;
+    private _forceTestAtSteps: number;
     protected failedForcedTest: boolean;
 
     protected constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
@@ -93,32 +93,32 @@ export abstract class ModelEdge {
         const failedConditions: Condition[] = [];
 
         // times up... force testing of conditions and if they are not fulfilled make add as failed
-        if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
-            || (this.forceTestAfterSteps && this.forceTestAfterSteps <= stepsSinceLastTransition)) {
+        if ((this._forceTestAtSteps && this._forceTestAtSteps <= t.getTotalStepsExecuted())
+            || (this._forceTestAfterSteps && this._forceTestAfterSteps <= stepsSinceLastTransition)) {
 
-            for (let i = 0; i < this.conditions.length; i++) {
+            for (const c of this.conditions) {
                 try {
-                    if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
+                    if (!c.check(stepsSinceLastTransition, stepsSinceEnd)) {
                         this.failedForcedTest = true;
-                        failedConditions.push(this.conditions[i]);
-                        cu.addTimeLimitFailOutput(this.getTimeLimitFailedOutput(this.conditions[i], t));
+                        failedConditions.push(c);
+                        cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t));
                     }
                 } catch (e) {
                     cu.addErrorOutput(this.label, this.graphID, e);
-                    failedConditions.push(this.conditions[i]);
+                    failedConditions.push(c);
                 }
             }
             return failedConditions;
         }
 
         // time limit not reached
-        for (let i = 0; i < this.conditions.length; i++) {
+        for (const c of this.conditions) {
             try {
-                if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
-                    failedConditions.push(this.conditions[i]);
+                if (!c.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                    failedConditions.push(c);
                 }
             } catch (e) {
-                failedConditions.push(this.conditions[i]);
+                failedConditions.push(c);
                 cu.addErrorOutput(this.label, this.graphID, e);
             }
         }
@@ -143,8 +143,8 @@ export abstract class ModelEdge {
     }
 
 
-    private getTimeLimitFailedOutput(condition: Condition, t: TestDriver): string {
-        if (this.forceTestAtSteps != -1 && this.forceTestAtSteps <= t.getTotalStepsExecuted()) {
+    private _getTimeLimitFailedOutput(condition: Condition, t: TestDriver): string {
+        if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
             return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt);
         } else {
             return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter);
@@ -171,10 +171,10 @@ export abstract class ModelEdge {
      */
     registerComponents(checkListener: CheckUtility, t: TestDriver, caseSensitive: boolean): void {
         if (this.forceTestAt != -1) {
-            this.forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
+            this._forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
         }
         if (this.forceTestAfter != -1) {
-            this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
+            this._forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
         }
         this.conditions.forEach(cond => {
             cond.registerComponents(checkListener, t, caseSensitive, this.graphID);
@@ -183,8 +183,8 @@ export abstract class ModelEdge {
 
     reset(): void {
         this.failedForcedTest = false;
-        this.forceTestAtSteps = undefined;
-        this.forceTestAfterSteps = undefined;
+        this._forceTestAtSteps = undefined;
+        this._forceTestAfterSteps = undefined;
         this.lastTransition = 0;
     }
 
@@ -265,14 +265,13 @@ export class ProgramModelEdge extends ModelEdge {
         let check = false;
 
         // look up if this edge has a condition that was triggered
-        for (let j = 0; j < this.conditions.length; j++) {
-            const cond = this.conditions[j];
-            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
-            if (eventStrings.indexOf(eventString) != -1) {
+        for (const c of this.conditions) {
+            const eventString = CheckUtility.getEventString(c.name, c.negated, ...c.args);
+            if (eventStrings.includes(eventString)) {
                 check = true;
                 break;
             } else if (eventString == "Function:true" || eventString == "Probability:1") {
-                check = this.testEffectsOnEvent(eventStrings);
+                check = this._testEffectsOnEvent(eventStrings);
                 if (check) {
                     break;
                 }
@@ -284,30 +283,31 @@ export class ProgramModelEdge extends ModelEdge {
         }
 
         const failed = [];
-        for (let j = 0; j < this.conditions.length; j++) {
-            const cond = this.conditions[j];
-            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
-
-            if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
-                failed.push(cond);
-                break;
+        for (const c of this.conditions) {
+            const eventString = CheckUtility.getEventString(c.name, c.negated, ...c.args);
+            if (!eventStrings.includes(eventString) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                failed.push(c);
+                break; // TODO check if this break should be here
             }
         }
         return failed;
     }
 
 
-    private testEffectsOnEvent(eventStrings: string[]): boolean {
-        for (let i = 0; i < this.effects.length; i++) {
-            const eventString = CheckUtility.getEventString(this.effects[i].name, this.effects[i].negated,
-                ...this.effects[i].args);
-            if (eventStrings.indexOf(eventString) != -1) {
+    private _testEffectsOnEvent(eventStrings: string[]): boolean {
+        for (const e of this.effects) {
+            const eventString = CheckUtility.getEventString(e.name, e.negated, ...e.args);
+
+            if (eventStrings.includes(eventString)) {
                 return true;
-            } else if (Check.testForContradictingWithEvents(this.effects[i], eventStrings)) {
+            }
+
+            if (Check.testForContradictingWithEvents(e, eventStrings)) {
                 // tests whether an event contradicting an effect (of a true condition edge) is there
                 return true;
             }
         }
+
         return false;
     }
 }

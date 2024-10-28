@@ -22,7 +22,7 @@ export class Effect extends Check {
         if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
             this.dependsOnSayText = true;
         } else if (name == CheckName.Function || name == CheckName.Expr) {
-            this.dependsOnSayText = String(args[0]).indexOf(".sayText") != -1;
+            this.dependsOnSayText = String(args[0]).includes(".sayText");
         } else {
             this.dependsOnSayText = false;
         }
@@ -33,14 +33,14 @@ export class Effect extends Check {
      * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    check(stepsSinceLastTransition:number, stepsSinceEnd: number): boolean {
+    check(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
         return this._effect(stepsSinceLastTransition, stepsSinceEnd);
     }
 
     /**
      * Register the check listener and test driver and check the effect for errors.
      */
-    registerComponents(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string):void {
+    registerComponents(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string): void {
         try {
             this._effect = this.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
         } catch (e) {

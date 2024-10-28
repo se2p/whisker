@@ -1,107 +1,88 @@
 import {readFileSync} from 'fs';
 import {ModelLoader} from "../../../../src/whisker/model/util/ModelLoader";
+import * as path from "node:path";
 
 /**
  * Test for errors for the moment
  */
-describe('ModelLoaderjson', () => {
-    test('Load model from json', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(loader.loadModels(text)).not.toBeNull();
+describe('ModelLoader', () => {
+    describe('loadModels() returns correct number of models', () => {
+        const table: [string, string, number, number, number][] = [
+            ["Load model from json", 'SimpleGraph.json', 2, 0, 0],
+            ["Edge with two conditions", 'SimpleGraph-multiple-edge-conditions.json', 2, 0, 0],
+            ["Duplicated graph id", 'SimpleGraph-error-dup-graph-id.json', 2, 0, 0],
+            ["Duplicated edge id", 'SimpleGraph-error-dup-edge-id.json', 1, 0, 0],
+            ["Duplicated edge id", 'SimpleGraph-error-dup-graph-id.json', 2, 0, 0],
+            ["No edge id.", 'SimpleGraph-noterror-no-edge-id.json', 2, 0, 0],
+            ["No stopNodes as attribute.", 'SimpleGraph-noterror-no-stopNodes.json', 1, 0, 0],
+            ["No stopAllNodes as attribute.", 'SimpleGraph-noterror-no-stopAllNodes.json', 1, 0, 0],
+            ["No graph id given.", 'SimpleGraph-noterror-no-graph-id.json', 1, 0, 0],
+            ["Loading big file with multipleModels", 'fruitcatcher-random-fruit.json', 19, 1, 1],
+            ["Loading big file with multipleModels (and new Nodes with Labels)", 'spaceshipModels.json', 1, 0, 1]
+        ];
+        it.each(table)('%s',
+            (name: string, file: string, pmCount: number, umCount: number, otemCount: number) => {
+                const text = readFileSync(path.join("test/whisker/model/models/", file), 'utf8');
+                const loader = new ModelLoader();
+                const result = loader.loadModels(text);
+                expect(result.programModels.length).toBe(pmCount);
+                expect(result.userModels.length).toBe(umCount);
+                expect(result.onTestEndModels.length).toBe(otemCount);
+            });
     });
 
-    test('Edge with two conditions', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-multiple-edge-conditions.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(loader.loadModels(text)).not.toBeNull();
-    });
+    describe('Loading invalid Models fails', () => {
+        function checkThrowsException(subfolder: string, file: string) {
+            const text = readFileSync(path.join("test/whisker/model/models/faultyModels", subfolder, file), 'utf8');
+            const loader = new ModelLoader();
+            expect(function () {
+                loader.loadModels(text);
+            }).toThrow();
+        }
 
-    test('Duplicated graph id', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-graph-id.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).not.toThrow();
-    });
+        describe('Invalid Conditions', () => {
+            const table: [string, string][] = [
+                ["No condition on edge", 'SimpleGraph-error-no-edge-condition.json'],
+                ["No condition on edge", 'SimpleGraph-error-no-condition.json'],
+                ["Edge condition type wrong", 'SimpleGraph-error-edge-condition.json'],
+                ["Args are not an array for Condition.", 'SimpleGraph-error-condition-args-not-array.json'],
+                ["No args for Condition", 'SimpleGraph-error-condition-no-args.json'],
+                ["Condition has no name.", 'SimpleGraph-error-condition-no-name.json'],
+                ["Condition.negated is not a boolean value.", 'SimpleGraph-error-condition-negated-not-boolean.json'],
+            ];
+            it.each(table)("%s", (name: string, file: string) => checkThrowsException("condition", file));
+        });
 
-    test('Duplicated node id', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-node-id.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
+        describe('Invalid Effect', () => {
+            const table: [string, string][] = [
+                ["No args for Effect", 'SimpleGraph-error-effect-no-args.json'],
+                ["Args are not an array for Effect.", 'SimpleGraph-error-effect-args-not-array.json'],
+                ["Effect has invalid name.", 'SimpleGraph-error-effect-invalid-name.json'],
+                ["Effect.negated is not a boolean value.", 'SimpleGraph-error-effect-negated-not-boolean.json'],
+            ];
+            it.each(table)("%s", (name: string, file: string) => checkThrowsException("effect", file));
+        });
 
-    test('Duplicated edge id', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-edge-id.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).not.toThrow();
-    });
+        describe('Invalid InputEffect', () => {
+            const table: [string, string][] = [
+                ["No args for InputEffect", 'SimpleGraph-error-inputEffect-no-args.json'],
+                ["Args are not an array for InputEffect.", 'SimpleGraph-error-inputEffect-args-not-array.json'],
+            ];
+            it.each(table)("%s", (name: string, file: string) => checkThrowsException("inputEffect", file));
+        });
 
-    test('No condition on edge.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-edge-condition.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
-
-    test('No start node given.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-startnode.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
-
-    test('Two start nodes given.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-two-startnodes.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
-
-    test('Unknown end node of edge.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-unknown-node1.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
-
-    test('Unknown start node of edge.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-unknown-node2.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
-
-    test('Edge condition type wrong.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-edge-condition.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
-
-    test('No node id', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-node-id.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).toThrow();
-    });
-
-    test('No edge id.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-noterror-no-edge-id.json', 'utf8');
-        const loader = new ModelLoader();
-        expect(function () {
-            loader.loadModels(text);
-        }).not.toThrow();
+        const table: [string, string][] = [
+            ["Duplicated node id", 'SimpleGraph-error-dup-node-id.json'],
+            ["No start node given", 'SimpleGraph-error-no-startnode.json'],
+            ["Two start nodes given", 'SimpleGraph-error-two-startnodes.json'],
+            ["Unknown end node of edge", 'SimpleGraph-error-unknown-node1.json'],
+            ["Unknown start node of edge", 'SimpleGraph-error-unknown-node2.json'],
+            ["No start node of edge", 'SimpleGraph-error-edge-has-no-from-node.json'],
+            ["No end node of edge", 'SimpleGraph-error-edge-has-no-to-node.json'],
+            ["No node id", 'SimpleGraph-error-no-node-id.json'],
+            ["A SimpleNode has no id", 'SimpleGraph-simpleNode-without-label.json'],
+            ["Graph without nodes", 'SimpleGraph-no-nodes.json']
+        ];
+        it.each(table)('%s', (name: string, file: string) => checkThrowsException("", file));
     });
 });
