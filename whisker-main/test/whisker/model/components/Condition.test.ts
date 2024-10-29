@@ -172,11 +172,9 @@ describe('Condition', () => {
         });
     });
 
-    test('Condition.check() fails after invalid constructor arguments', () => {
-        expect(() => {
-            const condition = new Condition("id", "edgeID", CheckName.AttrChange, false, ["test", "attr", "-"]);
-            condition.check(1, 1);
-        }).toThrow();
+    test('Condition.check() returns false before registerComponent()', () => {
+        const condition = new Condition("id", "edgeID", CheckName.AttrChange, false, ["test", "attr", "-"]);
+        expect(condition.check(1, 1)).toBe(false);
     });
 
     const cuMock = new CheckUtilityMock({"a": true, "b": false, "c": true,});
