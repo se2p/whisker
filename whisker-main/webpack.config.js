@@ -55,7 +55,6 @@ module.exports = [
             whisker: path.resolve('src', 'index.js')
         },
         output: {
-            library: 'Whisker',
             filename: '[name].js',
             libraryTarget: 'commonjs2',
             path: path.resolve('dist', 'node'),
