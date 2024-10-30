@@ -107,15 +107,16 @@ export class ModelTester extends EventEmitter {
             return false;
         }
 
+        let result = false
         if (this._modelStepCallback !== null) {
-            return this._modelStepCallback.isActive();
+            result = this._modelStepCallback.isActive();
         }
 
-        if (this._onTestEndCallback !== null) {
-            return this._onTestEndCallback.isActive();
+        if (!result && this._onTestEndCallback !== null) {
+            result = this._onTestEndCallback.isActive();
         }
 
-        return false;
+        return result;
     }
 
     getAllModels(): SimpleTypedModel[] {
