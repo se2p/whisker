@@ -126,7 +126,7 @@ export class Check {
      * @param graphID ID of the parent graph of the check.
      */
     checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string):
-        (...any: ArgType[]) => boolean {
+        ((...any: ArgType[]) => boolean) | ((...args: number[]) => boolean) {
         switch (this._name) {
             case CheckName.AttrComp:
                 return CheckGenerator.getAttributeComparisonCheck(t, cu, this._edgeLabel, graphID, this._negated,
@@ -188,7 +188,7 @@ export class Check {
                 return CheckGenerator.getRandomValueCheck(t, cu, this._edgeLabel, graphID, this.negated, caseSensitive,
                     this.args[0], this.args[1]);
             default:
-                return undefined;
+                throw new Error(`Unhandled check name "${this._name}"`);
         }
     }
 

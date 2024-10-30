@@ -19,6 +19,9 @@ export class Effect extends Check {
      */
     constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: ArgType[]) {
         super(id, edgeLabel, name, args, negated);
+
+        this._effect = () => false;
+
         if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
             this.dependsOnSayText = true;
         } else if (name == CheckName.Function || name == CheckName.Expr) {

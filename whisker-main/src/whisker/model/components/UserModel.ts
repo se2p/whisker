@@ -38,7 +38,7 @@ export class UserModel {
 
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
-    stepNbrOfProgramEnd: number;
+    stepNbrOfProgramEnd: number = 0;
     protected currentState: ModelNode;
 
     /**
@@ -72,7 +72,7 @@ export class UserModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): ModelEdge {
+    makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
         const stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(testDriver, checkUtility, stepsSinceLastTransition,
             this.stepNbrOfProgramEnd);

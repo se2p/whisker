@@ -18,6 +18,7 @@ export class Condition extends Check {
      */
     constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: ArgType[]) {
         super(id, edgeLabel, name, args, negated);
+        this._condition = () => false;
     }
 
     /**

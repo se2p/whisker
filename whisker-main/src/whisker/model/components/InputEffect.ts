@@ -44,6 +44,7 @@ export class InputEffect {
         this.name = name;
         this.id = id;
         this._args = args;
+        this._inputEffect = () => void 0;
 
         // Todo: refactor this code
         const _testArgs = function (length: number) {

@@ -49,7 +49,7 @@ export class ProgramModel {
 
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
-    programEndStep: number;
+    programEndStep: number = 0;
     currentState: ModelNode;
 
     /**
@@ -83,7 +83,7 @@ export class ProgramModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge {
+    makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.programEndStep);
@@ -95,7 +95,7 @@ export class ProgramModel {
         return edge;
     }
 
-    testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: string[]): ModelEdge {
+    testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: string[]): ModelEdge | null {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.programEndStep,
             eventStrings);

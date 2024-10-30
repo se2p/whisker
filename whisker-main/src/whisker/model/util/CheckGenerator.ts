@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
-import {ModelUtil} from "./ModelUtil";
+import {ModelUtil, ParamType} from "./ModelUtil";
 import {
     ComparisonNotKnownError,
     ErrorForAttribute,
@@ -18,6 +18,10 @@ import Variable from "../../../vm/variable";
 // todo check plays a sound...
 // todo check when getting message
 // todo key check for 'any key' test
+
+function unsafeRead(s: Sprite, property: ArgType): string {
+    return (s as any)[property];
+}
 
 /**
  * Generates methods for different events (e.g. user inputs or sensorial Scratch events) based on a test driver and
@@ -97,7 +101,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.compare(variable.value, varValue, comparison);
             } catch (e) {
-                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e);
             }
         }
 
@@ -150,12 +154,12 @@ export abstract class CheckGenerator {
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
             try {
                 for (const s of sprites) {
-                    if (ModelUtil.compare(s[attrName], attrValue, comparison)) {
+                    if (ModelUtil.compare(unsafeRead(s, attrName), attrValue, comparison)) {
                         return !negated;
                     }
                 }
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
             return negated;
         };
@@ -175,9 +179,9 @@ export abstract class CheckGenerator {
 
         cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return !negated == ModelUtil.compare(unsafeRead(sprite, attrName), attrValue, comparison);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -189,9 +193,9 @@ export abstract class CheckGenerator {
             comparison, attrValue);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return !negated == ModelUtil.compare(unsafeRead(sprite, attrName), attrValue, comparison);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -203,9 +207,9 @@ export abstract class CheckGenerator {
             comparison, attrValue);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return !negated == ModelUtil.compare(unsafeRead(sprite, attrName), attrValue, comparison);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -366,14 +370,17 @@ export abstract class CheckGenerator {
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, spriteNameRegex, output);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
-            const sayText = !caseSensitive ? sprite.sayText.toLowerCase() : sprite.sayText;
+            const sayText = !caseSensitive ? sprite.sayText?.toLowerCase() : sprite.sayText;
             return !negated == (sayText && sayText.includes(eval(expression)(t)));
         });
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anySayText = sprites
-                .filter((s: Sprite) => s.sayText)
                 .some((s: Sprite) => {
+                    if (!s.sayText) {
+                        return false;
+                    }
+
                     const sayText = !caseSensitive ? s.sayText.toLowerCase() : s.sayText;
                     return sayText.includes(eval(expression)(t));
                 });
@@ -414,7 +421,7 @@ export abstract class CheckGenerator {
             try {
                 return !negated == ModelUtil.testChange(variable.old.value, variable.value, change);
             } catch (e) {
-                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e.message);
+                throw new ErrorForVariable(spriteNameRegex, varNameRegex, e);
             }
         }
 
@@ -471,7 +478,7 @@ export abstract class CheckGenerator {
                     }
                 }
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
             return negated;
         };
@@ -487,9 +494,9 @@ export abstract class CheckGenerator {
         }
         cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !negated == ModelUtil.testChange(unsafeRead(sprite.old, attrName), unsafeRead(sprite, attrName), change);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -499,9 +506,9 @@ export abstract class CheckGenerator {
         const eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, attrName, change);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
-                return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !negated == ModelUtil.testChange(unsafeRead(sprite.old, attrName), unsafeRead(sprite, attrName), change);
             } catch (e) {
-                throw new ErrorForAttribute(spriteNameRegex, attrName, e.message);
+                throw new ErrorForAttribute(spriteNameRegex, attrName, e);
             }
         });
     }
@@ -525,7 +532,7 @@ export abstract class CheckGenerator {
                 }
             } catch (e) {
                 // should not even happen...
-                throw new ErrorForAttribute("Stage", "costume", e.message);
+                throw new ErrorForAttribute("Stage", "costume", e);
             }
             return negated;
         };
@@ -698,7 +705,7 @@ export abstract class CheckGenerator {
             throw new Error("Random value check only implemented for x and y value at the moment...");
         }
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
-        const oldValues = [];
+        const oldValues: unknown[] = [];
 
         // updates value on move
         const check = (sprite: Sprite) => {

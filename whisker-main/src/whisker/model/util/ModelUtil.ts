@@ -24,7 +24,7 @@ interface Expression extends Dependencies {
     expr: string
 }
 
-type ParamType = string | number | boolean | string[];
+export type ParamType = string | number | boolean | string[];
 
 export abstract class ModelUtil {
 
@@ -137,7 +137,7 @@ export abstract class ModelUtil {
      * change by an exact value '+<number>' or '<number>' or '-<number>'.
      * "+=" for increase or staying the same."-=" for decrease or staying the same.
      */
-    static testChange(oldValue: string | string[], newValue: string | string[], pChange: ArgType): boolean {
+    static testChange(oldValue: string | string[] | null, newValue: string | string[] | null, pChange: ArgType): boolean {
         let change = String(pChange);
         if (oldValue == undefined || newValue == undefined || change == undefined) {
             throw new Error("Undefined value.");
@@ -438,6 +438,11 @@ export abstract class ModelUtil {
             const nameGetter = /(?:let\s)?([A-Za-z0-9]+)\s?=\s?t.getSprite\(['"]([A-Za-z0-9]+)['"]\)/i;
             for (let i = 0; i < spriteLines.length; i++) {
                 const names = spriteLines[i].match(nameGetter);
+
+                if (names === null) {
+                    continue;
+                }
+
                 allSprites[names[1]] = names[2];
                 attrDependencies[names[2]] = [];
                 varDependencies[names[2]] = [];
@@ -452,6 +457,11 @@ export abstract class ModelUtil {
             const spriteAndAttrGetter2 = /t.getSprite\(['"](\w+)['"]\)\.(?!getVariable)(\w+)(\s|;|\n)?/;
             for (let i = 0; i < spriteAndAttr.length; i++) {
                 const match = spriteAndAttr[i].match(spriteAndAttrGetter2);
+
+                if (match === null) {
+                    continue;
+                }
+
                 if (attrDependencies[match[1]] == undefined) {
                     attrDependencies[match[1]] = [match[2]];
                 } else {
@@ -467,6 +477,11 @@ export abstract class ModelUtil {
             const detailedGetter = /t.getSprite\(['"](\w+)['"]\)\.getVariable\(['"](\w+)['"]\)/;
             for (let i = 0; i < spriteAndVar.length; i++) {
                 const match = spriteAndVar[i].match(detailedGetter);
+
+                if (match === null) {
+                    continue;
+                }
+
                 if (varDependencies[match[1]] == undefined) {
                     varDependencies[match[1]] = [match[2]];
                 } else {
@@ -484,6 +499,11 @@ export abstract class ModelUtil {
             if (matches != null) {
                 for (let i = 0; i < matches.length; i++) {
                     const name = matches[i].match(variableNameGetter);
+
+                    if (name === null) {
+                        continue;
+                    }
+
                     varDependencies[allSprites[allSpritesKey]].push(name[1]);
                 }
             }
@@ -502,8 +522,8 @@ export abstract class ModelUtil {
             }
         }
 
-        const newAttrDep = [];
-        const newVarDep = [];
+        const newAttrDep: Dependencies['attrDependencies'] = [];
+        const newVarDep: Dependencies['varDependencies'] = [];
 
         for (const spriteName in attrDependencies) {
             const attributes = new Set(attrDependencies[spriteName]);

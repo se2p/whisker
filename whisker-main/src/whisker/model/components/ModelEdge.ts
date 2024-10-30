@@ -72,6 +72,8 @@ export abstract class ModelEdge {
             this.forceTestAt = forceTestAt;
         }
         this.failedForcedTest = false;
+        this._forceTestAfterSteps = -1;
+        this._forceTestAtSteps = -1;
     }
 
     /**
@@ -93,8 +95,8 @@ export abstract class ModelEdge {
         const failedConditions: Condition[] = [];
 
         // times up... force testing of conditions and if they are not fulfilled make add as failed
-        if ((this._forceTestAtSteps && this._forceTestAtSteps <= t.getTotalStepsExecuted())
-            || (this._forceTestAfterSteps && this._forceTestAfterSteps <= stepsSinceLastTransition)) {
+        if ((this._forceTestAtSteps !== -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted())
+            || (this._forceTestAfterSteps !== -1 && this._forceTestAfterSteps <= stepsSinceLastTransition)) {
 
             for (const c of this.conditions) {
                 try {
@@ -183,8 +185,8 @@ export abstract class ModelEdge {
 
     reset(): void {
         this.failedForcedTest = false;
-        this._forceTestAtSteps = undefined;
-        this._forceTestAfterSteps = undefined;
+        this._forceTestAtSteps = -1;
+        this._forceTestAfterSteps = -1;
         this.lastTransition = 0;
     }
 

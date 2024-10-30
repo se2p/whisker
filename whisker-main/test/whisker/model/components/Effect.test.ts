@@ -181,17 +181,16 @@ describe('Effect', () => {
             });
     });
 
-    test("effects", () => {
-
+    test("effect.contradicts() throws for null argument", () => {
         expect(() => {
             const effect = new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
             effect.contradicts(null);
         }).toThrow();
+    });
 
-        expect(() => {
-            const effect = new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
-            effect.check(0, 0);
-        }).toThrow();
+    test("effect.check() returns false before calling registerComponents()", () => {
+        const effect = new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+        expect(effect.check(0, 0)).toBe(false);
     });
 
     describe('Contradictions', () => {

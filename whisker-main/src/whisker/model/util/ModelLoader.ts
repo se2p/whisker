@@ -14,6 +14,7 @@ import {Effect} from "../components/Effect";
 import {InputEffect, InputEffectName, SimpleInputEffect} from "../components/InputEffect";
 import {ArgType, CheckName, SimpleCheck} from "../components/Check";
 import logger from "../../../util/logger";
+import {getErrorMessage} from "./ModelError";
 
 export type ModelType = "program" | "user" | "end";
 
@@ -80,6 +81,22 @@ export class ModelLoader {
     private _idUndefined = 0;
     private static readonly _ID_UNDEFINED = "id_undefined";
 
+    constructor() {
+        // FIXME: the code from loadModels() should probably be cut and pasted here. Then, delete loadModels(), and
+        //  invoke the constructor instead.
+
+        this._startNodeId = "";
+        this._stopNodeIds = []
+        this._stopAllNodeIds = []
+        this._nodesMap = {}
+        this._edgesMapProgram = {}
+        this._edgesMapUser = {}
+        this._graphIDs = []
+        this._programModels = []
+        this._userModels = []
+        this._onTestEndModels = []
+    }
+
     /**
      * Load the models from a string file content.
      * @param jsonText Content of a json file containing the models.
@@ -100,7 +117,9 @@ export class ModelLoader {
                 this._loadGraph(graph);
             });
         } catch (e) {
-            e.message = "Model Loader: " + e.message;
+            if (e instanceof Error) {
+                e.message = "Model Loader: " + e.message;
+            }
             throw e;
         }
 
@@ -163,7 +182,7 @@ export class ModelLoader {
         if (nodes) {
             this._loadNodes(nodes);
         } else {
-            this._loadNodesFromIds(nodeIDs);
+            this._loadNodesFromIds(nodeIDs!);
         }
         this._setupNodes();
 
@@ -171,7 +190,7 @@ export class ModelLoader {
         try {
             graph.edges.forEach((edge: SimpleProgramModelEdge | SimpleUserModelEdge) => this._loadEdge(graph.usage, graphID, edge));
         } catch (e) {
-            throw new Error(graphID + ": " + e.message);
+            throw new Error(graphID + ": " + getErrorMessage(e));
         }
 
         let model: ProgramModel | UserModel;
