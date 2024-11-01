@@ -107,7 +107,7 @@ export class ModelTester extends EventEmitter {
             return false;
         }
 
-        let result = false
+        let result = false;
         if (this._modelStepCallback !== null) {
             result = this._modelStepCallback.isActive();
         }
