@@ -68,18 +68,7 @@ export class Check {
         this._id = id;
         this._edgeLabel = edgeLabel;
 
-        // Todo: refactor this code
-        const _testArgs = function (length: number) {
-            const error = new Error("Wrong number of arguments for check " + name + ".");
-            if (args.length != length) {
-                throw error;
-            }
-
-            if (args.some((arg) => arg == undefined)) {
-                throw error;
-            }
-        };
-
+        let expectedLength: number;
         switch (name) {
             case CheckName.BackgroundChange:
             case CheckName.Function:
@@ -93,26 +82,31 @@ export class Check {
             case CheckName.TouchingEdge:
             case CheckName.TouchingHorizEdge:
             case CheckName.TouchingVerticalEdge:
-                _testArgs(1);
+                expectedLength = 1;
                 break;
             case CheckName.Output:
             case CheckName.SpriteTouching:
             case CheckName.RandomValue:
-                _testArgs(2);
+                expectedLength = 2;
                 break;
             case CheckName.VarChange:
             case CheckName.AttrChange:
             case CheckName.NbrOfClones:
             case CheckName.NbrOfVisibleClones:
-                _testArgs(3);
+                expectedLength = 3;
                 break;
             case CheckName.AttrComp:
             case CheckName.VarComp:
             case CheckName.SpriteColor:
-                _testArgs(4);
+                expectedLength = 4;
                 break;
             default:
                 throw new Error("Check type not recognized: " + name);
+        }
+        if (args.length != expectedLength) {
+            throw new Error("Wrong number of arguments for input effect " + name + ".");
+        } else if (args.some((arg) => arg == undefined)) {
+            throw new Error("arguments cannot be undefined.");
         }
     }
 
