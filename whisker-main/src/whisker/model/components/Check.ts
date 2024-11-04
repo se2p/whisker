@@ -105,7 +105,8 @@ export class Check {
         }
         if (args.length != expectedLength) {
             throw new Error("Wrong number of arguments for input effect " + name + ".");
-        } else if (args.some((arg) => arg == undefined)) {
+        }
+        if (args.some((arg) => arg == undefined)) {
             throw new Error("arguments cannot be undefined.");
         }
     }
