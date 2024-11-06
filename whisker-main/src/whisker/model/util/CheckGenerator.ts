@@ -120,7 +120,7 @@ export abstract class CheckGenerator {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const spriteName = ModelUtil.checkSpriteExistence(t, String(pSpriteName)).name;
+        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
