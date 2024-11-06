@@ -139,5 +139,15 @@ describe('Scratch Mutations', () => {
         expect(Number(mutantCoverage)).toBe(0.8);
     }, timeout);
 
+    test('Negate-Condition-Mutation', async () => {
+        await (await page.$('#fileselect-tests')).uploadFile("test/integration/mutation/WaitTest.js");
+        await page.evaluate(m => document.querySelector('#container').mutators = m, ["NCM"]);
+        await loadProject('test/integration/mutation/NCM.sb3')
+        await (await page.$('#run-all-tests')).click();
+        const {originalCoverage, mutantCoverage} = await getCSVResults();
+        expect(Number(originalCoverage)).toBe(1);
+        expect(Number(mutantCoverage)).toBe(0.75);
+    }, timeout);
+
 });
 

@@ -1,7 +1,8 @@
 import {ScratchMutation} from "./ScratchMutation";
-import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
+import {ScratchProgram} from "../ScratchInterface";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Randomness} from "../../utils/Randomness";
+import {getBlockFromId} from "scratch-analysis";
 
 export class VariableReplacementMutation extends ScratchMutation {
 
@@ -23,7 +24,7 @@ export class VariableReplacementMutation extends ScratchMutation {
      * @returns true if the mutation was successful.
      */
     public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
-        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
+        const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
 
         // We may have the chance to replace multiple variables within one parent block. We therefore, count how
         // often a given parent has been mutated and always replace the next up to this point untouched variable.

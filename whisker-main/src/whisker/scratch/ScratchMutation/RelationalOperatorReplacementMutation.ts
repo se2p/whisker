@@ -1,8 +1,8 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
-import {OperatorFilter} from "scratch-analysis/src/block-filter";
+import {ScratchProgram} from "../ScratchInterface";
 import {Randomness} from "../../utils/Randomness";
+import {OperatorFilter, getBlockFromId} from "scratch-analysis";
 
 export class RelationalOperatorReplacementMutation extends ScratchMutation {
 
@@ -20,7 +20,7 @@ export class RelationalOperatorReplacementMutation extends ScratchMutation {
      * @returns true if the mutation was successful.
      */
     public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
-        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
+        const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         const originalOpcode = mutationBlock['opcode'];
         let mutantOpcode = Randomness.getInstance().pick(RelationalOperatorReplacementMutation.RELATIONAL_OPCODES);
         while (mutantOpcode === originalOpcode) {
