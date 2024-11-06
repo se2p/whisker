@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
-import {ModelUtil, ParamType} from "./ModelUtil";
+import {ModelUtil} from "./ModelUtil";
 import {
     ComparisonNotKnownError,
     ErrorForAttribute,
@@ -54,10 +54,6 @@ export abstract class CheckGenerator {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            //TODO check if it is intended that multiple sprites can be checked here (docs suggest not i guess)
-            // e.g. spriteNameRegex "apple" will check for "pineapple" and "apple" to be clicked
-            // Depending on the order the value of the local variable spriteName might be "pineapple" and therefore
-            // apple will not be checked. This does not sound right
             const anyTouchingMouse = sprites.some((s: Sprite) => s.visible && t.isMouseDown() && s.isTouchingMouse());
             return !negated == anyTouchingMouse;
         };
@@ -713,7 +709,7 @@ export abstract class CheckGenerator {
             if (oldValues.length && oldValues.length > 0 && oldValues[oldValues.length - 1] == sprite[attrName]) {
                 return !negated;
             }
-            // TODO: fix this code. Here the value is ignored if it stays the same but in the check below it can only be
+            //TODO: fix this code. Here the value is ignored if it stays the same but in the check below it can only be
             // a not random value if the last three consecutive entries in the list are the same which is made impossible
             // by the three lines above
 

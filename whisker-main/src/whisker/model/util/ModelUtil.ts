@@ -230,7 +230,6 @@ export abstract class ModelUtil {
         const name = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
         return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
             + "if (sprite" + index + " == undefined) {\n    throw new SpriteNotFoundError('" + spriteName + "');\n}\n";
-        // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
     private static _getVariableString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string, varName: string): string {
@@ -239,7 +238,6 @@ export abstract class ModelUtil {
         return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
             " (variable" + index
             + " == undefined) {\n   throw new VariableNotFoundError('" + varName + "');\n}\n";
-        // Todo check if instead the constructor should be called here so that the method can be removed
     }
 
     private static _isAnAttribute(attrName: string): boolean {
@@ -352,20 +350,6 @@ export abstract class ModelUtil {
 
         const spriteMap: Record<string, number> = {};
 
-        // TODO make this more robust
-        /*
-            this only works if there is no ")" that does not belong to any $(sprite.variable) before all
-            $(sprite.variable) are dealt with in this expression.
-            Works fine:
-                - $(sprite.x) == 42
-                - $(sprite.x) + $(sprite.y) == 0
-                - Math.abs($(sprite.x) - $(sprite.old.x)) > 10
-                - Math.abs($(sprite.x) - t.getMousePosition().x) > 10
-            Does not work -> problematic ")" is marked by "_" as "_)_" and the corresponding "$" as well with "_$_"
-                - (1/2_)_ * _$_(sprite.x) > 10
-                - Math.abs( t.getMousePosition(_)_.x- _$_(sprite.x)) > 10
-                - Math.abs($(sprite.x) - $(sprite.old.x)_)_ + Math.abs(_$_(sprite.x) - $(sprite.old.x)) > 10
-            */
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
             endIndex = toEval.indexOf(this.EXPR_END, startIndex);
 
