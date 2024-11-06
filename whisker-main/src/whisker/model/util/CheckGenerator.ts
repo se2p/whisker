@@ -64,7 +64,7 @@ export abstract class CheckGenerator {
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
      * @param graphID ID of the parent graph of the check.
-     * @param pSpriteName The name of the sprite having the variable.
+     * @param pSpriteName The name of the sprite whose variable is being evaluated
      * @param varName The name of the variable.
      * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
      * @param varValue Value to compare to the variable's current value.
@@ -108,7 +108,7 @@ export abstract class CheckGenerator {
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
      * @param graphID ID of the parent graph of the check.
-     * @param pSpriteName The name of the sprite having the variable.
+     * @param pSpriteName The name of the sprite whose attribute is evaluated
      * @param attrName Name of the attribute.
      * @param comparison  Mode of comparison, e.g. =, <, >, <=, >=
      * @param attrValue Value to compare to the attribute's current value.
@@ -381,7 +381,7 @@ export abstract class CheckGenerator {
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
      * @param graphID ID of the parent graph of the check.
-     * @param pSpriteName The name of the sprite having the variable.
+     * @param pSpriteName The name of the sprite whose variable is evaluated
      * @param varName The name of the variable.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
      * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
@@ -422,7 +422,7 @@ export abstract class CheckGenerator {
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
      * @param graphID ID of the parent graph of the check.
-     * @param pSpriteName The name of the sprite having the variable.
+     * @param pSpriteName The name of the sprite whose attribute is evaluated
      * @param attrName Name of the attribute.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
      * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
