@@ -33,6 +33,12 @@ describe('InputEffect', () => {
         });
     });
 
+    test("Throws when some argument is undefined", () => {
+        expect(() => {
+            new InputEffect("test", InputEffectName.InputMouseMove, ["12", undefined]);
+        }).toThrow();
+    });
+
     test("constructor does not need args for InputEffectName.InputClickStage", () => {
         expect(() => {
             new InputEffect("test", InputEffectName.InputClickStage, []);
@@ -60,7 +66,7 @@ describe('InputEffect', () => {
             jest.mock('../../../../src/whisker/scratch/ScratchInterface');
             ScratchInterface.setMousePosition = jest.fn();
             const effect = new InputEffect("test", InputEffectName.InputMouseMove, ["12", "34"]);
-            effect.registerComponents(t, false);
+            effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(ScratchInterface.setMousePosition).toHaveBeenCalledWith(new ScratchPosition(12, 34));
         });
@@ -68,7 +74,7 @@ describe('InputEffect', () => {
         test("Key input effect", () => {
             tdMock.inputImmediate = jest.fn();
             const effect = new InputEffect("test", InputEffectName.InputKey, ["b"]);
-            effect.registerComponents(t, false);
+            effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.inputImmediate).toHaveBeenCalledWith([{
                 device: "keyboard",
@@ -81,7 +87,7 @@ describe('InputEffect', () => {
         test("Text input effect", () => {
             tdMock.typeText = jest.fn();
             const effect = new InputEffect("test", InputEffectName.InputText, ["this is some text"]);
-            effect.registerComponents(t, false);
+            effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.typeText).toHaveBeenCalledWith("this is some text");
         });
@@ -90,7 +96,7 @@ describe('InputEffect', () => {
             jest.mock('../../../../src/whisker/utils/Container');
             tdMock.mouseDown = jest.fn();
             const effect = new InputEffect("test", InputEffectName.InputMouseDown, ["false"]);
-            effect.registerComponents(t, false);
+            effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.mouseDown).toHaveBeenCalledWith(false);
         });
@@ -98,7 +104,7 @@ describe('InputEffect', () => {
         test("Click stage input effect", () => {
             tdMock.clickStage = jest.fn();
             const effect = new InputEffect("test", InputEffectName.InputClickStage, []);
-            effect.registerComponents(t, false);
+            effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.clickStage).toHaveBeenCalledWith();
         });
@@ -108,7 +114,7 @@ describe('InputEffect', () => {
             tdMock.currentSprites = SpriteMock.stringsToSpriteArray(["apple", "bowl"]);
             tdMock.clickSprite = jest.fn();
             const effect = new InputEffect("test", InputEffectName.InputClickSprite, ["bowl"]);
-            effect.registerComponents(t, false);
+            effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.clickSprite).toHaveBeenCalledWith("bowl", 42);
         });
@@ -118,7 +124,7 @@ describe('InputEffect', () => {
         const effect = new InputEffect("test", InputEffectName.InputClickSprite, ["bowl"]);
         effect.name = undefined;
         expect(() => {
-            effect.registerComponents(getDummyTestDriver(), false);
+            effect.registerComponents(getDummyTestDriver());
         }).toThrow();
     });
 });

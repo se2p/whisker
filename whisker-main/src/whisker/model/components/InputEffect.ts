@@ -79,8 +79,8 @@ export class InputEffect {
     /**
      * Register the test driver and convert the saved input arguments to an executable input function for fast input.
      */
-    registerComponents(t: TestDriver, caseSensitive: boolean): void {
-        this._inputEffect = this._getInputDataFunction(t, caseSensitive, this._args);
+    registerComponents(t: TestDriver): void {
+        this._inputEffect = this._getInputDataFunction(t, this._args);
     }
 
     simplifyForSave(): SimpleInputEffect {
@@ -91,7 +91,7 @@ export class InputEffect {
         };
     }
 
-    private _getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: ArgType[]) {
+    private _getInputDataFunction(t: TestDriver, arg: ArgType[]) {
         switch (this.name) {
             case InputEffectName.InputKey:
                 return () => {
@@ -125,7 +125,7 @@ export class InputEffect {
                 };
             }
             case InputEffectName.InputClickSprite: {
-                const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, arg[0]);
+                const sprite = ModelUtil.checkSpriteExistence(t, arg[0]);
                 const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
                 return () => {
                     clickSpriteEvent.apply();

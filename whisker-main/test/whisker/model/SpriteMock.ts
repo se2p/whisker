@@ -7,7 +7,7 @@ export class SpriteMock {
     public touchingSprite: boolean;
     public variables: any[];
     public currentCostumeName: string;
-    public clones: SpriteMock[];
+    public _clones: SpriteMock[];
     public old: SpriteMock;
     public sayText: string;
     public touchingVerticalEdge: boolean;
@@ -73,8 +73,15 @@ export class SpriteMock {
 
     set visible(value: boolean) {
         this._visible = value;
-        // this.createSprite();
-        // TODO check if there is a possibility to change the attribute of the sprite after creation
+    }
+
+    set clones(value: SpriteMock[]) {
+        value.forEach(c => c._original = false);
+        this._clones = value;
+    }
+
+    get clones(): SpriteMock[] {
+        return this._clones;
     }
 
     public static toSpriteArray(array: SpriteMock[]): Sprite[] {

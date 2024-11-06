@@ -134,7 +134,7 @@ describe('Model node', () => {
         for (let i = 0; i < count; ++i) {
             node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, fn));
         }
-        node.registerComponents(null, null, false);
+        node.registerComponents(null, null);
         expect(fn).toHaveBeenCalledTimes(count);
     });
 });

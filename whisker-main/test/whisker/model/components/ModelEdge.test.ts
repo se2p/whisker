@@ -211,7 +211,7 @@ describe('Model edges', () => {
                 mockCondition("cond50", true),
             ];
             conditions.forEach(condition => edge.addCondition(condition));
-            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditions(tdMock.getTestDriver(), cu, 5, 7);
             expect(result).toStrictEqual([conditions[0], conditions[4]]);
             expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() at 42ms");
@@ -233,7 +233,7 @@ describe('Model edges', () => {
                 mockCondition("cond50", true),
             ];
             conditions.forEach(condition => edge.addCondition(condition));
-            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            edge.registerComponents(cu, tdMock.getTestDriver());
             let result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual([conditions[0], conditions[1]]);
             expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 10ms");
@@ -269,7 +269,7 @@ describe('Model edges', () => {
             edge.addCondition(new Condition(id, label, CheckName.Key, false, ["d"]));
             edge.addCondition(new Condition(id, label, CheckName.SpriteTouching, false, ["banana", "bowl"]));
             const eventStrings = ["BackgroundChange:test", "Key:d", "Function:true"];
-            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 5, 7, eventStrings);
             expect(result).toStrictEqual([edge.conditions[0]]);
         });
@@ -283,7 +283,7 @@ describe('Model edges', () => {
             edge.addCondition(new Condition(id, label, CheckName.Function, false, ["true"]));
             edge.addEffect(new Effect(id, label, CheckName.SpriteTouching, false, ["apple", "bowl"]));
             const eventStrings = ["BackgroundChange:stage", "Key:d"];
-            edge.registerComponents(cu, tdMock.getTestDriver(), false);
+            edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 5, 7, eventStrings);
             expect(result).toStrictEqual(edge.conditions);
         });
@@ -295,7 +295,7 @@ describe('Model edges', () => {
         edge.addEffect(mockEffect(fn));
         edge.addEffect(mockEffect(fn));
         edge.addEffect(mockEffect(fn));
-        edge.registerComponents(null, null, false);
+        edge.registerComponents(null, null);
         expect(fn).toHaveBeenCalledTimes(3);
     });
 
@@ -306,7 +306,7 @@ describe('Model edges', () => {
         edge.addInputEffect(mockInputEffectRegister(fn, null));
         edge.addInputEffect(mockInputEffectRegister(fn, null));
         edge.addInputEffect(mockInputEffectRegister(fn, null));
-        edge.registerComponents(null, null, false);
+        edge.registerComponents(null, null);
         expect(fn).toHaveBeenCalledTimes(4);
     });
 

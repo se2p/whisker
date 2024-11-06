@@ -153,9 +153,9 @@ describe('User model', () => {
         const model = new UserModel("model", "start", nodes, {}, [], []);
         const cu = getDummyCheckUtility();
         const t = getDummyTestDriver();
-        model.registerComponents(cu, t, false);
+        model.registerComponents(cu, t);
         expect(fn).toBeCalledTimes(4);
-        expect(fn).toHaveBeenCalledWith(cu, t, false);
+        expect(fn).toHaveBeenCalledWith(cu, t);
     });
 
     test("Reset() resets transition steps", () => {

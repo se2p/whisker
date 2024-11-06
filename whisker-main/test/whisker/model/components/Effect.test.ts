@@ -568,7 +568,7 @@ describe('Effect', () => {
 
     test('registerComponent() calculates correct effect', () => {
         const effect = new Effect(id, edgeID, CheckName.Key, true, ["a"]);
-        effect.registerComponents(null, cu, false, "graphID");
+        effect.registerComponents(null, cu, "graphID");
         const func = effect.effect;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(true);
@@ -579,13 +579,13 @@ describe('Effect', () => {
     test('registerComponent() clears effect in error case', () => {
         const effect = new Effect(id, edgeID, CheckName.Key, true, ["a"]);
         const error = new Error("this is a message");
-        effect.registerComponents(null, cu, false, "graphID");
-        effect.checkArgsWithTestDriver = (t, cu, cs, args) => {
+        effect.registerComponents(null, cu, "graphID");
+        effect.checkArgsWithTestDriver = (t, cu, args) => {
             throw error;
         };
         const fn = jest.fn();
         cu.addErrorOutput = fn;
-        effect.registerComponents(null, cu, false, "graphID");
+        effect.registerComponents(null, cu, "graphID");
         const func = effect.effect;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);

@@ -43,9 +43,9 @@ export class Effect extends Check {
     /**
      * Register the check listener and test driver and check the effect for errors.
      */
-    registerComponents(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string): void {
+    registerComponents(t: TestDriver, cu: CheckUtility, graphID: string): void {
         try {
-            this._effect = this.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+            this._effect = this.checkArgsWithTestDriver(t, cu, graphID);
         } catch (e) {
             this._effect = () => false;
             cu.addErrorOutput(this._edgeLabel, graphID, e);

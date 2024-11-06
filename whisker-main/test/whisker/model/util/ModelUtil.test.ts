@@ -5,10 +5,13 @@ import {
     ExpressionEndTagMissingError,
     ExpressionEnterError,
     ExprEvalError,
+    SpriteNotFoundError,
     VariableNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
 import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
+import Sprite from "../../../../src/vm/sprite";
+import Variable from "../../../../src/vm/variable";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
@@ -280,9 +283,9 @@ describe('ModelUtil tests', function () {
         });
 
         test('empty dependencies if t.getSprites is not called', () => {
-           const res = ModelUtil.getDependencies("Math.exp(-1)");
-           expect(res.attrDependencies).toStrictEqual([]);
-           expect(res.varDependencies).toStrictEqual([]);
+            const res = ModelUtil.getDependencies("Math.exp(-1)");
+            expect(res.attrDependencies).toStrictEqual([]);
+            expect(res.varDependencies).toStrictEqual([]);
         });
     });
 
@@ -452,26 +455,81 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
     });
 
     describe('checkVariableExistence()', () => {
-        const bowl = new SpriteMock("Bowl",[{name: "y", value: 17}]);
-        const kiwi = new SpriteMock("Kiwi",[{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("Stage", [{name:"Points", value:10}]);
+        const bowl = new SpriteMock("Bowl", [{name: "y", value: 17}]);
+        const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
+        const stage = new SpriteMock("Stage", [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
         test("throws exception if variable does not exist", () => {
             expect(() => {
-                ModelUtil.checkVariableExistence(t, true, kiwi.sprite, "X");
+                ModelUtil.checkVariableExistence(t, kiwi.sprite, "X");
             }).toThrow(VariableNotFoundError);
         });
         test("finds variable on other Sprites", () => {
-            const res = ModelUtil.checkVariableExistence(t, true, kiwi.sprite, "Points");
+            const res = ModelUtil.checkVariableExistence(t, kiwi.sprite, "Points");
             expect(res.sprite).toEqual(stage.sprite);
             expect(res.variable).toEqual(stage.variables[0]);
         });
-        test("finds variable for regex with flags", () => {
-            const res = ModelUtil.checkVariableExistence(t, true, stage.sprite, "/oin/g");
-            expect(res.sprite).toEqual(stage.sprite);
-            expect(res.variable).toEqual(stage.variables[0]);
+        test("Regex does not work", () => {
+            expect(() => {
+                ModelUtil.checkVariableExistence(t, stage.sprite, "/oin/g");
+            }).toThrow(VariableNotFoundError);
+        });
+
+        test("finds the correct option if only one matches", () => {
+            let res: { sprite: Sprite, variable: Variable };
+            expect(() => {
+                res = ModelUtil.checkVariableExistence(t, stage.sprite,
+                    ["someInvalidVariable", "Score", "Points"]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res.sprite == stage.sprite).toBe(true);
+            expect(res.variable).toBe(stage.variables[0]);
+        });
+
+        test("Does not throw but simply returns one if multiply match", () => {
+            let res: { sprite: Sprite, variable: Variable };
+            expect(() => {
+                res = ModelUtil.checkVariableExistence(t, stage.sprite, ["Points", "Lives"]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res.sprite == stage.sprite).toBe(true);
+            expect(stage.variables.some(v => v == res.variable)).toBe(true);
         });
     });
+
+    describe('checkSpriteExistence()', () => {
+        const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
+        const kiwi = new SpriteMock("Kiwi", [{name: "y", value: 7}, {name: "name", value: "Kiwi"}]);
+        const stage = new SpriteMock("Stage", [{name: "Punkte", value: 10}]);
+        const tdMock = new TestDriverMock([bowl, kiwi, stage]);
+        tdMock.stage = stage.sprite;
+        const t = tdMock.getTestDriver();
+        const table: [string, ArgType][] = [
+            ["throws exception if sprite does not exist", "Banane"],
+            ["throws exception if sprite does not exist (multiple options)", ["Banane", "banane", "Banana", "banana"]],
+            ["Regex does not work", "/owl/g"],
+        ];
+        it.each(table)('%s', (name: string, spriteNames: ArgType) => {
+            expect(() => {
+                ModelUtil.checkSpriteExistence(t, spriteNames);
+            }).toThrow(SpriteNotFoundError);
+        });
+
+        test("finds the correct option if only one matches", () => {
+            let res: Sprite;
+            expect(() => {
+                res = ModelUtil.checkSpriteExistence(t, [bowl.name + "someTypo", "boowl", bowl.name]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res).toBe(bowl.sprite);
+        });
+
+        test("Does not throw but simply returns one if multiply match", () => {
+            let res: Sprite;
+            expect(() => {
+                res = ModelUtil.checkSpriteExistence(t, [bowl.name, kiwi.name]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res == bowl.sprite || res == kiwi.sprite).toBe(true);
+        });
+    });
+
 });

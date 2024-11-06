@@ -59,26 +59,25 @@ describe('Check', () => {
     const cu = getDummyCheckUtility();
     const graphID = "graphID";
     const negated = false;
-    const caseSensitive = false;
 
     test('AttrComp', () => {
         const fn = jest.fn();
         CheckGenerator.getAttributeComparisonCheck = fn;
-        const args: ArgType[] = ["(Apple)", "x", "<", 5];
+        const args: ArgType[] = ["apple", "x", "<", 5];
         const check = new Condition("id", "label", CheckName.AttrComp, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('AttrChange', () => {
         const fn = jest.fn();
         CheckGenerator.getAttributeChangeCheck = fn;
-        const args: ArgType[] = ["(apple)", "size", "-"];
+        const args: ArgType[] = ["apple", "size", "-"];
         const check = new Condition("id", "label", CheckName.AttrChange, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('BackgroundChange', () => {
@@ -86,7 +85,7 @@ describe('Check', () => {
         CheckGenerator.getBackgroundChangeCheck = fn;
         const args: ArgType[] = ["newBackground"];
         const check = new Condition("id", "label", CheckName.BackgroundChange, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", negated, ...args);
     });
@@ -96,39 +95,39 @@ describe('Check', () => {
         CheckGenerator.getFunctionCheck = fn;
         const args: ArgType[] = ["() => true"];
         const check = new Condition("id", "label", CheckName.Function, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('Output', () => {
         const fn = jest.fn();
         CheckGenerator.getOutputOnSpriteCheck = fn;
-        const args: ArgType[] = ["(Apple)", "i have fallen down"];
+        const args: ArgType[] = ["apple", "i have fallen down"];
         const check = new Condition("id", "label", CheckName.Output, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, false, ...args);
     });
 
     test('VarChange', () => {
         const fn = jest.fn();
         CheckGenerator.getVariableChangeCheck = fn;
-        const args: ArgType[] = ["(Apple)", "x", "+"];
+        const args: ArgType[] = ["apple", "x", "+"];
         const check = new Condition("id", "label", CheckName.VarChange, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('VarComp', () => {
         const fn = jest.fn();
         CheckGenerator.getVariableComparisonCheck = fn;
-        const args: ArgType[] = ["(Apple)", "x", ">=", "7"];
+        const args: ArgType[] = ["apple", "x", ">=", "7"];
         const check = new Condition("id", "label", CheckName.VarComp, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('SpriteTouching', () => {
@@ -136,9 +135,9 @@ describe('Check', () => {
         CheckGenerator.getSpriteTouchingCheck = fn;
         const args: ArgType[] = ["apple", "bowl"];
         const check = new Condition("id", "label", CheckName.SpriteTouching, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('SpriteColor', () => {
@@ -146,9 +145,9 @@ describe('Check', () => {
         CheckGenerator.getSpriteColorTouchingCheck = fn;
         const args: ArgType[] = ["apple", 128, 128, 128];
         const check = new Condition("id", "label", CheckName.SpriteColor, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('Key', () => {
@@ -156,7 +155,7 @@ describe('Check', () => {
         CheckGenerator.getKeyDownCheck = fn;
         const args: ArgType[] = ["a"];
         const check = new Condition("id", "label", CheckName.Key, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, negated, ...args);
     });
@@ -166,9 +165,9 @@ describe('Check', () => {
         CheckGenerator.getSpriteClickedCheck = fn;
         const args: ArgType[] = ["banana"];
         const check = new Condition("id", "label", CheckName.Click, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, negated, ...args);
     });
 
     test('Expr', () => {
@@ -176,9 +175,9 @@ describe('Check', () => {
         CheckGenerator.getExpressionCheck = fn;
         const args: ArgType[] = ["$(Cat. x) > 25"];
         const check = new Condition("id", "label", CheckName.Expr, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('Probability', () => {
@@ -186,7 +185,7 @@ describe('Check', () => {
         CheckGenerator.getProbabilityCheck = fn;
         const args: ArgType[] = [0.5];
         const check = new Condition("id", "label", CheckName.Probability, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
     });
@@ -196,7 +195,7 @@ describe('Check', () => {
         CheckGenerator.getTimeElapsedCheck = fn;
         const args: ArgType[] = [1000];
         const check = new Condition("id", "label", CheckName.TimeElapsed, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
     });
@@ -206,7 +205,7 @@ describe('Check', () => {
         CheckGenerator.getTimeBetweenCheck = fn;
         const args: ArgType[] = [500];
         const check = new Condition("id", "label", CheckName.TimeBetween, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
     });
@@ -216,9 +215,9 @@ describe('Check', () => {
         CheckGenerator.getNumberOfClonesCheck = fn;
         const args: ArgType[] = ["apple", ">=", "1"];
         const check = new Condition("id", "label", CheckName.NbrOfClones, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, negated, caseSensitive, false, ...args);
+        expect(fn).toHaveBeenCalledWith(t, negated, false, ...args);
     });
 
     test('NbrOfVisibleClones', () => {
@@ -226,9 +225,9 @@ describe('Check', () => {
         CheckGenerator.getNumberOfClonesCheck = fn;
         const args: ArgType[] = ["apple", "==", "1"];
         const check = new Condition("id", "label", CheckName.NbrOfVisibleClones, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, negated, caseSensitive, true, ...args);
+        expect(fn).toHaveBeenCalledWith(t, negated, true, ...args);
     });
 
     test('TouchingEdge', () => {
@@ -236,9 +235,9 @@ describe('Check', () => {
         CheckGenerator.getTouchingEdgeCheck = fn;
         const args: ArgType[] = ["apple"];
         const check = new Condition("id", "label", CheckName.TouchingEdge, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, "apple");
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, "apple");
     });
 
     test('TouchingHorizEdge', () => {
@@ -246,9 +245,9 @@ describe('Check', () => {
         CheckGenerator.getTouchingEdgeCheck = fn;
         const args: ArgType[] = ["apple"];
         const check = new Condition("id", "label", CheckName.TouchingHorizEdge, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, "apple", false);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, "apple", false);
     });
 
     test('TouchingVerticalEdge', () => {
@@ -256,9 +255,9 @@ describe('Check', () => {
         CheckGenerator.getTouchingEdgeCheck = fn;
         const args: ArgType[] = ["apple"];
         const check = new Condition("id", "label", CheckName.TouchingVerticalEdge, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, "apple", true, false);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, "apple", true, false);
     });
 
     test('TimeAfterEnd', () => {
@@ -266,7 +265,7 @@ describe('Check', () => {
         CheckGenerator.getTimeAfterEndCheck = fn;
         const args: ArgType[] = [200];
         const check = new Condition("id", "label", CheckName.TimeAfterEnd, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
     });
@@ -276,9 +275,9 @@ describe('Check', () => {
         CheckGenerator.getRandomValueCheck = fn;
         const args: ArgType[] = ["banana", "x"];
         const check = new Condition("id", "label", CheckName.RandomValue, negated, args);
-        check.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+        check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, caseSensitive, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('Invalid comparison throws error', () => {
