@@ -8563,7 +8563,7 @@ schema-utils@^4.0.0:
 
 "scratch-analysis@git+https://gitlab+deploy-token-26:gldt-JnhezqQAx-v4JyLZBw7P@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-analysis.git#main":
   version "1.0.0"
-  resolved "git+https://gitlab+deploy-token-26:gldt-JnhezqQAx-v4JyLZBw7P@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-analysis.git#a2756cb6b290851ab1f4526278a7c1e88af04f34"
+  resolved "git+https://gitlab+deploy-token-26:gldt-JnhezqQAx-v4JyLZBw7P@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-analysis.git#a997139e510785264d54a6c4c5e8afd797ee4e32"
 
 scratch-audio@0.1.0-prerelease.20200528195344:
   version "0.1.0-prerelease.20200528195344"

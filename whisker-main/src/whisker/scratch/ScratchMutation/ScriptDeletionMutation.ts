@@ -1,7 +1,8 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ControlFilter} from "scratch-analysis";
-import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
+import {ScratchProgram} from "../ScratchInterface";
+import {getBlockFromId} from "scratch-analysis";
 
 export class ScriptDeletionMutation extends ScratchMutation {
 
@@ -17,9 +18,9 @@ export class ScriptDeletionMutation extends ScratchMutation {
      * @returns true if the mutation was successful.
      */
     public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
-        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
+        const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         if (mutationBlock['next'] !== null) {
-            const nextBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['next']);
+            const nextBlock = getBlockFromId(mutantProgram.targets, mutationBlock['next']);
             nextBlock['parent'] = null;
             mutationBlock['next'] = null;
             const mutantId = this.getMutantId(mutationBlockId);

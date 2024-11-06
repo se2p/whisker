@@ -1,7 +1,7 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
-import {OperatorFilter} from "scratch-analysis/src/block-filter";
+import {ScratchProgram} from "../ScratchInterface";
+import {OperatorFilter, getBlockFromId} from "scratch-analysis";
 
 export class LogicalOperatorReplacementMutation extends ScratchMutation {
 
@@ -16,7 +16,7 @@ export class LogicalOperatorReplacementMutation extends ScratchMutation {
      * @returns true if the mutation was successful.
      */
     public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
-        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
+        const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         const originalOpcode = mutationBlock['opcode'];
         const mutantOpcode = originalOpcode === 'operator_and' ? 'operator_or' : 'operator_and';
         mutationBlock['opcode'] = mutantOpcode;
