@@ -353,7 +353,7 @@ export abstract class CheckGenerator {
     static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                   caseSensitive: boolean, pSpriteName: ArgType, output: ArgType): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
-        const expression = ModelUtil.getExpressionForEval(t, false/*TODO caseSensitive Flag here*/, output).expr;
+        const expression = ModelUtil.getExpressionForEval(t, caseSensitive, output).expr;
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, pSpriteName, output);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {

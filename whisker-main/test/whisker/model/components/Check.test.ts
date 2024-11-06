@@ -107,7 +107,7 @@ describe('Check', () => {
         const check = new Condition("id", "label", CheckName.Output, negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, false, ...args);
+        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, true, ...args);
     });
 
     test('VarChange', () => {
