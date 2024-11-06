@@ -1,7 +1,8 @@
 import {ScratchMutation} from "./ScratchMutation";
-import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
+import {ScratchProgram} from "../ScratchInterface";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ControlFilter, StatementFilter} from "scratch-analysis";
+import {getBlockFromId} from "scratch-analysis";
 
 
 export class SingleBlockDeletionMutation extends ScratchMutation {
@@ -58,19 +59,18 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * @returns true if the mutation was successful.
      */
     public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
-        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
-
+        const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
 
         // Since we exclude hat blocks, every block that has no parent is a dead block and removing them is pointless.
         if (mutationBlock['parent'] === null) {
             return false;
         }
-        const parent = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['parent']);
+        const parent = getBlockFromId(mutantProgram.targets, mutationBlock['parent']);
 
         // On the other hand, the next block can be null if we are about to delete the last block in a script.
         let next: unknown;
         if (mutationBlock['next'] !== null) {
-            next = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['next']);
+            next = getBlockFromId(mutantProgram.targets, mutationBlock['next']);
         } else {
             next = null;
         }

@@ -46,31 +46,26 @@ export class InputEffect {
         this._args = args;
         this._inputEffect = () => void 0;
 
-        // Todo: refactor this code
-        const _testArgs = function (length: number) {
-            if (args.length != length) {
-                return false;
-            }
-
-            return args.every((arg) => arg != undefined);
-        };
-        let isOK = true;
+        let expectedLength: number;
         switch (name) {
             case InputEffectName.InputKey:
             case InputEffectName.InputClickSprite:
             case InputEffectName.InputText:
             case InputEffectName.InputMouseDown:
-                isOK = _testArgs(1);
+                expectedLength = 1;
                 break;
             case InputEffectName.InputClickStage:
-                isOK = _testArgs(0);
+                expectedLength = 0;
                 break;
             case InputEffectName.InputMouseMove:
-                isOK = _testArgs(2);
+                expectedLength = 2;
                 break;
         }
-        if (!isOK) {
+        if (args.length != expectedLength) {
             throw new Error("Wrong number of arguments for input effect " + name + ".");
+        }
+        if (args.some((arg) => arg == undefined)) {
+            throw new Error("arguments cannot be undefined.");
         }
     }
 

@@ -86,15 +86,15 @@ export class ModelLoader {
         //  invoke the constructor instead.
 
         this._startNodeId = "";
-        this._stopNodeIds = []
-        this._stopAllNodeIds = []
-        this._nodesMap = {}
-        this._edgesMapProgram = {}
-        this._edgesMapUser = {}
-        this._graphIDs = []
-        this._programModels = []
-        this._userModels = []
-        this._onTestEndModels = []
+        this._stopNodeIds = [];
+        this._stopAllNodeIds = [];
+        this._nodesMap = {};
+        this._edgesMapProgram = {};
+        this._edgesMapUser = {};
+        this._graphIDs = [];
+        this._programModels = [];
+        this._userModels = [];
+        this._onTestEndModels = [];
     }
 
     /**

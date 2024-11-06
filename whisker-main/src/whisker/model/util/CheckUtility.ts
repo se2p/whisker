@@ -141,15 +141,13 @@ export class CheckUtility extends EventEmitter {
         }
 
         predicateChecker[spriteName].push((sprite) => {
-            // todo: refactor this code
-            let predicateResult = false;
             try {
-                predicateResult = predicate(sprite);
+                const predicateResult = predicate(sprite);
+                if (predicateResult) {
+                    this._eventStrings.push(eventString);
+                }
             } catch (e) {
                 this.addErrorOutput(edgeLabel, graphID, e);
-            }
-            if (predicateResult) {
-                this._eventStrings.push(eventString);
             }
         });
     }

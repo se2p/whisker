@@ -1,10 +1,10 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchInterface, ScratchProgram} from "../ScratchInterface";
-import {OperatorFilter} from "scratch-analysis/src/block-filter";
+import {ScratchProgram} from "../ScratchInterface";
 import uid from "scratch-vm/src/util/uid";
 import {Randomness} from "../../utils/Randomness";
 import logger from "../../../util/logger";
+import {OperatorFilter, getHostingTarget, getBlockFromId} from "scratch-analysis";
 
 export class NegateConditionalMutation extends ScratchMutation {
 
@@ -22,11 +22,11 @@ export class NegateConditionalMutation extends ScratchMutation {
         const mutantId = this.getMutantId(mutationBlockId);
         mutantProgram.name = `NCM:${mutantId}`.replace(/,/g, '');
 
-        const mutationBlock = ScratchInterface.getBlockFromId(mutantProgram, mutationBlockId);
+        const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId, mutationBlock['parent']);
 
         // The parent of the mutated block.
-        const parent = ScratchInterface.getBlockFromId(mutantProgram, mutationBlock['parent']);
+        const parent = getBlockFromId(mutantProgram.targets, mutationBlock['parent']);
 
         // Only if the parent exists, modify the parent block to point to the wrapping not block instead of the negated
         // conditional diamond block
@@ -51,7 +51,7 @@ export class NegateConditionalMutation extends ScratchMutation {
             }
         }
 
-        const sourceTarget = ScratchInterface.getHostingRenderedTarget(mutantProgram, mutationBlockId);
+        const sourceTarget = getHostingTarget(mutantProgram.targets, mutationBlockId);
         if (sourceTarget === null) {
             return false;
         }

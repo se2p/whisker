@@ -127,7 +127,7 @@ describe('Algorithms', () => {
 
     test('Neatest Optimising for Branch Coverage', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/neatestBranch.json");
-        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        await loadProject('test/integration/networkSuites/SimpleFruitCatching.sb3')
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
