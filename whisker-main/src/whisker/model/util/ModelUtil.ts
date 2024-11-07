@@ -14,6 +14,7 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "../components/Check";
+import logger from "../../../util/logger";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -47,7 +48,7 @@ export abstract class ModelUtil {
             throw new SpriteNotFoundError(spriteName);
         }
         if (sprites.length > 1) {
-            console.log(`found ${sprites.map(s => s.name)} for sprite names: ${pSpriteName}. Taking ${sprites[0].name} as result`);
+            logger.debug(`found ${sprites.map(s => s.name)} for sprite names: ${pSpriteName}. Taking ${sprites[0].name} as result`);
         }
         return sprites[0];
     }
