@@ -309,25 +309,24 @@ describe('ModelUtil tests', function () {
     describe('getExpressionForEval', () => {
         const t = getDummyTestDriver();
         test('throws exception when expression cannot be evaluated', () => {
-            const tdMock = new TestDriverMock();
             // const expr = "throw new Exception(\"this is supposed to happen\")";
             const expr = "\"some wrong syntax'\"";
             expect(() => {
-                ModelUtil.getExpressionForEval(tdMock.getTestDriver(), false, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(ExprEvalError);
         });
 
         test('throws exception when expression has no end tag', () => {
             const expr = "$(sprite.name";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, false, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(ExpressionEndTagMissingError);
         });
 
         test('throws exception when expression is empty  $()', () => {
             const expr = "true && $() == 10";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, false, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(EmptyExpressionError);
         });
 
@@ -336,7 +335,7 @@ describe('ModelUtil tests', function () {
             const testDriver = tdMock.getTestDriver();
             const expr = "const value=$(apple.x);return value == 10";
             expect(() => {
-                ModelUtil.getExpressionForEval(testDriver, false, expr);
+                ModelUtil.getExpressionForEval(testDriver, expr);
             }).toThrow(ExprEvalError);
             // TODO: I think the test should rather look like this because "=" should not be automatically converted to "=="
             // const result = ModelUtil.getExpressionForEval(testDriver, false, expr);
@@ -345,7 +344,7 @@ describe('ModelUtil tests', function () {
         });
 
         test('adds missing \' at the end of constant expression', () => {
-            const res = ModelUtil.getExpressionForEval(t, false, "'some text");
+            const res = ModelUtil.getExpressionForEval(t, "'some text");
             const f = eval(res.expr);
             expect(f(t)).toBe("some text");
         });
@@ -356,7 +355,7 @@ describe('ModelUtil tests', function () {
             const tdMock = new TestDriverMock([apple, kiwi]);
             const t = tdMock.getTestDriver();
             const expr = "t.getSprites(s => s.name == \"apple\").length == 1";
-            const result = ModelUtil.getExpressionForEval(t, true, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             const f = eval(result.expr);
             expect(f(t)).toBe(expr);
         });
@@ -365,7 +364,7 @@ describe('ModelUtil tests', function () {
             const t = getDummyTestDriver();
             const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))\n==10";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, true, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(ExpressionEnterError);
         });
 
@@ -380,7 +379,7 @@ describe('ModelUtil tests', function () {
             const tdMock = new TestDriverMock([apple, kiwi, bowl]);
             const t = tdMock.getTestDriver();
             const expr = "$(Bowl.name)!=\"ApPle\"&&Math.abs($(Bowl.old.x)-$(Bowl.x))==10";
-            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             const f = eval(result.expr);
             expect(f(t)).toBe(false);
             bowl.variables = [{name: "x", value: 15}, {name: "name", value: "Bowl"}];
@@ -410,7 +409,7 @@ return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
             const tdMock = new TestDriverMock([bowl, kiwi]);
             const t = tdMock.getTestDriver();
             const expr = "$(Kiwi.name)+(-1*Math.abs($(Bowl.old.y)-$(Bowl.x))).toString()";
-            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             expect(result.expr).toBe(expectedOutput);
             const f = eval(result.expr);
             expect(f(t)).toBe("Kiwi-8");
@@ -447,7 +446,7 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
             tdMock.stage = stage.sprite;
             const t = tdMock.getTestDriver();
             const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
-            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             expect(result.expr).toBe(expectedOutput);
             const f = eval(result.expr);
             expect(f(t)).toBe(true);

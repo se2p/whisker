@@ -241,10 +241,9 @@ export abstract class ModelUtil {
      * Returns a function needing a test driver instance that evaluates the expression by getting the correct
      * sprites and their attributes or values and combining the original expression parts.
      * @param t Instance of the test driver.
-     * @param caseSensitive Whether the names of sprites and variables should be tested case-sensitive.
      * @param pToEval Expression to evaluate and make into a function.
      */
-    static getExpressionForEval(t: TestDriver, caseSensitive: boolean, pToEval: ArgType): Expression {
+    static getExpressionForEval(t: TestDriver, pToEval: ArgType): Expression {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
         let toEval = String(pToEval);
         if (!toEval.includes(this.EXPR_START)) {
@@ -274,11 +273,6 @@ export abstract class ModelUtil {
 
         const expression = this._getExpression(t, toEval);
 
-        // all texts in "" to lower case
-        if (!caseSensitive) {
-            expression.expr = ModelUtil._toLowerCaseTexts(expression.expr);
-        }
-
         // test it beforehand
         try {
             eval(expression.expr)(t);
@@ -287,21 +281,6 @@ export abstract class ModelUtil {
         }
 
         return expression;
-    }
-
-    private static _toLowerCaseTexts(expr: string): string {
-        // all texts in "" to lower case
-        const temp = expr.split("\"");
-        if (temp.length > 2) {
-            // (0) return => (1) "Hello (2) "
-            for (let i = 1; i < temp.length; i++) {
-                if (i % 2 != 0) {
-                    temp[i] = temp[i].toLowerCase();
-                }
-            }
-            expr = temp.join("\"");
-        }
-        return expr;
     }
 
     private static _getExpression(t: TestDriver, toEval: string): Expression {
