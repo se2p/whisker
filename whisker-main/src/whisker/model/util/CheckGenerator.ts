@@ -360,8 +360,8 @@ export abstract class CheckGenerator {
                 return false;
             }
 
-            const sayText = s.sayText.toLowerCase();
-            const expected = String(eval(expression)(t)).toLowerCase();
+            const sayText = s.sayText.toLocaleLowerCase();
+            const expected = String(eval(expression)(t)).toLocaleLowerCase();
             return sayText.includes(expected);
         };
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (s) => !negated == check(s));
