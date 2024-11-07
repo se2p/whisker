@@ -516,7 +516,7 @@ describe('CheckGenerator', () => {
         const t = tdMock.getTestDriver();
 
         test('Generates check compares actual output correctly', () => {
-            const result = CheckGenerator.getOutputOnSpriteCheck(t, dummyCU, "label", graphID, false, false, "Banana", "this is some text");
+            const result = CheckGenerator.getOutputOnSpriteCheck(t, dummyCU, "label", graphID, false, "Banana", "this is some text");
             expect(result()).toEqual(true);
             banana.sayText = "this is a different text";
             tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
@@ -532,7 +532,7 @@ describe('CheckGenerator', () => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
             };
-            CheckGenerator.getOutputOnSpriteCheck(t, cu, "label", graphID, false, false, "kiwi", "this is a text as well");
+            CheckGenerator.getOutputOnSpriteCheck(t, cu, "label", graphID, false, "kiwi", "this is a text as well");
             expect(fn).toHaveBeenCalledWith("kiwi", "Output:kiwi:this is a text as well", "label", graphID, check);
             expect(check(kiwi.sprite)).toEqual(true);
             kiwi.sayText = "this is a different text";

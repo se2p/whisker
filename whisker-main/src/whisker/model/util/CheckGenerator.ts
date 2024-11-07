@@ -348,29 +348,26 @@ export abstract class CheckGenerator {
      * @param pSpriteName The name of the sprite.
      * @param output Output to say.
      * @param negated Whether this check is negated.
-     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                  caseSensitive: boolean, pSpriteName: ArgType, output: ArgType): () => boolean {
+                                  pSpriteName: ArgType, output: ArgType): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const expression = ModelUtil.getExpressionForEval(t, output).expr;
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, pSpriteName, output);
-        cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
-            const sayText = !caseSensitive ? sprite.sayText?.toLowerCase() : sprite.sayText;
-            return !negated == (sayText && sayText.includes(eval(expression)(t)));
-        });
+        const check: (s: Sprite) => boolean = (s) => {
+            if (!s.sayText) {
+                return false;
+            }
+
+            const sayText = s.sayText.toLowerCase();
+            const expected = String(eval(expression)(t)).toLowerCase();
+            return sayText.includes(expected);
+        };
+        cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (s) => !negated == check(s));
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const anySayText = sprites
-                .some((s: Sprite) => {
-                    if (!s.sayText) {
-                        return false;
-                    }
-
-                    const sayText = !caseSensitive ? s.sayText.toLowerCase() : s.sayText;
-                    return sayText.includes(eval(expression)(t));
-                });
+            const anySayText = sprites.some(check);
             return !negated == anySayText;
         };
     }

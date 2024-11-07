@@ -134,7 +134,7 @@ export class Check {
                 return CheckGenerator.getFunctionCheck(t, cu, this._edgeLabel, graphID, this._negated, this._args[0]);
             case CheckName.Output:
                 return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    true/*TODO caseSensitive Flag here*/, this._args[0], this._args[1]);
+                    this._args[0], this._args[1]);
             case CheckName.VarChange:
                 return CheckGenerator.getVariableChangeCheck(t, cu, this._edgeLabel, graphID, this._negated,
                     this._args[0], this._args[1], this._args[2]);
