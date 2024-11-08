@@ -36,16 +36,21 @@ export abstract class ModelUtil {
      */
     static checkSpriteExistence(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
         const spriteName = String(pSpriteName);
-        if (spriteName == "Stage" || spriteName == "stage") {
+        if (pSpriteName == "Stage" || pSpriteName == "stage") {
             return testDriver.getStage();
         }
 
-        const filter = Array.isArray(pSpriteName)
-            ? (s: Sprite) => s.isOriginal && pSpriteName.some((name: string) => name == s.name)
-            : (s: Sprite) => s.isOriginal && s.name == pSpriteName;
-        const sprites: Sprite[] = testDriver.getSprites(filter);
-        if (sprites.length == 0) {
-            throw new SpriteNotFoundError(spriteName);
+        const spriteNames = Array.isArray(pSpriteName) ? pSpriteName : [String(pSpriteName)];
+
+        for (const name of spriteNames) {
+            const sprite = testDriver.getSprite(name);
+
+            if (sprite != null) {
+                return sprite;
+            }
+        }
+
+        throw new SpriteNotFoundError(String(pSpriteName));
         }
         if (sprites.length > 1) {
             logger.debug(`found ${sprites.map(s => s.name)} for sprite names: ${pSpriteName}. Taking ${sprites[0].name} as result`);
