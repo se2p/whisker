@@ -74,6 +74,6 @@ export class BranchCoverageFitnessFunction extends StatementFitnessFunction {
     }
 
     public override getNodeId(): string {
-        return `${this._targetNode.id}->${this._isTrueBranch}`;
+        return `${this._targetNode.id}-${this._isTrueBranch ? "True" : "False"}`;
     }
 }

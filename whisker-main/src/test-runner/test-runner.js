@@ -544,26 +544,25 @@ class TestRunner extends EventEmitter {
      * @returns {Promise<void>}
      */
     async _determineCoverages(test, props) {
-        if (!(props.traceBlockCoverage && props.traceBranchCoverage)) {
-            return;
-        }
-
-        // Set the execution trace and the covered blocks set for computing coverages.
         const coverageTrace = this.vmWrapper.vm.getTraces();
-        test.coverage = coverageTrace.blockCoverage;
-        test.trace = new ExecutionTrace(coverageTrace.branchDistances, []);
 
-        // Infer statement coverage
-        for (const statement of this.statementMap.keys()) {
-            if (await statement.isCovered(test)) {
-                this.statementMap.set(statement, true);
+        if (props.traceBlockCoverage) {
+            test.coverage = coverageTrace.blockCoverage;
+
+            // Infer statement coverage
+            for (const statement of this.statementMap.keys()) {
+                if (test.coverage.has(statement.getNodeId())) {
+                    this.statementMap.set(statement, true);
+                }
             }
         }
 
-        // Infer branch coverage
-        for (const branch of this.branchMap.keys()) {
-            if (await branch.isCovered(test)) {
-                this.branchMap.set(branch, true);
+        if (props.traceBranchCoverage) {
+            // Infer branch coverage
+            for (const branch of this.branchMap.keys()) {
+                if (coverageTrace.branchCoverage.has(branch.getNodeId())) {
+                    this.branchMap.set(branch, true);
+                }
             }
         }
     }
