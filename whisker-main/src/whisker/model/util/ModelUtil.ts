@@ -35,7 +35,6 @@ export abstract class ModelUtil {
      * @param pSpriteName Name of the sprite.
      */
     static checkSpriteExistence(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
-        const spriteName = String(pSpriteName);
         if (pSpriteName == "Stage" || pSpriteName == "stage") {
             return testDriver.getStage();
         }
@@ -51,11 +50,6 @@ export abstract class ModelUtil {
         }
 
         throw new SpriteNotFoundError(String(pSpriteName));
-        }
-        if (sprites.length > 1) {
-            logger.debug(`found ${sprites.map(s => s.name)} for sprite names: ${pSpriteName}. Taking ${sprites[0].name} as result`);
-        }
-        return sprites[0];
     }
 
     /**
