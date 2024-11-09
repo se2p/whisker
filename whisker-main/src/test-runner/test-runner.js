@@ -504,11 +504,7 @@ class TestRunner extends EventEmitter {
                 result.modelResult = modelTester.stopAndGetModelResult(testDriver);
             }
 
-            // Set the execution trace and the covered blocks set for computing coverages.
-            const coverageTrace = this.vmWrapper.vm.getTraces();
-            test.trace = new ExecutionTrace(coverageTrace.branchDistances, []);
-            test.coverage = coverageTrace.blockCoverage;
-            await this._determineCoverages(test);
+            await this._determineCoverages(test, props);
 
         } else if (modelTester && modelTester.someModelLoaded()) {
             // Start the test run with either a maximal duration or until the model stops
@@ -544,20 +540,29 @@ class TestRunner extends EventEmitter {
     /**
      * Determines the achieved coverage values of an executed test.
      * @param {Test} test
+     * @param props
      * @returns {Promise<void>}
      */
-    async _determineCoverages(test){
-        // Infer statement coverage
-        for (const statement of this.statementMap.keys()) {
-            if (await statement.isCovered(test)) {
-                this.statementMap.set(statement, true);
+    async _determineCoverages(test, props) {
+        const coverageTrace = this.vmWrapper.vm.getTraces();
+
+        if (props.traceBlockCoverage) {
+            test.coverage = coverageTrace.blockCoverage;
+
+            // Infer statement coverage
+            for (const statement of this.statementMap.keys()) {
+                if (test.coverage.has(statement.getNodeId())) {
+                    this.statementMap.set(statement, true);
+                }
             }
         }
 
-        // Infer branch coverage
-        for (const branch of this.branchMap.keys()) {
-            if (await branch.isCovered(test)) {
-                this.branchMap.set(branch, true);
+        if (props.traceBranchCoverage) {
+            // Infer branch coverage
+            for (const branch of this.branchMap.keys()) {
+                if (coverageTrace.branchCoverage.has(branch.getNodeId())) {
+                    this.branchMap.set(branch, true);
+                }
             }
         }
     }
