@@ -38,7 +38,7 @@ export class UserModel {
 
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
-    stepNbrOfProgramEnd: number = 0;
+    stepNbrOfProgramEnd = 0;
     protected currentState: ModelNode;
 
     /**
@@ -107,9 +107,9 @@ export class UserModel {
     /**
      * Register the check listener and test driver on all node's edges.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         Object.values(this.nodes).forEach(node => {
-            node.registerComponents(checkListener, testDriver, caseSensitive);
+            node.registerComponents(checkListener, testDriver);
         });
     }
 

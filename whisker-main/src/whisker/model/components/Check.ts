@@ -23,13 +23,13 @@ export enum CheckName {
     TimeAfterEnd = "TimeAfterEnd", // time from program end (for after end models)
     NbrOfClones = "NbrOfClones", // sprite name, comparison, number
     NbrOfVisibleClones = "NbrOfVisibleClones", // sprite name, comparison, number
-    TouchingEdge = "TouchingEdge", // sprite name regex
-    TouchingVerticalEdge = "TouchingVerticalEdge", // sprite name regex
-    TouchingHorizEdge = "TouchingHorizEdge", // sprite name regex
-    RandomValue = "RandomValue" // sprite name regex, attrName
+    TouchingEdge = "TouchingEdge", // sprite name
+    TouchingVerticalEdge = "TouchingVerticalEdge", // sprite name
+    TouchingHorizEdge = "TouchingHorizEdge", // sprite name
+    RandomValue = "RandomValue" // sprite name , attrName
 }
 
-export type ArgType = string | number;
+export type ArgType = string | number | string[];
 
 export interface SimpleCheck {
     id: string
@@ -117,45 +117,42 @@ export class Check {
      * arguments are not in the correct range (e.g. x coordinate) or a sprite/var/attribute is not defined.
      * @param t Instance of the test driver.
      * @param cu Instance of the check utility for listening and checking more complex events.
-     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param graphID ID of the parent graph of the check.
      */
-    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string):
+    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string):
         ((...any: ArgType[]) => boolean) | ((...args: number[]) => boolean) {
         switch (this._name) {
             case CheckName.AttrComp:
                 return CheckGenerator.getAttributeComparisonCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, this._args[0], this._args[1], this._args[2], this._args[3]);
+                    this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.AttrChange:
                 return CheckGenerator.getAttributeChangeCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, this._args[0], this._args[1], this._args[2]);
+                    this._args[0], this._args[1], this._args[2]);
             case CheckName.BackgroundChange:
                 return CheckGenerator.getBackgroundChangeCheck(t, cu, this._edgeLabel, this._negated, this._args[0]);
             case CheckName.Function:
-                return CheckGenerator.getFunctionCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    this._args[0]);
+                return CheckGenerator.getFunctionCheck(t, cu, this._edgeLabel, graphID, this._negated, this._args[0]);
             case CheckName.Output:
                 return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, this._args[0], this._args[1]);
+                    this._args[0], this._args[1]);
             case CheckName.VarChange:
                 return CheckGenerator.getVariableChangeCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, this._args[0], this._args[1], this._args[2]);
+                    this._args[0], this._args[1], this._args[2]);
             case CheckName.VarComp:
                 return CheckGenerator.getVariableComparisonCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, this._args[0], this._args[1], this._args[2], this._args[3]);
+                    this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.SpriteTouching:
                 return CheckGenerator.getSpriteTouchingCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, this._args[0], this._args[1]);
+                    this._args[0], this._args[1]);
             case CheckName.SpriteColor:
                 return CheckGenerator.getSpriteColorTouchingCheck(t, cu, this._edgeLabel, graphID, this._negated,
-                    caseSensitive, this._args[0], this._args[1], this._args[2], this._args[3]);
+                    this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.Key:
                 return CheckGenerator.getKeyDownCheck(t, cu, this._negated, this._args[0]);
             case CheckName.Click:
-                return CheckGenerator.getSpriteClickedCheck(t, this._negated, caseSensitive, this._args[0]);
+                return CheckGenerator.getSpriteClickedCheck(t, this._negated, this._args[0]);
             case CheckName.Expr:
-                return CheckGenerator.getExpressionCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    this._args[0]);
+                return CheckGenerator.getExpressionCheck(t, cu, this._edgeLabel, graphID, this._negated, this._args[0]);
             case CheckName.Probability:
                 return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             case CheckName.TimeElapsed:
@@ -163,25 +160,24 @@ export class Check {
             case CheckName.TimeBetween:
                 return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0]);
             case CheckName.NbrOfClones:
-                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, false,
+                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, false,
                     this._args[0], this._args[1], this._args[2]);
             case CheckName.NbrOfVisibleClones:
-                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, true,
+                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, true,
                     this._args[0], this._args[1], this._args[2]);
             case CheckName.TouchingEdge:
-                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    this._args[0]);
+                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, this._args[0]);
             case CheckName.TouchingHorizEdge:
-                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    this._args[0], false);
+                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, this._args[0],
+                    false);
             case CheckName.TouchingVerticalEdge:
-                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, caseSensitive,
-                    this._args[0], true, false);
+                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeLabel, graphID, this._negated, this._args[0],
+                    true, false);
             case CheckName.TimeAfterEnd:
                 return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
             case CheckName.RandomValue:
-                return CheckGenerator.getRandomValueCheck(t, cu, this._edgeLabel, graphID, this.negated, caseSensitive,
-                    this.args[0], this.args[1]);
+                return CheckGenerator.getRandomValueCheck(t, cu, this._edgeLabel, graphID, this.negated, this.args[0],
+                    this.args[1]);
             default:
                 throw new Error(`Unhandled check name "${this._name}"`);
         }

@@ -282,8 +282,8 @@ describe('Program model', () => {
         const model = new ProgramModel("model", "start", nodes, {}, [], []);
         const cu = getDummyCheckUtility();
         const t = getDummyTestDriver();
-        model.registerComponents(cu, t, false);
+        model.registerComponents(cu, t);
         expect(fn).toBeCalledTimes(4);
-        expect(fn).toHaveBeenCalledWith(cu, t, false);
+        expect(fn).toHaveBeenCalledWith(cu, t);
     });
 });

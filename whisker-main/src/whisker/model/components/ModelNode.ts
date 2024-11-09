@@ -91,9 +91,9 @@ export class ModelNode {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         this.edges.forEach(edge => {
-            edge.registerComponents(checkListener, testDriver, caseSensitive);
+            edge.registerComponents(checkListener, testDriver);
         });
     }
 

@@ -5,10 +5,13 @@ import {
     ExpressionEndTagMissingError,
     ExpressionEnterError,
     ExprEvalError,
+    SpriteNotFoundError,
     VariableNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
 import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
+import Sprite from "../../../../src/vm/sprite";
+import Variable from "../../../../src/vm/variable";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
@@ -280,9 +283,9 @@ describe('ModelUtil tests', function () {
         });
 
         test('empty dependencies if t.getSprites is not called', () => {
-           const res = ModelUtil.getDependencies("Math.exp(-1)");
-           expect(res.attrDependencies).toStrictEqual([]);
-           expect(res.varDependencies).toStrictEqual([]);
+            const res = ModelUtil.getDependencies("Math.exp(-1)");
+            expect(res.attrDependencies).toStrictEqual([]);
+            expect(res.varDependencies).toStrictEqual([]);
         });
     });
 
@@ -306,25 +309,24 @@ describe('ModelUtil tests', function () {
     describe('getExpressionForEval', () => {
         const t = getDummyTestDriver();
         test('throws exception when expression cannot be evaluated', () => {
-            const tdMock = new TestDriverMock();
             // const expr = "throw new Exception(\"this is supposed to happen\")";
             const expr = "\"some wrong syntax'\"";
             expect(() => {
-                ModelUtil.getExpressionForEval(tdMock.getTestDriver(), false, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(ExprEvalError);
         });
 
         test('throws exception when expression has no end tag', () => {
             const expr = "$(sprite.name";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, false, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(ExpressionEndTagMissingError);
         });
 
         test('throws exception when expression is empty  $()', () => {
             const expr = "true && $() == 10";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, false, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(EmptyExpressionError);
         });
 
@@ -333,7 +335,7 @@ describe('ModelUtil tests', function () {
             const testDriver = tdMock.getTestDriver();
             const expr = "const value=$(apple.x);return value == 10";
             expect(() => {
-                ModelUtil.getExpressionForEval(testDriver, false, expr);
+                ModelUtil.getExpressionForEval(testDriver, expr);
             }).toThrow(ExprEvalError);
             // TODO: I think the test should rather look like this because "=" should not be automatically converted to "=="
             // const result = ModelUtil.getExpressionForEval(testDriver, false, expr);
@@ -342,7 +344,7 @@ describe('ModelUtil tests', function () {
         });
 
         test('adds missing \' at the end of constant expression', () => {
-            const res = ModelUtil.getExpressionForEval(t, false, "'some text");
+            const res = ModelUtil.getExpressionForEval(t, "'some text");
             const f = eval(res.expr);
             expect(f(t)).toBe("some text");
         });
@@ -353,7 +355,7 @@ describe('ModelUtil tests', function () {
             const tdMock = new TestDriverMock([apple, kiwi]);
             const t = tdMock.getTestDriver();
             const expr = "t.getSprites(s => s.name == \"apple\").length == 1";
-            const result = ModelUtil.getExpressionForEval(t, true, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             const f = eval(result.expr);
             expect(f(t)).toBe(expr);
         });
@@ -362,7 +364,7 @@ describe('ModelUtil tests', function () {
             const t = getDummyTestDriver();
             const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))\n==10";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, true, expr);
+                ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(ExpressionEnterError);
         });
 
@@ -377,7 +379,7 @@ describe('ModelUtil tests', function () {
             const tdMock = new TestDriverMock([apple, kiwi, bowl]);
             const t = tdMock.getTestDriver();
             const expr = "$(Bowl.name)!=\"ApPle\"&&Math.abs($(Bowl.old.x)-$(Bowl.x))==10";
-            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             const f = eval(result.expr);
             expect(f(t)).toBe(false);
             bowl.variables = [{name: "x", value: 15}, {name: "name", value: "Bowl"}];
@@ -407,7 +409,7 @@ return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
             const tdMock = new TestDriverMock([bowl, kiwi]);
             const t = tdMock.getTestDriver();
             const expr = "$(Kiwi.name)+(-1*Math.abs($(Bowl.old.y)-$(Bowl.x))).toString()";
-            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             expect(result.expr).toBe(expectedOutput);
             const f = eval(result.expr);
             expect(f(t)).toBe("Kiwi-8");
@@ -444,7 +446,7 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
             tdMock.stage = stage.sprite;
             const t = tdMock.getTestDriver();
             const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
-            const result = ModelUtil.getExpressionForEval(t, false, expr);
+            const result = ModelUtil.getExpressionForEval(t, expr);
             expect(result.expr).toBe(expectedOutput);
             const f = eval(result.expr);
             expect(f(t)).toBe(true);
@@ -452,26 +454,81 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
     });
 
     describe('checkVariableExistence()', () => {
-        const bowl = new SpriteMock("Bowl",[{name: "y", value: 17}]);
-        const kiwi = new SpriteMock("Kiwi",[{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("Stage", [{name:"Points", value:10}]);
+        const bowl = new SpriteMock("Bowl", [{name: "y", value: 17}]);
+        const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
+        const stage = new SpriteMock("Stage", [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
         test("throws exception if variable does not exist", () => {
             expect(() => {
-                ModelUtil.checkVariableExistence(t, true, kiwi.sprite, "X");
+                ModelUtil.checkVariableExistence(t, kiwi.sprite, "X");
             }).toThrow(VariableNotFoundError);
         });
         test("finds variable on other Sprites", () => {
-            const res = ModelUtil.checkVariableExistence(t, true, kiwi.sprite, "Points");
+            const res = ModelUtil.checkVariableExistence(t, kiwi.sprite, "Points");
             expect(res.sprite).toEqual(stage.sprite);
             expect(res.variable).toEqual(stage.variables[0]);
         });
-        test("finds variable for regex with flags", () => {
-            const res = ModelUtil.checkVariableExistence(t, true, stage.sprite, "/oin/g");
-            expect(res.sprite).toEqual(stage.sprite);
-            expect(res.variable).toEqual(stage.variables[0]);
+        test("Regex does not work", () => {
+            expect(() => {
+                ModelUtil.checkVariableExistence(t, stage.sprite, "/oin/g");
+            }).toThrow(VariableNotFoundError);
+        });
+
+        test("finds the correct option if only one matches", () => {
+            let res: { sprite: Sprite, variable: Variable };
+            expect(() => {
+                res = ModelUtil.checkVariableExistence(t, stage.sprite,
+                    ["someInvalidVariable", "Score", "Points"]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res.sprite == stage.sprite).toBe(true);
+            expect(res.variable).toBe(stage.variables[0]);
+        });
+
+        test("Does not throw but simply returns one if multiply match", () => {
+            let res: { sprite: Sprite, variable: Variable };
+            expect(() => {
+                res = ModelUtil.checkVariableExistence(t, stage.sprite, ["Points", "Lives"]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res.sprite == stage.sprite).toBe(true);
+            expect(stage.variables.some(v => v == res.variable)).toBe(true);
         });
     });
+
+    describe('checkSpriteExistence()', () => {
+        const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
+        const kiwi = new SpriteMock("Kiwi", [{name: "y", value: 7}, {name: "name", value: "Kiwi"}]);
+        const stage = new SpriteMock("Stage", [{name: "Punkte", value: 10}]);
+        const tdMock = new TestDriverMock([bowl, kiwi, stage]);
+        tdMock.stage = stage.sprite;
+        const t = tdMock.getTestDriver();
+        const table: [string, ArgType][] = [
+            ["throws exception if sprite does not exist", "Banane"],
+            ["throws exception if sprite does not exist (multiple options)", ["Banane", "banane", "Banana", "banana"]],
+            ["Regex does not work", "/owl/g"],
+        ];
+        it.each(table)('%s', (name: string, spriteNames: ArgType) => {
+            expect(() => {
+                ModelUtil.checkSpriteExistence(t, spriteNames);
+            }).toThrow(SpriteNotFoundError);
+        });
+
+        test("finds the correct option if only one matches", () => {
+            let res: Sprite;
+            expect(() => {
+                res = ModelUtil.checkSpriteExistence(t, [bowl.name + "someTypo", "boowl", bowl.name]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res).toBe(bowl.sprite);
+        });
+
+        test("Does not throw but simply returns one if multiply match", () => {
+            let res: Sprite;
+            expect(() => {
+                res = ModelUtil.checkSpriteExistence(t, [bowl.name, kiwi.name]);
+            }).not.toThrow(SpriteNotFoundError);
+            expect(res == bowl.sprite || res == kiwi.sprite).toBe(true);
+        });
+    });
+
 });

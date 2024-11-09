@@ -49,7 +49,7 @@ export class ProgramModel {
 
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
-    programEndStep: number = 0;
+    programEndStep = 0;
     currentState: ModelNode;
 
     /**
@@ -182,9 +182,9 @@ export class ProgramModel {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
+    registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
         Object.values(this.nodes).forEach(node => {
-            node.registerComponents(cu, testDriver, caseSensitive);
+            node.registerComponents(cu, testDriver);
         });
     }
 

@@ -171,7 +171,7 @@ export abstract class ModelEdge {
     /**
      * Register the check listener and test driver on the edge's conditions.
      */
-    registerComponents(checkListener: CheckUtility, t: TestDriver, caseSensitive: boolean): void {
+    registerComponents(checkListener: CheckUtility, t: TestDriver): void {
         if (this.forceTestAt != -1) {
             this._forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
         }
@@ -179,7 +179,7 @@ export abstract class ModelEdge {
             this._forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
         }
         this.conditions.forEach(cond => {
-            cond.registerComponents(checkListener, t, caseSensitive, this.graphID);
+            cond.registerComponents(checkListener, t, this.graphID);
         });
     }
 
@@ -241,10 +241,10 @@ export class ProgramModelEdge extends ModelEdge {
     /**
      * Register the check listener and test driver on the conditions and effects.
      */
-    override registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
-        super.registerComponents(cu, testDriver, caseSensitive);
+    override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
+        super.registerComponents(cu, testDriver);
         this.effects.forEach(effect => {
-            effect.registerComponents(testDriver, cu, caseSensitive, this.graphID);
+            effect.registerComponents(testDriver, cu, this.graphID);
         });
     }
 
@@ -355,10 +355,10 @@ export class UserModelEdge extends ModelEdge {
     /**
      *  Register the check listener and test driver on the conditions and input effects.
      */
-    override registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
-        super.registerComponents(checkListener, testDriver, caseSensitive);
+    override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
+        super.registerComponents(checkListener, testDriver);
         this.inputEffects.forEach(effect => {
-            effect.registerComponents(testDriver, caseSensitive);
+            effect.registerComponents(testDriver);
         });
     }
 

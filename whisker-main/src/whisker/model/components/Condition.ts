@@ -24,9 +24,9 @@ export class Condition extends Check {
     /**
      * Register the check listener and test driver and check the condition for errors.
      */
-    registerComponents(cu: CheckUtility, t: TestDriver, caseSensitive: boolean, graphID: string): void {
+    registerComponents(cu: CheckUtility, t: TestDriver, graphID: string): void {
         try {
-            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
+            this._condition = this.checkArgsWithTestDriver(t, cu, graphID);
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
             this._condition = () => false;

@@ -139,9 +139,8 @@ export class ModelTester extends EventEmitter {
     /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      * @param t Instance of the test driver for this test run.
-     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    async prepareModel(t: TestDriver, caseSensitive: boolean): Promise<void> {
+    async prepareModel(t: TestDriver): Promise<void> {
         // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
@@ -156,7 +155,7 @@ export class ModelTester extends EventEmitter {
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
         allModels.forEach(model => {
             model.reset();
-            model.registerComponents(this._checkUtility!, t, caseSensitive);
+            model.registerComponents(this._checkUtility!, t);
         });
         this._userInputGen();
 
