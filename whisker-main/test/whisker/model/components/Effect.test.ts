@@ -232,14 +232,6 @@ describe('Effect', () => {
                 (a, b) => assertSymmetricContradiction(a, b, false));
         });
 
-        test("contradictions random value", () => {
-            const randomValue = new Effect(id, edgeID, CheckName.RandomValue, false, ["sprite", "x"]);
-            assertSymmetricContradiction2(randomValue, CheckName.AttrChange, false, ["sprite", "x", "+"], false);
-            assertSymmetricContradiction2(randomValue, CheckName.RandomValue, false, ["sprite", "x"], false);
-            assertSymmetricContradiction2(randomValue, CheckName.RandomValue, false, ["sprite", "y"], false);
-            assertSymmetricContradiction2(randomValue, CheckName.RandomValue, false, ["sprite2", "x"], false);
-        });
-
         test("contradictions output", () => {
             const output = new Effect(id, edgeID, CheckName.Output, true, ["sprite", "hi"]);
             assertSymmetricContradiction2(output, CheckName.Output, true, ["sprite1", "hi"], false);

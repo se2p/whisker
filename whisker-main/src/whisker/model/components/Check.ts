@@ -26,7 +26,6 @@ export enum CheckName {
     TouchingEdge = "TouchingEdge", // sprite name
     TouchingVerticalEdge = "TouchingVerticalEdge", // sprite name
     TouchingHorizEdge = "TouchingHorizEdge", // sprite name
-    RandomValue = "RandomValue" // sprite name , attrName
 }
 
 export type ArgType = string | number | string[];
@@ -86,7 +85,6 @@ export class Check {
                 break;
             case CheckName.Output:
             case CheckName.SpriteTouching:
-            case CheckName.RandomValue:
                 expectedLength = 2;
                 break;
             case CheckName.VarChange:
@@ -175,9 +173,6 @@ export class Check {
                     true, false);
             case CheckName.TimeAfterEnd:
                 return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
-            case CheckName.RandomValue:
-                return CheckGenerator.getRandomValueCheck(t, cu, this._edgeLabel, graphID, this.negated, this.args[0],
-                    this.args[1]);
             default:
                 throw new Error(`Unhandled check name "${this._name}"`);
         }

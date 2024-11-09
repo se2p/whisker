@@ -28,7 +28,6 @@ describe('Check', () => {
         backUp[18] = CheckGenerator.getTouchingEdgeCheck;
         backUp[19] = CheckGenerator.getTouchingEdgeCheck;
         backUp[20] = CheckGenerator.getTimeAfterEndCheck;
-        backUp[21] = CheckGenerator.getRandomValueCheck;
     });
     afterEach(() => {
         CheckGenerator.getAttributeComparisonCheck = backUp[0];
@@ -52,7 +51,6 @@ describe('Check', () => {
         CheckGenerator.getTouchingEdgeCheck = backUp[18];
         CheckGenerator.getTouchingEdgeCheck = backUp[19];
         CheckGenerator.getTimeAfterEndCheck = backUp[20];
-        CheckGenerator.getRandomValueCheck = backUp[21];
     });
 
     const t = getDummyTestDriver();
@@ -270,16 +268,6 @@ describe('Check', () => {
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
     });
 
-    test('RandomValue', () => {
-        const fn = jest.fn();
-        CheckGenerator.getRandomValueCheck = fn;
-        const args: ArgType[] = ["banana", "x"];
-        const check = new Condition("id", "label", CheckName.RandomValue, negated, args);
-        check.checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
-    });
-
     test('Invalid comparison throws error', () => {
         expect(() => {
             const c1 = new Condition("id", "label", CheckName.AttrComp, true, ["sprite", "var", "comp", "value"]);
@@ -287,6 +275,4 @@ describe('Check', () => {
             Check.testForContradicting(c1, c2);
         }).toThrow();
     });
-
-
 });
