@@ -1433,15 +1433,6 @@
                             "170"
                         ],
                         "negated": false
-                    },
-                    {
-                        "id": "effect2",
-                        "name": "RandomValue",
-                        "args": [
-                            "Banan",
-                            "x"
-                        ],
-                        "negated": false
                     }
                 ]
             }
@@ -1755,15 +1746,6 @@
                             "y",
                             "=",
                             "170"
-                        ],
-                        "negated": false
-                    },
-                    {
-                        "id": "effect2",
-                        "name": "RandomValue",
-                        "args": [
-                            "(Apfel|Apple)",
-                            "x"
                         ],
                         "negated": false
                     }
