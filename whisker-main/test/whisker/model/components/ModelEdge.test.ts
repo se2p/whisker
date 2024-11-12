@@ -260,7 +260,7 @@ describe('Model edges', () => {
             cuMock.constIsKeyDown = true;
             const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock();
-            const stage = new SpriteMock("stage");
+            const stage = new SpriteMock("_stage_");
             stage.currentCostumeName = "stage";
             stage.updateSprite();
             tdMock.stage = stage.sprite;
