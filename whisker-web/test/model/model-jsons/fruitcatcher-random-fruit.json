@@ -244,7 +244,10 @@
                         "id": "condition1",
                         "name": "SpriteColor",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "255",
                             "0",
                             "0"
@@ -265,7 +268,10 @@
                         "id": "condition1",
                         "name": "SpriteTouching",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "Bowl"
                         ],
                         "negated": false
@@ -285,7 +291,11 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "+5"
                         ],
                         "negated": false
@@ -304,7 +314,10 @@
                         "id": "condition1",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             ">",
                             "100"
@@ -345,7 +358,10 @@
                         "id": "condition1",
                         "name": "SpriteColor",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "255",
                             "0",
                             "0"
@@ -358,7 +374,10 @@
                         "id": "effect1",
                         "name": "Output",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "over"
                         ],
                         "negated": false
@@ -386,7 +405,10 @@
                         "id": "effect1",
                         "name": "Output",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "over"
                         ],
                         "negated": true
@@ -404,7 +426,10 @@
                         "id": "condition1",
                         "name": "SpriteTouching",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "Bowl"
                         ],
                         "negated": false
@@ -423,7 +448,10 @@
                         "id": "condition1",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             ">",
                             "100"
@@ -444,7 +472,10 @@
                         "id": "condition1",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "-"
                         ],
@@ -520,7 +551,11 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "-8"
                         ],
                         "negated": false
@@ -696,7 +731,11 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "+8"
                         ],
                         "negated": false
@@ -760,7 +799,11 @@
                         "name": "VarComp",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "=",
                             "0"
                         ],
@@ -843,7 +886,10 @@
                         "id": "effect2",
                         "name": "NbrOfVisibleClones",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "<=",
                             "1"
                         ],
@@ -888,7 +934,10 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Zeit", "Time"],
+                            [
+                                "Zeit",
+                                "Time"
+                            ],
                             "-1"
                         ],
                         "negated": false
@@ -917,7 +966,10 @@
                         "name": "VarComp",
                         "args": [
                             "_stage_",
-                            ["Zeit", "Time"],
+                            [
+                                "Zeit",
+                                "Time"
+                            ],
                             "=",
                             "0"
                         ],
@@ -960,7 +1012,10 @@
                         "name": "VarComp",
                         "args": [
                             "_stage_",
-                            ["Zeit", "Time"],
+                            [
+                                "Zeit",
+                                "Time"
+                            ],
                             "=",
                             "30"
                         ],
@@ -981,7 +1036,10 @@
                         "name": "VarComp",
                         "args": [
                             "_stage_",
-                            ["Zeit", "Time"],
+                            [
+                                "Zeit",
+                                "Time"
+                            ],
                             "=",
                             "30"
                         ],
@@ -1002,7 +1060,10 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Zeit", "Time"],
+                            [
+                                "Zeit",
+                                "Time"
+                            ],
                             "="
                         ],
                         "negated": true
@@ -1014,7 +1075,10 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Zeit", "Time"],
+                            [
+                                "Zeit",
+                                "Time"
+                            ],
                             "+"
                         ],
                         "negated": true
@@ -1070,7 +1134,10 @@
                         "id": "condition4",
                         "name": "SpriteColor",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "255",
                             "0",
                             "0"
@@ -1090,7 +1157,10 @@
                         "id": "condition1",
                         "name": "SpriteTouching",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "Bowl"
                         ],
                         "negated": false
@@ -1109,7 +1179,11 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "+"
                         ],
                         "negated": false
@@ -1127,7 +1201,10 @@
                         "id": "condition1",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             ">",
                             "100"
@@ -1138,7 +1215,10 @@
                         "id": "condition2",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "-"
                         ],
@@ -1176,7 +1256,11 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "="
                         ],
                         "negated": true
@@ -1244,7 +1328,10 @@
                         "id": "condition1",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "visible",
                             "=",
                             "true"
@@ -1286,7 +1373,11 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "="
                         ],
                         "negated": false
@@ -1321,7 +1412,10 @@
                         "id": "condition1",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "visible",
                             "=",
                             "true"
@@ -1332,7 +1426,10 @@
                         "id": "condition2",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             ">",
                             "100"
@@ -1353,7 +1450,10 @@
                         "id": "condition1",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "visible",
                             "=",
                             "true"
@@ -1364,7 +1464,10 @@
                         "id": "condition2",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "-"
                         ],
@@ -1384,7 +1487,10 @@
                         "id": "condition1",
                         "name": "SpriteTouching",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "Bowl"
                         ],
                         "negated": false
@@ -1562,7 +1668,10 @@
                         "id": "condition1",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "x",
                             "="
                         ],
@@ -1582,7 +1691,10 @@
                         "id": "condition1",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "-"
                         ],
@@ -1602,7 +1714,10 @@
                         "id": "condition1",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "x",
                             "="
                         ],
@@ -1730,7 +1845,10 @@
                         "id": "condition1",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "x",
                             "="
                         ],
@@ -1742,7 +1860,10 @@
                         "id": "effect1",
                         "name": "AttrComp",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "=",
                             "170"
@@ -1762,7 +1883,10 @@
                         "id": "condition1",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "-"
                         ],
@@ -1772,14 +1896,20 @@
                         "id": "condition2",
                         "name": "TouchingHorizEdge",
                         "args": [
-                            ["Apfel", "Apple"]
+                            [
+                                "Apfel",
+                                "Apple"
+                            ]
                         ],
                         "negated": true
                     },
                     {
                         "id": "5779e743d5c85",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "<",
                             "170"
@@ -1793,7 +1923,10 @@
                         "id": "effect1",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "y",
                             "-5"
                         ],
@@ -1803,7 +1936,10 @@
                         "id": "effect2",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "x",
                             "="
                         ],
@@ -2431,7 +2567,11 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Punkte", "Point", "Score"],
+                            [
+                                "Punkte",
+                                "Point",
+                                "Score"
+                            ],
                             "="
                         ],
                         "negated": false
@@ -2441,7 +2581,10 @@
                         "name": "VarChange",
                         "args": [
                             "_stage_",
-                            ["Zeit", "Time"],
+                            [
+                                "Zeit",
+                                "Time"
+                            ],
                             "="
                         ],
                         "negated": false
@@ -2460,7 +2603,10 @@
                         "id": "effect4",
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "x",
                             "="
                         ],
@@ -2570,7 +2716,10 @@
                     {
                         "name": "SpriteColor",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "255",
                             "0",
                             "0"
@@ -2669,7 +2818,10 @@
                     {
                         "name": "AttrChange",
                         "args": [
-                            ["Apfel", "Apple"],
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
                             "x",
                             "="
                         ],
