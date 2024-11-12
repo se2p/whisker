@@ -284,7 +284,7 @@
                         "id": "condition1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "+5"
                         ],
@@ -519,7 +519,7 @@
                         "id": "effect1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "-8"
                         ],
@@ -695,7 +695,7 @@
                         "id": "condition1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "+8"
                         ],
@@ -759,7 +759,7 @@
                         "id": "effect2",
                         "name": "VarComp",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "=",
                             "0"
@@ -887,7 +887,7 @@
                         "id": "condition1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Zeit", "Time"],
                             "-1"
                         ],
@@ -916,7 +916,7 @@
                         "id": "condition1",
                         "name": "VarComp",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Zeit", "Time"],
                             "=",
                             "0"
@@ -959,7 +959,7 @@
                         "id": "condition1",
                         "name": "VarComp",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Zeit", "Time"],
                             "=",
                             "30"
@@ -980,7 +980,7 @@
                         "id": "condition1",
                         "name": "VarComp",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Zeit", "Time"],
                             "=",
                             "30"
@@ -1001,7 +1001,7 @@
                         "id": "effect1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Zeit", "Time"],
                             "="
                         ],
@@ -1013,7 +1013,7 @@
                         "id": "effect1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Zeit", "Time"],
                             "+"
                         ],
@@ -1108,7 +1108,7 @@
                         "id": "condition1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "+"
                         ],
@@ -1175,7 +1175,7 @@
                         "id": "condition1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "="
                         ],
@@ -1285,7 +1285,7 @@
                         "id": "effect1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "="
                         ],
@@ -2430,7 +2430,7 @@
                         "id": "effect1",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Punkte", "Point", "Score"],
                             "="
                         ],
@@ -2440,7 +2440,7 @@
                         "id": "effect2",
                         "name": "VarChange",
                         "args": [
-                            "Stage",
+                            "_stage_",
                             ["Zeit", "Time"],
                             "="
                         ],
