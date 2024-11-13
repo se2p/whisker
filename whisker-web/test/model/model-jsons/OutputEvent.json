@@ -179,7 +179,7 @@
                         "id": "0",
                         "name": "Expr",
                         "args": [
-                            "$(Sprite1.sayText) == 'Hello!'"
+                            "$('Sprite1', 'sayText') == 'Hello!'"
                         ],
                         "negated": false
                     }
@@ -197,7 +197,7 @@
                         "id": "0",
                         "name": "Expr",
                         "args": [
-                            "$(Sprite1.sayText) == 'Hello!'"
+                            "$('Sprite1', 'sayText') == 'Hello!'"
                         ],
                         "negated": true
                     }
@@ -215,7 +215,7 @@
                         "id": "0",
                         "name": "Expr",
                         "args": [
-                            "$(Sprite1.sayText) == 'Hello!'"
+                            "$('Sprite1', 'sayText') == 'Hello!'"
                         ],
                         "negated": false
                     }

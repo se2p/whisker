@@ -2,8 +2,8 @@ import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelU
 import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {
     EmptyExpressionError,
-    ExpressionEndTagMissingError,
     ExpressionEnterError,
+    ExpressionSyntaxError,
     ExprEvalError,
     SpriteNotFoundError,
     VariableNotFoundError
@@ -320,7 +320,7 @@ describe('ModelUtil tests', function () {
             const expr = "$(sprite.name";
             expect(() => {
                 ModelUtil.getExpressionForEval(t, expr);
-            }).toThrow(ExpressionEndTagMissingError);
+            }).toThrow(ExpressionSyntaxError);
         });
 
         test('throws exception when expression is empty  $()', () => {
@@ -330,17 +330,14 @@ describe('ModelUtil tests', function () {
             }).toThrow(EmptyExpressionError);
         });
 
-        test('does not allow assignment of variables', () => {
+        test('can create variables', () => {
+            //TODO: before the syntax change an assignment of variables was not possible and this test was for coverage
+            // should this test now be removed?
             const tdMock = new TestDriverMock([new SpriteMock("apple", [{name: "x", value: 10}])]);
-            const testDriver = tdMock.getTestDriver();
-            const expr = "const value=$(apple.x);return value == 10";
-            expect(() => {
-                ModelUtil.getExpressionForEval(testDriver, expr);
-            }).toThrow(ExprEvalError);
-            // TODO: I think the test should rather look like this because "=" should not be automatically converted to "=="
-            // const result = ModelUtil.getExpressionForEval(testDriver, false, expr);
-            // const f = eval(result.expr);
-            // expect(f(testDriver)).toBe(true);
+            const t = tdMock.getTestDriver();
+            const expr = "(() => {const value=$('apple', 'x');return value == 10})()";
+            const result = ModelUtil.getExpressionForEval(t, expr);
+            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
         });
 
         test('adds missing \' at the end of constant expression', () => {
@@ -378,78 +375,35 @@ describe('ModelUtil tests', function () {
             bowl.old = oldBowl;
             const tdMock = new TestDriverMock([apple, kiwi, bowl]);
             const t = tdMock.getTestDriver();
-            const expr = "$(Bowl.name)!=\"ApPle\"&&Math.abs($(Bowl.old.x)-$(Bowl.x))==10";
+            const expr = '$("Bowl", "name")!="ApPle"&&Math.abs($("Bowl", "old").x-$("Bowl", "x"))==10';
             const result = ModelUtil.getExpressionForEval(t, expr);
-            const f = eval(result.expr);
-            expect(f(t)).toBe(false);
+            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(false);
             bowl.variables = [{name: "x", value: 15}, {name: "name", value: "Bowl"}];
             tdMock.currentSprites = SpriteMock.toSpriteArray([apple, kiwi, bowl]);
-            expect(f(t)).toBe(true);
+            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
         });
 
         test('Produces the correct sting for multiple variables and sprites', () => {
-            const expectedOutput = `(t) => {
-const sprite0 = t.getSprites(sprite => sprite.name.includes('Kiwi'), false)[0];
-if (sprite0 == undefined) {
-    throw new SpriteNotFoundError('Kiwi');
-}
-const variable0 = sprite0.getVariable('name', false).value;
- if (variable0 == undefined) {
-   throw new VariableNotFoundError('name');
-}
-const sprite1 = t.getSprites(sprite => sprite.name.includes('Bowl'), false)[0];
-if (sprite1 == undefined) {
-    throw new SpriteNotFoundError('Bowl');
-}
-return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
-}`;
             const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
             const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
             bowl.old = new SpriteMock("Bowl", [{name: "x", value: 5}, {name: "y", value: 9}]);
             const tdMock = new TestDriverMock([bowl, kiwi]);
             const t = tdMock.getTestDriver();
-            const expr = "$(Kiwi.name)+(-1*Math.abs($(Bowl.old.y)-$(Bowl.x))).toString()";
+            const expr = '$("Kiwi", "name")+(-1*Math.abs($("Bowl", "old").y-$("Bowl", "x"))).toString()';
             const result = ModelUtil.getExpressionForEval(t, expr);
-            expect(result.expr).toBe(expectedOutput);
-            const f = eval(result.expr);
-            expect(f(t)).toBe("Kiwi-8");
+            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe("Kiwi-8");
         });
 
         test('Produces correct result with () independent of $-expressions', () => {
-            const expectedOutput = `(t) => {
-const sprite0 = t.getSprites(sprite => sprite.name.includes('Boat'), false)[0];
-if (sprite0 == undefined) {
-    throw new SpriteNotFoundError('Boat');
-}
-const variable0 = sprite0.getVariable('speed', false).value;
- if (variable0 == undefined) {
-   throw new VariableNotFoundError('speed');
-}
-const sprite1 = t.getSprites(sprite => sprite.name.includes('Gate'), false)[0];
-if (sprite1 == undefined) {
-    throw new SpriteNotFoundError('Gate');
-}
-const sprite2 = t.getSprites(sprite => sprite.name.includes('Stage'), false)[0];
-if (sprite2 == undefined) {
-    throw new SpriteNotFoundError('Stage');
-}
-const variable2 = sprite2.getVariable('score', false).value;
- if (variable2 == undefined) {
-   throw new VariableNotFoundError('score');
-}
-return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3*(sprite1.size+2) < (2*(variable2-1)+10)/1.5;
-}`;
             const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
             const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
             const stage = new SpriteMock("Stage", [{name: "direction", value: 140}, {name: "score", value: 10}]);
             const tdMock = new TestDriverMock([boat, gate, stage]);
             tdMock.stage = stage.sprite;
             const t = tdMock.getTestDriver();
-            const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
+            const expr = '$("Boat", "x").toString()+(-1*Math.sqrt($("Boat", "speed", true))).toString() == "42-10" && 3*($("Gate", "size")+2) < (2*($("_stage_", "score", true)-1)+10)/1.5';
             const result = ModelUtil.getExpressionForEval(t, expr);
-            expect(result.expr).toBe(expectedOutput);
-            const f = eval(result.expr);
-            expect(f(t)).toBe(true);
+            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
         });
     });
 

@@ -2370,7 +2370,7 @@
                         "id": "effect1",
                         "name": "Expr",
                         "args": [
-                            "Math.abs($(Bowl.old.x)-$(Bowl.x))==10"
+                            "Math.abs($('Bowl', 'old').x-$('Bowl', 'x'))==10"
                         ],
                         "negated": false
                     }
@@ -2599,7 +2599,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Apple.x)>=0"
+                            "$('Apple', 'x')>=0"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2625,7 +2625,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Apple.x)<0"
+                            "$('Apple', 'x')<0"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2689,7 +2689,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Bowl.x)>$(Apple.x)"
+                            "$('Bowl', 'x')>$('Apple', 'x')"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2697,7 +2697,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
                         ],
                         "negated": false,
                         "id": "condition2"
@@ -2723,7 +2723,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Bowl.x)<$(Apple.x)"
+                            "$('Bowl', 'x')<$('Apple', 'x')"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2731,7 +2731,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
                         ],
                         "negated": false,
                         "id": "condition2"
@@ -2757,7 +2757,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Bowl.x)>$(Apple.x)"
+                            "$('Bowl', 'x')>$('Apple', 'x')"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2765,7 +2765,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
                         ],
                         "negated": false,
                         "id": "condition2"
@@ -2791,7 +2791,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Bowl.x)<$(Apple.x)"
+                            "$('Bowl', 'x')<$('Apple', 'x')"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2799,7 +2799,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
                         ],
                         "negated": false,
                         "id": "condition2"
@@ -2863,7 +2863,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Bowl.x)>$(Bananas.x)"
+                            "$('Bowl', 'x')>$('Bananas', 'x')"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2871,7 +2871,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "Math.abs($(Bowl.x)-$(Bananas.x))>10"
+                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
                         ],
                         "negated": false,
                         "id": "condition2"
@@ -2897,7 +2897,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "$(Bowl.x)<$(Bananas.x)"
+                            "$('Bowl', 'x')<$('Bananas', 'x')"
                         ],
                         "negated": false,
                         "id": "condition1"
@@ -2905,7 +2905,7 @@
                     {
                         "name": "Expr",
                         "args": [
-                            "Math.abs($(Bowl.x)-$(Bananas.x))>10"
+                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
                         ],
                         "negated": false,
                         "id": "condition2"
