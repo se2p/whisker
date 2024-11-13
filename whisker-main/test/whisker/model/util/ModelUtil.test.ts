@@ -313,7 +313,7 @@ describe('ModelUtil tests', function () {
             const expr = "\"some wrong syntax'\"";
             expect(() => {
                 ModelUtil.getExpressionForEval(t, expr);
-            }).toThrow(ExprEvalError);
+            }).toThrow(ExpressionSyntaxError);
         });
 
         test('throws exception when expression has no end tag', () => {
