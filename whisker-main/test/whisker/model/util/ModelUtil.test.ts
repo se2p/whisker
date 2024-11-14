@@ -389,7 +389,7 @@ describe('ModelUtil tests', function () {
 
         test('Produces the correct sting for multiple variables and sprites', () => {
             const expectedOutput = `(t) => {
-const sprite0 = t.getSprites(sprite => sprite.name.includes('Kiwi'), false)[0];
+const sprite0 = t.getSprites(sprite => sprite.name == 'Kiwi', false)[0];
 if (sprite0 == undefined) {
     throw new SpriteNotFoundError('Kiwi');
 }
@@ -397,7 +397,7 @@ const variable0 = sprite0.getVariable('name', false).value;
  if (variable0 == undefined) {
    throw new VariableNotFoundError('name');
 }
-const sprite1 = t.getSprites(sprite => sprite.name.includes('Bowl'), false)[0];
+const sprite1 = t.getSprites(sprite => sprite.name == 'Bowl', false)[0];
 if (sprite1 == undefined) {
     throw new SpriteNotFoundError('Bowl');
 }
@@ -417,7 +417,7 @@ return variable0+(-1*Math.abs(sprite1.old.y-sprite1.x)).toString();
 
         test('Produces correct result with () independent of $-expressions', () => {
             const expectedOutput = `(t) => {
-const sprite0 = t.getSprites(sprite => sprite.name.includes('Boat'), false)[0];
+const sprite0 = t.getSprites(sprite => sprite.name == 'Boat', false)[0];
 if (sprite0 == undefined) {
     throw new SpriteNotFoundError('Boat');
 }
@@ -425,13 +425,13 @@ const variable0 = sprite0.getVariable('speed', false).value;
  if (variable0 == undefined) {
    throw new VariableNotFoundError('speed');
 }
-const sprite1 = t.getSprites(sprite => sprite.name.includes('Gate'), false)[0];
+const sprite1 = t.getSprites(sprite => sprite.name == 'Gate', false)[0];
 if (sprite1 == undefined) {
     throw new SpriteNotFoundError('Gate');
 }
-const sprite2 = t.getSprites(sprite => sprite.name.includes('Stage'), false)[0];
+const sprite2 = t.getSprites(sprite => sprite.name == '_stage_', false)[0];
 if (sprite2 == undefined) {
-    throw new SpriteNotFoundError('Stage');
+    throw new SpriteNotFoundError('_stage_');
 }
 const variable2 = sprite2.getVariable('score', false).value;
  if (variable2 == undefined) {
@@ -441,11 +441,11 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
 }`;
             const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
             const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
-            const stage = new SpriteMock("Stage", [{name: "direction", value: 140}, {name: "score", value: 10}]);
+            const stage = new SpriteMock("_stage_", [{name: "direction", value: 140}, {name: "score", value: 10}]);
             const tdMock = new TestDriverMock([boat, gate, stage]);
             tdMock.stage = stage.sprite;
             const t = tdMock.getTestDriver();
-            const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
+            const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(_stage_.score)-1)+10)/1.5";
             const result = ModelUtil.getExpressionForEval(t, expr);
             expect(result.expr).toBe(expectedOutput);
             const f = eval(result.expr);
@@ -456,7 +456,7 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
     describe('checkVariableExistence()', () => {
         const bowl = new SpriteMock("Bowl", [{name: "y", value: 17}]);
         const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("Stage", [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
+        const stage = new SpriteMock("_stage_", [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
@@ -499,7 +499,7 @@ return sprite0.x.toString()+(-1*Math.sqrt(variable0)).toString() == '42-10' && 3
     describe('checkSpriteExistence()', () => {
         const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
         const kiwi = new SpriteMock("Kiwi", [{name: "y", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("Stage", [{name: "Punkte", value: 10}]);
+        const stage = new SpriteMock("_stage_", [{name: "Punkte", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();

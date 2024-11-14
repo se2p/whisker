@@ -178,7 +178,7 @@ describe('CheckGenerator', () => {
     });
 
     describe('getVariableComparisonCheck', () => {
-        const stage = new SpriteMock("stage");
+        const stage = new SpriteMock("_stage_");
         const kiwi = new SpriteMock("kiwi");
         const apple = new SpriteMock("apple");
         const banana = new SpriteMock("banana");
@@ -210,7 +210,7 @@ describe('CheckGenerator', () => {
         });
 
         test('Check works for stage', () => {
-            const res = CheckGenerator.getVariableComparisonCheck(t, dummyCU, "label", graphID, false, "stage", "x", "==", "10");
+            const res = CheckGenerator.getVariableComparisonCheck(t, dummyCU, "label", graphID, false, "_stage_", "x", "==", "10");
             expect(res()).toEqual(true);
             stage.variables[0].value = 9;
             expect(res()).toEqual(false);
@@ -219,8 +219,8 @@ describe('CheckGenerator', () => {
 
     describe('getVariableChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
-        const stage = new SpriteMock("stage");
-        const oldStage = new SpriteMock("stage");
+        const stage = new SpriteMock("_stage_");
+        const oldStage = new SpriteMock("_stage_");
         const apple = new SpriteMock("apple");
         const banana = new SpriteMock("banana");
         stage.variables = [{name: "Punkte", value: 9, old: {name: "Punkte", value: 10}}];
@@ -245,7 +245,7 @@ describe('CheckGenerator', () => {
         });
 
         test('Check works for stage', () => {
-            const res = CheckGenerator.getVariableChangeCheck(t, dummyCU, "label", graphID, false, "stage", "Punkte", "-");
+            const res = CheckGenerator.getVariableChangeCheck(t, dummyCU, "label", graphID, false, "_stage_", "Punkte", "-");
             expect(res()).toEqual(true);
             stage.variables = [{name: "Punkte", value: 10, old: {name: "Punkte", value: 9}}];
             expect(res()).toEqual(false);
@@ -335,7 +335,7 @@ describe('CheckGenerator', () => {
         });
 
         test('Output is registered on CheckUtil for changing visual', () => {
-            const sprite = new SpriteMock("stage");
+            const sprite = new SpriteMock("_stage_");
             sprite.currentCostumeName = "defaultStage";
             const tdMock = new TestDriverMock([sprite]);
             tdMock.stage = sprite.updateSprite();
@@ -349,8 +349,8 @@ describe('CheckGenerator', () => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
             };
             const cu = cuMock.getCheckUtility();
-            CheckGenerator.getAttributeComparisonCheck(t, cu, "label", graphID, true, "stage", "currentCostume", "==", "win");
-            expect(fn).toHaveBeenLastCalledWith("stage", "!AttrComp:stage:costume:==:win", "label", graphID, check);
+            CheckGenerator.getAttributeComparisonCheck(t, cu, "label", graphID, true, "_stage_", "currentCostume", "==", "win");
+            expect(fn).toHaveBeenLastCalledWith("_stage_", "!AttrComp:_stage_:costume:==:win", "label", graphID, check);
             expect(check(sprite.sprite)).toBe(true);
             sprite.currentCostumeName = "win";
             sprite.updateSprite();
@@ -386,12 +386,12 @@ describe('CheckGenerator', () => {
 
     describe('getAttributeChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
-        const stage = new SpriteMock("stage", [{
+        const stage = new SpriteMock("_stage_", [{
             name: "currentCostumeName",
             value: "win",
             old: {name: "currentCostumeName", value: "lose"}
         }]);
-        const oldStage = new SpriteMock("stage", [{name: "currentCostumeName", value: "lose"}]);
+        const oldStage = new SpriteMock("_stage_", [{name: "currentCostumeName", value: "lose"}]);
         const apple = new SpriteMock("apple", [{name: "x", value: 2}, {name: "size", value: 10}]);
         apple.old = new SpriteMock("apple", [{name: "x", value: 42}, {name: "size", value: 20}]);
         const banana = new SpriteMock("banana");
@@ -434,7 +434,7 @@ describe('CheckGenerator', () => {
         });
 
         test('Check is not a constant function', () => {
-            const res = CheckGenerator.getAttributeChangeCheck(t, dummyCU, "label", graphID, true, "stage", "currentCostume", "==");
+            const res = CheckGenerator.getAttributeChangeCheck(t, dummyCU, "label", graphID, true, "_stage_", "currentCostume", "==");
             expect(res()).toEqual(true);
             stage.variables = [{
                 name: "currentCostumeName",
@@ -448,7 +448,7 @@ describe('CheckGenerator', () => {
 
     test('getBackgroundChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
-        const stage = new SpriteMock("stage", [{name: "currentCostumeName", value: "win"}]);
+        const stage = new SpriteMock("_stage_", [{name: "currentCostumeName", value: "win"}]);
         const tdMock = new TestDriverMock([stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
@@ -624,12 +624,12 @@ describe('CheckGenerator', () => {
     describe('getExpressionCheck()', () => {
         const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
         const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
-        const stage = new SpriteMock("Stage", [{name: "direction", value: 140}, {name: "score", value: 10}]);
+        const stage = new SpriteMock("_stage_", [{name: "direction", value: 140}, {name: "score", value: 10}]);
         const tdMock = new TestDriverMock([boat, gate, stage]);
         const cu = getDummyCheckUtility();
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
-        const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(Stage.score)-1)+10)/1.5";
+        const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(_stage_.score)-1)+10)/1.5";
 
         test('returned check is correct', () => {
             const res = CheckGenerator.getExpressionCheck(t, cu, "label", graphID, false, expr);
