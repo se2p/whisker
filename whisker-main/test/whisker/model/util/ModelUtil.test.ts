@@ -397,7 +397,7 @@ describe('ModelUtil tests', function () {
         test('Produces correct result with () independent of $-expressions', () => {
             const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
             const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
-            const stage = new SpriteMock("Stage", [{name: "direction", value: 140}, {name: "score", value: 10}]);
+            const stage = new SpriteMock("_stage_", [{name: "direction", value: 140}, {name: "score", value: 10}]);
             const tdMock = new TestDriverMock([boat, gate, stage]);
             tdMock.stage = stage.sprite;
             const t = tdMock.getTestDriver();
@@ -410,7 +410,7 @@ describe('ModelUtil tests', function () {
     describe('checkVariableExistence()', () => {
         const bowl = new SpriteMock("Bowl", [{name: "y", value: 17}]);
         const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("Stage", [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
+        const stage = new SpriteMock("_stage_", [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
@@ -453,7 +453,7 @@ describe('ModelUtil tests', function () {
     describe('checkSpriteExistence()', () => {
         const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
         const kiwi = new SpriteMock("Kiwi", [{name: "y", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("Stage", [{name: "Punkte", value: 10}]);
+        const stage = new SpriteMock("_stage_", [{name: "Punkte", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();

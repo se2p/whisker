@@ -76,7 +76,7 @@ export abstract class CheckGenerator {
         const {
             sprite: foundSprite,
             variable: foundVar
-        } = ModelUtil.checkVariableExistence(t, ModelUtil.checkSpriteExistence(t, pSpriteName), varName);
+        } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
         const eventString = CheckUtility.getEventString(CheckName.VarComp, negated, pSpriteName, varName,
@@ -88,7 +88,7 @@ export abstract class CheckGenerator {
         }
 
         function check() {
-            const sprite = t.getSprites((sprite: Sprite) => sprite.name.includes(spriteName), false)[0];
+            const sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable = sprite.getVariable(variableName);
             try {
                 return !negated == ModelUtil.compare(variable.value, varValue, comparison);
@@ -120,7 +120,7 @@ export abstract class CheckGenerator {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
@@ -387,7 +387,7 @@ export abstract class CheckGenerator {
      */
     static getVariableChangeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                   pSpriteName: ArgType, varName: ArgType, change: ArgType): () => boolean {
-        let sprite = ModelUtil.checkSpriteExistence(t, pSpriteName);
+        let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const {
             sprite: foundSprite,
             variable: foundVar
@@ -398,7 +398,7 @@ export abstract class CheckGenerator {
         const eventString = CheckUtility.getEventString(CheckName.VarChange, negated, pSpriteName, varName, change);
 
         function check(): boolean {
-            const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name.includes(spriteName), false)[0];
+            const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
             try {
                 return !negated == ModelUtil.testChange(variable.old.value, variable.value, change);
@@ -431,7 +431,8 @@ export abstract class CheckGenerator {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
+        const spriteName = sprite.name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
@@ -449,10 +450,10 @@ export abstract class CheckGenerator {
         }
 
         return () => {
-            const sprites = t.getSprite(spriteName).getClones(true);
+            const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             try {
                 for (const s of sprites) {
-                    if (ModelUtil.testChange(s.old[attrName], s[attrName], change)) {
+                    if (ModelUtil.testChange(unsafeRead(s.old, attrName), unsafeRead(s, attrName), change)) {
                         return !negated;
                     }
                 }
@@ -511,7 +512,7 @@ export abstract class CheckGenerator {
                 }
             } catch (e) {
                 // should not even happen...
-                throw new ErrorForAttribute("Stage", "costume", e);
+                throw new ErrorForAttribute("_stage_", "costume", e);
             }
             return negated;
         };
@@ -613,9 +614,9 @@ export abstract class CheckGenerator {
 
         let spriteCondition: (sprite: Sprite) => boolean;
         if (!clonesVisible) {
-            spriteCondition = sprite => sprite.name.includes(spriteName);
+            spriteCondition = sprite => sprite.name == spriteName;
         } else {
-            spriteCondition = sprite => sprite.name.includes(spriteName) && sprite.visible == true;
+            spriteCondition = sprite => sprite.name == spriteName && sprite.visible == true;
         }
         return () => {
             const sprites = t.getSprites(spriteCondition);

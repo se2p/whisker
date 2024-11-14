@@ -29,15 +29,23 @@ export type ParamType = string | number | boolean | string[];
 export abstract class ModelUtil {
 
     /**
+     * If {@link pSpriteName} == "_stage_" this method returns the stage, otherwise it calls {@link ModelUtil.checkSpriteExistence}
+     * @param testDriver Instance of the test driver.
+     * @param pSpriteName Name of the sprite or "_stage_" for the stage
+     */
+    static getStageOrSprite(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
+        if (pSpriteName == "_stage_") {
+            return testDriver.getStage();
+        }
+        return this.checkSpriteExistence(testDriver, pSpriteName);
+    }
+
+    /**
      * Check the existence of a sprite.
      * @param testDriver Instance of the test driver.
      * @param pSpriteName Name of the sprite.
      */
     static checkSpriteExistence(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
-        if (pSpriteName == "Stage" || pSpriteName == "stage") {
-            return testDriver.getStage();
-        }
-
         const spriteNames = Array.isArray(pSpriteName) ? pSpriteName : [String(pSpriteName)];
 
         for (const name of spriteNames) {
@@ -198,13 +206,13 @@ export abstract class ModelUtil {
     static readonly EXPR_END = ")";
 
     private static _getSpriteString(t: TestDriver, index: number, spriteName: string): string {
-        const name = ModelUtil.checkSpriteExistence(t, spriteName).name;
-        return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
+        const name = ModelUtil.getStageOrSprite(t, spriteName).name;
+        return "const sprite" + index + " = t.getSprites(sprite => sprite.name == '" + name + "', false)[0];\n"
             + "if (sprite" + index + " == undefined) {\n    throw new SpriteNotFoundError('" + spriteName + "');\n}\n";
     }
 
     private static _getVariableString(t: TestDriver, index: number, spriteName: string, varName: string): string {
-        const sprite = ModelUtil.checkSpriteExistence(t, spriteName);
+        const sprite = ModelUtil.getStageOrSprite(t, spriteName);
         const name = ModelUtil.checkVariableExistence(t, sprite, varName).variable.name;
         return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
             " (variable" + index
