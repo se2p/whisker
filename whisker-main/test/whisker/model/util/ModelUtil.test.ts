@@ -4,7 +4,6 @@ import {
     EmptyExpressionError,
     ExpressionEnterError,
     ExpressionSyntaxError,
-    ExprEvalError,
     SpriteNotFoundError,
     VariableNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
