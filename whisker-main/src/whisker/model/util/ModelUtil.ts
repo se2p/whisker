@@ -315,10 +315,11 @@ export abstract class ModelUtil {
             variable = sprite[attribute];
             if (!variable) {
                 if (this._isAnAttribute(attribute)) {
-                    variable = `t.getSprite(${spriteName}).${attribute}"`;
+                    // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
+                    variable = eval(`t => t.getSprite("${spriteName}").${attribute}`)(t);
                 } else {
                     try {
-                        // try custom variables
+                        // maybe custom flag was not specified by accident -> try custom variables
                         return this.getValueForSubExpression(t, spriteName, attribute, true, dependencies);
                     } catch (e) {
                         throw new AttributeNotFoundError(spriteName, attribute);
