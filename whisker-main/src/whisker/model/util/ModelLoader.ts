@@ -1,18 +1,16 @@
-import {ModelNode, NodeID, ModelNodeJSON} from "../components/ModelNode";
-import {
-    EdgeID,
-    ModelEdge
-} from "../components/ModelEdge";
+import {ModelNode, ModelNodeJSON, NodeID} from "../components/ModelNode";
+import {EdgeID, ModelEdge} from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
 import {InputEffect, InputEffectJSON, InputEffectName} from "../components/InputEffect";
-import {ArgType, CheckName, CheckJSON} from "../components/Check";
+import {ArgType, CheckJSON, CheckName} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
-import {UserModelEdgeJSON, UserModelEdge} from "../components/UserModelEdge";
+import {UserModelEdge, UserModelEdgeJSON} from "../components/UserModelEdge";
 import {ProgramModelEdge, ProgramModelEdgeJSON} from "../components/ProgramModelEdge";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
 export type ModelType = "program" | "user" | "end";
 
@@ -20,7 +18,7 @@ interface Attributes {
     id: string,
 }
 
-interface StoredModelEdge {
+interface StoredModelEdge { // TODO: Duplicates ModelEdgeJSON
     id: EdgeID;
     label: string;
     from: NodeID;
@@ -33,8 +31,8 @@ interface StoredModelEdge {
     effects: any[];
 }
 
-interface StoredModel {
-    usage: string,
+interface StoredModel { // TODO: Duplicates ModelJSON
+    usage: ModelType,
     _attributes: Attributes,
     nodeIds?: NodeID[],
     id: string;
@@ -58,11 +56,6 @@ interface StoredModel {
  * constraints after initialisation e.g. time < 30 as it decreases)
  */
 export class ModelLoader {
-
-    static readonly PROGRAM_MODEL_ID: ModelType = "program";
-    static readonly USER_MODEL_ID: ModelType = "user";
-    static readonly ON_TEST_END_ID: ModelType = "end";
-
     private _startNodeId: string;
     private _stopNodeIds: string[];
     private _stopAllNodeIds: string[];
@@ -193,23 +186,23 @@ export class ModelLoader {
 
         let model: ProgramModel | UserModel;
         switch (graph.usage) {
-            case ModelLoader.PROGRAM_MODEL_ID:
+            case "program":
                 model = new ProgramModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapProgram,
                     this._stopNodeIds, this._stopAllNodeIds);
                 this._programModels.push(model);
                 break;
-            case ModelLoader.USER_MODEL_ID:
+            case "user":
                 model = new UserModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapUser, this._stopNodeIds,
                     this._stopAllNodeIds);
                 this._userModels.push(model);
                 break;
-            case ModelLoader.ON_TEST_END_ID:
+            case "end":
                 model = new ProgramModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapProgram, this._stopNodeIds,
                     this._stopAllNodeIds);
                 this._onTestEndModels.push(model);
                 break;
             default:
-                throw Error("Model type id not known.");
+                throw new NonExhaustiveCaseDistinction(graph.usage, "Model type id not known.");
         }
     }
 
@@ -294,7 +287,7 @@ export class ModelLoader {
             forceTestAt = Number(edge.forceTestAt.toString());
         }
 
-        if (usage != ModelLoader.USER_MODEL_ID) {
+        if (usage != "user") {
             const newEdge = new ProgramModelEdge(edgeID, label, graphID, from, to, forceTestAfter, forceTestAt);
 
             if (!edge.conditions) {
