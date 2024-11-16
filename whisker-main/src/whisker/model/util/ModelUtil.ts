@@ -316,7 +316,7 @@ export abstract class ModelUtil {
             if (!variable) {
                 if (this._isAnAttribute(attribute)) {
                     // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
-                    variable = eval(`t => t.getSprite("${spriteName}").${attribute}`)(t);
+                    variable = t.getSprite(spriteName)[attribute];
                 } else {
                     try {
                         // maybe custom flag was not specified by accident -> try custom variables
