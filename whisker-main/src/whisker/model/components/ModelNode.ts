@@ -106,7 +106,7 @@ export class ModelNode {
         });
     }
 
-    simplifyForSave(): SimpleModelNode {
+    toJSON(): SimpleModelNode {
         return {
             id: this.id,
             label: this.label

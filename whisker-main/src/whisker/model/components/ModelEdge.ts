@@ -190,7 +190,7 @@ export abstract class ModelEdge {
         this.lastTransition = 0;
     }
 
-    simplifyForSave(): SimpleModelEdge {
+    toJSON(): SimpleModelEdge {
         return {
             id: this.id,
             label: this.label,
@@ -248,9 +248,9 @@ export class ProgramModelEdge extends ModelEdge {
         });
     }
 
-    override simplifyForSave(): SimpleProgramModelEdge {
+    override toJSON(): SimpleProgramModelEdge {
         return {
-            ...super.simplifyForSave(),
+            ...super.toJSON(),
             effects: this.effects.map(effect => effect.simplifyForSave())
         };
     }
@@ -362,9 +362,9 @@ export class UserModelEdge extends ModelEdge {
         });
     }
 
-    override simplifyForSave(): SimpleUserModelEdge {
+    override toJSON(): SimpleUserModelEdge {
         return {
-            ...super.simplifyForSave(),
+            ...super.toJSON(),
             effects: this.inputEffects.map(value => value.simplifyForSave())
         };
     }

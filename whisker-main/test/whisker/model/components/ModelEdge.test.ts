@@ -117,17 +117,17 @@ describe('Model edges', () => {
         edge.addCondition(condition);
         expect(edge.inputEffects.length).toBe(1);
         expect(() => {
-            edge.simplifyForSave();
+            edge.toJSON();
         }).not.toThrow();
     });
 
-    test("ProgramModelEdge.SimplifyForSave()", () => {
+    test("ProgramModelEdge.toJSON()", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
         const effect = new Effect(id, label, CheckName.BackgroundChange, false, ["test"]);
         const condition = new Condition(id, label, CheckName.BackgroundChange, false, ["test"]);
         edge.addEffect(effect);
         edge.addCondition(condition);
-        const actual = edge.simplifyForSave();
+        const actual = edge.toJSON();
         const expected: SimpleProgramModelEdge = {
             id: id,
             label: label,
@@ -141,13 +141,13 @@ describe('Model edges', () => {
         expect(actual).toStrictEqual(expected);
     });
 
-    test("UserModelEdge.SimplifyForSave()", () => {
+    test("UserModelEdge.toJSON()", () => {
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
         const inputEffect = new InputEffect("id", InputEffectName.InputKey, ["left"]);
         const condition = new Condition(id, label, CheckName.BackgroundChange, false, ["test"]);
         edge.addInputEffect(inputEffect);
         edge.addCondition(condition);
-        const actual = edge.simplifyForSave();
+        const actual = edge.toJSON();
         const expected: SimpleUserModelEdge = {
             id: id,
             label: label,

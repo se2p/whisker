@@ -53,11 +53,11 @@ describe('Model node', () => {
         expect(edge2.lastTransition).toBe(0);
     });
 
-    test("SimplifyForSave", () => {
+    test("toJSON", () => {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", 1000, -1);
         const node = new ModelNode("from", "label");
         node.addOutgoingEdge(edge);
-        const actual = node.simplifyForSave();
+        const actual = node.toJSON();
         const expected: SimpleModelNode = {
             id: "from",
             label: "label"

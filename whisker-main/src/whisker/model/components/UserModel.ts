@@ -96,8 +96,8 @@ export class UserModel extends Model<UserModelEdge, SimpleUserModel> {
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.simplifyForSave()),
-            edges: ProgramModel.mapValuesToArray(this.edges, edge => edge.simplifyForSave())
+            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.toJSON()),
+            edges: ProgramModel.mapValuesToArray(this.edges, edge => edge.toJSON())
         };
     }
 }

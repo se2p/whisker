@@ -171,8 +171,8 @@ export class ProgramModel extends Model<ProgramModelEdge, SimpleProgramModel> {
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.simplifyForSave()),
-            edges: ProgramModel.mapValuesToArray(this.edges, edges => edges.simplifyForSave())
+            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.toJSON()),
+            edges: ProgramModel.mapValuesToArray(this.edges, edges => edges.toJSON())
         };
     }
 
