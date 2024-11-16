@@ -1,4 +1,4 @@
-import {ModelLoader, ModelType} from "./util/ModelLoader";
+import {ModelLoader} from "./util/ModelLoader";
 import {CoverageResult, ExtendedCoverageResult, ProgramModel, SimpleProgramModel} from "./components/ProgramModel";
 import {SimpleUserModel, UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
@@ -18,11 +18,11 @@ import {ProgramModelEdge} from "./components/ProgramModelEdge";
 export type SimpleTypedModel = SimpleTypedPModel | SimpleTypedUModel;
 
 export interface SimpleTypedPModel extends SimpleProgramModel {
-    usage: ModelType;
+    usage: "program" | "end";
 }
 
 export interface SimpleTypedUModel extends SimpleUserModel {
-    usage: ModelType;
+    usage: "user";
 }
 
 export class ModelTester extends EventEmitter {

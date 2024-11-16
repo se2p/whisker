@@ -5,6 +5,7 @@ import {Condition} from "../../../src/whisker/model/components/Condition";
 import {readFileSync} from "fs";
 import * as path from "node:path";
 import {ProgramModelEdge} from "../../../src/whisker/model/components/ProgramModelEdge";
+import {UserModel} from "../../../src/whisker/model/components/UserModel";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
@@ -96,7 +97,7 @@ describe('ModelTester', () => {
 
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[1];
-            const expectedProgramModel = new ProgramModel("bowl2", "init", expectedNodesExtended,
+            const expectedProgramModel = new UserModel("bowl2", "init", expectedNodesExtended,
                 {}, ["end"], ["end"]);
             const expected: SimpleTypedModel = {
                 usage: "user",
