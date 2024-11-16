@@ -63,6 +63,8 @@ export class InputEffect {
             case "InputMouseMove":
                 expectedLength = 2;
                 break;
+            default:
+                throw new NonExhaustiveCaseDistinction(name);
         }
         if (args.length != expectedLength) {
             throw new Error("Wrong number of arguments for input effect " + name + ".");
