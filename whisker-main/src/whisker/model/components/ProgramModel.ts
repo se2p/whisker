@@ -1,8 +1,8 @@
-import {ModelNode, SimpleModelNode} from "./ModelNode";
+import {ModelNode} from "./ModelNode";
 import {EdgeID, ModelEdge, ProgramModelEdge, SimpleProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Model} from "./Model";
+import {Model, SimpleModel} from "./Model";
 
 export interface CoverageResult {
     total: number;
@@ -13,13 +13,8 @@ export interface ExtendedCoverageResult extends CoverageResult {
     missedEdges: EdgeID[];
 }
 
-export interface SimpleProgramModel {
-    id: string;
-    nodes: SimpleModelNode[];
+export interface SimpleProgramModel extends SimpleModel {
     edges: SimpleProgramModelEdge[];
-    startNodeId: string;
-    stopNodeIds: string[];
-    stopAllNodeIds: string[]
 }
 
 /**

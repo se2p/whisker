@@ -1,17 +1,12 @@
-import {ModelNode, SimpleModelNode} from "./ModelNode";
+import {ModelNode} from "./ModelNode";
 import {ModelEdge, SimpleUserModelEdge, UserModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModel} from "./ProgramModel";
-import {Model} from "./Model";
+import {Model, SimpleModel} from "./Model";
 
-export interface SimpleUserModel {
-    id: string;
-    nodes: SimpleModelNode[];
+export interface SimpleUserModel extends SimpleModel {
     edges: SimpleUserModelEdge[];
-    startNodeId: string;
-    stopNodeIds: string[];
-    stopAllNodeIds: string[]
 }
 
 /**
