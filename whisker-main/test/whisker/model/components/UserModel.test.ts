@@ -1,4 +1,4 @@
-import {SimpleUserModel, UserModel} from "../../../../src/whisker/model/components/UserModel";
+import {UserModelJSON, UserModel} from "../../../../src/whisker/model/components/UserModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
 import {MockedModelNode} from "./ProgramModel.test";
@@ -72,7 +72,7 @@ describe('User model', () => {
         const p = new UserModel("id", "start", {start: new ModelNode("start", "label")},
             edges, [], []);
         const actual = p.toJSON();
-        const expected: SimpleUserModel = {
+        const expected: UserModelJSON = {
             id: p.id,
             startNodeId: "start",
             stopNodeIds: [],

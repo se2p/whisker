@@ -2,11 +2,11 @@ import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Model, SimpleModel} from "./Model";
-import {SimpleUserModelEdge, UserModelEdge} from "./UserModelEdge";
+import {Model, ModelJSON} from "./Model";
+import {UserModelEdgeJSON, UserModelEdge} from "./UserModelEdge";
 
-export interface SimpleUserModel extends SimpleModel {
-    edges: SimpleUserModelEdge[];
+export interface UserModelJSON extends ModelJSON {
+    edges: UserModelEdgeJSON[];
 }
 
 /**
@@ -22,7 +22,7 @@ export interface SimpleUserModel extends SimpleModel {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class UserModel extends Model<UserModelEdge, SimpleUserModel> {
+export class UserModel extends Model<UserModelEdge, UserModelJSON> {
     stepNbrOfProgramEnd = 0;
 
     /**
@@ -93,7 +93,7 @@ export class UserModel extends Model<UserModelEdge, SimpleUserModel> {
         this.secondLastTransitionStep = steps;
     }
 
-    override toJSON(): SimpleUserModel {
+    override toJSON(): UserModelJSON {
         return {
             id: this.id,
             startNodeId: this.startNodeId,

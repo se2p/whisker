@@ -1,11 +1,11 @@
-import {InputEffect, SimpleInputEffect} from "./InputEffect";
+import {InputEffect, InputEffectJSON} from "./InputEffect";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Condition} from "./Condition";
-import {ModelEdge, SimpleModelEdge} from "./ModelEdge";
+import {ModelEdge, ModelEdgeJSON} from "./ModelEdge";
 
-export interface SimpleUserModelEdge extends SimpleModelEdge {
-    effects: SimpleInputEffect[];
+export interface UserModelEdgeJSON extends ModelEdgeJSON {
+    effects: InputEffectJSON[];
 }
 
 /**
@@ -64,7 +64,7 @@ export class UserModelEdge extends ModelEdge {
         return this.conditions;
     }
 
-    override toJSON(): SimpleUserModelEdge {
+    override toJSON(): UserModelEdgeJSON {
         return {
             ...super.toJSON(),
             effects: this._inputEffects.map(value => value.toJSON())

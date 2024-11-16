@@ -1,4 +1,4 @@
-import {ModelNode, NodeID, SimpleModelNode} from "../components/ModelNode";
+import {ModelNode, NodeID, ModelNodeJSON} from "../components/ModelNode";
 import {
     EdgeID,
     ModelEdge
@@ -7,12 +7,12 @@ import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
-import {InputEffect, InputEffectName, SimpleInputEffect} from "../components/InputEffect";
+import {InputEffect, InputEffectName, InputEffectJSON} from "../components/InputEffect";
 import {ArgType, CheckName, SimpleCheck} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
-import {SimpleUserModelEdge, UserModelEdge} from "../components/UserModelEdge";
-import {ProgramModelEdge, SimpleProgramModelEdge} from "../components/ProgramModelEdge";
+import {UserModelEdgeJSON, UserModelEdge} from "../components/UserModelEdge";
+import {ProgramModelEdge, ProgramModelEdgeJSON} from "../components/ProgramModelEdge";
 
 export type ModelType = "program" | "user" | "end";
 
@@ -28,7 +28,7 @@ interface StoredModelEdge {
     forceTestAt: number;
     forceTestAfter: number
     conditions: SimpleCheck[];
-    inputEffects?: SimpleInputEffect[];
+    inputEffects?: InputEffectJSON[];
     // effects: SimpleInputEffect[] | SimpleCheck[];
     effects: any[];
 }
@@ -38,7 +38,7 @@ interface StoredModel {
     _attributes: Attributes,
     nodeIds?: NodeID[],
     id: string;
-    nodes: SimpleModelNode[];
+    nodes: ModelNodeJSON[];
     edges: StoredModelEdge[];
     startNodeId: NodeID;
     stopNodeIds: NodeID[];
@@ -186,7 +186,7 @@ export class ModelLoader {
 
         // Load the edges
         try {
-            graph.edges.forEach((edge: SimpleProgramModelEdge | SimpleUserModelEdge) => this._loadEdge(graph.usage, graphID, edge));
+            graph.edges.forEach((edge: ProgramModelEdgeJSON | UserModelEdgeJSON) => this._loadEdge(graph.usage, graphID, edge));
         } catch (e) {
             throw new Error(graphID + ": " + getErrorMessage(e));
         }
@@ -213,7 +213,7 @@ export class ModelLoader {
         }
     }
 
-    private _loadNodes(nodes: SimpleModelNode[]): void {
+    private _loadNodes(nodes: ModelNodeJSON[]): void {
         nodes.forEach(node => {
             if ((this._nodesMap)[node.id]) {
                 throw new Error("Node id '" + node.id + "' already defined.");
@@ -389,7 +389,7 @@ export class ModelLoader {
         });
     }
 
-    private _loadInputEffect(newEdge: UserModelEdge, effects: SimpleInputEffect[]): void {
+    private _loadInputEffect(newEdge: UserModelEdge, effects: InputEffectJSON[]): void {
         let id: string, name: InputEffectName, args: ArgType[];
         effects.forEach(effect => {
             id = effect.id;

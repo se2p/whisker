@@ -4,8 +4,8 @@ import {InputEffect, InputEffectName} from "../../../../src/whisker/model/compon
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
-import {SimpleUserModelEdge, UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
-import {ProgramModelEdge, SimpleProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
+import {UserModelEdgeJSON, UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
+import {ProgramModelEdge, ProgramModelEdgeJSON} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('Model edges', () => {
     const id = "id";
@@ -123,7 +123,7 @@ describe('Model edges', () => {
         edge.addEffect(effect);
         edge.addCondition(condition);
         const actual = edge.toJSON();
-        const expected: SimpleProgramModelEdge = {
+        const expected: ProgramModelEdgeJSON = {
             id: id,
             label: label,
             to: to,
@@ -143,7 +143,7 @@ describe('Model edges', () => {
         edge.addInputEffect(inputEffect);
         edge.addCondition(condition);
         const actual = edge.toJSON();
-        const expected: SimpleUserModelEdge = {
+        const expected: UserModelEdgeJSON = {
             id: id,
             label: label,
             to: to,

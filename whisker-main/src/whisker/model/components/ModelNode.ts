@@ -4,7 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 
 export type NodeID = string;
 
-export interface SimpleModelNode {
+export interface ModelNodeJSON {
     id: NodeID;
     label: string
 }
@@ -103,7 +103,7 @@ export class ModelNode {
         });
     }
 
-    toJSON(): SimpleModelNode {
+    toJSON(): ModelNodeJSON {
         return {
             id: this.id,
             label: this.label

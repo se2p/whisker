@@ -1,4 +1,4 @@
-import {ModelNode, SimpleModelNode} from "../../../../src/whisker/model/components/ModelNode";
+import {ModelNode, ModelNodeJSON} from "../../../../src/whisker/model/components/ModelNode";
 import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import {TestDriverMock} from "../TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
@@ -59,7 +59,7 @@ describe('Model node', () => {
         const node = new ModelNode("from", "label");
         node.addOutgoingEdge(edge);
         const actual = node.toJSON();
-        const expected: SimpleModelNode = {
+        const expected: ModelNodeJSON = {
             id: "from",
             label: "label"
         };

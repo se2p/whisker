@@ -7,7 +7,7 @@ import {NodeID} from "./ModelNode";
 
 export type EdgeID = string;
 
-export interface SimpleModelEdge {
+export interface ModelEdgeJSON {
     id: EdgeID;
     label: string;
     from: NodeID;
@@ -173,7 +173,7 @@ export abstract class ModelEdge {
         this.lastTransition = 0;
     }
 
-    toJSON(): SimpleModelEdge {
+    toJSON(): ModelEdgeJSON {
         return {
             id: this.id,
             label: this.label,

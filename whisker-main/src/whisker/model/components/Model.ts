@@ -1,17 +1,17 @@
-import {ModelNode, SimpleModelNode} from "./ModelNode";
+import {ModelNode, ModelNodeJSON} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 
-export interface SimpleModel {
+export interface ModelJSON {
     id: string;
-    nodes: SimpleModelNode[];
+    nodes: ModelNodeJSON[];
     startNodeId: string;
     stopNodeIds: string[];
     stopAllNodeIds: string[];
 }
 
-export abstract class Model<E, J extends SimpleModel> {
+export abstract class Model<E, J extends ModelJSON> {
     private readonly _id: string;
 
     protected readonly startNodeId: string;

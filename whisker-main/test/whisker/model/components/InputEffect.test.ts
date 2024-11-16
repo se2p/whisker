@@ -1,4 +1,4 @@
-import {InputEffect, InputEffectName, SimpleInputEffect} from "../../../../src/whisker/model/components/InputEffect";
+import {InputEffect, InputEffectName, InputEffectJSON} from "../../../../src/whisker/model/components/InputEffect";
 import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
 import {ScratchInterface} from "../../../../src/whisker/scratch/ScratchInterface";
@@ -48,7 +48,7 @@ describe('InputEffect', () => {
     test("toJSON()", () => {
         const effect = new InputEffect("test", InputEffectName.InputKey, ["left"]);
         const actual = effect.toJSON();
-        const expected: SimpleInputEffect = {
+        const expected: InputEffectJSON = {
             id: "test",
             name: InputEffectName.InputKey,
             args: ["left"]

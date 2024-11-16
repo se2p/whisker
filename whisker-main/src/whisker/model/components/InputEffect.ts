@@ -16,7 +16,7 @@ export enum InputEffectName {
     InputText = "InputText" // answer| text
 }
 
-export interface SimpleInputEffect {
+export interface InputEffectJSON {
     id: string
     name: InputEffectName;
     args: ArgType[];
@@ -83,7 +83,7 @@ export class InputEffect {
         this._inputEffect = this._getInputDataFunction(t, this._args);
     }
 
-    toJSON(): SimpleInputEffect {
+    toJSON(): InputEffectJSON {
         return {
             id: this._id,
             name: this._name,

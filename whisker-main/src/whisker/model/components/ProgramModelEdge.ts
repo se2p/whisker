@@ -3,9 +3,9 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {Check, SimpleCheck} from "./Check";
-import {ModelEdge, SimpleModelEdge} from "./ModelEdge";
+import {ModelEdge, ModelEdgeJSON} from "./ModelEdge";
 
-export interface SimpleProgramModelEdge extends SimpleModelEdge {
+export interface ProgramModelEdgeJSON extends ModelEdgeJSON {
     effects: SimpleCheck[];
 }
 
@@ -52,7 +52,7 @@ export class ProgramModelEdge extends ModelEdge {
         });
     }
 
-    override toJSON(): SimpleProgramModelEdge {
+    override toJSON(): ProgramModelEdgeJSON {
         return {
             ...super.toJSON(),
             effects: this._effects.map(effect => effect.toJSON())
