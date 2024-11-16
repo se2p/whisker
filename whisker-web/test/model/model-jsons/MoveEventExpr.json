@@ -43,7 +43,7 @@
                         "id": "0",
                         "name": "Expr",
                         "args": [
-                            "$(Sprite1.y)==-10"
+                            "$('Sprite1', 'y')==-10"
                         ],
                         "negated": false
                     }
@@ -61,7 +61,7 @@
                         "id": "0",
                         "name": "Expr",
                         "args": [
-                            "$(Sprite1.y)==0"
+                            "$('Sprite1', 'y')==0"
                         ],
                         "negated": false
                     }
@@ -79,7 +79,7 @@
                         "id": "0",
                         "name": "Expr",
                         "args": [
-                            "$(Sprite1.y)<0"
+                            "$('Sprite1', 'y')<0"
                         ],
                         "negated": false
                     }

@@ -629,7 +629,7 @@ describe('CheckGenerator', () => {
         const cu = getDummyCheckUtility();
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
-        const expr = "$(Boat.x).toString()+(-1*Math.sqrt($(Boat.speed))).toString() == '42-10' && 3*($(Gate.size)+2) < (2*($(_stage_.score)-1)+10)/1.5";
+        const expr = "$('Boat', 'x').toString()+(-1*Math.sqrt($('Boat', 'speed', true))).toString() == '42-10' && 3*($('Gate', 'size')+2) < (2*($('_stage_', 'score', true)-1)+10)/1.5";
 
         test('returned check is correct', () => {
             const res = CheckGenerator.getExpressionCheck(t, cu, "label", graphID, false, expr);

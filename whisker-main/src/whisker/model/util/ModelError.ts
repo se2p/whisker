@@ -48,7 +48,7 @@ export class VariableNotFoundError extends Error {
 }
 
 export class AttributeNotFoundError extends Error {
-    constructor(attrName: string, spriteName: string) {
+    constructor(spriteName: string, attrName: string) {
         super("Attribute not found: " + spriteName + "." + attrName);
     }
 }
@@ -77,9 +77,9 @@ export class ExprEvalError extends Error {
     }
 }
 
-export class ExpressionEndTagMissingError extends Error {
-    constructor() {
-        super("Sprite/variable expression missing closing tag ')'");
+export class ExpressionSyntaxError extends Error {
+    constructor(message: string) {
+        super(message);
     }
 }
 

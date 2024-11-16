@@ -5,8 +5,8 @@ import {
     ChangeComparisonNotKnownError,
     ComparisonNotKnownError,
     EmptyExpressionError,
-    ExpressionEndTagMissingError,
     ExpressionEnterError,
+    ExpressionSyntaxError,
     ExprEvalError,
     NotANumericalValueError,
     SpriteNotFoundError,
@@ -103,7 +103,7 @@ export abstract class ModelUtil {
     static checkAttributeExistence(testDriver: TestDriver, spriteName: string, pAttrName: ArgType): void {
         const attrName = String(pAttrName);
         if (!this._isAnAttribute(attrName)) {
-            throw new AttributeNotFoundError(attrName, spriteName);
+            throw new AttributeNotFoundError(spriteName, attrName);
         }
     }
 
@@ -260,96 +260,83 @@ export abstract class ModelUtil {
             } else if (!toEval.endsWith("'")) {
                 toEval = toEval + "'";
             }
-
-            try {
-                eval(toEval);
-            } catch (e) {
-                throw new ExprEvalError(e);
-            }
-
-            return {
-                expr: "(t) => {return " + toEval + "}",
-                varDependencies: [],
-                attrDependencies: []
-            };
         }
 
         if (toEval.includes("\n")) {
             throw new ExpressionEnterError();
         }
 
-        const expression = this._getExpression(t, toEval);
-
-        // test it beforehand
+        const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
+        const $ = (s: string, a: string, c: boolean) =>
+            this.getValueForSubExpression(t, s, a, c, dependencies);
         try {
-            eval(expression.expr)(t);
-        } catch (e) {
+            // fill dependencies and check if the expression works
+            eval("($) => {\n " + toEval + "\n}")($);
+        } catch (e: unknown) {
+            if (e instanceof SyntaxError) {
+                throw new ExpressionSyntaxError(e.message);
+            }
+            if (e instanceof EmptyExpressionError || e instanceof SpriteNotFoundError
+                || e instanceof VariableNotFoundError || e instanceof AttributeNotFoundError) {
+                throw e;
+            }
             throw new ExprEvalError(e);
         }
-
-        return expression;
+        return {
+            expr: "(t, $) => {\nreturn " + toEval + ";\n}",
+            varDependencies: dependencies.varDependencies,
+            attrDependencies: dependencies.attrDependencies
+        };
     }
 
-    private static _getExpression(t: TestDriver, toEval: string): Expression {
-        let startIndex: number;
-        let endIndex: number;
-        let expression = "return ";
-        let inits = "(t) => {\n";
-        let subexpression: string;
-        let index = 0;
-        const varDependencies: { spriteName: string, varName: string }[] = [];
-        const attrDependencies: { spriteName: string, attrName: string }[] = [];
-
-        const spriteMap: Record<string, number> = {};
-
-        while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
-            endIndex = toEval.indexOf(this.EXPR_END, startIndex);
-
-            if (endIndex == -1) {
-                throw new ExpressionEndTagMissingError();
-            }
-
-            if (startIndex + 2 >= endIndex - 1) {
-                throw new EmptyExpressionError();
-            }
-
-            let fillerBetween = toEval.substring(0, startIndex);
-            if (fillerBetween == "=" || (fillerBetween.endsWith("=") && !fillerBetween.endsWith("=="))) {
-                fillerBetween += "=";
-            }
-            expression += fillerBetween;
-
-            subexpression = toEval.substring(startIndex + 2, endIndex);
-            toEval = toEval.substring(endIndex + 1, toEval.length);
-            const pointIndex = subexpression.indexOf(".");
-            const spriteName = subexpression.substring(0, pointIndex);
-            const attrName = subexpression.substring(pointIndex + 1, subexpression.length);
-
-            if (spriteMap[spriteName] == undefined) {
-                const spriteString = this._getSpriteString(t, index, spriteName);
-                spriteMap[spriteName] = index;
-                inits += spriteString;
-                index++;
-            }
-
-            if (this._isAnAttribute(attrName)) {
-                attrDependencies.push({spriteName, attrName});
-                expression += "sprite" + spriteMap[spriteName] + "." + attrName;
-            } else {
-                varDependencies.push({spriteName, varName: attrName});
-                inits += this._getVariableString(t, spriteMap[spriteName], spriteName, attrName);
-                expression += "variable" + spriteMap[spriteName];
-            }
-
+    private static getValueForSubExpression(t: TestDriver, spriteName: string, attribute: string,
+                                            custom: boolean, dependencies: Dependencies = undefined): Sprite | Variable | string | string[] {
+        if (!spriteName || spriteName == "") {
+            throw new EmptyExpressionError();
         }
-        // rest of the toEval
-        expression += toEval;
-        expression = inits + expression + ";\n}";
-        return {
-            expr: expression,
-            varDependencies: varDependencies,
-            attrDependencies: attrDependencies
-        };
+        const sprite: Sprite = spriteName == "_stage_" ? t.getStage() : t.getSprite(spriteName);
+        if (!sprite) {
+            throw new SpriteNotFoundError(spriteName);
+        }
+        if (attribute == undefined) {
+            return sprite;
+        }
+        let variable: Variable | string;
+        if (custom) {
+            variable = sprite.getVariable(attribute);
+            if (!variable) {
+                throw new VariableNotFoundError(spriteName, attribute);
+            }
+            if (dependencies) {
+                dependencies.varDependencies.push({spriteName: sprite.name, varName: variable.name});
+            }
+            return variable.value;
+        } else {
+            variable = sprite[attribute];
+            if (!variable) {
+                if (this._isAnAttribute(attribute)) {
+                    // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
+                    variable = t.getSprite(spriteName)[attribute];
+                } else {
+                    try {
+                        // maybe custom flag was not specified by accident -> try custom variables
+                        return this.getValueForSubExpression(t, spriteName, attribute, true, dependencies);
+                    } catch (e) {
+                        throw new AttributeNotFoundError(spriteName, attribute);
+                    }
+                }
+            }
+            if (dependencies) {
+                dependencies.attrDependencies.push({spriteName: sprite.name, attrName: attribute});
+            }
+            return variable;
+        }
+    }
+
+    public static evaluateExpression(t: TestDriver, expression: string): unknown {
+        const $ = (spriteName: string, attribute: string, custom: boolean) =>
+            this.getValueForSubExpression(t, spriteName, attribute, custom);
+        return eval(expression)(t, $);
     }
 
     /**

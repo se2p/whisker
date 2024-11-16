@@ -531,7 +531,7 @@ export abstract class CheckGenerator {
                               negated: boolean, expr: ArgType): () => boolean {
         const e = ModelUtil.getExpressionForEval(t, expr);
         const eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
-        const check: () => boolean = () => !negated == eval(e.expr)(t);
+        const check: () => boolean = () => !negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, check);
         return check;
     }
