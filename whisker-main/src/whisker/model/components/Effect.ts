@@ -22,9 +22,9 @@ export class Effect extends Check {
 
         this._effect = () => false;
 
-        if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
+        if (name == "Output" || ((name == "AttrComp" || name == "AttrChange") && (args[1] == "sayText"))) {
             this._dependsOnSayText = true;
-        } else if (name == CheckName.Function || name == CheckName.Expr) {
+        } else if (name == "Function" || name == "Expr") {
             this._dependsOnSayText = String(args[0]).includes(".sayText");
         } else {
             this._dependsOnSayText = false;

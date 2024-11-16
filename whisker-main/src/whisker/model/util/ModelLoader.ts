@@ -343,7 +343,7 @@ export class ModelLoader {
                 this._idUndefined++;
             }
 
-            if (name == undefined || CheckName[name] == undefined) {
+            if (name == undefined) {
                 throw new Error(newEdge.id + ": Name of condition wrong or missing.");
             }
 
@@ -373,7 +373,7 @@ export class ModelLoader {
                 this._idUndefined++;
             }
 
-            if (name == undefined || CheckName[name] == undefined) {
+            if (name == undefined) {
                 throw new Error(newEdge.id + ": Name of effect wrong or missing.");
             }
 
