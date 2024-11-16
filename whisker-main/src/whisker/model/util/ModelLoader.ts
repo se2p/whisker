@@ -7,7 +7,7 @@ import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
-import {InputEffect, InputEffectName, InputEffectJSON} from "../components/InputEffect";
+import {InputEffect, InputEffectJSON, InputEffectName} from "../components/InputEffect";
 import {ArgType, CheckName, SimpleCheck} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
@@ -396,7 +396,7 @@ export class ModelLoader {
             name = effect.name;
             args = effect.args;
 
-            if (name == InputEffectName.InputKey) {
+            if (name == "InputKey") {
                 if (String(args[0]).toLowerCase() == "left") {
                     args[0] = "left arrow";
                 } else if (String(args[0]).toLowerCase() == "right") {
@@ -414,7 +414,7 @@ export class ModelLoader {
                 this._idUndefined++;
             }
 
-            if (name == undefined || InputEffectName[name] == undefined) {
+            if (name == undefined) {
                 throw new Error(newEdge.id + ": Name of input effect wrong or missing.");
             }
 

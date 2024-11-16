@@ -1,10 +1,10 @@
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
-import {InputEffect, InputEffectName} from "../../../../src/whisker/model/components/InputEffect";
+import {InputEffect} from "../../../../src/whisker/model/components/InputEffect";
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
-import {UserModelEdgeJSON, UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
+import {UserModelEdge, UserModelEdgeJSON} from "../../../../src/whisker/model/components/UserModelEdge";
 import {ProgramModelEdge, ProgramModelEdgeJSON} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('Model edges', () => {
@@ -105,7 +105,7 @@ describe('Model edges', () => {
     });
 
     test("User model edge", () => {
-        const inputEffect = new InputEffect("id", InputEffectName.InputKey, ["left"]);
+        const inputEffect = new InputEffect("id", "InputKey", ["left"]);
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
         const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
         edge.addInputEffect(inputEffect);
@@ -138,7 +138,7 @@ describe('Model edges', () => {
 
     test("UserModelEdge.toJSON()", () => {
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
-        const inputEffect = new InputEffect("id", InputEffectName.InputKey, ["left"]);
+        const inputEffect = new InputEffect("id", "InputKey", ["left"]);
         const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
         edge.addInputEffect(inputEffect);
         edge.addCondition(condition);
