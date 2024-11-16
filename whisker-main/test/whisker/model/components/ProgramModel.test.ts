@@ -113,9 +113,9 @@ describe('Program model', () => {
         expect(totalCoverage.missedEdges.length).toBe(2);
     });
 
-    test("SimplifyForSave", () => {
+    test("toJSON", () => {
         const p = getValidProgramModelForCoverage();
-        const actual = p.simplifyForSave();
+        const actual = p.toJSON();
         const expected: SimpleProgramModel = {
             id: p.id,
             startNodeId: "start",

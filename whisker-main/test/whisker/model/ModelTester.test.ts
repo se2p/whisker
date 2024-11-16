@@ -87,7 +87,7 @@ describe('ModelTester', () => {
                 {}, ["end"], []);
             const expected: SimpleTypedModel = {
                 usage: "program",
-                ...expectedProgramModel.simplifyForSave()
+                ...expectedProgramModel.toJSON()
             };
             expect(loadedModel).toStrictEqual(expected);
         });
@@ -101,7 +101,7 @@ describe('ModelTester', () => {
                 {}, ["end"], ["end"]);
             const expected: SimpleTypedModel = {
                 usage: "user",
-                ...expectedProgramModel.simplifyForSave()
+                ...expectedProgramModel.toJSON()
             };
             expect(loadedModel).toStrictEqual(expected);
         });
@@ -116,7 +116,7 @@ describe('ModelTester', () => {
                 {"e1": expectedEdge}, ["end"], ["end"]);
             const expected: SimpleTypedModel = {
                 usage: "end",
-                ...expectedProgramModel.simplifyForSave()
+                ...expectedProgramModel.toJSON()
             };
             expect(loadedModel).toStrictEqual(expected);
         });

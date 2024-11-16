@@ -165,7 +165,7 @@ export class ProgramModel extends Model<ProgramModelEdge, SimpleProgramModel> {
         this.secondLastTransitionStep = steps;
     }
 
-    override simplifyForSave(): SimpleProgramModel {
+    override toJSON(): SimpleProgramModel {
         return {
             id: this.id,
             startNodeId: this.startNodeId,

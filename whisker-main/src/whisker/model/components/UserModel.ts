@@ -90,7 +90,7 @@ export class UserModel extends Model<UserModelEdge, SimpleUserModel> {
         this.secondLastTransitionStep = steps;
     }
 
-    override simplifyForSave(): SimpleUserModel {
+    override toJSON(): SimpleUserModel {
         return {
             id: this.id,
             startNodeId: this.startNodeId,

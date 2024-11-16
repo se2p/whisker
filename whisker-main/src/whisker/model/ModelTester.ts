@@ -122,15 +122,15 @@ export class ModelTester extends EventEmitter {
     getAllModels(): SimpleTypedModel[] {
         const models: SimpleTypedModel[] = [];
         this._programModels.forEach(model => {
-            const shortened: SimpleProgramModel = model.simplifyForSave();
+            const shortened: SimpleProgramModel = model.toJSON();
             models.push({usage: "program", ...shortened});
         });
         this._userModels.forEach(model => {
-            const shortened: SimpleUserModel = model.simplifyForSave();
+            const shortened: SimpleUserModel = model.toJSON();
             models.push({usage: "user", ...shortened});
         });
         this._onTestEndModels.forEach(model => {
-            const shortened: SimpleProgramModel = model.simplifyForSave();
+            const shortened: SimpleProgramModel = model.toJSON();
             models.push({usage: "end", ...shortened});
         });
         return models;

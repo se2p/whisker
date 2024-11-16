@@ -44,5 +44,5 @@ export abstract class Model<E, J extends SimpleModel> {
 
     abstract makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null;
 
-    abstract simplifyForSave(): J;
+    abstract toJSON(): J;
 }

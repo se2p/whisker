@@ -63,7 +63,7 @@ describe('User model', () => {
         });
     });
 
-    test("SimplifyForSave", () => {
+    test("toJSON", () => {
         const edges: Record<string, UserModelEdge> = {};
         edges["1"] = new UserModelEdge("1", "label", "graphID", "from", "to", -1, -1);
         edges["2"] = new UserModelEdge("2", "label", "graphID", "from", "to", 1000, -1);
@@ -71,7 +71,7 @@ describe('User model', () => {
         edges["4"] = new UserModelEdge("4", "label", "graphID", "from", "to", 1, 200);
         const p = new UserModel("id", "start", {start: new ModelNode("start", "label")},
             edges, [], []);
-        const actual = p.simplifyForSave();
+        const actual = p.toJSON();
         const expected: SimpleUserModel = {
             id: p.id,
             startNodeId: "start",
