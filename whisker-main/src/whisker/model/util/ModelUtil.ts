@@ -202,23 +202,6 @@ export abstract class ModelUtil {
         }
     }
 
-    static readonly EXPR_START = "$(";
-    static readonly EXPR_END = ")";
-
-    private static _getSpriteString(t: TestDriver, index: number, spriteName: string): string {
-        const name = ModelUtil.getStageOrSprite(t, spriteName).name;
-        return "const sprite" + index + " = t.getSprites(sprite => sprite.name == '" + name + "', false)[0];\n"
-            + "if (sprite" + index + " == undefined) {\n    throw new SpriteNotFoundError('" + spriteName + "');\n}\n";
-    }
-
-    private static _getVariableString(t: TestDriver, index: number, spriteName: string, varName: string): string {
-        const sprite = ModelUtil.getStageOrSprite(t, spriteName);
-        const name = ModelUtil.checkVariableExistence(t, sprite, varName).variable.name;
-        return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
-            " (variable" + index
-            + " == undefined) {\n   throw new VariableNotFoundError('" + varName + "');\n}\n";
-    }
-
     private static _isAnAttribute(attrName: string): boolean {
         return this._testAttributeName(attrName) ||
             (attrName.startsWith('old.') && this._testAttributeName(attrName.substring(4)));
@@ -253,7 +236,7 @@ export abstract class ModelUtil {
     static getExpressionForEval(t: TestDriver, pToEval: ArgType): Expression {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
         let toEval = String(pToEval);
-        if (!toEval.includes(this.EXPR_START)) {
+        if (!toEval.includes("$(")) {
             // TODO check if this should be more robust ("\"some wrong syntax'\"" as pToEval creates an error)
             if (!toEval.startsWith("'")) {
                 toEval = "'" + toEval + "'";
