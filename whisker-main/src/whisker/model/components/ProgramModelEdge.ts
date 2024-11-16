@@ -14,7 +14,6 @@ export interface SimpleProgramModelEdge extends SimpleModelEdge {
  */
 export class ProgramModelEdge extends ModelEdge {
     private readonly _effects: Effect[] = [];
-    failedEffects: Effect[] = [];
 
     /**
      * Create a new edge.
@@ -29,11 +28,6 @@ export class ProgramModelEdge extends ModelEdge {
     constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
                 forceTestAt: number) {
         super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
-    }
-
-    override reset(): void {
-        super.reset();
-        this.failedEffects = [];
     }
 
     /**
