@@ -31,7 +31,7 @@ export type CheckName = typeof CHECK_NAMES[number];
 
 export type ArgType = string | number | string[];
 
-export interface SimpleCheck {
+export interface CheckJSON {
     id: string
     name: CheckName;
     negated: boolean;
@@ -195,7 +195,7 @@ export class Check {
         return this._negated;
     }
 
-    toJSON(): SimpleCheck {
+    toJSON(): CheckJSON {
         return {
             id: this.id,
             name: this.name,

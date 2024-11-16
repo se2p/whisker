@@ -14,7 +14,7 @@ export interface ExtendedCoverageResult extends CoverageResult {
     missedEdges: EdgeID[];
 }
 
-export interface SimpleProgramModel extends ModelJSON {
+export interface ProgramModelJSON extends ModelJSON {
     edges: ProgramModelEdgeJSON[];
 }
 
@@ -31,7 +31,7 @@ export interface SimpleProgramModel extends ModelJSON {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class ProgramModel extends Model<ProgramModelEdge, SimpleProgramModel> {
+export class ProgramModel extends Model<ProgramModelEdge, ProgramModelJSON> {
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
 
@@ -166,7 +166,7 @@ export class ProgramModel extends Model<ProgramModelEdge, SimpleProgramModel> {
         this.secondLastTransitionStep = steps;
     }
 
-    override toJSON(): SimpleProgramModel {
+    override toJSON(): ProgramModelJSON {
         return {
             id: this.id,
             startNodeId: this.startNodeId,

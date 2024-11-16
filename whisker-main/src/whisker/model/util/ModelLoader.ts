@@ -8,7 +8,7 @@ import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
 import {InputEffect, InputEffectJSON, InputEffectName} from "../components/InputEffect";
-import {ArgType, CheckName, SimpleCheck} from "../components/Check";
+import {ArgType, CheckName, CheckJSON} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
 import {UserModelEdgeJSON, UserModelEdge} from "../components/UserModelEdge";
@@ -27,7 +27,7 @@ interface StoredModelEdge {
     to: NodeID;
     forceTestAt: number;
     forceTestAfter: number
-    conditions: SimpleCheck[];
+    conditions: CheckJSON[];
     inputEffects?: InputEffectJSON[];
     // effects: SimpleInputEffect[] | SimpleCheck[];
     effects: any[];
@@ -329,7 +329,7 @@ export class ModelLoader {
         }
     }
 
-    private _loadConditions(newEdge: ModelEdge, conditions: SimpleCheck[]): void {
+    private _loadConditions(newEdge: ModelEdge, conditions: CheckJSON[]): void {
         let id: string, name: CheckName, negated: boolean, args: ArgType[];
         conditions.forEach(condition => {
             id = condition.id;
@@ -359,9 +359,9 @@ export class ModelLoader {
         });
     }
 
-    private _loadEffects(newEdge: ProgramModelEdge, effects: SimpleCheck[]): void {
+    private _loadEffects(newEdge: ProgramModelEdge, effects: CheckJSON[]): void {
         let id: string, name: CheckName, negated: boolean, args: ArgType[];
-        effects.forEach((effect: SimpleCheck) => {
+        effects.forEach((effect: CheckJSON) => {
             id = effect.id;
             name = effect.name;
             negated = effect.negated;

@@ -1,5 +1,5 @@
 import {ModelLoader} from "./util/ModelLoader";
-import {CoverageResult, ExtendedCoverageResult, ProgramModel, SimpleProgramModel} from "./components/ProgramModel";
+import {CoverageResult, ExtendedCoverageResult, ProgramModel, ProgramModelJSON} from "./components/ProgramModel";
 import {UserModelJSON, UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
@@ -17,7 +17,7 @@ import {ProgramModelEdge} from "./components/ProgramModelEdge";
 
 export type SimpleTypedModel = SimpleTypedPModel | SimpleTypedUModel;
 
-export interface SimpleTypedPModel extends SimpleProgramModel {
+export interface SimpleTypedPModel extends ProgramModelJSON {
     usage: "program" | "end";
 }
 
@@ -124,7 +124,7 @@ export class ModelTester extends EventEmitter {
     getAllModels(): SimpleTypedModel[] {
         const models: SimpleTypedModel[] = [];
         this._programModels.forEach(model => {
-            const shortened: SimpleProgramModel = model.toJSON();
+            const shortened: ProgramModelJSON = model.toJSON();
             models.push({usage: "program", ...shortened});
         });
         this._userModels.forEach(model => {
@@ -132,7 +132,7 @@ export class ModelTester extends EventEmitter {
             models.push({usage: "user", ...shortened});
         });
         this._onTestEndModels.forEach(model => {
-            const shortened: SimpleProgramModel = model.toJSON();
+            const shortened: ProgramModelJSON = model.toJSON();
             models.push({usage: "end", ...shortened});
         });
         return models;

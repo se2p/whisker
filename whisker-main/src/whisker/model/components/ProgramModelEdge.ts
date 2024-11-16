@@ -2,11 +2,11 @@ import {Effect} from "./Effect";
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
-import {Check, SimpleCheck} from "./Check";
+import {Check, CheckJSON} from "./Check";
 import {ModelEdge, ModelEdgeJSON} from "./ModelEdge";
 
 export interface ProgramModelEdgeJSON extends ModelEdgeJSON {
-    effects: SimpleCheck[];
+    effects: CheckJSON[];
 }
 
 /**

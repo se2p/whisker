@@ -2,7 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
-import {SimpleCheck} from "./Check";
+import {CheckJSON} from "./Check";
 import {NodeID} from "./ModelNode";
 
 export type EdgeID = string;
@@ -14,7 +14,7 @@ export interface ModelEdgeJSON {
     to: NodeID;
     forceTestAt: number;
     forceTestAfter: number
-    conditions: SimpleCheck[];
+    conditions: CheckJSON[];
 }
 
 /**

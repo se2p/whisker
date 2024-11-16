@@ -1,4 +1,4 @@
-import {CoverageResult, ProgramModel, SimpleProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
+import {CoverageResult, ProgramModel, ProgramModelJSON} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
@@ -116,7 +116,7 @@ describe('Program model', () => {
     test("toJSON", () => {
         const p = getValidProgramModelForCoverage();
         const actual = p.toJSON();
-        const expected: SimpleProgramModel = {
+        const expected: ProgramModelJSON = {
             id: p.id,
             startNodeId: "start",
             stopNodeIds: [],

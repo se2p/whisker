@@ -1,5 +1,5 @@
 import {Condition} from "../../../../src/whisker/model/components/Condition";
-import {ArgType, CHECK_NAMES, CheckName, SimpleCheck} from "../../../../src/whisker/model/components/Check";
+import {ArgType, CHECK_NAMES, CheckName, CheckJSON} from "../../../../src/whisker/model/components/Check";
 import {CheckUtilityMock} from "../CheckUtilityMock";
 
 describe('Condition', () => {
@@ -44,7 +44,7 @@ describe('Condition', () => {
         const args: ArgType[] = ["test"];
         const condition = new Condition(id, "edgeID", checkName, negated, args);
         const actual = condition.toJSON();
-        const expected: SimpleCheck = {
+        const expected: CheckJSON = {
             id: id,
             name: checkName,
             negated: negated,
