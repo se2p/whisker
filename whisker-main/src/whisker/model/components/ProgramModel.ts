@@ -172,12 +172,8 @@ export class ProgramModel extends Model<ProgramModelEdge, SimpleProgramModel> {
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.toJSON()),
-            edges: ProgramModel.mapValuesToArray(this.edges, edges => edges.toJSON())
+            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
+            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
         };
-    }
-
-    public static mapValuesToArray<A, B>(map: Record<string | number | symbol, A>, mapper: (a: A) => B): B[] {
-        return Object.values(map).map((v) => mapper(v));
     }
 }

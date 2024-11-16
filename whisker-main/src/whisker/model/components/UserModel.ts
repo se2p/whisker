@@ -2,7 +2,6 @@ import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {ProgramModel} from "./ProgramModel";
 import {Model, SimpleModel} from "./Model";
 import {SimpleUserModelEdge, UserModelEdge} from "./UserModelEdge";
 
@@ -100,8 +99,8 @@ export class UserModel extends Model<UserModelEdge, SimpleUserModel> {
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.toJSON()),
-            edges: ProgramModel.mapValuesToArray(this.edges, edge => edge.toJSON())
+            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
+            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
         };
     }
 }
