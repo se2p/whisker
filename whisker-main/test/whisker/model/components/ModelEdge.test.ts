@@ -1,9 +1,3 @@
-import {
-    ProgramModelEdge,
-    SimpleProgramModelEdge,
-    SimpleUserModelEdge,
-    UserModelEdge
-} from "../../../../src/whisker/model/components/ModelEdge";
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
@@ -11,6 +5,8 @@ import {InputEffect, InputEffectName} from "../../../../src/whisker/model/compon
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
+import {SimpleUserModelEdge, UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
+import {ProgramModelEdge, SimpleProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('Model edges', () => {
     const id = "id";

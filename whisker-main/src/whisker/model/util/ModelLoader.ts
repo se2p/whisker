@@ -1,11 +1,7 @@
 import {ModelNode, NodeID, SimpleModelNode} from "../components/ModelNode";
 import {
     EdgeID,
-    ModelEdge,
-    ProgramModelEdge,
-    SimpleProgramModelEdge,
-    SimpleUserModelEdge,
-    UserModelEdge
+    ModelEdge
 } from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
@@ -15,6 +11,8 @@ import {InputEffect, InputEffectName, SimpleInputEffect} from "../components/Inp
 import {ArgType, CheckName, SimpleCheck} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
+import {SimpleUserModelEdge, UserModelEdge} from "../components/UserModelEdge";
+import {ProgramModelEdge, SimpleProgramModelEdge} from "../components/ProgramModelEdge";
 
 export type ModelType = "program" | "user" | "end";
 

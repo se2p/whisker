@@ -1,6 +1,7 @@
 import {ModelNode, SimpleModelNode} from "../../../../src/whisker/model/components/ModelNode";
-import {ModelEdge, ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
+import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import {TestDriverMock} from "../TestDriverMock";
+import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('Model node', () => {
     function mockModelEdge(id: string, checkConditions: jest.Mock, lastTransition = 0,

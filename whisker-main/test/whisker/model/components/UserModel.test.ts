@@ -1,10 +1,10 @@
 import {SimpleUserModel, UserModel} from "../../../../src/whisker/model/components/UserModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
-import {UserModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import TestDriver from "../../../../src/test/test-driver";
 import {MockedModelNode} from "./ProgramModel.test";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {getDummyTestDriver} from "../TestDriverMock";
+import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 
 function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode>, Record<string, UserModelEdge>] {
     const nodes: Record<string, ModelNode> = {

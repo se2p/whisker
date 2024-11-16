@@ -5,13 +5,15 @@ import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
-import {ModelEdge, ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
+import {ModelEdge} from "./components/ModelEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
 import {Effect} from "./components/Effect";
 import Sprite from "../../vm/sprite";
 import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
+import {UserModelEdge} from "./components/UserModelEdge";
+import {ProgramModelEdge} from "./components/ProgramModelEdge";
 
 export type SimpleTypedModel = SimpleTypedPModel | SimpleTypedUModel;
 

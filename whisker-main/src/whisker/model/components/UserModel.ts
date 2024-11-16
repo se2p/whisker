@@ -1,9 +1,10 @@
 import {ModelNode} from "./ModelNode";
-import {ModelEdge, SimpleUserModelEdge, UserModelEdge} from "./ModelEdge";
+import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModel} from "./ProgramModel";
 import {Model, SimpleModel} from "./Model";
+import {SimpleUserModelEdge, UserModelEdge} from "./UserModelEdge";
 
 export interface SimpleUserModel extends SimpleModel {
     edges: SimpleUserModelEdge[];

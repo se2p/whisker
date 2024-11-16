@@ -1,4 +1,3 @@
-import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {
@@ -8,6 +7,7 @@ import {
     getTimeLimitFailedAtOutput
 } from "../../../../src/whisker/model/util/ModelError";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
+import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('ModelError', () => {
     function getEdge(): ProgramModelEdge {

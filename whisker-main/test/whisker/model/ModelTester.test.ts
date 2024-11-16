@@ -1,11 +1,11 @@
 import {ModelTester, SimpleTypedModel} from "../../../src/whisker/model/ModelTester";
 import {ProgramModel} from "../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../src/whisker/model/components/ModelNode";
-import {ProgramModelEdge} from "../../../src/whisker/model/components/ModelEdge";
 import {Condition} from "../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../src/whisker/model/components/Check";
 import {readFileSync} from "fs";
 import * as path from "node:path";
+import {ProgramModelEdge} from "../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {

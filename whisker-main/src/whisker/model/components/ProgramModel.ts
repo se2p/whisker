@@ -1,8 +1,9 @@
 import {ModelNode} from "./ModelNode";
-import {EdgeID, ModelEdge, ProgramModelEdge, SimpleProgramModelEdge} from "./ModelEdge";
+import {EdgeID, ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Model, SimpleModel} from "./Model";
+import {ProgramModelEdge, SimpleProgramModelEdge} from "./ProgramModelEdge";
 
 export interface CoverageResult {
     total: number;
