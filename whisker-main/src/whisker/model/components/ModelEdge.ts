@@ -365,7 +365,7 @@ export class UserModelEdge extends ModelEdge {
     override toJSON(): SimpleUserModelEdge {
         return {
             ...super.toJSON(),
-            effects: this.inputEffects.map(value => value.simplifyForSave())
+            effects: this.inputEffects.map(value => value.toJSON())
         };
     }
 }

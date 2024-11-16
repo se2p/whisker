@@ -45,9 +45,9 @@ describe('InputEffect', () => {
         }).not.toThrow();
     });
 
-    test("SimplifyForSave()", () => {
+    test("toJSON()", () => {
         const effect = new InputEffect("test", InputEffectName.InputKey, ["left"]);
-        const actual = effect.simplifyForSave();
+        const actual = effect.toJSON();
         const expected: SimpleInputEffect = {
             id: "test",
             name: InputEffectName.InputKey,

@@ -156,7 +156,7 @@ describe('Model edges', () => {
             forceTestAfter: -1,
             forceTestAt: -1,
             conditions: [condition.toJSON()],
-            effects: [inputEffect.simplifyForSave()],
+            effects: [inputEffect.toJSON()],
         };
         expect(actual).toStrictEqual(expected);
     });

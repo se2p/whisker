@@ -83,7 +83,7 @@ export class InputEffect {
         this._inputEffect = this._getInputDataFunction(t, this._args);
     }
 
-    simplifyForSave(): SimpleInputEffect {
+    toJSON(): SimpleInputEffect {
         return {
             id: this.id,
             name: this.name,
