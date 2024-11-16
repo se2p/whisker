@@ -49,11 +49,14 @@ export class UserModel extends Model<UserModelEdge, SimpleUserModel> {
         const edge = this.currentState.testEdgeConditions(testDriver, checkUtility, stepsSinceLastTransition,
             this.stepNbrOfProgramEnd);
 
-        if (edge != null) {
-            this.currentState = this.nodes[edge.getEndNodeId()];
-            this.secondLastTransitionStep = this.lastTransitionStep;
-            this.lastTransitionStep = testDriver.getTotalStepsExecuted() + 1;
+        if (edge == null) {
+            return null;
         }
+
+        this.currentState = this.nodes[edge.getEndNodeId()];
+        this.secondLastTransitionStep = this.lastTransitionStep;
+        this.lastTransitionStep = testDriver.getTotalStepsExecuted() + 1;
+
         return edge;
     }
 
