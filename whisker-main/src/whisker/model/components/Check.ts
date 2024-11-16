@@ -194,7 +194,7 @@ export class Check {
         return this._negated;
     }
 
-    simplifyForSave(): SimpleCheck {
+    toJSON(): SimpleCheck {
         return {
             id: this.id,
             name: this.name,

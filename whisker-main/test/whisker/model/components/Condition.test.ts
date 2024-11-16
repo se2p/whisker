@@ -37,13 +37,13 @@ describe('Condition', () => {
         }).not.toThrow();
     });
 
-    test("SimplifyForSave", () => {
+    test("toJSON", () => {
         const id = "id";
         const checkName = CheckName.BackgroundChange;
         const negated = true;
         const args: ArgType[] = ["test"];
         const condition = new Condition(id, "edgeID", checkName, negated, args);
-        const actual = condition.simplifyForSave();
+        const actual = condition.toJSON();
         const expected: SimpleCheck = {
             id: id,
             name: checkName,

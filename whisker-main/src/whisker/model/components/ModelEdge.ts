@@ -198,7 +198,7 @@ export abstract class ModelEdge {
             to: this.to,
             forceTestAfter: this.forceTestAfter,
             forceTestAt: this.forceTestAt,
-            conditions: this.conditions.map((condition: Condition) => condition.simplifyForSave())
+            conditions: this.conditions.map((condition: Condition) => condition.toJSON())
         };
     }
 }
@@ -251,7 +251,7 @@ export class ProgramModelEdge extends ModelEdge {
     override toJSON(): SimpleProgramModelEdge {
         return {
             ...super.toJSON(),
-            effects: this.effects.map(effect => effect.simplifyForSave())
+            effects: this.effects.map(effect => effect.toJSON())
         };
     }
 
