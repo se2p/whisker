@@ -27,16 +27,13 @@ export class ModelNode {
      * @param id Id of the node
      * @param label Label of the node
      */
-    constructor(id: string, label: string) {
+    constructor(id: string, label: string = id) {
         if (!id) {
             throw new Error("No id given.");
         }
+
         this.id = id;
-        if (label == undefined) {
-            this.label = id;
-        } else {
-            this.label = label;
-        }
+        this.label = label;
     }
 
     /**
