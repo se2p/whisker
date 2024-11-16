@@ -128,13 +128,8 @@ export abstract class ModelEdge {
         return failedConditions;
     }
 
-    /**
-     * Do nothing... Only on subtype ProgramModelEdge.
-     */
-    checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                           eventStrings: string[]): Condition[] {
-        return this.conditions;
-    }
+    abstract checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
+                           eventStrings: string[]): Condition[];
 
     set lastTransition(transition: number) {
         this._lastTransition = transition;
@@ -143,7 +138,6 @@ export abstract class ModelEdge {
     get lastTransition(): number {
         return this._lastTransition;
     }
-
 
     private _getTimeLimitFailedOutput(condition: Condition, t: TestDriver): string {
         if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
@@ -360,6 +354,10 @@ export class UserModelEdge extends ModelEdge {
         this.inputEffects.forEach(effect => {
             effect.registerComponents(testDriver);
         });
+    }
+
+    checkConditionsOnEvent(t, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Condition[] {
+        return this.conditions;
     }
 
     override toJSON(): SimpleUserModelEdge {
