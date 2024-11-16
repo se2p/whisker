@@ -3,6 +3,7 @@ import {ModelEdge, SimpleUserModelEdge, UserModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModel} from "./ProgramModel";
+import {Model} from "./Model";
 
 export interface SimpleUserModel {
     id: string;
@@ -26,20 +27,8 @@ export interface SimpleUserModel {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class UserModel {
-    readonly id: string;
-
-    protected readonly startNodeId: string;
-    protected readonly stopNodeIds: string[];
-    protected readonly stopAllNodeIds: string[];
-
-    protected readonly nodes: Record<string, ModelNode>;
-    protected readonly edges: Record<string, UserModelEdge>;
-
-    lastTransitionStep = 0;
-    secondLastTransitionStep = 0;
+export class UserModel extends Model<UserModelEdge, SimpleUserModel> {
     stepNbrOfProgramEnd = 0;
-    protected currentState: ModelNode;
 
     /**
      * Construct a user model (graph) with a string identifier. This model acts as a user playing/using the Scratch
@@ -54,25 +43,13 @@ export class UserModel {
      */
     constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>, edges: Record<string, UserModelEdge>,
                 stopNodeIds: string[], stopAllNodeIds: string[]) {
-        if (!id) {
-            throw new Error("No id given.");
-        }
-        if (!startNodeId || !nodes[startNodeId]) {
-            throw new Error("No start node (id or in node set) given.");
-        }
-        this.id = id;
-        this.currentState = nodes[startNodeId];
-        this.nodes = nodes;
-        this.edges = edges;
-        this.startNodeId = startNodeId;
-        this.stopNodeIds = stopNodeIds;
-        this.stopAllNodeIds = stopAllNodeIds;
+        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
 
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
+    override makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
         const stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(testDriver, checkUtility, stepsSinceLastTransition,
             this.stepNbrOfProgramEnd);
@@ -118,7 +95,7 @@ export class UserModel {
         this.secondLastTransitionStep = steps;
     }
 
-    simplifyForSave(): SimpleUserModel {
+    override simplifyForSave(): SimpleUserModel {
         return {
             id: this.id,
             startNodeId: this.startNodeId,

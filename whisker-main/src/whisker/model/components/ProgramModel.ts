@@ -2,6 +2,7 @@ import {ModelNode, SimpleModelNode} from "./ModelNode";
 import {EdgeID, ModelEdge, ProgramModelEdge, SimpleProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
+import {Model} from "./Model";
 
 export interface CoverageResult {
     total: number;
@@ -34,23 +35,11 @@ export interface SimpleProgramModel {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class ProgramModel {
-    readonly id: string;
-
-    protected readonly startNodeId: string;
-    protected readonly stopNodeIds: string[];
-    protected readonly stopAllNodeIds: string[];
-
-    protected readonly nodes: Record<string, ModelNode>;
-    protected readonly edges: Record<string, ProgramModelEdge>;
-
+export class ProgramModel extends Model<ProgramModelEdge, SimpleProgramModel> {
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
 
-    lastTransitionStep = 0;
-    secondLastTransitionStep = 0;
     programEndStep = 0;
-    currentState: ModelNode;
 
     /**
      * Construct a program model (graph) with a string identifier. This model is executed in parallel to the program
@@ -65,25 +54,13 @@ export class ProgramModel {
      */
     constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
-        if (!id) {
-            throw new Error("No id given.");
-        }
-        if (!startNodeId || !nodes[startNodeId]) {
-            throw new Error("No start node (id or in node set) given.");
-        }
-        this.id = id;
-        this.startNodeId = startNodeId;
-        this.currentState = nodes[startNodeId];
-        this.nodes = nodes;
-        this.edges = edges;
-        this.stopNodeIds = stopNodeIds;
-        this.stopAllNodeIds = stopAllNodeIds;
+        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
 
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
+    override makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.programEndStep);
@@ -193,7 +170,7 @@ export class ProgramModel {
         this.secondLastTransitionStep = steps;
     }
 
-    simplifyForSave(): SimpleProgramModel {
+    override simplifyForSave(): SimpleProgramModel {
         return {
             id: this.id,
             startNodeId: this.startNodeId,
