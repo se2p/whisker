@@ -370,4 +370,10 @@ export class Check {
 
         return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
     }
+
+    toString(): string {
+        const negated = this.negated ? "!" : "";
+        const args = this.args.join(',');
+        return `${negated}${this.name}(${args})`;
+    }
 }

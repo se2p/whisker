@@ -61,22 +61,6 @@ export class Effect extends Check {
     }
 
     /**
-     * Get a readable output for a failed effect trace.
-     */
-    override toString(): string {
-        let result = (this.negated ? "!" : "") + this.name + "(";
-
-        if (this.args.length == 1) {
-            result = result + this.args[0];
-        } else {
-            result = result + this.args.concat();
-        }
-
-        result = result + ")";
-        return result;
-    }
-
-    /**
      * Whether this effect contradicts another effect check.
      * @param effect The other effect.
      */
