@@ -77,8 +77,7 @@ export class ModelNode {
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                  eventStrings: string[]): ModelEdge | null {
         for (const e of this.edges) {
-            const result = e.checkConditionsOnEvent(t, cu, stepsSinceLastTransition, stepsSinceEnd,
-                eventStrings);
+            const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, eventStrings);
 
             if (result && result.length == 0) {
                 e.lastTransition = t.getTotalStepsExecuted() + 1;

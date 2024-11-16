@@ -239,7 +239,7 @@ describe('Model edges', () => {
             expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 10ms");
             result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual(conditions);
-            result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 11, 9, []);
+            result = edge.checkConditionsOnEvent(11, 9, []);
             expect(result).toStrictEqual(conditions);
         });
     });
@@ -251,7 +251,7 @@ describe('Model edges', () => {
             edge.addCondition(new Condition(id, label, CheckName.Key, false, ["a"]));
             edge.addCondition(new Condition(id, label, CheckName.SpriteTouching, false, ["apple", "bowl"]));
             const eventStrings = ["BackgroundChange:differentArg", "Key:w", "Function:false"];
-            const result = edge.checkConditionsOnEvent(null, null, 5, 7, eventStrings);
+            const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
             expect(result).toBe(edge.conditions);
         });
 
@@ -270,7 +270,7 @@ describe('Model edges', () => {
             edge.addCondition(new Condition(id, label, CheckName.SpriteTouching, false, ["banana", "bowl"]));
             const eventStrings = ["BackgroundChange:test", "Key:d", "Function:true"];
             edge.registerComponents(cu, tdMock.getTestDriver());
-            const result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 5, 7, eventStrings);
+            const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
             expect(result).toStrictEqual([edge.conditions[0]]);
         });
 
@@ -284,7 +284,7 @@ describe('Model edges', () => {
             edge.addEffect(new Effect(id, label, CheckName.SpriteTouching, false, ["apple", "bowl"]));
             const eventStrings = ["BackgroundChange:stage", "Key:d"];
             edge.registerComponents(cu, tdMock.getTestDriver());
-            const result = edge.checkConditionsOnEvent(tdMock.getTestDriver(), cu, 5, 7, eventStrings);
+            const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
             expect(result).toStrictEqual(edge.conditions);
         });
     });

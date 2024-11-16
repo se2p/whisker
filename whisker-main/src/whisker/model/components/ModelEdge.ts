@@ -128,8 +128,7 @@ export abstract class ModelEdge {
         return failedConditions;
     }
 
-    abstract checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                           eventStrings: string[]): Condition[];
+    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Condition[];
 
     set lastTransition(transition: number) {
         this._lastTransition = transition;
@@ -253,8 +252,7 @@ export class ProgramModelEdge extends ModelEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Function:true Checks.
      */
-    override checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                                    eventStrings: string[]): Condition[] {
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Condition[] {
         if (this.failedForcedTest) {
             return this.conditions;
         }
@@ -356,7 +354,7 @@ export class UserModelEdge extends ModelEdge {
         });
     }
 
-    checkConditionsOnEvent(t, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Condition[] {
+    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _eventStrings: string[]): Condition[] {
         return this.conditions;
     }
 
