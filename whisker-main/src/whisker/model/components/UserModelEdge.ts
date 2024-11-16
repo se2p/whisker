@@ -12,7 +12,7 @@ export interface SimpleUserModelEdge extends SimpleModelEdge {
  * Edge structure that has input effects triggered if the conditions are fulfilled.
  */
 export class UserModelEdge extends ModelEdge {
-    inputEffects: InputEffect[] = [];
+    private readonly _inputEffects: InputEffect[] = [];
 
     /**
      * Create a new edge.
@@ -29,19 +29,23 @@ export class UserModelEdge extends ModelEdge {
         super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
     }
 
+    get inputEffects(): readonly InputEffect[] {
+        return this._inputEffects;
+    }
+
     /**
      * Add an effect to the edge.
      * @param effect Effect function as a string.
      */
     addInputEffect(effect: InputEffect): void {
-        this.inputEffects.push(effect);
+        this._inputEffects.push(effect);
     }
 
     /**
      * Start the input effects of this edge.
      */
     inputImmediate(t: TestDriver): void {
-        this.inputEffects.forEach(inputEffect => {
+        this._inputEffects.forEach(inputEffect => {
             inputEffect.inputImmediate(t);
         });
     }
@@ -51,7 +55,7 @@ export class UserModelEdge extends ModelEdge {
      */
     override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         super.registerComponents(checkListener, testDriver);
-        this.inputEffects.forEach(effect => {
+        this._inputEffects.forEach(effect => {
             effect.registerComponents(testDriver);
         });
     }
@@ -63,7 +67,7 @@ export class UserModelEdge extends ModelEdge {
     override toJSON(): SimpleUserModelEdge {
         return {
             ...super.toJSON(),
-            effects: this.inputEffects.map(value => value.toJSON())
+            effects: this._inputEffects.map(value => value.toJSON())
         };
     }
 }

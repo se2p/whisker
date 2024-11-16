@@ -26,8 +26,8 @@ export interface SimpleInputEffect {
  * Class for giving the Scratch VM immediate inputs.
  */
 export class InputEffect {
-    id: string;
-    name: InputEffectName;
+    private readonly _id: string;
+    private readonly _name: InputEffectName;
     private _inputEffect: (t: TestDriver) => void;
     private readonly _args: ArgType[];
 
@@ -41,8 +41,8 @@ export class InputEffect {
         if (!id) {
             throw new Error("No id given.");
         }
-        this.name = name;
-        this.id = id;
+        this._name = name;
+        this._id = id;
         this._args = args;
         this._inputEffect = () => void 0;
 
@@ -85,14 +85,14 @@ export class InputEffect {
 
     toJSON(): SimpleInputEffect {
         return {
-            id: this.id,
-            name: this.name,
+            id: this._id,
+            name: this._name,
             args: this._args
         };
     }
 
     private _getInputDataFunction(t: TestDriver, arg: ArgType[]) {
-        switch (this.name) {
+        switch (this._name) {
             case InputEffectName.InputKey:
                 return () => {
                     t.inputImmediate({device: "keyboard", key: arg[0], isDown: true, steps: 1});
@@ -133,7 +133,7 @@ export class InputEffect {
             }
             default:
                 // should not happen
-                throw new Error("Input type not recognized: " + this.name);
+                throw new Error("Input type not recognized: " + this._name);
         }
     }
 }

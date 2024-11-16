@@ -119,12 +119,4 @@ describe('InputEffect', () => {
             expect(tdMock.clickSprite).toHaveBeenCalledWith("bowl", 42);
         });
     });
-
-    test("Click stage input effect", () => {
-        const effect = new InputEffect("test", InputEffectName.InputClickSprite, ["bowl"]);
-        effect.name = undefined;
-        expect(() => {
-            effect.registerComponents(getDummyTestDriver());
-        }).toThrow();
-    });
 });

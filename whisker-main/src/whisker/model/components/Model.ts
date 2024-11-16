@@ -12,7 +12,7 @@ export interface SimpleModel {
 }
 
 export abstract class Model<E, J extends SimpleModel> {
-    readonly id: string;
+    private readonly _id: string;
 
     protected readonly startNodeId: string;
     protected readonly stopNodeIds: string[];
@@ -33,7 +33,7 @@ export abstract class Model<E, J extends SimpleModel> {
         if (!startNodeId || !nodes[startNodeId]) {
             throw new Error("No start node (id or in node set) given.");
         }
-        this.id = id;
+        this._id = id;
         this.currentState = nodes[startNodeId];
         this.nodes = nodes;
         this.edges = edges;
@@ -45,4 +45,8 @@ export abstract class Model<E, J extends SimpleModel> {
     abstract makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null;
 
     abstract toJSON(): J;
+
+    get id(): string {
+        return this._id;
+    }
 }

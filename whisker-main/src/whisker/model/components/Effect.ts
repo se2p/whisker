@@ -7,7 +7,7 @@ import {CheckUtility} from "../util/CheckUtility";
  */
 export class Effect extends Check {
     private _effect: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
-    dependsOnSayText: boolean;
+    private readonly _dependsOnSayText: boolean;
 
     /**
      * Get an effect representation, checks the arguments.
@@ -23,11 +23,11 @@ export class Effect extends Check {
         this._effect = () => false;
 
         if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
-            this.dependsOnSayText = true;
+            this._dependsOnSayText = true;
         } else if (name == CheckName.Function || name == CheckName.Expr) {
-            this.dependsOnSayText = String(args[0]).includes(".sayText");
+            this._dependsOnSayText = String(args[0]).includes(".sayText");
         } else {
-            this.dependsOnSayText = false;
+            this._dependsOnSayText = false;
         }
     }
 
@@ -60,6 +60,10 @@ export class Effect extends Check {
         return this._effect;
     }
 
+    get dependsOnSayText(): boolean {
+        return this._dependsOnSayText;
+    }
+
     /**
      * Whether this effect contradicts another effect check.
      * @param effect The other effect.
@@ -67,5 +71,4 @@ export class Effect extends Check {
     contradicts(effect: Effect): boolean {
         return Check.testForContradicting(this, effect);
     }
-
 }

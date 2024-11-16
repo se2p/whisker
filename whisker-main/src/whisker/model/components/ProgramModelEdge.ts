@@ -13,7 +13,7 @@ export interface SimpleProgramModelEdge extends SimpleModelEdge {
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends ModelEdge {
-    effects: Effect[] = [];
+    private readonly _effects: Effect[] = [];
     failedEffects: Effect[] = [];
 
     /**
@@ -41,7 +41,11 @@ export class ProgramModelEdge extends ModelEdge {
      * @param effect Effect function as a string.
      */
     addEffect(effect: Effect): void {
-        this.effects.push(effect);
+        this._effects.push(effect);
+    }
+
+    get effects(): readonly Effect[] {
+        return this._effects;
     }
 
     /**
@@ -49,7 +53,7 @@ export class ProgramModelEdge extends ModelEdge {
      */
     override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
         super.registerComponents(cu, testDriver);
-        this.effects.forEach(effect => {
+        this._effects.forEach(effect => {
             effect.registerComponents(testDriver, cu, this.graphID);
         });
     }
@@ -57,7 +61,7 @@ export class ProgramModelEdge extends ModelEdge {
     override toJSON(): SimpleProgramModelEdge {
         return {
             ...super.toJSON(),
-            effects: this.effects.map(effect => effect.toJSON())
+            effects: this._effects.map(effect => effect.toJSON())
         };
     }
 
@@ -102,7 +106,7 @@ export class ProgramModelEdge extends ModelEdge {
 
 
     private _testEffectsOnEvent(eventStrings: string[]): boolean {
-        for (const e of this.effects) {
+        for (const e of this._effects) {
             const eventString = CheckUtility.getEventString(e.name, e.negated, ...e.args);
 
             if (eventStrings.includes(eventString)) {

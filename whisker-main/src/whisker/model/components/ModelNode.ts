@@ -17,6 +17,7 @@ export class ModelNode {
     readonly label: string;
     edges: ModelEdge[] = []; //outgoing edges
 
+    // FIXME: this should be private readonly and already be set in the constructor!
     isStartNode = false;
     isStopNode = false;
     isStopAllNode = false;
