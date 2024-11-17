@@ -83,8 +83,9 @@ const checkLabelCodes = {
     RandomValue: [argType.spriteNameRegex, argType.attrName]
 };
 
-const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
-    'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter', 'a', 'b', 'c', 'd', 'e', 'f',
+    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2',
+    '3', '4', '5', '6', '7', '8', '9'];
 
 const placeholders = {
     spriteNameRegex: '',
@@ -106,6 +107,5 @@ const placeholders = {
     coordX: '0',
     coordY: '0'
 };
-
 
 export {argType, checkLabelCodes, inputLabelCodes, keys, placeholders};
