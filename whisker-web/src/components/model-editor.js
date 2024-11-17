@@ -171,7 +171,7 @@ class ModelEditor {
         if (data.label === 'new') {
             data.label = i18n.t('modelEditor:newNode');
         }
-        this.models[this.currentTab].nodes.push({id: data.id, label: data.label});
+        this.currentModel.nodes.push({id: data.id, label: data.label});
         this.showAddButtons();
         callback(data);
     }
@@ -180,7 +180,7 @@ class ModelEditor {
         data.label = data.label ?? '';
         data.id = data.id ?? Math.random().toString(16)
             .slice(2);
-        this.models[this.currentTab].edges.push({
+        this.currentModel.edges.push({
             id: data.id,
             label: data.label,
             from: data.from,
@@ -208,6 +208,10 @@ class ModelEditor {
         });
     }
 
+    get currentModel () {
+        return this.models[this.currentTab];
+    }
+
     deleteCurrentModel () {
         this.models.splice(this.currentTab, 1);
     }
@@ -219,17 +223,17 @@ class ModelEditor {
     deleteSelection () {
         const selection = this.network.getSelection();
 
-        if (selection.nodes.includes(this.models[this.currentTab].startNodeId)) {
+        if (selection.nodes.includes(this.currentModel.startNodeId)) {
             return false;
         }
-        this.models[this.currentTab].stopNodeIds =
-            this.getNotRemovedOnesByString(this.models[this.currentTab].stopNodeIds, selection.nodes);
-        this.models[this.currentTab].stopAllNodeIds =
-            this.getNotRemovedOnesByString(this.models[this.currentTab].stopAllNodeIds, selection.nodes);
-        this.models[this.currentTab].nodes =
-            this.getNotRemovedOnesByID(this.models[this.currentTab].nodes, selection.nodes);
-        this.models[this.currentTab].edges =
-            this.getNotRemovedOnesByID(this.models[this.currentTab].edges, selection.edges);
+        this.currentModel.stopNodeIds =
+            this.getNotRemovedOnesByString(this.currentModel.stopNodeIds, selection.nodes);
+        this.currentModel.stopAllNodeIds =
+            this.getNotRemovedOnesByString(this.currentModel.stopAllNodeIds, selection.nodes);
+        this.currentModel.nodes =
+            this.getNotRemovedOnesByID(this.currentModel.nodes, selection.nodes);
+        this.currentModel.edges =
+            this.getNotRemovedOnesByID(this.currentModel.edges, selection.edges);
         return true;
     }
 
@@ -320,19 +324,19 @@ class ModelEditor {
     }
 
     getEdgeById (edgeID) {
-        return this.models[this.currentTab].edges.find(e => e.id === edgeID);
+        return this.currentModel.edges.find(e => e.id === edgeID);
     }
 
     /** Delete all effects of edges of the current model if there are any */
     deleteEffects () {
-        for (const edge of this.models[this.currentTab].edges) {
+        for (const edge of this.currentModel.edges) {
             edge.effects = [];
         }
     }
 
     /** Check whether the current model has effects on any edges */
     hasEffects () {
-        return this.models[this.currentTab].edges.some(e => e.effects.length > 0);
+        return this.currentModel.edges.some(e => e.effects.length > 0);
     }
 
     /** Fill all empty conditions of edges with a always true condition */
@@ -551,15 +555,15 @@ class ModelEditor {
     checkForTypeChange (newType) {
         // if there are no effects of a program model than save it
         if (!this.hasEffects()) {
-            this.models[this.currentTab].usage = newType;
+            this.currentModel.usage = newType;
             return;
         }
 
         this.showConfirmPopup(i18n.t('modelEditor:effectsError'), () => {
             this.deleteEffects();
-            this.models[this.currentTab].usage = newType;
+            this.currentModel.usage = newType;
             this.loadModel(this.currentTab);
-        }, () => this.changeModelType(this.models[this.currentTab].usage));
+        }, () => this.changeModelType(this.currentModel.usage));
     }
 
     changeModelType (usage = 'program') {
@@ -576,7 +580,7 @@ class ModelEditor {
             const text = $(ModelEditor.CONFIG_NODE_LABEL).val();
 
             const currentNodeID = this.network.getSelectedNodes()[0];
-            for (const node of this.models[this.currentTab].nodes) {
+            for (const node of this.currentModel.nodes) {
                 if (node.id === currentNodeID) {
                     node.label = text;
                     break;
@@ -588,10 +592,10 @@ class ModelEditor {
         });
         $(ModelEditor.CONFIG_NODE_STOP1).on('click', () => {
             if ($(ModelEditor.CONFIG_NODE_STOP1).prop('checked')) {
-                this.models[this.currentTab].stopNodeIds.push(this.network.getSelectedNodes()[0]);
+                this.currentModel.stopNodeIds.push(this.network.getSelectedNodes()[0]);
             } else {
-                const index = this.models[this.currentTab].stopNodeIds.indexOf(this.network.getSelectedNodes()[0]);
-                this.models[this.currentTab].stopNodeIds.splice(index, 1);
+                const index = this.currentModel.stopNodeIds.indexOf(this.network.getSelectedNodes()[0]);
+                this.currentModel.stopNodeIds.splice(index, 1);
             }
             this.loadModel(this.currentTab);
         });
@@ -600,12 +604,12 @@ class ModelEditor {
             if ($(ModelEditor.CONFIG_NODE_STOP2).prop('checked')) {
                 $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
                 $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
-                this.models[this.currentTab].stopAllNodeIds.push(this.network.getSelectedNodes()[0]);
-                this.models[this.currentTab].stopNodeIds.push(this.network.getSelectedNodes()[0]);
+                this.currentModel.stopAllNodeIds.push(this.network.getSelectedNodes()[0]);
+                this.currentModel.stopNodeIds.push(this.network.getSelectedNodes()[0]);
             } else {
                 $(ModelEditor.CONFIG_NODE_STOP1).removeAttr('disabled');
-                const index = this.models[this.currentTab].stopAllNodeIds.indexOf(this.network.getSelectedNodes()[0]);
-                this.models[this.currentTab].stopAllNodeIds.splice(index, 1);
+                const index = this.currentModel.stopAllNodeIds.indexOf(this.network.getSelectedNodes()[0]);
+                this.currentModel.stopAllNodeIds.splice(index, 1);
             }
             this.loadModel(this.currentTab);
         });
@@ -619,7 +623,7 @@ class ModelEditor {
             const text = $(ModelEditor.CONFIG_EDGE_LABEL).val();
 
             const currentEdge = this.network.getSelectedEdges()[0];
-            for (const edge of this.models[this.currentTab].edges) {
+            for (const edge of this.currentModel.edges) {
                 if (edge.id === currentEdge) {
                     edge.label = text;
                     break;
@@ -712,7 +716,7 @@ class ModelEditor {
 
         let checkNames;
         let defValue;
-        if (this.models[this.currentTab].usage === 'user') {
+        if (this.currentModel.usage === 'user') {
             defValue = 'InputClickSprite';
             checkNames = Object.keys(inputLabelCodes).sort((a, b) => (a < b ? -1 : 0));
             $(ModelEditor.CHECK_NEGATED_DIV).addClass('hide');
@@ -856,14 +860,14 @@ class ModelEditor {
         const hasThisId = this.models.filter(m => m.id === newValue).length;
 
         if (hasThisId > 0) {
-            this.models[this.currentTab].id = newValue + hasThisId;
+            this.currentModel.id = newValue + hasThisId;
             setTimeout(() => {
-                $(ModelEditor.MODEL_ID_FIELD).val(this.models[this.currentTab].id);
+                $(ModelEditor.MODEL_ID_FIELD).val(this.currentModel.id);
             }, 1000);
         } else {
-            this.models[this.currentTab].id = newValue;
+            this.currentModel.id = newValue;
         }
-        $(ModelEditor.TABS).children('.active')[0].textContent = this.models[this.currentTab].id;
+        $(ModelEditor.TABS).children('.active')[0].textContent = this.currentModel.id;
     }
 
     /**
@@ -982,15 +986,15 @@ class ModelEditor {
         $(ModelEditor.CHECK_DIV).addClass('hide');
 
         // get the corresponding node
-        const node = this.models[this.currentTab].nodes.find(n => n.id === nodeID);
+        const node = this.currentModel.nodes.find(n => n.id === nodeID);
 
         $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
-        if (this.models[this.currentTab].stopNodeIds.includes(node.id)) {
+        if (this.currentModel.stopNodeIds.includes(node.id)) {
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
         } else {
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', false);
         }
-        if (this.models[this.currentTab].stopAllNodeIds.includes(node.id)) {
+        if (this.currentModel.stopAllNodeIds.includes(node.id)) {
             $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', true);
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
@@ -998,7 +1002,7 @@ class ModelEditor {
             $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
         }
-        if (this.models[this.currentTab].startNodeId === node.id) {
+        if (this.currentModel.startNodeId === node.id) {
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
             $(ModelEditor.CONFIG_NODE_STOP2).attr('disabled', true);
         } else {
@@ -1011,7 +1015,7 @@ class ModelEditor {
 
     /** to sort the edge priorities */
     showPriorityChanger (nodeID, node) {
-        const outgoingEdges = this.models[this.currentTab].edges.filter(edge => edge.from === nodeID);
+        const outgoingEdges = this.currentModel.edges.filter(edge => edge.from === nodeID);
 
         const tag = 'model-priority-row';
         $(ModelEditor.PRIORITY_CHANGER).children(`.${tag}`)
@@ -1052,16 +1056,16 @@ class ModelEditor {
         let firstIndex = -1;
         let secondIndex = -1;
 
-        for (const [i, edge] of this.this.models[this.currentTab].edges.entries()) {
+        for (const [i, edge] of this.this.currentModel.edges.entries()) {
             if (edge.id === oldEdgeId) {
                 firstIndex = i;
             } else if (edge.id === edgeID) {
                 secondIndex = i;
             }
         }
-        const temp = this.models[this.currentTab].edges[firstIndex];
-        this.models[this.currentTab].edges[firstIndex] = this.models[this.currentTab].edges[secondIndex];
-        this.models[this.currentTab].edges[secondIndex] = temp;
+        const temp = this.currentModel.edges[firstIndex];
+        this.currentModel.edges[firstIndex] = this.currentModel.edges[secondIndex];
+        this.currentModel.edges[secondIndex] = temp;
 
         const selection = this.network.getSelectedNodes();
         this.loadModel(this.currentTab);
@@ -1085,7 +1089,7 @@ class ModelEditor {
         $(ModelEditor.EFFECTS).children()
             .remove();
 
-        const isAUserModel = this.models[this.currentTab].usage === 'user';
+        const isAUserModel = this.currentModel.usage === 'user';
         if (edge.conditions.length > 0) {
             $(ModelEditor.CONDITIONS).append(this.getCheckElement(edge.conditions[0], 0));
             for (let i = 1; i < edge.conditions.length; i++) {
