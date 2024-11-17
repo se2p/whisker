@@ -1009,7 +1009,6 @@ class ModelEditor {
             if (data.edges.length + data.nodes.length === 0) {
                 this.showGeneralSettings(this.currentTab);
                 this.showAddButtons();
-                this.chosenEdge = undefined;
             } else {
                 this.showDeleteButton();
                 if (data.nodes.length === 1) {
