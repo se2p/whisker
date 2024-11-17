@@ -705,7 +705,7 @@ class ModelEditor {
                 field.removeClass(ModelEditor.INVALID_INPUT_CLASS);
 
                 const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
-                edge.forceTestAt = parseInt(value);
+                edge.forceTestAt = parseInt(value, 10);
             }
         });
         $(ModelEditor.FORCE_TEST_AFTER).on('keyup change', () => {
@@ -717,7 +717,7 @@ class ModelEditor {
                 field.removeClass(ModelEditor.INVALID_INPUT_CLASS);
 
                 const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
-                edge.forceTestAfter = parseInt(value);
+                edge.forceTestAfter = parseInt(value, 10);
             }
         });
     }
@@ -801,7 +801,7 @@ class ModelEditor {
      * @param tabNr Number of the tab
      */
     changeToTab (tabNr) {
-        this.loadModel(parseInt(tabNr));
+        this.loadModel(parseInt(tabNr, 10));
 
         const children = $(ModelEditor.TABS).children();
         let oldAttr = children[tabNr].getAttribute('class');
