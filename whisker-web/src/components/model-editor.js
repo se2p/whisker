@@ -234,23 +234,11 @@ class ModelEditor {
     }
 
     getNotRemovedOnesByString (original, toRemove) {
-        const notRemoved = [];
-        for (let i = 0; i < original.length; i++) {
-            if (toRemove.indexOf(original[i]) === -1) {
-                notRemoved.push(original[i]);
-            }
-        }
-        return notRemoved;
+        return original.filter(item => toRemove.indexOf(item) === -1);
     }
 
     getNotRemovedOnesByID (original, toRemove) {
-        const notRemoved = [];
-        for (let i = 0; i < original.length; i++) {
-            if (toRemove.indexOf(original[i].id) === -1) {
-                notRemoved.push(original[i]);
-            }
-        }
-        return notRemoved;
+        return original.filter(item => toRemove.indexOf(item.id) === -1);
     }
 
     /** For the currently selected edge by the network save the check in the check div. */
@@ -332,31 +320,21 @@ class ModelEditor {
     }
 
     getEdgeById (edgeID) {
-        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
-            const e = this.models[this.currentTab].edges[i];
-            if (e.id === edgeID) {
-                return e;
-            }
-        }
+        return this.models[this.currentTab].edges.find(e => e.id === edgeID);
     }
 
     /** Delete all effects of edges of the current model if there are any */
     deleteEffects () {
-        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
-            if (this.models[this.currentTab].edges[i].effects !== []) {
-                this.models[this.currentTab].edges[i].effects = [];
+        for (const edge of this.models[this.currentTab].edges) {
+            if (edge.effects !== []) {
+                edge.effects = [];
             }
         }
     }
 
     /** Check whether the current model has effects on any edges */
     hasEffects () {
-        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
-            if (this.models[this.currentTab].edges[i].effects.length !== 0) {
-                return true;
-            }
-        }
-        return false;
+        return this.models[this.currentTab].edges.some(e => e.effects.length > 0);
     }
 
     /** Fill all empty conditions of edges with a always true condition */
@@ -600,9 +578,9 @@ class ModelEditor {
             const text = $(ModelEditor.CONFIG_NODE_LABEL).val();
 
             const currentNodeID = this.network.getSelectedNodes()[0];
-            for (let i = 0; i < this.models[this.currentTab].nodes.length; i++) {
-                if (this.models[this.currentTab].nodes[i].id === currentNodeID) {
-                    this.models[this.currentTab].nodes[i].label = text;
+            for (const node of this.models[this.currentTab].nodes) {
+                if (node.id === currentNodeID) {
+                    node.label = text;
                     break;
                 }
             }
@@ -643,9 +621,9 @@ class ModelEditor {
             const text = $(ModelEditor.CONFIG_EDGE_LABEL).val();
 
             const currentEdge = this.network.getSelectedEdges()[0];
-            for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
-                if (this.models[this.currentTab].edges[i].id === currentEdge) {
-                    this.models[this.currentTab].edges[i].label = text;
+            for (const edge of this.models[this.currentTab].edges) {
+                if (edge.id === currentEdge) {
+                    edge.label = text;
                     break;
                 }
             }
@@ -789,8 +767,8 @@ class ModelEditor {
         if (isActive !== -1) {
             oldAttr = oldAttr.substring(0, isActive) + oldAttr.substring(isActive + 6, oldAttr.length);
         }
-        for (let i = 0; i < children.length; i++) {
-            children[i].setAttribute('class', oldAttr);
+        for (const item of children) {
+            item.setAttribute('class', oldAttr);
         }
         children[tabNr].setAttribute('class', `${oldAttr} active`);
         $(ModelEditor.TABS).scrollTop(children[tabNr].offsetTop);
@@ -809,8 +787,8 @@ class ModelEditor {
             return;
         }
 
-        for (let i = 0; i < this.models.length; i++) {
-            this.addTab(this.models[i].id, i);
+        for (const [i, model] of this.models.entries()) {
+            this.addTab(model.id, i);
         }
     }
 
@@ -847,9 +825,9 @@ class ModelEditor {
         // change to last active tab
         let lastIndex = 0;
         const newChildren = $(ModelEditor.TABS).children();
-        for (let i = 0; i < newChildren.length; i++) {
-            if (newChildren[i].textContent === lastFocus) {
-                lastIndex = newChildren[i].value;
+        for (const elem of newChildren) {
+            if (elem.textContent === lastFocus) {
+                lastIndex = elem.value;
                 break;
             }
         }
@@ -877,12 +855,7 @@ class ModelEditor {
             return;
         }
 
-        let hasThisId = 0;
-        for (let i = 0; i < this.models.length; i++) {
-            if (this.models[i].id === newValue) {
-                hasThisId++;
-            }
-        }
+        const hasThisId = this.models.filter(m => m.id === newValue).length;
 
         if (hasThisId > 0) {
             this.models[this.currentTab].id = newValue + hasThisId;
@@ -1011,14 +984,7 @@ class ModelEditor {
         $(ModelEditor.CHECK_DIV).addClass('hide');
 
         // get the corresponding node
-        let node;
-        for (let i = 0; i < this.models[this.currentTab].nodes.length; i++) {
-            const n = this.models[this.currentTab].nodes[i];
-            if (n.id === nodeID) {
-                node = n;
-                break;
-            }
-        }
+        const node = this.models[this.currentTab].nodes.find(n => n.id === nodeID);
 
         $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
         if (this.models[this.currentTab].stopNodeIds.indexOf(node.id) === -1) {
@@ -1088,10 +1054,10 @@ class ModelEditor {
         let firstIndex = -1;
         let secondIndex = -1;
 
-        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
-            if (this.edges[i].id === oldEdgeId) {
+        for (const [i, edge] of this.this.models[this.currentTab].edges.entries()) {
+            if (edge.id === oldEdgeId) {
                 firstIndex = i;
-            } else if (this.edges[i].id === edgeID) {
+            } else if (edge.id === edgeID) {
                 secondIndex = i;
             }
         }
@@ -1202,8 +1168,8 @@ class ModelEditor {
         if (children.length > 0) {
             $(ModelEditor.CHECK_EXPLANATION).append($('<label/>', {'data-i18n': 'modelEditor:hintTitle'})
                 .text(i18n.t('modelEditor:hintTitle')));
-            for (let i = 0; i < children.length; i++) {
-                $(ModelEditor.CHECK_EXPLANATION).append(children[i]);
+            for (const item of children) {
+                $(ModelEditor.CHECK_EXPLANATION).append(item);
             }
         }
     }
@@ -1216,8 +1182,8 @@ class ModelEditor {
             .remove();
 
         const argNames = checkLabelCodes[type] ?? inputLabelCodes[type];
-        for (let i = 0; i < argNames.length; i++) {
-            this.appendInputBasedOnType(argNames[i], placeholders[argNames[i]], i);
+        for (const [i, argName] of argNames.entries()) {
+            this.appendInputBasedOnType(argName, placeholders[argName], i);
         }
     }
 
@@ -1236,8 +1202,8 @@ class ModelEditor {
         $(ModelEditor.CHECK_ARGS_DIV).children()
             .remove();
 
-        for (let i = 0; i < argNames.length; i++) {
-            this.appendInputBasedOnType(argNames[i], args[i], i);
+        for (const [i, argName] of argNames.entries()) {
+            this.appendInputBasedOnType(argName, args[i], i);
         }
     }
 
