@@ -326,9 +326,7 @@ class ModelEditor {
     /** Delete all effects of edges of the current model if there are any */
     deleteEffects () {
         for (const edge of this.models[this.currentTab].edges) {
-            if (edge.effects !== []) {
-                edge.effects = [];
-            }
+            edge.effects = [];
         }
     }
 
