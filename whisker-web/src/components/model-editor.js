@@ -987,18 +987,18 @@ class ModelEditor {
         const node = this.models[this.currentTab].nodes.find(n => n.id === nodeID);
 
         $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
-        if (!this.models[this.currentTab].stopNodeIds.includes(node.id)) {
-            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', false);
-        } else {
+        if (this.models[this.currentTab].stopNodeIds.includes(node.id)) {
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
-        }
-        if (!this.models[this.currentTab].stopAllNodeIds.includes(node.id)) {
-            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
-            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
         } else {
+            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', false);
+        }
+        if (this.models[this.currentTab].stopAllNodeIds.includes(node.id)) {
             $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', true);
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
+        } else {
+            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
+            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
         }
         if (this.models[this.currentTab].startNodeId === node.id) {
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
