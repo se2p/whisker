@@ -475,7 +475,7 @@ class ModelEditor {
             if (loops[nodeId].length > 1) {
                 let i = 0;
                 loops[nodeId].forEach(edge => {
-                    edge.selfReference = {angle: i + i * loops[nodeId].length};
+                    edge.selfReference = {angle: (i + 1) * loops[nodeId].length};
                     edge.font = {align: 'horizontal'};
                     if (i % 2 === 0) {
                         edge.font.vadjust = -20 - loops[nodeId].length;
