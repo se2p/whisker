@@ -219,7 +219,7 @@ class ModelEditor {
     deleteSelection () {
         const selection = this.network.getSelection();
 
-        if (selection.nodes.indexOf(this.models[this.currentTab].startNodeId) !== -1) {
+        if (selection.nodes.includes(this.models[this.currentTab].startNodeId)) {
             return false;
         }
         this.models[this.currentTab].stopNodeIds =
@@ -234,11 +234,11 @@ class ModelEditor {
     }
 
     getNotRemovedOnesByString (original, toRemove) {
-        return original.filter(item => toRemove.indexOf(item) === -1);
+        return original.filter(item => !toRemove.includes(item));
     }
 
     getNotRemovedOnesByID (original, toRemove) {
-        return original.filter(item => toRemove.indexOf(item.id) === -1);
+        return original.filter(item => !toRemove.includes(item.id));
     }
 
     /** For the currently selected edge by the network save the check in the check div. */
@@ -406,11 +406,11 @@ class ModelEditor {
             if (nodes[node].id === json.startNodeId) {
                 nodes[node].color = 'rgb(0,151,163)';
                 nodes[node].title = i18n.t('modelEditor:startNodeTitle');
-            } else if (json.stopAllNodeIds.indexOf(nodes[node].id) !== -1) {
+            } else if (json.stopAllNodeIds.includes(nodes[node].id)) {
                 nodes[node].color = 'rgb(102,102,102)';
                 nodes[node].font = {color: 'rgb(230,230,230)'};
                 nodes[node].title = i18n.t('modelEditor:stopAllNodeTitle');
-            } else if (json.stopNodeIds.indexOf(nodes[node].id) !== -1) {
+            } else if (json.stopNodeIds.includes(nodes[node].id)) {
                 nodes[node].color = 'rgb(201,201,201)';
                 nodes[node].title = i18n.t('modelEditor:stopNodeTitle');
             }
@@ -987,12 +987,12 @@ class ModelEditor {
         const node = this.models[this.currentTab].nodes.find(n => n.id === nodeID);
 
         $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
-        if (this.models[this.currentTab].stopNodeIds.indexOf(node.id) === -1) {
+        if (!this.models[this.currentTab].stopNodeIds.includes(node.id)) {
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', false);
         } else {
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
         }
-        if (this.models[this.currentTab].stopAllNodeIds.indexOf(node.id) === -1) {
+        if (!this.models[this.currentTab].stopAllNodeIds.includes(node.id)) {
             $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
         } else {
