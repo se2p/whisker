@@ -1,3 +1,5 @@
+/* eslint-disable valid-jsdoc */
+
 const {ModelTester} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
@@ -136,7 +138,7 @@ class ModelEditor {
         this.addTab(`${i18n.t('modelEditor:tabContent')}1`, 0);
         this.nextTabIndex = 2;
         this.changeToTab(0);
-        this.chosenList = undefined;
+        this.chosenList = null;
         this.checkIndex = -1;
     }
 
@@ -175,13 +177,9 @@ class ModelEditor {
     }
 
     addEdge (data, callback) {
-        if (data.label === undefined) {
-            data.label = '';
-        }
-        if (data.id === undefined) {
-            data.id = Math.random().toString(16)
-                .slice(2);
-        }
+        data.label = data.label ?? '';
+        data.id = data.id ?? Math.random().toString(16)
+            .slice(2);
         this.models[this.currentTab].edges.push({
             id: data.id,
             label: data.label,
@@ -258,10 +256,7 @@ class ModelEditor {
     /** For the currently selected edge by the network save the check in the check div. */
     saveCheck () {
         const type = $(ModelEditor.CHECK_CHOOSER).val();
-        let argNumber = checkLabelCodes[type];
-        if (argNumber === undefined) {
-            argNumber = inputLabelCodes[type];
-        }
+        const argNumber = checkLabelCodes[type] ?? inputLabelCodes[type];
 
         const args = [];
         let valid = true;
@@ -303,7 +298,7 @@ class ModelEditor {
             chosenCheckList[this.checkIndex].name = name;
         }
         this.checkIndex = -1;
-        this.chosenList = undefined;
+        this.chosenList = null;
         return true;
     }
 
@@ -414,12 +409,12 @@ class ModelEditor {
         // load into the header etc
         $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
 
-        if (this.models[tabNbr].usage === 'program' || this.models[tabNbr].usage === undefined) {
-            this.changeModelType();
+        if (this.models[tabNbr].usage === 'end') {
+            this.changeModelType(false, true);
         } else if (this.models[tabNbr].usage === 'user') {
             this.changeModelType(true);
         } else {
-            this.changeModelType(false, true);
+            this.changeModelType(); // assume 'program'
         }
 
         if (this.models.length === 1) {
@@ -1209,10 +1204,7 @@ class ModelEditor {
     addExplanation (type) {
         $(ModelEditor.CHECK_EXPLANATION).children()
             .remove();
-        let argTypes = checkLabelCodes[type];
-        if (argTypes === undefined) {
-            argTypes = inputLabelCodes[type];
-        }
+        const argTypes = checkLabelCodes[type] ?? inputLabelCodes[type];
         const children = [];
         for (let i = 0; i < argTypes.length; i++) {
             const key = `modelEditor:${argTypes[i]}Hint`;
@@ -1238,10 +1230,7 @@ class ModelEditor {
         $(ModelEditor.CHECK_ARGS_DIV).children()
             .remove();
 
-        let argNames = checkLabelCodes[type];
-        if (argNames === undefined) {
-            argNames = inputLabelCodes[type];
-        }
+        const argNames = checkLabelCodes[type] ?? inputLabelCodes[type];
         for (let i = 0; i < argNames.length; i++) {
             this.appendInputBasedOnType(argNames[i], placeholders[argNames[i]], i);
         }
@@ -1254,10 +1243,7 @@ class ModelEditor {
      * @param args Arguments of the check
      */
     changeCheckType (type, id, args) {
-        let argNames = checkLabelCodes[type];
-        if (argNames === undefined) {
-            argNames = inputLabelCodes[type];
-        }
+        const argNames = checkLabelCodes[type] ?? inputLabelCodes[type];
 
         if (args.length !== argNames.length) {
             logger.error(`Loaded model has a check with wrong number of arguments. Check.id:${id}`);
@@ -1274,11 +1260,11 @@ class ModelEditor {
         switch (type) {
         case argType.spriteNameRegex:
             this.appendInputWithPattern('modelEditor:spriteName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, undefined, undefined, '(Regex)');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, '(Regex)');
             break;
         case argType.varNameRegex:
             this.appendInputWithPattern('modelEditor:varName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, undefined, undefined, '(Regex)');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, '(Regex)');
             break;
         case argType.attrName:
             this.appendInputWithPattern('modelEditor:attrName', value,
@@ -1362,8 +1348,7 @@ class ModelEditor {
             .append($('<div/>', {class: 'row'}).append(textarea));
     }
 
-    appendInputWithPattern (key, value, pattern, idNbr, style = undefined, unit = undefined,
-        placeholder = undefined) {
+    appendInputWithPattern (key, value, pattern, idNbr, style = null, unit = null, placeholder = null) {
         const id = ModelEditor.INPUT_ID + idNbr;
         const row = $('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': key}).text(i18n.t(key)))
