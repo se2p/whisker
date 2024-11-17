@@ -293,14 +293,14 @@ class ModelEditor {
 
         const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         const name = $(ModelEditor.CHECK_CHOOSER).val();
-        if (this.checkIndex !== -1) {
-            chosenCheckList[this.checkIndex].args = args;
-            chosenCheckList[this.checkIndex].negated = negated;
-            chosenCheckList[this.checkIndex].name = name;
-        } else {
+        if (this.checkIndex === -1) {
             const id = Math.random().toString(16)
                 .slice(2);
             chosenCheckList.push({id, args, negated, name});
+        } else {
+            chosenCheckList[this.checkIndex].args = args;
+            chosenCheckList[this.checkIndex].negated = negated;
+            chosenCheckList[this.checkIndex].name = name;
         }
         this.checkIndex = -1;
         this.chosenList = undefined;
@@ -1042,18 +1042,18 @@ class ModelEditor {
         }
 
         $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
-        if (this.models[this.currentTab].stopNodeIds.indexOf(node.id) !== -1) {
-            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
-        } else {
+        if (this.models[this.currentTab].stopNodeIds.indexOf(node.id) === -1) {
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', false);
+        } else {
+            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
         }
-        if (this.models[this.currentTab].stopAllNodeIds.indexOf(node.id) !== -1) {
+        if (this.models[this.currentTab].stopAllNodeIds.indexOf(node.id) === -1) {
+            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
+            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
+        } else {
             $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', true);
             $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
-        } else {
-            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
-            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
         }
         if (this.models[this.currentTab].startNodeId === node.id) {
             $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
@@ -1351,10 +1351,10 @@ class ModelEditor {
             placeholder: placeholder
         }).val(value)
             .on('keyup change', () => {
-                if (textarea.val().match(ModelEditor.NOT_EMPTY_PATTERN) !== null) {
-                    textarea.removeClass(ModelEditor.INVALID_INPUT_CLASS);
-                } else {
+                if (textarea.val().match(ModelEditor.NOT_EMPTY_PATTERN) === null) {
                     textarea.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                } else {
+                    textarea.removeClass(ModelEditor.INVALID_INPUT_CLASS);
                 }
             });
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
@@ -1380,10 +1380,10 @@ class ModelEditor {
                     .on('keyup change', () => {
                         const queryID = `#${id}`;
                         if ($(queryID).val()
-                            .match(pattern) !== null) {
-                            $(queryID).removeClass(ModelEditor.INVALID_INPUT_CLASS);
-                        } else {
+                            .match(pattern) === null) {
                             $(queryID).addClass(ModelEditor.INVALID_INPUT_CLASS);
+                        } else {
+                            $(queryID).removeClass(ModelEditor.INVALID_INPUT_CLASS);
                         }
                     })
                 ));
