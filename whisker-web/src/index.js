@@ -1082,16 +1082,13 @@ const loadFooter = function () {
 $(document)
     .ready(() => {
         $('#scratch-controls').hide();
+        loadHeader();
+        loadFooter();
         initScratch();
         initComponents();
         initEvents();
         toggleComponents();
     });
-
-window.onload = function () {
-    loadHeader();
-    loadFooter();
-};
 
 window.onbeforeunload = function () {
     if (window.localStorage) {
