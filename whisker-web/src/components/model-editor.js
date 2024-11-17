@@ -409,13 +409,7 @@ class ModelEditor {
         // load into the header etc
         $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
 
-        if (this.models[tabNbr].usage === 'end') {
-            this.changeModelType(false, true);
-        } else if (this.models[tabNbr].usage === 'user') {
-            this.changeModelType(true);
-        } else {
-            this.changeModelType(); // assume 'program'
-        }
+        this.changeModelType(this.models[tabNbr].usage);
 
         if (this.models.length === 1) {
             $(ModelEditor.MODEL_DELETE_BUTTON).addClass('hide');
@@ -589,22 +583,13 @@ class ModelEditor {
             this.deleteEffects();
             this.models[this.currentTab].usage = newType;
             this.loadModel(this.currentTab);
-        }, () => {
-            if (this.models[this.currentTab].usage === 'program') {
-                this.changeModelType();
-            } else if (this.models[this.currentTab].usage === 'user') {
-                this.changeModelType(true);
-            } else {
-                this.changeModelType(false, true);
-            }
-        });
-
+        }, () => this.changeModelType(this.models[this.currentTab].usage));
     }
 
-    changeModelType (userModel = false, endModel = false) {
-        $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', !userModel && !endModel);
-        $(ModelEditor.USER_TYPE_CHOICE).prop('checked', userModel);
-        $(ModelEditor.END_TYPE_CHOICE).prop('checked', endModel);
+    changeModelType (usage = 'program') {
+        $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', usage === 'program');
+        $(ModelEditor.USER_TYPE_CHOICE).prop('checked', usage === 'user');
+        $(ModelEditor.END_TYPE_CHOICE).prop('checked', usage === 'end');
     }
 
     /**
