@@ -699,7 +699,7 @@ class ModelEditor {
         $(ModelEditor.FORCE_TEST_AT).on('keyup change', () => {
             const field = $(ModelEditor.FORCE_TEST_AT);
             const value = field.val();
-            if (value.match(ModelEditor.TIME_PATTERN) == null) {
+            if (value.match(ModelEditor.TIME_PATTERN) === null) {
                 field.addClass(ModelEditor.INVALID_INPUT_CLASS);
             } else {
                 field.removeClass(ModelEditor.INVALID_INPUT_CLASS);
@@ -711,7 +711,7 @@ class ModelEditor {
         $(ModelEditor.FORCE_TEST_AFTER).on('keyup change', () => {
             const field = $(ModelEditor.FORCE_TEST_AFTER);
             const value = field.val();
-            if (value.match(ModelEditor.TIME_PATTERN) == null) {
+            if (value.match(ModelEditor.TIME_PATTERN) === null) {
                 field.addClass(ModelEditor.INVALID_INPUT_CLASS);
             } else {
                 field.removeClass(ModelEditor.INVALID_INPUT_CLASS);
@@ -1351,7 +1351,7 @@ class ModelEditor {
             placeholder: placeholder
         }).val(value)
             .on('keyup change', () => {
-                if (textarea.val().match(ModelEditor.NOT_EMPTY_PATTERN) != null) {
+                if (textarea.val().match(ModelEditor.NOT_EMPTY_PATTERN) !== null) {
                     textarea.removeClass(ModelEditor.INVALID_INPUT_CLASS);
                 } else {
                     textarea.addClass(ModelEditor.INVALID_INPUT_CLASS);
@@ -1380,7 +1380,7 @@ class ModelEditor {
                     .on('keyup change', () => {
                         const queryID = `#${id}`;
                         if ($(queryID).val()
-                            .match(pattern) != null) {
+                            .match(pattern) !== null) {
                             $(queryID).removeClass(ModelEditor.INVALID_INPUT_CLASS);
                         } else {
                             $(queryID).addClass(ModelEditor.INVALID_INPUT_CLASS);
