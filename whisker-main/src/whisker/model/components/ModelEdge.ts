@@ -1,30 +1,20 @@
 import TestDriver from "../../../test/test-driver";
-import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
-import {InputEffect, SimpleInputEffect} from "./InputEffect";
-import {Check, SimpleCheck} from "./Check";
+import {CheckJSON} from "./Check";
 import {NodeID} from "./ModelNode";
 
 export type EdgeID = string;
 
-export interface SimpleModelEdge {
+export interface ModelEdgeJSON {
     id: EdgeID;
     label: string;
     from: NodeID;
     to: NodeID;
     forceTestAt: number;
     forceTestAfter: number
-    conditions: SimpleCheck[];
-}
-
-export interface SimpleProgramModelEdge extends SimpleModelEdge {
-    effects: SimpleCheck[];
-}
-
-export interface SimpleUserModelEdge extends SimpleModelEdge {
-    effects: SimpleInputEffect[];
+    conditions: CheckJSON[];
 }
 
 /**
@@ -128,13 +118,7 @@ export abstract class ModelEdge {
         return failedConditions;
     }
 
-    /**
-     * Do nothing... Only on subtype ProgramModelEdge.
-     */
-    checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                           eventStrings: string[]): Condition[] {
-        return this.conditions;
-    }
+    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Condition[];
 
     set lastTransition(transition: number) {
         this._lastTransition = transition;
@@ -143,7 +127,6 @@ export abstract class ModelEdge {
     get lastTransition(): number {
         return this._lastTransition;
     }
-
 
     private _getTimeLimitFailedOutput(condition: Condition, t: TestDriver): string {
         if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
@@ -190,7 +173,7 @@ export abstract class ModelEdge {
         this.lastTransition = 0;
     }
 
-    simplifyForSave(): SimpleModelEdge {
+    toJSON(): ModelEdgeJSON {
         return {
             id: this.id,
             label: this.label,
@@ -198,174 +181,7 @@ export abstract class ModelEdge {
             to: this.to,
             forceTestAfter: this.forceTestAfter,
             forceTestAt: this.forceTestAt,
-            conditions: this.conditions.map((condition: Condition) => condition.simplifyForSave())
-        };
-    }
-}
-
-/**
- * Edge structure for a program model with effects that can be triggered based on its conditions.
- */
-export class ProgramModelEdge extends ModelEdge {
-    effects: Effect[] = [];
-    failedEffects: Effect[] = [];
-
-    /**
-     * Create a new edge.
-     * @param id ID of the edge.
-     * @param label Label of the edge.
-     * @param graphID Id of the parent graph.
-     * @param from Index of the source node.
-     * @param to Index of the target node.
-     * @param forceTestAfter Force testing this condition after given amount of milliseconds.
-     * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
-     */
-    constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
-                forceTestAt: number) {
-        super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
-    }
-
-    override reset(): void {
-        super.reset();
-        this.failedEffects = [];
-    }
-
-    /**
-     * Add an effect to the edge.
-     * @param effect Effect function as a string.
-     */
-    addEffect(effect: Effect): void {
-        this.effects.push(effect);
-    }
-
-    /**
-     * Register the check listener and test driver on the conditions and effects.
-     */
-    override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
-        super.registerComponents(cu, testDriver);
-        this.effects.forEach(effect => {
-            effect.registerComponents(testDriver, cu, this.graphID);
-        });
-    }
-
-    override simplifyForSave(): SimpleProgramModelEdge {
-        return {
-            ...super.simplifyForSave(),
-            effects: this.effects.map(effect => effect.simplifyForSave())
-        };
-    }
-
-    /**
-     * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
-     * Effects are checked for Function:true Checks.
-     */
-    override checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                                    eventStrings: string[]): Condition[] {
-        if (this.failedForcedTest) {
-            return this.conditions;
-        }
-        let check = false;
-
-        // look up if this edge has a condition that was triggered
-        for (const c of this.conditions) {
-            const eventString = CheckUtility.getEventString(c.name, c.negated, ...c.args);
-            if (eventStrings.includes(eventString)) {
-                check = true;
-                break;
-            } else if (eventString == "Function:true" || eventString == "Probability:1") {
-                check = this._testEffectsOnEvent(eventStrings);
-                if (check) {
-                    break;
-                }
-            }
-        }
-
-        if (!check) {
-            return this.conditions;
-        }
-
-        const failed = [];
-        for (const c of this.conditions) {
-            const eventString = CheckUtility.getEventString(c.name, c.negated, ...c.args);
-            if (!eventStrings.includes(eventString) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
-                failed.push(c);
-                break; // TODO check if this break should be here
-            }
-        }
-        return failed;
-    }
-
-
-    private _testEffectsOnEvent(eventStrings: string[]): boolean {
-        for (const e of this.effects) {
-            const eventString = CheckUtility.getEventString(e.name, e.negated, ...e.args);
-
-            if (eventStrings.includes(eventString)) {
-                return true;
-            }
-
-            if (Check.testForContradictingWithEvents(e, eventStrings)) {
-                // tests whether an event contradicting an effect (of a true condition edge) is there
-                return true;
-            }
-        }
-
-        return false;
-    }
-}
-
-/**
- * Edge structure that has input effects triggered if the conditions are fulfilled.
- */
-export class UserModelEdge extends ModelEdge {
-    inputEffects: InputEffect[] = [];
-
-    /**
-     * Create a new edge.
-     * @param id ID of the edge.
-     * @param label Label of the edge.
-     * @param graphID Id of the parent graph.
-     * @param from Index of the source node.
-     * @param to Index of the target node.
-     * @param forceTestAfter Force testing this condition after given amount of milliseconds.
-     * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
-     */
-    constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
-                forceTestAt: number) {
-        super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
-    }
-
-    /**
-     * Add an effect to the edge.
-     * @param effect Effect function as a string.
-     */
-    addInputEffect(effect: InputEffect): void {
-        this.inputEffects.push(effect);
-    }
-
-    /**
-     * Start the input effects of this edge.
-     */
-    inputImmediate(t: TestDriver): void {
-        this.inputEffects.forEach(inputEffect => {
-            inputEffect.inputImmediate(t);
-        });
-    }
-
-    /**
-     *  Register the check listener and test driver on the conditions and input effects.
-     */
-    override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
-        super.registerComponents(checkListener, testDriver);
-        this.inputEffects.forEach(effect => {
-            effect.registerComponents(testDriver);
-        });
-    }
-
-    override simplifyForSave(): SimpleUserModelEdge {
-        return {
-            ...super.simplifyForSave(),
-            effects: this.inputEffects.map(value => value.simplifyForSave())
+            conditions: this.conditions.map((condition: Condition) => condition.toJSON())
         };
     }
 }

@@ -1,12 +1,13 @@
 import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
-import {ModelEdge, ProgramModelEdge} from "../components/ModelEdge";
+import {ModelEdge} from "../components/ModelEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
 import {ArgType, CheckName} from "../components/Check";
+import {ProgramModelEdge} from "../components/ProgramModelEdge";
 
 type EffectCheck = { effect: Effect, edge: ProgramModelEdge, model: ProgramModel };
 
@@ -224,7 +225,7 @@ export class CheckUtility extends EventEmitter {
         const splits = eventString.split(":");
         return {
             negated: negated,
-            name: CheckName[splits[0] as CheckName],
+            name: splits[0] as CheckName,
             args: splits.slice(1, splits.length)
         };
     }

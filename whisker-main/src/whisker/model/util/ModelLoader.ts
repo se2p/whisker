@@ -1,20 +1,16 @@
-import {ModelNode, NodeID, SimpleModelNode} from "../components/ModelNode";
-import {
-    EdgeID,
-    ModelEdge,
-    ProgramModelEdge,
-    SimpleProgramModelEdge,
-    SimpleUserModelEdge,
-    UserModelEdge
-} from "../components/ModelEdge";
+import {ModelNode, ModelNodeJSON, NodeID} from "../components/ModelNode";
+import {EdgeID, ModelEdge} from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
-import {InputEffect, InputEffectName, SimpleInputEffect} from "../components/InputEffect";
-import {ArgType, CheckName, SimpleCheck} from "../components/Check";
+import {InputEffect, InputEffectJSON, InputEffectName} from "../components/InputEffect";
+import {ArgType, CheckJSON, CheckName} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
+import {UserModelEdge, UserModelEdgeJSON} from "../components/UserModelEdge";
+import {ProgramModelEdge, ProgramModelEdgeJSON} from "../components/ProgramModelEdge";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
 export type ModelType = "program" | "user" | "end";
 
@@ -22,25 +18,25 @@ interface Attributes {
     id: string,
 }
 
-interface StoredModelEdge {
+interface StoredModelEdge { // TODO: Duplicates ModelEdgeJSON
     id: EdgeID;
     label: string;
     from: NodeID;
     to: NodeID;
     forceTestAt: number;
     forceTestAfter: number
-    conditions: SimpleCheck[];
-    inputEffects?: SimpleInputEffect[];
+    conditions: CheckJSON[];
+    inputEffects?: InputEffectJSON[];
     // effects: SimpleInputEffect[] | SimpleCheck[];
     effects: any[];
 }
 
-interface StoredModel {
-    usage: string,
+interface StoredModel { // TODO: Duplicates ModelJSON
+    usage: ModelType,
     _attributes: Attributes,
     nodeIds?: NodeID[],
     id: string;
-    nodes: SimpleModelNode[];
+    nodes: ModelNodeJSON[];
     edges: StoredModelEdge[];
     startNodeId: NodeID;
     stopNodeIds: NodeID[];
@@ -60,11 +56,6 @@ interface StoredModel {
  * constraints after initialisation e.g. time < 30 as it decreases)
  */
 export class ModelLoader {
-
-    static readonly PROGRAM_MODEL_ID: ModelType = "program";
-    static readonly USER_MODEL_ID: ModelType = "user";
-    static readonly ON_TEST_END_ID: ModelType = "end";
-
     private _startNodeId: string;
     private _stopNodeIds: string[];
     private _stopAllNodeIds: string[];
@@ -188,34 +179,34 @@ export class ModelLoader {
 
         // Load the edges
         try {
-            graph.edges.forEach((edge: SimpleProgramModelEdge | SimpleUserModelEdge) => this._loadEdge(graph.usage, graphID, edge));
+            graph.edges.forEach((edge: ProgramModelEdgeJSON | UserModelEdgeJSON) => this._loadEdge(graph.usage, graphID, edge));
         } catch (e) {
             throw new Error(graphID + ": " + getErrorMessage(e));
         }
 
         let model: ProgramModel | UserModel;
         switch (graph.usage) {
-            case ModelLoader.PROGRAM_MODEL_ID:
+            case "program":
                 model = new ProgramModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapProgram,
                     this._stopNodeIds, this._stopAllNodeIds);
                 this._programModels.push(model);
                 break;
-            case ModelLoader.USER_MODEL_ID:
+            case "user":
                 model = new UserModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapUser, this._stopNodeIds,
                     this._stopAllNodeIds);
                 this._userModels.push(model);
                 break;
-            case ModelLoader.ON_TEST_END_ID:
+            case "end":
                 model = new ProgramModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapProgram, this._stopNodeIds,
                     this._stopAllNodeIds);
                 this._onTestEndModels.push(model);
                 break;
             default:
-                throw Error("Model type id not known.");
+                throw new NonExhaustiveCaseDistinction(graph.usage, "Model type id not known.");
         }
     }
 
-    private _loadNodes(nodes: SimpleModelNode[]): void {
+    private _loadNodes(nodes: ModelNodeJSON[]): void {
         nodes.forEach(node => {
             if ((this._nodesMap)[node.id]) {
                 throw new Error("Node id '" + node.id + "' already defined.");
@@ -296,7 +287,7 @@ export class ModelLoader {
             forceTestAt = Number(edge.forceTestAt.toString());
         }
 
-        if (usage != ModelLoader.USER_MODEL_ID) {
+        if (usage != "user") {
             const newEdge = new ProgramModelEdge(edgeID, label, graphID, from, to, forceTestAfter, forceTestAt);
 
             if (!edge.conditions) {
@@ -331,7 +322,7 @@ export class ModelLoader {
         }
     }
 
-    private _loadConditions(newEdge: ModelEdge, conditions: SimpleCheck[]): void {
+    private _loadConditions(newEdge: ModelEdge, conditions: CheckJSON[]): void {
         let id: string, name: CheckName, negated: boolean, args: ArgType[];
         conditions.forEach(condition => {
             id = condition.id;
@@ -345,7 +336,7 @@ export class ModelLoader {
                 this._idUndefined++;
             }
 
-            if (name == undefined || CheckName[name] == undefined) {
+            if (name == undefined) {
                 throw new Error(newEdge.id + ": Name of condition wrong or missing.");
             }
 
@@ -361,9 +352,9 @@ export class ModelLoader {
         });
     }
 
-    private _loadEffects(newEdge: ProgramModelEdge, effects: SimpleCheck[]): void {
+    private _loadEffects(newEdge: ProgramModelEdge, effects: CheckJSON[]): void {
         let id: string, name: CheckName, negated: boolean, args: ArgType[];
-        effects.forEach((effect: SimpleCheck) => {
+        effects.forEach((effect: CheckJSON) => {
             id = effect.id;
             name = effect.name;
             negated = effect.negated;
@@ -375,7 +366,7 @@ export class ModelLoader {
                 this._idUndefined++;
             }
 
-            if (name == undefined || CheckName[name] == undefined) {
+            if (name == undefined) {
                 throw new Error(newEdge.id + ": Name of effect wrong or missing.");
             }
 
@@ -391,14 +382,14 @@ export class ModelLoader {
         });
     }
 
-    private _loadInputEffect(newEdge: UserModelEdge, effects: SimpleInputEffect[]): void {
+    private _loadInputEffect(newEdge: UserModelEdge, effects: InputEffectJSON[]): void {
         let id: string, name: InputEffectName, args: ArgType[];
         effects.forEach(effect => {
             id = effect.id;
             name = effect.name;
             args = effect.args;
 
-            if (name == InputEffectName.InputKey) {
+            if (name == "InputKey") {
                 if (String(args[0]).toLowerCase() == "left") {
                     args[0] = "left arrow";
                 } else if (String(args[0]).toLowerCase() == "right") {
@@ -416,7 +407,7 @@ export class ModelLoader {
                 this._idUndefined++;
             }
 
-            if (name == undefined || InputEffectName[name] == undefined) {
+            if (name == undefined) {
                 throw new Error(newEdge.id + ": Name of input effect wrong or missing.");
             }
 

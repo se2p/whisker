@@ -6,17 +6,20 @@ import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {ArgType} from "./Check";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
-export enum InputEffectName {
-    InputClickSprite = "InputClickSprite", // sprite name
-    InputClickStage = "InputClickStage", // nothing
-    InputKey = "InputKey", // key name (input for one step)
-    InputMouseDown = "InputMouseDown", // true | false
-    InputMouseMove = "InputMouseMove", // x, y
-    InputText = "InputText" // answer| text
-}
+export const INPUT_EFFECT_NAMES = Object.freeze([
+    "InputClickSprite", // sprite name
+    "InputClickStage", // nothing
+    "InputKey", // key name (input for one step)
+    "InputMouseDown", // true | false
+    "InputMouseMove", // x, y
+    "InputText", // answer| text
+] as const);
 
-export interface SimpleInputEffect {
+export type InputEffectName = typeof INPUT_EFFECT_NAMES[number];
+
+export interface InputEffectJSON {
     id: string
     name: InputEffectName;
     args: ArgType[];
@@ -26,8 +29,8 @@ export interface SimpleInputEffect {
  * Class for giving the Scratch VM immediate inputs.
  */
 export class InputEffect {
-    id: string;
-    name: InputEffectName;
+    private readonly _id: string;
+    private readonly _name: InputEffectName;
     private _inputEffect: (t: TestDriver) => void;
     private readonly _args: ArgType[];
 
@@ -41,25 +44,27 @@ export class InputEffect {
         if (!id) {
             throw new Error("No id given.");
         }
-        this.name = name;
-        this.id = id;
+        this._name = name;
+        this._id = id;
         this._args = args;
         this._inputEffect = () => void 0;
 
         let expectedLength: number;
         switch (name) {
-            case InputEffectName.InputKey:
-            case InputEffectName.InputClickSprite:
-            case InputEffectName.InputText:
-            case InputEffectName.InputMouseDown:
+            case "InputKey":
+            case "InputClickSprite":
+            case "InputText":
+            case "InputMouseDown":
                 expectedLength = 1;
                 break;
-            case InputEffectName.InputClickStage:
+            case "InputClickStage":
                 expectedLength = 0;
                 break;
-            case InputEffectName.InputMouseMove:
+            case "InputMouseMove":
                 expectedLength = 2;
                 break;
+            default:
+                throw new NonExhaustiveCaseDistinction(name);
         }
         if (args.length != expectedLength) {
             throw new Error("Wrong number of arguments for input effect " + name + ".");
@@ -83,21 +88,21 @@ export class InputEffect {
         this._inputEffect = this._getInputDataFunction(t, this._args);
     }
 
-    simplifyForSave(): SimpleInputEffect {
+    toJSON(): InputEffectJSON {
         return {
-            id: this.id,
-            name: this.name,
+            id: this._id,
+            name: this._name,
             args: this._args
         };
     }
 
     private _getInputDataFunction(t: TestDriver, arg: ArgType[]) {
-        switch (this.name) {
-            case InputEffectName.InputKey:
+        switch (this._name) {
+            case "InputKey":
                 return () => {
                     t.inputImmediate({device: "keyboard", key: arg[0], isDown: true, steps: 1});
                 };
-            case InputEffectName.InputMouseMove: {
+            case "InputMouseMove": {
                 arg[0] = ModelUtil.testNumber(arg[0]);
                 arg[1] = ModelUtil.testNumber(arg[1]);
                 const mouseEvent = new MouseMoveEvent(arg[0], arg[1]);
@@ -105,26 +110,26 @@ export class InputEffect {
                     mouseEvent.apply();
                 };
             }
-            case InputEffectName.InputText: {
+            case "InputText": {
                 const textEvent = new TypeTextEvent(String(arg[0]));
                 return () => {
                     textEvent.apply();
                 };
             }
-            case InputEffectName.InputMouseDown: {
+            case "InputMouseDown": {
                 const boolVal = arg[0] == "true";
                 const mouseDownEvent = new MouseDownEvent(boolVal);
                 return () => {
                     mouseDownEvent.apply();
                 };
             }
-            case InputEffectName.InputClickStage: {
+            case "InputClickStage": {
                 const clickStageEvent = new ClickStageEvent();
                 return () => {
                     clickStageEvent.apply();
                 };
             }
-            case InputEffectName.InputClickSprite: {
+            case "InputClickSprite": {
                 const sprite = ModelUtil.checkSpriteExistence(t, arg[0]);
                 const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
                 return () => {
@@ -133,7 +138,7 @@ export class InputEffect {
             }
             default:
                 // should not happen
-                throw new Error("Input type not recognized: " + this.name);
+                throw new Error("Input type not recognized: " + this._name);
         }
     }
 }

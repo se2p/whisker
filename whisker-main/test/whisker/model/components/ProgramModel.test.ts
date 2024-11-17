@@ -1,9 +1,9 @@
-import {CoverageResult, ProgramModel, SimpleProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
+import {CoverageResult, ProgramModel, ProgramModelJSON} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
-import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import TestDriver from "../../../../src/test/test-driver";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {getDummyTestDriver} from "../TestDriverMock";
+import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 export class MockedModelNode extends ModelNode {
     private readonly fn: jest.Mock;
@@ -113,10 +113,10 @@ describe('Program model', () => {
         expect(totalCoverage.missedEdges.length).toBe(2);
     });
 
-    test("SimplifyForSave", () => {
+    test("toJSON", () => {
         const p = getValidProgramModelForCoverage();
-        const actual = p.simplifyForSave();
-        const expected: SimpleProgramModel = {
+        const actual = p.toJSON();
+        const expected: ProgramModelJSON = {
             id: p.id,
             startNodeId: "start",
             stopNodeIds: [],

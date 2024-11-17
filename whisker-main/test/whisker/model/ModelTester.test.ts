@@ -1,11 +1,11 @@
 import {ModelTester, SimpleTypedModel} from "../../../src/whisker/model/ModelTester";
 import {ProgramModel} from "../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../src/whisker/model/components/ModelNode";
-import {ProgramModelEdge} from "../../../src/whisker/model/components/ModelEdge";
 import {Condition} from "../../../src/whisker/model/components/Condition";
-import {CheckName} from "../../../src/whisker/model/components/Check";
 import {readFileSync} from "fs";
 import * as path from "node:path";
+import {ProgramModelEdge} from "../../../src/whisker/model/components/ProgramModelEdge";
+import {UserModel} from "../../../src/whisker/model/components/UserModel";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
@@ -87,7 +87,7 @@ describe('ModelTester', () => {
                 {}, ["end"], []);
             const expected: SimpleTypedModel = {
                 usage: "program",
-                ...expectedProgramModel.simplifyForSave()
+                ...expectedProgramModel.toJSON()
             };
             expect(loadedModel).toStrictEqual(expected);
         });
@@ -97,11 +97,11 @@ describe('ModelTester', () => {
 
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[1];
-            const expectedProgramModel = new ProgramModel("bowl2", "init", expectedNodesExtended,
+            const expectedProgramModel = new UserModel("bowl2", "init", expectedNodesExtended,
                 {}, ["end"], ["end"]);
             const expected: SimpleTypedModel = {
                 usage: "user",
-                ...expectedProgramModel.simplifyForSave()
+                ...expectedProgramModel.toJSON()
             };
             expect(loadedModel).toStrictEqual(expected);
         });
@@ -111,12 +111,12 @@ describe('ModelTester', () => {
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[2];
             const expectedEdge = new ProgramModelEdge("init", "init", "bowl3", "init", "start", -1, -1);
-            expectedEdge.addCondition(new Condition("condition1", undefined, CheckName.Function, false, ["true"]));
+            expectedEdge.addCondition(new Condition("condition1", undefined, "Function", false, ["true"]));
             const expectedProgramModel = new ProgramModel("bowl3", "init", expectedNodesExtended,
                 {"e1": expectedEdge}, ["end"], ["end"]);
             const expected: SimpleTypedModel = {
                 usage: "end",
-                ...expectedProgramModel.simplifyForSave()
+                ...expectedProgramModel.toJSON()
             };
             expect(loadedModel).toStrictEqual(expected);
         });

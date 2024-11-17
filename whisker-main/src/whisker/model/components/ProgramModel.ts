@@ -1,7 +1,9 @@
-import {ModelNode, SimpleModelNode} from "./ModelNode";
-import {EdgeID, ModelEdge, ProgramModelEdge, SimpleProgramModelEdge} from "./ModelEdge";
+import {ModelNode} from "./ModelNode";
+import {EdgeID, ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
+import {Model, ModelJSON} from "./Model";
+import {ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
 
 export interface CoverageResult {
     total: number;
@@ -12,13 +14,8 @@ export interface ExtendedCoverageResult extends CoverageResult {
     missedEdges: EdgeID[];
 }
 
-export interface SimpleProgramModel {
-    id: string;
-    nodes: SimpleModelNode[];
-    edges: SimpleProgramModelEdge[];
-    startNodeId: string;
-    stopNodeIds: string[];
-    stopAllNodeIds: string[]
+export interface ProgramModelJSON extends ModelJSON {
+    edges: ProgramModelEdgeJSON[];
 }
 
 /**
@@ -34,23 +31,11 @@ export interface SimpleProgramModel {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class ProgramModel {
-    readonly id: string;
-
-    protected readonly startNodeId: string;
-    protected readonly stopNodeIds: string[];
-    protected readonly stopAllNodeIds: string[];
-
-    protected readonly nodes: Record<string, ModelNode>;
-    protected readonly edges: Record<string, ProgramModelEdge>;
-
+export class ProgramModel extends Model<ProgramModelEdge, ProgramModelJSON> {
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
 
-    lastTransitionStep = 0;
-    secondLastTransitionStep = 0;
     programEndStep = 0;
-    currentState: ModelNode;
 
     /**
      * Construct a program model (graph) with a string identifier. This model is executed in parallel to the program
@@ -65,25 +50,13 @@ export class ProgramModel {
      */
     constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
-        if (!id) {
-            throw new Error("No id given.");
-        }
-        if (!startNodeId || !nodes[startNodeId]) {
-            throw new Error("No start node (id or in node set) given.");
-        }
-        this.id = id;
-        this.startNodeId = startNodeId;
-        this.currentState = nodes[startNodeId];
-        this.nodes = nodes;
-        this.edges = edges;
-        this.stopNodeIds = stopNodeIds;
-        this.stopAllNodeIds = stopAllNodeIds;
+        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
 
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
+    override makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.programEndStep);
@@ -193,18 +166,14 @@ export class ProgramModel {
         this.secondLastTransitionStep = steps;
     }
 
-    simplifyForSave(): SimpleProgramModel {
+    override toJSON(): ProgramModelJSON {
         return {
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodes: ProgramModel.mapValuesToArray(this.nodes, node => node.simplifyForSave()),
-            edges: ProgramModel.mapValuesToArray(this.edges, edges => edges.simplifyForSave())
+            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
+            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
         };
-    }
-
-    public static mapValuesToArray<A, B>(map: Record<string | number | symbol, A>, mapper: (a: A) => B): B[] {
-        return Object.values(map).map((v) => mapper(v));
     }
 }

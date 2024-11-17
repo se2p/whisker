@@ -2,7 +2,7 @@
 import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
 import {Condition} from "../components/Condition";
-import {ArgType, CheckName} from "../components/Check";
+import {ArgType} from "../components/Check";
 
 function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     const conditions = edge.conditions;
@@ -10,9 +10,9 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect): string {
     let containsElapsed: string | null = null;
 
     for (const c of conditions) {
-        if (c.name == CheckName.TimeBetween || c.name == CheckName.TimeAfterEnd) {
+        if (c.name == "TimeBetween" || c.name == "TimeAfterEnd") {
             containsAfterTime = c.args[0].toString();
-        } else if (c.name == CheckName.TimeElapsed) {
+        } else if (c.name == "TimeElapsed") {
             containsElapsed = c.args[0].toString();
         }
     }

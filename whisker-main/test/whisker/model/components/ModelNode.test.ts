@@ -1,6 +1,7 @@
-import {ModelNode, SimpleModelNode} from "../../../../src/whisker/model/components/ModelNode";
-import {ModelEdge, ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
+import {ModelNode, ModelNodeJSON} from "../../../../src/whisker/model/components/ModelNode";
+import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import {TestDriverMock} from "../TestDriverMock";
+import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('Model node', () => {
     function mockModelEdge(id: string, checkConditions: jest.Mock, lastTransition = 0,
@@ -53,12 +54,12 @@ describe('Model node', () => {
         expect(edge2.lastTransition).toBe(0);
     });
 
-    test("SimplifyForSave", () => {
+    test("toJSON", () => {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", 1000, -1);
         const node = new ModelNode("from", "label");
         node.addOutgoingEdge(edge);
-        const actual = node.simplifyForSave();
-        const expected: SimpleModelNode = {
+        const actual = node.toJSON();
+        const expected: ModelNodeJSON = {
             id: "from",
             label: "label"
         };

@@ -4,7 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 
 export type NodeID = string;
 
-export interface SimpleModelNode {
+export interface ModelNodeJSON {
     id: NodeID;
     label: string
 }
@@ -17,6 +17,7 @@ export class ModelNode {
     readonly label: string;
     edges: ModelEdge[] = []; //outgoing edges
 
+    // FIXME: this should be private readonly and already be set in the constructor!
     isStartNode = false;
     isStopNode = false;
     isStopAllNode = false;
@@ -26,16 +27,13 @@ export class ModelNode {
      * @param id Id of the node
      * @param label Label of the node
      */
-    constructor(id: string, label: string) {
+    constructor(id: string, label: string = id) {
         if (!id) {
             throw new Error("No id given.");
         }
+
         this.id = id;
-        if (label == undefined) {
-            this.label = id;
-        } else {
-            this.label = label;
-        }
+        this.label = label;
     }
 
     /**
@@ -77,8 +75,7 @@ export class ModelNode {
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                  eventStrings: string[]): ModelEdge | null {
         for (const e of this.edges) {
-            const result = e.checkConditionsOnEvent(t, cu, stepsSinceLastTransition, stepsSinceEnd,
-                eventStrings);
+            const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, eventStrings);
 
             if (result && result.length == 0) {
                 e.lastTransition = t.getTotalStepsExecuted() + 1;
@@ -106,7 +103,7 @@ export class ModelNode {
         });
     }
 
-    simplifyForSave(): SimpleModelNode {
+    toJSON(): ModelNodeJSON {
         return {
             id: this.id,
             label: this.label

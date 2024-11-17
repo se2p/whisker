@@ -1,5 +1,5 @@
 import {Effect} from "../../../../src/whisker/model/components/Effect";
-import {ArgType, Check, CheckName} from "../../../../src/whisker/model/components/Check";
+import {ArgType, Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {CheckUtilityMock} from "../CheckUtilityMock";
@@ -62,7 +62,7 @@ describe('Effect', () => {
     describe('Constructor throws exception vor invalid arguments', () => {
 
         describe('Constructor throws for empty args', () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = Object.values(CheckName).map(c => [c, true, []]);
+            const constructorArguments: [CheckName, boolean, ArgType[]][] = CHECK_NAMES.map(c => [c, true, []]);
             it.each(constructorArguments)('throws for CheckName: %s', checkConstructorThrows);
         });
 
@@ -70,83 +70,83 @@ describe('Effect', () => {
 
             describe("not enough arguments: sprite events", () => {
                 const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                    [CheckName.SpriteColor, true, ["spritename"]],
-                    [CheckName.SpriteColor, true, ["spritename", "1"]],
-                    [CheckName.SpriteColor, true, ["spritename", "1", "2"]],
-                    [CheckName.SpriteColor, true, ["spritename", "1", "2", undefined]],
-                    [CheckName.SpriteColor, true, [undefined, "spritename", "1", "2"]],
-                    [CheckName.SpriteColor, true, ["spritename", undefined, "1", "2"]],
-                    [CheckName.SpriteColor, true, ["spritename", "1", undefined, "2"]],
-                    [CheckName.SpriteTouching, true, ["spritename"]],
-                    [CheckName.SpriteTouching, true, ["spritename", undefined]],
-                    [CheckName.SpriteTouching, true, [undefined, "spritename"]]
+                    ["SpriteColor", true, ["spritename"]],
+                    ["SpriteColor", true, ["spritename", "1"]],
+                    ["SpriteColor", true, ["spritename", "1", "2"]],
+                    ["SpriteColor", true, ["spritename", "1", "2", undefined]],
+                    ["SpriteColor", true, [undefined, "spritename", "1", "2"]],
+                    ["SpriteColor", true, ["spritename", undefined, "1", "2"]],
+                    ["SpriteColor", true, ["spritename", "1", undefined, "2"]],
+                    ["SpriteTouching", true, ["spritename"]],
+                    ["SpriteTouching", true, ["spritename", undefined]],
+                    ["SpriteTouching", true, [undefined, "spritename"]]
                 ];
                 it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
             });
 
             describe("not enough argument: nbrofclones", () => {
                 const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                    [CheckName.NbrOfClones, true, ["spritename"]],
-                    [CheckName.NbrOfClones, true, ["spritename", "="]],
-                    [CheckName.NbrOfVisibleClones, true, ["spritename"]],
-                    [CheckName.NbrOfVisibleClones, true, ["spritename", "="]]
+                    ["NbrOfClones", true, ["spritename"]],
+                    ["NbrOfClones", true, ["spritename", "="]],
+                    ["NbrOfVisibleClones", true, ["spritename"]],
+                    ["NbrOfVisibleClones", true, ["spritename", "="]]
                 ];
                 it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
             });
 
             describe("not enough arguments: output", () => {
                 const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                    [CheckName.Output, true, ["test"]],
-                    [CheckName.Output, true, ["test", undefined]],
-                    [CheckName.Output, true, [undefined, "test"]],
+                    ["Output", true, ["test"]],
+                    ["Output", true, ["test", undefined]],
+                    ["Output", true, [undefined, "test"]],
                 ];
                 it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
             });
 
             describe("not enough arguments: variable change", () => {
                 const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                    [CheckName.VarChange, true, ["test"]],
-                    [CheckName.VarChange, true, ["test", "test2"]],
-                    [CheckName.VarChange, true, ["test", "test2", undefined]],
-                    [CheckName.VarChange, true, [undefined, "test", "test2"]],
-                    [CheckName.VarChange, true, ["test", undefined, "test2"]],
+                    ["VarChange", true, ["test"]],
+                    ["VarChange", true, ["test", "test2"]],
+                    ["VarChange", true, ["test", "test2", undefined]],
+                    ["VarChange", true, [undefined, "test", "test2"]],
+                    ["VarChange", true, ["test", undefined, "test2"]],
                 ];
                 it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
             });
 
             describe("not enough arguments: variable comparison", () => {
                 const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                    [CheckName.VarComp, true, ["test"]],
-                    [CheckName.VarComp, true, ["test", "test2"]],
-                    [CheckName.VarComp, true, ["test", "test2", ">"]],
-                    [CheckName.VarComp, true, ["test", "test2", ">", undefined]],
-                    [CheckName.VarComp, true, ["test", "test2", undefined]],
-                    [CheckName.VarComp, true, ["test", undefined, "test2"]],
-                    [CheckName.VarComp, true, [undefined, "test", "test2"]],
+                    ["VarComp", true, ["test"]],
+                    ["VarComp", true, ["test", "test2"]],
+                    ["VarComp", true, ["test", "test2", ">"]],
+                    ["VarComp", true, ["test", "test2", ">", undefined]],
+                    ["VarComp", true, ["test", "test2", undefined]],
+                    ["VarComp", true, ["test", undefined, "test2"]],
+                    ["VarComp", true, [undefined, "test", "test2"]],
                 ];
                 it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
             });
 
             describe("not enough arguments: attribute change", () => {
                 const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                    [CheckName.AttrChange, true, ["test"]],
-                    [CheckName.AttrChange, true, ["test", "test2"]],
-                    [CheckName.AttrChange, true, ["test", "test2", undefined]],
-                    [CheckName.AttrChange, true, ["test", undefined, "test2"]],
-                    [CheckName.AttrChange, true, [undefined, "test", "test2"]],
+                    ["AttrChange", true, ["test"]],
+                    ["AttrChange", true, ["test", "test2"]],
+                    ["AttrChange", true, ["test", "test2", undefined]],
+                    ["AttrChange", true, ["test", undefined, "test2"]],
+                    ["AttrChange", true, [undefined, "test", "test2"]],
                 ];
                 it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
             });
 
             describe("not enough arguments: attribute comparison", () => {
                 const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                    [CheckName.AttrComp, true, ["test"]],
-                    [CheckName.AttrComp, true, ["test", "test2"]],
-                    [CheckName.AttrComp, true, ["test", "test2", ">"]],
-                    [CheckName.AttrComp, true, ["test", "test2", ">", undefined]],
-                    [CheckName.AttrComp, true, ["test", "test2", undefined]],
-                    [CheckName.AttrComp, true, ["test", undefined, "test2"]],
-                    [CheckName.AttrComp, true, [undefined, "test", "test2"]],
+                    ["AttrComp", true, ["test"]],
+                    ["AttrComp", true, ["test", "test2"]],
+                    ["AttrComp", true, ["test", "test2", ">"]],
+                    ["AttrComp", true, ["test", "test2", ">", undefined]],
+                    ["AttrComp", true, ["test", "test2", undefined]],
+                    ["AttrComp", true, ["test", undefined, "test2"]],
+                    ["AttrComp", true, [undefined, "test", "test2"]],
                 ];
                 it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
             });
@@ -155,25 +155,25 @@ describe('Effect', () => {
 
     describe('toString()', () => {
         const toStrings: [CheckName, boolean, ArgType[], string][] = [
-            [CheckName.AttrChange, true, ["test", "attr", "-"], "!AttrChange(test,attr,-)"],
-            [CheckName.AttrComp, false, ["sprite", "attr", ">", "0"], "AttrComp(sprite,attr,>,0)"],
-            [CheckName.BackgroundChange, true, ["test"], "!BackgroundChange(test)"],
-            [CheckName.Click, true, ["sprite"], "!Click(sprite)"],
-            [CheckName.Function, true, ["test"], "!Function(test)"],
-            [CheckName.Key, true, ["test"], "!Key(test)"],
-            [CheckName.Output, true, ["test", "hallo"], "!Output(test,hallo)"],
-            [CheckName.SpriteColor, true, ["sprite", "0", "0", "0"], "!SpriteColor(sprite,0,0,0)"],
-            [CheckName.SpriteTouching, true, ["sprite1", "sprite2"], "!SpriteTouching(sprite1,sprite2)"],
-            [CheckName.VarChange, true, ["test", "var", "+"], "!VarChange(test,var,+)"],
-            [CheckName.VarComp, true, ["sprite", "var", ">", "0"], "!VarComp(sprite,var,>,0)"],
-            [CheckName.Expr, true, ["test"], "!Expr(test)"],
-            [CheckName.Probability, true, ["0"], "!Probability(0)"],
-            [CheckName.TimeElapsed, true, ["1000"], "!TimeElapsed(1000)"],
-            [CheckName.TimeBetween, true, ["1000"], "!TimeBetween(1000)"],
-            [CheckName.TimeAfterEnd, true, ["1000"], "!TimeAfterEnd(1000)"],
-            [CheckName.NbrOfClones, true, ["sprite", "=", "1"], "!NbrOfClones(sprite,=,1)"],
-            [CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,=,1)"],
-            [CheckName.TouchingEdge, true, ["sprite"], "!TouchingEdge(sprite)"],
+            ["AttrChange", true, ["test", "attr", "-"], "!AttrChange(test,attr,-)"],
+            ["AttrComp", false, ["sprite", "attr", ">", "0"], "AttrComp(sprite,attr,>,0)"],
+            ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
+            ["Click", true, ["sprite"], "!Click(sprite)"],
+            ["Function", true, ["test"], "!Function(test)"],
+            ["Key", true, ["test"], "!Key(test)"],
+            ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
+            ["SpriteColor", true, ["sprite", "0", "0", "0"], "!SpriteColor(sprite,0,0,0)"],
+            ["SpriteTouching", true, ["sprite1", "sprite2"], "!SpriteTouching(sprite1,sprite2)"],
+            ["VarChange", true, ["test", "var", "+"], "!VarChange(test,var,+)"],
+            ["VarComp", true, ["sprite", "var", ">", "0"], "!VarComp(sprite,var,>,0)"],
+            ["Expr", true, ["test"], "!Expr(test)"],
+            ["Probability", true, ["0"], "!Probability(0)"],
+            ["TimeElapsed", true, ["1000"], "!TimeElapsed(1000)"],
+            ["TimeBetween", true, ["1000"], "!TimeBetween(1000)"],
+            ["TimeAfterEnd", true, ["1000"], "!TimeAfterEnd(1000)"],
+            ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,=,1)"],
+            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,=,1)"],
+            ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"],
         ];
         it.each(toStrings)('toString() of (%s, %s, %s)',
             (checkName: CheckName, negated: boolean, args: ArgType[], expected: string) => {
@@ -183,13 +183,13 @@ describe('Effect', () => {
 
     test("effect.contradicts() throws for null argument", () => {
         expect(() => {
-            const effect = new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+            const effect = new Effect(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]);
             effect.contradicts(null);
         }).toThrow();
     });
 
     test("effect.check() returns false before calling registerComponents()", () => {
-        const effect = new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+        const effect = new Effect(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]);
         expect(effect.check(0, 0)).toBe(false);
     });
 
@@ -207,25 +207,25 @@ describe('Effect', () => {
             }
 
             const effects: Effect[] = [
-                new Effect(id, edgeID, CheckName.Output, true, ["sprite", "hi"]),
-                new Effect(id, edgeID, CheckName.VarChange, true, ["test", "var", "+"]),
-                new Effect(id, edgeID, CheckName.AttrChange, true, ["test", "attr", "-"]),
-                new Effect(id, edgeID, CheckName.BackgroundChange, true, ["test"]),
-                new Effect(id, edgeID, CheckName.Function, true, ["test"]),
-                new Effect(id, edgeID, CheckName.VarComp, true, ["sprite", "var", ">", "0"]),
-                new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]),
-                new Effect(id, edgeID, CheckName.Key, true, ["right arrow"]),
-                new Effect(id, edgeID, CheckName.Click, true, ["sprite"]),
-                new Effect(id, edgeID, CheckName.SpriteColor, true, ["sprite", 255, 0, 0]),
-                new Effect(id, edgeID, CheckName.SpriteTouching, true, ["sprite", "sprite1"]),
-                new Effect(id, edgeID, CheckName.TouchingEdge, true, ["sprite"]),
-                new Effect(id, edgeID, CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"]),
-                new Effect(id, edgeID, CheckName.NbrOfClones, true, ["sprite", "=", "1"]),
-                new Effect(id, edgeID, CheckName.TimeAfterEnd, true, ["1000"]),
-                new Effect(id, edgeID, CheckName.TimeBetween, true, ["1000"]),
-                new Effect(id, edgeID, CheckName.TimeElapsed, true, ["1000"]),
-                new Effect(id, edgeID, CheckName.Probability, true, ["0"]),
-                new Effect(id, edgeID, CheckName.Expr, true, ["test"]),
+                new Effect(id, edgeID, "Output", true, ["sprite", "hi"]),
+                new Effect(id, edgeID, "VarChange", true, ["test", "var", "+"]),
+                new Effect(id, edgeID, "AttrChange", true, ["test", "attr", "-"]),
+                new Effect(id, edgeID, "BackgroundChange", true, ["test"]),
+                new Effect(id, edgeID, "Function", true, ["test"]),
+                new Effect(id, edgeID, "VarComp", true, ["sprite", "var", ">", "0"]),
+                new Effect(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]),
+                new Effect(id, edgeID, "Key", true, ["right arrow"]),
+                new Effect(id, edgeID, "Click", true, ["sprite"]),
+                new Effect(id, edgeID, "SpriteColor", true, ["sprite", 255, 0, 0]),
+                new Effect(id, edgeID, "SpriteTouching", true, ["sprite", "sprite1"]),
+                new Effect(id, edgeID, "TouchingEdge", true, ["sprite"]),
+                new Effect(id, edgeID, "NbrOfVisibleClones", true, ["sprite", "=", "1"]),
+                new Effect(id, edgeID, "NbrOfClones", true, ["sprite", "=", "1"]),
+                new Effect(id, edgeID, "TimeAfterEnd", true, ["1000"]),
+                new Effect(id, edgeID, "TimeBetween", true, ["1000"]),
+                new Effect(id, edgeID, "TimeElapsed", true, ["1000"]),
+                new Effect(id, edgeID, "Probability", true, ["0"]),
+                new Effect(id, edgeID, "Expr", true, ["test"]),
             ];
 
             it.each(createAllPairs(effects))('%s and %s do not contradict each other',
@@ -233,97 +233,97 @@ describe('Effect', () => {
         });
 
         test("contradictions output", () => {
-            const output = new Effect(id, edgeID, CheckName.Output, true, ["sprite", "hi"]);
-            assertSymmetricContradiction2(output, CheckName.Output, true, ["sprite1", "hi"], false);
-            assertSymmetricContradiction2(output, CheckName.Output, true, ["sprite", "hi"], false);
-            assertSymmetricContradiction2(output, CheckName.Output, true, ["sprite", "hi2"], true);
+            const output = new Effect(id, edgeID, "Output", true, ["sprite", "hi"]);
+            assertSymmetricContradiction2(output, "Output", true, ["sprite1", "hi"], false);
+            assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi"], false);
+            assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi2"], true);
         });
 
         test("contradictions function", () => {
-            const functionE = new Effect(id, edgeID, CheckName.Function, true, ["test"]);
-            assertSymmetricContradiction2(functionE, CheckName.Function, true, ["testblabla"], false);
-            assertSymmetricContradiction2(functionE, CheckName.Function, true, ["test"], false);
+            const functionE = new Effect(id, edgeID, "Function", true, ["test"]);
+            assertSymmetricContradiction2(functionE, "Function", true, ["testblabla"], false);
+            assertSymmetricContradiction2(functionE, "Function", true, ["test"], false);
         });
 
         test("contradictions background", () => {
-            const background = new Effect(id, edgeID, CheckName.BackgroundChange, true, ["test"]);
-            assertSymmetricContradiction2(background, CheckName.BackgroundChange, true, ["test"], false);
-            assertSymmetricContradiction2(background, CheckName.BackgroundChange, true, ["test2"], true);
+            const background = new Effect(id, edgeID, "BackgroundChange", true, ["test"]);
+            assertSymmetricContradiction2(background, "BackgroundChange", true, ["test"], false);
+            assertSymmetricContradiction2(background, "BackgroundChange", true, ["test2"], true);
         });
 
         describe("contradiction: variable change and comparison", () => {
             test('not the same sprite', () => {
-                const varChange = new Effect(id, edgeID, CheckName.VarChange, true, ["test", "var", "+"]);
-                const varComp = new Effect(id, edgeID, CheckName.VarComp, true, ["sprite", "var", ">", "0"]);
+                const varChange = new Effect(id, edgeID, "VarChange", true, ["test", "var", "+"]);
+                const varComp = new Effect(id, edgeID, "VarComp", true, ["sprite", "var", ">", "0"]);
                 assertSymmetricContradiction(varChange, varComp, false);
             });
 
             test('not the same var', () => {
-                const varChange = new Effect(id, edgeID, CheckName.VarChange, true, ["sprite", "var", "+"]);
-                const varComp = new Effect(id, edgeID, CheckName.VarComp, true, ["sprite", "var2", ">", "0"]);
+                const varChange = new Effect(id, edgeID, "VarChange", true, ["sprite", "var", "+"]);
+                const varComp = new Effect(id, edgeID, "VarComp", true, ["sprite", "var2", ">", "0"]);
                 assertSymmetricContradiction(varChange, varComp, false);
             });
 
 
             describe('VarComp and VarChange', () => {
-                it.each(getEffectComparisonChangeCombinations(CheckName.VarComp, CheckName.VarChange))(
+                it.each(getEffectComparisonChangeCombinations("VarComp", "VarChange"))(
                     '%s does not contradict %s', assertSymmetricContradiction);
             });
         });
 
         describe("contradiction: attribute comparison and change", () => {
             test('not the same sprite', () => {
-                const attrChange = new Effect(id, edgeID, CheckName.AttrChange, true, ["test", "var", "+"]);
-                const attrComp = new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "var", ">", "0"]);
+                const attrChange = new Effect(id, edgeID, "AttrChange", true, ["test", "var", "+"]);
+                const attrComp = new Effect(id, edgeID, "AttrComp", true, ["sprite", "var", ">", "0"]);
                 assertSymmetricContradiction(attrChange, attrComp, false);
             });
 
             test('not the same var', () => {
-                const attrChange = new Effect(id, edgeID, CheckName.AttrChange, true, ["sprite", "var", "+"]);
-                const attrComp = new Effect(id, edgeID, CheckName.AttrComp, true, ["sprite", "var2", ">", "0"]);
+                const attrChange = new Effect(id, edgeID, "AttrChange", true, ["sprite", "var", "+"]);
+                const attrComp = new Effect(id, edgeID, "AttrComp", true, ["sprite", "var2", ">", "0"]);
                 assertSymmetricContradiction(attrChange, attrComp, false);
             });
 
             describe('AttrComp and AttrChange', () => {
-                it.each(getEffectComparisonChangeCombinations(CheckName.AttrComp, CheckName.AttrChange))(
+                it.each(getEffectComparisonChangeCombinations("AttrComp", "AttrChange"))(
                     '%s does not contradict %s', assertSymmetricContradiction);
             });
         });
 
         describe("contradictions: var/attr change", () => {
             const table: TableEntry[] = [
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '+'], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '-'], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '+='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '-='], true],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '+'], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '-'], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '+='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '-='], true],
 
                 // other names
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite2', 'var', '='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var2', '='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite2', 'var', '='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var2', '='], false],
 
-                [CheckName.VarChange, true, ['sprite', 'var', '-'], CheckName.VarChange, true, ['sprite', 'var', '+='], true],
-                [CheckName.VarChange, true, ['sprite', 'var', '-'], CheckName.VarChange, true, ['sprite', 'var', '-='], false],
+                ["VarChange", true, ['sprite', 'var', '-'], "VarChange", true, ['sprite', 'var', '+='], true],
+                ["VarChange", true, ['sprite', 'var', '-'], "VarChange", true, ['sprite', 'var', '-='], false],
 
                 //attrChange
-                [CheckName.AttrChange, true, ['sprite', 'var', '+'], CheckName.AttrChange, true, ['sprite', 'var', '+'], false],
-                [CheckName.AttrChange, true, ['sprite', 'var', '+'], CheckName.AttrChange, true, ['sprite', 'var', '-'], false],
-                [CheckName.AttrChange, true, ['sprite', 'var', '+'], CheckName.AttrChange, true, ['sprite', 'var', '='], false],
-                [CheckName.AttrChange, true, ['sprite', 'var', '+'], CheckName.AttrChange, true, ['sprite', 'var', '+='], false],
-                [CheckName.AttrChange, true, ['sprite', 'var', '+'], CheckName.AttrChange, true, ['sprite', 'var', '-='], true],
+                ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '+'], false],
+                ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '-'], false],
+                ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '='], false],
+                ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '+='], false],
+                ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '-='], true],
 
                 //other names
-                [CheckName.AttrChange, true, ['sprite', 'var', '+'], CheckName.AttrChange, true, ['sprite2', 'var', '='], false],
-                [CheckName.AttrChange, true, ['sprite', 'var', '+'], CheckName.AttrChange, true, ['sprite', 'var2', '='], false],
+                ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite2', 'var', '='], false],
+                ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var2', '='], false],
 
-                [CheckName.AttrChange, true, ['sprite', 'var', '-'], CheckName.AttrChange, true, ['sprite', 'var', '+='], true],
-                [CheckName.AttrChange, true, ['sprite', 'var', '-'], CheckName.AttrChange, true, ['sprite', 'var', '-='], false],
+                ["AttrChange", true, ['sprite', 'var', '-'], "AttrChange", true, ['sprite', 'var', '+='], true],
+                ["AttrChange", true, ['sprite', 'var', '-'], "AttrChange", true, ['sprite', 'var', '-='], false],
 
                 // different values
-                [CheckName.VarChange, true, ['sprite', 'var', '-5'], CheckName.VarChange, true, ['sprite', 'var', '-7'], true],
-                [CheckName.VarChange, true, ['sprite', 'var', '+5'], CheckName.VarChange, true, ['sprite', 'var', '+7'], true],
-                [CheckName.AttrChange, false, ['sprite', 'var', '-5'], CheckName.AttrChange, false, ['sprite', 'var', '-7'], true],
-                [CheckName.AttrChange, false, ['sprite', 'var', '+5'], CheckName.AttrChange, false, ['sprite', 'var', '+7'], true],
+                ["VarChange", true, ['sprite', 'var', '-5'], "VarChange", true, ['sprite', 'var', '-7'], true],
+                ["VarChange", true, ['sprite', 'var', '+5'], "VarChange", true, ['sprite', 'var', '+7'], true],
+                ["AttrChange", false, ['sprite', 'var', '-5'], "AttrChange", false, ['sprite', 'var', '-7'], true],
+                ["AttrChange", false, ['sprite', 'var', '+5'], "AttrChange", false, ['sprite', 'var', '+7'], true],
             ];
 
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
@@ -331,16 +331,16 @@ describe('Effect', () => {
 
         describe("varChange += -=", () => {
             const table: TableEntry[] = [
-                [CheckName.VarChange, true, ['sprite', 'var', '+='], CheckName.VarChange, true, ['sprite', 'var', '+='], false],
-                [CheckName.VarChange, false, ['sprite', 'var', '+='], CheckName.VarChange, false, ['sprite', 'var', '+='], false],
-                [CheckName.VarChange, false, ['sprite', 'var', '+='], CheckName.VarChange, true, ['sprite', 'var', '+='], true],
+                ["VarChange", true, ['sprite', 'var', '+='], "VarChange", true, ['sprite', 'var', '+='], false],
+                ["VarChange", false, ['sprite', 'var', '+='], "VarChange", false, ['sprite', 'var', '+='], false],
+                ["VarChange", false, ['sprite', 'var', '+='], "VarChange", true, ['sprite', 'var', '+='], true],
 
-                [CheckName.VarChange, true, ['sprite', 'var', '-='], CheckName.VarChange, true, ['sprite', 'var', '-='], false],
-                [CheckName.VarChange, false, ['sprite', 'var', '-='], CheckName.VarChange, false, ['sprite', 'var', '-='], false],
-                [CheckName.VarChange, false, ['sprite', 'var', '-='], CheckName.VarChange, true, ['sprite', 'var', '-='], true],
+                ["VarChange", true, ['sprite', 'var', '-='], "VarChange", true, ['sprite', 'var', '-='], false],
+                ["VarChange", false, ['sprite', 'var', '-='], "VarChange", false, ['sprite', 'var', '-='], false],
+                ["VarChange", false, ['sprite', 'var', '-='], "VarChange", true, ['sprite', 'var', '-='], true],
 
-                [CheckName.VarChange, false, ['sprite', 'var', '+='], CheckName.VarChange, true, ['sprite', 'var', '-='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+='], CheckName.VarChange, true, ['sprite', 'var', '-='], true]
+                ["VarChange", false, ['sprite', 'var', '+='], "VarChange", true, ['sprite', 'var', '-='], false],
+                ["VarChange", true, ['sprite', 'var', '+='], "VarChange", true, ['sprite', 'var', '-='], true]
             ];
 
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
@@ -348,124 +348,124 @@ describe('Effect', () => {
 
         describe('contradictions: variable comparison', () => {
             const table: TableEntry[] = [
-                [CheckName.VarComp, true, ["sprite", "var", ">", "0"], CheckName.VarComp, true, ["sprite", "var", ">", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", ">", "0"], CheckName.VarComp, true, ["sprite", "var", ">=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", ">=", "0"], CheckName.VarComp, true, ["sprite", "var", ">=", "1"], false],
-                [CheckName.VarComp, true, ["sprite2", "var", ">=", "0"], CheckName.VarComp, true, ["sprite", "var", ">=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var2", ">=", "0"], CheckName.VarComp, true, ["sprite", "var", ">=", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">", "0"], "VarComp", true, ["sprite", "var", ">", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">=", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
+                ["VarComp", true, ["sprite2", "var", ">=", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
+                ["VarComp", true, ["sprite", "var2", ">=", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
 
-                [CheckName.VarComp, true, ["sprite", "var", "<", "0"], CheckName.VarComp, true, ["sprite", "var", "<", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<", "0"], CheckName.VarComp, true, ["sprite", "var", "<=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<=", "0"], CheckName.VarComp, true, ["sprite", "var", "<=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", true, ["sprite", "var", "<", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", true, ["sprite", "var", "<=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<=", "0"], "VarComp", true, ["sprite", "var", "<=", "1"], false],
 
-                [CheckName.VarComp, false, ["sprite", "var", "=", "0"], CheckName.VarComp, false, ["sprite", "var", "=", "1"], true],
-                [CheckName.VarComp, false, ["sprite", "var", "=", "0"], CheckName.VarComp, true, ["sprite", "var", "=", "0"], true],
+                ["VarComp", false, ["sprite", "var", "=", "0"], "VarComp", false, ["sprite", "var", "=", "1"], true],
+                ["VarComp", false, ["sprite", "var", "=", "0"], "VarComp", true, ["sprite", "var", "=", "0"], true],
 
-                [CheckName.VarComp, true, ["sprite", "var", "=", "0"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "=", "0"], CheckName.VarComp, true, ["sprite", "var", "=", "0"], false],
+                ["VarComp", true, ["sprite", "var", "=", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "=", "0"], "VarComp", true, ["sprite", "var", "=", "0"], false],
 
-                [CheckName.VarComp, true, ["sprite", "var", "<", "0"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<", "0"], CheckName.VarComp, false, ["sprite", "var", "=", "-1"], true],
-                [CheckName.VarComp, true, ["sprite", "var", "<", "2"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", false, ["sprite", "var", "=", "-1"], true],
+                ["VarComp", true, ["sprite", "var", "<", "2"], "VarComp", true, ["sprite", "var", "=", "1"], false],
 
-                [CheckName.VarComp, true, ["sprite", "var", "<=", "0"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<=", "2"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<=", "2"], CheckName.VarComp, false, ["sprite", "var", "=", "-1"], true],
-                [CheckName.VarComp, true, ["sprite", "var", "<=", "1"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<=", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<=", "2"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<=", "2"], "VarComp", false, ["sprite", "var", "=", "-1"], true],
+                ["VarComp", true, ["sprite", "var", "<=", "1"], "VarComp", true, ["sprite", "var", "=", "1"], false],
 
-                [CheckName.VarComp, true, ["sprite", "var", ">", "1"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", ">", "1"], CheckName.VarComp, false, ["sprite", "var", "=", "2"], true],
-                [CheckName.VarComp, true, ["sprite", "var", ">", "0"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">", "1"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">", "1"], "VarComp", false, ["sprite", "var", "=", "2"], true],
+                ["VarComp", true, ["sprite", "var", ">", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
 
-                [CheckName.VarComp, true, ["sprite", "var", ">=", "2"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", ">=", "2"], CheckName.VarComp, false, ["sprite", "var", "=", "3"], true],
-                [CheckName.VarComp, true, ["sprite", "var", ">=", "0"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", ">=", "1"], CheckName.VarComp, true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">=", "2"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">=", "2"], "VarComp", false, ["sprite", "var", "=", "3"], true],
+                ["VarComp", true, ["sprite", "var", ">=", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+                ["VarComp", true, ["sprite", "var", ">=", "1"], "VarComp", true, ["sprite", "var", "=", "1"], false],
 
-                [CheckName.VarComp, false, ["sprite", "var", "<", "3"], CheckName.VarComp, false, ["sprite", "var", ">", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<", "1"], CheckName.VarComp, true, ["sprite", "var", ">", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<=", "1"], CheckName.VarComp, true, ["sprite", "var", ">=", "1"], true],
-                [CheckName.VarComp, false, ["sprite", "var", "<", "1"], CheckName.VarComp, false, ["sprite", "var", ">", "1"], true],
-                [CheckName.VarComp, true, ["sprite", "var", "<", "-1"], CheckName.VarComp, true, ["sprite", "var", ">", "1"], false],
+                ["VarComp", false, ["sprite", "var", "<", "3"], "VarComp", false, ["sprite", "var", ">", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<", "1"], "VarComp", true, ["sprite", "var", ">", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<=", "1"], "VarComp", true, ["sprite", "var", ">=", "1"], true],
+                ["VarComp", false, ["sprite", "var", "<", "1"], "VarComp", false, ["sprite", "var", ">", "1"], true],
+                ["VarComp", true, ["sprite", "var", "<", "-1"], "VarComp", true, ["sprite", "var", ">", "1"], false],
 
-                [CheckName.VarComp, true, ["sprite", "var", "<", "3"], CheckName.VarComp, true, ["sprite", "var", ">=", "1"], true],
-                [CheckName.VarComp, false, ["sprite", "var", "<", "3"], CheckName.VarComp, false, ["sprite", "var", ">=", "1"], false],
-                [CheckName.VarComp, true, ["sprite", "var", "<", "1"], CheckName.VarComp, true, ["sprite", "var", ">=", "1"], true],
-                [CheckName.VarComp, false, ["sprite", "var", "<", "-1"], CheckName.VarComp, false, ["sprite", "var", ">=", "1"], true],
+                ["VarComp", true, ["sprite", "var", "<", "3"], "VarComp", true, ["sprite", "var", ">=", "1"], true],
+                ["VarComp", false, ["sprite", "var", "<", "3"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "<", "1"], "VarComp", true, ["sprite", "var", ">=", "1"], true],
+                ["VarComp", false, ["sprite", "var", "<", "-1"], "VarComp", false, ["sprite", "var", ">=", "1"], true],
 
-                [CheckName.VarComp, true, ["sprite", "var", "<=", "3"], CheckName.VarComp, true, ["sprite", "var", ">", "1"], true],
-                [CheckName.VarComp, false, ["sprite", "var", "<=", "1"], CheckName.VarComp, false, ["sprite", "var", ">", "1"], true],
-                [CheckName.VarComp, false, ["sprite", "var", "<=", "-1"], CheckName.VarComp, false, ["sprite", "var", ">", "1"], true],
+                ["VarComp", true, ["sprite", "var", "<=", "3"], "VarComp", true, ["sprite", "var", ">", "1"], true],
+                ["VarComp", false, ["sprite", "var", "<=", "1"], "VarComp", false, ["sprite", "var", ">", "1"], true],
+                ["VarComp", false, ["sprite", "var", "<=", "-1"], "VarComp", false, ["sprite", "var", ">", "1"], true],
 
-                [CheckName.VarComp, false, ["sprite", "var", "<=", "3"], CheckName.VarComp, false, ["sprite", "var", ">=", "1"], false],
-                [CheckName.VarComp, false, ["sprite", "var", "<=", "1"], CheckName.VarComp, false, ["sprite", "var", ">=", "1"], false],
-                [CheckName.VarComp, false, ["sprite", "var", "<=", "-1"], CheckName.VarComp, false, ["sprite", "var", ">=", "1"], true],
+                ["VarComp", false, ["sprite", "var", "<=", "3"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
+                ["VarComp", false, ["sprite", "var", "<=", "1"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
+                ["VarComp", false, ["sprite", "var", "<=", "-1"], "VarComp", false, ["sprite", "var", ">=", "1"], true],
             ];
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
         });
 
         test("contradiction: click", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.Click, true, ["sprite1"]);
-            assertSymmetricContradiction2(effect1, CheckName.Click, true, ["sprite2"], true);
-            assertSymmetricContradiction2(effect1, CheckName.Click, true, ["sprite1"], false);
+            const effect1 = new Effect(id, edgeID, "Click", true, ["sprite1"]);
+            assertSymmetricContradiction2(effect1, "Click", true, ["sprite2"], true);
+            assertSymmetricContradiction2(effect1, "Click", true, ["sprite1"], false);
         });
 
         test("contradiction: key", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.Key, true, ["left"]);
-            assertSymmetricContradiction2(effect1, CheckName.Key, true, ["right"], false);
-            assertSymmetricContradiction2(effect1, CheckName.Key, true, ["left"], false);
+            const effect1 = new Effect(id, edgeID, "Key", true, ["left"]);
+            assertSymmetricContradiction2(effect1, "Key", true, ["right"], false);
+            assertSymmetricContradiction2(effect1, "Key", true, ["left"], false);
         });
 
         test("contradiction: sprite color", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.SpriteColor, true, ["sprite1", "0", "0", "0"]);
-            assertSymmetricContradiction2(effect1, CheckName.SpriteColor, true, ["sprite2", "0", "0", "0"], false);
+            const effect1 = new Effect(id, edgeID, "SpriteColor", true, ["sprite1", "0", "0", "0"]);
+            assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite2", "0", "0", "0"], false);
             // it can touch multiple colors at the same time
-            assertSymmetricContradiction2(effect1, CheckName.SpriteColor, true, ["sprite1", "0", "0", "1"], false);
+            assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite1", "0", "0", "1"], false);
         });
 
         test("contradiction: sprite touching", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.SpriteTouching, true, ["sprite1", "sprite2"]);
-            assertSymmetricContradiction2(effect1, CheckName.SpriteTouching, true, ["sprite2", "sprite3"], false);
-            assertSymmetricContradiction2(effect1, CheckName.SpriteTouching, true, ["sprite1", "sprite3"], false);
+            const effect1 = new Effect(id, edgeID, "SpriteTouching", true, ["sprite1", "sprite2"]);
+            assertSymmetricContradiction2(effect1, "SpriteTouching", true, ["sprite2", "sprite3"], false);
+            assertSymmetricContradiction2(effect1, "SpriteTouching", true, ["sprite1", "sprite3"], false);
         });
 
         test("contradiction: expr", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.Expr, true, ["whatever"]);
-            assertSymmetricContradiction2(effect1, CheckName.Expr, true, ["whatever2"], false);
-            assertSymmetricContradiction2(effect1, CheckName.Click, true, ["whatever"], false);
+            const effect1 = new Effect(id, edgeID, "Expr", true, ["whatever"]);
+            assertSymmetricContradiction2(effect1, "Expr", true, ["whatever2"], false);
+            assertSymmetricContradiction2(effect1, "Click", true, ["whatever"], false);
         });
 
         // actually an effect with probability result is quite dumb to have....
         test("contradiction: probability", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.Probability, true, ["1"]);
-            assertSymmetricContradiction2(effect1, CheckName.Probability, true, ["9"], false);
-            assertSymmetricContradiction2(effect1, CheckName.Probability, true, ["1"], false);
+            const effect1 = new Effect(id, edgeID, "Probability", true, ["1"]);
+            assertSymmetricContradiction2(effect1, "Probability", true, ["9"], false);
+            assertSymmetricContradiction2(effect1, "Probability", true, ["1"], false);
         });
 
         describe("contradiction: time", () => {
             const table: TableEntry[] = [
-                [CheckName.TimeElapsed, true, ["1000"], CheckName.TimeElapsed, true, ["2000"], false],
-                [CheckName.TimeElapsed, true, ["1000"], CheckName.TimeElapsed, true, ["1000"], false],
-                [CheckName.TimeBetween, true, ["1000"], CheckName.TimeBetween, true, ["2000"], false],
-                [CheckName.TimeBetween, true, ["1000"], CheckName.TimeBetween, true, ["1000"], false],
-                [CheckName.TimeAfterEnd, true, ["1000"], CheckName.TimeAfterEnd, true, ["2000"], false],
-                [CheckName.TimeAfterEnd, true, ["1000"], CheckName.TimeAfterEnd, true, ["1000"], false],
+                ["TimeElapsed", true, ["1000"], "TimeElapsed", true, ["2000"], false],
+                ["TimeElapsed", true, ["1000"], "TimeElapsed", true, ["1000"], false],
+                ["TimeBetween", true, ["1000"], "TimeBetween", true, ["2000"], false],
+                ["TimeBetween", true, ["1000"], "TimeBetween", true, ["1000"], false],
+                ["TimeAfterEnd", true, ["1000"], "TimeAfterEnd", true, ["2000"], false],
+                ["TimeAfterEnd", true, ["1000"], "TimeAfterEnd", true, ["1000"], false],
             ];
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
         });
 
         describe("contradiction: clones", () => {
             const table: TableEntry[] = [
-                [CheckName.NbrOfClones, true, ["sprite", "=", "1"], CheckName.NbrOfClones, true, ["sprite2", "=", "2"], false],
-                [CheckName.NbrOfClones, true, ["sprite", "=", "1"], CheckName.NbrOfClones, true, ["sprite", "=", "1"], false],
-                [CheckName.NbrOfClones, true, ["sprite", "=", "1"], CheckName.NbrOfClones, true, ["sprite", "=", "2"], false],
-                [CheckName.NbrOfClones, true, ["sprite", "=", "1"], CheckName.NbrOfClones, false, ["sprite", "=", "2"], false],
+                ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", true, ["sprite2", "=", "2"], false],
+                ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", true, ["sprite", "=", "1"], false],
+                ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", true, ["sprite", "=", "2"], false],
+                ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", false, ["sprite", "=", "2"], false],
 
-                [CheckName.NbrOfClones, true, ["sprite", "=", "1"], CheckName.NbrOfClones, false, ["sprite", "=", "1"], true],
+                ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", false, ["sprite", "=", "1"], true],
 
-                [CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"], CheckName.NbrOfVisibleClones, true, ["sprite2", "=", "2"], false],
-                [CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"], CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"], false],
-                [CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"], CheckName.NbrOfVisibleClones, true, ["sprite", "=", "2"], false],
+                ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "NbrOfVisibleClones", true, ["sprite2", "=", "2"], false],
+                ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "NbrOfVisibleClones", true, ["sprite", "=", "1"], false],
+                ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "NbrOfVisibleClones", true, ["sprite", "=", "2"], false],
             ];
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
 
@@ -473,84 +473,84 @@ describe('Effect', () => {
         });
 
         test("contradiction: expr", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.TouchingEdge, true, ["sprite"]);
-            assertSymmetricContradiction2(effect1, CheckName.TouchingEdge, true, ["sprite2"], false);
-            assertSymmetricContradiction2(effect1, CheckName.TouchingEdge, true, ["sprite"], false);
+            const effect1 = new Effect(id, edgeID, "TouchingEdge", true, ["sprite"]);
+            assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite2"], false);
+            assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite"], false);
         });
 
         test("contradiction negation", () => {
-            const effect1 = new Effect(id, edgeID, CheckName.TouchingEdge, true, ["sprite"]);
-            assertSymmetricContradiction2(effect1, CheckName.TouchingEdge, true, ["sprite"], false);
-            assertSymmetricContradiction2(effect1, CheckName.TouchingEdge, false, ["sprite2"], false);
-            assertSymmetricContradiction2(effect1, CheckName.TouchingEdge, false, ["sprite"], true);
+            const effect1 = new Effect(id, edgeID, "TouchingEdge", true, ["sprite"]);
+            assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite"], false);
+            assertSymmetricContradiction2(effect1, "TouchingEdge", false, ["sprite2"], false);
+            assertSymmetricContradiction2(effect1, "TouchingEdge", false, ["sprite"], true);
         });
 
         describe("contradiction negation attr/var change", () => {
             const table: TableEntry[] = [
-                [CheckName.VarChange, true, ['sprite', 'var', '+5'], CheckName.VarChange, false, ['sprite', 'var', '+5'], true],
+                ["VarChange", true, ['sprite', 'var', '+5'], "VarChange", false, ['sprite', 'var', '+5'], true],
 
                 // inverted
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '+'], true],
-                [CheckName.VarChange, true, ['sprite', 'var', '-'], CheckName.VarChange, false, ['sprite', 'var', '-'], true],
-                [CheckName.VarChange, true, ['sprite', 'var', '='], CheckName.VarChange, false, ['sprite', 'var', '='], true],
-                [CheckName.VarChange, true, ['sprite', 'var', '-'], CheckName.VarChange, false, ['sprite', 'var', '+='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '-'], CheckName.VarChange, true, ['sprite', 'var', '+='], true],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '-='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '-='], true],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '+'], true],
+                ["VarChange", true, ['sprite', 'var', '-'], "VarChange", false, ['sprite', 'var', '-'], true],
+                ["VarChange", true, ['sprite', 'var', '='], "VarChange", false, ['sprite', 'var', '='], true],
+                ["VarChange", true, ['sprite', 'var', '-'], "VarChange", false, ['sprite', 'var', '+='], false],
+                ["VarChange", true, ['sprite', 'var', '-'], "VarChange", true, ['sprite', 'var', '+='], true],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '-='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '-='], true],
 
                 // NO increase
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '-'], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '-'], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '='], false],
-                [CheckName.VarChange, true, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '-='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '-'], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '-'], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '='], false],
+                ["VarChange", true, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '-='], false],
 
                 // increase
-                [CheckName.VarChange, false, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '-'], false],
-                [CheckName.VarChange, false, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '-'], true],
-                [CheckName.VarChange, false, ['sprite', 'var', '+'], CheckName.VarChange, true, ['sprite', 'var', '='], false],
-                [CheckName.VarChange, false, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '='], true],
-                [CheckName.VarChange, false, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '+='], false],
-                [CheckName.VarChange, false, ['sprite', 'var', '+'], CheckName.VarChange, false, ['sprite', 'var', '-='], true],
+                ["VarChange", false, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '-'], false],
+                ["VarChange", false, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '-'], true],
+                ["VarChange", false, ['sprite', 'var', '+'], "VarChange", true, ['sprite', 'var', '='], false],
+                ["VarChange", false, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '='], true],
+                ["VarChange", false, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '+='], false],
+                ["VarChange", false, ['sprite', 'var', '+'], "VarChange", false, ['sprite', 'var', '-='], true],
             ];
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
         });
 
         describe("contradiction negation attr/var comparison", () => {
             const table: TableEntry[] = [
-                [CheckName.AttrComp, true, ["sprite", "var", ">=", "0"], CheckName.AttrComp, true, ["sprite", "var", ">=", "0"], false],
-                [CheckName.AttrComp, true, ["sprite", "var", ">=", "0"], CheckName.AttrComp, false, ["sprite", "var", "<", "0"], false],
-                [CheckName.AttrComp, true, ["sprite", "var", ">=", "0"], CheckName.AttrComp, true, ["sprite", "var", "<", "0"], true],
+                ["AttrComp", true, ["sprite", "var", ">=", "0"], "AttrComp", true, ["sprite", "var", ">=", "0"], false],
+                ["AttrComp", true, ["sprite", "var", ">=", "0"], "AttrComp", false, ["sprite", "var", "<", "0"], false],
+                ["AttrComp", true, ["sprite", "var", ">=", "0"], "AttrComp", true, ["sprite", "var", "<", "0"], true],
 
-                [CheckName.AttrComp, false, ["sprite", "var", ">=", "0"], CheckName.AttrComp, true, ["sprite", "var", "<", "0"], false],
-                [CheckName.AttrComp, false, ["sprite", "var", ">=", "0"], CheckName.AttrComp, false, ["sprite", "var", "<", "0"], true],
+                ["AttrComp", false, ["sprite", "var", ">=", "0"], "AttrComp", true, ["sprite", "var", "<", "0"], false],
+                ["AttrComp", false, ["sprite", "var", ">=", "0"], "AttrComp", false, ["sprite", "var", "<", "0"], true],
 
-                [CheckName.AttrComp, false, ["sprite", "var", ">", "0"], CheckName.AttrComp, true, ["sprite", "var", ">=", "0"], true],
-                [CheckName.AttrComp, false, ["sprite", "var", ">", "0"], CheckName.AttrComp, false, ["sprite", "var", ">=", "0"], false],
+                ["AttrComp", false, ["sprite", "var", ">", "0"], "AttrComp", true, ["sprite", "var", ">=", "0"], true],
+                ["AttrComp", false, ["sprite", "var", ">", "0"], "AttrComp", false, ["sprite", "var", ">=", "0"], false],
 
-                [CheckName.AttrComp, false, ["sprite", "var", "<", "0"], CheckName.AttrComp, true, ["sprite", "var", "<=", "0"], true],
-                [CheckName.AttrComp, false, ["sprite", "var", "<", "0"], CheckName.AttrComp, false, ["sprite", "var", "<=", "0"], false],
+                ["AttrComp", false, ["sprite", "var", "<", "0"], "AttrComp", true, ["sprite", "var", "<=", "0"], true],
+                ["AttrComp", false, ["sprite", "var", "<", "0"], "AttrComp", false, ["sprite", "var", "<=", "0"], false],
 
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, true, ["sprite", "var", "<=", "0"], true],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, false, ["sprite", "var", "<=", "0"], false],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, true, ["sprite", "var", ">=", "0"], true],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, false, ["sprite", "var", ">=", "0"], false],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, false, ["sprite", "var", "<", "0"], true],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, true, ["sprite", "var", "<", "0"], false],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, false, ["sprite", "var", ">", "0"], true],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, true, ["sprite", "var", ">", "0"], false],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", "<=", "0"], true],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", "<=", "0"], false],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", ">=", "0"], true],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", ">=", "0"], false],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", "<", "0"], true],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", "<", "0"], false],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", ">", "0"], true],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", ">", "0"], false],
 
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, true, ["sprite", "var", "<=", "2"], true],
-                [CheckName.AttrComp, false, ["sprite", "var", "=", "0"], CheckName.AttrComp, false, ["sprite", "var", "<=", "2"], false],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", "<=", "2"], true],
+                ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", "<=", "2"], false],
             ];
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
         });
 
         test('contradiction with event strings', () => {
-            const attrComp = new Effect(id, edgeID, CheckName.AttrComp, false, ["sprite", "var", "=", "0"]);
-            expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString(CheckName.AttrComp, true,
+            const attrComp = new Effect(id, edgeID, "AttrComp", false, ["sprite", "var", "=", "0"]);
+            expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString("AttrComp", true,
                 "sprite", "var", "<=", "2")])).toBe(true);
-            expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString(CheckName.AttrComp, false,
+            expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString("AttrComp", false,
                 "sprite", "var", "<=", "2")])).toBe(false);
         });
     });
@@ -559,7 +559,7 @@ describe('Effect', () => {
     const cu = cuMock.getCheckUtility();
 
     test('registerComponent() calculates correct effect', () => {
-        const effect = new Effect(id, edgeID, CheckName.Key, true, ["a"]);
+        const effect = new Effect(id, edgeID, "Key", true, ["a"]);
         effect.registerComponents(null, cu, "graphID");
         const func = effect.effect;
         cuMock.pressedKeys["a"] = false;
@@ -569,7 +569,7 @@ describe('Effect', () => {
     });
 
     test('registerComponent() clears effect in error case', () => {
-        const effect = new Effect(id, edgeID, CheckName.Key, true, ["a"]);
+        const effect = new Effect(id, edgeID, "Key", true, ["a"]);
         const error = new Error("this is a message");
         effect.registerComponents(null, cu, "graphID");
         effect.checkArgsWithTestDriver = (t, cu, args) => {

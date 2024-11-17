@@ -9,7 +9,7 @@ import {
     RGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
-import {ArgType, CheckName} from "../components/Check";
+import {ArgType} from "../components/Check";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 
@@ -79,7 +79,7 @@ export abstract class CheckGenerator {
         } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
-        const eventString = CheckUtility.getEventString(CheckName.VarComp, negated, pSpriteName, varName,
+        const eventString = CheckUtility.getEventString("VarComp", negated, pSpriteName, varName,
             comparison, varValue);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
@@ -161,10 +161,10 @@ export abstract class CheckGenerator {
                                           comparison: string, attrValue: ArgType): void {
         let eventString: string;
         if (attrName == "currentCostumeName") {
-            eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, pSpriteName, "costume",
+            eventString = CheckUtility.getEventString("AttrComp", negated, pSpriteName, "costume",
                 comparison, attrValue);
         } else {
-            eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, pSpriteName, attrName,
+            eventString = CheckUtility.getEventString("AttrComp", negated, pSpriteName, attrName,
                 comparison, attrValue);
         }
 
@@ -180,7 +180,7 @@ export abstract class CheckGenerator {
     private static _attributeCompOnMove(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                         spriteName: string, pSpriteName: ArgType, attrName: string,
                                         comparison: string, attrValue: string): void {
-        const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, pSpriteName, attrName,
+        const eventString = CheckUtility.getEventString("AttrComp", negated, pSpriteName, attrName,
             comparison, attrValue);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
@@ -194,7 +194,7 @@ export abstract class CheckGenerator {
     private static _attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                           spriteName: string, pSpriteName: ArgType, attrName: string,
                                           comparison: string, attrValue: ArgType): void {
-        const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, pSpriteName, attrName,
+        const eventString = CheckUtility.getEventString("AttrComp", negated, pSpriteName, attrName,
             comparison, attrValue);
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
@@ -238,7 +238,7 @@ export abstract class CheckGenerator {
         }
 
         const dependencies = ModelUtil.getDependencies(f);
-        const eventString = CheckUtility.getEventString(CheckName.Function, negated, f);
+        const eventString = CheckUtility.getEventString("Function", negated, f);
         this._setupDependencies(cu, eventString, edgeLabel, graphID, dependencies.varDependencies,
             dependencies.attrDependencies, () => {
                 return !negated == fun(t);
@@ -284,7 +284,7 @@ export abstract class CheckGenerator {
         const spriteName1 = ModelUtil.checkSpriteExistence(t, pSpriteName1).name;
         const spriteName2 = ModelUtil.checkSpriteExistence(t, pSpriteName2).name;
 
-        const eventString = CheckUtility.getEventString(CheckName.SpriteTouching, negated, pSpriteName1,
+        const eventString = CheckUtility.getEventString("SpriteTouching", negated, pSpriteName1,
             pSpriteName2);
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2
@@ -324,7 +324,7 @@ export abstract class CheckGenerator {
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw new RGBRangeError();
         }
-        const eventString = CheckUtility.getEventString(CheckName.SpriteColor, negated, pSpriteName, r, g, b);
+        const eventString = CheckUtility.getEventString("SpriteColor", negated, pSpriteName, r, g, b);
         // on movement check sprite color
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             return !negated == sprite.isTouchingColor([r, g, b]);
@@ -354,7 +354,7 @@ export abstract class CheckGenerator {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const expression = ModelUtil.getExpressionForEval(t, output).expr;
 
-        const eventString = CheckUtility.getEventString(CheckName.Output, negated, pSpriteName, output);
+        const eventString = CheckUtility.getEventString("Output", negated, pSpriteName, output);
         const check: (s: Sprite) => boolean = (s) => {
             if (!s.sayText) {
                 return false;
@@ -395,7 +395,7 @@ export abstract class CheckGenerator {
         sprite = foundSprite;
         const spriteName = sprite.name;
         const variableName = foundVar.name;
-        const eventString = CheckUtility.getEventString(CheckName.VarChange, negated, pSpriteName, varName, change);
+        const eventString = CheckUtility.getEventString("VarChange", negated, pSpriteName, varName, change);
 
         function check(): boolean {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
@@ -468,9 +468,9 @@ export abstract class CheckGenerator {
                                                spriteName: string, pSpriteName: ArgType, attrName: string, change: ArgType) {
         let eventString: string;
         if (attrName == "currentCostumeName") {
-            eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, pSpriteName, "costume", change);
+            eventString = CheckUtility.getEventString("AttrChange", negated, pSpriteName, "costume", change);
         } else {
-            eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, pSpriteName, attrName, change);
+            eventString = CheckUtility.getEventString("AttrChange", negated, pSpriteName, attrName, change);
         }
         cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
@@ -483,7 +483,7 @@ export abstract class CheckGenerator {
 
     private static _registerOnMoveAttrChange(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                              spriteName: string, pSpriteName: ArgType, attrName: string, change: ArgType) {
-        const eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, pSpriteName, attrName, change);
+        const eventString = CheckUtility.getEventString("AttrChange", negated, pSpriteName, attrName, change);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.testChange(unsafeRead(sprite.old, attrName), unsafeRead(sprite, attrName), change);
@@ -530,7 +530,7 @@ export abstract class CheckGenerator {
     static getExpressionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
                               negated: boolean, expr: ArgType): () => boolean {
         const e = ModelUtil.getExpressionForEval(t, expr);
-        const eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
+        const eventString = CheckUtility.getEventString("Expr", negated, expr);
         const check: () => boolean = () => !negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, check);
         return check;
@@ -644,13 +644,13 @@ export abstract class CheckGenerator {
 
         let check = (sprite: Sprite) =>
             sprite.visible && sprite.isTouchingEdge();
-        let eventString = CheckUtility.getEventString(CheckName.TouchingEdge, negated, pSpriteName);
+        let eventString = CheckUtility.getEventString("TouchingEdge", negated, pSpriteName);
         if (!verticalEdge) {
             check = (sprite: Sprite) => sprite.visible && sprite.isTouchingHorizEdge();
-            eventString = CheckUtility.getEventString(CheckName.TouchingHorizEdge, negated, pSpriteName);
+            eventString = CheckUtility.getEventString("TouchingHorizEdge", negated, pSpriteName);
         } else if (!horizEdge) {
             check = sprite => sprite.visible && sprite.isTouchingVerticalEdge();
-            eventString = CheckUtility.getEventString(CheckName.TouchingVerticalEdge, negated, pSpriteName);
+            eventString = CheckUtility.getEventString("TouchingVerticalEdge", negated, pSpriteName);
         }
 
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {

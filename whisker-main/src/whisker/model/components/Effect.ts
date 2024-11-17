@@ -7,7 +7,7 @@ import {CheckUtility} from "../util/CheckUtility";
  */
 export class Effect extends Check {
     private _effect: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
-    dependsOnSayText: boolean;
+    private readonly _dependsOnSayText: boolean;
 
     /**
      * Get an effect representation, checks the arguments.
@@ -22,12 +22,12 @@ export class Effect extends Check {
 
         this._effect = () => false;
 
-        if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
-            this.dependsOnSayText = true;
-        } else if (name == CheckName.Function || name == CheckName.Expr) {
-            this.dependsOnSayText = String(args[0]).includes(".sayText");
+        if (name == "Output" || ((name == "AttrComp" || name == "AttrChange") && (args[1] == "sayText"))) {
+            this._dependsOnSayText = true;
+        } else if (name == "Function" || name == "Expr") {
+            this._dependsOnSayText = String(args[0]).includes(".sayText");
         } else {
-            this.dependsOnSayText = false;
+            this._dependsOnSayText = false;
         }
     }
 
@@ -60,20 +60,8 @@ export class Effect extends Check {
         return this._effect;
     }
 
-    /**
-     * Get a readable output for a failed effect trace.
-     */
-    override toString(): string {
-        let result = (this.negated ? "!" : "") + this.name + "(";
-
-        if (this.args.length == 1) {
-            result = result + this.args[0];
-        } else {
-            result = result + this.args.concat();
-        }
-
-        result = result + ")";
-        return result;
+    get dependsOnSayText(): boolean {
+        return this._dependsOnSayText;
     }
 
     /**
@@ -83,5 +71,4 @@ export class Effect extends Check {
     contradicts(effect: Effect): boolean {
         return Check.testForContradicting(this, effect);
     }
-
 }

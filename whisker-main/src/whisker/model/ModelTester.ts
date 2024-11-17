@@ -1,26 +1,28 @@
-import {ModelLoader, ModelType} from "./util/ModelLoader";
-import {CoverageResult, ExtendedCoverageResult, ProgramModel, SimpleProgramModel} from "./components/ProgramModel";
-import {SimpleUserModel, UserModel} from "./components/UserModel";
+import {ModelLoader} from "./util/ModelLoader";
+import {CoverageResult, ExtendedCoverageResult, ProgramModel, ProgramModelJSON} from "./components/ProgramModel";
+import {UserModelJSON, UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
-import {ModelEdge, ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
+import {ModelEdge} from "./components/ModelEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
 import {Effect} from "./components/Effect";
 import Sprite from "../../vm/sprite";
 import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
+import {UserModelEdge} from "./components/UserModelEdge";
+import {ProgramModelEdge} from "./components/ProgramModelEdge";
 
 export type SimpleTypedModel = SimpleTypedPModel | SimpleTypedUModel;
 
-export interface SimpleTypedPModel extends SimpleProgramModel {
-    usage: ModelType;
+export interface SimpleTypedPModel extends ProgramModelJSON {
+    usage: "program" | "end";
 }
 
-export interface SimpleTypedUModel extends SimpleUserModel {
-    usage: ModelType;
+export interface SimpleTypedUModel extends UserModelJSON {
+    usage: "user";
 }
 
 export class ModelTester extends EventEmitter {
@@ -122,15 +124,15 @@ export class ModelTester extends EventEmitter {
     getAllModels(): SimpleTypedModel[] {
         const models: SimpleTypedModel[] = [];
         this._programModels.forEach(model => {
-            const shortened: SimpleProgramModel = model.simplifyForSave();
+            const shortened: ProgramModelJSON = model.toJSON();
             models.push({usage: "program", ...shortened});
         });
         this._userModels.forEach(model => {
-            const shortened: SimpleUserModel = model.simplifyForSave();
+            const shortened: UserModelJSON = model.toJSON();
             models.push({usage: "user", ...shortened});
         });
         this._onTestEndModels.forEach(model => {
-            const shortened: SimpleProgramModel = model.simplifyForSave();
+            const shortened: ProgramModelJSON = model.toJSON();
             models.push({usage: "end", ...shortened});
         });
         return models;

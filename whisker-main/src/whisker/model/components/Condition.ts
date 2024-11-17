@@ -49,19 +49,4 @@ export class Condition extends Check {
     get condition(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         return this._condition;
     }
-
-    /**
-     * Get a compact representation for this condition for edge tracing.
-     */
-    override toString(): string {
-        let result = (this._negated ? "!" : "") + this.name + "(";
-
-        if (this.args.length == 1) {
-            result = result + this.args[0];
-        } else {
-            result = result + this.args.concat();
-        }
-
-        return result + ")";
-    }
 }
