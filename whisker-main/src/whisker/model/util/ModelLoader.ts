@@ -4,7 +4,7 @@ import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
-import {InputEffect, InputEffectJSON, InputEffectName} from "../components/InputEffect";
+import {UserInput, UserInputJSON, UserInputName} from "../components/UserInput";
 import {ArgType, CheckJSON, CheckName} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
@@ -291,9 +291,9 @@ export class ModelLoader {
 
             // old models have inputEffects in json, modelEditor writes just effects so this is just as a precaution
             if ("inputEffects" in edge) {
-                this._loadInputEffect(newEdge, edge.inputEffects as InputEffectJSON[]);
+                this._loadUserInputs(newEdge, edge.inputEffects as UserInputJSON[]);
             } else if ("effects" in edge) {
-                this._loadInputEffect(newEdge, edge.effects as InputEffectJSON[]);
+                this._loadUserInputs(newEdge, edge.effects as UserInputJSON[]);
             }
 
             this._userNodesMap[from].addOutgoingEdge(newEdge);
@@ -374,8 +374,8 @@ export class ModelLoader {
         });
     }
 
-    private _loadInputEffect(newEdge: UserModelEdge, effects: InputEffectJSON[]): void {
-        let id: string, name: InputEffectName, args: ArgType[];
+    private _loadUserInputs(newEdge: UserModelEdge, effects: UserInputJSON[]): void {
+        let id: string, name: UserInputName, args: ArgType[];
         effects.forEach(effect => {
             id = effect.id;
             name = effect.name;
@@ -407,7 +407,7 @@ export class ModelLoader {
                 throw new Error(newEdge.id + ": Arguments for input effect not given or not an array.");
             }
 
-            newEdge.addInputEffect(new InputEffect(id, name, args));
+            newEdge.addUserInput(new UserInput(id, name, args));
         });
     }
 }

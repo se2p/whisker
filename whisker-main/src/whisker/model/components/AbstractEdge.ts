@@ -4,7 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {CheckJSON} from "./Check";
 import {NodeID} from "./ModelNode";
-import {InputEffectJSON} from "./InputEffect";
+import {UserInputJSON} from "./UserInput";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 
@@ -21,12 +21,12 @@ interface IModelEdgeJSON {
 }
 
 export interface ModelEdgeJSON extends IModelEdgeJSON {
-    effects: CheckJSON[] | InputEffectJSON[];
+    effects: CheckJSON[] | UserInputJSON[];
 }
 
 export interface LegacyModelEdgeJSON extends IModelEdgeJSON {
     effects?: CheckJSON[];
-    inputEffects?: InputEffectJSON[];
+    inputEffects?: UserInputJSON[];
 }
 
 export type ModelEdge =

@@ -8,7 +8,7 @@ import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {ArgType} from "./Check";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
-export const INPUT_EFFECT_NAMES = Object.freeze([
+export const USER_INPUT_NAMES = Object.freeze([
     "InputClickSprite", // sprite name
     "InputClickStage", // nothing
     "InputKey", // key name (input for one step)
@@ -17,21 +17,21 @@ export const INPUT_EFFECT_NAMES = Object.freeze([
     "InputText", // answer| text
 ] as const);
 
-export type InputEffectName = typeof INPUT_EFFECT_NAMES[number];
+export type UserInputName = typeof USER_INPUT_NAMES[number];
 
-export interface InputEffectJSON {
+export interface UserInputJSON {
     id: string;
-    name: InputEffectName;
+    name: UserInputName;
     args: ArgType[];
 }
 
 /**
  * Class for giving the Scratch VM immediate inputs.
  */
-export class InputEffect {
+export class UserInput {
     private readonly _id: string;
-    private readonly _name: InputEffectName;
-    private _inputEffect: (t: TestDriver) => void;
+    private readonly _name: UserInputName;
+    private _userInput: (t: TestDriver) => void;
     private readonly _args: ArgType[];
 
     /**
@@ -40,14 +40,14 @@ export class InputEffect {
      * @param name Type of the input effect
      * @param args Arguments for this input effect.
      */
-    constructor(id: string, name: InputEffectName, args: ArgType[]) {
+    constructor(id: string, name: UserInputName, args: ArgType[]) {
         if (!id) {
             throw new Error("No id given.");
         }
         this._name = name;
         this._id = id;
         this._args = args;
-        this._inputEffect = () => void 0;
+        this._userInput = () => void 0;
 
         let expectedLength: number;
         switch (name) {
@@ -78,17 +78,17 @@ export class InputEffect {
      * Input the saved input effects of this instance to the test driver.
      */
     inputImmediate(t: TestDriver): void {
-        this._inputEffect(t);
+        this._userInput(t);
     }
 
     /**
      * Register the test driver and convert the saved input arguments to an executable input function for fast input.
      */
     registerComponents(t: TestDriver): void {
-        this._inputEffect = this._getInputDataFunction(t, this._args);
+        this._userInput = this._getInputDataFunction(t, this._args);
     }
 
-    toJSON(): InputEffectJSON {
+    toJSON(): UserInputJSON {
         return {
             id: this._id,
             name: this._name,

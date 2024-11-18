@@ -1,6 +1,6 @@
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
-import {InputEffect} from "../../../../src/whisker/model/components/InputEffect";
+import {UserInput} from "../../../../src/whisker/model/components/UserInput";
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
@@ -38,8 +38,8 @@ describe('Model edges', () => {
         return {registerComponents: fn} as unknown as Effect;
     }
 
-    function mockInputEffectRegister(register: jest.Mock, inputImmediate: jest.Mock): InputEffect {
-        return {registerComponents: register, inputImmediate: inputImmediate} as unknown as InputEffect;
+    function mockInputEffectRegister(register: jest.Mock, inputImmediate: jest.Mock): UserInput {
+        return {registerComponents: register, inputImmediate: inputImmediate} as unknown as UserInput;
     }
 
     describe("constructor", () => {
@@ -105,12 +105,12 @@ describe('Model edges', () => {
     });
 
     test("User model edge", () => {
-        const inputEffect = new InputEffect("id", "InputKey", ["left"]);
+        const inputEffect = new UserInput("id", "InputKey", ["left"]);
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
         const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
-        edge.addInputEffect(inputEffect);
+        edge.addUserInput(inputEffect);
         edge.addCondition(condition);
-        expect(edge.inputEffects.length).toBe(1);
+        expect(edge.userInputs.length).toBe(1);
         expect(() => {
             edge.toJSON();
         }).not.toThrow();
@@ -138,9 +138,9 @@ describe('Model edges', () => {
 
     test("UserModelEdge.toJSON()", () => {
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
-        const inputEffect = new InputEffect("id", "InputKey", ["left"]);
+        const inputEffect = new UserInput("id", "InputKey", ["left"]);
         const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
-        edge.addInputEffect(inputEffect);
+        edge.addUserInput(inputEffect);
         edge.addCondition(condition);
         const actual = edge.toJSON();
         const expected: UserModelEdgeJSON = {
@@ -297,10 +297,10 @@ describe('Model edges', () => {
     test("UserModelEdge.registerComponents calls registerComponents on effects", () => {
         const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
         const fn = jest.fn();
-        edge.addInputEffect(mockInputEffectRegister(fn, null));
-        edge.addInputEffect(mockInputEffectRegister(fn, null));
-        edge.addInputEffect(mockInputEffectRegister(fn, null));
-        edge.addInputEffect(mockInputEffectRegister(fn, null));
+        edge.addUserInput(mockInputEffectRegister(fn, null));
+        edge.addUserInput(mockInputEffectRegister(fn, null));
+        edge.addUserInput(mockInputEffectRegister(fn, null));
+        edge.addUserInput(mockInputEffectRegister(fn, null));
         edge.registerComponents(null, null);
         expect(fn).toHaveBeenCalledTimes(4);
     });
@@ -308,8 +308,8 @@ describe('Model edges', () => {
     test("UserModelEdge.inputImmediate calls registerComponents on effects", () => {
         const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
         const fn = jest.fn();
-        edge.addInputEffect(mockInputEffectRegister(null, fn));
-        edge.addInputEffect(mockInputEffectRegister(null, fn));
+        edge.addUserInput(mockInputEffectRegister(null, fn));
+        edge.addUserInput(mockInputEffectRegister(null, fn));
         edge.inputImmediate(null);
         expect(fn).toHaveBeenCalledTimes(2);
     });
