@@ -4,9 +4,9 @@ import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {getDummyTestDriver} from "../TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {CoverageResult, ProgramModel, ProgramModelJSON} from "../../../../src/whisker/model/components/ProgramModel";
-import {AbstractEdge} from "../../../../src/whisker/model/components/AbstractEdge";
+import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 
-export class MockedModelNode<T extends AbstractEdge> extends ModelNode<T> {
+export class MockedModelNode<T extends ModelEdge> extends ModelNode<T> {
     private readonly fn: jest.Mock;
 
     constructor(id: string, label: string, fn: jest.Mock) {

@@ -44,7 +44,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<ProgramModelEdge>>,
+    protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<ProgramModelEdge>>,
                 edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }

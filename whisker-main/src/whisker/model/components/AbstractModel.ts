@@ -1,7 +1,9 @@
 import {ModelNode, ModelNodeJSON} from "./ModelNode";
-import {LegacyModelEdgeJSON, AbstractEdge, ModelEdgeJSON} from "./AbstractEdge";
+import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
+import {UserModel} from "./UserModel";
+import {EndModel, ProgramModel} from "./ProgramModel";
 
 export type ModelUsage =
     | "program"
@@ -27,7 +29,13 @@ export interface LegacyModelJSON extends IModelJSON {
     nodeIds: string[];
 }
 
-export abstract class AbstractModel<E extends AbstractEdge> {
+export type Model =
+    | UserModel
+    | ProgramModel
+    | EndModel
+    ;
+
+export abstract class AbstractModel<E extends ModelEdge> {
     private readonly _id: string;
 
     protected readonly startNodeId: string;

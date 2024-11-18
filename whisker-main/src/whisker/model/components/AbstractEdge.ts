@@ -5,6 +5,8 @@ import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util
 import {CheckJSON} from "./Check";
 import {NodeID} from "./ModelNode";
 import {InputEffectJSON} from "./InputEffect";
+import {ProgramModelEdge} from "./ProgramModelEdge";
+import {UserModelEdge} from "./UserModelEdge";
 
 export type EdgeID = string;
 
@@ -26,6 +28,11 @@ export interface LegacyModelEdgeJSON extends IModelEdgeJSON {
     effects?: CheckJSON[];
     inputEffects?: InputEffectJSON[];
 }
+
+export type ModelEdge =
+    | ProgramModelEdge
+    | UserModelEdge
+    ;
 
 /**
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
