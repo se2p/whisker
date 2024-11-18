@@ -1,4 +1,4 @@
-import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
+import {ModelNode, ProgramModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {getDummyTestDriver} from "../TestDriverMock";
@@ -40,8 +40,8 @@ class MockedProgram extends ProgramModel {
     }
 }
 
-function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode<ProgramModelEdge>>, Record<string, ProgramModelEdge>] {
-    const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
+function getNodesAndEdgesForBiggerModel(): [Record<string, ProgramModelNode>, Record<string, ProgramModelEdge>] {
+    const nodes: Record<string, ProgramModelNode> = {
         start: new ModelNode("start", undefined),
         n1: new ModelNode("n1", undefined),
         n2: new ModelNode("n2", undefined),
@@ -58,7 +58,7 @@ function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode<ProgramMode
     return [nodes, edges];
 }
 
-function getBiggerModel(): [ProgramModel, Record<string, ModelNode<ProgramModelEdge>>, Record<string, ProgramModelEdge>] {
+function getBiggerModel(): [ProgramModel, Record<string, ProgramModelNode>, Record<string, ProgramModelEdge>] {
     const [nodes, edges] = getNodesAndEdgesForBiggerModel();
     return [new ProgramModel("id", "start", nodes, edges, ["end"], []), nodes, edges];
 }
@@ -200,7 +200,7 @@ describe('Program model', () => {
     });
 
     test("Reset() resets to start node", () => {
-        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
+        const nodes: Record<string, ProgramModelNode> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
             n2: new ModelNode("n1", "n2")
@@ -213,7 +213,7 @@ describe('Program model', () => {
 
     test("Reset() calls node.reset() for every node", () => {
         const fn = jest.fn();
-        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
+        const nodes: Record<string, ProgramModelNode> = {
             start: new MockedModelNode("start", "label", fn),
             n1: new MockedModelNode("n1", "n1", fn),
             n2: new MockedModelNode("n1", "n2", fn)
@@ -224,7 +224,7 @@ describe('Program model', () => {
     });
 
     test("Reset() clears coverage", () => {
-        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
+        const nodes: Record<string, ProgramModelNode> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
             n2: new ModelNode("n2", "n2")
@@ -273,7 +273,7 @@ describe('Program model', () => {
 
     test("registerComponents() registers all nodes", () => {
         const fn = jest.fn();
-        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
+        const nodes: Record<string, ProgramModelNode> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
             n2: new ModelNode("n2", "n2"),

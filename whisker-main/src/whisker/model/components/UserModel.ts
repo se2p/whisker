@@ -1,4 +1,4 @@
-import {ModelNode} from "./ModelNode";
+import {UserModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel, ModelJSON} from "./AbstractModel";
@@ -36,7 +36,7 @@ export class UserModel extends AbstractModel<UserModelEdge> {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<UserModelEdge>>, edges: Record<string, UserModelEdge>,
+    constructor(id: string, startNodeId: string, nodes: Record<string, UserModelNode>, edges: Record<string, UserModelEdge>,
                 stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }

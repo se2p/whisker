@@ -1,6 +1,8 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./AbstractEdge";
 import {CheckUtility} from "../util/CheckUtility";
+import {ProgramModelEdge} from "./ProgramModelEdge";
+import {UserModelEdge} from "./UserModelEdge";
 
 export type NodeID = string;
 
@@ -8,6 +10,9 @@ export interface ModelNodeJSON {
     id: NodeID;
     label: string
 }
+
+export type ProgramModelNode = ModelNode<ProgramModelEdge>;
+export type UserModelNode = ModelNode<UserModelEdge>;
 
 /**
  * Node structure for a model.

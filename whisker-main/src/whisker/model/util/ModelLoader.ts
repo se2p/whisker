@@ -1,4 +1,4 @@
-import {ModelNode, ModelNodeJSON} from "../components/ModelNode";
+import {ModelNode, ModelNodeJSON, ProgramModelNode, UserModelNode} from "../components/ModelNode";
 import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON} from "../components/AbstractEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
@@ -35,8 +35,8 @@ export class ModelLoader {
     private _stopNodeIds: string[];
     private _stopAllNodeIds: string[];
 
-    private _userNodesMap: Record<string, ModelNode<UserModelEdge>>;
-    private _programNodesMap: Record<string, ModelNode<ProgramModelEdge>>;
+    private _userNodesMap: Record<string, UserModelNode>;
+    private _programNodesMap: Record<string, ProgramModelNode>;
 
     private _edgesMapProgram: Record<string, ProgramModelEdge>;
     private _edgesMapUser: Record<string, UserModelEdge>;

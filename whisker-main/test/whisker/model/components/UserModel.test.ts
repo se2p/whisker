@@ -1,13 +1,13 @@
 import {UserModel, UserModelJSON} from "../../../../src/whisker/model/components/UserModel";
-import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
+import {ModelNode, UserModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
 import {MockedModelNode} from "./ProgramModel.test";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {getDummyTestDriver} from "../TestDriverMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 
-function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode<UserModelEdge>>, Record<string, UserModelEdge>] {
-    const nodes: Record<string, ModelNode<UserModelEdge>> = {
+function getNodesAndEdgesForBiggerModel(): [Record<string, UserModelNode>, Record<string, UserModelEdge>] {
+    const nodes: Record<string, UserModelNode> = {
         start: new ModelNode("start", undefined),
         n1: new ModelNode("n1", undefined),
         n2: new ModelNode("n2", undefined),
@@ -24,17 +24,17 @@ function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode<UserModelEd
     return [nodes, edges];
 }
 
-function getBiggerModel(): [MockedUserModel, Record<string, ModelNode<UserModelEdge>>, Record<string, UserModelEdge>] {
+function getBiggerModel(): [MockedUserModel, Record<string, UserModelNode>, Record<string, UserModelEdge>] {
     const [nodes, edges] = getNodesAndEdgesForBiggerModel();
     return [new MockedUserModel("id", "start", nodes, edges, ["end"], []), nodes, edges];
 }
 
 class MockedUserModel extends UserModel {
-    get currentStateOfModel(): ModelNode<UserModelEdge> {
+    get currentStateOfModel(): UserModelNode {
         return super.currentState;
     }
 
-    set currentStateOfModel(value: ModelNode<UserModelEdge>) {
+    set currentStateOfModel(value: UserModelNode) {
         super.currentState = value;
     }
 }
@@ -144,7 +144,7 @@ describe('User model', () => {
 
     test("registerComponents() registers all nodes", () => {
         const fn = jest.fn();
-        const nodes: Record<string, ModelNode<UserModelEdge>> = {
+        const nodes: Record<string, UserModelNode> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
             n2: new ModelNode("n2", "n2"),
@@ -168,7 +168,7 @@ describe('User model', () => {
     });
 
     // test("Reset() resets to start node", () => {
-    //     const nodes: Record<string, ModelNode<UserModelEdge>> = {
+    //     const nodes: Record<string, UserModelNode> = {
     //         start: new ModelNode("start", "label"),
     //         n1: new ModelNode("n1", "n1"),
     //         n2: new ModelNode("n2", "n2")
@@ -181,7 +181,7 @@ describe('User model', () => {
 
     test("Reset() calls node.reset() for every node", () => {
         const fn = jest.fn();
-        const nodes: Record<string, ModelNode<UserModelEdge>> = {
+        const nodes: Record<string, UserModelNode> = {
             start: new MockedModelNode("start", "label", fn),
             n1: new MockedModelNode("n1", "n1", fn),
             n2: new MockedModelNode("n1", "n2", fn)

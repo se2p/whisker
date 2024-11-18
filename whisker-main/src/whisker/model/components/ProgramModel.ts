@@ -1,4 +1,4 @@
-import {ModelNode} from "./ModelNode";
+import {ProgramModelNode} from "./ModelNode";
 import {EdgeID} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
@@ -44,7 +44,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<ProgramModelEdge>>,
+    protected constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
@@ -169,7 +169,7 @@ export interface EndModelJSON extends ModelJSON {
 }
 
 export class EndModel extends AbstractProgramModel {
-    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<ProgramModelEdge>>,
+    constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
@@ -194,7 +194,7 @@ export interface ProgramModelJSON extends ModelJSON {
 }
 
 export class ProgramModel extends AbstractProgramModel {
-    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<ProgramModelEdge>>,
+    constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
