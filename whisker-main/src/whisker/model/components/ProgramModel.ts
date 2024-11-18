@@ -1,8 +1,8 @@
 import {ModelNode} from "./ModelNode";
-import {EdgeID} from "./ModelEdge";
+import {EdgeID} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Model, ModelJSON} from "./Model";
+import {AbstractModel, ModelJSON} from "./AbstractModel";
 import {ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
 
 export interface CoverageResult {
@@ -27,7 +27,7 @@ export interface ExtendedCoverageResult extends CoverageResult {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-abstract class AbstractProgramModel extends Model<ProgramModelEdge> {
+abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
 

@@ -1,18 +1,18 @@
 import {ModelNode, ModelNodeJSON} from "../../../../src/whisker/model/components/ModelNode";
-import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
+import {AbstractEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {TestDriverMock} from "../TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
 describe('Model node', () => {
     function mockModelEdge(id: string, checkConditions: jest.Mock, lastTransition = 0,
-                           registerComponents: jest.Mock = jest.fn(), checkConditionsOnEvent: jest.Mock = jest.fn()): ModelEdge {
+                           registerComponents: jest.Mock = jest.fn(), checkConditionsOnEvent: jest.Mock = jest.fn()): AbstractEdge {
         return {
             from: id,
             checkConditions: checkConditions,
             registerComponents: registerComponents,
             checkConditionsOnEvent: checkConditionsOnEvent,
             lastTransition: lastTransition
-        } as unknown as ModelEdge;
+        } as unknown as AbstractEdge;
     }
 
     test("constructor throws for undefined id", () => {

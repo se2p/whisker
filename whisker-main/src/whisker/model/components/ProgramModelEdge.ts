@@ -3,7 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {Check, CheckJSON} from "./Check";
-import {ModelEdge, ModelEdgeJSON} from "./ModelEdge";
+import {AbstractEdge, ModelEdgeJSON} from "./AbstractEdge";
 
 export interface ProgramModelEdgeJSON extends ModelEdgeJSON {
     effects: CheckJSON[];
@@ -12,7 +12,7 @@ export interface ProgramModelEdgeJSON extends ModelEdgeJSON {
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
-export class ProgramModelEdge extends ModelEdge {
+export class ProgramModelEdge extends AbstractEdge {
     private readonly _effects: Effect[] = [];
 
     /**

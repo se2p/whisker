@@ -3,7 +3,7 @@ import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
-import {ModelEdge} from "./components/ModelEdge";
+import {AbstractEdge} from "./components/AbstractEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
 import {Effect} from "./components/Effect";
@@ -12,7 +12,7 @@ import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
 import {UserModelEdge} from "./components/UserModelEdge";
 import {ProgramModelEdge} from "./components/ProgramModelEdge";
-import {ModelJSON} from "./components/Model";
+import {ModelJSON} from "./components/AbstractModel";
 import {
     CoverageResult,
     EndModel,
@@ -324,7 +324,7 @@ export class ModelTester extends EventEmitter {
         this.emit(ModelTester.MODEL_LOG, output);
     }
 
-    private _edgeTrace(transition: ModelEdge) {
+    private _edgeTrace(transition: AbstractEdge) {
         const edgeID = transition.id;
         const conditions = transition.conditions;
         let edgeTrace = "'" + edgeID + "':";

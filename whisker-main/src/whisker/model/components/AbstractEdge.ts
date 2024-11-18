@@ -31,7 +31,7 @@ export interface LegacyModelEdgeJSON extends IModelEdgeJSON {
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
  * here).
  */
-export abstract class ModelEdge {
+export abstract class AbstractEdge {
     readonly id: string;
     readonly label: string;
     readonly graphID: string;

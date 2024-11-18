@@ -1,5 +1,5 @@
 import {ModelNode, ModelNodeJSON} from "./ModelNode";
-import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON} from "./ModelEdge";
+import {LegacyModelEdgeJSON, AbstractEdge, ModelEdgeJSON} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 
@@ -27,7 +27,7 @@ export interface LegacyModelJSON extends IModelJSON {
     nodeIds: string[];
 }
 
-export abstract class Model<E extends ModelEdge> {
+export abstract class AbstractModel<E extends AbstractEdge> {
     private readonly _id: string;
 
     protected readonly startNodeId: string;

@@ -1,7 +1,7 @@
 import {ModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Model, ModelJSON} from "./Model";
+import {AbstractModel, ModelJSON} from "./AbstractModel";
 import {UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
 
 export interface UserModelJSON extends ModelJSON {
@@ -22,7 +22,7 @@ export interface UserModelJSON extends ModelJSON {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class UserModel extends Model<UserModelEdge> {
+export class UserModel extends AbstractModel<UserModelEdge> {
     stepNbrOfProgramEnd = 0;
 
     /**

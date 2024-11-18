@@ -1,5 +1,5 @@
 import {ModelNode, ModelNodeJSON} from "../components/ModelNode";
-import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON} from "../components/ModelEdge";
+import {LegacyModelEdgeJSON, AbstractEdge, ModelEdgeJSON} from "../components/AbstractEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
@@ -11,7 +11,7 @@ import {getErrorMessage} from "./ModelError";
 import {UserModelEdge} from "../components/UserModelEdge";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {LegacyModelJSON, ModelJSON, ModelUsage} from "../components/Model";
+import {LegacyModelJSON, ModelJSON, ModelUsage} from "../components/AbstractModel";
 
 interface Models {
     programModels: ProgramModel[],
@@ -314,7 +314,7 @@ export class ModelLoader {
         }
     }
 
-    private _loadConditions(newEdge: ModelEdge, conditions: CheckJSON[]): void {
+    private _loadConditions(newEdge: AbstractEdge, conditions: CheckJSON[]): void {
         let id: string, name: CheckName, negated: boolean, args: ArgType[];
         conditions.forEach(condition => {
             id = condition.id;

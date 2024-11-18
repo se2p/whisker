@@ -2,7 +2,7 @@ import {InputEffect, InputEffectJSON} from "./InputEffect";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Condition} from "./Condition";
-import {ModelEdge, ModelEdgeJSON} from "./ModelEdge";
+import {AbstractEdge, ModelEdgeJSON} from "./AbstractEdge";
 
 export interface UserModelEdgeJSON extends ModelEdgeJSON {
     effects: InputEffectJSON[];
@@ -11,7 +11,7 @@ export interface UserModelEdgeJSON extends ModelEdgeJSON {
 /**
  * Edge structure that has input effects triggered if the conditions are fulfilled.
  */
-export class UserModelEdge extends ModelEdge {
+export class UserModelEdge extends AbstractEdge {
     private readonly _inputs: InputEffect[] = [];
 
     /**

@@ -1,5 +1,5 @@
 import TestDriver from "../../../test/test-driver";
-import {ModelEdge} from "./ModelEdge";
+import {AbstractEdge} from "./AbstractEdge";
 import {CheckUtility} from "../util/CheckUtility";
 
 export type NodeID = string;
@@ -12,7 +12,7 @@ export interface ModelNodeJSON {
 /**
  * Node structure for a model.
  */
-export class ModelNode<E extends ModelEdge> {
+export class ModelNode<E extends AbstractEdge> {
     readonly id: string;
     readonly label: string;
     edges: E[] = []; //outgoing edges

@@ -1,7 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
-import {ModelEdge} from "../components/ModelEdge";
+import {AbstractEdge} from "../components/AbstractEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
@@ -293,7 +293,7 @@ export class CheckUtility extends EventEmitter {
      * @param edge Edge that has a failed effect.
      * @param effect Effect that failed.
      */
-    addFailOutput(edge: ModelEdge, effect: Effect): void {
+    addFailOutput(edge: AbstractEdge, effect: Effect): void {
         const output = getEffectFailedOutput(edge, effect);
         this._failOrError(output, this._failOutputs);
         this._modelResult.addFail(output);
