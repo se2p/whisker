@@ -1,11 +1,12 @@
-import {CoverageResult, ProgramModel, ProgramModelJSON} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {getDummyTestDriver} from "../TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
+import {CoverageResult, ProgramModel, ProgramModelJSON} from "../../../../src/whisker/model/components/ProgramModel";
+import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 
-export class MockedModelNode extends ModelNode {
+export class MockedModelNode<T extends ModelEdge> extends ModelNode<T> {
     private readonly fn: jest.Mock;
 
     constructor(id: string, label: string, fn: jest.Mock) {
@@ -26,8 +27,7 @@ function getValidProgramModelForCoverage(): MockedProgram {
     edges["3"] = new ProgramModelEdge("3", "label", "graphID", "from", "to", -1, 200);
     edges["4"] = new ProgramModelEdge("4", "label", "graphID", "from", "to", 1, 200);
 
-    return new MockedProgram("id", "start", {start: new ModelNode("start", "label")},
-        edges, [], []);
+    return new MockedProgram("id", "start", {start: new ModelNode("start", "label")}, edges, [], []);
 }
 
 class MockedProgram extends ProgramModel {
@@ -40,8 +40,8 @@ class MockedProgram extends ProgramModel {
     }
 }
 
-function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode>, Record<string, ProgramModelEdge>] {
-    const nodes: Record<string, ModelNode> = {
+function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode<ProgramModelEdge>>, Record<string, ProgramModelEdge>] {
+    const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
         start: new ModelNode("start", undefined),
         n1: new ModelNode("n1", undefined),
         n2: new ModelNode("n2", undefined),
@@ -58,7 +58,7 @@ function getNodesAndEdgesForBiggerModel(): [Record<string, ModelNode>, Record<st
     return [nodes, edges];
 }
 
-function getBiggerModel(): [ProgramModel, Record<string, ModelNode>, Record<string, ProgramModelEdge>] {
+function getBiggerModel(): [ProgramModel, Record<string, ModelNode<ProgramModelEdge>>, Record<string, ProgramModelEdge>] {
     const [nodes, edges] = getNodesAndEdgesForBiggerModel();
     return [new ProgramModel("id", "start", nodes, edges, ["end"], []), nodes, edges];
 }
@@ -117,6 +117,7 @@ describe('Program model', () => {
         const p = getValidProgramModelForCoverage();
         const actual = p.toJSON();
         const expected: ProgramModelJSON = {
+            usage: "program",
             id: p.id,
             startNodeId: "start",
             stopNodeIds: [],
@@ -199,7 +200,7 @@ describe('Program model', () => {
     });
 
     test("Reset() resets to start node", () => {
-        const nodes: Record<string, ModelNode> = {
+        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
             n2: new ModelNode("n1", "n2")
@@ -212,7 +213,7 @@ describe('Program model', () => {
 
     test("Reset() calls node.reset() for every node", () => {
         const fn = jest.fn();
-        const nodes: Record<string, ModelNode> = {
+        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
             start: new MockedModelNode("start", "label", fn),
             n1: new MockedModelNode("n1", "n1", fn),
             n2: new MockedModelNode("n1", "n2", fn)
@@ -223,7 +224,7 @@ describe('Program model', () => {
     });
 
     test("Reset() clears coverage", () => {
-        const nodes: Record<string, ModelNode> = {
+        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
             n2: new ModelNode("n2", "n2")
@@ -272,7 +273,7 @@ describe('Program model', () => {
 
     test("registerComponents() registers all nodes", () => {
         const fn = jest.fn();
-        const nodes: Record<string, ModelNode> = {
+        const nodes: Record<string, ModelNode<ProgramModelEdge>> = {
             start: new ModelNode("start", "label"),
             n1: new ModelNode("n1", "n1"),
             n2: new ModelNode("n2", "n2"),

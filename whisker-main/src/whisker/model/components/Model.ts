@@ -1,32 +1,48 @@
 import {ModelNode, ModelNodeJSON} from "./ModelNode";
-import {ModelEdge} from "./ModelEdge";
+import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 
-export interface ModelJSON {
+export type ModelUsage =
+    | "program"
+    | "end"
+    | "user"
+    ;
+
+interface IModelJSON {
     id: string;
-    nodes: ModelNodeJSON[];
+    usage: ModelUsage;
     startNodeId: string;
     stopNodeIds: string[];
     stopAllNodeIds: string[];
 }
 
-export abstract class Model<E, J extends ModelJSON> {
+export interface ModelJSON extends IModelJSON {
+    edges: ModelEdgeJSON[];
+    nodes: ModelNodeJSON[];
+}
+
+export interface LegacyModelJSON extends IModelJSON {
+    edges: LegacyModelEdgeJSON[];
+    nodeIds: string[];
+}
+
+export abstract class Model<E extends ModelEdge> {
     private readonly _id: string;
 
     protected readonly startNodeId: string;
     protected readonly stopNodeIds: string[];
     protected readonly stopAllNodeIds: string[];
 
-    protected readonly nodes: Record<string, ModelNode>;
+    protected readonly nodes: Record<string, ModelNode<E>>;
     protected readonly edges: Record<string, E>;
 
-    currentState: ModelNode;
+    currentState: ModelNode<E>;
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
 
-    protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>, edges: Record<string, E>,
-                stopNodeIds: string[], stopAllNodeIds: string[]) {
+    protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<E>>, edges: Record<string, E>,
+                          stopNodeIds: string[], stopAllNodeIds: string[]) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -42,9 +58,9 @@ export abstract class Model<E, J extends ModelJSON> {
         this.stopAllNodeIds = stopAllNodeIds;
     }
 
-    abstract makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null;
+    abstract makeOneTransition(t: TestDriver, checkUtility: CheckUtility): E | null;
 
-    abstract toJSON(): J;
+    abstract toJSON(): ModelJSON;
 
     get id(): string {
         return this._id;

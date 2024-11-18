@@ -3,13 +3,13 @@ import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
 import {ModelEdge} from "../components/ModelEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
-import {ProgramModel} from "../components/ProgramModel";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
 import {ArgType, CheckName} from "../components/Check";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
+import {EndModel, ProgramModel} from "../components/ProgramModel";
 
-type EffectCheck = { effect: Effect, edge: ProgramModelEdge, model: ProgramModel };
+type EffectCheck = { effect: Effect, edge: ProgramModelEdge, model: ProgramModel | EndModel };
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -235,7 +235,7 @@ export class CheckUtility extends EventEmitter {
      * @param takenEdge The taken edge of a model.
      * @param model Model of the edge.
      */
-    registerEffectCheck(takenEdge: ProgramModelEdge, model: ProgramModel): void {
+    registerEffectCheck(takenEdge: ProgramModelEdge, model: ProgramModel | EndModel): void {
         takenEdge.effects.forEach(effect => {
             this._effectChecks.push({effect: effect, edge: takenEdge, model: model});
         });

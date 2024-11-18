@@ -12,7 +12,7 @@ export interface UserModelEdgeJSON extends ModelEdgeJSON {
  * Edge structure that has input effects triggered if the conditions are fulfilled.
  */
 export class UserModelEdge extends ModelEdge {
-    private readonly _inputEffects: InputEffect[] = [];
+    private readonly _inputs: InputEffect[] = [];
 
     /**
      * Create a new edge.
@@ -30,7 +30,7 @@ export class UserModelEdge extends ModelEdge {
     }
 
     get inputEffects(): readonly InputEffect[] {
-        return this._inputEffects;
+        return this._inputs;
     }
 
     /**
@@ -38,14 +38,14 @@ export class UserModelEdge extends ModelEdge {
      * @param effect Effect function as a string.
      */
     addInputEffect(effect: InputEffect): void {
-        this._inputEffects.push(effect);
+        this._inputs.push(effect);
     }
 
     /**
      * Start the input effects of this edge.
      */
     inputImmediate(t: TestDriver): void {
-        this._inputEffects.forEach(inputEffect => {
+        this._inputs.forEach(inputEffect => {
             inputEffect.inputImmediate(t);
         });
     }
@@ -55,7 +55,7 @@ export class UserModelEdge extends ModelEdge {
      */
     override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         super.registerComponents(checkListener, testDriver);
-        this._inputEffects.forEach(effect => {
+        this._inputs.forEach(effect => {
             effect.registerComponents(testDriver);
         });
     }
@@ -66,8 +66,14 @@ export class UserModelEdge extends ModelEdge {
 
     override toJSON(): UserModelEdgeJSON {
         return {
-            ...super.toJSON(),
-            effects: this._inputEffects.map(value => value.toJSON())
+            id: this.id,
+            label: this.label,
+            from: this.from,
+            to: this.to,
+            forceTestAfter: this.forceTestAfter,
+            forceTestAt: this.forceTestAt,
+            conditions: this.conditions.map((c) => c.toJSON()),
+            effects: this._inputs.map(input => input.toJSON())
         };
     }
 }

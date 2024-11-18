@@ -12,10 +12,10 @@ export interface ModelNodeJSON {
 /**
  * Node structure for a model.
  */
-export class ModelNode {
+export class ModelNode<E extends ModelEdge> {
     readonly id: string;
     readonly label: string;
-    edges: ModelEdge[] = []; //outgoing edges
+    edges: E[] = []; //outgoing edges
 
     // FIXME: this should be private readonly and already be set in the constructor!
     isStartNode = false;
@@ -40,7 +40,7 @@ export class ModelNode {
      * Add an outgoing edge from this model node.
      * @param edge Edge to add.
      */
-    addOutgoingEdge(edge: ModelEdge): void {
+    addOutgoingEdge(edge: E): void {
         if (edge.from != this.id) {
             throw new Error("Edge start node id not from this node.");
         }
@@ -55,7 +55,7 @@ export class ModelNode {
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
     testEdgeConditions(testDriver: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number,
-                       stepsSinceEnd: number): ModelEdge | null {
+                       stepsSinceEnd: number): E | null {
 
         // get all edges that have not failing conditions and check for order of events
         for (const e of this.edges) {
@@ -73,7 +73,7 @@ export class ModelNode {
      * Check the edges for a transition based on fired events.
      */
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                 eventStrings: string[]): ModelEdge | null {
+                 eventStrings: string[]): E | null {
         for (const e of this.edges) {
             const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, eventStrings);
 

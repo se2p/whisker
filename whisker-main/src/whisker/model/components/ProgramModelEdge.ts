@@ -52,13 +52,6 @@ export class ProgramModelEdge extends ModelEdge {
         });
     }
 
-    override toJSON(): ProgramModelEdgeJSON {
-        return {
-            ...super.toJSON(),
-            effects: this._effects.map(effect => effect.toJSON())
-        };
-    }
-
     /**
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Function:true Checks.
@@ -114,5 +107,18 @@ export class ProgramModelEdge extends ModelEdge {
         }
 
         return false;
+    }
+
+    override toJSON(): ProgramModelEdgeJSON {
+        return {
+            id: this.id,
+            label: this.label,
+            from: this.from,
+            to: this.to,
+            forceTestAfter: this.forceTestAfter,
+            forceTestAt: this.forceTestAt,
+            conditions: this.conditions.map((c) => c.toJSON()),
+            effects: this._effects.map(effect => effect.toJSON())
+        };
     }
 }

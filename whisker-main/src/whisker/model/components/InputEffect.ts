@@ -20,7 +20,7 @@ export const INPUT_EFFECT_NAMES = Object.freeze([
 export type InputEffectName = typeof INPUT_EFFECT_NAMES[number];
 
 export interface InputEffectJSON {
-    id: string
+    id: string;
     name: InputEffectName;
     args: ArgType[];
 }
@@ -92,7 +92,7 @@ export class InputEffect {
         return {
             id: this._id,
             name: this._name,
-            args: this._args
+            args: this._args,
         };
     }
 

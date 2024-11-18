@@ -4,10 +4,11 @@ import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {CheckJSON} from "./Check";
 import {NodeID} from "./ModelNode";
+import {InputEffectJSON} from "./InputEffect";
 
 export type EdgeID = string;
 
-export interface ModelEdgeJSON {
+interface IModelEdgeJSON {
     id: EdgeID;
     label: string;
     from: NodeID;
@@ -15,6 +16,15 @@ export interface ModelEdgeJSON {
     forceTestAt: number;
     forceTestAfter: number
     conditions: CheckJSON[];
+}
+
+export interface ModelEdgeJSON extends IModelEdgeJSON {
+    effects: CheckJSON[] | InputEffectJSON[];
+}
+
+export interface LegacyModelEdgeJSON extends IModelEdgeJSON {
+    effects?: CheckJSON[];
+    inputEffects?: InputEffectJSON[];
 }
 
 /**
@@ -173,15 +183,5 @@ export abstract class ModelEdge {
         this.lastTransition = 0;
     }
 
-    toJSON(): ModelEdgeJSON {
-        return {
-            id: this.id,
-            label: this.label,
-            from: this.from,
-            to: this.to,
-            forceTestAfter: this.forceTestAfter,
-            forceTestAt: this.forceTestAt,
-            conditions: this.conditions.map((condition: Condition) => condition.toJSON())
-        };
-    }
+    abstract toJSON(): ModelEdgeJSON;
 }

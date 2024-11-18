@@ -51,7 +51,7 @@ describe('InputEffect', () => {
         const expected: InputEffectJSON = {
             id: "test",
             name: "InputKey",
-            args: ["left"]
+            args: ["left"],
         };
         expect(actual).toStrictEqual(expected);
     });

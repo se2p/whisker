@@ -1,6 +1,6 @@
-import {ModelNode, ModelNodeJSON, NodeID} from "../components/ModelNode";
-import {EdgeID, ModelEdge} from "../components/ModelEdge";
-import {ProgramModel} from "../components/ProgramModel";
+import {ModelNode, ModelNodeJSON} from "../components/ModelNode";
+import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON} from "../components/ModelEdge";
+import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 import {Effect} from "../components/Effect";
@@ -8,41 +8,16 @@ import {InputEffect, InputEffectJSON, InputEffectName} from "../components/Input
 import {ArgType, CheckJSON, CheckName} from "../components/Check";
 import logger from "../../../util/logger";
 import {getErrorMessage} from "./ModelError";
-import {UserModelEdge, UserModelEdgeJSON} from "../components/UserModelEdge";
-import {ProgramModelEdge, ProgramModelEdgeJSON} from "../components/ProgramModelEdge";
+import {UserModelEdge} from "../components/UserModelEdge";
+import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+import {LegacyModelJSON, ModelJSON, ModelUsage} from "../components/Model";
 
-export type ModelType = "program" | "user" | "end";
-
-interface Attributes {
-    id: string,
+interface Models {
+    programModels: ProgramModel[],
+    userModels: UserModel[],
+    onTestEndModels: EndModel[]
 }
-
-interface StoredModelEdge { // TODO: Duplicates ModelEdgeJSON
-    id: EdgeID;
-    label: string;
-    from: NodeID;
-    to: NodeID;
-    forceTestAt: number;
-    forceTestAfter: number
-    conditions: CheckJSON[];
-    inputEffects?: InputEffectJSON[];
-    // effects: SimpleInputEffect[] | SimpleCheck[];
-    effects: any[];
-}
-
-interface StoredModel { // TODO: Duplicates ModelJSON
-    usage: ModelType,
-    _attributes: Attributes,
-    nodeIds?: NodeID[],
-    id: string;
-    nodes: ModelNodeJSON[];
-    edges: StoredModelEdge[];
-    startNodeId: NodeID;
-    stopNodeIds: NodeID[];
-    stopAllNodeIds: NodeID[]
-}
-
 
 /**
  * Load models from a json file.
@@ -60,14 +35,16 @@ export class ModelLoader {
     private _stopNodeIds: string[];
     private _stopAllNodeIds: string[];
 
-    private _nodesMap: Record<string, ModelNode>;
+    private _userNodesMap: Record<string, ModelNode<UserModelEdge>>;
+    private _programNodesMap: Record<string, ModelNode<ProgramModelEdge>>;
+
     private _edgesMapProgram: Record<string, ProgramModelEdge>;
     private _edgesMapUser: Record<string, UserModelEdge>;
     private _graphIDs: string[];
 
     private _programModels: ProgramModel[];
     private _userModels: UserModel[];
-    private _onTestEndModels: ProgramModel[];
+    private _onTestEndModels: EndModel[];
 
     private _idUndefined = 0;
     private static readonly _ID_UNDEFINED = "id_undefined";
@@ -79,7 +56,8 @@ export class ModelLoader {
         this._startNodeId = "";
         this._stopNodeIds = [];
         this._stopAllNodeIds = [];
-        this._nodesMap = {};
+        this._userNodesMap = {};
+        this._programNodesMap = {};
         this._edgesMapProgram = {};
         this._edgesMapUser = {};
         this._graphIDs = [];
@@ -92,12 +70,8 @@ export class ModelLoader {
      * Load the models from a string file content.
      * @param jsonText Content of a json file containing the models.
      */
-    loadModels(jsonText: string): {
-        programModels: ProgramModel[],
-        userModels: UserModel[],
-        onTestEndModels: ProgramModel[]
-    } {
-        const graphs: StoredModel[] = JSON.parse(jsonText);
+    loadModels(jsonText: string): Models {
+        const graphs: (ModelJSON | LegacyModelJSON)[] = JSON.parse(jsonText);
         this._graphIDs = [];
         this._programModels = [];
         this._userModels = [];
@@ -121,7 +95,7 @@ export class ModelLoader {
         };
     }
 
-    private _loadGraph(graph: StoredModel) {
+    private _loadGraph(graph: ModelJSON | LegacyModelJSON) {
         const graphID = graph.id;
 
         if (graph.startNodeId == undefined) {
@@ -145,13 +119,14 @@ export class ModelLoader {
             logger.warn("Warning: Graph without stop-all node ids.");
             this._stopAllNodeIds = [];
         }
-        this._nodesMap = {};
+        this._userNodesMap = {};
+        this._programNodesMap = {};
         this._edgesMapProgram = {};
         this._edgesMapUser = {};
         this._loadModel(graph);
     }
 
-    private _loadModel(graph: StoredModel): void {
+    private _loadModel(graph: ModelJSON | LegacyModelJSON): void {
         let graphID = graph.id;
         if (graphID == undefined) {
             graphID = ModelLoader._ID_UNDEFINED + this._idUndefined;
@@ -159,45 +134,53 @@ export class ModelLoader {
             logger.warn("Warning: A graph id was not given. Defining as " + graphID);
         } else if (this._graphIDs.includes(graphID)) {
             graphID = graphID + "_dup" + this._graphIDs.length;
-            logger.warn("Warning: Model id '" + graph._attributes.id + "' already defined.");
+            logger.warn("Warning: Model id '" + graph.id + "' already defined.");
         }
         this._graphIDs.push(graphID);
 
         // create all nodes, allowed is either a 'nodeIds' string array or an array 'nodes' with{id:string,
         // label:string}
-        const nodeIDs = graph.nodeIds;
-        const nodes = graph.nodes;
-        if ((!Array.isArray(nodeIDs) || nodeIDs.length == 0) && (!Array.isArray(nodes) || nodes.length == 0)) {
-            throw new Error(graphID + ": No nodes given.");
-        }
-        if (nodes) {
-            this._loadNodes(nodes);
+        if ("nodeIds" in graph) {
+            const nodeIds = graph.nodeIds;
+
+            if (!Array.isArray(nodeIds) || nodeIds.length == 0) {
+                throw new Error(graphID + ": No nodes given.");
+            }
+
+            this._loadNodesFromIds(nodeIds!, graph.usage);
         } else {
-            this._loadNodesFromIds(nodeIDs!);
+            const nodes = graph.nodes;
+
+            if (!Array.isArray(nodes) || nodes.length == 0) {
+                throw new Error(graphID + ": No nodes given.");
+            }
+
+            this._loadNodes(nodes, graph.usage);
         }
-        this._setupNodes();
+
+        this._setupNodes(graph.usage);
 
         // Load the edges
         try {
-            graph.edges.forEach((edge: ProgramModelEdgeJSON | UserModelEdgeJSON) => this._loadEdge(graph.usage, graphID, edge));
+            graph.edges.forEach((edge) => this._loadEdge(graph.usage, graphID, edge));
         } catch (e) {
             throw new Error(graphID + ": " + getErrorMessage(e));
         }
 
-        let model: ProgramModel | UserModel;
+        let model: ProgramModel | UserModel | EndModel;
         switch (graph.usage) {
             case "program":
-                model = new ProgramModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapProgram,
+                model = new ProgramModel(graphID, this._startNodeId, this._programNodesMap, this._edgesMapProgram,
                     this._stopNodeIds, this._stopAllNodeIds);
                 this._programModels.push(model);
                 break;
             case "user":
-                model = new UserModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapUser, this._stopNodeIds,
+                model = new UserModel(graphID, this._startNodeId, this._userNodesMap, this._edgesMapUser, this._stopNodeIds,
                     this._stopAllNodeIds);
                 this._userModels.push(model);
                 break;
             case "end":
-                model = new ProgramModel(graphID, this._startNodeId, this._nodesMap, this._edgesMapProgram, this._stopNodeIds,
+                model = new EndModel(graphID, this._startNodeId, this._programNodesMap, this._edgesMapProgram, this._stopNodeIds,
                     this._stopAllNodeIds);
                 this._onTestEndModels.push(model);
                 break;
@@ -206,46 +189,54 @@ export class ModelLoader {
         }
     }
 
-    private _loadNodes(nodes: ModelNodeJSON[]): void {
+    private _loadNodes(nodes: ModelNodeJSON[], usage: ModelUsage): void {
+        const map = usage === "user" ? this._userNodesMap : this._programNodesMap;
+
         nodes.forEach(node => {
-            if ((this._nodesMap)[node.id]) {
+            if (map[node.id]) {
                 throw new Error("Node id '" + node.id + "' already defined.");
             }
             if (!node.label) {
                 node.label = node.id;
             }
 
-            (this._nodesMap)[node.id] = new ModelNode(node.id, node.label);
+            map[node.id] = new ModelNode<typeof map extends "user" ? UserModelEdge : ProgramModelEdge>(node.id, node.label);
         });
     }
 
-    private _loadNodesFromIds(nodeIds: string[]): void {
+    private _loadNodesFromIds(nodeIds: string[], usage: ModelUsage): void {
+        const map = usage === "user" ? this._userNodesMap : this._programNodesMap;
+
         nodeIds.forEach(id => {
-            if ((this._nodesMap)[id]) {
+            if (map[id]) {
                 throw new Error("Node id '" + id + "' already defined.");
             }
-            (this._nodesMap)[id] = new ModelNode(id, id);
+            map[id] = new ModelNode<typeof map extends "user" ? UserModelEdge : ProgramModelEdge>(id, id);
         });
     }
 
-    private _setupNodes() {
-        this._nodesMap[this._startNodeId].isStartNode = true;
+    private _setupNodes(usage: ModelUsage) {
+        const map = usage === "user" ? this._userNodesMap : this._programNodesMap;
+
+        map[this._startNodeId].isStartNode = true;
         this._stopNodeIds.forEach(id => {
-            this._nodesMap[id].isStopNode = true;
+            map[id].isStopNode = true;
         });
         this._stopAllNodeIds.forEach(id => {
-            this._nodesMap[id].isStopAllNode = true;
+            map[id].isStopAllNode = true;
         });
     }
 
-    private _loadEdge(usage: string, graphID: string, edge: StoredModelEdge): void {
+    private _loadEdge(usage: ModelUsage, graphID: string, edge: ModelEdgeJSON | LegacyModelEdgeJSON): void {
+        const edgesMap = usage === "user" ? this._edgesMapUser : this._edgesMapProgram;
+
         let edgeID: string;
         if (edge.id == undefined) {
             edgeID = "edge-undef-" + this._idUndefined;
             this._idUndefined++;
             logger.warn("Warning: ID for an edge not given.");
-        } else if ((this._edgesMapProgram)[edge.id]) {
-            edgeID = edge.id + "_dup_" + Object.keys(this._edgesMapProgram).length;
+        } else if ((edgesMap)[edge.id]) {
+            edgeID = edge.id + "_dup_" + Object.keys(edgesMap).length;
             logger.warn("Warning: ID '" + edge.id + "' already defined.");
         } else {
             edgeID = edge.id;
@@ -267,10 +258,12 @@ export class ModelLoader {
             throw new Error(edgeID + ": target node (to) not defined.");
         }
 
-        if (!this._nodesMap[from]) {
+        const nodesMap = usage === "user" ? this._userNodesMap : this._programNodesMap;
+
+        if (!nodesMap[from]) {
             throw new Error(edgeID + ": Unknown node id '" + from + "'.");
         }
-        if (!this._nodesMap[to]) {
+        if (!nodesMap[to]) {
             throw new Error(edgeID + ": Unknown node id '" + to + "'.");
         }
 
@@ -287,21 +280,7 @@ export class ModelLoader {
             forceTestAt = Number(edge.forceTestAt.toString());
         }
 
-        if (usage != "user") {
-            const newEdge = new ProgramModelEdge(edgeID, label, graphID, from, to, forceTestAfter, forceTestAt);
-
-            if (!edge.conditions) {
-                throw new Error("Edge '" + edgeID + "': Condition not given.");
-            }
-
-            this._loadConditions(newEdge, edge.conditions);
-            if (edge.effects) {
-                this._loadEffects(newEdge, edge.effects);
-            }
-
-            this._nodesMap[from].addOutgoingEdge(newEdge);
-            this._edgesMapProgram[edgeID] = newEdge;
-        } else {
+        if (usage === "user") {
             const newEdge = new UserModelEdge(edgeID, label, graphID, from, to, forceTestAfter, forceTestAt);
 
             if (!edge.conditions) {
@@ -311,14 +290,27 @@ export class ModelLoader {
             this._loadConditions(newEdge, edge.conditions);
 
             // old models have inputEffects in json, modelEditor writes just effects so this is just as a precaution
-            if (edge.inputEffects) {
-                this._loadInputEffect(newEdge, edge.inputEffects);
-            } else if (edge.effects) {
-                this._loadInputEffect(newEdge, edge.effects);
+            if ("inputEffects" in edge) {
+                this._loadInputEffect(newEdge, edge.inputEffects as InputEffectJSON[]);
+            } else if ("effects" in edge) {
+                this._loadInputEffect(newEdge, edge.effects as InputEffectJSON[]);
             }
 
-            this._nodesMap[from].addOutgoingEdge(newEdge);
+            this._userNodesMap[from].addOutgoingEdge(newEdge);
             this._edgesMapUser[edgeID] = newEdge;
+        } else {
+            const newEdge = new ProgramModelEdge(edgeID, label, graphID, from, to, forceTestAfter, forceTestAt);
+
+            if (!edge.conditions) {
+                throw new Error("Edge '" + edgeID + "': Condition not given.");
+            }
+
+            this._loadConditions(newEdge, edge.conditions);
+            if (edge.effects) {
+                this._loadEffects(newEdge, edge.effects as CheckJSON[]);
+            }
+            this._programNodesMap[from].addOutgoingEdge(newEdge);
+            this._edgesMapProgram[edgeID] = newEdge;
         }
     }
 
@@ -418,5 +410,4 @@ export class ModelLoader {
             newEdge.addInputEffect(new InputEffect(id, name, args));
         });
     }
-
 }
