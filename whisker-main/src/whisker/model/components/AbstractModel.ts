@@ -63,6 +63,14 @@ export type LegacyModelJSON =
     | LegacyEndModelJSON
     ;
 
+export function isLegacyModelJSON(m: ModelJSON | LegacyModelJSON): m is LegacyModelJSON {
+    return "nodeIds" in m;
+}
+
+export function isModelJSON(m: ModelJSON | LegacyModelJSON): m is ModelJSON {
+    return "nodes" in m;
+}
+
 export type Model =
     | UserModel
     | ProgramModel
