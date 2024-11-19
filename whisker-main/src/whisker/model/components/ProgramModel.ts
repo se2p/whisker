@@ -185,10 +185,13 @@ export class EndModel extends AbstractProgramModel {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
 
+    override get usage(): "end" {
+        return "end";
+    }
 
     override toJSON(): EndModelJSON {
         return {
-            usage: "end",
+            usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
@@ -215,9 +218,13 @@ export class ProgramModel extends AbstractProgramModel {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
 
+    override get usage(): "program" {
+        return "program";
+    }
+
     override toJSON(): ProgramModelJSON {
         return {
-            usage: "program",
+            usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,

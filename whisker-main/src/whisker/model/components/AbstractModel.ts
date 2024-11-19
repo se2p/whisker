@@ -107,4 +107,6 @@ export abstract class AbstractModel<E extends ModelEdge> {
     get id(): string {
         return this._id;
     }
+
+    abstract get usage(): ModelUsage;
 }

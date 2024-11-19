@@ -98,9 +98,13 @@ export class UserModel extends AbstractModel<UserModelEdge> {
         this.secondLastTransitionStep = steps;
     }
 
+    override get usage(): "user" {
+        return "user";
+    }
+
     override toJSON(): UserModelJSON {
         return {
-            usage: "user",
+            usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
