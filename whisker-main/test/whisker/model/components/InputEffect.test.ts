@@ -1,4 +1,4 @@
-import {InputEffect, InputEffectJSON, InputEffectName} from "../../../../src/whisker/model/components/InputEffect";
+import {UserInput, UserInputJSON, UserInputName} from "../../../../src/whisker/model/components/UserInput";
 import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {TestDriverMock} from "../TestDriverMock";
 import {ScratchInterface} from "../../../../src/whisker/scratch/ScratchInterface";
@@ -13,12 +13,12 @@ describe('InputEffect', () => {
 
     test("constructor throws for undefined id", () => {
         expect(() => {
-            new InputEffect(undefined, "InputKey", ["left"]);
+            new UserInput(undefined, "InputKey", ["left"]);
         }).toThrow();
     });
 
     describe("not enough arguments", () => {
-        const constructorArguments: [InputEffectName, ArgType[]][] = [
+        const constructorArguments: [UserInputName, ArgType[]][] = [
             ["InputKey", []],
             ["InputClickSprite", []],
             ["InputText", []],
@@ -26,32 +26,32 @@ describe('InputEffect', () => {
             ["InputMouseMove", []],
             ["InputMouseMove", [0]],
         ];
-        it.each(constructorArguments)('constructor throws for (%s, %s)', (name: InputEffectName, args: ArgType[]) => {
+        it.each(constructorArguments)('constructor throws for (%s, %s)', (name: UserInputName, args: ArgType[]) => {
             expect(() => {
-                new InputEffect("test", name, args);
+                new UserInput("test", name, args);
             }).toThrow();
         });
     });
 
     test("Throws when some argument is undefined", () => {
         expect(() => {
-            new InputEffect("test", "InputMouseMove", ["12", undefined]);
+            new UserInput("test", "InputMouseMove", ["12", undefined]);
         }).toThrow();
     });
 
     test("constructor does not need args for InputEffectName.InputClickStage", () => {
         expect(() => {
-            new InputEffect("test", "InputClickStage", []);
+            new UserInput("test", "InputClickStage", []);
         }).not.toThrow();
     });
 
     test("toJSON()", () => {
-        const effect = new InputEffect("test", "InputKey", ["left"]);
+        const effect = new UserInput("test", "InputKey", ["left"]);
         const actual = effect.toJSON();
-        const expected: InputEffectJSON = {
+        const expected: UserInputJSON = {
             id: "test",
             name: "InputKey",
-            args: ["left"]
+            args: ["left"],
         };
         expect(actual).toStrictEqual(expected);
     });
@@ -65,7 +65,7 @@ describe('InputEffect', () => {
         test("Mouse input effect", () => {
             jest.mock('../../../../src/whisker/scratch/ScratchInterface');
             ScratchInterface.setMousePosition = jest.fn();
-            const effect = new InputEffect("test", "InputMouseMove", ["12", "34"]);
+            const effect = new UserInput("test", "InputMouseMove", ["12", "34"]);
             effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(ScratchInterface.setMousePosition).toHaveBeenCalledWith(new ScratchPosition(12, 34));
@@ -73,7 +73,7 @@ describe('InputEffect', () => {
 
         test("Key input effect", () => {
             tdMock.inputImmediate = jest.fn();
-            const effect = new InputEffect("test", "InputKey", ["b"]);
+            const effect = new UserInput("test", "InputKey", ["b"]);
             effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.inputImmediate).toHaveBeenCalledWith([{
@@ -86,7 +86,7 @@ describe('InputEffect', () => {
 
         test("Text input effect", () => {
             tdMock.typeText = jest.fn();
-            const effect = new InputEffect("test", "InputText", ["this is some text"]);
+            const effect = new UserInput("test", "InputText", ["this is some text"]);
             effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.typeText).toHaveBeenCalledWith("this is some text");
@@ -95,7 +95,7 @@ describe('InputEffect', () => {
         test("Mouse down input effect", () => {
             jest.mock('../../../../src/whisker/utils/Container');
             tdMock.mouseDown = jest.fn();
-            const effect = new InputEffect("test", "InputMouseDown", ["false"]);
+            const effect = new UserInput("test", "InputMouseDown", ["false"]);
             effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.mouseDown).toHaveBeenCalledWith(false);
@@ -103,7 +103,7 @@ describe('InputEffect', () => {
 
         test("Click stage input effect", () => {
             tdMock.clickStage = jest.fn();
-            const effect = new InputEffect("test", "InputClickStage", []);
+            const effect = new UserInput("test", "InputClickStage", []);
             effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.clickStage).toHaveBeenCalledWith();
@@ -113,7 +113,7 @@ describe('InputEffect', () => {
             Container.config = {getClickDuration: () => 42} as unknown as WhiskerSearchConfiguration;
             tdMock.currentSprites = SpriteMock.stringsToSpriteArray(["apple", "bowl"]);
             tdMock.clickSprite = jest.fn();
-            const effect = new InputEffect("test", "InputClickSprite", ["bowl"]);
+            const effect = new UserInput("test", "InputClickSprite", ["bowl"]);
             effect.registerComponents(t);
             effect.inputImmediate(t);
             expect(tdMock.clickSprite).toHaveBeenCalledWith("bowl", 42);

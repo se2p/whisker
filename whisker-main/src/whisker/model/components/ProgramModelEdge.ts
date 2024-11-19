@@ -3,16 +3,20 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {Check, CheckJSON} from "./Check";
-import {ModelEdge, ModelEdgeJSON} from "./ModelEdge";
+import {AbstractEdge, IModelEdgeJSON} from "./AbstractEdge";
 
-export interface ProgramModelEdgeJSON extends ModelEdgeJSON {
+export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
     effects: CheckJSON[];
 }
+
+export type EndModelEdgeJSON = ProgramModelEdgeJSON;
+export type LegacyProgramModelEdgeJSON = ProgramModelEdgeJSON;
+export type LegacyEndModelEdgeJSON = LegacyProgramModelEdgeJSON;
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
-export class ProgramModelEdge extends ModelEdge {
+export class ProgramModelEdge extends AbstractEdge {
     private readonly _effects: Effect[] = [];
 
     /**
@@ -50,13 +54,6 @@ export class ProgramModelEdge extends ModelEdge {
         this._effects.forEach(effect => {
             effect.registerComponents(testDriver, cu, this.graphID);
         });
-    }
-
-    override toJSON(): ProgramModelEdgeJSON {
-        return {
-            ...super.toJSON(),
-            effects: this._effects.map(effect => effect.toJSON())
-        };
     }
 
     /**
@@ -114,5 +111,18 @@ export class ProgramModelEdge extends ModelEdge {
         }
 
         return false;
+    }
+
+    override toJSON(): ProgramModelEdgeJSON {
+        return {
+            id: this.id,
+            label: this.label,
+            from: this.from,
+            to: this.to,
+            forceTestAfter: this.forceTestAfter,
+            forceTestAt: this.forceTestAt,
+            conditions: this.conditions.map((c) => c.toJSON()),
+            effects: this._effects.map(effect => effect.toJSON())
+        };
     }
 }

@@ -1,12 +1,17 @@
-import {ModelNode} from "./ModelNode";
-import {ModelEdge} from "./ModelEdge";
+import {UserModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Model, ModelJSON} from "./Model";
-import {UserModelEdgeJSON, UserModelEdge} from "./UserModelEdge";
+import {AbstractModel, ILegacyModelJSON, IModelJSON} from "./AbstractModel";
+import {LegacyUserModelEdgeJSON, UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
 
-export interface UserModelJSON extends ModelJSON {
+export interface UserModelJSON extends IModelJSON {
+    usage: "user";
     edges: UserModelEdgeJSON[];
+}
+
+export interface LegacyUserModelJSON extends ILegacyModelJSON {
+    usage: "user";
+    edges: LegacyUserModelEdgeJSON[];
 }
 
 /**
@@ -22,7 +27,7 @@ export interface UserModelJSON extends ModelJSON {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class UserModel extends Model<UserModelEdge, UserModelJSON> {
+export class UserModel extends AbstractModel<UserModelEdge> {
     stepNbrOfProgramEnd = 0;
 
     /**
@@ -36,7 +41,7 @@ export class UserModel extends Model<UserModelEdge, UserModelJSON> {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>, edges: Record<string, UserModelEdge>,
+    constructor(id: string, startNodeId: string, nodes: Record<string, UserModelNode>, edges: Record<string, UserModelEdge>,
                 stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
@@ -44,7 +49,7 @@ export class UserModel extends Model<UserModelEdge, UserModelJSON> {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    override makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
+    override makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): UserModelEdge | null {
         const stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(testDriver, checkUtility, stepsSinceLastTransition,
             this.stepNbrOfProgramEnd);
@@ -93,8 +98,13 @@ export class UserModel extends Model<UserModelEdge, UserModelJSON> {
         this.secondLastTransitionStep = steps;
     }
 
+    override get usage(): "user" {
+        return "user";
+    }
+
     override toJSON(): UserModelJSON {
         return {
+            usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,

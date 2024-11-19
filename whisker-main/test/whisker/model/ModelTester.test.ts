@@ -1,11 +1,16 @@
-import {ModelTester, SimpleTypedModel} from "../../../src/whisker/model/ModelTester";
-import {ProgramModel} from "../../../src/whisker/model/components/ProgramModel";
+import {ModelTester} from "../../../src/whisker/model/ModelTester";
 import {ModelNode} from "../../../src/whisker/model/components/ModelNode";
 import {Condition} from "../../../src/whisker/model/components/Condition";
 import {readFileSync} from "fs";
 import * as path from "node:path";
 import {ProgramModelEdge} from "../../../src/whisker/model/components/ProgramModelEdge";
-import {UserModel} from "../../../src/whisker/model/components/UserModel";
+import {UserModel, UserModelJSON} from "../../../src/whisker/model/components/UserModel";
+import {
+    EndModel,
+    EndModelJSON,
+    ProgramModel,
+    ProgramModelJSON
+} from "../../../src/whisker/model/components/ProgramModel";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
@@ -58,12 +63,12 @@ describe('ModelTester', () => {
     });
 
     describe('GetAllModels()', () => {
-        const expectedNodes: Record<string, ModelNode> = {
+        const expectedNodes: Record<string, ModelNode<any>> = {
             "init": new ModelNode("init", undefined),
             "end": new ModelNode("end", undefined)
         };
 
-        const expectedNodesExtended: Record<string, ModelNode> = {
+        const expectedNodesExtended: Record<string, ModelNode<any>> = {
             "init": new ModelNode("init", undefined),
             "start": new ModelNode("start", undefined),
             "text": new ModelNode("text", undefined),
@@ -85,7 +90,7 @@ describe('ModelTester', () => {
             const loadedModel = modelTester.getAllModels()[0];
             const expectedProgramModel = new ProgramModel("bowl", "init", expectedNodes,
                 {}, ["end"], []);
-            const expected: SimpleTypedModel = {
+            const expected: ProgramModelJSON = {
                 usage: "program",
                 ...expectedProgramModel.toJSON()
             };
@@ -99,7 +104,7 @@ describe('ModelTester', () => {
             const loadedModel = modelTester.getAllModels()[1];
             const expectedProgramModel = new UserModel("bowl2", "init", expectedNodesExtended,
                 {}, ["end"], ["end"]);
-            const expected: SimpleTypedModel = {
+            const expected: UserModelJSON = {
                 usage: "user",
                 ...expectedProgramModel.toJSON()
             };
@@ -112,9 +117,9 @@ describe('ModelTester', () => {
             const loadedModel = modelTester.getAllModels()[2];
             const expectedEdge = new ProgramModelEdge("init", "init", "bowl3", "init", "start", -1, -1);
             expectedEdge.addCondition(new Condition("condition1", undefined, "Function", false, ["true"]));
-            const expectedProgramModel = new ProgramModel("bowl3", "init", expectedNodesExtended,
+            const expectedProgramModel = new EndModel("bowl3", "init", expectedNodesExtended,
                 {"e1": expectedEdge}, ["end"], ["end"]);
-            const expected: SimpleTypedModel = {
+            const expected: EndModelJSON = {
                 usage: "end",
                 ...expectedProgramModel.toJSON()
             };

@@ -1,11 +1,9 @@
-import {ModelLoader} from "./util/ModelLoader";
-import {CoverageResult, ExtendedCoverageResult, ProgramModel, ProgramModelJSON} from "./components/ProgramModel";
-import {UserModelJSON, UserModel} from "./components/UserModel";
+import {UserModel, UserModelJSON} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
-import {ModelEdge} from "./components/ModelEdge";
+import {AbstractEdge} from "./components/AbstractEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
 import {Effect} from "./components/Effect";
@@ -14,22 +12,22 @@ import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
 import {UserModelEdge} from "./components/UserModelEdge";
 import {ProgramModelEdge} from "./components/ProgramModelEdge";
-
-export type SimpleTypedModel = SimpleTypedPModel | SimpleTypedUModel;
-
-export interface SimpleTypedPModel extends ProgramModelJSON {
-    usage: "program" | "end";
-}
-
-export interface SimpleTypedUModel extends UserModelJSON {
-    usage: "user";
-}
+import {ModelJSON} from "./components/AbstractModel";
+import {
+    CoverageResult,
+    EndModel,
+    EndModelJSON,
+    ExtendedCoverageResult,
+    ProgramModel,
+    ProgramModelJSON
+} from "./components/ProgramModel";
+import {ModelLoader} from "./util/ModelLoader";
 
 export class ModelTester extends EventEmitter {
 
     private _programModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
-    private _onTestEndModels: ProgramModel[] = [];
+    private _onTestEndModels: EndModel[] = [];
 
     private _checkUtility: CheckUtility | null;
     private _result: ModelResult | null;
@@ -121,8 +119,8 @@ export class ModelTester extends EventEmitter {
         return result;
     }
 
-    getAllModels(): SimpleTypedModel[] {
-        const models: SimpleTypedModel[] = [];
+    getAllModels(): ModelJSON[] {
+        const models: ModelJSON[] = [];
         this._programModels.forEach(model => {
             const shortened: ProgramModelJSON = model.toJSON();
             models.push({usage: "program", ...shortened});
@@ -132,7 +130,7 @@ export class ModelTester extends EventEmitter {
             models.push({usage: "user", ...shortened});
         });
         this._onTestEndModels.forEach(model => {
-            const shortened: ProgramModelJSON = model.toJSON();
+            const shortened: EndModelJSON = model.toJSON();
             models.push({usage: "end", ...shortened});
         });
         return models;
@@ -172,7 +170,7 @@ export class ModelTester extends EventEmitter {
         this._isRunning = true;
     }
 
-    private _doOneStepOnProgramModel(model: ProgramModel, notStoppedModels: ProgramModel[]) {
+    private _doOneStepOnProgramModel(model: ProgramModel | EndModel, notStoppedModels: (ProgramModel | EndModel)[]) {
         const takenEdge = model.makeOneTransition(this._testDriver!, this._checkUtility!);
         if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
             this._checkUtility!.registerEffectCheck(takenEdge, model);
@@ -237,7 +235,7 @@ export class ModelTester extends EventEmitter {
         let afterStopModels = [...this._onTestEndModels];
         return () => {
             this._checkUtility!.makeFailedOutputs();
-            const notStoppedModels: ProgramModel[] = [];
+            const notStoppedModels: EndModel[] = [];
             afterStopModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
             const contradictingEffects = this._checkUtility!.checkEffects();
             if (contradictingEffects && contradictingEffects.length != 0) {
@@ -326,7 +324,7 @@ export class ModelTester extends EventEmitter {
         this.emit(ModelTester.MODEL_LOG, output);
     }
 
-    private _edgeTrace(transition: ModelEdge) {
+    private _edgeTrace(transition: AbstractEdge) {
         const edgeID = transition.id;
         const conditions = transition.conditions;
         let edgeTrace = "'" + edgeID + "':";
@@ -398,7 +396,7 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage(): Record<string, CoverageResult> {
         const coverage: Record<string, CoverageResult> = {};
-        const programModels: ProgramModel[] = [...this._programModels, ...this._onTestEndModels];
+        const programModels: (ProgramModel | EndModel)[] = [...this._programModels, ...this._onTestEndModels];
         const missedEdges: Record<string, string[]> = {};
         programModels.forEach(model => {
             const totalCov: ExtendedCoverageResult = model.getTotalCoverage();

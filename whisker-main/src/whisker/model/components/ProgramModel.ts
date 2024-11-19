@@ -1,9 +1,15 @@
-import {ModelNode} from "./ModelNode";
-import {EdgeID, ModelEdge} from "./ModelEdge";
+import {ProgramModelNode} from "./ModelNode";
+import {EdgeID} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Model, ModelJSON} from "./Model";
-import {ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
+import {AbstractModel, ILegacyModelJSON, IModelJSON} from "./AbstractModel";
+import {
+    EndModelEdgeJSON,
+    LegacyEndModelEdgeJSON,
+    LegacyProgramModelEdgeJSON,
+    ProgramModelEdge,
+    ProgramModelEdgeJSON
+} from "./ProgramModelEdge";
 
 export interface CoverageResult {
     total: number;
@@ -12,10 +18,6 @@ export interface CoverageResult {
 
 export interface ExtendedCoverageResult extends CoverageResult {
     missedEdges: EdgeID[];
-}
-
-export interface ProgramModelJSON extends ModelJSON {
-    edges: ProgramModelEdgeJSON[];
 }
 
 /**
@@ -31,7 +33,7 @@ export interface ProgramModelJSON extends ModelJSON {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-export class ProgramModel extends Model<ProgramModelEdge, ProgramModelJSON> {
+abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
 
@@ -48,15 +50,15 @@ export class ProgramModel extends Model<ProgramModelEdge, ProgramModelJSON> {
      * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode>,
-                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
+    protected constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
+                          edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
 
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    override makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge | null {
+    override makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ProgramModelEdge | null {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.programEndStep);
@@ -68,7 +70,7 @@ export class ProgramModel extends Model<ProgramModelEdge, ProgramModelJSON> {
         return edge;
     }
 
-    testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: string[]): ModelEdge | null {
+    testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: string[]): ProgramModelEdge | null {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.programEndStep,
             eventStrings);
@@ -79,7 +81,7 @@ export class ProgramModel extends Model<ProgramModelEdge, ProgramModelJSON> {
         return edge;
     }
 
-    private _update(t: TestDriver, edge: ModelEdge) {
+    private _update(t: TestDriver, edge: ProgramModelEdge) {
         this.coverageCurrentRun[edge.id] = true;
         this.coverageTotal[edge.id] = true;
         this.currentState = this.nodes[edge.getEndNodeId()];
@@ -165,9 +167,64 @@ export class ProgramModel extends Model<ProgramModelEdge, ProgramModelJSON> {
         this.lastTransitionStep = steps;
         this.secondLastTransitionStep = steps;
     }
+}
+
+export interface EndModelJSON extends IModelJSON {
+    usage: "end";
+    edges: EndModelEdgeJSON[];
+}
+
+export interface LegacyEndModelJSON extends ILegacyModelJSON {
+    usage: "end";
+    edges: LegacyEndModelEdgeJSON[];
+}
+
+export class EndModel extends AbstractProgramModel {
+    constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
+                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
+        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
+    }
+
+    override get usage(): "end" {
+        return "end";
+    }
+
+    override toJSON(): EndModelJSON {
+        return {
+            usage: this.usage,
+            id: this.id,
+            startNodeId: this.startNodeId,
+            stopNodeIds: this.stopNodeIds,
+            stopAllNodeIds: this.stopAllNodeIds,
+            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
+            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
+        };
+    }
+}
+
+export interface ProgramModelJSON extends IModelJSON {
+    usage: "program";
+    edges: ProgramModelEdgeJSON[];
+}
+
+export interface LegacyProgramModelJSON extends ILegacyModelJSON {
+    usage: "program";
+    edges: LegacyProgramModelEdgeJSON[];
+}
+
+export class ProgramModel extends AbstractProgramModel {
+    constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
+                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
+        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
+    }
+
+    override get usage(): "program" {
+        return "program";
+    }
 
     override toJSON(): ProgramModelJSON {
         return {
+            usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,

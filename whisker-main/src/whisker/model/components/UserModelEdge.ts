@@ -1,18 +1,22 @@
-import {InputEffect, InputEffectJSON} from "./InputEffect";
+import {UserInput, UserInputJSON} from "./UserInput";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Condition} from "./Condition";
-import {ModelEdge, ModelEdgeJSON} from "./ModelEdge";
+import {AbstractEdge, IModelEdgeJSON} from "./AbstractEdge";
 
-export interface UserModelEdgeJSON extends ModelEdgeJSON {
-    effects: InputEffectJSON[];
+export interface UserModelEdgeJSON extends IModelEdgeJSON {
+    effects: UserInputJSON[];
+}
+
+export interface LegacyUserModelEdgeJSON extends IModelEdgeJSON {
+    inputEffects: UserInputJSON[];
 }
 
 /**
  * Edge structure that has input effects triggered if the conditions are fulfilled.
  */
-export class UserModelEdge extends ModelEdge {
-    private readonly _inputEffects: InputEffect[] = [];
+export class UserModelEdge extends AbstractEdge {
+    private readonly _userInputs: UserInput[] = [];
 
     /**
      * Create a new edge.
@@ -29,23 +33,23 @@ export class UserModelEdge extends ModelEdge {
         super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
     }
 
-    get inputEffects(): readonly InputEffect[] {
-        return this._inputEffects;
+    get userInputs(): readonly UserInput[] {
+        return this._userInputs;
     }
 
     /**
      * Add an effect to the edge.
      * @param effect Effect function as a string.
      */
-    addInputEffect(effect: InputEffect): void {
-        this._inputEffects.push(effect);
+    addUserInput(effect: UserInput): void {
+        this._userInputs.push(effect);
     }
 
     /**
      * Start the input effects of this edge.
      */
     inputImmediate(t: TestDriver): void {
-        this._inputEffects.forEach(inputEffect => {
+        this._userInputs.forEach(inputEffect => {
             inputEffect.inputImmediate(t);
         });
     }
@@ -55,7 +59,7 @@ export class UserModelEdge extends ModelEdge {
      */
     override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         super.registerComponents(checkListener, testDriver);
-        this._inputEffects.forEach(effect => {
+        this._userInputs.forEach(effect => {
             effect.registerComponents(testDriver);
         });
     }
@@ -66,8 +70,14 @@ export class UserModelEdge extends ModelEdge {
 
     override toJSON(): UserModelEdgeJSON {
         return {
-            ...super.toJSON(),
-            effects: this._inputEffects.map(value => value.toJSON())
+            id: this.id,
+            label: this.label,
+            from: this.from,
+            to: this.to,
+            forceTestAfter: this.forceTestAfter,
+            forceTestAt: this.forceTestAt,
+            conditions: this.conditions.map((c) => c.toJSON()),
+            effects: this._userInputs.map(input => input.toJSON())
         };
     }
 }

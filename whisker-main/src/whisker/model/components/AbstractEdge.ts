@@ -4,10 +4,16 @@ import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {CheckJSON} from "./Check";
 import {NodeID} from "./ModelNode";
+import {LegacyProgramModelEdgeJSON, ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
+import {LegacyUserModelEdgeJSON, UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
 
 export type EdgeID = string;
 
-export interface ModelEdgeJSON {
+/**
+ * Properties common to the edges found in the canonical JSON representation and the legacy JSON representation of
+ * models.
+ */
+export interface IModelEdgeJSON {
     id: EdgeID;
     label: string;
     from: NodeID;
@@ -18,10 +24,31 @@ export interface ModelEdgeJSON {
 }
 
 /**
+ * The canonical JSON representation of model edges.
+ */
+export type ModelEdgeJSON =
+    | ProgramModelEdgeJSON
+    | UserModelEdgeJSON
+    ;
+
+/**
+ * The legacy JSON representation of model edges.
+ */
+export type LegacyModelEdgeJSON =
+    | LegacyProgramModelEdgeJSON
+    | LegacyUserModelEdgeJSON
+    ;
+
+export type ModelEdge =
+    | ProgramModelEdge
+    | UserModelEdge
+    ;
+
+/**
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
  * here).
  */
-export abstract class ModelEdge {
+export abstract class AbstractEdge {
     readonly id: string;
     readonly label: string;
     readonly graphID: string;
@@ -173,15 +200,5 @@ export abstract class ModelEdge {
         this.lastTransition = 0;
     }
 
-    toJSON(): ModelEdgeJSON {
-        return {
-            id: this.id,
-            label: this.label,
-            from: this.from,
-            to: this.to,
-            forceTestAfter: this.forceTestAfter,
-            forceTestAt: this.forceTestAt,
-            conditions: this.conditions.map((condition: Condition) => condition.toJSON())
-        };
-    }
+    abstract toJSON(): ModelEdgeJSON;
 }

@@ -8,7 +8,7 @@ import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {ArgType} from "./Check";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
-export const INPUT_EFFECT_NAMES = Object.freeze([
+export const USER_INPUT_NAMES = Object.freeze([
     "InputClickSprite", // sprite name
     "InputClickStage", // nothing
     "InputKey", // key name (input for one step)
@@ -17,21 +17,21 @@ export const INPUT_EFFECT_NAMES = Object.freeze([
     "InputText", // answer| text
 ] as const);
 
-export type InputEffectName = typeof INPUT_EFFECT_NAMES[number];
+export type UserInputName = typeof USER_INPUT_NAMES[number];
 
-export interface InputEffectJSON {
-    id: string
-    name: InputEffectName;
+export interface UserInputJSON {
+    id: string;
+    name: UserInputName;
     args: ArgType[];
 }
 
 /**
  * Class for giving the Scratch VM immediate inputs.
  */
-export class InputEffect {
+export class UserInput {
     private readonly _id: string;
-    private readonly _name: InputEffectName;
-    private _inputEffect: (t: TestDriver) => void;
+    private readonly _name: UserInputName;
+    private _userInput: (t: TestDriver) => void;
     private readonly _args: ArgType[];
 
     /**
@@ -40,14 +40,14 @@ export class InputEffect {
      * @param name Type of the input effect
      * @param args Arguments for this input effect.
      */
-    constructor(id: string, name: InputEffectName, args: ArgType[]) {
+    constructor(id: string, name: UserInputName, args: ArgType[]) {
         if (!id) {
             throw new Error("No id given.");
         }
         this._name = name;
         this._id = id;
         this._args = args;
-        this._inputEffect = () => void 0;
+        this._userInput = () => void 0;
 
         let expectedLength: number;
         switch (name) {
@@ -78,67 +78,74 @@ export class InputEffect {
      * Input the saved input effects of this instance to the test driver.
      */
     inputImmediate(t: TestDriver): void {
-        this._inputEffect(t);
+        this._userInput(t);
     }
 
     /**
      * Register the test driver and convert the saved input arguments to an executable input function for fast input.
      */
     registerComponents(t: TestDriver): void {
-        this._inputEffect = this._getInputDataFunction(t, this._args);
+        switch (this._name) {
+            case "InputKey":
+                this._userInput = () => {
+                    t.inputImmediate({device: "keyboard", key: (this._args)[0], isDown: true, steps: 1});
+                };
+                return;
+
+            case "InputMouseMove": {
+                (this._args)[0] = ModelUtil.testNumber((this._args)[0]);
+                (this._args)[1] = ModelUtil.testNumber((this._args)[1]);
+                const mouseEvent = new MouseMoveEvent((this._args)[0], (this._args)[1]);
+                this._userInput = () => {
+                    mouseEvent.apply();
+                };
+                return;
+            }
+
+            case "InputText": {
+                const textEvent = new TypeTextEvent(String((this._args)[0]));
+                this._userInput = () => {
+                    textEvent.apply();
+                };
+                return;
+            }
+
+            case "InputMouseDown": {
+                const boolVal = (this._args)[0] == "true";
+                const mouseDownEvent = new MouseDownEvent(boolVal);
+                this._userInput = () => {
+                    mouseDownEvent.apply();
+                };
+                return;
+            }
+
+            case "InputClickStage": {
+                const clickStageEvent = new ClickStageEvent();
+                this._userInput = () => {
+                    clickStageEvent.apply();
+                };
+                return;
+            }
+
+            case "InputClickSprite": {
+                const sprite = ModelUtil.checkSpriteExistence(t, (this._args)[0]);
+                const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
+                this._userInput = () => {
+                    clickSpriteEvent.apply();
+                };
+                return;
+            }
+
+            default:
+                throw new NonExhaustiveCaseDistinction(this._name, "Input type not recognized: " + this._name);
+        }
     }
 
-    toJSON(): InputEffectJSON {
+    toJSON(): UserInputJSON {
         return {
             id: this._id,
             name: this._name,
-            args: this._args
+            args: this._args,
         };
-    }
-
-    private _getInputDataFunction(t: TestDriver, arg: ArgType[]) {
-        switch (this._name) {
-            case "InputKey":
-                return () => {
-                    t.inputImmediate({device: "keyboard", key: arg[0], isDown: true, steps: 1});
-                };
-            case "InputMouseMove": {
-                arg[0] = ModelUtil.testNumber(arg[0]);
-                arg[1] = ModelUtil.testNumber(arg[1]);
-                const mouseEvent = new MouseMoveEvent(arg[0], arg[1]);
-                return () => {
-                    mouseEvent.apply();
-                };
-            }
-            case "InputText": {
-                const textEvent = new TypeTextEvent(String(arg[0]));
-                return () => {
-                    textEvent.apply();
-                };
-            }
-            case "InputMouseDown": {
-                const boolVal = arg[0] == "true";
-                const mouseDownEvent = new MouseDownEvent(boolVal);
-                return () => {
-                    mouseDownEvent.apply();
-                };
-            }
-            case "InputClickStage": {
-                const clickStageEvent = new ClickStageEvent();
-                return () => {
-                    clickStageEvent.apply();
-                };
-            }
-            case "InputClickSprite": {
-                const sprite = ModelUtil.checkSpriteExistence(t, arg[0]);
-                const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
-                return () => {
-                    clickSpriteEvent.apply();
-                };
-            }
-            default:
-                // should not happen
-                throw new Error("Input type not recognized: " + this._name);
-        }
     }
 }

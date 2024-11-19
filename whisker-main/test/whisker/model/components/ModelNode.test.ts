@@ -1,5 +1,5 @@
 import {ModelNode, ModelNodeJSON} from "../../../../src/whisker/model/components/ModelNode";
-import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
+import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {TestDriverMock} from "../TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 
