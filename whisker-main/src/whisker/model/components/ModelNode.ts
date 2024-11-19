@@ -8,7 +8,7 @@ export type NodeID = string;
 
 export interface ModelNodeJSON {
     id: NodeID;
-    label: string
+    label: string;
 }
 
 export type ProgramModelNode = ModelNode<ProgramModelEdge>;

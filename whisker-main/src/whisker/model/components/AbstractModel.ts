@@ -1,5 +1,5 @@
 import {ModelNode, ModelNodeJSON} from "./ModelNode";
-import {ModelEdge, IModelEdgeJSON, LegacyModelEdgeJSON} from "./AbstractEdge";
+import {IModelEdgeJSON, LegacyModelEdgeJSON, ModelEdge} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {LegacyUserModelJSON, UserModel, UserModelJSON} from "./UserModel";
@@ -18,9 +18,6 @@ export type ModelUsage =
     | "user"
     ;
 
-/**
- * Properties common to the canonical JSON representation and the legacy JSON representation of models.
- */
 interface ICommonModelJSON {
     id: string;
     usage: ModelUsage;
@@ -29,34 +26,22 @@ interface ICommonModelJSON {
     stopAllNodeIds: string[];
 }
 
-/**
- * Properties exclusive to the canonical JSON representation.
- */
 export interface IModelJSON extends ICommonModelJSON {
     edges: IModelEdgeJSON[];
     nodes: ModelNodeJSON[];
 }
 
-/**
- * Properties exclusive to the legacy JSON representation.
- */
 export interface ILegacyModelJSON extends ICommonModelJSON {
     edges: LegacyModelEdgeJSON[];
     nodeIds: string[];
 }
 
-/**
- * The canonical JSON representation of models.
- */
 export type ModelJSON =
     | UserModelJSON
     | ProgramModelJSON
     | EndModelJSON
     ;
 
-/**
- * The legacy JSON representation of models.
- */
 export type LegacyModelJSON =
     | LegacyUserModelJSON
     | LegacyProgramModelJSON

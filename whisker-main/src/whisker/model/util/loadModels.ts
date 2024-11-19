@@ -1,16 +1,16 @@
-import {isModelJSON, LegacyModelJSON, Model, ModelJSON} from "../components/AbstractModel";
-import {LegacyUserModelJSON, UserModel, UserModelJSON} from "../components/UserModel";
+import {isModelJSON, LegacyModelJSON, Model, ModelJSON,} from "../components/AbstractModel";
+import {LegacyUserModelJSON, UserModel, UserModelJSON,} from "../components/UserModel";
 import {
     EndModel,
     EndModelJSON,
     LegacyEndModelJSON,
     LegacyProgramModelJSON,
     ProgramModel,
-    ProgramModelJSON
+    ProgramModelJSON,
 } from "../components/ProgramModel";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {ModelNode} from "../components/ModelNode";
-import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON} from "../components/AbstractEdge";
+import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON,} from "../components/AbstractEdge";
 import {UserModelEdge} from "../components/UserModelEdge";
 import {UserInput, UserInputJSON} from "../components/UserInput";
 import logger from "../../../util/logger";

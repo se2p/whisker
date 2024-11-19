@@ -10,7 +10,9 @@ export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
 }
 
 export type EndModelEdgeJSON = ProgramModelEdgeJSON;
+
 export type LegacyProgramModelEdgeJSON = ProgramModelEdgeJSON;
+
 export type LegacyEndModelEdgeJSON = LegacyProgramModelEdgeJSON;
 
 /**

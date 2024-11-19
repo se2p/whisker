@@ -5,8 +5,8 @@ import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
-import {ArgType} from "./Check";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+import {ArgType} from "./Check";
 
 export const USER_INPUT_NAMES = Object.freeze([
     "InputClickSprite", // sprite name

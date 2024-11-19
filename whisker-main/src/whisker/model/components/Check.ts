@@ -29,7 +29,11 @@ export const CHECK_NAMES = Object.freeze([
 
 export type CheckName = typeof CHECK_NAMES[number];
 
-export type ArgType = string | number | string[];
+export type ArgType =
+    | string
+    | number
+    | string[]
+    ;
 
 export interface CheckJSON {
     id: string
