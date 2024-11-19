@@ -55,6 +55,13 @@ export abstract class NetworkChromosome extends Chromosome {
     protected readonly _fullyHiddenPairs: Map<string, HiddenNode> = new Map<string, HiddenNode>();
 
     /**
+     * Keeps track of the hidden node ids used for the fullyHidden input connection method.
+     * This is necessary to ensure that the same hidden nodes get assigned the same ids across networks.
+     * This ensures that appropriate innovation numbers are assigned to the respective connection genes.
+     */
+    public static fullyHiddenIDs: Map<string, number> = new Map<string, number>();
+
+    /**
      * Reference activation trace serving as the ground truth.
      */
     private _referenceActivationTrace: ActivationTrace;

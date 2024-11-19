@@ -6,9 +6,6 @@ import {Container} from "../../utils/Container";
 import {Randomness} from "../../utils/Randomness";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
-import {ScratchEvent} from "../../testcase/events/ScratchEvent";
-import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
-import {NeatChromosomeGenerator} from "../NetworkGenerators/NeatChromosomeGenerator";
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class TargetStatementPopulation extends NeatPopulation {
@@ -28,7 +25,7 @@ export class TargetStatementPopulation extends NeatPopulation {
      * anything, we just generate the desired number of networks using the defined NetworkGenerator.
      */
     public override generatePopulation(): void {
-        // If we don't have any starting networks, i.e. it's the first ever selected fitness target generate
+        // If we don't have any starting networks, i.e., it's the first ever selected fitness target generate
         // the desired number of networks using the defined generator.
         if (this._startingNetworks.length === 0) {
             while (this.networks.length < this.populationSize) {
@@ -42,14 +39,6 @@ export class TargetStatementPopulation extends NeatPopulation {
                 }
             }
         } else {
-
-            const discoveredInputs = this._fetchDiscoveredInputStates();
-            const discoveredEvents = this._fetchDiscoveredOutputEvents();
-            if (this.generator instanceof NeatChromosomeGenerator) {
-                this.generator.inputSpace = discoveredInputs;
-                this.generator.outputSpace = discoveredEvents;
-            }
-
             // Otherwise, we start with cloning all starting networks.
             for (const network of this._startingNetworks) {
                 // Stop if we already hit the population boundary.
@@ -109,35 +98,5 @@ export class TargetStatementPopulation extends NeatPopulation {
         if (randomNumber <= gradientDescentProb) {
             Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
         }
-    }
-
-    /**
-     * Ponders through the provided starting networks and collects all input states discovered so far.
-     * @returns mapping of sprite names to corresponding sprite features.
-     */
-    private _fetchDiscoveredInputStates(): InputFeatures {
-        const inputs: InputFeatures = new Map<string, FeatureGroup>();
-        for (const network of this._startingNetworks) {
-            const networkFeatures = network.extractInputFeatures();
-            for (const [sprite, features] of networkFeatures.entries()) {
-                inputs.set(sprite, features);
-            }
-        }
-        return inputs;
-    }
-
-    /**
-     * Ponders through the provided starting networks and collects all supported output events so far.
-     * @returns array of found {@link ScratchEvent}s.
-     */
-    private _fetchDiscoveredOutputEvents(): ScratchEvent[] {
-        const discoveredEvents = new Map<string, ScratchEvent>();
-        for (const network of this._startingNetworks) {
-            const networkOutputs = network.extractOutputFeatures();
-            for (const [identifier, event] of networkOutputs.entries()) {
-                discoveredEvents.set(identifier, event);
-            }
-        }
-        return [...discoveredEvents.values()];
     }
 }
