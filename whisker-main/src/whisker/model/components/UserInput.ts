@@ -6,7 +6,7 @@ import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {ArgType} from "./Check";
+import {ArgType, UserInputJSON} from "../schema/common";
 
 export const USER_INPUT_NAMES = Object.freeze([
     "InputClickSprite", // sprite name
@@ -18,12 +18,6 @@ export const USER_INPUT_NAMES = Object.freeze([
 ] as const);
 
 export type UserInputName = typeof USER_INPUT_NAMES[number];
-
-export interface UserInputJSON {
-    id: string;
-    name: UserInputName;
-    args: ArgType[];
-}
 
 /**
  * Class for giving the Scratch VM immediate inputs.

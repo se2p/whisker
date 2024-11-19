@@ -1,6 +1,7 @@
 import {Effect} from "../../../../src/whisker/model/components/Effect";
-import {ArgType, CheckName} from "../../../../src/whisker/model/components/Check";
+import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
+import {ArgType} from "../../../../src/whisker/model/schema/common";
 
 describe('CheckUtility', () => {
     describe("split event strings", () => {

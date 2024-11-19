@@ -9,9 +9,9 @@ import {
     RGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
-import {ArgType} from "../components/Check";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
+import {ArgType} from "../schema/common";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"

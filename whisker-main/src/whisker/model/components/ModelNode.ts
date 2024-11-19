@@ -3,13 +3,7 @@ import {ModelEdge} from "./AbstractEdge";
 import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
-
-export type NodeID = string;
-
-export interface ModelNodeJSON {
-    id: NodeID;
-    label: string;
-}
+import {ModelNodeJSON} from "../schema/common";
 
 export type ProgramModelNode = ModelNode<ProgramModelEdge>;
 export type UserModelNode = ModelNode<UserModelEdge>;

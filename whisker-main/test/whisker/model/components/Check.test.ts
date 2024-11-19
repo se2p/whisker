@@ -1,8 +1,9 @@
-import {ArgType, Check} from "../../../../src/whisker/model/components/Check";
+import {Check} from "../../../../src/whisker/model/components/Check";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {getDummyTestDriver} from "../TestDriverMock";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
+import {ArgType} from "../../../../src/whisker/model/schema/common";
 
 describe('Check', () => {
     const backUp = [];

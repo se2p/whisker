@@ -1,6 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {ArgType, Check, CheckName} from "./Check";
+import {Check, CheckName} from "./Check";
+import {ArgType} from "../schema/common";
 
 /**
  * Defining an edge condition.

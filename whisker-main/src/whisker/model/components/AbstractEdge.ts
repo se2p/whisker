@@ -2,32 +2,9 @@ import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
-import {CheckJSON} from "./Check";
-import {LegacyProgramModelEdgeJSON, ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
-import {LegacyUserModelEdgeJSON, UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
-import {NodeID} from "./ModelNode";
-
-export type EdgeID = string;
-
-export interface IModelEdgeJSON {
-    id: EdgeID;
-    label: string;
-    from: NodeID;
-    to: NodeID;
-    forceTestAt: number;
-    forceTestAfter: number
-    conditions: CheckJSON[];
-}
-
-export type ModelEdgeJSON =
-    | ProgramModelEdgeJSON
-    | UserModelEdgeJSON
-    ;
-
-export type LegacyModelEdgeJSON =
-    | LegacyProgramModelEdgeJSON
-    | LegacyUserModelEdgeJSON
-    ;
+import {ProgramModelEdge} from "./ProgramModelEdge";
+import {UserModelEdge} from "./UserModelEdge";
+import {ModelEdgeJSON} from "../schema/canonical";
 
 export type ModelEdge =
     | ProgramModelEdge

@@ -1,52 +1,12 @@
-import {ModelNode, ModelNodeJSON} from "./ModelNode";
-import {IModelEdgeJSON, LegacyModelEdgeJSON, ModelEdge} from "./AbstractEdge";
+import {ModelNode} from "./ModelNode";
+import {ModelEdge} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {LegacyUserModelJSON, UserModel, UserModelJSON} from "./UserModel";
-import {
-    EndModel,
-    EndModelJSON,
-    LegacyEndModelJSON,
-    LegacyProgramModelJSON,
-    ProgramModel,
-    ProgramModelJSON
-} from "./ProgramModel";
-
-export type ModelUsage =
-    | "program"
-    | "end"
-    | "user"
-    ;
-
-interface ICommonModelJSON {
-    id: string;
-    usage: ModelUsage;
-    startNodeId: string;
-    stopNodeIds: string[];
-    stopAllNodeIds: string[];
-}
-
-export interface IModelJSON extends ICommonModelJSON {
-    edges: IModelEdgeJSON[];
-    nodes: ModelNodeJSON[];
-}
-
-export interface ILegacyModelJSON extends ICommonModelJSON {
-    edges: LegacyModelEdgeJSON[];
-    nodeIds: string[];
-}
-
-export type ModelJSON =
-    | UserModelJSON
-    | ProgramModelJSON
-    | EndModelJSON
-    ;
-
-export type LegacyModelJSON =
-    | LegacyUserModelJSON
-    | LegacyProgramModelJSON
-    | LegacyEndModelJSON
-    ;
+import {UserModel} from "./UserModel";
+import {EndModel, ProgramModel} from "./ProgramModel";
+import {LegacyModelJSON} from "../schema/legacy";
+import {ModelJSON} from "../schema/canonical";
+import {ModelUsage} from "../schema/common";
 
 export function isLegacyModelJSON(m: ModelJSON | LegacyModelJSON): m is LegacyModelJSON {
     return "nodeIds" in m;

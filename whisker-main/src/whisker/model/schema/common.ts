@@ -1,14 +1,27 @@
 import {z} from "zod";
-import {CHECK_NAMES} from "../components/Check";
-import {USER_INPUT_NAMES} from "../components/UserInput";
+import {CheckName, CHECK_NAMES} from "../components/Check";
+import {UserInputName, USER_INPUT_NAMES} from "../components/UserInput";
 
 const CheckName = z.enum(CHECK_NAMES);
+
+export type ArgType =
+    | string
+    | number
+    | string[]
+    ;
 
 const ArgType = z.union([
     z.string(),
     z.number(),
     z.array(z.string()),
 ]);
+
+export interface CheckJSON {
+    id: string
+    name: CheckName;
+    negated: boolean;
+    args: ArgType[];
+}
 
 const CheckJSON = z.object({
     id: z.string(),
@@ -19,19 +32,43 @@ const CheckJSON = z.object({
 
 const UserInputName = z.enum(USER_INPUT_NAMES);
 
+export interface UserInputJSON {
+    id: string;
+    name: UserInputName;
+    args: ArgType[];
+}
+
 export const UserInputJSON = z.object({
     id: z.string(),
     name: UserInputName,
     args: z.array(ArgType),
 });
 
+export type EdgeID = string;
 const EdgeID = z.string();
+
+type NodeID = string;
 const NodeID = z.string();
+
+export interface ModelNodeJSON {
+    id: NodeID;
+    label: string;
+}
 
 export const ModelNodeJSON = z.object({
     id: NodeID,
     label: z.string(),
 });
+
+export interface IModelEdgeJSON {
+    id: EdgeID;
+    label: string;
+    from: NodeID;
+    to: NodeID;
+    forceTestAt: number;
+    forceTestAfter: number
+    conditions: CheckJSON[];
+}
 
 export const IModelEdgeJSON = z.object({
     id: EdgeID,
@@ -43,15 +80,33 @@ export const IModelEdgeJSON = z.object({
     conditions: z.array(CheckJSON),
 });
 
+export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
+    effects: CheckJSON[];
+}
+
 export const ProgramModelEdgeJSON = IModelEdgeJSON.extend({
     effects: z.array(CheckJSON),
 });
+
+export type ModelUsage =
+    | "program"
+    | "end"
+    | "user"
+    ;
 
 const ModelUsage = z.union([
     z.literal("program"),
     z.literal("end"),
     z.literal("user"),
 ]);
+
+export interface ICommonModelJSON {
+    id: string;
+    usage: ModelUsage;
+    startNodeId: string;
+    stopNodeIds: string[];
+    stopAllNodeIds: string[];
+}
 
 export const ICommonModelJSON = z.object({
     id: z.string(),

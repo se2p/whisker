@@ -1,18 +1,9 @@
 import {UserModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {AbstractModel, ILegacyModelJSON, IModelJSON} from "./AbstractModel";
-import {LegacyUserModelEdgeJSON, UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
-
-export interface UserModelJSON extends IModelJSON {
-    usage: "user";
-    edges: UserModelEdgeJSON[];
-}
-
-export interface LegacyUserModelJSON extends ILegacyModelJSON {
-    usage: "user";
-    edges: LegacyUserModelEdgeJSON[];
-}
+import {AbstractModel} from "./AbstractModel";
+import {UserModelEdge} from "./UserModelEdge";
+import {UserModelJSON} from "../schema/canonical";
 
 /**
  *  Graph structure for a user model representing the user's behaviour when playing a Scratch program.

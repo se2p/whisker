@@ -1,23 +1,28 @@
-import {isModelJSON, LegacyModelJSON, Model, ModelJSON,} from "../components/AbstractModel";
-import {LegacyUserModelJSON, UserModel, UserModelJSON,} from "../components/UserModel";
+import {isModelJSON, Model} from "../components/AbstractModel";
+import {UserModel, } from "../components/UserModel";
 import {
     EndModel,
-    EndModelJSON,
-    LegacyEndModelJSON,
-    LegacyProgramModelJSON,
     ProgramModel,
-    ProgramModelJSON,
 } from "../components/ProgramModel";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {ModelNode} from "../components/ModelNode";
-import {LegacyModelEdgeJSON, ModelEdge, ModelEdgeJSON,} from "../components/AbstractEdge";
+import {ModelEdge} from "../components/AbstractEdge";
 import {UserModelEdge} from "../components/UserModelEdge";
-import {UserInput, UserInputJSON} from "../components/UserInput";
+import {UserInput} from "../components/UserInput";
 import logger from "../../../util/logger";
-import {Check, CheckJSON} from "../components/Check";
+import {Check} from "../components/Check";
 import {Condition} from "../components/Condition";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {Effect} from "../components/Effect";
+import {EndModelJSON, ModelEdgeJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "../schema/canonical";
+import {
+    LegacyEndModelJSON,
+    LegacyModelEdgeJSON,
+    LegacyModelJSON,
+    LegacyProgramModelJSON,
+    LegacyUserModelJSON
+} from "../schema/legacy";
+import {CheckJSON, UserInputJSON} from "../schema/common";
 
 interface Models {
     programModels: ProgramModel[],

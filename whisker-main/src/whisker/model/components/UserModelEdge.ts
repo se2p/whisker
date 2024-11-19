@@ -1,16 +1,9 @@
-import {UserInput, UserInputJSON} from "./UserInput";
+import {UserInput} from "./UserInput";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Condition} from "./Condition";
-import {AbstractEdge, IModelEdgeJSON} from "./AbstractEdge";
-
-export interface UserModelEdgeJSON extends IModelEdgeJSON {
-    effects: UserInputJSON[];
-}
-
-export interface LegacyUserModelEdgeJSON extends IModelEdgeJSON {
-    inputEffects: UserInputJSON[];
-}
+import {AbstractEdge} from "./AbstractEdge";
+import {UserModelEdgeJSON} from "../schema/canonical";
 
 /**
  * Edge structure that has input effects triggered if the conditions are fulfilled.

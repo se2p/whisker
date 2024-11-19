@@ -1,11 +1,11 @@
-import {UserInput, UserInputJSON, UserInputName} from "../../../../src/whisker/model/components/UserInput";
-import {ArgType} from "../../../../src/whisker/model/components/Check";
+import {UserInput, UserInputName} from "../../../../src/whisker/model/components/UserInput";
 import {TestDriverMock} from "../TestDriverMock";
 import {ScratchInterface} from "../../../../src/whisker/scratch/ScratchInterface";
 import {ScratchPosition} from "../../../../src/whisker/scratch/ScratchPosition";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {SpriteMock} from "../SpriteMock";
 import {WhiskerSearchConfiguration} from "../../../../src/whisker/utils/WhiskerSearchConfiguration";
+import {ArgType, UserInputJSON} from "../../../../src/whisker/model/schema/common";
 
 import('../../../../src/whisker/scratch/ScratchInterface');
 
