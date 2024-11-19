@@ -4,13 +4,16 @@ import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {CheckJSON} from "./Check";
 import {NodeID} from "./ModelNode";
-import {UserInputJSON} from "./UserInput";
-import {ProgramModelEdge} from "./ProgramModelEdge";
-import {UserModelEdge} from "./UserModelEdge";
+import {LegacyProgramModelEdgeJSON, ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
+import {LegacyUserModelEdgeJSON, UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
 
 export type EdgeID = string;
 
-interface IModelEdgeJSON {
+/**
+ * Properties common to the edges found in the canonical JSON representation and the legacy JSON representation of
+ * models.
+ */
+export interface IModelEdgeJSON {
     id: EdgeID;
     label: string;
     from: NodeID;
@@ -20,14 +23,21 @@ interface IModelEdgeJSON {
     conditions: CheckJSON[];
 }
 
-export interface ModelEdgeJSON extends IModelEdgeJSON {
-    effects: CheckJSON[] | UserInputJSON[];
-}
+/**
+ * The canonical JSON representation of model edges.
+ */
+export type ModelEdgeJSON =
+    | ProgramModelEdgeJSON
+    | UserModelEdgeJSON
+    ;
 
-export interface LegacyModelEdgeJSON extends IModelEdgeJSON {
-    effects?: CheckJSON[];
-    inputEffects?: UserInputJSON[];
-}
+/**
+ * The legacy JSON representation of model edges.
+ */
+export type LegacyModelEdgeJSON =
+    | LegacyProgramModelEdgeJSON
+    | LegacyUserModelEdgeJSON
+    ;
 
 export type ModelEdge =
     | ProgramModelEdge

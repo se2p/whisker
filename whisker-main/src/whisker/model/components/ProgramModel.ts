@@ -2,8 +2,14 @@ import {ProgramModelNode} from "./ModelNode";
 import {EdgeID} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {AbstractModel, ModelJSON} from "./AbstractModel";
-import {ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
+import {AbstractModel, ILegacyModelJSON, IModelJSON} from "./AbstractModel";
+import {
+    EndModelEdgeJSON,
+    LegacyEndModelEdgeJSON,
+    LegacyProgramModelEdgeJSON,
+    ProgramModelEdge,
+    ProgramModelEdgeJSON
+} from "./ProgramModelEdge";
 
 export interface CoverageResult {
     total: number;
@@ -45,7 +51,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
     protected constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
-                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
+                          edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
         super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
     }
 
@@ -163,9 +169,14 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     }
 }
 
-export interface EndModelJSON extends ModelJSON {
+export interface EndModelJSON extends IModelJSON {
     usage: "end";
-    edges: ProgramModelEdgeJSON[];
+    edges: EndModelEdgeJSON[];
+}
+
+export interface LegacyEndModelJSON extends ILegacyModelJSON {
+    usage: "end";
+    edges: LegacyEndModelEdgeJSON[];
 }
 
 export class EndModel extends AbstractProgramModel {
@@ -188,9 +199,14 @@ export class EndModel extends AbstractProgramModel {
     }
 }
 
-export interface ProgramModelJSON extends ModelJSON {
+export interface ProgramModelJSON extends IModelJSON {
     usage: "program";
     edges: ProgramModelEdgeJSON[];
+}
+
+export interface LegacyProgramModelJSON extends ILegacyModelJSON {
+    usage: "program";
+    edges: LegacyProgramModelEdgeJSON[];
 }
 
 export class ProgramModel extends AbstractProgramModel {

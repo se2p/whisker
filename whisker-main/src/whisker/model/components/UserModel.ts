@@ -1,12 +1,17 @@
 import {UserModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {AbstractModel, ModelJSON} from "./AbstractModel";
-import {UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
+import {AbstractModel, ILegacyModelJSON, IModelJSON} from "./AbstractModel";
+import {LegacyUserModelEdgeJSON, UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
 
-export interface UserModelJSON extends ModelJSON {
+export interface UserModelJSON extends IModelJSON {
     usage: "user";
     edges: UserModelEdgeJSON[];
+}
+
+export interface LegacyUserModelJSON extends ILegacyModelJSON {
+    usage: "user";
+    edges: LegacyUserModelEdgeJSON[];
 }
 
 /**

@@ -168,7 +168,8 @@ export class ModelLoader {
         }
 
         let model: Model;
-        switch (graph.usage) {
+        const usage = graph.usage;
+        switch (usage) {
             case "program":
                 model = new ProgramModel(graphID, this._startNodeId, this._programNodesMap, this._edgesMapProgram,
                     this._stopNodeIds, this._stopAllNodeIds);
@@ -185,7 +186,7 @@ export class ModelLoader {
                 this._onTestEndModels.push(model);
                 break;
             default:
-                throw new NonExhaustiveCaseDistinction(graph.usage, "Model type id not known.");
+                throw new NonExhaustiveCaseDistinction(usage, `Model usage "${usage}" not known.`);
         }
     }
 
@@ -291,7 +292,7 @@ export class ModelLoader {
 
             // old models have inputEffects in json, modelEditor writes just effects so this is just as a precaution
             if ("inputEffects" in edge) {
-                this._loadUserInputs(newEdge, edge.inputEffects as UserInputJSON[]);
+                this._loadUserInputs(newEdge, edge.inputEffects);
             } else if ("effects" in edge) {
                 this._loadUserInputs(newEdge, edge.effects as UserInputJSON[]);
             }
@@ -306,7 +307,7 @@ export class ModelLoader {
             }
 
             this._loadConditions(newEdge, edge.conditions);
-            if (edge.effects) {
+            if ("effects" in edge) {
                 this._loadEffects(newEdge, edge.effects as CheckJSON[]);
             }
             this._programNodesMap[from].addOutgoingEdge(newEdge);

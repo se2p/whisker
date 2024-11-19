@@ -3,11 +3,15 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {Check, CheckJSON} from "./Check";
-import {AbstractEdge, ModelEdgeJSON} from "./AbstractEdge";
+import {AbstractEdge, IModelEdgeJSON} from "./AbstractEdge";
 
-export interface ProgramModelEdgeJSON extends ModelEdgeJSON {
+export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
     effects: CheckJSON[];
 }
+
+export type EndModelEdgeJSON = ProgramModelEdgeJSON;
+export type LegacyProgramModelEdgeJSON = ProgramModelEdgeJSON;
+export type LegacyEndModelEdgeJSON = LegacyProgramModelEdgeJSON;
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.

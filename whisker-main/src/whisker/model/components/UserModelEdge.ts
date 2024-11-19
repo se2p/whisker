@@ -2,10 +2,14 @@ import {UserInput, UserInputJSON} from "./UserInput";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Condition} from "./Condition";
-import {AbstractEdge, ModelEdgeJSON} from "./AbstractEdge";
+import {AbstractEdge, IModelEdgeJSON} from "./AbstractEdge";
 
-export interface UserModelEdgeJSON extends ModelEdgeJSON {
+export interface UserModelEdgeJSON extends IModelEdgeJSON {
     effects: UserInputJSON[];
+}
+
+export interface LegacyUserModelEdgeJSON extends IModelEdgeJSON {
+    inputEffects: UserInputJSON[];
 }
 
 /**
