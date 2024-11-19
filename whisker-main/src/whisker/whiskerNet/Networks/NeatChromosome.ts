@@ -192,9 +192,13 @@ export class NeatChromosome extends NetworkChromosome {
             // Add Hidden Node if there is none for the given sprite feature.
             if (!this._fullyHiddenPairs.has(sprite)) {
                 const depth = minDepth / 2;
-                const hiddenNode = new HiddenNode(++NeatPopulation.highestNodeId, depth, this.activationFunction);
+                const id = NetworkChromosome.fullyHiddenIDs.get(sprite) ?? ++NeatPopulation.highestNodeId;
+                const hiddenNode = new HiddenNode(id, depth, this.activationFunction);
                 this.addNode(hiddenNode);
                 this._fullyHiddenPairs.set(sprite, hiddenNode);
+                if (!NetworkChromosome.fullyHiddenIDs.has(sprite)) {
+                    NetworkChromosome.fullyHiddenIDs.set(sprite, id);
+                }
             }
 
             const hiddenNode = this._fullyHiddenPairs.get(sprite);
