@@ -21,7 +21,7 @@ import {
     ProgramModel,
     ProgramModelJSON
 } from "./components/ProgramModel";
-import {ModelLoader} from "./util/ModelLoader";
+import {loadModels} from "./util/loadModels";
 
 export class ModelTester extends EventEmitter {
 
@@ -67,7 +67,7 @@ export class ModelTester extends EventEmitter {
      */
     load(modelsString: string): void {
         try {
-            const result = new ModelLoader().loadModels(modelsString);
+            const result = loadModels(modelsString);
             this._programModels = result.programModels;
             this._userModels = result.userModels;
             this._onTestEndModels = result.onTestEndModels;

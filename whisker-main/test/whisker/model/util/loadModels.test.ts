@@ -1,6 +1,6 @@
 import {readFileSync} from 'fs';
-import {ModelLoader} from "../../../../src/whisker/model/util/ModelLoader";
 import * as path from "node:path";
+import {loadModels} from "../../../../src/whisker/model/util/loadModels";
 
 /**
  * Test for errors for the moment
@@ -23,8 +23,7 @@ describe('ModelLoader', () => {
         it.each(table)('%s',
             (name: string, file: string, pmCount: number, umCount: number, otemCount: number) => {
                 const text = readFileSync(path.join("test/whisker/model/models/", file), 'utf8');
-                const loader = new ModelLoader();
-                const result = loader.loadModels(text);
+                const result = loadModels(text);
                 expect(result.programModels.length).toBe(pmCount);
                 expect(result.userModels.length).toBe(umCount);
                 expect(result.onTestEndModels.length).toBe(otemCount);
@@ -34,9 +33,8 @@ describe('ModelLoader', () => {
     describe('Loading invalid Models fails', () => {
         function checkThrowsException(subfolder: string, file: string) {
             const text = readFileSync(path.join("test/whisker/model/models/faultyModels", subfolder, file), 'utf8');
-            const loader = new ModelLoader();
             expect(function () {
-                loader.loadModels(text);
+                loadModels(text);
             }).toThrow();
         }
 
