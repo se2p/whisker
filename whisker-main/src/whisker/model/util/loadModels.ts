@@ -23,6 +23,7 @@ import {
     LegacyUserModelJSON
 } from "../schema/legacy";
 import {CheckJSON, UserInputJSON} from "../schema/common";
+import {parse} from "../schema/schema";
 
 interface Models {
     programModels: ProgramModel[],
@@ -46,7 +47,7 @@ let idUndefined = 0;
 export function loadModels(text: string): Models {
     idUndefined = 0;
 
-    const rawModels: (ModelJSON | LegacyModelJSON)[] = JSON.parse(text);
+    const rawModels = parse(text);
     sanitizeModelIDs(rawModels);
 
     const models: Models = {
