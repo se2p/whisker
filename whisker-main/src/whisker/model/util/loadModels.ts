@@ -110,20 +110,6 @@ function sanitizeModelJSON(raw: ModelJSON | LegacyModelJSON): void {
     if (raw.startNodeId == null) {
         throw new Error(`${raw.id}: Start node id of the graph is undefined`);
     }
-
-    if (Array.isArray(raw.startNodeId)) {
-        throw new Error(`${raw.id}: Only one start node allowed.`);
-    }
-
-    if (raw.stopNodeIds == null || !Array.isArray(raw.stopNodeIds)) {
-        logger.warn("Warning: Graph without stop node ids.");
-        raw.stopNodeIds = [];
-    }
-
-    if (raw.stopAllNodeIds == null || !Array.isArray(raw.stopAllNodeIds)) {
-        logger.warn("Warning: Graph without stop-all node ids.");
-        raw.stopAllNodeIds = [];
-    }
 }
 
 function loadUserModel(raw: UserModelJSON | LegacyUserModelJSON): UserModel {
@@ -215,7 +201,7 @@ function loadProgramModelEdges(raw: ProgramModelJSON | LegacyProgramModelJSON | 
         }
 
         const edge = new ProgramModelEdge(id, label, raw.id, from, to, forceTestAfter, forceTestAt);
-        addEffects(edge, effects ?? []);
+        addEffects(edge, effects);
         addConditions(edge, conditions);
         edges.set(id, edge);
     }

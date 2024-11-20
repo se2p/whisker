@@ -26,7 +26,7 @@ interface ILegacyModelJSON extends ICommonModelJSON {
 
 const ILegacyModelJSON = ICommonModelJSON.extend({
     edges: z.array(LegacyModelEdgeJSON),
-    nodeIds: z.array(z.string()),
+    nodeIds: z.array(z.string()).default([]),
 });
 
 export interface LegacyUserModelJSON extends ILegacyModelJSON {

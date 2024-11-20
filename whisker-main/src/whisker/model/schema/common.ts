@@ -57,7 +57,7 @@ export interface ModelNodeJSON {
 
 export const ModelNodeJSON = z.object({
     id: NodeID,
-    label: z.string(),
+    label: z.string().optional(),
 });
 
 export interface IModelEdgeJSON {
@@ -71,8 +71,8 @@ export interface IModelEdgeJSON {
 }
 
 export const IModelEdgeJSON = z.object({
-    id: EdgeID,
-    label: z.string(),
+    id: EdgeID.optional(),
+    label: z.string().optional(),
     from: NodeID,
     to: NodeID,
     forceTestAt: z.number(),
@@ -85,7 +85,7 @@ export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
 }
 
 export const ProgramModelEdgeJSON = IModelEdgeJSON.extend({
-    effects: z.array(CheckJSON),
+    effects: z.array(CheckJSON).default([]),
 });
 
 export type ModelUsage =
@@ -109,9 +109,11 @@ export interface ICommonModelJSON {
 }
 
 export const ICommonModelJSON = z.object({
-    id: z.string(),
+    id: z.string().optional(),
     usage: ModelUsage,
-    startNodeId: z.string(),
-    stopNodeIds: z.array(z.string()),
-    stopAllNodeIds: z.array(z.string()),
+    startNodeId: z.string({
+        invalid_type_error: "Expected exactly one start node"
+    }),
+    stopNodeIds: z.array(z.string()).default([]),
+    stopAllNodeIds: z.array(z.string()).default([]),
 });
