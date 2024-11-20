@@ -1,16 +1,12 @@
 import {isModelJSON, Model} from "../components/AbstractModel";
-import {UserModel, } from "../components/UserModel";
-import {
-    EndModel,
-    ProgramModel,
-} from "../components/ProgramModel";
+import {UserModel,} from "../components/UserModel";
+import {EndModel, ProgramModel,} from "../components/ProgramModel";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/AbstractEdge";
 import {UserModelEdge} from "../components/UserModelEdge";
 import {UserInput} from "../components/UserInput";
 import logger from "../../../util/logger";
-import {Check} from "../components/Check";
 import {Condition} from "../components/Condition";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {Effect} from "../components/Effect";
@@ -31,8 +27,6 @@ interface Models {
     onTestEndModels: EndModel[]
 }
 
-let idUndefined = 0;
-
 /**
  * Load models from a json string.
  *
@@ -45,10 +39,8 @@ let idUndefined = 0;
  * constraints after initialisation e.g. time < 30 as it decreases)
  */
 export function loadModels(text: string): Models {
-    idUndefined = 0;
-
     const rawModels = parse(text);
-    sanitizeModelIDs(rawModels);
+    handleDuplicateModelIDs(rawModels);
 
     const models: Models = {
         programModels: [],
@@ -74,22 +66,16 @@ export function loadModels(text: string): Models {
     return models;
 }
 
-function sanitizeModelIDs(models: (ModelJSON | LegacyModelJSON)[]): void {
+function handleDuplicateModelIDs(models: (ModelJSON | LegacyModelJSON)[]): void {
     const ids = new Set<string>();
 
     for (const m of models) {
-        if (m.id == null) {
-            m.id = `id_undefined${idUndefined}`;
-            logger.warn(`Warning: A graph id was not given. Defining as ${m.id}`);
-            idUndefined++;
-        } else if (ids.has(m.id)) {
+        if (ids.has(m.id)) {
             m.id = `${m.id}_dup${ids.size}`;
             logger.warn(`Warning: Model id '${m.id}' already defined.`);
         }
 
         ids.add(m.id);
-
-        sanitizeModelJSON(m);
     }
 }
 
@@ -104,12 +90,6 @@ function loadModel(raw: ModelJSON | LegacyModelJSON): Model {
             return loadEndModel(raw);
         default:
             throw new NonExhaustiveCaseDistinction(usage, `Unknown model of type "${usage}"`);
-    }
-}
-
-function sanitizeModelJSON(raw: ModelJSON | LegacyModelJSON): void {
-    if (raw.startNodeId == null) {
-        throw new Error(`${raw.id}: Start node id of the graph is undefined`);
     }
 }
 
@@ -164,19 +144,9 @@ function loadNodes<E extends ModelEdge>(raw: ModelJSON | LegacyModelJSON): Map<s
 
     if (isModelJSON(raw)) {
         const rawNodes = raw.nodes;
-
-        if (!Array.isArray(rawNodes) || rawNodes.length === 0) {
-            throw new Error(`${raw.id}: No nodes given.`);
-        }
-
         rawNodes.forEach(({id, label}) => addNode(id, label));
     } else {
         const nodeIds = raw.nodeIds;
-
-        if (!Array.isArray(nodeIds) || nodeIds.length === 0) {
-            throw new Error(`${raw.id}: No nodes given.`);
-        }
-
         nodeIds.forEach((id) => addNode(id));
     }
 
@@ -193,14 +163,10 @@ function setupNodes(raw: ModelJSON | LegacyModelJSON, nodes: Map<string, ModelNo
 function loadProgramModelEdges(raw: ProgramModelJSON | LegacyProgramModelJSON | EndModelJSON | LegacyEndModelJSON): Map<string, ProgramModelEdge> {
     const edges = new Map<string, ProgramModelEdge>();
 
-    sanitizeEdgeJSON(raw.edges);
+    handleDuplicateEdgeIDs(raw.edges);
+
     for (const rawEdge of raw.edges) {
         const {id, label, from, to, forceTestAfter, forceTestAt, effects, conditions} = rawEdge;
-
-        if (conditions == null) {
-            throw new Error(`Edge '${id}': Condition not given.`);
-        }
-
         const edge = new ProgramModelEdge(id, label, raw.id, from, to, forceTestAfter, forceTestAt);
         addEffects(edge, effects);
         addConditions(edge, conditions);
@@ -213,15 +179,10 @@ function loadProgramModelEdges(raw: ProgramModelJSON | LegacyProgramModelJSON | 
 function loadUserModelEdges(raw: UserModelJSON | LegacyUserModelJSON): Map<string, UserModelEdge> {
     const edges = new Map<string, UserModelEdge>();
 
-    sanitizeEdgeJSON(raw.edges);
+    handleDuplicateEdgeIDs(raw.edges);
 
     for (const rawEdge of raw.edges) {
         const {id, label, from, to, forceTestAfter, forceTestAt, conditions} = rawEdge;
-
-        if (conditions == null) {
-            throw new Error(`Edge '${id}': Condition not given.`);
-        }
-
         const edge = new UserModelEdge(id, label, raw.id, from, to, forceTestAfter, forceTestAt);
         const inputs = "effects" in rawEdge ? rawEdge.effects : rawEdge.inputEffects;
         addUserInputs(edge, inputs);
@@ -232,80 +193,35 @@ function loadUserModelEdges(raw: UserModelJSON | LegacyUserModelJSON): Map<strin
     return edges;
 }
 
-function sanitizeEdgeJSON(edges: (ModelEdgeJSON | LegacyModelEdgeJSON)[]): void {
+function handleDuplicateEdgeIDs(edges: (ModelEdgeJSON | LegacyModelEdgeJSON)[]): void {
     const ids = new Set<string>();
 
     for (const e of edges) {
-        if (e.id == null) {
-            e.id = `edge-undef-${idUndefined}`;
-            logger.warn("Warning: ID for an edge not given.");
-            idUndefined++;
-        } else if (ids.has(e.id)) {
+        if (ids.has(e.id)) {
             e.id = `${e.id}_dup_${ids.size}`;
         }
 
         ids.add(e.id);
-
-        if (e.from == null) {
-            throw new Error(`${e.id}: source node (from) not defined.`);
-        }
-
-        if (e.to == null) {
-            throw new Error(`${e.id}: target node (to) not defined.`);
-        }
-
         e.label = e.label ?? e.id;
-        e.forceTestAt = e.forceTestAt == null ? -1 : Number(String(e.forceTestAt));
-        e.forceTestAfter = e.forceTestAfter == null ? -1 : Number(String(e.forceTestAfter));
     }
 }
 
 function addUserInputs(edge: UserModelEdge, rawUserInputs: UserInputJSON[]): void {
     for (const i of rawUserInputs) {
-        sanitizeCheckOrInput(i, edge.id, "input");
+        if (i.name === "InputKey") {
+            i.args[0] = canonicalizeInputKey(i.args[0]);
+        }
+
         edge.addUserInput(new UserInput(i.id, i.name, i.args));
     }
 }
 
 function addEffects(edge: ProgramModelEdge, rawEffects: CheckJSON[]): void {
-    for (const e of rawEffects) {
-        sanitizeCheckOrInput(e, edge.id, "effect");
-        edge.addEffect(new Effect(e.id, edge.id, e.name, e.negated, e.args));
-    }
+    rawEffects.forEach((e) => edge.addEffect(new Effect(e.id, edge.id, e.name, e.negated, e.args)));
 }
 
 function addConditions(edge: ModelEdge, rawConditions: CheckJSON[]): void {
-    for (const c of rawConditions) {
-        sanitizeCheckOrInput(c, edge.id, "condition");
-        edge.addCondition(new Condition(c.id, edge.id, c.name, c.negated, c.args));
-    }
-}
-
-function sanitizeCheckOrInput(o: CheckJSON | UserInputJSON, edgeId: string, kind: "condition" | "effect" | "input"): void {
-    if (o.id == null) {
-        o.id = `${kind}${idUndefined}`;
-        logger.warn(`Warning: ${edgeId} ID for a ${kind} not given.`);
-        idUndefined++;
-    }
-
-    if (o.name == null) {
-        throw new Error(`${edgeId}: Name of ${kind} wrong or missing.`);
-    }
-
-    if (o.args == null || !Array.isArray(o.args)) {
-        throw new Error(`${edgeId}: Arguments for ${kind} not given or not an array.`);
-    }
-
-    if (kind === "input") {
-        if (o.name === "InputKey") {
-            o.args[0] = canonicalizeInputKey(o.args[0]);
-        }
-    } else {
-        const check = o as Check;
-        if (check.negated == null || typeof check.negated !== 'boolean') {
-            throw new Error(`${edgeId}: Negated attribute of ${kind} missing or not a boolean.`);
-        }
-    }
+    rawConditions.forEach((c) => edge.addCondition(new Condition(c.id, edge.id, c.name, c.negated, c.args)));
 }
 
 function canonicalizeInputKey(key: unknown): string {

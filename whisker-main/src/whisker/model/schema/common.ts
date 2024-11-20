@@ -1,6 +1,7 @@
 import {z} from "zod";
 import {CheckName, CHECK_NAMES} from "../components/Check";
 import {UserInputName, USER_INPUT_NAMES} from "../components/UserInput";
+import {nextId} from "./schema";
 
 const CheckName = z.enum(CHECK_NAMES);
 
@@ -24,7 +25,7 @@ export interface CheckJSON {
 }
 
 const CheckJSON = z.object({
-    id: z.string(),
+    id: z.string().default(() => `check${nextId()}`),
     name: CheckName,
     negated: z.boolean(),
     args: z.array(ArgType),
@@ -71,12 +72,12 @@ export interface IModelEdgeJSON {
 }
 
 export const IModelEdgeJSON = z.object({
-    id: EdgeID.optional(),
+    id: EdgeID.default(() => `edge-undef-${nextId()}`),
     label: z.string().optional(),
     from: NodeID,
     to: NodeID,
-    forceTestAt: z.number(),
-    forceTestAfter: z.number(),
+    forceTestAt: z.number().default(-1),
+    forceTestAfter: z.number().default(-1),
     conditions: z.array(CheckJSON),
 });
 
@@ -109,7 +110,7 @@ export interface ICommonModelJSON {
 }
 
 export const ICommonModelJSON = z.object({
-    id: z.string().optional(),
+    id: z.string().default(() => `id_undefined${nextId()}`),
     usage: ModelUsage,
     startNodeId: z.string({
         invalid_type_error: "Expected exactly one start node"
