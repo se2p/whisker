@@ -18,7 +18,7 @@ import {ScratchInterface} from "../scratch/ScratchInterface";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
-    private static CLONE_THRESHOLD = 3;
+    private static CLONE_THRESHOLD = 1;
 
     /**
      * Whether events should be extracted statically, ignoring if a sprite is invisible or not.

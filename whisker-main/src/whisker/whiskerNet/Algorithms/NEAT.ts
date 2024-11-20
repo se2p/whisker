@@ -80,7 +80,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             this._archive.get(bestNetworkKey).fitness < candidateChromosome.fitness) {
             this._archive.set(bestNetworkKey, candidateChromosome);
         }
-        this._bestIndividuals = Arrays.distinctObjects([...this._archive.values()]);
     }
 
     /**
@@ -97,8 +96,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * @param population the current generation's population of networks.
      */
     protected updateBestIndividualAndStatistics(population: NeatPopulation): void {
-        this._bestIndividuals = Arrays.distinct(this._archive.values());
-        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
+        StatisticsCollector.getInstance().bestTestSuiteSize = this.getCurrentSolution().length;
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size - 1;
         StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.fitness);
@@ -166,7 +164,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     getCurrentSolution(): NeatChromosome[] {
-        return this._bestIndividuals as NeatChromosome[];
+        return Arrays.distinct(this._archive.values());
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<NeatChromosome>> {
