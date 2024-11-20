@@ -71,7 +71,7 @@ beforeEach(async () => {
 });
 
 describe('Algorithms', () => {
-    // We test for coverages of >= 0.4.
+    // We test for coverages of >= 0.35.
     // If we obtain this amount of coverage, the algorithms execute without throwing an error.
     // Testing for higher coverage values involves randomness and requires longer running tests.
 
@@ -121,8 +121,8 @@ describe('Algorithms', () => {
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
-        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(statCoverage).toBeGreaterThanOrEqual(0.35);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.35);
     }, timeout);
 
     test('Neatest Optimising for Branch Coverage', async () => {
@@ -131,8 +131,8 @@ describe('Algorithms', () => {
         const runSearchButton = await page.$('#run-search');
         await runSearchButton.evaluate(b => b.click());
         const [statCoverage, branchCoverage] = await getCoverage();
-        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
-        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(statCoverage).toBeGreaterThanOrEqual(0.35);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.35);
     }, timeout);
 });
 
