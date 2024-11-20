@@ -49,7 +49,7 @@ export class Neatest extends NEAT {
     private _switchedTargets = new Set<string>();
 
     /**
-     * Holds a record of promising targets, i.e. the maximum amount of how often a target has accidentally already been
+     * Holds a record of promising targets, i.e., the maximum amount of how often a target has accidentally already been
      * covered by a network without it actually being the currently targeted statement.
      */
     private _promisingTargets = new Map<number, number>();
@@ -129,7 +129,7 @@ export class Neatest extends NEAT {
     }
 
     /**
-     * Sets the next fitness objective by prioritising the most promising statements, i.e. statements that are direct
+     * Sets the next fitness objective by prioritising the most promising statements, i.e., statements that are direct
      * children of already reached statements in the control dependence graph.
      * @returns the next target statement's fitness function.
      */
@@ -220,7 +220,7 @@ export class Neatest extends NEAT {
             await this.updateArchive(network);
 
             // Free memory if the network was not added to the archive.
-            if (![...this._archive.values()].includes(network)){
+            if (![...this._archive.values()].includes(network)) {
                 network.trace = null;
                 network.coverage = null;
                 network.codons = null;
@@ -269,9 +269,10 @@ export class Neatest extends NEAT {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
 
             // If we covered a statement, update the archive, statistics and the map of open target statements.
-            if (await this.isCovered(fitnessFunctionKey, network)) {
+            if (this.coveredNewObjective(fitnessFunctionKey, network)) {
                 logger.debug(`Covered Statement ${fitnessFunctionKey}:${fitnessFunction}`);
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                await this.minimiseArchive(network);
                 this._archive.set(fitnessFunctionKey, network);
                 for (const n of this._population.networks) {
                     if (n.openStatementTargets != null) {
@@ -283,19 +284,50 @@ export class Neatest extends NEAT {
                 }
             }
         }
-        this._bestIndividuals = Arrays.distinctObjects([...this._archive.values()]);
     }
 
     /**
-     * Checks whether a given Scratch statement was as covered in a network's playthrough.
-     * @param fitnessFunctionKey the key of the Scratch statement that will be checked if it counts as covered.
-     * @param network the chromosome that is evaluated whether it covers the given statement.
-     * @returns boolean which is true if the statement was covered.
+     * Minimises the number of networks stored in the archive by replacing previously stored networks with
+     * networks that were just added to the archive.
+     * The idea is that networks found later in the search are more likely better in playing the game reasonably,
+     * and thus, also cover previously reached statements.
+     *
+     * Minimising the archive size helps to deal with memory issues that might occur when the archive grows too large,
+     * e.g., if there are a lot of statements to cover.
+     * @param addedNetwork
      */
-    private async isCovered(fitnessFunctionKey: number, network: NeatChromosome): Promise<boolean> {
+    private async minimiseArchive(addedNetwork: NeatChromosome): Promise<void> {
+        const sizeBefore = this.getCurrentSolution().length;
+        for (const fitnessKey of this._archive.keys()) {
+            if (this.coveredObjective(fitnessKey, addedNetwork)) {
+                this._archive.set(fitnessKey, addedNetwork);
+            }
+        }
+        const sizeAfter = this.getCurrentSolution().length;
+        if (sizeAfter < sizeBefore) {
+            logger.debug(`Minimized Archive: ${sizeBefore} -> ${sizeAfter}`);
+        }
+    }
+
+    /**
+     * Checks whether the given objective was covered in a network's playthrough.
+     * @param fitnessFunctionKey the key of the coverage objective to be checked.
+     * @param network the chromosome that might cover the given objective.
+     * @returns boolean true if the objective was covered.
+     */
+    private coveredObjective(fitnessFunctionKey: number, network: NeatChromosome): boolean {
         const coverageStableCount = network.openStatementTargets.get(fitnessFunctionKey);
-        return !this._archive.has(fitnessFunctionKey) &&
-            coverageStableCount >= this._neuroevolutionProperties.coverageStableCount;
+        return coverageStableCount >= this._neuroevolutionProperties.coverageStableCount;
+    }
+
+    /**
+     * Checks whether a previously uncovered objective was covered in a network's playthrough.
+     * @param fitnessFunctionKey the key of the coverage objective to be checked.
+     * @param network the chromosome that might cover the given objective.
+     * @returns boolean true if the objective was covered for the first time.
+     */
+    private coveredNewObjective(fitnessFunctionKey: number, network: NeatChromosome): boolean {
+        return !this._archive.has(fitnessFunctionKey) && this.coveredObjective(fitnessFunctionKey, network);
     }
 
     /**
@@ -327,8 +359,7 @@ export class Neatest extends NEAT {
      * Updates the List of the best networks found so far, and the statistics used for reporting.
      */
     protected override updateBestIndividualAndStatistics(): void {
-        this._bestIndividuals = Arrays.distinct(this._archive.values());
-        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
+        StatisticsCollector.getInstance().bestTestSuiteSize = this.getCurrentSolution().length;
         StatisticsCollector.getInstance().iterationCount = this._iterations;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);

@@ -12,8 +12,6 @@ export class InputExtraction {
 
     private static whiteColorOffset = 0;
 
-    private static CLONE_THRESHOLD = 5;
-
     /**
      * Extracts input features from the current Scratch state.
      * @param vm the Scratch-VM describing the Scratch state.
@@ -21,34 +19,47 @@ export class InputExtraction {
      */
     static extractFeatures(vm: VirtualMachine): InputFeatures {
         const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
-        const cloneRecord = new Map<string, number>();
         for (const target of vm.runtime.targets) {
-            if ('blocks' in target && target.visible) {
-                if (target.isStage) {
-                    const stageFeatures = this._extractStageFeatures(vm, target);
-                    if (stageFeatures.size > 0) {
-                        inputFeatures.set("Stage", stageFeatures);
-                    }
-                } else {
-                    const spriteFeatures = this._extractSpriteFeatures(target, vm);
-                    if (target.isOriginal) {
-                        inputFeatures.set(target.sprite.name, spriteFeatures);
-                    } else {
-                        const cloneID = this.getCloneIdentifier(target);
-                        const parentSprite = target.sprite.name;
-                        // Only allow a limited number of clones per sprite to avoid input feature explosion.
-                        if (!cloneRecord.has(parentSprite) || cloneRecord.get(parentSprite) < this.CLONE_THRESHOLD) {
-                            inputFeatures.set(cloneID, spriteFeatures);
-                            if (!cloneRecord.has(parentSprite)) {
-                                cloneRecord.set(parentSprite, 0);
-                            }
-                            cloneRecord.set(parentSprite, cloneRecord.get(parentSprite) + 1);
-                        }
-                    }
-                }
+            // We only consider targets that are visible and host blocks.
+            if (Object.keys(target.blocks).length === 0 && !target.isvisible) {
+                continue;
+            }
+
+            if (target.isStage) {
+                this._addStageFeatures(vm, target, inputFeatures);
+            } else {
+                this._addSpriteFeatures(vm, target, inputFeatures);
             }
         }
         return inputFeatures;
+    }
+
+    /**
+     * Collects features extracted from the stage.
+     * @param vm the Scratch-VM describing the Scratch state.
+     * @param stage the {@link RenderedTarget} representing the stage.
+     * @param inputFeatures the collection of input features to which the stage features will be added.
+     */
+    private static _addStageFeatures(vm: VirtualMachine, stage: RenderedTarget, inputFeatures: InputFeatures): void {
+        const stageFeatures = this._extractStageFeatures(vm, stage);
+        if (stageFeatures.size > 0) {
+            inputFeatures.set("Stage", stageFeatures);
+        }
+    }
+
+    /**
+     * Collects features extracted from the given sprite.
+     * We distinguish between original sprites and clones and only add the features of one clone to save memory.
+     * @param vm the Scratch-VM describing the Scratch state.
+     * @param sprite the {@link RenderedTarget} representing the sprite.
+     * @param inputFeatures the collection of input features to which the sprite features will be added.
+     */
+    private static _addSpriteFeatures(vm: VirtualMachine, sprite: RenderedTarget, inputFeatures: InputFeatures) {
+        if (sprite.isOriginal) {
+            inputFeatures.set(sprite.sprite.name, this._extractSpriteFeatures(sprite, vm));
+        } else if (!inputFeatures.has(this.getCloneIdentifier(sprite))) {
+            inputFeatures.set(this.getCloneIdentifier(sprite), this._extractSpriteFeatures(sprite, vm));
+        }
     }
 
     /**
@@ -57,7 +68,7 @@ export class InputExtraction {
      * @returns unique id for the given target clone.
      */
     public static getCloneIdentifier(target: RenderedTarget): string {
-        return `${target.sprite.name}Clone${target.cloneID}`;
+        return `${target.sprite.name}-Clone`;
     }
 
     /**
