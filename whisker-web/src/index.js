@@ -97,7 +97,7 @@ const loadModelFromString = function (models) {
         Whisker.outputLog.println(`ERROR: ${err.message}`);
         logger.error(err);
         const message = `${err.name}: ${err.message}`;
-        showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
+        showModal('Model Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
     }
 
