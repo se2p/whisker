@@ -2,6 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {CheckGenerator} from "../util/CheckGenerator";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+import {ArgType, CheckJSON} from "../schema/common";
 
 export const CHECK_NAMES = Object.freeze([
     "AttrChange", // sprite name, attr name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
@@ -28,15 +29,6 @@ export const CHECK_NAMES = Object.freeze([
 ] as const);
 
 export type CheckName = typeof CHECK_NAMES[number];
-
-export type ArgType = string | number | string[];
-
-export interface CheckJSON {
-    id: string
-    name: CheckName;
-    negated: boolean;
-    args: ArgType[];
-}
 
 /**
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs

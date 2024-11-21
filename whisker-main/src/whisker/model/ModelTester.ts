@@ -1,4 +1,4 @@
-import {UserModel, UserModelJSON} from "./components/UserModel";
+import {UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
@@ -12,16 +12,14 @@ import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
 import {UserModelEdge} from "./components/UserModelEdge";
 import {ProgramModelEdge} from "./components/ProgramModelEdge";
-import {ModelJSON} from "./components/AbstractModel";
 import {
     CoverageResult,
     EndModel,
-    EndModelJSON,
     ExtendedCoverageResult,
     ProgramModel,
-    ProgramModelJSON
 } from "./components/ProgramModel";
-import {ModelLoader} from "./util/ModelLoader";
+import {loadModels} from "./util/loadModels";
+import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./schema/canonical";
 
 export class ModelTester extends EventEmitter {
 
@@ -67,7 +65,7 @@ export class ModelTester extends EventEmitter {
      */
     load(modelsString: string): void {
         try {
-            const result = new ModelLoader().loadModels(modelsString);
+            const result = loadModels(modelsString);
             this._programModels = result.programModels;
             this._userModels = result.userModels;
             this._onTestEndModels = result.onTestEndModels;

@@ -1,67 +1,12 @@
-import {ModelNode, ModelNodeJSON} from "./ModelNode";
-import {ModelEdge, IModelEdgeJSON, LegacyModelEdgeJSON} from "./AbstractEdge";
+import {ModelNode} from "./ModelNode";
+import {ModelEdge} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {LegacyUserModelJSON, UserModel, UserModelJSON} from "./UserModel";
-import {
-    EndModel,
-    EndModelJSON,
-    LegacyEndModelJSON,
-    LegacyProgramModelJSON,
-    ProgramModel,
-    ProgramModelJSON
-} from "./ProgramModel";
-
-export type ModelUsage =
-    | "program"
-    | "end"
-    | "user"
-    ;
-
-/**
- * Properties common to the canonical JSON representation and the legacy JSON representation of models.
- */
-interface ICommonModelJSON {
-    id: string;
-    usage: ModelUsage;
-    startNodeId: string;
-    stopNodeIds: string[];
-    stopAllNodeIds: string[];
-}
-
-/**
- * Properties exclusive to the canonical JSON representation.
- */
-export interface IModelJSON extends ICommonModelJSON {
-    edges: IModelEdgeJSON[];
-    nodes: ModelNodeJSON[];
-}
-
-/**
- * Properties exclusive to the legacy JSON representation.
- */
-export interface ILegacyModelJSON extends ICommonModelJSON {
-    edges: LegacyModelEdgeJSON[];
-    nodeIds: string[];
-}
-
-/**
- * The canonical JSON representation of models.
- */
-export type ModelJSON =
-    | UserModelJSON
-    | ProgramModelJSON
-    | EndModelJSON
-    ;
-
-/**
- * The legacy JSON representation of models.
- */
-export type LegacyModelJSON =
-    | LegacyUserModelJSON
-    | LegacyProgramModelJSON
-    | LegacyEndModelJSON
-    ;
+import {UserModel} from "./UserModel";
+import {EndModel, ProgramModel} from "./ProgramModel";
+import {LegacyModelJSON} from "../schema/legacy";
+import {ModelJSON} from "../schema/canonical";
+import {ModelUsage} from "../schema/common";
 
 export function isLegacyModelJSON(m: ModelJSON | LegacyModelJSON): m is LegacyModelJSON {
     return "nodeIds" in m;

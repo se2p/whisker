@@ -1,8 +1,9 @@
 import {Effect} from "../../../../src/whisker/model/components/Effect";
-import {ArgType, Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
+import {Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {CheckUtilityMock} from "../CheckUtilityMock";
+import {ArgType} from "../../../../src/whisker/model/schema/common";
 
 describe('Effect', () => {
 

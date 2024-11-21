@@ -1,5 +1,4 @@
 import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
-import {ArgType} from "../../../../src/whisker/model/components/Check";
 import {
     EmptyExpressionError,
     ExpressionEnterError,
@@ -11,6 +10,7 @@ import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
+import {ArgType} from "../../../../src/whisker/model/schema/common";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {

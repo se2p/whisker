@@ -4,8 +4,10 @@ import {UserInput} from "../../../../src/whisker/model/components/UserInput";
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
-import {UserModelEdge, UserModelEdgeJSON} from "../../../../src/whisker/model/components/UserModelEdge";
-import {ProgramModelEdge, ProgramModelEdgeJSON} from "../../../../src/whisker/model/components/ProgramModelEdge";
+import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
+import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
+import {ProgramModelEdgeJSON} from "../../../../src/whisker/model/schema/common";
+import {UserModelEdgeJSON} from "../../../../src/whisker/model/schema/canonical";
 
 describe('Model edges', () => {
     const id = "id";

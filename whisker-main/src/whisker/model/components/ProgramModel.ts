@@ -1,15 +1,10 @@
 import {ProgramModelNode} from "./ModelNode";
-import {EdgeID} from "./AbstractEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {AbstractModel, ILegacyModelJSON, IModelJSON} from "./AbstractModel";
-import {
-    EndModelEdgeJSON,
-    LegacyEndModelEdgeJSON,
-    LegacyProgramModelEdgeJSON,
-    ProgramModelEdge,
-    ProgramModelEdgeJSON
-} from "./ProgramModelEdge";
+import {AbstractModel} from "./AbstractModel";
+import {ProgramModelEdge} from "./ProgramModelEdge";
+import {EndModelJSON, ProgramModelJSON} from "../schema/canonical";
+import {EdgeID} from "../schema/common";
 
 export interface CoverageResult {
     total: number;
@@ -169,16 +164,6 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     }
 }
 
-export interface EndModelJSON extends IModelJSON {
-    usage: "end";
-    edges: EndModelEdgeJSON[];
-}
-
-export interface LegacyEndModelJSON extends ILegacyModelJSON {
-    usage: "end";
-    edges: LegacyEndModelEdgeJSON[];
-}
-
 export class EndModel extends AbstractProgramModel {
     constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
@@ -200,16 +185,6 @@ export class EndModel extends AbstractProgramModel {
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
         };
     }
-}
-
-export interface ProgramModelJSON extends IModelJSON {
-    usage: "program";
-    edges: ProgramModelEdgeJSON[];
-}
-
-export interface LegacyProgramModelJSON extends ILegacyModelJSON {
-    usage: "program";
-    edges: LegacyProgramModelEdgeJSON[];
 }
 
 export class ProgramModel extends AbstractProgramModel {

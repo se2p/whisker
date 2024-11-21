@@ -5,9 +5,10 @@ import {AbstractEdge} from "../components/AbstractEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
-import {ArgType, CheckName} from "../components/Check";
+import {CheckName} from "../components/Check";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
+import {ArgType} from "../schema/common";
 
 type EffectCheck = { effect: Effect, edge: ProgramModelEdge, model: ProgramModel | EndModel };
 

@@ -2,42 +2,9 @@ import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
-import {CheckJSON} from "./Check";
-import {NodeID} from "./ModelNode";
-import {LegacyProgramModelEdgeJSON, ProgramModelEdge, ProgramModelEdgeJSON} from "./ProgramModelEdge";
-import {LegacyUserModelEdgeJSON, UserModelEdge, UserModelEdgeJSON} from "./UserModelEdge";
-
-export type EdgeID = string;
-
-/**
- * Properties common to the edges found in the canonical JSON representation and the legacy JSON representation of
- * models.
- */
-export interface IModelEdgeJSON {
-    id: EdgeID;
-    label: string;
-    from: NodeID;
-    to: NodeID;
-    forceTestAt: number;
-    forceTestAfter: number
-    conditions: CheckJSON[];
-}
-
-/**
- * The canonical JSON representation of model edges.
- */
-export type ModelEdgeJSON =
-    | ProgramModelEdgeJSON
-    | UserModelEdgeJSON
-    ;
-
-/**
- * The legacy JSON representation of model edges.
- */
-export type LegacyModelEdgeJSON =
-    | LegacyProgramModelEdgeJSON
-    | LegacyUserModelEdgeJSON
-    ;
+import {ProgramModelEdge} from "./ProgramModelEdge";
+import {UserModelEdge} from "./UserModelEdge";
+import {ModelEdgeJSON} from "../schema/canonical";
 
 export type ModelEdge =
     | ProgramModelEdge

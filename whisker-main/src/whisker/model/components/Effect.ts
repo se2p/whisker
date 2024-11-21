@@ -1,6 +1,7 @@
 import TestDriver from "../../../test/test-driver";
-import {ArgType, Check, CheckName} from "./Check";
+import {Check, CheckName} from "./Check";
 import {CheckUtility} from "../util/CheckUtility";
+import {ArgType} from "../schema/common";
 
 /**
  * Class representing the check of an edge effect.

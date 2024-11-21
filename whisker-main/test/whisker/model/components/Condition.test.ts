@@ -1,6 +1,7 @@
 import {Condition} from "../../../../src/whisker/model/components/Condition";
-import {ArgType, CHECK_NAMES, CheckName, CheckJSON} from "../../../../src/whisker/model/components/Check";
+import {CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtilityMock} from "../CheckUtilityMock";
+import {ArgType, CheckJSON} from "../../../../src/whisker/model/schema/common";
 
 describe('Condition', () => {
 
