@@ -39,7 +39,7 @@
         "distanceThreshold": 3.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
-        "weightCoefficient": 0.5
+        "weightCoefficient": 0.4
     },
     "fitnessFunction": {
         "type": "statement",
