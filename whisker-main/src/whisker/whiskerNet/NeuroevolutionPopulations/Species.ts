@@ -58,11 +58,6 @@ export class Species<C extends NeatChromosome> {
     private _expectedOffspring = 0;
 
     /**
-     * Flag determining whether the species was just born.
-     */
-    private _isNovel: boolean;
-
-    /**
      * Age value since at least one member of the species has achieved a new highest fitness value.
      */
     private _ageOfLastImprovement = 1;
@@ -81,12 +76,10 @@ export class Species<C extends NeatChromosome> {
     /**
      * Constructs a new Species.
      * @param uID the id of the species
-     * @param novel true if it's a new species
      * @param hyperParameter the search parameters
      */
-    constructor(uID: number, novel: boolean, hyperParameter: NeuroevolutionTestGenerationParameter) {
+    constructor(uID: number, hyperParameter: NeuroevolutionTestGenerationParameter) {
         this._uID = uID;
-        this._isNovel = novel;
         this._hyperParameter = hyperParameter;
     }
 
@@ -334,8 +327,9 @@ export class Species<C extends NeatChromosome> {
             return undefined;
         }
 
-        // Decide if we additionally apply mutation, which is done randomly with a user-defined probability or
-        // if both parents have a compatibility distance of 0, i.e. they have the same structure and weights.
+        // Decide if we additionally apply mutation, which is done randomly with a user-defined probability, or
+        // if both parents have a compatibility distance of 0,
+        // i.e., they have the same structure and weights.
         const distance = population.compatibilityDistance(parent1, parent2);
         if (this._randomness.nextDouble() < 1 - this._hyperParameter.crossoverWithoutMutation || distance === 0) {
             child = child.mutate();
@@ -367,7 +361,7 @@ export class Species<C extends NeatChromosome> {
      * @returns Species deep clone of this species.
      */
     clone(): Species<C> {
-        const clone = new Species(this.uID, this.isNovel, this.hyperParameter);
+        const clone = new Species(this.uID, this.hyperParameter);
         clone.age = this.age;
         clone.averageSharedFitness = this.averageSharedFitness;
         clone.currentBestFitness = this.currentBestFitness;
@@ -463,14 +457,6 @@ export class Species<C extends NeatChromosome> {
 
     get networks(): C[] {
         return this._networks;
-    }
-
-    get isNovel(): boolean {
-        return this._isNovel;
-    }
-
-    set isNovel(value: boolean) {
-        this._isNovel = value;
     }
 
     get ageOfLastImprovement(): number {

@@ -274,7 +274,7 @@ describe("Test NeatPopulation", () => {
         const node2 = chromosome1.layers.get(1)[1];
         chromosome2.connections.push(new ConnectionGene(node1, node2, 1, true, 1000));
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
-        expect(compatDistance).toBe(1 / chromosome2.connections.length);
+        expect(compatDistance).toBe(1);
     });
 
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {

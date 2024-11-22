@@ -92,6 +92,6 @@
         "clickDuration": 30,
         "pressDuration": 30
     },
-    "assertions": true,
-    "minimizeAssertions": true
+    "assertions": false,
+    "minimizeAssertions": false
 }

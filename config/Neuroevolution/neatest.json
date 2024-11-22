@@ -41,7 +41,7 @@
         "distanceThreshold": 3.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
-        "weightCoefficient": 0.5
+        "weightCoefficient": 0.4
     },
     "fitnessFunction": {
         "type": "statement",
@@ -74,6 +74,6 @@
         "clickDuration": 30,
         "pressDuration": 30
     },
-    "assertions": true,
-    "minimizeAssertions": true
+    "assertions": false,
+    "minimizeAssertions": false
 }

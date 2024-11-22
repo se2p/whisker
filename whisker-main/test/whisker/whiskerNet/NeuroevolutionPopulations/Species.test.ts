@@ -63,7 +63,7 @@ describe("Species Test", () => {
         properties.interspeciesMating = 0.1;
         properties.populationChampionNumberOffspring = 5;
         properties.populationChampionNumberClones = 3;
-        species = new Species(0, false, properties);
+        species = new Species(0, properties);
         while (population.length < populationSize) {
             population.push(generator.get() as NeatChromosome);
         }
@@ -77,12 +77,11 @@ describe("Species Test", () => {
     });
 
     test("Test Constructor", () => {
-        const species = new Species(1, true, properties);
+        const species = new Species(1, properties);
         expect(species.uID).toBe(1);
         expect(species.age).toBe(1);
         expect(species.averageSharedFitness).toBe(0);
         expect(species.expectedOffspring).toBe(0);
-        expect(species.isNovel).toBeTruthy();
         expect(species.ageOfLastImprovement).toBe(1);
         expect(species.currentBestFitness).toBe(0);
         expect(species.allTimeBestFitness).toBe(0);
@@ -94,7 +93,6 @@ describe("Species Test", () => {
         species.age = 10;
         species.averageSharedFitness = 3;
         species.expectedOffspring = 4;
-        species.isNovel = true;
         species.ageOfLastImprovement = 7;
         species.currentBestFitness = 5;
         species.allTimeBestFitness = 6;
@@ -102,7 +100,6 @@ describe("Species Test", () => {
         expect(species.age).toBe(10);
         expect(species.averageSharedFitness).toBe(3);
         expect(species.expectedOffspring).toBe(4);
-        expect(species.isNovel).toBeTruthy();
         expect(species.ageOfLastImprovement).toBe(7);
         expect(species.currentBestFitness).toBe(5);
         expect(species.allTimeBestFitness).toBe(6);
@@ -222,7 +219,7 @@ describe("Species Test", () => {
         champion.isSpeciesChampion = true;
 
         speciesList.push(popSpecie);
-        speciesList.push(new Species<NeatChromosome>(1, true, properties));
+        speciesList.push(new Species<NeatChromosome>(1, properties));
         popSpecie.assignSharedFitness();
 
         popSpecie.calculateAverageSharedFitness();
@@ -233,7 +230,7 @@ describe("Species Test", () => {
             popSpecie.evolve(population, speciesList);
         }
 
-        // We did not eliminate the marked Chromosomes here therefore 2 times the size of the old population
+        // We did not eliminate the marked Chromosomes, therefore 2 times the size of the old population
         expect(popSpecie.networks.length).toBeLessThanOrEqual(2 * sizeBeforeBreed);
     });
 
@@ -251,7 +248,7 @@ describe("Species Test", () => {
 
         popSpecie.evolve(population, speciesList);
 
-        // We did not eliminate the marked Chromosomes here therefore 2 times the size of the old population.
+        // We did not eliminate the marked Chromosome, therefore 2 times the size of the old population.
         expect(popSpecie.networks.length).toBe(0);
     });
 

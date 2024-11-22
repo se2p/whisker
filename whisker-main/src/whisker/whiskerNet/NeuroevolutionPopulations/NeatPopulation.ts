@@ -107,6 +107,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // Assign representatives to each species and assign each offspring to its closest matching species.
         this.assignRepresentatives(offspring);
+        this.species.sort((a, b) => b.age - a.age); // Maintain the same species order during speciation.
         for (const child of offspring) {
             this.speciate(child);
         }
@@ -124,11 +125,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             if (specie.networks.length === 0) {
                 doomedSpecies.push(specie);
             } else {
-                // Give the new species an age bonus!
-                if (specie.isNovel)
-                    specie.isNovel = false;
-                else
-                    specie.age++;
+                specie.age++;
                 for (const network of specie.networks) {
                     this.networks.push(network);
                 }
@@ -242,7 +239,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             this.highestFitnessLastChanged++;
         }
 
-        // If there is a stagnation in fitness, refocus the search
+        // If there is stagnation in fitness, refocus the search
         if (this.highestFitnessLastChanged > this.hyperParameter.penalizingAge + 5) {
             logger.debug("Refocusing the search on the two most promising species");
             this.highestFitnessLastChanged = 0;
@@ -316,43 +313,35 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // If we have no existent species in our population, create the first one.
         if (this.species.length === 0) {
-            const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
+            const newSpecies = new Species(this.speciesCount, this.hyperParameter);
             newSpecies.representative = network;
             this.speciesCount++;
             this.species.push(newSpecies);
             newSpecies.networks.push(network);
-        } else {
-            // If we already have some species,
-            // find a compatible one or create a new species for the network if the network
-            // is not compatible enough with any existent species.
-            let foundSpecies = false;
-            for (const specie of this.species) {
-                // Skip empty species
-                if (specie.networks.length == 0) {
-                    continue;
-                }
+            return;
+        }
 
-                // Get a representative of the specie and calculate the compatibility distance.
-                const compatDistance = this.compatibilityDistance(network, specie.representative);
-
-                // If the representative and the given network are compatible enough, add the network to the
-                // representative's species.
-                if (compatDistance < this.compatibilityThreshold) {
-                    specie.networks.push(network);
-                    foundSpecies = true;
-                    break;
-                }
+        // Otherwise, search for compatible species the network can be assigned to.
+        for (const specie of this.species) {
+            // Skip empty species
+            if (specie.networks.length == 0) {
+                continue;
             }
 
-            // If the network fits into no species, create a new one.
-            if (!foundSpecies) {
-                const newSpecies = new Species(this.speciesCount, true, this.hyperParameter);
-                newSpecies.representative = network;
-                this.speciesCount++;
-                this.species.push(newSpecies);
-                newSpecies.networks.push(network);
+            const compatDistance = this.compatibilityDistance(network, specie.representative);
+            if (compatDistance < this.compatibilityThreshold) {
+                specie.networks.push(network);
+                return;
             }
         }
+
+        // If the network fits into no species, create a new one.
+        const newSpecies = new Species(this.speciesCount, this.hyperParameter);
+        newSpecies.representative = network;
+        this.speciesCount++;
+        this.species.push(newSpecies);
+        newSpecies.networks.push(network);
+
     }
 
     /**
@@ -428,8 +417,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Calculate the compatibility distance according to the number of matching, excess and disjoint genes.
-        const disjointFactor = (disjoint * this.hyperParameter.disjointCoefficient) / maxSize;
-        const excessFactor = (excess * this.hyperParameter.excessCoefficient) / maxSize;
+        const disjointFactor = (disjoint * this.hyperParameter.disjointCoefficient);
+        const excessFactor = (excess * this.hyperParameter.excessCoefficient);
         const weightCoefficient = this.hyperParameter.weightCoefficient;
         if (matching === 0) {
             return disjointFactor + excessFactor;
