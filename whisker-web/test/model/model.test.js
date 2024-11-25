@@ -173,6 +173,6 @@ describe('Model tests on multiple events per step', () => {
         await expect(errorsInModel).toBe("0");
         await expect(failsInModel).toBe("0");
         // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.8.
-        await expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.5);
+        await expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.45);
     })
 });

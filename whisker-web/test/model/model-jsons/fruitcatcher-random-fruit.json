@@ -283,7 +283,7 @@
                 "id": "points",
                 "from": "bowl",
                 "to": "points",
-                "forceTestAfter": 1500,
+                "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
                     {
@@ -543,7 +543,7 @@
                 "id": "pointsRed",
                 "from": "red",
                 "to": "points",
-                "forceTestAfter": 1500,
+                "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
                     {
@@ -723,7 +723,7 @@
                 "id": "points",
                 "from": "bowl",
                 "to": "points",
-                "forceTestAfter": 1500,
+                "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
                     {
