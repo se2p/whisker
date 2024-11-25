@@ -61,7 +61,7 @@ import {
     BasicNeuroevolutionParameter,
     NeuroevolutionEventSelection
 } from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
-import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
+import {ReliableCoverageFitness} from "../whiskerNet/NetworkFitness/ReliableCoverageFitness";
 import {EventSequenceNovelty} from "../whiskerNet/NetworkFitness/Novelty/EventSequenceNovelty";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
@@ -321,7 +321,7 @@ export class WhiskerSearchConfiguration {
     private setDynamicSuiteParameter(): BasicNeuroevolutionParameter {
         const parameter = new BasicNeuroevolutionParameter();
         parameter.timeout = this._config['timeout'];
-        parameter.networkFitness = new ReliableStatementFitness(1, false);
+        parameter.networkFitness = new ReliableCoverageFitness(1, false);
         return parameter;
     }
 
@@ -601,7 +601,7 @@ export class WhiskerSearchConfiguration {
             case 'reliableStatement': {
                 const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
                 const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
-                return new ReliableStatementFitness(stableCount, earlyStop);
+                return new ReliableCoverageFitness(stableCount, earlyStop);
             }
             case 'cosineNovelty': {
                 const [stableCount, neighbours, archiveProb, noveltyWeight] = this.extractNoveltyParameter(fitnessFunction);

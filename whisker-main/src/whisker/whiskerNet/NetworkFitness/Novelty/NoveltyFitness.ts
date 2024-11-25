@@ -1,9 +1,9 @@
 import {NetworkChromosome} from "../../Networks/NetworkChromosome";
 import {NeuroevolutionEventSelection} from "../../HyperParameter/BasicNeuroevolutionParameter";
-import {ReliableStatementFitness} from "../ReliableStatementFitness";
 import {Randomness} from "../../../utils/Randomness";
+import {ReliableCoverageFitness} from "../ReliableCoverageFitness";
 
-export abstract class NoveltyFitness<T> extends ReliableStatementFitness {
+export abstract class NoveltyFitness<T> extends ReliableCoverageFitness {
 
     /**
      * Contains all behavior observed so far.

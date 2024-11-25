@@ -11,7 +11,7 @@ import logger from "../../../util/logger";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 
 
-export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
+export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
      * Random number generator.
@@ -46,6 +46,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         if (fitness > 0) {
             network.fitness = 1 - fitness;
         } else {
+            network.fitness = 1;
 
             // If Peer-To-Peer Sharing is activated, add collected trace to recording buffer.
             if (Container.backpropagationInstance && Container.dynamicRecordingFraction > 0) {
@@ -87,22 +88,19 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
                 // Let the network decided on what to do...
                 await executor.execute(network);
             }
-            await executor.resetState();
-            await this.updateUncoveredMap(network);
-            await executor.resetState();
 
-            // If the chromosome did not manage to reach the target statement, add the inverted distance toward the
-            // target statement to the fitness function.
-            if (!await network.targetFitness.isCovered(network)) {
-                network.fitness += (1 - await network.targetFitness.getFitness(network));
-                continue;
+            await this.updateUncoveredMap(network);
+            if (await network.targetFitness.isCovered(network)) {
+                network.fitness++;
             }
 
-            // At this point, we know that we have covered the statement again.
-            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth data.
-            if (Container.backpropagationInstance && Container.dynamicRecordingFraction > 0) {
+            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth.
+            if (await network.targetFitness.isCovered(network) &&
+                Container.backpropagationInstance && Container.dynamicRecordingFraction > 0) {
                 this._dynamicRecordingBuffer = new Map([...this._dynamicRecordingBuffer, ...network.stateActionPairs]);
             }
+
+            await executor.resetState();
         }
         // Add dynamically recorded data to training dataset.
         this._addDynamicRecordToTrainingDataset();
@@ -115,7 +113,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
     }
 
     /**
-     * Makes a copy of relevant network attributes to restore them afterwards.
+     * Makes a copy of relevant network attributes to restore them afterward.
      * @param network hosting the relevant network attributes to be copied.
      */
     private copyNetworkAttributes(network: NetworkChromosome) {
@@ -157,9 +155,6 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
             if (await statement.isCovered(network)) {
                 network.openStatementTargets.set(fitnessKey, coverCount + 1);
-                if (statement === network.targetFitness) {
-                    network.fitness++;
-                }
             }
         }
 
