@@ -147,6 +147,7 @@ export class DynamicNetworkSuite {
             if (mutant == null) {
                 continue;
             }
+            await this.loadMutant(mutant);
 
             // Save mutant for download. This may cause memory issues!
             if (this.properties.downloadMutants) {
@@ -162,11 +163,12 @@ export class DynamicNetworkSuite {
             for (let i = 0; i < this.testCases.length; i++) {
                 logger.debug(`Executing test ${i}`);
                 const test = this.testCases[i];
-                // We clone the network since it might get changed due to specific mutations.
+
+                // Clone the network since it might get changed, e.g., if the mutant contains new events.
                 const testClone = test.cloneAsTestCase();
-                await this.loadMutant(mutant);
                 await this.executeTestCase(testClone, true);
                 executedTests.push(testClone);
+
                 if (this.isMutant(testClone, test, false)) {
                     logger.debug("Mutant detected; Stop testing for this mutant...");
                     break;
@@ -270,7 +272,7 @@ export class DynamicNetworkSuite {
         if (seedString !== 'undefined' && seedString !== "") {
             Randomness.setInitialSeeds(seedString);
         }
-        // If not set a random seed.
+        // If not, set a random seed.
         else {
             Randomness.setInitialSeeds(Date.now());
             this.properties.seed = Randomness.scratchSeed;
