@@ -334,7 +334,7 @@ describe('ModelUtil tests', function () {
             // should this test now be removed?
             const tdMock = new TestDriverMock([new SpriteMock("apple", [{name: "x", value: 10}])]);
             const t = tdMock.getTestDriver();
-            const expr = "(() => {const value=$('apple', 'x');return value == 10})()";
+            const expr = "{const value=$('apple', 'x');return value == 10}";
             const result = ModelUtil.getExpressionForEval(t, expr);
             expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
         });

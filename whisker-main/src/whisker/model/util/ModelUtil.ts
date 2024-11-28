@@ -254,7 +254,7 @@ export abstract class ModelUtil {
             this.getValueForSubExpression(t, s, a, c, dependencies);
         try {
             // fill dependencies and check if the expression works
-            eval("($) => {\n " + toEval + "\n}")($);
+            eval("($) => " + toEval)($);
         } catch (e: unknown) {
             if (e instanceof SyntaxError) {
                 throw new ExpressionSyntaxError(e.message);
@@ -266,7 +266,7 @@ export abstract class ModelUtil {
             throw new ExprEvalError(e);
         }
         return {
-            expr: "(t, $) => {\nreturn " + toEval + ";\n}",
+            expr: "(t, $) => " + toEval,
             varDependencies: dependencies.varDependencies,
             attrDependencies: dependencies.attrDependencies
         };
