@@ -9,7 +9,7 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {generateInputs} from "../Algorithms/NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 import logger from "../../../../src/util/logger";
 
 describe("Network Analysis", () => {
@@ -45,7 +45,7 @@ describe("Network Analysis", () => {
             }
         }
 
-        const genInputs = generateInputs();
+        const genInputs = generateNetworkInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         const generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
