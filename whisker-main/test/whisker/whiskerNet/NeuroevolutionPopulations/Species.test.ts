@@ -11,7 +11,7 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComp
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
-import {generateInputs} from "../Algorithms/NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 import logger from "../../../../src/util/logger";
 
 describe("Species Test", () => {
@@ -49,7 +49,7 @@ describe("Species Test", () => {
         };
         const mutationOp = new NeatMutation(mutationConfig);
         const crossoverOp = new NeatCrossover(crossoverConfig);
-        const genInputs = generateInputs();
+        const genInputs = generateNetworkInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
