@@ -190,24 +190,23 @@ export abstract class NetworkChromosome extends Chromosome {
     public updateInputNodes(features: InputFeatures): void {
         let updated = false;
         features.forEach((spriteFeatures, spriteKey) => {
-            const featureKeys = [...spriteFeatures.keys()];
 
             // Check if we have encountered a new Sprite.
             if (!this.inputNodes.has(spriteKey)) {
                 updated = true;
                 const spriteNodes = new Map<string, InputNode>();
-                for (const featureKey of featureKeys) {
+                Object.keys(spriteFeatures).forEach(featureKey => {
                     const featureID = `I:${spriteKey}-${featureKey}`;
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const iNode = new InputNode(id, spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
                     this._layers.get(0).push(iNode);
-                }
+                });
                 this.inputNodes.set(spriteKey, spriteNodes);
             } else {
                 // We haven't encountered a new Sprite, but we still have to check
                 // if we encountered new features of a Sprite.
-                for (const featureKey of featureKeys) {
+                Object.keys(spriteFeatures).forEach(featureKey => {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
                     if (!savedSpriteMap.has(featureKey)) {
                         updated = true;
@@ -217,7 +216,7 @@ export abstract class NetworkChromosome extends Chromosome {
                         savedSpriteMap.set(featureKey, iNode);
                         this._layers.get(0).push(iNode);
                     }
-                }
+                });
             }
         });
 
@@ -472,10 +471,9 @@ export abstract class NetworkChromosome extends Chromosome {
         const inputs: InputFeatures = new Map<string, Map<string, number>>();
         this.inputNodes.forEach((sprite, k) => {
             const spriteFeatures = new Map<string, number>();
-            const featureKeys = [...sprite.keys()];
-            for (const featureKey of featureKeys) {
+            Object.keys(sprite).forEach(featureKey => {
                 spriteFeatures.set(featureKey, random.nextDouble());
-            }
+            });
             inputs.set(k, spriteFeatures);
         });
         return inputs;
