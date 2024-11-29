@@ -527,7 +527,8 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param step the previously performed step whose ActivationTrace should be recorded.
      */
     public updateActivationTrace(step: number): void {
-        const tracedNodes = this.getAllNodes().filter(node => node.type === NodeType.HIDDEN);
+        const tracedNodes = this.getAllNodes()
+            .filter(node => node.type === NodeType.HIDDEN || node instanceof ClassificationNode);
 
         if (this.testActivationTrace === undefined) {
             this.testActivationTrace = new ActivationTrace(tracedNodes);
