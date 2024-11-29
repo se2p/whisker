@@ -17,7 +17,6 @@ import assert from "assert";
 import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
 import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 import {BiasNode} from "../NetworkComponents/BiasNode";
-import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 
 export abstract class NetworkChromosome extends Chromosome {
@@ -46,20 +45,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Maps events which take at least one parameter as input to the corresponding regression nodes.
      */
     protected readonly _regressionNodes = new Map<string, RegressionNode[]>();
-
-    /**
-     * When using the fullyHidden input connection method, this map keeps track of which input nodes
-     * are connected to which HiddenNodes during the generation of the chromosome. This mapping facilitates connecting
-     * new output nodes to the networks during the execution.
-     */
-    protected readonly _fullyHiddenPairs: Map<string, HiddenNode> = new Map<string, HiddenNode>();
-
-    /**
-     * Keeps track of the hidden node ids used for the fullyHidden input connection method.
-     * This is necessary to ensure that the same hidden nodes get assigned the same ids across networks.
-     * This ensures that appropriate innovation numbers are assigned to the respective connection genes.
-     */
-    public static fullyHiddenIDs: Map<string, number> = new Map<string, number>();
 
     /**
      * Reference activation trace serving as the ground truth.
@@ -118,7 +103,7 @@ export abstract class NetworkChromosome extends Chromosome {
 
     /**
      * Determined whether on a child with equivalent network structure, gradient descent has already been applied.
-     * There is no reason in applying gradient descent on the same parent twice.
+     * There is no reason for applying gradient descent on the same parent twice.
      */
     private _gradientDescentChild = false;
 
@@ -143,7 +128,7 @@ export abstract class NetworkChromosome extends Chromosome {
     private _coverage = new Set<string>();
 
     /**
-     * Saves the codons of the network in a similar way to other non-network chromosomes.
+     * Saves the codons of the network similarly to other non-network chromosomes.
      * Used for transforming the network into a TestChromosome for evaluating its StatementFitness.
      */
     private _codons: number[] = [];
@@ -205,23 +190,24 @@ export abstract class NetworkChromosome extends Chromosome {
     public updateInputNodes(features: InputFeatures): void {
         let updated = false;
         features.forEach((spriteFeatures, spriteKey) => {
+            const featureKeys = [...spriteFeatures.keys()];
 
             // Check if we have encountered a new Sprite.
             if (!this.inputNodes.has(spriteKey)) {
                 updated = true;
                 const spriteNodes = new Map<string, InputNode>();
-                spriteFeatures.forEach((featureValue, featureKey) => {
+                for (const featureKey of featureKeys) {
                     const featureID = `I:${spriteKey}-${featureKey}`;
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const iNode = new InputNode(id, spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
                     this._layers.get(0).push(iNode);
-                });
+                }
                 this.inputNodes.set(spriteKey, spriteNodes);
             } else {
                 // We haven't encountered a new Sprite, but we still have to check
                 // if we encountered new features of a Sprite.
-                spriteFeatures.forEach((featureValue, featureKey) => {
+                for (const featureKey of featureKeys) {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
                     if (!savedSpriteMap.has(featureKey)) {
                         updated = true;
@@ -231,11 +217,11 @@ export abstract class NetworkChromosome extends Chromosome {
                         savedSpriteMap.set(featureKey, iNode);
                         this._layers.get(0).push(iNode);
                     }
-                });
+                }
             }
         });
 
-        // If the network's structure has changed re-generate the new network.
+        // If the network's structure has changed, re-generate the new network.
         if (updated) {
             this.generateNetwork();
         }
@@ -249,7 +235,7 @@ export abstract class NetworkChromosome extends Chromosome {
         let updated = false;
         for (const event of events) {
 
-            // Update MouseMoveEvents by changing the Event itself in order to prevent an explosion of such events.
+            // Update MouseMoveEvents by changing the Event itself to prevent an explosion of such events.
             if (event instanceof MouseMoveToEvent) {
                 const targetSprite = event.sprite;
                 for (const classNode of this.classificationNodes.values()) {
@@ -284,7 +270,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
             }
         }
-        // If the network's structure has changed re-generate the new network.
+        // If the network's structure has changed, re-generate the new network.
         if (updated) {
             this.generateNetwork();
         }
@@ -298,7 +284,7 @@ export abstract class NetworkChromosome extends Chromosome {
     public abstract connectNodesToInputLayer(nodesToConnect: NodeGene[], mode: InputConnectionMethod): void;
 
     /**
-     * Fetches the ID of a functional Node, i.e. a non-Hidden node.
+     * Fetches the ID of a functional Node, i.e., a non-Hidden node.
      * @param featureID the featureID of the node whose id should be extracted.
      * @returns the found ID.
      */
@@ -375,7 +361,7 @@ export abstract class NetworkChromosome extends Chromosome {
             }
         }
 
-        // After we looked at potential recurrent connections we can reset the activation value.
+        // After we looked at potential recurrent connections, we can reset the activation value.
         for (const node of this.getAllNodes()) {
             if (!(node instanceof BiasNode)) {
                 node.activationValue = 0;
@@ -386,7 +372,7 @@ export abstract class NetworkChromosome extends Chromosome {
         for (const layer of layers) {
             const nodes = this.layers.get(layer);
 
-            // In the first layer we set up our inputs.
+            // In the first layer, we set up our inputs.
             if (layer === 0) {
                 this.setUpInputs(inputs);
             }
@@ -406,7 +392,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     this._calculateNodeValue(node);
                 }
 
-                // Check if at least one output node has received an input. If not we have a defect network.
+                // Check if at least one output node has received an input. If not, we have a defect network.
                 if (this.layers.get(1).every(node => !node.activatedFlag)) {
                     return false;
                 }
@@ -486,9 +472,10 @@ export abstract class NetworkChromosome extends Chromosome {
         const inputs: InputFeatures = new Map<string, Map<string, number>>();
         this.inputNodes.forEach((sprite, k) => {
             const spriteFeatures = new Map<string, number>();
-            sprite.forEach((featureNode, featureKey) => {
+            const featureKeys = [...sprite.keys()];
+            for (const featureKey of featureKeys) {
                 spriteFeatures.set(featureKey, random.nextDouble());
-            });
+            }
             inputs.set(k, spriteFeatures);
         });
         return inputs;
@@ -904,7 +891,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
 export type InputConnectionMethod =
     | 'fully'
-    | 'fullyHidden'
     | 'sparse'
 
 /**

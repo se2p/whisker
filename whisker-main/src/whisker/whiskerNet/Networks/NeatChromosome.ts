@@ -12,7 +12,6 @@ import {
 import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {BiasNode} from "../NetworkComponents/BiasNode";
-import {NodeType} from "../NetworkComponents/NodeType";
 
 export class NeatChromosome extends NetworkChromosome {
     /**
@@ -157,9 +156,6 @@ export class NeatChromosome extends NetworkChromosome {
             case "sparse":
                 this.connectNodeSpriteSparse(nodesToConnect, inputRate);
                 break;
-            case "fullyHidden":
-                this.connectNodeFullyHidden(nodesToConnect);
-                break;
             default:
             case "fully":
                 this.connectNodeFully(nodesToConnect);
@@ -180,67 +176,13 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
-     * Creates connections from each input node to every specified node by placing a hidden node in between.
-     * @param nodesToConnect the nodes that will be connected to the specified inputs.
-     * @returns ConnectionGene[] the generated network's connections.
-     */
-    private connectNodeFullyHidden(nodesToConnect: NodeGene[]): ConnectionGene[] {
-        const newConnections: ConnectionGene[] = [];
-        const minDepth = Math.min(...nodesToConnect.map(node => node.depth));
-
-        for (const [sprite, featureMap] of this.inputNodes.entries()) {
-            // Add Hidden Node if there is none for the given sprite feature.
-            if (!this._fullyHiddenPairs.has(sprite)) {
-                const depth = minDepth / 2;
-                const id = NetworkChromosome.fullyHiddenIDs.get(sprite) ?? ++NeatPopulation.highestNodeId;
-                const hiddenNode = new HiddenNode(id, depth, this.activationFunction);
-                this.addNode(hiddenNode);
-                this._fullyHiddenPairs.set(sprite, hiddenNode);
-                if (!NetworkChromosome.fullyHiddenIDs.has(sprite)) {
-                    NetworkChromosome.fullyHiddenIDs.set(sprite, id);
-                }
-            }
-
-            const hiddenNode = this._fullyHiddenPairs.get(sprite);
-            const hiddenIncomingNodes = hiddenNode.incomingConnections.map(conn => conn.source);
-
-            // Connect inputNode to hiddenNode if there is no such connection.
-            for (const iNode of featureMap.values()) {
-                if (!hiddenIncomingNodes.includes(iNode)) {
-                    const inputHiddenConn = new ConnectionGene(iNode, hiddenNode, this._random.nextDoubleMinMax(-1, 1), true, 0);
-                    newConnections.push(inputHiddenConn);
-                    this.addConnection(inputHiddenConn);
-                }
-            }
-
-            // Connect nodeToConnect to corresponding hidden node.
-            for (const nodeToConnect of nodesToConnect) {
-                const hiddenToNewNode = new ConnectionGene(hiddenNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
-                newConnections.push(hiddenToNewNode);
-                this.addConnection(hiddenToNewNode);
-            }
-
-        }
-
-        // Connect new nodes to Bias
-        const biasNode = this.layers.get(0).find(node => node.type == NodeType.BIAS);
-        for (const nodeToConnect of nodesToConnect) {
-            const biasConnection = new ConnectionGene(biasNode, nodeToConnect, this._random.nextDoubleMinMax(-1, 1), true, 0);
-            newConnections.push(biasConnection);
-            this.addConnection(biasConnection);
-        }
-
-        return newConnections;
-    }
-
-    /**
-     * Creates connections from a single sprite's input nodes to all specified nodes. With a defined probability more
-     * sprite node groups are connected to the specified nodes.
+     * Creates connections from a single sprite's input nodes to all specified nodes.
+     * With a defined probability, more sprite node groups are connected to the specified nodes.
      * @param nodesToConnect the nodes that will be connected to the inputs.
      * @param inputRate the probability of adding additional sprites to the network.
      * @returns ConnectionGene[] the generated network's connections.
      */
-    private connectNodeSpriteSparse(nodesToConnect: NodeGene[], inputRate): ConnectionGene[] {
+    private connectNodeSpriteSparse(nodesToConnect: NodeGene[], inputRate: number): ConnectionGene[] {
         const connections: ConnectionGene[] = [];
         const biasNode = this.layers.get(0).find(node => node instanceof BiasNode);
         for (const nodeToConnect of nodesToConnect) {

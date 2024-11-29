@@ -676,8 +676,6 @@ export class WhiskerSearchConfiguration {
         switch (this._config['chromosome']['inputConnectionMethod']) {
             case'sparse':
                 return 'sparse';
-            case 'fullyHidden':
-                return 'fullyHidden';
             case 'fully':
                 return 'fully';
         }

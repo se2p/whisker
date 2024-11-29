@@ -2,7 +2,7 @@
     "Network 0": {
         "id": 0,
         "aF": "TANH",
-        "cM": "fullyHidden",
+        "cM": "fully",
         "tf": "u*;kMNBI!JQ!TOk8u1{~-Stage",
         "Nodes": {
             "Node 0": {
@@ -161,7 +161,7 @@
     "Network 1": {
         "id": 0,
         "aF": "TANH",
-        "cM": "fullyHidden",
+        "cM": "fully",
         "tf": "u*;kMNBI!JQ!TOk8u1{~-Stage",
         "Nodes": {
             "Node 0": {

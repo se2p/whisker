@@ -470,33 +470,6 @@ describe('Test NeatChromosome', () => {
         expect(regressionNodes.get("MouseMoveEvent").length).toEqual(2);
     });
 
-    test("Test updateOutputNodes fullyHidden", () => {
-        const hiddenNodeGenerator = new NeatChromosomeGenerator(genInputs, [new WaitEvent()], 'fullyHidden',
-            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
-        chromosome = hiddenNodeGenerator.get();
-        const chromosome2 = hiddenNodeGenerator.get();
-        const chromosome3 = hiddenNodeGenerator.get();
-        const oldNodeSize = chromosome.getNumNodes();
-        const oldOutputNodesSize = chromosome.layers.get(1).length;
-        const oldRegressionNodesSize = chromosome.regressionNodes.size;
-        const oldMapSize = NeatPopulation.nodeToId.size;
-        const oldConnectionSize = chromosome.connections.length;
-        chromosome.updateOutputNodes([new MouseMoveEvent()]);
-        chromosome2.updateOutputNodes([new MouseMoveEvent()]);
-        chromosome3.updateOutputNodes([new KeyPressEvent('up arrow')]);
-        expect(chromosome.getNumNodes()).toBeGreaterThan(oldNodeSize);
-        expect(chromosome.layers.get(1).length).toBeGreaterThan(oldOutputNodesSize);
-        expect(chromosome.regressionNodes.size).toBeGreaterThan(oldRegressionNodesSize);
-        expect(chromosome.connections.length).toBeGreaterThan(oldConnectionSize);
-        expect(NeatPopulation.nodeToId.size).toBe(oldMapSize + 5);
-        expect(chromosome.layers.size).toEqual(3);
-        expect(chromosome.layers.get(0.5).length).toEqual(2);
-        expect(chromosome.layers.get(1)[chromosome.layers.get(1).length - 1].uID).toEqual(
-            chromosome2.layers.get(1)[chromosome2.layers.get(1).length - 1].uID);
-        expect(chromosome.layers.get(1)[chromosome.layers.get(1).length - 1].uID).not.toEqual(
-            chromosome3.layers.get(1)[chromosome3.layers.get(1).length - 1].uID);
-    });
-
     test("Test updateOutputNodes sparse", () => {
         const sparseGenerator = new NeatChromosomeGenerator(genInputs, [new WaitEvent()], 'sparse',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
@@ -580,16 +553,16 @@ describe('Test NeatChromosome', () => {
     });
 
     test("Update Activation Trace", () => {
-        let numberHiddenNodes = 0;
+        let numberTracedNodes = 0;
         for (const node of chromosome.getAllNodes()) {
-            if (node instanceof HiddenNode) {
+            if (node instanceof ClassificationNode || node instanceof HiddenNode) {
                 node.activationValue = Randomness.getInstance().nextInt(-1, 1);
-                numberHiddenNodes++;
+                numberTracedNodes++;
             }
         }
         const step = 2;
         chromosome.updateActivationTrace(step);
-        expect(chromosome.testActivationTrace.tracedNodes.length).toEqual(numberHiddenNodes);
+        expect(chromosome.testActivationTrace.tracedNodes.length).toEqual(numberTracedNodes);
     });
 
     test("Get number of executed events", () => {

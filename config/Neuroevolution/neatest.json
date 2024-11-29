@@ -13,7 +13,7 @@
     "chromosome": {
         "type": "neatChromosome",
         "activationFunction": "RELU",
-        "inputConnectionMethod": "fullyHidden"
+        "inputConnectionMethod": "fully"
     },
     "crossover": {
         "operator": "neatCrossover",

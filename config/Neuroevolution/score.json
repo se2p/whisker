@@ -11,7 +11,7 @@
     "chromosome": {
         "type": "neatChromosome",
         "activationFunction": "TANH",
-        "inputConnectionMethod": "fullyHidden"
+        "inputConnectionMethod": "fully
     },
     "crossover": {
         "operator": "neatCrossover",
