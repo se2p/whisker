@@ -10,7 +10,7 @@ import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCr
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
-import {generateInputs} from "../Algorithms/NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 
 
 describe('Test NeatChromosomeGenerator', () => {
@@ -47,7 +47,7 @@ describe('Test NeatChromosomeGenerator', () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
         crossoverOp = new NeatCrossover(crossoverConfig);
-        inputSpace = generateInputs();
+        inputSpace = generateNetworkInputs();
 
         outputSpace = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];

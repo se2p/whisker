@@ -23,7 +23,7 @@ import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {ActivationTrace} from "../../../../src/whisker/whiskerNet/Misc/ActivationTrace";
 import {EventAndParameters, ExecutionTrace} from "../../../../src/whisker/testcase/ExecutionTrace";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
-import {generateInputs} from "../Algorithms/NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 
 describe('Test NeatChromosome', () => {
     let mutationOp: NeatMutation;
@@ -95,7 +95,7 @@ describe('Test NeatChromosome', () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
 
-        genInputs = generateInputs();
+        genInputs = generateNetworkInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',

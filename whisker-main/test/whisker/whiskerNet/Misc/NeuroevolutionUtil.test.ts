@@ -7,7 +7,7 @@ import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/Networ
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
-import {generateInputs} from "../Algorithms/NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 
 describe("NeuroevolutionUtil Tests", () => {
@@ -43,7 +43,7 @@ describe("NeuroevolutionUtil Tests", () => {
             "toggleEnableConnectionTimes": 3,
             "mutateEnableConnection": 0.03
         };
-        genInputs = generateInputs();
+        genInputs = generateNetworkInputs();
         populationSize = 50;
         properties = new NeuroevolutionTestGenerationParameter();
         properties.populationSize = populationSize;
