@@ -330,8 +330,6 @@ describe('ModelUtil tests', function () {
         });
 
         test('can create variables', () => {
-            //TODO: before the syntax change an assignment of variables was not possible and this test was for coverage
-            // should this test now be removed?
             const tdMock = new TestDriverMock([new SpriteMock("apple", [{name: "x", value: 10}])]);
             const t = tdMock.getTestDriver();
             const expr = "{const value=$('apple', 'x');return value == 10}";
