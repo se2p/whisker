@@ -87,10 +87,14 @@ export class UserInput {
                 return;
 
             case "InputMouseMove": {
-                (this._args)[0] = ModelUtil.testNumber((this._args)[0]);
-                (this._args)[1] = ModelUtil.testNumber((this._args)[1]);
-                const mouseEvent = new MouseMoveEvent((this._args)[0], (this._args)[1]);
+                const xFunc = ModelUtil.getExpressionForEval(t, this._args[0]);
+                const yFunc = ModelUtil.getExpressionForEval(t, this._args[0]);
                 this._userInput = () => {
+                    const x = ModelUtil.evaluateExpression(t, xFunc.expr);
+                    const y = ModelUtil.evaluateExpression(t, yFunc.expr);
+                    const xVal = ModelUtil.testNumber(String(x));
+                    const yVal = ModelUtil.testNumber(String(y));
+                    const mouseEvent = new MouseMoveEvent(xVal, yVal);
                     mouseEvent.apply();
                 };
                 return;
