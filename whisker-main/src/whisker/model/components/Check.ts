@@ -61,7 +61,7 @@ export class Check {
         this._edgeLabel = edgeLabel;
 
         if ((name == "Expr" || name == "Function") && args.length > 1) {
-            this._args = [args.join(" ")];
+            this._args = [args.join("\n")];
         }
         let expectedLength: number;
         switch (name) {

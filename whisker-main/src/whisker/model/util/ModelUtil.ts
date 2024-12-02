@@ -258,10 +258,6 @@ export abstract class ModelUtil {
             }
         }
 
-        if (toEval.includes("\n")) {
-            throw new ExpressionEnterError();
-        }
-
         const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
         const $ = (s: string, a: string, c: boolean) =>
             this.getValueForSubExpression(t, s, a, c, dependencies);

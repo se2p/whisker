@@ -354,14 +354,6 @@ describe('ModelUtil tests', function () {
             expect(f(t)).toBe(expr);
         });
 
-        test('Expression cannot contain newlines', () => {
-            const t = getDummyTestDriver();
-            const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))\n==10";
-            expect(() => {
-                ModelUtil.getExpressionForEval(t, expr);
-            }).toThrow(ExpressionEnterError);
-        });
-
         test('Evaluated expression correct with dependencies', () => {
             const apple = new SpriteMock("Apple");
             const kiwi = new SpriteMock("Banana");
