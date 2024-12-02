@@ -3,7 +3,7 @@ import {Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/compo
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {CheckUtilityMock} from "../CheckUtilityMock";
-import {ArgType} from "../../../../src/whisker/model/schema/canonical";
+import {ArgType} from "../../../../src/whisker/model/util/schema";
 
 describe('Effect', () => {
 

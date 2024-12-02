@@ -5,7 +5,7 @@ import {MockedModelNode} from "./ProgramModel.test";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {getDummyTestDriver} from "../TestDriverMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
-import {UserModelJSON} from "../../../../src/whisker/model/schema/canonical";
+import {UserModelJSON} from "../../../../src/whisker/model/util/schema";
 
 function getNodesAndEdgesForBiggerModel(): [Record<string, UserModelNode>, Record<string, UserModelEdge>] {
     const nodes: Record<string, UserModelNode> = {

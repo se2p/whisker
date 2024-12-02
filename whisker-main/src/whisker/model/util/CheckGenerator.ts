@@ -11,7 +11,7 @@ import {
 import {Randomness} from "../../utils/Randomness";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
-import {ArgType} from "../schema/canonical";
+import {ArgType} from "./schema";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"

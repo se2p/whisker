@@ -8,7 +8,7 @@ import Sprite from "../../../vm/sprite";
 import {CheckName} from "../components/Check";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
-import {ArgType} from "../schema/canonical";
+import {ArgType} from "./schema";
 
 type EffectCheck = { effect: Effect, edge: ProgramModelEdge, model: ProgramModel | EndModel };
 

@@ -19,7 +19,7 @@ import {
     ProgramModel,
 } from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
-import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./schema/canonical";
+import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./util/schema";
 
 export class ModelTester extends EventEmitter {
 

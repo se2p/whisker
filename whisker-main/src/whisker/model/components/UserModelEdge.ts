@@ -3,7 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Condition} from "./Condition";
 import {AbstractEdge} from "./AbstractEdge";
-import {UserModelEdgeJSON} from "../schema/canonical";
+import {UserModelEdgeJSON} from "../util/schema";
 
 /**
  * Edge structure that has input effects triggered if the conditions are fulfilled.

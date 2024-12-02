@@ -19,7 +19,7 @@ import {
     UserInputJSON,
     UserModelJSON,
     parse
-} from "../schema/canonical";
+} from "./schema";
 
 interface Models {
     programModels: ProgramModel[],

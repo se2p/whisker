@@ -10,7 +10,7 @@ import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
-import {ArgType} from "../../../../src/whisker/model/schema/canonical";
+import {ArgType} from "../../../../src/whisker/model/util/schema";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {

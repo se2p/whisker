@@ -3,7 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {UserModelEdge} from "./UserModelEdge";
-import {UserModelJSON} from "../schema/canonical";
+import {UserModelJSON} from "../util/schema";
 
 /**
  *  Graph structure for a user model representing the user's behaviour when playing a Scratch program.

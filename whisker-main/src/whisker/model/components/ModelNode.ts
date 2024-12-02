@@ -3,7 +3,7 @@ import {ModelEdge} from "./AbstractEdge";
 import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
-import {ModelNodeJSON} from "../schema/canonical";
+import {ModelNodeJSON} from "../util/schema";
 
 export type ProgramModelNode = ModelNode<ProgramModelEdge>;
 export type UserModelNode = ModelNode<UserModelEdge>;

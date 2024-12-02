@@ -12,7 +12,7 @@ import {
     VariableNotFoundError
 } from "./ModelError";
 import Variable from "../../../vm/variable";
-import {ArgType} from "../schema/canonical";
+import {ArgType} from "./schema";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
