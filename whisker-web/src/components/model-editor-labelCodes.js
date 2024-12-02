@@ -78,9 +78,7 @@ const checkLabelCodes = {
     // 1 // sprite name regex
     TouchingVerticalEdge: [argType.spriteNameRegex],
     // 1 // sprite name regex
-    TouchingHorizEdge: [argType.spriteNameRegex],
-    // 2 // sprite name regex, attrName
-    RandomValue: [argType.spriteNameRegex, argType.attrName]
+    TouchingHorizEdge: [argType.spriteNameRegex]
 };
 
 const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter', 'a', 'b', 'c', 'd', 'e', 'f',

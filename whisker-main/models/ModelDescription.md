@@ -142,8 +142,6 @@ Following conditions can be added to any edge:
     <li>TouchingEdge: Whether a sprite touches an edge of the canvas. (sprite name regex) </li>
     <li>TouchingVerticalEdge:  Whether a sprite touches a vertical edge of the canvas (sprite name regex) </li>
     <li>TouchingHorizEdge:  Whether a sprite touches a horizontal edge of the canvas. (sprite name regex) </li>
-    <li>RandomValue: Checks that the last three values of the attribute are random. (sprite name regex, attrribute
-        name)</li>
 </ul>
 
 Spezial arguments:
