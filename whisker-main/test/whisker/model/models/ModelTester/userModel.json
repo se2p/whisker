@@ -9,11 +9,23 @@
         "stopAllNodeIds": [
             "end"
         ],
-        "nodeIds": [
-            "init",
-            "start",
-            "text",
-            "end"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "text",
+                "label": "text"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": []
     }

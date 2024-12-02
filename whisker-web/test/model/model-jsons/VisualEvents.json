@@ -1,27 +1,58 @@
 [
     {
-        "id": "sprite",
         "usage": "program",
+        "id": "sprite",
         "startNodeId": "n0",
         "stopNodeIds": [
             "n9"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1",
-            "n2",
-            "n3",
-            "n4",
-            "n5",
-            "n6",
-            "n7",
-            "n8",
-            "n9"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "n2",
+                "label": "n2"
+            },
+            {
+                "id": "n3",
+                "label": "n3"
+            },
+            {
+                "id": "n4",
+                "label": "n4"
+            },
+            {
+                "id": "n5",
+                "label": "n5"
+            },
+            {
+                "id": "n6",
+                "label": "n6"
+            },
+            {
+                "id": "n7",
+                "label": "n7"
+            },
+            {
+                "id": "n8",
+                "label": "n8"
+            },
+            {
+                "id": "n9",
+                "label": "n9"
+            }
         ],
         "edges": [
             {
                 "id": "saysHello",
+                "label": "saysHello",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": 500,
@@ -41,6 +72,7 @@
             },
             {
                 "id": "noOutput",
+                "label": "noOutput",
                 "from": "n1",
                 "to": "n2",
                 "forceTestAfter": 2200,
@@ -60,6 +92,7 @@
             },
             {
                 "id": "costumeChange",
+                "label": "costumeChange",
                 "from": "n2",
                 "to": "n3",
                 "forceTestAfter": 500,
@@ -81,6 +114,7 @@
             },
             {
                 "id": "size",
+                "label": "size",
                 "from": "n3",
                 "to": "n4",
                 "forceTestAfter": 500,
@@ -101,6 +135,7 @@
             },
             {
                 "id": "hide",
+                "label": "hide",
                 "from": "n4",
                 "to": "n5",
                 "forceTestAfter": 500,
@@ -122,6 +157,7 @@
             },
             {
                 "id": "visible",
+                "label": "visible",
                 "from": "n5",
                 "to": "n6",
                 "forceTestAfter": 500,
@@ -143,6 +179,7 @@
             },
             {
                 "id": "rotationStyle",
+                "label": "rotationStyle",
                 "from": "n6",
                 "to": "n7",
                 "forceTestAfter": 500,
@@ -164,6 +201,7 @@
             },
             {
                 "id": "direction",
+                "label": "direction",
                 "from": "n7",
                 "to": "n8",
                 "forceTestAfter": 500,
@@ -185,6 +223,7 @@
             },
             {
                 "id": "rotationStyle2",
+                "label": "rotationStyle2",
                 "from": "n8",
                 "to": "n9",
                 "forceTestAfter": 500,

@@ -1,20 +1,30 @@
 [
     {
-        "id": "test",
         "usage": "program",
+        "id": "test",
         "startNodeId": "n0",
         "stopNodeIds": [
             "end"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1",
-            "end"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": [
             {
                 "id": "timeOver",
+                "label": "timeOver",
                 "from": "n1",
                 "to": "end",
                 "forceTestAfter": -1,
@@ -33,6 +43,7 @@
             },
             {
                 "id": "moved",
+                "label": "moved",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": -1,
@@ -54,6 +65,7 @@
             },
             {
                 "id": "moved2",
+                "label": "moved2",
                 "from": "n1",
                 "to": "n0",
                 "forceTestAfter": -1,
