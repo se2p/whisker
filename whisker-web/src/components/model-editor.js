@@ -248,26 +248,33 @@ class ModelEditor {
     /** For the currently selected edge by the network save the check in the check div. */
     saveCheck () {
         const type = $(ModelEditor.CHECK_CHOOSER).val();
-        const argNumber = checkLabelCodes[type] ?? inputLabelCodes[type];
+        let args = [];
+        if (type === 'Expr' || type === 'Function'){
+            args = $(`#${ModelEditor.INPUT_ID}${0}`).val()
+                .trim()
+                .split('\n');
+        } else {
+            const argNumber = checkLabelCodes[type] ?? inputLabelCodes[type];
 
-        const args = [];
-        let valid = true;
-        for (let i = 0; i < argNumber.length; i++) {
-            const element = $(`#${ModelEditor.INPUT_ID}${i}`);
-            args[i] = element.val();
-            valid = this.checkValidCheckArgument(argNumber[i], args[i]);
-            if (argNumber[i] === argType.probValue) {
-                args[i] = args[i] / 100;
+            let valid = true;
+            for (let i = 0; i < argNumber.length; i++) {
+                const element = $(`#${ModelEditor.INPUT_ID}${i}`);
+                args[i] = element.val();
+                valid = this.checkValidCheckArgument(argNumber[i], args[i]);
+                if (argNumber[i] === argType.probValue) {
+                    args[i] = args[i] / 100;
+                }
+                if (!valid) {
+                    element.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                }
             }
+
+            // if any arg is empty string or invalid stop and mark it
             if (!valid) {
-                element.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                return false;
             }
         }
 
-        // if any arg is empty string or invalid stop and mark it
-        if (!valid) {
-            return false;
-        }
 
         // get the list that check gets added to
         const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
@@ -317,7 +324,7 @@ class ModelEditor {
         case argType.value:
         case argType.functionC:
         case argType.expr:
-            return value.match(ModelEditor.NOT_EMPTY_PATTERN);
+            return value.trim().length > 0;
         default:
             return true;
         }

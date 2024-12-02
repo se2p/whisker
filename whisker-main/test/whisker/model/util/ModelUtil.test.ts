@@ -330,11 +330,9 @@ describe('ModelUtil tests', function () {
         });
 
         test('can create variables', () => {
-            //TODO: before the syntax change an assignment of variables was not possible and this test was for coverage
-            // should this test now be removed?
             const tdMock = new TestDriverMock([new SpriteMock("apple", [{name: "x", value: 10}])]);
             const t = tdMock.getTestDriver();
-            const expr = "(() => {const value=$('apple', 'x');return value == 10})()";
+            const expr = "{const value=$('apple', 'x');return value == 10}";
             const result = ModelUtil.getExpressionForEval(t, expr);
             expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
         });
@@ -354,14 +352,6 @@ describe('ModelUtil tests', function () {
             const result = ModelUtil.getExpressionForEval(t, expr);
             const f = eval(result.expr);
             expect(f(t)).toBe(expr);
-        });
-
-        test('Expression cannot contain newlines', () => {
-            const t = getDummyTestDriver();
-            const expr = "Math.abs($(Bowl.old.x)-$(Bowl.x))\n==10";
-            expect(() => {
-                ModelUtil.getExpressionForEval(t, expr);
-            }).toThrow(ExpressionEnterError);
         });
 
         test('Evaluated expression correct with dependencies', () => {

@@ -60,6 +60,9 @@ export class Check {
         this._id = id;
         this._edgeLabel = edgeLabel;
 
+        if ((name == "Expr" || name == "Function") && args.length > 1) {
+            this._args = [args.join("\n")];
+        }
         let expectedLength: number;
         switch (name) {
             case "BackgroundChange":
@@ -94,10 +97,10 @@ export class Check {
             default:
                 throw new NonExhaustiveCaseDistinction(name, "Check type not recognized: " + name);
         }
-        if (args.length != expectedLength) {
-            throw new Error("Wrong number of arguments for input effect " + name + ".");
+        if (this._args.length != expectedLength) {
+            throw new Error("Wrong number of arguments for check " + name + ".");
         }
-        if (args.some((arg) => arg == undefined)) {
+        if (this._args.some((arg) => arg == undefined)) {
             throw new Error("arguments cannot be undefined.");
         }
     }
