@@ -156,8 +156,21 @@ export abstract class ModelUtil {
      * Test whether a value is a number.
      */
     static testNumber(value: ParamType): number {
-        if (value == null || value === '' || isNaN(Number(value))) {
+        const result = this.returnNumberIfPossible(value);
+        if (result == null) {
             throw new NotANumericalValueError(String(value));
+        }
+        return result;
+    }
+
+    /**
+     * Returns the value as a number if possible or null otherwise.
+     * @param value The value to be converted to a number
+     * @return The input converted to a number
+     */
+    private static returnNumberIfPossible(value: ParamType): number | null {
+        if (value == null || value === '' || isNaN(Number(value))) {
+            return null;
         }
         return Number(value.toString());
     }
@@ -446,5 +459,15 @@ export abstract class ModelUtil {
         }
 
         return {attrDependencies: newAttrDep, varDependencies: newVarDep};
+    }
+
+    static getNumberFunction(text: ArgType, t: TestDriver): () => number {
+        const asNumber = this.returnNumberIfPossible(text);
+        if (asNumber == null) {
+            const func = ModelUtil.getExpressionForEval(t, text).expr;
+            return () => ModelUtil.testNumber(Number(ModelUtil.evaluateExpression(t, func)));
+        } else {
+            return () => asNumber;
+        }
     }
 }
