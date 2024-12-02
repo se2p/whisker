@@ -87,8 +87,8 @@ export class UserInput {
                 return;
 
             case "InputMouseMove": {
-                const xFunc = this.getNumberFunction(this._args[0], t);
-                const yFunc = this.getNumberFunction(this._args[1], t);
+                const xFunc = ModelUtil.getNumberFunction(this._args[0], t);
+                const yFunc = ModelUtil.getNumberFunction(this._args[1], t);
                 this._userInput = () => {
                     const mouseEvent = new MouseMoveEvent(xFunc(), yFunc());
                     mouseEvent.apply();
@@ -132,16 +132,6 @@ export class UserInput {
 
             default:
                 throw new NonExhaustiveCaseDistinction(this._name, "Input type not recognized: " + this._name);
-        }
-    }
-
-    getNumberFunction(text: ArgType, t: TestDriver): () => number {
-        const asNumber = Number(text);
-        if (Number.isNaN(asNumber)) {
-            const func = ModelUtil.getExpressionForEval(t, text).expr;
-            return () => ModelUtil.testNumber(Number(ModelUtil.evaluateExpression(t, func)));
-        } else {
-            return () => asNumber;
         }
     }
 

@@ -447,4 +447,14 @@ export abstract class ModelUtil {
 
         return {attrDependencies: newAttrDep, varDependencies: newVarDep};
     }
+
+    static getNumberFunction(text: ArgType, t: TestDriver): () => number {
+        const asNumber = Number(text);
+        if (Number.isNaN(asNumber)) {
+            const func = ModelUtil.getExpressionForEval(t, text).expr;
+            return () => ModelUtil.testNumber(Number(ModelUtil.evaluateExpression(t, func)));
+        } else {
+            return () => asNumber;
+        }
+    }
 }
