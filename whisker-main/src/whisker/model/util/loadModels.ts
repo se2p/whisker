@@ -127,23 +127,18 @@ function addConnections<E extends ModelEdge>(nodes: Map<string, ModelNode<E>>, e
 function loadNodes<E extends ModelEdge>(raw: ModelJSON): Map<string, ModelNode<E>> {
     const nodes = new Map<string, ModelNode<E>>();
 
-    function addNode(id: string, label?: string): void {
+    raw.nodes.forEach(({id, label}) => {
         if (nodes.has(id)) {
             throw new Error("Node id '" + id + "' already defined.");
         }
 
         nodes.set(id, new ModelNode(id, label));
-    }
+    });
 
-    raw.nodes.forEach(({id, label}) => addNode(id, label));
-    setupNodes(raw, nodes);
-    return nodes;
-}
-
-function setupNodes(raw: ModelJSON, nodes: Map<string, ModelNode>): void {
     nodes.get(raw.startNodeId).isStartNode = true;
     raw.stopNodeIds.forEach((id) => nodes.get(id).isStopNode = true);
     raw.stopAllNodeIds.forEach((id) => nodes.get(id).isStopAllNode = true);
+    return nodes;
 }
 
 function loadProgramModelEdges(raw: ProgramModelJSON | EndModelJSON): Map<string, ProgramModelEdge> {
