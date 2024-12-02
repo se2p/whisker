@@ -16,7 +16,7 @@ import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/Net
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
-import {generateInputs} from "./NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 import logger from "../../../../src/util/logger";
 
 describe('Test Neatest', () => {
@@ -53,7 +53,7 @@ describe('Test Neatest', () => {
         logger.suggest.deny(/.*/, "debug");
         const mock = new VMWrapperMock();
         mock.init();
-        const inputFeatures = generateInputs();
+        const inputFeatures = generateNetworkInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(inputFeatures, events, 'fully',

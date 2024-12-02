@@ -2,7 +2,7 @@
         "Network 0": {
             "id": 1200,
             "aF": "RELU",
-            "cM": "fullyHidden",
+            "cM": "fully",
             "tf": "zk!,NxS,WX#iEo/8`P!;-Apple",
             "Nodes": {
                 "Node 0": {

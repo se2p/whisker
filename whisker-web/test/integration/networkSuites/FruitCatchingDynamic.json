@@ -14,7 +14,7 @@
         "Network 0": {
             "id": 4638,
             "aF": "RELU",
-            "cM": "fullyHidden",
+            "cM": "fully",
             "tf": "}Gp_.7).xv-]IUt.!E1/",
             "Nodes": {
                 "Node 0": {

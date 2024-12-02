@@ -14,7 +14,7 @@ import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatCh
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
-import {generateInputs} from "../Algorithms/NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 import {NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 
 
@@ -54,7 +54,7 @@ describe("Test NeatMutation", () => {
         };
         NeatPopulation.innovations = [];
         mutation = new NeatMutation(mutationConfig);
-        const genInputs = generateInputs();
+        const genInputs = generateNetworkInputs();
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         networkGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',

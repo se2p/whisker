@@ -10,7 +10,7 @@ import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCr
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
-import {generateInputs} from "../Algorithms/NEAT.test";
+import {generateNetworkInputs} from "../../TestUtils";
 
 
 describe('Test NeatChromosomeGenerator', () => {
@@ -47,7 +47,7 @@ describe('Test NeatChromosomeGenerator', () => {
         };
         mutationOp = new NeatMutation(mutationConfig);
         crossoverOp = new NeatCrossover(crossoverConfig);
-        inputSpace = generateInputs();
+        inputSpace = generateNetworkInputs();
 
         outputSpace = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
@@ -66,23 +66,6 @@ describe('Test NeatChromosomeGenerator', () => {
         expect(neatChromosome.regressionNodes.size).toBe(4);
         expect(neatChromosome.layers.size).toEqual(2);
         expect(neatChromosome.layers.get(0).length).toEqual(10);
-        expect(neatChromosome.layers.get(1).length).toBe(9);
-    });
-
-    test('Create initial random Chromosome using fullyHidden connection mode', () => {
-        const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fullyHidden',
-            ActivationFunction.TANH, mutationOp, crossoverOp);
-        const neatChromosome = generator.get();
-        expect(neatChromosome.getAllNodes().length).toBe(21);
-        expect(neatChromosome.connections.length).toBe(36);
-        expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
-        expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
-        expect(neatChromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toBe(2);
-        expect(neatChromosome.classificationNodes.size).toBe(4);
-        expect(neatChromosome.regressionNodes.size).toBe(4);
-        expect(neatChromosome.layers.size).toEqual(3);
-        expect(neatChromosome.layers.get(0).length).toEqual(10);
-        expect(neatChromosome.layers.get(0.5).length).toEqual(2);
         expect(neatChromosome.layers.get(1).length).toBe(9);
     });
 
