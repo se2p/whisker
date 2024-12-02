@@ -77,6 +77,7 @@ class ModelEditor {
     static INPUT_ID = 'model-check-input';
 
     // checking arguments
+    static NOT_EMPTY_PATTERN = /^\S+$/g;
     static CHANGE_PATTERN = /^(-=|\+=|=|[+-]|([+-]?)[0-9]+)$/g;
     static TIME_PATTERN = /^([0-9]+)$/g;
     static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
