@@ -39,12 +39,10 @@ export class NegateConditionalMutation extends ScratchMutation {
                 parent['inputs']['OPERAND'][1] = not_block['id'];
             } else if (parent['inputs']['TOUCHINGOBJECTMENU']) {
                 parent['inputs']['TOUCHINGOBJECTMENU'][1] = not_block['id'];
-            } else if (parent['inputs']['OPERAND1'] && parent['inputs']['OPERAND1']) {
-                if (Randomness.getInstance().randomBoolean()) {
-                    parent['inputs']['OPERAND1'][1] = not_block['id'];
-                } else {
-                    parent['inputs']['OPERAND2'][1] = not_block['id'];
-                }
+            } else if (parent['inputs']['OPERAND1'][1] === mutationBlockId) {
+                parent['inputs']['OPERAND1'][1] = not_block['id'];
+            } else if (parent['inputs']['OPERAND2'][1] === mutationBlockId) {
+                parent['inputs']['OPERAND2'][1] = not_block['id'];
             } else {
                 logger.warn(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
                 return false;
