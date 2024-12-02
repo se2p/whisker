@@ -60,7 +60,7 @@ export class Check {
         this._id = id;
         this._edgeLabel = edgeLabel;
 
-        if((name == "Expr" || name == "Function") && args.length > 1) {
+        if (name == "Expr" || name == "Function") {
             this._args = [args.join(" ")];
         }
         let expectedLength: number;
