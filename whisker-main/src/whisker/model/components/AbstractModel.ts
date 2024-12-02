@@ -4,8 +4,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {UserModel} from "./UserModel";
 import {EndModel, ProgramModel} from "./ProgramModel";
-import {ModelJSON} from "../schema/canonical";
-import {ModelUsage} from "../schema/common";
+import {ModelJSON, ModelUsage} from "../schema/canonical";
 
 export type Model =
     | UserModel

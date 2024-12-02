@@ -2,7 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {CheckGenerator} from "../util/CheckGenerator";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {ArgType, CheckJSON} from "../schema/common";
+import {ArgType, CheckJSON} from "../schema/canonical";
 
 export const CHECK_NAMES = Object.freeze([
     "AttrChange", // sprite name, attr name, ( + | - | = | += | -= | +<number> | <number> | -<number>)

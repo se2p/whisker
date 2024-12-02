@@ -3,8 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {ProgramModelEdge} from "./ProgramModelEdge";
-import {EndModelJSON, ProgramModelJSON} from "../schema/canonical";
-import {EdgeID} from "../schema/common";
+import {EdgeID, EndModelJSON, ProgramModelJSON} from "../schema/canonical";
 
 export interface CoverageResult {
     total: number;

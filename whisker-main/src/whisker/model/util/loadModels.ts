@@ -10,9 +10,16 @@ import logger from "../../../util/logger";
 import {Condition} from "../components/Condition";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {Effect} from "../components/Effect";
-import {EndModelJSON, ModelEdgeJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "../schema/canonical";
-import {CheckJSON, UserInputJSON} from "../schema/common";
-import {parse} from "../schema/schema";
+import {
+    CheckJSON,
+    EndModelJSON,
+    ModelEdgeJSON,
+    ModelJSON,
+    ProgramModelJSON,
+    UserInputJSON,
+    UserModelJSON,
+    parse
+} from "../schema/canonical";
 
 interface Models {
     programModels: ProgramModel[],

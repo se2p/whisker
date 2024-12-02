@@ -6,8 +6,7 @@ import {SpriteMock} from "../SpriteMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
-import {ProgramModelEdgeJSON} from "../../../../src/whisker/model/schema/common";
-import {UserModelEdgeJSON} from "../../../../src/whisker/model/schema/canonical";
+import {ProgramModelEdgeJSON, UserModelEdgeJSON} from "../../../../src/whisker/model/schema/canonical";
 
 describe('Model edges', () => {
     const id = "id";

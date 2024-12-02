@@ -6,7 +6,7 @@ import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {ArgType, UserInputJSON} from "../schema/common";
+import {ArgType, UserInputJSON} from "../schema/canonical";
 
 export const USER_INPUT_NAMES = Object.freeze([
     "InputClickSprite", // sprite name

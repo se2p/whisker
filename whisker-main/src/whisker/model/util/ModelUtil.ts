@@ -4,8 +4,7 @@ import {
     AttributeNotFoundError,
     ChangeComparisonNotKnownError,
     ComparisonNotKnownError,
-    EmptyExpressionError,
-    ExpressionEnterError,
+    EmptyExpressionError, ExpressionEnterError,
     ExpressionSyntaxError,
     ExprEvalError,
     NotANumericalValueError,
@@ -13,7 +12,7 @@ import {
     VariableNotFoundError
 } from "./ModelError";
 import Variable from "../../../vm/variable";
-import {ArgType} from "../schema/common";
+import {ArgType} from "../schema/canonical";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],

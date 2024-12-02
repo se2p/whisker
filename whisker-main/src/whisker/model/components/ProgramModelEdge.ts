@@ -4,7 +4,7 @@ import TestDriver from "../../../test/test-driver";
 import {Condition} from "./Condition";
 import {Check} from "./Check";
 import {AbstractEdge} from "./AbstractEdge";
-import {ProgramModelEdgeJSON} from "../schema/common";
+import {ProgramModelEdgeJSON} from "../schema/canonical";
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
