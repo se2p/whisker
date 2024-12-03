@@ -1,7 +1,5 @@
-import {Effect} from "./Effect";
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
-import {Condition} from "./Condition";
 import {Check} from "./Check";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
@@ -10,7 +8,7 @@ import {ProgramModelEdgeJSON} from "../util/schema";
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends AbstractEdge {
-    private readonly _effects: Effect[] = [];
+    private readonly _effects: Check[] = [];
 
     /**
      * Create a new edge.
@@ -31,11 +29,11 @@ export class ProgramModelEdge extends AbstractEdge {
      * Add an effect to the edge.
      * @param effect Effect function as a string.
      */
-    addEffect(effect: Effect): void {
+    addEffect(effect: Check): void {
         this._effects.push(effect);
     }
 
-    get effects(): readonly Effect[] {
+    get effects(): readonly Check[] {
         return this._effects;
     }
 
@@ -53,7 +51,7 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Function:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Condition[] {
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Check[] {
         if (this.failedForcedTest) {
             return this.conditions;
         }
@@ -97,7 +95,7 @@ export class ProgramModelEdge extends AbstractEdge {
                 return true;
             }
 
-            if (Check.testForContradictingWithEvents(e, eventStrings)) {
+            if (e.testForContradictingWithEvents(eventStrings)) {
                 // tests whether an event contradicting an effect (of a true condition edge) is there
                 return true;
             }

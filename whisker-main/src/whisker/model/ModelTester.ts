@@ -6,7 +6,6 @@ import ModelResult from "../../test-runner/model-result";
 import {AbstractEdge} from "./components/AbstractEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
-import {Effect} from "./components/Effect";
 import Sprite from "../../vm/sprite";
 import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
@@ -20,6 +19,7 @@ import {
 } from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./util/schema";
+import {Check} from "./components/Check";
 
 export class ModelTester extends EventEmitter {
 
@@ -407,7 +407,7 @@ export class ModelTester extends EventEmitter {
         return coverage;
     }
 
-    private _printContradictingEffects(contradictingEffects: Effect[]): void {
+    private _printContradictingEffects(contradictingEffects: Check[]): void {
         let output = "Model had to check contradicting effects! Skipping these.";
         contradictingEffects.forEach(effect => {
             output += "\n -- " + effect.toString();

@@ -7,9 +7,7 @@ import {ModelEdge} from "../components/AbstractEdge";
 import {UserModelEdge} from "../components/UserModelEdge";
 import {UserInput} from "../components/UserInput";
 import logger from "../../../util/logger";
-import {Condition} from "../components/Condition";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
-import {Effect} from "../components/Effect";
 import {
     CheckJSON,
     EndModelJSON,
@@ -20,6 +18,7 @@ import {
     UserModelJSON,
     parse
 } from "./schema";
+import {Check} from "../components/Check";
 
 interface Models {
     programModels: ProgramModel[],
@@ -204,11 +203,11 @@ function addUserInputs(edge: UserModelEdge, rawUserInputs: UserInputJSON[]): voi
 }
 
 function addEffects(edge: ProgramModelEdge, rawEffects: CheckJSON[]): void {
-    rawEffects.forEach((e) => edge.addEffect(new Effect(e.id, edge.id, e.name, e.negated, e.args)));
+    rawEffects.forEach((e) => edge.addEffect(new Check(e.id, edge.id, e.name, e.negated, e.args)));
 }
 
 function addConditions(edge: ModelEdge, rawConditions: CheckJSON[]): void {
-    rawConditions.forEach((c) => edge.addCondition(new Condition(c.id, edge.id, c.name, c.negated, c.args)));
+    rawConditions.forEach((c) => edge.addCondition(new Check(c.id, edge.id, c.name, c.negated, c.args)));
 }
 
 function canonicalizeInputKey(key: unknown): string {

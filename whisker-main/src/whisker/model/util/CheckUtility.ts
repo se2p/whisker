@@ -1,16 +1,15 @@
 import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
-import {Effect} from "../components/Effect";
 import {AbstractEdge} from "../components/AbstractEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
-import {CheckName} from "../components/Check";
+import {Check, CheckName} from "../components/Check";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {ArgType} from "./schema";
 
-type EffectCheck = { effect: Effect, edge: ProgramModelEdge, model: ProgramModel | EndModel };
+type EffectCheck = { effect: Check, edge: ProgramModelEdge, model: ProgramModel | EndModel };
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -245,8 +244,8 @@ export class CheckUtility extends EventEmitter {
     /**
      * Check the registered effects of this step.
      */
-    checkEffects(): Effect[] {
-        const contradictingEffects: Effect[] = [];
+    checkEffects(): Check[] {
+        const contradictingEffects: Check[] = [];
         const doNotCheck: Record<number, boolean> = {};
         const newEffects: EffectCheck[] = [];
 
@@ -294,7 +293,7 @@ export class CheckUtility extends EventEmitter {
      * @param edge Edge that has a failed effect.
      * @param effect Effect that failed.
      */
-    addFailOutput(edge: AbstractEdge, effect: Effect): void {
+    addFailOutput(edge: AbstractEdge, effect: Check): void {
         const output = getEffectFailedOutput(edge, effect);
         this._failOrError(output, this._failOutputs);
         this._modelResult.addFail(output);

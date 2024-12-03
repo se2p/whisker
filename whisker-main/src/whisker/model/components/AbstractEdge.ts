@@ -1,10 +1,10 @@
 import TestDriver from "../../../test/test-driver";
-import {Condition} from "./Condition";
 import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
+import {Check} from "./Check";
 
 export type ModelEdge =
     | ProgramModelEdge
@@ -24,7 +24,7 @@ export abstract class AbstractEdge {
     readonly from: string;
     /* Id of the target node*/
     readonly to: string;
-    conditions: Condition[] = [];
+    conditions: Check[] = [];
     _lastTransition = 0;
 
     readonly forceTestAfter: number;
@@ -68,7 +68,7 @@ export abstract class AbstractEdge {
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      * @Returns the failed conditions.
      */
-    checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): Condition[] {
+    checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): Check[] {
         if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
             return this.conditions;
         }
@@ -76,7 +76,7 @@ export abstract class AbstractEdge {
             return this.conditions;
         }
 
-        const failedConditions: Condition[] = [];
+        const failedConditions: Check[] = [];
 
         // times up... force testing of conditions and if they are not fulfilled make add as failed
         if ((this._forceTestAtSteps !== -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted())
@@ -112,7 +112,7 @@ export abstract class AbstractEdge {
         return failedConditions;
     }
 
-    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Condition[];
+    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Check[];
 
     set lastTransition(transition: number) {
         this._lastTransition = transition;
@@ -122,7 +122,7 @@ export abstract class AbstractEdge {
         return this._lastTransition;
     }
 
-    private _getTimeLimitFailedOutput(condition: Condition, t: TestDriver): string {
+    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver): string {
         if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
             return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt);
         } else {
@@ -141,7 +141,7 @@ export abstract class AbstractEdge {
      * Add a condition to the edge. Conditions in the evaluation all need to be fulfilled for the effect to be valid.
      * @param condition Condition function as a string.
      */
-    addCondition(condition: Condition): void {
+    addCondition(condition: Check): void {
         this.conditions.push(condition);
     }
 
@@ -156,7 +156,7 @@ export abstract class AbstractEdge {
             this._forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
         }
         this.conditions.forEach(cond => {
-            cond.registerComponents(checkListener, t, this.graphID);
+            cond.registerComponents(t, checkListener, this.graphID);
         });
     }
 

@@ -1,9 +1,9 @@
 import {UserInput} from "./UserInput";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Condition} from "./Condition";
 import {AbstractEdge} from "./AbstractEdge";
 import {UserModelEdgeJSON} from "../util/schema";
+import {Check} from "./Check";
 
 /**
  * Edge structure that has input effects triggered if the conditions are fulfilled.
@@ -57,7 +57,7 @@ export class UserModelEdge extends AbstractEdge {
         });
     }
 
-    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _eventStrings: string[]): Condition[] {
+    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _eventStrings: string[]): Check[] {
         return this.conditions;
     }
 

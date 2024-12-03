@@ -35,22 +35,24 @@ export type CheckName = typeof CHECK_NAMES[number];
  * to be created once for every test run with a new test driver.
  */
 export class Check {
-    protected readonly _id: string;
-    protected readonly _name: CheckName;
-    protected readonly _args: ArgType[];
-    protected readonly _negated: boolean;
-    protected readonly _edgeLabel: string;
+    private readonly _id: string;
+    private readonly _name: CheckName;
+    private readonly _args: ArgType[];
+    private readonly _negated: boolean;
+    private readonly _edgeLabel: string;
+    private readonly _dependsOnSayText: boolean;
+    private _check: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
      * @param id Id for this check.
      * @param edgeLabel Label of the parent edge of the check.
      * @param name Type/name of the check.
-     * @param args List of arguments for the check.
      * @param negated Whether the check is negated.
+     * @param args List of arguments for the check.
      * @protected
      */
-    protected constructor(id: string, edgeLabel: string, name: CheckName, args: ArgType[], negated: boolean) {
+    constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: ArgType[]) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -59,6 +61,7 @@ export class Check {
         this._negated = negated;
         this._id = id;
         this._edgeLabel = edgeLabel;
+        this._check = () => false;
 
         if ((name == "Expr" || name == "Function") && args.length > 1) {
             this._args = [args.join("\n")];
@@ -103,6 +106,27 @@ export class Check {
         if (this._args.some((arg) => arg == undefined)) {
             throw new Error("arguments cannot be undefined.");
         }
+
+        if (name == "Output" || ((name == "AttrComp" || name == "AttrChange") && (args[1] == "sayText"))) {
+            this._dependsOnSayText = true;
+        } else if (name == "Function" || name == "Expr") {
+            this._dependsOnSayText = String(args[0]).includes(".sayText");
+        } else {
+            this._dependsOnSayText = false;
+        }
+    }
+
+    /**
+     * Check the edge condition/effect.
+     * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
+     * @param stepsSinceEnd Number of steps since the after run model tests started.
+     */
+    get check(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
+        return this._check;
+    }
+
+    get dependsOnSayText(): boolean {
+        return this._dependsOnSayText;
     }
 
     /**
@@ -211,90 +235,24 @@ export class Check {
         return this.name == check.name && this.negated != check.negated && this._arrayEquals(this.args, check.args);
     }
 
-    static testForContradictingWithEvents(check1: Check, eventStrings: string[]): boolean {
+    testForContradictingWithEvents(eventStrings: string[]): boolean {
         return eventStrings.some((e) => {
             const {negated, name, args} = CheckUtility.splitEventString(e);
-            const checkDummy = new Check("dummy", "dummyEdge", name, args, negated);
-            return Check.testForContradicting(check1, checkDummy);
+            const checkDummy = new Check("dummy", "dummyEdge", name, negated, args);
+            return this.contradicts(checkDummy);
         });
     }
 
-    /**
-     * Test whether the checks are contradicting each other.
-     */
-    static testForContradicting(check1: Check, check2: Check): boolean {
-        if (check1.name != check2.name || check1.equals(check2)) {
-            return false;
-        }
-        if (check1.isInvertedOf(check2)) {
-            return true;
-        }
-
-        let comp1: ArgType, comp2: ArgType;
-        switch (check1.name) {
-            case "Click":
-                // you cant click on two different sprites at the same time
-                return check1.args[0] != check2.args[0];
-            case "BackgroundChange": // contradict if different costume names
-                return check1.args[0] != check2.args[0];
-            case "Output":
-                // contradict if same sprite name and different output
-                return check1.args[0] == check2.args[0] && check1.args[1] != check2.args[1];
-            case "VarChange":
-            case "AttrChange":
-                if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
-                    return false;
-                }
-
-                return Check._checkChange(check1, check2);
-            case "VarComp":
-            case "AttrComp":
-                if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
-                    return false;
-                }
-
-                comp1 = check1.args[2];
-                comp2 = check2.args[2];
-                if (check1.negated) {
-                    comp1 = this._getInvertedCompOp(comp1);
-                }
-                if (check2.negated) {
-                    comp2 = this._getInvertedCompOp(comp2);
-                }
-
-                return this._checkComparison(comp1, comp2, check1.args[3], check2.args[3]);
-            case "NbrOfVisibleClones":
-            case "NbrOfClones":
-                if (check1.args[0] != check2.args[0]) {
-                    return false;
-                }
-
-                comp1 = check1.args[1];
-                comp2 = check2.args[1];
-                if (check1.negated) {
-                    comp1 = this._getInvertedCompOp(comp1);
-                }
-                if (check2.negated) {
-                    comp2 = this._getInvertedCompOp(comp2);
-                }
-
-                return this._checkComparison(comp1, comp2, check1.args[2], check2.args[2]);
-
-            default:
-                return false;
-        }
-    }
-
-    private static _checkChange(check1: Check, check2: Check): boolean {
-        let change1 = String(check1.args[2]);
-        let change2 = String(check2.args[2]);
-        let negated1 = check1.negated;
-        let negated2 = check2.negated;
+    private _checkChange(that: Check): boolean {
+        let change1 = String(this.args[2]);
+        let change2 = String(that.args[2]);
+        let negated1 = this.negated;
+        let negated2 = that.negated;
 
         if (change1.length == 2 && change2.length == 2) {
             // += & +=, -= & -= are not getting until here, caught before call to checkChange
             // += & -=, -= & += only tested here
-            return check1.negated == check2.negated;
+            return this.negated == that.negated;
         }
 
         if (change1.length == 2) {
@@ -365,6 +323,85 @@ export class Check {
         }
 
         return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
+    }
+
+    /**
+     * Register the check listener and test driver and check for errors.
+     */
+    registerComponents(t, cu: CheckUtility, graphID: string): void {
+        try {
+            this._check = this.checkArgsWithTestDriver(t, cu, graphID);
+        } catch (e) {
+            cu.addErrorOutput(this._edgeLabel, graphID, e);
+            this._check = () => false;
+        }
+    }
+
+    /**
+     * Whether this effect contradicts another effect check.
+     * @param that The other effect.
+     */
+    contradicts(that: Check): boolean {
+        if (this.name != that.name || this.equals(that)) {
+            return false;
+        }
+        if (this.isInvertedOf(that)) {
+            return true;
+        }
+
+        let comp1: ArgType, comp2: ArgType;
+        switch (this.name) {
+            case "Click":
+                // you cant click on two different sprites at the same time
+                return this.args[0] != that.args[0];
+            case "BackgroundChange": // contradict if different costume names
+                return this.args[0] != that.args[0];
+            case "Output":
+                // contradict if same sprite name and different output
+                return this.args[0] == that.args[0] && this.args[1] != that.args[1];
+            case "VarChange":
+            case "AttrChange":
+                if (this.args[0] != that.args[0] || this.args[1] != that.args[1]) {
+                    return false;
+                }
+
+                return this._checkChange(that);
+            case "VarComp":
+            case "AttrComp":
+                if (this.args[0] != that.args[0] || this.args[1] != that.args[1]) {
+                    return false;
+                }
+
+                comp1 = this.args[2];
+                comp2 = that.args[2];
+                if (this.negated) {
+                    comp1 = Check._getInvertedCompOp(comp1);
+                }
+                if (that.negated) {
+                    comp2 = Check._getInvertedCompOp(comp2);
+                }
+
+                return Check._checkComparison(comp1, comp2, this.args[3], that.args[3]);
+            case "NbrOfVisibleClones":
+            case "NbrOfClones":
+                if (this.args[0] != that.args[0]) {
+                    return false;
+                }
+
+                comp1 = this.args[1];
+                comp2 = that.args[1];
+                if (this.negated) {
+                    comp1 = Check._getInvertedCompOp(comp1);
+                }
+                if (that.negated) {
+                    comp2 = Check._getInvertedCompOp(comp2);
+                }
+
+                return Check._checkComparison(comp1, comp2, this.args[2], that.args[2]);
+
+            default:
+                return false;
+        }
     }
 
     toString(): string {

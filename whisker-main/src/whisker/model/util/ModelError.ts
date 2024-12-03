@@ -1,10 +1,9 @@
 // Model errors
 import {AbstractEdge} from "../components/AbstractEdge";
-import {Effect} from "../components/Effect";
-import {Condition} from "../components/Condition";
 import {ArgType} from "./schema";
+import {Check} from "../components/Check";
 
-function getEffectFailedOutput(edge: AbstractEdge, effect: Effect): string {
+function getEffectFailedOutput(edge: AbstractEdge, effect: Check): string {
     const conditions = edge.conditions;
     let containsAfterTime: string | null = null;
     let containsElapsed: string | null = null;
@@ -27,11 +26,11 @@ function getEffectFailedOutput(edge: AbstractEdge, effect: Effect): string {
     return result;
 }
 
-function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Condition, ms: number): string {
+function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number): string {
     return edge.graphID + "-" + edge.label + ": " + condition.toString() + " after " + ms + "ms";
 }
 
-function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Condition, ms: number): string {
+function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number): string {
     return edge.graphID + "-" + edge.label + ": " + condition.toString() + " at " + ms + "ms";
 }
 
