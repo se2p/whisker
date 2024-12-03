@@ -1,7 +1,7 @@
 // Model errors
 import {AbstractEdge} from "../components/AbstractEdge";
 import {ArgType} from "./schema";
-import {Check} from "../components/Check";
+import {Check} from "../checks/Check";
 
 function getEffectFailedOutput(edge: AbstractEdge, effect: Check): string {
     const conditions = edge.conditions;

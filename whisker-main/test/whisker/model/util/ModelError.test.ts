@@ -5,7 +5,7 @@ import {
     getTimeLimitFailedAtOutput
 } from "../../../../src/whisker/model/util/ModelError";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
-import {Check} from "../../../../src/whisker/model/components/Check";
+import {Check} from "../../../../src/whisker/model/checks/Check";
 
 describe('ModelError', () => {
     function getEdge(): ProgramModelEdge {

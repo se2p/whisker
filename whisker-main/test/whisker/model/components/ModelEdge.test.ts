@@ -5,7 +5,7 @@ import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ProgramModelEdgeJSON, UserModelEdgeJSON} from "../../../../src/whisker/model/util/schema";
-import {Check} from "../../../../src/whisker/model/components/Check";
+import {Check} from "../../../../src/whisker/model/checks/Check";
 
 describe('Model edges', () => {
     const id = "id";

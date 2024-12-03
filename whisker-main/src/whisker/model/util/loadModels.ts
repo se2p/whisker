@@ -18,7 +18,7 @@ import {
     UserModelJSON,
     parse
 } from "./schema";
-import {Check} from "../components/Check";
+import {Check} from "../checks/Check";
 
 interface Models {
     programModels: ProgramModel[],

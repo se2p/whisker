@@ -1,6 +1,6 @@
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
-import {Check} from "./Check";
+import {Check} from "../checks/Check";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
 

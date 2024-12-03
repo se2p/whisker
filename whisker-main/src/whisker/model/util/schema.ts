@@ -1,7 +1,7 @@
 import {z} from "zod";
-import {CHECK_NAMES} from "../components/Check";
+import {CHECK_NAMES} from "../checks/Check";
 import {USER_INPUT_NAMES} from "../components/UserInput";
-import {CheckName} from "../components/Check";
+import {CheckName} from "../checks/Check";
 import {UserInputName} from "../components/UserInput";
 
 const CheckName = z.enum(CHECK_NAMES);

@@ -1,4 +1,4 @@
-import {Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
+import {Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/checks/Check";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {getDummyTestDriver} from "../TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";

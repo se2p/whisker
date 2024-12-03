@@ -1,4 +1,4 @@
-import {Check, CheckName} from "../../../../src/whisker/model/components/Check";
+import {Check, CheckName} from "../../../../src/whisker/model/checks/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 
