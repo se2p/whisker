@@ -1149,7 +1149,13 @@ class ModelEditor {
             }
         }
 
+        const currentOptions = new Set($(`${ModelEditor.CHECK_CHOOSER} option`).map((_, option) => $(option).val()));
+
         checkNames.forEach(name => {
+            if (currentOptions.has(name)) {
+                return;
+            }
+
             const key = `modelEditor:${name}`;
             $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {'value': name, 'data-i18n': key}).text(i18n.t(key)));
         });
