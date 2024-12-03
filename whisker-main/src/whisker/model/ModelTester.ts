@@ -79,21 +79,21 @@ export class ModelTester extends EventEmitter {
      * Whether any models are loaded at the moment.
      */
     someModelLoaded(): boolean {
-        return this._programModels.length != 0 || this._userModels.length != 0;
+        return this._programModels.length > 0 || this._userModels.length > 0;
     }
 
     /**
      * Check if program models are loaded.
      */
     programModelsLoaded(): boolean {
-        return this._programModels.length != 0;
+        return this._programModels.length > 0;
     }
 
     /**
      * Check if user models that represent the user behaviour are loaded.
      */
     userModelsLoaded(): boolean {
-        return this._userModels.length != 0;
+        return this._userModels.length > 0;
     }
 
     running(): boolean {
@@ -182,7 +182,7 @@ export class ModelTester extends EventEmitter {
             const notStoppedModels: ProgramModel[] = [];
             checkProgramModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
             const contradictingEffects = this._checkUtility!.checkEffects();
-            if (contradictingEffects && contradictingEffects.length != 0) {
+            if (contradictingEffects && contradictingEffects.length > 0) {
                 this._printContradictingEffects(contradictingEffects);
             }
             checkProgramModels = [...notStoppedModels];
@@ -232,7 +232,7 @@ export class ModelTester extends EventEmitter {
             const notStoppedModels: EndModel[] = [];
             afterStopModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
             const contradictingEffects = this._checkUtility!.checkEffects();
-            if (contradictingEffects && contradictingEffects.length != 0) {
+            if (contradictingEffects && contradictingEffects.length > 0) {
                 this._printContradictingEffects(contradictingEffects);
             }
             if (notStoppedModels.length == 0) {
