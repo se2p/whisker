@@ -40,6 +40,7 @@ export class Check {
     protected readonly _args: ArgType[];
     protected readonly _negated: boolean;
     protected readonly _edgeLabel: string;
+    protected _check: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -59,6 +60,7 @@ export class Check {
         this._negated = negated;
         this._id = id;
         this._edgeLabel = edgeLabel;
+        this._check = () => false;
 
         if ((name == "Expr" || name == "Function") && args.length > 1) {
             this._args = [args.join("\n")];
@@ -103,6 +105,15 @@ export class Check {
         if (this._args.some((arg) => arg == undefined)) {
             throw new Error("arguments cannot be undefined.");
         }
+    }
+
+    /**
+     * Check the edge condition/effect.
+     * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
+     * @param stepsSinceEnd Number of steps since the after run model tests started.
+     */
+    check(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
+        return this._check(stepsSinceLastTransition, stepsSinceEnd);
     }
 
     /**
@@ -365,6 +376,18 @@ export class Check {
         }
 
         return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
+    }
+
+    /**
+     * Register the check listener and test driver and check for errors.
+     */
+    registerComponents(t, cu: CheckUtility, graphID: string): void {
+        try {
+            this._check = this.checkArgsWithTestDriver(t, cu, graphID);
+        } catch (e) {
+            cu.addErrorOutput(this._edgeLabel, graphID, e);
+            this._check = () => false;
+        }
     }
 
     toString(): string {

@@ -183,7 +183,7 @@ describe('Condition', () => {
 
     test('registerComponent() calculates correct effect', () => {
         const effect = new Condition("id", "edgeID", "Key", true, ["a"]);
-        effect.registerComponents(cu, null, "graphID");
+        effect.registerComponents(null, cu, "graphID");
         const func = effect.condition;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(true);
@@ -194,13 +194,13 @@ describe('Condition', () => {
     test('registerComponent() clears effect in error case', () => {
         const condition = new Condition("id", "edgeID", "Key", true, ["a"]);
         const error = new Error("this is a message");
-        condition.registerComponents(cu, null, "graphID");
+        condition.registerComponents(null, cu, "graphID");
         condition.checkArgsWithTestDriver = (t, cu, args) => {
             throw error;
         };
         const fn = jest.fn();
         cu.addErrorOutput = fn;
-        condition.registerComponents(cu, null, "graphID");
+        condition.registerComponents(null, cu, "graphID");
         const func = condition.condition;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);

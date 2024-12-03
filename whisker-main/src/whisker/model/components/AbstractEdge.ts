@@ -156,7 +156,7 @@ export abstract class AbstractEdge {
             this._forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
         }
         this.conditions.forEach(cond => {
-            cond.registerComponents(checkListener, t, this.graphID);
+            cond.registerComponents(t, checkListener, this.graphID);
         });
     }
 
