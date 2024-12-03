@@ -11,7 +11,7 @@ import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
 import {UserModelEdge} from "./components/UserModelEdge";
 import {ProgramModelEdge} from "./components/ProgramModelEdge";
-import {CoverageResult, EndModel, ExtendedCoverageResult, ProgramModel,} from "./components/ProgramModel";
+import {CoverageResult, EndModel, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {ModelJSON} from "./util/schema";
 import {Checks} from "./util/Checks";
@@ -61,10 +61,10 @@ export class ModelTester extends EventEmitter {
      */
     load(modelsString: string): void {
         try {
-            const result = loadModels(modelsString);
-            this._programModels = result.programModels;
-            this._userModels = result.userModels;
-            this._onTestEndModels = result.onTestEndModels;
+            const {programModels, userModels, onTestEndModels} = loadModels(modelsString);
+            this._programModels = programModels;
+            this._userModels = userModels;
+            this._onTestEndModels = onTestEndModels;
             this.emit(ModelTester.MODEL_ON_LOAD);
         } catch (e) {
             this._programModels = [];
@@ -79,7 +79,7 @@ export class ModelTester extends EventEmitter {
      * Whether any models are loaded at the moment.
      */
     someModelLoaded(): boolean {
-        return this._programModels.length > 0 || this._userModels.length > 0;
+        return this.programModelsLoaded() || this.userModelsLoaded();
     }
 
     /**
@@ -114,11 +114,7 @@ export class ModelTester extends EventEmitter {
     }
 
     getAllModels(): ModelJSON[] {
-        return [
-            this._programModels,
-            this._userModels,
-            this._onTestEndModels,
-        ].flatMap((models) => models.map((m) => m.toJSON()));
+        return [...this._programModels, ...this._userModels, ...this._onTestEndModels].map((m) => m.toJSON());
     }
 
     /**
@@ -173,9 +169,7 @@ export class ModelTester extends EventEmitter {
             const notStoppedModels: ProgramModel[] = [];
             checkProgramModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
             const contradictingEffects = this._checkUtility!.checkEffects();
-            if (contradictingEffects && contradictingEffects.length > 0) {
-                this._printContradictingEffects(contradictingEffects);
-            }
+            this._printContradictingEffects(contradictingEffects);
             checkProgramModels = [...notStoppedModels];
             if (checkProgramModels.length == 0) {
                 this._modelStepCallback!.disable();
@@ -201,7 +195,7 @@ export class ModelTester extends EventEmitter {
         this._modelStepCallback!.disable();
         this._haltAllCallback!.disable();
 
-        if (this._onTestEndModels.length <= 0) {
+        if (this._onTestEndModels.length === 0) {
             return;
         }
 
@@ -223,9 +217,7 @@ export class ModelTester extends EventEmitter {
             const notStoppedModels: EndModel[] = [];
             afterStopModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
             const contradictingEffects = this._checkUtility!.checkEffects();
-            if (contradictingEffects && contradictingEffects.length > 0) {
-                this._printContradictingEffects(contradictingEffects);
-            }
+            this._printContradictingEffects(contradictingEffects);
             if (notStoppedModels.length == 0) {
                 this._onTestEndCallback!.disable();
             }
@@ -382,10 +374,10 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage(): Record<string, CoverageResult> {
         const coverage: Record<string, CoverageResult> = {};
-        const programModels: (ProgramModel | EndModel)[] = [...this._programModels, ...this._onTestEndModels];
+        const programModels = [...this._programModels, ...this._onTestEndModels];
         const missedEdges: Record<string, string[]> = {};
         programModels.forEach(model => {
-            const totalCov: ExtendedCoverageResult = model.getTotalCoverage();
+            const totalCov = model.getTotalCoverage();
             if (totalCov.missedEdges.length > 0) {
                 missedEdges[model.id] = totalCov.missedEdges;
             }
@@ -396,6 +388,10 @@ export class ModelTester extends EventEmitter {
     }
 
     private _printContradictingEffects(contradictingEffects: Check[]): void {
+        if (contradictingEffects.length === 0) {
+            return;
+        }
+
         let output = "Model had to check contradicting effects! Skipping these.";
         contradictingEffects.forEach(effect => {
             output += "\n -- " + effect.toString();
