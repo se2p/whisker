@@ -1,4 +1,3 @@
-import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {UserInput} from "../../../../src/whisker/model/components/UserInput";
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
@@ -35,8 +34,8 @@ describe('Model edges', () => {
         } as unknown as Check;
     }
 
-    function mockEffect(fn: jest.Mock): Effect {
-        return {registerComponents: fn} as unknown as Effect;
+    function mockEffect(fn: jest.Mock): Check {
+        return {registerComponents: fn} as unknown as Check;
     }
 
     function mockInputEffectRegister(register: jest.Mock, inputImmediate: jest.Mock): UserInput {
@@ -97,7 +96,7 @@ describe('Model edges', () => {
     });
 
     test("Program model edge", () => {
-        const effect = new Effect(id, label, "BackgroundChange", false, ["test"]);
+        const effect = new Check(id, label, "BackgroundChange", false, ["test"]);
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
         const condition = new Check(id, label, "BackgroundChange", false, ["test"]);
         edge.addEffect(effect);
@@ -119,7 +118,7 @@ describe('Model edges', () => {
 
     test("ProgramModelEdge.toJSON()", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const effect = new Effect(id, label, "BackgroundChange", false, ["test"]);
+        const effect = new Check(id, label, "BackgroundChange", false, ["test"]);
         const condition = new Check(id, label, "BackgroundChange", false, ["test"]);
         edge.addEffect(effect);
         edge.addCondition(condition);
@@ -277,7 +276,7 @@ describe('Model edges', () => {
             edge.addCondition(new Check(id, label, "BackgroundChange", false, ["newBackground"]));
             edge.addCondition(new Check(id, label, "Key", false, ["a"]));
             edge.addCondition(new Check(id, label, "Function", false, ["true"]));
-            edge.addEffect(new Effect(id, label, "SpriteTouching", false, ["apple", "bowl"]));
+            edge.addEffect(new Check(id, label, "SpriteTouching", false, ["apple", "bowl"]));
             const eventStrings = ["BackgroundChange:stage", "Key:d"];
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(5, 7, eventStrings);

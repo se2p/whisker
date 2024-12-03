@@ -1,4 +1,3 @@
-import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {Pair} from "../../../../src/whisker/utils/Pair";
@@ -12,41 +11,41 @@ describe('Effect', () => {
 
     type TableEntry = [CheckName, boolean, ArgType[], CheckName, boolean, ArgType[], boolean];
 
-    function assertSymmetricContradiction(effect1: Effect, effect2: Effect, expected: boolean) {
+    function assertSymmetricContradiction(effect1: Check, effect2: Check, expected: boolean) {
         expect(effect1.contradicts(effect2)).toBe(expected);
         expect(effect2.contradicts(effect1)).toBe(expected);
     }
 
-    function assertSymmetricContradiction2(effect1: Effect, checkName: CheckName, negated: boolean,
+    function assertSymmetricContradiction2(effect1: Check, checkName: CheckName, negated: boolean,
                                            args: ArgType[], expected: boolean) {
-        assertSymmetricContradiction(effect1, new Effect(id, edgeID, checkName, negated, args), expected);
+        assertSymmetricContradiction(effect1, new Check(id, edgeID, checkName, negated, args), expected);
     }
 
     function checkConstructorThrows(c: CheckName, n: boolean, args: ArgType[]) {
-        expect(() => new Effect(id, edgeID, c, n, args)).toThrow();
+        expect(() => new Check(id, edgeID, c, n, args)).toThrow();
     }
 
     function mapToTwoEffects(checkName1: CheckName, negated1: boolean, args1: ArgType[],
-                             checkName2: CheckName, negated2: boolean, args2: ArgType[], expected: boolean): [Effect, Effect, boolean] {
+                             checkName2: CheckName, negated2: boolean, args2: ArgType[], expected: boolean): [Check, Check, boolean] {
         return [
-            new Effect(id, edgeID, checkName1, negated1, args1),
-            new Effect(id, edgeID, checkName2, negated2, args2), expected
+            new Check(id, edgeID, checkName1, negated1, args1),
+            new Check(id, edgeID, checkName2, negated2, args2), expected
         ];
     }
 
-    function mapToRightFormat(table: TableEntry[]): [Effect, Effect, boolean][] {
+    function mapToRightFormat(table: TableEntry[]): [Check, Check, boolean][] {
         return table.map((entry: TableEntry) => {
             return mapToTwoEffects(...entry);
         });
     }
 
     function getEffectsCombinationsFor(id: string, edgeLabel: string, first: CheckName, optionsFirst: string[],
-                                       second: CheckName, optionsSecond: string[]): [Effect, Effect, boolean][] {
-        const effects: [Effect, Effect, boolean][] = [];
+                                       second: CheckName, optionsSecond: string[]): [Check, Check, boolean][] {
+        const effects: [Check, Check, boolean][] = [];
         for (const option1 of optionsFirst) {
-            const effect1 = new Effect(id, edgeLabel, first, true, [id, edgeLabel, option1, "0"]);
+            const effect1 = new Check(id, edgeLabel, first, true, [id, edgeLabel, option1, "0"]);
             for (const option2 of optionsSecond) {
-                const effect2 = new Effect(id, edgeLabel, second, true, [id, edgeLabel, option2]);
+                const effect2 = new Check(id, edgeLabel, second, true, [id, edgeLabel, option2]);
                 effects.push([effect1, effect2, false]);
             }
         }
@@ -56,7 +55,7 @@ describe('Effect', () => {
     const optionsFirst = [">", ">=", "=", "<=", "<"];
     const optionsSecond = ["+", "+=", "=", "-=", "-"];
 
-    function getEffectComparisonChangeCombinations(first: CheckName, second: CheckName): [Effect, Effect, boolean][] {
+    function getEffectComparisonChangeCombinations(first: CheckName, second: CheckName): [Check, Check, boolean][] {
         return getEffectsCombinationsFor("sprite", "var", first, optionsFirst, second, optionsSecond);
     }
 
@@ -178,19 +177,19 @@ describe('Effect', () => {
         ];
         it.each(toStrings)('toString() of (%s, %s, %s)',
             (checkName: CheckName, negated: boolean, args: ArgType[], expected: string) => {
-                expect(new Effect(id, edgeID, checkName, negated, args).toString()).toBe(expected);
+                expect(new Check(id, edgeID, checkName, negated, args).toString()).toBe(expected);
             });
     });
 
     test("effect.contradicts() throws for null argument", () => {
         expect(() => {
-            const effect = new Effect(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]);
+            const effect = new Check(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]);
             effect.contradicts(null);
         }).toThrow();
     });
 
     test("effect.check() returns false before calling registerComponents()", () => {
-        const effect = new Effect(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]);
+        const effect = new Check(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]);
         expect(effect.check(0, 0)).toBe(false);
     });
 
@@ -207,26 +206,26 @@ describe('Effect', () => {
                 return pairs;
             }
 
-            const effects: Effect[] = [
-                new Effect(id, edgeID, "Output", true, ["sprite", "hi"]),
-                new Effect(id, edgeID, "VarChange", true, ["test", "var", "+"]),
-                new Effect(id, edgeID, "AttrChange", true, ["test", "attr", "-"]),
-                new Effect(id, edgeID, "BackgroundChange", true, ["test"]),
-                new Effect(id, edgeID, "Function", true, ["test"]),
-                new Effect(id, edgeID, "VarComp", true, ["sprite", "var", ">", "0"]),
-                new Effect(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]),
-                new Effect(id, edgeID, "Key", true, ["right arrow"]),
-                new Effect(id, edgeID, "Click", true, ["sprite"]),
-                new Effect(id, edgeID, "SpriteColor", true, ["sprite", 255, 0, 0]),
-                new Effect(id, edgeID, "SpriteTouching", true, ["sprite", "sprite1"]),
-                new Effect(id, edgeID, "TouchingEdge", true, ["sprite"]),
-                new Effect(id, edgeID, "NbrOfVisibleClones", true, ["sprite", "=", "1"]),
-                new Effect(id, edgeID, "NbrOfClones", true, ["sprite", "=", "1"]),
-                new Effect(id, edgeID, "TimeAfterEnd", true, ["1000"]),
-                new Effect(id, edgeID, "TimeBetween", true, ["1000"]),
-                new Effect(id, edgeID, "TimeElapsed", true, ["1000"]),
-                new Effect(id, edgeID, "Probability", true, ["0"]),
-                new Effect(id, edgeID, "Expr", true, ["test"]),
+            const effects: Check[] = [
+                new Check(id, edgeID, "Output", true, ["sprite", "hi"]),
+                new Check(id, edgeID, "VarChange", true, ["test", "var", "+"]),
+                new Check(id, edgeID, "AttrChange", true, ["test", "attr", "-"]),
+                new Check(id, edgeID, "BackgroundChange", true, ["test"]),
+                new Check(id, edgeID, "Function", true, ["test"]),
+                new Check(id, edgeID, "VarComp", true, ["sprite", "var", ">", "0"]),
+                new Check(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]),
+                new Check(id, edgeID, "Key", true, ["right arrow"]),
+                new Check(id, edgeID, "Click", true, ["sprite"]),
+                new Check(id, edgeID, "SpriteColor", true, ["sprite", 255, 0, 0]),
+                new Check(id, edgeID, "SpriteTouching", true, ["sprite", "sprite1"]),
+                new Check(id, edgeID, "TouchingEdge", true, ["sprite"]),
+                new Check(id, edgeID, "NbrOfVisibleClones", true, ["sprite", "=", "1"]),
+                new Check(id, edgeID, "NbrOfClones", true, ["sprite", "=", "1"]),
+                new Check(id, edgeID, "TimeAfterEnd", true, ["1000"]),
+                new Check(id, edgeID, "TimeBetween", true, ["1000"]),
+                new Check(id, edgeID, "TimeElapsed", true, ["1000"]),
+                new Check(id, edgeID, "Probability", true, ["0"]),
+                new Check(id, edgeID, "Expr", true, ["test"]),
             ];
 
             it.each(createAllPairs(effects))('%s and %s do not contradict each other',
@@ -234,34 +233,34 @@ describe('Effect', () => {
         });
 
         test("contradictions output", () => {
-            const output = new Effect(id, edgeID, "Output", true, ["sprite", "hi"]);
+            const output = new Check(id, edgeID, "Output", true, ["sprite", "hi"]);
             assertSymmetricContradiction2(output, "Output", true, ["sprite1", "hi"], false);
             assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi"], false);
             assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi2"], true);
         });
 
         test("contradictions function", () => {
-            const functionE = new Effect(id, edgeID, "Function", true, ["test"]);
+            const functionE = new Check(id, edgeID, "Function", true, ["test"]);
             assertSymmetricContradiction2(functionE, "Function", true, ["testblabla"], false);
             assertSymmetricContradiction2(functionE, "Function", true, ["test"], false);
         });
 
         test("contradictions background", () => {
-            const background = new Effect(id, edgeID, "BackgroundChange", true, ["test"]);
+            const background = new Check(id, edgeID, "BackgroundChange", true, ["test"]);
             assertSymmetricContradiction2(background, "BackgroundChange", true, ["test"], false);
             assertSymmetricContradiction2(background, "BackgroundChange", true, ["test2"], true);
         });
 
         describe("contradiction: variable change and comparison", () => {
             test('not the same sprite', () => {
-                const varChange = new Effect(id, edgeID, "VarChange", true, ["test", "var", "+"]);
-                const varComp = new Effect(id, edgeID, "VarComp", true, ["sprite", "var", ">", "0"]);
+                const varChange = new Check(id, edgeID, "VarChange", true, ["test", "var", "+"]);
+                const varComp = new Check(id, edgeID, "VarComp", true, ["sprite", "var", ">", "0"]);
                 assertSymmetricContradiction(varChange, varComp, false);
             });
 
             test('not the same var', () => {
-                const varChange = new Effect(id, edgeID, "VarChange", true, ["sprite", "var", "+"]);
-                const varComp = new Effect(id, edgeID, "VarComp", true, ["sprite", "var2", ">", "0"]);
+                const varChange = new Check(id, edgeID, "VarChange", true, ["sprite", "var", "+"]);
+                const varComp = new Check(id, edgeID, "VarComp", true, ["sprite", "var2", ">", "0"]);
                 assertSymmetricContradiction(varChange, varComp, false);
             });
 
@@ -274,14 +273,14 @@ describe('Effect', () => {
 
         describe("contradiction: attribute comparison and change", () => {
             test('not the same sprite', () => {
-                const attrChange = new Effect(id, edgeID, "AttrChange", true, ["test", "var", "+"]);
-                const attrComp = new Effect(id, edgeID, "AttrComp", true, ["sprite", "var", ">", "0"]);
+                const attrChange = new Check(id, edgeID, "AttrChange", true, ["test", "var", "+"]);
+                const attrComp = new Check(id, edgeID, "AttrComp", true, ["sprite", "var", ">", "0"]);
                 assertSymmetricContradiction(attrChange, attrComp, false);
             });
 
             test('not the same var', () => {
-                const attrChange = new Effect(id, edgeID, "AttrChange", true, ["sprite", "var", "+"]);
-                const attrComp = new Effect(id, edgeID, "AttrComp", true, ["sprite", "var2", ">", "0"]);
+                const attrChange = new Check(id, edgeID, "AttrChange", true, ["sprite", "var", "+"]);
+                const attrComp = new Check(id, edgeID, "AttrComp", true, ["sprite", "var2", ">", "0"]);
                 assertSymmetricContradiction(attrChange, attrComp, false);
             });
 
@@ -406,39 +405,39 @@ describe('Effect', () => {
         });
 
         test("contradiction: click", () => {
-            const effect1 = new Effect(id, edgeID, "Click", true, ["sprite1"]);
+            const effect1 = new Check(id, edgeID, "Click", true, ["sprite1"]);
             assertSymmetricContradiction2(effect1, "Click", true, ["sprite2"], true);
             assertSymmetricContradiction2(effect1, "Click", true, ["sprite1"], false);
         });
 
         test("contradiction: key", () => {
-            const effect1 = new Effect(id, edgeID, "Key", true, ["left"]);
+            const effect1 = new Check(id, edgeID, "Key", true, ["left"]);
             assertSymmetricContradiction2(effect1, "Key", true, ["right"], false);
             assertSymmetricContradiction2(effect1, "Key", true, ["left"], false);
         });
 
         test("contradiction: sprite color", () => {
-            const effect1 = new Effect(id, edgeID, "SpriteColor", true, ["sprite1", "0", "0", "0"]);
+            const effect1 = new Check(id, edgeID, "SpriteColor", true, ["sprite1", "0", "0", "0"]);
             assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite2", "0", "0", "0"], false);
             // it can touch multiple colors at the same time
             assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite1", "0", "0", "1"], false);
         });
 
         test("contradiction: sprite touching", () => {
-            const effect1 = new Effect(id, edgeID, "SpriteTouching", true, ["sprite1", "sprite2"]);
+            const effect1 = new Check(id, edgeID, "SpriteTouching", true, ["sprite1", "sprite2"]);
             assertSymmetricContradiction2(effect1, "SpriteTouching", true, ["sprite2", "sprite3"], false);
             assertSymmetricContradiction2(effect1, "SpriteTouching", true, ["sprite1", "sprite3"], false);
         });
 
         test("contradiction: expr", () => {
-            const effect1 = new Effect(id, edgeID, "Expr", true, ["whatever"]);
+            const effect1 = new Check(id, edgeID, "Expr", true, ["whatever"]);
             assertSymmetricContradiction2(effect1, "Expr", true, ["whatever2"], false);
             assertSymmetricContradiction2(effect1, "Click", true, ["whatever"], false);
         });
 
         // actually an effect with probability result is quite dumb to have....
         test("contradiction: probability", () => {
-            const effect1 = new Effect(id, edgeID, "Probability", true, ["1"]);
+            const effect1 = new Check(id, edgeID, "Probability", true, ["1"]);
             assertSymmetricContradiction2(effect1, "Probability", true, ["9"], false);
             assertSymmetricContradiction2(effect1, "Probability", true, ["1"], false);
         });
@@ -474,13 +473,13 @@ describe('Effect', () => {
         });
 
         test("contradiction: expr", () => {
-            const effect1 = new Effect(id, edgeID, "TouchingEdge", true, ["sprite"]);
+            const effect1 = new Check(id, edgeID, "TouchingEdge", true, ["sprite"]);
             assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite2"], false);
             assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite"], false);
         });
 
         test("contradiction negation", () => {
-            const effect1 = new Effect(id, edgeID, "TouchingEdge", true, ["sprite"]);
+            const effect1 = new Check(id, edgeID, "TouchingEdge", true, ["sprite"]);
             assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite"], false);
             assertSymmetricContradiction2(effect1, "TouchingEdge", false, ["sprite2"], false);
             assertSymmetricContradiction2(effect1, "TouchingEdge", false, ["sprite"], true);
@@ -548,7 +547,7 @@ describe('Effect', () => {
         });
 
         test('contradiction with event strings', () => {
-            const attrComp = new Effect(id, edgeID, "AttrComp", false, ["sprite", "var", "=", "0"]);
+            const attrComp = new Check(id, edgeID, "AttrComp", false, ["sprite", "var", "=", "0"]);
             expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString("AttrComp", true,
                 "sprite", "var", "<=", "2")])).toBe(true);
             expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString("AttrComp", false,
@@ -560,9 +559,9 @@ describe('Effect', () => {
     const cu = cuMock.getCheckUtility();
 
     test('registerComponent() calculates correct effect', () => {
-        const effect = new Effect(id, edgeID, "Key", true, ["a"]);
+        const effect = new Check(id, edgeID, "Key", true, ["a"]);
         effect.registerComponents(null, cu, "graphID");
-        const func = effect.effect;
+        const func = effect.check;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(true);
         cuMock.pressedKeys["a"] = true;
@@ -570,7 +569,7 @@ describe('Effect', () => {
     });
 
     test('registerComponent() clears effect in error case', () => {
-        const effect = new Effect(id, edgeID, "Key", true, ["a"]);
+        const effect = new Check(id, edgeID, "Key", true, ["a"]);
         const error = new Error("this is a message");
         effect.registerComponents(null, cu, "graphID");
         effect.checkArgsWithTestDriver = (t, cu, args) => {
@@ -579,7 +578,7 @@ describe('Effect', () => {
         const fn = jest.fn();
         cu.addErrorOutput = fn;
         effect.registerComponents(null, cu, "graphID");
-        const func = effect.effect;
+        const func = effect.check;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);
         cuMock.pressedKeys["a"] = false;

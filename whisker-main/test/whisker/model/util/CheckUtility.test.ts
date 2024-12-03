@@ -1,5 +1,4 @@
-import {Effect} from "../../../../src/whisker/model/components/Effect";
-import {CheckName} from "../../../../src/whisker/model/components/Check";
+import {Check, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 
@@ -31,11 +30,11 @@ describe('CheckUtility', () => {
                 expect(CheckUtility.getEventString(name, negated, ...args)).toBe(expected);
             });
 
-        const effects: [Effect, string][] = [
-            [new Effect("test", "dummy", "SpriteTouching", false, ["sprite1", "sprite2"]), "SpriteTouching:sprite1:sprite2"],
-            [new Effect("test", "dummy", "AttrComp", false, ["sprite1", "costume", "=", "costume2"]), "AttrComp:sprite1:costume:=:costume2"]
+        const effects: [Check, string][] = [
+            [new Check("test", "dummy", "SpriteTouching", false, ["sprite1", "sprite2"]), "SpriteTouching:sprite1:sprite2"],
+            [new Check("test", "dummy", "AttrComp", false, ["sprite1", "costume", "=", "costume2"]), "AttrComp:sprite1:costume:=:costume2"]
         ];
-        it.each(effects)('getEventString() with attributes of Effect: %s', (check: Effect, expected: string) => {
+        it.each(effects)('getEventString() with attributes of Check: %s', (check: Check, expected: string) => {
             expect(CheckUtility.getEventString(check.name, check.negated, ...check.args)).toBe(expected);
         });
     });

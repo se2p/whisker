@@ -35,12 +35,13 @@ export type CheckName = typeof CHECK_NAMES[number];
  * to be created once for every test run with a new test driver.
  */
 export class Check {
-    protected readonly _id: string;
-    protected readonly _name: CheckName;
-    protected readonly _args: ArgType[];
-    protected readonly _negated: boolean;
-    protected readonly _edgeLabel: string;
-    protected _check: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
+    private readonly _id: string;
+    private readonly _name: CheckName;
+    private readonly _args: ArgType[];
+    private readonly _negated: boolean;
+    private readonly _edgeLabel: string;
+    private readonly _dependsOnSayText: boolean;
+    private _check: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -105,6 +106,14 @@ export class Check {
         if (this._args.some((arg) => arg == undefined)) {
             throw new Error("arguments cannot be undefined.");
         }
+
+        if (name == "Output" || ((name == "AttrComp" || name == "AttrChange") && (args[1] == "sayText"))) {
+            this._dependsOnSayText = true;
+        } else if (name == "Function" || name == "Expr") {
+            this._dependsOnSayText = String(args[0]).includes(".sayText");
+        } else {
+            this._dependsOnSayText = false;
+        }
     }
 
     /**
@@ -114,6 +123,10 @@ export class Check {
      */
     get check(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         return this._check;
+    }
+
+    get dependsOnSayText(): boolean {
+        return this._dependsOnSayText;
     }
 
     /**
@@ -388,6 +401,14 @@ export class Check {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
             this._check = () => false;
         }
+    }
+
+    /**
+     * Whether this effect contradicts another effect check.
+     * @param effect The other effect.
+     */
+    contradicts(effect: Check): boolean {
+        return Check.testForContradicting(this, effect);
     }
 
     toString(): string {

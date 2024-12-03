@@ -4,7 +4,6 @@ import {
     getTimeLimitFailedAfterOutput,
     getTimeLimitFailedAtOutput
 } from "../../../../src/whisker/model/util/ModelError";
-import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {Check} from "../../../../src/whisker/model/components/Check";
 
@@ -18,14 +17,14 @@ describe('ModelError', () => {
 
     test("getEffectFailedOutput()", () => {
         const edge = getEdge();
-        const effect = new Effect("e1", "label", "AttrChange", false, ["Apple", "x", "+"]);
+        const effect = new Check("e1", "label", "AttrChange", false, ["Apple", "x", "+"]);
         expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Apple,x,+)");
     });
 
     test("getEffectFailedOutput() with TimeBetween", () => {
         const edge = getEdge();
         edge.addCondition(new Check("c4", "label", "TimeBetween", true, ["123"]));
-        const effect = new Effect("e1", "label", "AttrComp", false, ["Apple", "x", ">", "0"]);
+        const effect = new Check("e1", "label", "AttrComp", false, ["Apple", "x", ">", "0"]);
         expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrComp(Apple,x,>,0) after 123ms");
 
     });
@@ -33,7 +32,7 @@ describe('ModelError', () => {
     test("getEffectFailedOutput() with TimeElapsed", () => {
         const edge = getEdge();
         edge.addCondition(new Check("c3", "label", "TimeElapsed", true, ["456"]));
-        const effect = new Effect("e1", "label", "AttrChange", false, ["Apple", "x", "+"]);
+        const effect = new Check("e1", "label", "AttrChange", false, ["Apple", "x", "+"]);
         expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Apple,x,+) before 456ms elapsed");
     });
 
@@ -41,7 +40,7 @@ describe('ModelError', () => {
         const edge = getEdge();
         edge.addCondition(new Check("c5", "label", "TimeAfterEnd", true, ["789"]));
         edge.addCondition(new Check("c4", "label", "TimeElapsed", true, ["456"]));
-        const effect = new Effect("e1", "label", "AttrChange", false, ["Banana", "x", "+"]);
+        const effect = new Check("e1", "label", "AttrChange", false, ["Banana", "x", "+"]);
         expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Banana,x,+) before 456ms elapsed after 789ms");
     });
 

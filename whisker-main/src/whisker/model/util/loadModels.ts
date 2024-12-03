@@ -8,7 +8,6 @@ import {UserModelEdge} from "../components/UserModelEdge";
 import {UserInput} from "../components/UserInput";
 import logger from "../../../util/logger";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
-import {Effect} from "../components/Effect";
 import {
     CheckJSON,
     EndModelJSON,
@@ -204,7 +203,7 @@ function addUserInputs(edge: UserModelEdge, rawUserInputs: UserInputJSON[]): voi
 }
 
 function addEffects(edge: ProgramModelEdge, rawEffects: CheckJSON[]): void {
-    rawEffects.forEach((e) => edge.addEffect(new Effect(e.id, edge.id, e.name, e.negated, e.args)));
+    rawEffects.forEach((e) => edge.addEffect(new Check(e.id, edge.id, e.name, e.negated, e.args)));
 }
 
 function addConditions(edge: ModelEdge, rawConditions: CheckJSON[]): void {

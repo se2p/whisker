@@ -1,4 +1,3 @@
-import {Effect} from "./Effect";
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {Check} from "./Check";
@@ -9,7 +8,7 @@ import {ProgramModelEdgeJSON} from "../util/schema";
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends AbstractEdge {
-    private readonly _effects: Effect[] = [];
+    private readonly _effects: Check[] = [];
 
     /**
      * Create a new edge.
@@ -30,11 +29,11 @@ export class ProgramModelEdge extends AbstractEdge {
      * Add an effect to the edge.
      * @param effect Effect function as a string.
      */
-    addEffect(effect: Effect): void {
+    addEffect(effect: Check): void {
         this._effects.push(effect);
     }
 
-    get effects(): readonly Effect[] {
+    get effects(): readonly Check[] {
         return this._effects;
     }
 
