@@ -272,37 +272,38 @@ export class ModelTester extends EventEmitter {
     }
 
     private _onVMEvent(checks: Checks) {
-        if (this._isRunning) {
-            // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
-            const models = this._modelStepCallback!.isActive() ? this._programModels : this._onTestEndModels;
-
-            for (const m of models) {
-                if (!this._isRunning) {
-                    return; //stop the complete testing if the run is ending
-                }
-                const edge = m.testForEvent(this._testDriver!, this._checkUtility!, checks);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    this._checkUtility!.registerEffectCheck(edge, m);
-                    this._edgeTrace(edge);
-                }
-            }
-
-            // check for halt if not yet stopped
-            if (this._haltAllCallback!.isActive()) {
-                let halt = false;
-                this._programModels.forEach(model => {
-                    if (model.haltAllModels()) {
-                        halt = true;
-                    }
-                });
-                if (halt) {
-                    this._checkUtility!.checkEffects();
-                    this._startOnTestEnd();
-                    return;
-                }
-            }
-            this._checkUtility!.checkEventEffects();
+        if (!this._isRunning) {
+            return;
         }
+
+        // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
+        const models = this._modelStepCallback!.isActive() ? this._programModels : this._onTestEndModels;
+        for (const m of models) {
+            if (!this._isRunning) {
+                return; //stop the complete testing if the run is ending
+            }
+            const edge = m.testForEvent(this._testDriver!, this._checkUtility!, checks);
+            if (edge != null && edge instanceof ProgramModelEdge) {
+                this._checkUtility!.registerEffectCheck(edge, m);
+                this._edgeTrace(edge);
+            }
+        }
+
+        // check for halt if not yet stopped
+        if (this._haltAllCallback!.isActive()) {
+            let halt = false;
+            this._programModels.forEach(model => {
+                if (model.haltAllModels()) {
+                    halt = true;
+                }
+            });
+            if (halt) {
+                this._checkUtility!.checkEffects();
+                this._startOnTestEnd();
+                return;
+            }
+        }
+        this._checkUtility!.checkEventEffects();
     }
 
     private _onLogEvent(output: unknown) {
