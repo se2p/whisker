@@ -1,13 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
-import {ModelUtil} from "./ModelUtil";
-import {
-    ComparisonNotKnownError,
-    ErrorForAttribute,
-    ErrorForVariable,
-    FunctionEvalError,
-    RGBRangeError
-} from "./ModelError";
+import {Dependencies, ModelUtil} from "./ModelUtil";
+import {ComparisonNotKnownError, ErrorForAttribute, ErrorForVariable, RGBRangeError} from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
@@ -205,49 +199,6 @@ export abstract class CheckGenerator {
         });
     }
 
-    /**
-     * Get a method checking another method.
-     * @param t Instance of the test driver.
-     * @param cu Listener for checks.
-     * @param edgeLabel Label of the parent edge of the check.
-     * @param graphID ID of the parent graph of the check.
-     * @param negated Whether it should be negated.
-     * @param pF the function as a string.
-     */
-    static getFunctionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                            pF: ArgType): () => boolean {
-        let fun: (t: TestDriver) => boolean;
-        const f = String(pF);
-
-        if (f == "true" && negated || f == "false" && !negated) {
-            return () => {
-                return false;
-            };
-        }
-
-        if (f == "true" && !negated || f == "false" && negated) {
-            return () => {
-                return true;
-            };
-        }
-
-        try {
-            fun = eval(f);
-        } catch (e) {
-            throw new FunctionEvalError(e);
-        }
-
-        const dependencies = ModelUtil.getDependencies(f);
-        const eventString = CheckUtility.getEventString("Function", negated, f);
-        this._setupDependencies(cu, eventString, edgeLabel, graphID, dependencies.varDependencies,
-            dependencies.attrDependencies, () => {
-                return !negated == fun(t);
-            });
-        return () => {
-            return !negated == fun(t);
-        };
-    }
-
     private static _setupDependencies(cu: CheckUtility, eventString: string, edgeLabel: string, graphID: string,
                                       varDependencies: { spriteName: string, varName: string }[],
                                       attrDependencies: { spriteName: string, attrName: string }[],
@@ -352,7 +303,13 @@ export abstract class CheckGenerator {
     static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                   pSpriteName: ArgType, output: ArgType): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
-        const expression = ModelUtil.getExpressionForEval(t, output).expr;
+        let expression: string;
+        try {
+            expression = ModelUtil.getExpressionForEval(t, output).expr;
+        } catch (e) {
+            // this is probably supposed to be constant text like "apple" and not an expression
+            expression = ModelUtil.getExpressionForEval(t, `'${output}'`).expr;
+        }
 
         const eventString = CheckUtility.getEventString("Output", negated, pSpriteName, output);
         const check: (s: Sprite) => boolean = (s) => {
@@ -533,6 +490,10 @@ export abstract class CheckGenerator {
         const eventString = CheckUtility.getEventString("Expr", negated, expr);
         const check: () => boolean = () => !negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, eventString, edgeLabel, graphID, e.varDependencies, e.attrDependencies, check);
+        const dep: Dependencies = ModelUtil.getDependencies(String(expr));
+        if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
+            this._setupDependencies(cu, eventString, edgeLabel, graphID, dep.varDependencies, dep.attrDependencies, check);
+        }
         return check;
     }
 

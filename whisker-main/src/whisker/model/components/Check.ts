@@ -9,7 +9,6 @@ export const CHECK_NAMES = Object.freeze([
     "AttrComp",// args: sprite name, attribute name, comparison (=,>,<...), value to compare to
     "BackgroundChange",
     "Click", // args: sprite name
-    "Function",
     "Key", // args: key name
     "Output", // sprite name, string output
     "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
@@ -63,13 +62,12 @@ export class Check {
         this._edgeLabel = edgeLabel;
         this._check = () => false;
 
-        if ((name == "Expr" || name == "Function") && args.length > 1) {
+        if (name == "Expr" && args.length > 1) {
             this._args = [args.join("\n")];
         }
         let expectedLength: number;
         switch (name) {
             case "BackgroundChange":
-            case "Function":
             case "Key":
             case "Click":
             case "Probability":
@@ -109,7 +107,7 @@ export class Check {
 
         if (name == "Output" || ((name == "AttrComp" || name == "AttrChange") && (args[1] == "sayText"))) {
             this._dependsOnSayText = true;
-        } else if (name == "Function" || name == "Expr") {
+        } else if (name == "Expr") {
             this._dependsOnSayText = String(args[0]).includes(".sayText");
         } else {
             this._dependsOnSayText = false;
@@ -148,8 +146,6 @@ export class Check {
                     this._args[0], this._args[1], this._args[2]);
             case "BackgroundChange":
                 return CheckGenerator.getBackgroundChangeCheck(t, cu, this._edgeLabel, this._negated, this._args[0]);
-            case "Function":
-                return CheckGenerator.getFunctionCheck(t, cu, this._edgeLabel, graphID, this._negated, this._args[0]);
             case "Output":
                 return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._edgeLabel, graphID, this._negated,
                     this._args[0], this._args[1]);
