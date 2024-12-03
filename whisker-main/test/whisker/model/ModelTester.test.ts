@@ -4,12 +4,9 @@ import {readFileSync} from "fs";
 import * as path from "node:path";
 import {ProgramModelEdge} from "../../../src/whisker/model/components/ProgramModelEdge";
 import {UserModel} from "../../../src/whisker/model/components/UserModel";
-import {
-    EndModel,
-    ProgramModel,
-} from "../../../src/whisker/model/components/ProgramModel";
+import {EndModel, ProgramModel,} from "../../../src/whisker/model/components/ProgramModel";
 import {EndModelJSON, ProgramModelJSON, UserModelJSON} from "../../../src/whisker/model/util/schema";
-import {Check} from "../../../src/whisker/model/checks/Check";
+import {Expr} from "../../../src/whisker/model/checks/Expr";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
@@ -115,7 +112,7 @@ describe('ModelTester', () => {
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[2];
             const expectedEdge = new ProgramModelEdge("init", "init", "bowl3", "init", "start", -1, -1);
-            expectedEdge.addCondition(new Check("condition1", undefined, "Expr", false, ["true"]));
+            expectedEdge.addCondition(new Expr("condition1", undefined, false, ["true"]));
             const expectedProgramModel = new EndModel("bowl3", "init", expectedNodesExtended,
                 {"e1": expectedEdge}, ["end"], ["end"]);
             const expected: EndModelJSON = {

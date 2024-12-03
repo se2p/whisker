@@ -1,6 +1,9 @@
-import {Check, CheckName} from "../../../../src/whisker/model/checks/Check";
+import {AbstractCheck} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
+import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
+import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
+import {CheckName} from "../../../../src/whisker/model/checks/newCheck";
 
 describe('CheckUtility', () => {
     describe("split event strings", () => {
@@ -30,11 +33,11 @@ describe('CheckUtility', () => {
                 expect(CheckUtility.getEventString(name, negated, ...args)).toBe(expected);
             });
 
-        const effects: [Check, string][] = [
-            [new Check("test", "dummy", "SpriteTouching", false, ["sprite1", "sprite2"]), "SpriteTouching:sprite1:sprite2"],
-            [new Check("test", "dummy", "AttrComp", false, ["sprite1", "costume", "=", "costume2"]), "AttrComp:sprite1:costume:=:costume2"]
+        const effects: [AbstractCheck, string][] = [
+            [new SpriteTouching("test", "dummy", false, ["sprite1", "sprite2"]), "SpriteTouching:sprite1:sprite2"],
+            [new AttrComp("test", "dummy", false, ["sprite1", "costume", "=", "costume2"]), "AttrComp:sprite1:costume:=:costume2"]
         ];
-        it.each(effects)('getEventString() with attributes of Check: %s', (check: Check, expected: string) => {
+        it.each(effects)('getEventString() with attributes of Check: %s', (check: AbstractCheck, expected: string) => {
             expect(CheckUtility.getEventString(check.name, check.negated, ...check.args)).toBe(expected);
         });
     });

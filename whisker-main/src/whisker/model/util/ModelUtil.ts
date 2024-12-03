@@ -4,7 +4,7 @@ import {
     AttributeNotFoundError,
     ChangeComparisonNotKnownError,
     ComparisonNotKnownError,
-    EmptyExpressionError, ExpressionEnterError,
+    EmptyExpressionError,
     ExpressionSyntaxError,
     ExprEvalError,
     NotANumericalValueError,
@@ -19,7 +19,7 @@ export interface Dependencies {
     attrDependencies: { spriteName: string, attrName: string }[]
 }
 
-interface Expression extends Dependencies {
+export interface Expression extends Dependencies {
     expr: string
 }
 
@@ -44,7 +44,7 @@ export abstract class ModelUtil {
      * @param testDriver Instance of the test driver.
      * @param pSpriteName Name of the sprite.
      */
-    static checkSpriteExistence(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
+    static checkSpriteExistence(testDriver: TestDriver, pSpriteName: ArgType | ArgType[]): Sprite {
         const spriteNames = Array.isArray(pSpriteName) ? pSpriteName : [String(pSpriteName)];
 
         for (const name of spriteNames) {
@@ -64,7 +64,7 @@ export abstract class ModelUtil {
      * @param sprite Sprite instance.
      * @param pVariableName Name of the variable.
      */
-    static checkVariableExistence(t: TestDriver, sprite: Sprite, pVariableName: ArgType):
+    static checkVariableExistence(t: TestDriver, sprite: Sprite, pVariableName: ArgType | ArgType[]):
         { sprite: Sprite, variable: Variable } {
         const variableName = String(pVariableName);
 

@@ -1,6 +1,6 @@
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
-import {Check} from "../checks/Check";
+import {AbstractCheck} from "../checks/AbstractCheck";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
 
@@ -8,7 +8,7 @@ import {ProgramModelEdgeJSON} from "../util/schema";
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends AbstractEdge {
-    private readonly _effects: Check[] = [];
+    private readonly _effects: AbstractCheck[] = [];
 
     /**
      * Create a new edge.
@@ -29,11 +29,11 @@ export class ProgramModelEdge extends AbstractEdge {
      * Add an effect to the edge.
      * @param effect Effect function as a string.
      */
-    addEffect(effect: Check): void {
+    addEffect(effect: AbstractCheck): void {
         this._effects.push(effect);
     }
 
-    get effects(): readonly Check[] {
+    get effects(): readonly AbstractCheck[] {
         return this._effects;
     }
 
@@ -51,7 +51,7 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Function:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): Check[] {
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): AbstractCheck[] {
         if (this.failedForcedTest) {
             return this.conditions;
         }
