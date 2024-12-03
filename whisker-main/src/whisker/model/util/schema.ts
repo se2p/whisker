@@ -40,7 +40,7 @@ export interface UserInputJSON {
     args: ArgType[];
 }
 
-export const UserInputJSON = z.object({
+const UserInputJSON = z.object({
     id: z.string(),
     name: UserInputName,
     args: z.array(ArgType),
@@ -57,7 +57,7 @@ export interface ModelNodeJSON {
     label: string;
 }
 
-export const ModelNodeJSON = z.object({
+const ModelNodeJSON = z.object({
     id: NodeID,
     label: z.string().optional(),
 });
@@ -72,7 +72,7 @@ export interface IModelEdgeJSON {
     conditions: CheckJSON[];
 }
 
-export const IModelEdgeJSON = z.object({
+const IModelEdgeJSON = z.object({
     id: EdgeID.default(() => `edge-undef-${nextId()}`),
     label: z.string().optional(),
     from: NodeID,
@@ -86,7 +86,7 @@ export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
     effects: CheckJSON[];
 }
 
-export const ProgramModelEdgeJSON = IModelEdgeJSON.extend({
+const ProgramModelEdgeJSON = IModelEdgeJSON.extend({
     effects: z.array(CheckJSON).default([]),
 });
 
@@ -178,7 +178,7 @@ export type ModelJSON =
     | EndModelJSON
     ;
 
-export const ModelJSON = z.discriminatedUnion("usage", [
+const ModelJSON = z.discriminatedUnion("usage", [
     UserModelJSON,
     ProgramModelJSON,
     EndModelJSON,
