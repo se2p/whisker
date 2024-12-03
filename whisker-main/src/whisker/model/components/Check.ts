@@ -235,90 +235,24 @@ export class Check {
         return this.name == check.name && this.negated != check.negated && this._arrayEquals(this.args, check.args);
     }
 
-    static testForContradictingWithEvents(check1: Check, eventStrings: string[]): boolean {
+    testForContradictingWithEvents(eventStrings: string[]): boolean {
         return eventStrings.some((e) => {
             const {negated, name, args} = CheckUtility.splitEventString(e);
             const checkDummy = new Check("dummy", "dummyEdge", name, negated, args);
-            return Check.testForContradicting(check1, checkDummy);
+            return this.contradicts(checkDummy);
         });
     }
 
-    /**
-     * Test whether the checks are contradicting each other.
-     */
-    static testForContradicting(check1: Check, check2: Check): boolean {
-        if (check1.name != check2.name || check1.equals(check2)) {
-            return false;
-        }
-        if (check1.isInvertedOf(check2)) {
-            return true;
-        }
-
-        let comp1: ArgType, comp2: ArgType;
-        switch (check1.name) {
-            case "Click":
-                // you cant click on two different sprites at the same time
-                return check1.args[0] != check2.args[0];
-            case "BackgroundChange": // contradict if different costume names
-                return check1.args[0] != check2.args[0];
-            case "Output":
-                // contradict if same sprite name and different output
-                return check1.args[0] == check2.args[0] && check1.args[1] != check2.args[1];
-            case "VarChange":
-            case "AttrChange":
-                if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
-                    return false;
-                }
-
-                return Check._checkChange(check1, check2);
-            case "VarComp":
-            case "AttrComp":
-                if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
-                    return false;
-                }
-
-                comp1 = check1.args[2];
-                comp2 = check2.args[2];
-                if (check1.negated) {
-                    comp1 = this._getInvertedCompOp(comp1);
-                }
-                if (check2.negated) {
-                    comp2 = this._getInvertedCompOp(comp2);
-                }
-
-                return this._checkComparison(comp1, comp2, check1.args[3], check2.args[3]);
-            case "NbrOfVisibleClones":
-            case "NbrOfClones":
-                if (check1.args[0] != check2.args[0]) {
-                    return false;
-                }
-
-                comp1 = check1.args[1];
-                comp2 = check2.args[1];
-                if (check1.negated) {
-                    comp1 = this._getInvertedCompOp(comp1);
-                }
-                if (check2.negated) {
-                    comp2 = this._getInvertedCompOp(comp2);
-                }
-
-                return this._checkComparison(comp1, comp2, check1.args[2], check2.args[2]);
-
-            default:
-                return false;
-        }
-    }
-
-    private static _checkChange(check1: Check, check2: Check): boolean {
-        let change1 = String(check1.args[2]);
-        let change2 = String(check2.args[2]);
-        let negated1 = check1.negated;
-        let negated2 = check2.negated;
+    private _checkChange(that: Check): boolean {
+        let change1 = String(this.args[2]);
+        let change2 = String(that.args[2]);
+        let negated1 = this.negated;
+        let negated2 = that.negated;
 
         if (change1.length == 2 && change2.length == 2) {
             // += & +=, -= & -= are not getting until here, caught before call to checkChange
             // += & -=, -= & += only tested here
-            return check1.negated == check2.negated;
+            return this.negated == that.negated;
         }
 
         if (change1.length == 2) {
@@ -405,10 +339,69 @@ export class Check {
 
     /**
      * Whether this effect contradicts another effect check.
-     * @param effect The other effect.
+     * @param that The other effect.
      */
-    contradicts(effect: Check): boolean {
-        return Check.testForContradicting(this, effect);
+    contradicts(that: Check): boolean {
+        if (this.name != that.name || this.equals(that)) {
+            return false;
+        }
+        if (this.isInvertedOf(that)) {
+            return true;
+        }
+
+        let comp1: ArgType, comp2: ArgType;
+        switch (this.name) {
+            case "Click":
+                // you cant click on two different sprites at the same time
+                return this.args[0] != that.args[0];
+            case "BackgroundChange": // contradict if different costume names
+                return this.args[0] != that.args[0];
+            case "Output":
+                // contradict if same sprite name and different output
+                return this.args[0] == that.args[0] && this.args[1] != that.args[1];
+            case "VarChange":
+            case "AttrChange":
+                if (this.args[0] != that.args[0] || this.args[1] != that.args[1]) {
+                    return false;
+                }
+
+                return this._checkChange(that);
+            case "VarComp":
+            case "AttrComp":
+                if (this.args[0] != that.args[0] || this.args[1] != that.args[1]) {
+                    return false;
+                }
+
+                comp1 = this.args[2];
+                comp2 = that.args[2];
+                if (this.negated) {
+                    comp1 = Check._getInvertedCompOp(comp1);
+                }
+                if (that.negated) {
+                    comp2 = Check._getInvertedCompOp(comp2);
+                }
+
+                return Check._checkComparison(comp1, comp2, this.args[3], that.args[3]);
+            case "NbrOfVisibleClones":
+            case "NbrOfClones":
+                if (this.args[0] != that.args[0]) {
+                    return false;
+                }
+
+                comp1 = this.args[1];
+                comp2 = that.args[1];
+                if (this.negated) {
+                    comp1 = Check._getInvertedCompOp(comp1);
+                }
+                if (that.negated) {
+                    comp2 = Check._getInvertedCompOp(comp2);
+                }
+
+                return Check._checkComparison(comp1, comp2, this.args[2], that.args[2]);
+
+            default:
+                return false;
+        }
     }
 
     toString(): string {

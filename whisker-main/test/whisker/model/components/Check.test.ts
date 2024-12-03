@@ -272,7 +272,7 @@ describe('Check', () => {
         expect(() => {
             const c1 = new Check("id", "label", "AttrComp", true, ["sprite", "var", "comp", "value"]);
             const c2 = new Check("id", "label", "AttrComp", true, ["sprite", "var", ">=", "value"]);
-            Check.testForContradicting(c1, c2);
+            c1.contradicts(c2);
         }).toThrow();
     });
 });

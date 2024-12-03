@@ -95,7 +95,7 @@ export class ProgramModelEdge extends AbstractEdge {
                 return true;
             }
 
-            if (Check.testForContradictingWithEvents(e, eventStrings)) {
+            if (e.testForContradictingWithEvents(eventStrings)) {
                 // tests whether an event contradicting an effect (of a true condition edge) is there
                 return true;
             }

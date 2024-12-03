@@ -548,9 +548,9 @@ describe('Effect', () => {
 
         test('contradiction with event strings', () => {
             const attrComp = new Check(id, edgeID, "AttrComp", false, ["sprite", "var", "=", "0"]);
-            expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString("AttrComp", true,
+            expect(attrComp.testForContradictingWithEvents([CheckUtility.getEventString("AttrComp", true,
                 "sprite", "var", "<=", "2")])).toBe(true);
-            expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString("AttrComp", false,
+            expect(attrComp.testForContradictingWithEvents([CheckUtility.getEventString("AttrComp", false,
                 "sprite", "var", "<=", "2")])).toBe(false);
         });
     });
