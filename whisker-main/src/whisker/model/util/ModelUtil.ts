@@ -247,22 +247,13 @@ export abstract class ModelUtil {
      */
     static getExpressionForEval(t: TestDriver, pToEval: ArgType): Expression {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
-        let toEval = String(pToEval);
-        if (!toEval.includes("$(")) {
-            // TODO check if this should be more robust ("\"some wrong syntax'\"" as pToEval creates an error)
-            if (!toEval.startsWith("'")) {
-                toEval = "'" + toEval + "'";
-            } else if (!toEval.endsWith("'")) {
-                toEval = toEval + "'";
-            }
-        }
-
+        const toEval = String(pToEval);
         const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
         const $ = (s: string, a: string, c: boolean) =>
             this.getValueForSubExpression(t, s, a, c, dependencies);
         try {
             // fill dependencies and check if the expression works
-            eval("($) => " + toEval)($);
+            eval(`($) => ${toEval}`)($);
         } catch (e: unknown) {
             if (e instanceof SyntaxError) {
                 throw new ExpressionSyntaxError(e.message);
@@ -274,7 +265,7 @@ export abstract class ModelUtil {
             throw new ExprEvalError(e);
         }
         return {
-            expr: "(t, $) => " + toEval,
+            expr: `(t, $) => ${toEval}`,
             varDependencies: dependencies.varDependencies,
             attrDependencies: dependencies.attrDependencies
         };
