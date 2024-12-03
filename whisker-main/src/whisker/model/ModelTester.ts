@@ -13,7 +13,7 @@ import {UserModelEdge} from "./components/UserModelEdge";
 import {ProgramModelEdge} from "./components/ProgramModelEdge";
 import {CoverageResult, EndModel, ExtendedCoverageResult, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
-import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./util/schema";
+import {ModelJSON} from "./util/schema";
 import {Checks} from "./util/Checks";
 import {Check} from "./checks/newCheck";
 
@@ -114,20 +114,11 @@ export class ModelTester extends EventEmitter {
     }
 
     getAllModels(): ModelJSON[] {
-        const models: ModelJSON[] = [];
-        this._programModels.forEach(model => {
-            const shortened: ProgramModelJSON = model.toJSON();
-            models.push({usage: "program", ...shortened});
-        });
-        this._userModels.forEach(model => {
-            const shortened: UserModelJSON = model.toJSON();
-            models.push({usage: "user", ...shortened});
-        });
-        this._onTestEndModels.forEach(model => {
-            const shortened: EndModelJSON = model.toJSON();
-            models.push({usage: "end", ...shortened});
-        });
-        return models;
+        return [
+            this._programModels,
+            this._userModels,
+            this._onTestEndModels,
+        ].flatMap((models) => models.map((m) => m.toJSON()));
     }
 
     /**
