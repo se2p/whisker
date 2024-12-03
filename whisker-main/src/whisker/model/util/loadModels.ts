@@ -1,4 +1,4 @@
-import {isModelJSON, Model} from "../components/AbstractModel";
+import {Model} from "../components/AbstractModel";
 import {UserModel,} from "../components/UserModel";
 import {EndModel, ProgramModel,} from "../components/ProgramModel";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
@@ -10,16 +10,16 @@ import logger from "../../../util/logger";
 import {Condition} from "../components/Condition";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {Effect} from "../components/Effect";
-import {EndModelJSON, ModelEdgeJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "../schema/canonical";
 import {
-    LegacyEndModelJSON,
-    LegacyModelEdgeJSON,
-    LegacyModelJSON,
-    LegacyProgramModelJSON,
-    LegacyUserModelJSON
-} from "../schema/legacy";
-import {CheckJSON, UserInputJSON} from "../schema/common";
-import {parse} from "../schema/schema";
+    CheckJSON,
+    EndModelJSON,
+    ModelEdgeJSON,
+    ModelJSON,
+    ProgramModelJSON,
+    UserInputJSON,
+    UserModelJSON,
+    parse
+} from "./schema";
 
 interface Models {
     programModels: ProgramModel[],
@@ -66,7 +66,7 @@ export function loadModels(text: string): Models {
     return models;
 }
 
-function handleDuplicateModelIDs(models: (ModelJSON | LegacyModelJSON)[]): void {
+function handleDuplicateModelIDs(models: ModelJSON[]): void {
     const ids = new Set<string>();
 
     for (const m of models) {
@@ -79,7 +79,7 @@ function handleDuplicateModelIDs(models: (ModelJSON | LegacyModelJSON)[]): void 
     }
 }
 
-function loadModel(raw: ModelJSON | LegacyModelJSON): Model {
+function loadModel(raw: ModelJSON): Model {
     const usage = raw.usage;
     switch (usage) {
         case "user":
@@ -93,7 +93,7 @@ function loadModel(raw: ModelJSON | LegacyModelJSON): Model {
     }
 }
 
-function loadUserModel(raw: UserModelJSON | LegacyUserModelJSON): UserModel {
+function loadUserModel(raw: UserModelJSON): UserModel {
     const nodes = loadNodes<UserModelEdge>(raw);
     const edges = loadUserModelEdges(raw);
     addConnections(nodes, edges);
@@ -101,7 +101,7 @@ function loadUserModel(raw: UserModelJSON | LegacyUserModelJSON): UserModel {
     return new UserModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopNodeIds, stopAllNodeIds);
 }
 
-function loadProgramModel(raw: ProgramModelJSON | LegacyProgramModelJSON): ProgramModel {
+function loadProgramModel(raw: ProgramModelJSON): ProgramModel {
     const nodes = loadNodes<ProgramModelEdge>(raw);
     const edges = loadProgramModelEdges(raw);
     addConnections(nodes, edges);
@@ -109,7 +109,7 @@ function loadProgramModel(raw: ProgramModelJSON | LegacyProgramModelJSON): Progr
     return new ProgramModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopNodeIds, stopAllNodeIds);
 }
 
-function loadEndModel(raw: EndModelJSON | LegacyEndModelJSON): EndModel {
+function loadEndModel(raw: EndModelJSON): EndModel {
     const nodes = loadNodes<ProgramModelEdge>(raw);
     const edges = loadProgramModelEdges(raw);
     addConnections(nodes, edges);
@@ -131,36 +131,24 @@ function addConnections<E extends ModelEdge>(nodes: Map<string, ModelNode<E>>, e
     }
 }
 
-function loadNodes<E extends ModelEdge>(raw: ModelJSON | LegacyModelJSON): Map<string, ModelNode<E>> {
+function loadNodes<E extends ModelEdge>(raw: ModelJSON): Map<string, ModelNode<E>> {
     const nodes = new Map<string, ModelNode<E>>();
 
-    function addNode(id: string, label?: string): void {
+    raw.nodes.forEach(({id, label}) => {
         if (nodes.has(id)) {
             throw new Error("Node id '" + id + "' already defined.");
         }
 
         nodes.set(id, new ModelNode(id, label));
-    }
+    });
 
-    if (isModelJSON(raw)) {
-        const rawNodes = raw.nodes;
-        rawNodes.forEach(({id, label}) => addNode(id, label));
-    } else {
-        const nodeIds = raw.nodeIds;
-        nodeIds.forEach((id) => addNode(id));
-    }
-
-    setupNodes(raw, nodes);
-    return nodes;
-}
-
-function setupNodes(raw: ModelJSON | LegacyModelJSON, nodes: Map<string, ModelNode>): void {
     nodes.get(raw.startNodeId).isStartNode = true;
     raw.stopNodeIds.forEach((id) => nodes.get(id).isStopNode = true);
     raw.stopAllNodeIds.forEach((id) => nodes.get(id).isStopAllNode = true);
+    return nodes;
 }
 
-function loadProgramModelEdges(raw: ProgramModelJSON | LegacyProgramModelJSON | EndModelJSON | LegacyEndModelJSON): Map<string, ProgramModelEdge> {
+function loadProgramModelEdges(raw: ProgramModelJSON | EndModelJSON): Map<string, ProgramModelEdge> {
     const edges = new Map<string, ProgramModelEdge>();
 
     handleDuplicateEdgeIDs(raw.edges);
@@ -176,16 +164,15 @@ function loadProgramModelEdges(raw: ProgramModelJSON | LegacyProgramModelJSON | 
     return edges;
 }
 
-function loadUserModelEdges(raw: UserModelJSON | LegacyUserModelJSON): Map<string, UserModelEdge> {
+function loadUserModelEdges(raw: UserModelJSON): Map<string, UserModelEdge> {
     const edges = new Map<string, UserModelEdge>();
 
     handleDuplicateEdgeIDs(raw.edges);
 
     for (const rawEdge of raw.edges) {
-        const {id, label, from, to, forceTestAfter, forceTestAt, conditions} = rawEdge;
+        const {id, label, from, to, forceTestAfter, forceTestAt, conditions, effects} = rawEdge;
         const edge = new UserModelEdge(id, label, raw.id, from, to, forceTestAfter, forceTestAt);
-        const inputs = "effects" in rawEdge ? rawEdge.effects : rawEdge.inputEffects;
-        addUserInputs(edge, inputs);
+        addUserInputs(edge, effects);
         addConditions(edge, conditions);
         edges.set(id, edge);
     }
@@ -193,7 +180,7 @@ function loadUserModelEdges(raw: UserModelJSON | LegacyUserModelJSON): Map<strin
     return edges;
 }
 
-function handleDuplicateEdgeIDs(edges: (ModelEdgeJSON | LegacyModelEdgeJSON)[]): void {
+function handleDuplicateEdgeIDs(edges: ModelEdgeJSON[]): void {
     const ids = new Set<string>();
 
     for (const e of edges) {

@@ -4,7 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
-import {ModelEdgeJSON} from "../schema/canonical";
+import {ModelEdgeJSON} from "../util/schema";
 
 export type ModelEdge =
     | ProgramModelEdge

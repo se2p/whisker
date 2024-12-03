@@ -5,7 +5,7 @@ import {ScratchPosition} from "../../../../src/whisker/scratch/ScratchPosition";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {SpriteMock} from "../SpriteMock";
 import {WhiskerSearchConfiguration} from "../../../../src/whisker/utils/WhiskerSearchConfiguration";
-import {ArgType, UserInputJSON} from "../../../../src/whisker/model/schema/common";
+import {ArgType, UserInputJSON} from "../../../../src/whisker/model/util/schema";
 
 import('../../../../src/whisker/scratch/ScratchInterface');
 

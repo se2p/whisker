@@ -11,10 +11,12 @@
                 "label": "start"
             },
             {
-                "id": "space ship touched"
+                "id": "space ship touched",
+                "label": "space ship touched"
             },
             {
-                "id": "Says some text"
+                "id": "Says some text",
+                "label": "Says some text"
             },
             {
                 "id": "hidden",
@@ -134,13 +136,20 @@
             "end"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "wait",
-            "end"
+        "nodes": [
+            {
+                "id": "wait",
+                "label": "wait"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": [
             {
                 "id": "stop",
+                "label": "stop",
                 "from": "wait",
                 "to": "end",
                 "forceTestAfter": -1,
@@ -159,6 +168,7 @@
             },
             {
                 "id": "wait",
+                "label": "wait",
                 "from": "wait",
                 "to": "wait",
                 "forceTestAfter": -1,

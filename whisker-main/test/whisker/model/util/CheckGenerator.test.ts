@@ -11,7 +11,7 @@ import {TestDriverMock} from "../TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 import Sprite from "../../../../src/vm/sprite";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
-import {ArgType} from "../../../../src/whisker/model/schema/common";
+import {ArgType} from "../../../../src/whisker/model/util/schema";
 
 describe('CheckGenerator', () => {
 

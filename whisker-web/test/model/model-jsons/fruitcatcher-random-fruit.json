@@ -9,15 +9,28 @@
         "stopAllNodeIds": [
             "end"
         ],
-        "nodeIds": [
-            "init",
-            "start",
-            "text",
-            "end"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "text",
+                "label": "text"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "init",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -31,10 +44,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "sayText",
+                "label": "sayText",
                 "from": "start",
                 "to": "text",
                 "forceTestAfter": -1,
@@ -63,6 +78,7 @@
             },
             {
                 "id": "right",
+                "label": "right",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -108,6 +124,7 @@
             },
             {
                 "id": "left",
+                "label": "left",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -153,6 +170,7 @@
             },
             {
                 "id": "noMotion",
+                "label": "noMotion",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -190,6 +208,7 @@
             },
             {
                 "id": "stop",
+                "label": "stop",
                 "from": "text",
                 "to": "end",
                 "forceTestAfter": -1,
@@ -226,15 +245,28 @@
             "red"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start",
-            "bowl",
-            "points",
-            "red"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "bowl",
+                "label": "bowl"
+            },
+            {
+                "id": "points",
+                "label": "points"
+            },
+            {
+                "id": "red",
+                "label": "red"
+            }
         ],
         "edges": [
             {
                 "id": "red",
+                "label": "red",
                 "from": "start",
                 "to": "red",
                 "forceTestAfter": -1,
@@ -259,6 +291,7 @@
             },
             {
                 "id": "bowl",
+                "label": "bowl",
                 "from": "start",
                 "to": "bowl",
                 "forceTestAfter": -1,
@@ -281,6 +314,7 @@
             },
             {
                 "id": "points",
+                "label": "points",
                 "from": "bowl",
                 "to": "points",
                 "forceTestAfter": -1,
@@ -305,6 +339,7 @@
             },
             {
                 "id": "top",
+                "label": "top",
                 "from": "points",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -339,16 +374,32 @@
         "stopAllNodeIds": [
             "end"
         ],
-        "nodeIds": [
-            "start",
-            "wait",
-            "bowl",
-            "red",
-            "end"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "wait",
+                "label": "wait"
+            },
+            {
+                "id": "bowl",
+                "label": "bowl"
+            },
+            {
+                "id": "red",
+                "label": "red"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": [
             {
                 "id": "red",
+                "label": "red",
                 "from": "wait",
                 "to": "red",
                 "forceTestAfter": -1,
@@ -386,6 +437,7 @@
             },
             {
                 "id": "stop",
+                "label": "stop",
                 "from": "red",
                 "to": "end",
                 "forceTestAfter": -1,
@@ -417,6 +469,7 @@
             },
             {
                 "id": "bowl",
+                "label": "bowl",
                 "from": "wait",
                 "to": "bowl",
                 "forceTestAfter": -1,
@@ -439,6 +492,7 @@
             },
             {
                 "id": "top",
+                "label": "top",
                 "from": "bowl",
                 "to": "wait",
                 "forceTestAfter": -1,
@@ -463,6 +517,7 @@
             },
             {
                 "id": "moves",
+                "label": "moves",
                 "from": "start",
                 "to": "wait",
                 "forceTestAfter": -1,
@@ -492,16 +547,32 @@
         "startNodeId": "init",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "start",
-            "red",
-            "points",
-            "bowl"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "red",
+                "label": "red"
+            },
+            {
+                "id": "points",
+                "label": "points"
+            },
+            {
+                "id": "bowl",
+                "label": "bowl"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "init",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -509,17 +580,18 @@
                 "conditions": [
                     {
                         "id": "condition1",
-                        "negated": false,
                         "name": "Function",
                         "args": [
                             "true"
-                        ]
+                        ],
+                        "negated": false
                     }
                 ],
                 "effects": []
             },
             {
                 "id": "red",
+                "label": "red",
                 "from": "start",
                 "to": "red",
                 "forceTestAfter": -1,
@@ -541,6 +613,7 @@
             },
             {
                 "id": "pointsRed",
+                "label": "pointsRed",
                 "from": "red",
                 "to": "points",
                 "forceTestAfter": -1,
@@ -565,6 +638,7 @@
             },
             {
                 "id": "notRed",
+                "label": "notRed",
                 "from": "points",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -586,6 +660,7 @@
             },
             {
                 "id": "touchBowl",
+                "label": "touchBowl",
                 "from": "start",
                 "to": "bowl",
                 "forceTestAfter": -1,
@@ -605,6 +680,7 @@
             },
             {
                 "id": "top",
+                "label": "top",
                 "from": "bowl",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -632,16 +708,32 @@
         "startNodeId": "init",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "start",
-            "red",
-            "points",
-            "bowl"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "red",
+                "label": "red"
+            },
+            {
+                "id": "points",
+                "label": "points"
+            },
+            {
+                "id": "bowl",
+                "label": "bowl"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "init",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -649,17 +741,18 @@
                 "conditions": [
                     {
                         "id": "condition1",
-                        "negated": false,
                         "name": "Function",
                         "args": [
                             "true"
-                        ]
+                        ],
+                        "negated": false
                     }
                 ],
                 "effects": []
             },
             {
                 "id": "red",
+                "label": "red",
                 "from": "start",
                 "to": "red",
                 "forceTestAfter": -1,
@@ -681,6 +774,7 @@
             },
             {
                 "id": "notRed",
+                "label": "notRed",
                 "from": "red",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -702,6 +796,7 @@
             },
             {
                 "id": "bowl",
+                "label": "bowl",
                 "from": "start",
                 "to": "bowl",
                 "forceTestAfter": -1,
@@ -721,6 +816,7 @@
             },
             {
                 "id": "points",
+                "label": "points",
                 "from": "bowl",
                 "to": "points",
                 "forceTestAfter": -1,
@@ -745,6 +841,7 @@
             },
             {
                 "id": "top",
+                "label": "top",
                 "from": "points",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -772,13 +869,20 @@
         "startNodeId": "n0",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            }
         ],
         "edges": [
             {
                 "id": "e0",
+                "label": "e0",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": -1,
@@ -857,6 +961,7 @@
             },
             {
                 "id": "e1",
+                "label": "e1",
                 "from": "n1",
                 "to": "n1",
                 "forceTestAfter": -1,
@@ -917,13 +1022,20 @@
             "stop"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start",
-            "stop"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "stop",
+                "label": "stop"
+            }
         ],
         "edges": [
             {
                 "id": "dec",
+                "label": "dec",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": 1000,
@@ -956,6 +1068,7 @@
             },
             {
                 "id": "stop",
+                "label": "stop",
                 "from": "start",
                 "to": "stop",
                 "forceTestAfter": -1,
@@ -994,14 +1107,24 @@
         "startNodeId": "start",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start",
-            "wait",
-            "test"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "wait",
+                "label": "wait"
+            },
+            {
+                "id": "test",
+                "label": "test"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "start",
                 "to": "wait",
                 "forceTestAfter": 1000,
@@ -1026,6 +1149,7 @@
             },
             {
                 "id": "change",
+                "label": "change",
                 "from": "wait",
                 "to": "test",
                 "forceTestAfter": -1,
@@ -1050,6 +1174,7 @@
             },
             {
                 "id": "noIncrease",
+                "label": "noIncrease",
                 "from": "test",
                 "to": "test",
                 "forceTestAfter": -1,
@@ -1095,19 +1220,44 @@
             "appleRed"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "start",
-            "appleRed",
-            "appleBowl",
-            "applePoints",
-            "testBothVisible",
-            "bananasDown",
-            "bananPoints"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "appleRed",
+                "label": "appleRed"
+            },
+            {
+                "id": "appleBowl",
+                "label": "appleBowl"
+            },
+            {
+                "id": "applePoints",
+                "label": "applePoints"
+            },
+            {
+                "id": "testBothVisible",
+                "label": "testBothVisible"
+            },
+            {
+                "id": "bananasDown",
+                "label": "bananasDown"
+            },
+            {
+                "id": "bananPoints",
+                "label": "bananPoints"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "init",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -1121,10 +1271,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "appleRed",
+                "label": "appleRed",
                 "from": "start",
                 "to": "appleRed",
                 "forceTestAfter": -1,
@@ -1144,10 +1296,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "appleBowl",
+                "label": "appleBowl",
                 "from": "start",
                 "to": "appleBowl",
                 "forceTestAfter": -1,
@@ -1165,10 +1319,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "applePoints",
+                "label": "applePoints",
                 "from": "appleBowl",
                 "to": "applePoints",
                 "forceTestAfter": -1,
@@ -1188,10 +1344,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "appleTop",
+                "label": "appleTop",
                 "from": "applePoints",
                 "to": "testBothVisible",
                 "forceTestAfter": -1,
@@ -1224,10 +1382,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "bananBowl",
+                "label": "bananBowl",
                 "from": "start",
                 "to": "bananasDown",
                 "forceTestAfter": -1,
@@ -1242,10 +1402,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "bananPoints",
+                "label": "bananPoints",
                 "from": "bananasDown",
                 "to": "bananPoints",
                 "forceTestAfter": -1,
@@ -1265,10 +1427,12 @@
                         ],
                         "negated": true
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "bananRed",
+                "label": "bananRed",
                 "from": "start",
                 "to": "bananasDown",
                 "forceTestAfter": -1,
@@ -1285,10 +1449,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "bananasTop",
+                "label": "bananasTop",
                 "from": "bananPoints",
                 "to": "testBothVisible",
                 "forceTestAfter": -1,
@@ -1315,10 +1481,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "bothVisible",
+                "label": "bothVisible",
                 "from": "testBothVisible",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -1349,10 +1517,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "nothing",
+                "label": "nothing",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -1394,15 +1564,28 @@
             "bowl"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start",
-            "onTop",
-            "falls",
-            "bowl"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "onTop",
+                "label": "onTop"
+            },
+            {
+                "id": "falls",
+                "label": "falls"
+            },
+            {
+                "id": "bowl",
+                "label": "bowl"
+            }
         ],
         "edges": [
             {
                 "id": "onTop",
+                "label": "onTop",
                 "from": "start",
                 "to": "onTop",
                 "forceTestAfter": -1,
@@ -1441,6 +1624,7 @@
             },
             {
                 "id": "falls",
+                "label": "falls",
                 "from": "onTop",
                 "to": "falls",
                 "forceTestAfter": -1,
@@ -1478,6 +1662,7 @@
             },
             {
                 "id": "bowl",
+                "label": "bowl",
                 "from": "falls",
                 "to": "bowl",
                 "forceTestAfter": -1,
@@ -1506,12 +1691,16 @@
         "startNodeId": "start",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            }
         ],
         "edges": [
             {
                 "id": "onMove",
+                "label": "onMove",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -1552,14 +1741,24 @@
             "falls"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start",
-            "onTop",
-            "falls"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "onTop",
+                "label": "onTop"
+            },
+            {
+                "id": "falls",
+                "label": "falls"
+            }
         ],
         "edges": [
             {
                 "id": "onTop",
+                "label": "onTop",
                 "from": "start",
                 "to": "onTop",
                 "forceTestAfter": -1,
@@ -1592,6 +1791,7 @@
             },
             {
                 "id": "fall",
+                "label": "fall",
                 "from": "onTop",
                 "to": "falls",
                 "forceTestAfter": -1,
@@ -1631,34 +1831,32 @@
             "three"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "one",
-            "two",
-            "three",
-            "twoFalls"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "one",
+                "label": "one"
+            },
+            {
+                "id": "two",
+                "label": "two"
+            },
+            {
+                "id": "three",
+                "label": "three"
+            },
+            {
+                "id": "twoFalls",
+                "label": "twoFalls"
+            }
         ],
         "edges": [
             {
-                "id": "init",
-                "from": "init",
-                "to": "one",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "id": "condition1",
-                        "name": "TimeElapsed",
-                        "args": [
-                            "250"
-                        ],
-                        "negated": false
-                    }
-                ],
-                "effects": []
-            },
-            {
                 "id": "2",
+                "label": "2",
                 "from": "one",
                 "to": "two",
                 "forceTestAfter": -1,
@@ -1681,30 +1879,8 @@
                 "effects": []
             },
             {
-                "id": "2falls",
-                "from": "two",
-                "to": "twoFalls",
-                "forceTestAfter": -1,
-                "forceTestAt": 30000,
-                "conditions": [
-                    {
-                        "id": "condition1",
-                        "name": "AttrChange",
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "y",
-                            "-"
-                        ],
-                        "negated": false
-                    }
-                ],
-                "effects": []
-            },
-            {
                 "id": "3",
+                "label": "3",
                 "from": "twoFalls",
                 "to": "three",
                 "forceTestAfter": -1,
@@ -1722,6 +1898,49 @@
                             "="
                         ],
                         "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "init",
+                "label": "init",
+                "from": "init",
+                "to": "one",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "250"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "2falls",
+                "label": "2falls",
+                "from": "two",
+                "to": "twoFalls",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
                     }
                 ],
                 "effects": []
@@ -1736,34 +1955,32 @@
             "three"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "one",
-            "two",
-            "twoFalls",
-            "three"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "one",
+                "label": "one"
+            },
+            {
+                "id": "two",
+                "label": "two"
+            },
+            {
+                "id": "twoFalls",
+                "label": "twoFalls"
+            },
+            {
+                "id": "three",
+                "label": "three"
+            }
         ],
         "edges": [
             {
-                "id": "init",
-                "from": "init",
-                "to": "one",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "id": "condition1",
-                        "name": "TimeElapsed",
-                        "args": [
-                            "250"
-                        ],
-                        "negated": false
-                    }
-                ],
-                "effects": []
-            },
-            {
                 "id": "2",
+                "label": "2",
                 "from": "one",
                 "to": "two",
                 "forceTestAfter": -1,
@@ -1783,27 +2000,8 @@
                 "effects": []
             },
             {
-                "id": "2falls",
-                "from": "two",
-                "to": "twoFalls",
-                "forceTestAfter": -1,
-                "forceTestAt": 30000,
-                "conditions": [
-                    {
-                        "id": "condition1",
-                        "name": "AttrChange",
-                        "args": [
-                            "Bananas",
-                            "y",
-                            "-"
-                        ],
-                        "negated": false
-                    }
-                ],
-                "effects": []
-            },
-            {
                 "id": "3",
+                "label": "3",
                 "from": "twoFalls",
                 "to": "three",
                 "forceTestAfter": -1,
@@ -1821,6 +2019,46 @@
                     }
                 ],
                 "effects": []
+            },
+            {
+                "id": "init",
+                "label": "init",
+                "from": "init",
+                "to": "one",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "250"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "2falls",
+                "label": "2falls",
+                "from": "two",
+                "to": "twoFalls",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Bananas",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
             }
         ]
     },
@@ -1830,12 +2068,16 @@
         "startNodeId": "start",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            }
         ],
         "edges": [
             {
                 "id": "onMove",
+                "label": "onMove",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -1874,6 +2116,7 @@
             },
             {
                 "id": "fallAttr",
+                "label": "fallAttr",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -1905,6 +2148,7 @@
                     },
                     {
                         "id": "5779e743d5c85",
+                        "name": "AttrComp",
                         "args": [
                             [
                                 "Apfel",
@@ -1914,8 +2158,7 @@
                             "<",
                             "170"
                         ],
-                        "negated": false,
-                        "name": "AttrComp"
+                        "negated": false
                     }
                 ],
                 "effects": [
@@ -1957,15 +2200,28 @@
             "falls"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "start",
-            "notVisible",
-            "visible",
-            "falls"
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "notVisible",
+                "label": "notVisible"
+            },
+            {
+                "id": "visible",
+                "label": "visible"
+            },
+            {
+                "id": "falls",
+                "label": "falls"
+            }
         ],
         "edges": [
             {
                 "id": "hide",
+                "label": "hide",
                 "from": "start",
                 "to": "notVisible",
                 "forceTestAfter": 1000,
@@ -1987,6 +2243,7 @@
             },
             {
                 "id": "show",
+                "label": "show",
                 "from": "notVisible",
                 "to": "visible",
                 "forceTestAfter": 1000,
@@ -2017,6 +2274,7 @@
             },
             {
                 "id": "fall-after-1s",
+                "label": "fall-after-1s",
                 "from": "visible",
                 "to": "falls",
                 "forceTestAfter": 1000,
@@ -2043,16 +2301,32 @@
         "startNodeId": "init",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "start",
-            "output",
-            "noOutput",
-            "bowl"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "output",
+                "label": "output"
+            },
+            {
+                "id": "noOutput",
+                "label": "noOutput"
+            },
+            {
+                "id": "bowl",
+                "label": "bowl"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "init",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -2060,17 +2334,18 @@
                 "conditions": [
                     {
                         "id": "condition1",
-                        "negated": false,
                         "name": "Function",
                         "args": [
                             "true"
-                        ]
+                        ],
+                        "negated": false
                     }
                 ],
                 "effects": []
             },
             {
                 "id": "bowl",
+                "label": "bowl",
                 "from": "start",
                 "to": "bowl",
                 "forceTestAfter": -1,
@@ -2090,6 +2365,7 @@
             },
             {
                 "id": "notBowl",
+                "label": "notBowl",
                 "from": "bowl",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -2111,6 +2387,7 @@
             },
             {
                 "id": "output",
+                "label": "output",
                 "from": "start",
                 "to": "output",
                 "forceTestAfter": -1,
@@ -2142,6 +2419,7 @@
             },
             {
                 "id": "noOutput",
+                "label": "noOutput",
                 "from": "output",
                 "to": "noOutput",
                 "forceTestAfter": -1,
@@ -2170,6 +2448,7 @@
             },
             {
                 "id": "backToTop",
+                "label": "backToTop",
                 "from": "noOutput",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -2191,6 +2470,7 @@
             },
             {
                 "id": "speed",
+                "label": "speed",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -2227,14 +2507,14 @@
                     },
                     {
                         "id": "e3266bb5bdb61",
+                        "name": "AttrComp",
                         "args": [
                             "Bananas",
                             "y",
                             "<",
                             "170"
                         ],
-                        "negated": false,
-                        "name": "AttrComp"
+                        "negated": false
                     }
                 ],
                 "effects": [
@@ -2268,17 +2548,36 @@
         "startNodeId": "init",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "start",
-            "red",
-            "hide",
-            "show",
-            "bowl"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "red",
+                "label": "red"
+            },
+            {
+                "id": "hide",
+                "label": "hide"
+            },
+            {
+                "id": "show",
+                "label": "show"
+            },
+            {
+                "id": "bowl",
+                "label": "bowl"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "init",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -2286,17 +2585,18 @@
                 "conditions": [
                     {
                         "id": "condition1",
-                        "negated": false,
                         "name": "Function",
                         "args": [
                             "true"
-                        ]
+                        ],
+                        "negated": false
                     }
                 ],
                 "effects": []
             },
             {
                 "id": "notRed",
+                "label": "notRed",
                 "from": "start",
                 "to": "bowl",
                 "forceTestAfter": -1,
@@ -2311,10 +2611,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "notRedBack",
+                "label": "notRedBack",
                 "from": "bowl",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -2331,10 +2633,12 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             },
             {
                 "id": "touched",
+                "label": "touched",
                 "from": "start",
                 "to": "red",
                 "forceTestAfter": -1,
@@ -2356,6 +2660,7 @@
             },
             {
                 "id": "hide",
+                "label": "hide",
                 "from": "red",
                 "to": "hide",
                 "forceTestAfter": 1200,
@@ -2386,6 +2691,7 @@
             },
             {
                 "id": "show",
+                "label": "show",
                 "from": "hide",
                 "to": "show",
                 "forceTestAfter": 1000,
@@ -2416,6 +2722,7 @@
             },
             {
                 "id": "fall",
+                "label": "fall",
                 "from": "show",
                 "to": "start",
                 "forceTestAfter": 1000,
@@ -2453,30 +2760,20 @@
         "startNodeId": "init",
         "stopNodeIds": [],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "start"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            }
         ],
         "edges": [
             {
-                "id": "init",
-                "from": "init",
-                "to": "start",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "id": "condition1",
-                        "name": "Function",
-                        "args": [
-                            "true"
-                        ],
-                        "negated": false
-                    }
-                ]
-            },
-            {
                 "id": "10",
+                "label": "10",
                 "from": "start",
                 "to": "start",
                 "forceTestAfter": -1,
@@ -2511,6 +2808,522 @@
                         "negated": false
                     }
                 ]
+            },
+            {
+                "id": "init",
+                "label": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "random_fruit",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "dont-move"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "wait",
+                "label": "wait"
+            },
+            {
+                "id": "dont-move",
+                "label": "dont-move"
+            },
+            {
+                "id": "fruits",
+                "label": "fruits"
+            },
+            {
+                "id": "apple",
+                "label": "apple"
+            },
+            {
+                "id": "bananas",
+                "label": "bananas"
+            },
+            {
+                "id": "onlyApple",
+                "label": "onlyApple"
+            }
+        ],
+        "edges": [
+            {
+                "id": "dont-move",
+                "label": "dont-move",
+                "from": "start",
+                "to": "dont-move",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Probability",
+                        "args": [
+                            "0.05"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "waitProb",
+                "label": "waitProb",
+                "from": "start",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Probability",
+                        "args": [
+                            "0.1"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "onlyApple",
+                "label": "onlyApple",
+                "from": "start",
+                "to": "onlyApple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Probability",
+                        "args": [
+                            "0.2"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "not-wait",
+                "label": "not-wait",
+                "from": "start",
+                "to": "fruits",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "wait",
+                "label": "wait",
+                "from": "wait",
+                "to": "dont-move",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteColor",
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "away-left",
+                "label": "away-left",
+                "from": "wait",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Apple', 'x')>=0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "left arrow"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "away-right",
+                "label": "away-right",
+                "from": "wait",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Apple', 'x')<0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "right arrow"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "appleProb",
+                "label": "appleProb",
+                "from": "fruits",
+                "to": "apple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Probability",
+                        "args": [
+                            "0.5"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "caughtApple",
+                "label": "caughtApple",
+                "from": "apple",
+                "to": "fruits",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "a-left",
+                "label": "a-left",
+                "from": "apple",
+                "to": "apple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Bowl', 'x')>$('Apple', 'x')"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "left arrow"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "a-right",
+                "label": "a-right",
+                "from": "apple",
+                "to": "apple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Bowl', 'x')<$('Apple', 'x')"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "right arrow"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "follow-left",
+                "label": "follow-left",
+                "from": "onlyApple",
+                "to": "onlyApple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Bowl', 'x')>$('Apple', 'x')"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "left arrow"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "follow-right",
+                "label": "follow-right",
+                "from": "onlyApple",
+                "to": "onlyApple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Bowl', 'x')<$('Apple', 'x')"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "right arrow"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "BananasProb",
+                "label": "BananasProb",
+                "from": "fruits",
+                "to": "bananas",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Probability",
+                        "args": [
+                            "1"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "caughtBananas",
+                "label": "caughtBananas",
+                "from": "bananas",
+                "to": "fruits",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Bananas",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "b-left",
+                "label": "b-left",
+                "from": "bananas",
+                "to": "bananas",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Bowl', 'x')>$('Bananas', 'x')"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "left arrow"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "b-right",
+                "label": "b-right",
+                "from": "bananas",
+                "to": "bananas",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Expr",
+                        "args": [
+                            "$('Bowl', 'x')<$('Bananas', 'x')"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "inputEffect1",
+                        "name": "InputKey",
+                        "args": [
+                            "right arrow"
+                        ]
+                    }
+                ]
             }
         ]
     },
@@ -2522,13 +3335,20 @@
             "end"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "wait",
-            "end"
+        "nodes": [
+            {
+                "id": "wait",
+                "label": "wait"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": [
             {
                 "id": "stop",
+                "label": "stop",
                 "from": "wait",
                 "to": "end",
                 "forceTestAfter": -1,
@@ -2547,6 +3367,7 @@
             },
             {
                 "id": "wait",
+                "label": "wait",
                 "from": "wait",
                 "to": "wait",
                 "forceTestAfter": -1,
@@ -2611,465 +3432,6 @@
                             "="
                         ],
                         "negated": false
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "usage": "user",
-        "id": "random_fruit",
-        "startNodeId": "start",
-        "stopNodeIds": [
-            "dont-move"
-        ],
-        "stopAllNodeIds": [],
-        "nodeIds": [
-            "start",
-            "wait",
-            "dont-move",
-            "fruits",
-            "apple",
-            "bananas",
-            "onlyApple"
-        ],
-        "edges": [
-            {
-                "id": "dont-move",
-                "from": "start",
-                "to": "dont-move",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Probability",
-                        "args": [
-                            "0.05"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "waitProb",
-                "from": "start",
-                "to": "wait",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Probability",
-                        "args": [
-                            "0.1"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "onlyApple",
-                "from": "start",
-                "to": "onlyApple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Probability",
-                        "args": [
-                            "0.2"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "not-wait",
-                "from": "start",
-                "to": "fruits",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Function",
-                        "args": [
-                            "true"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "wait",
-                "from": "wait",
-                "to": "dont-move",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "SpriteColor",
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "255",
-                            "0",
-                            "0"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    },
-                    {
-                        "name": "TimeElapsed",
-                        "args": [
-                            "1000"
-                        ],
-                        "negated": false,
-                        "id": "condition2"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "away-left",
-                "from": "wait",
-                "to": "wait",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Apple', 'x')>=0"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Left"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "away-right",
-                "from": "wait",
-                "to": "wait",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Apple', 'x')<0"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Right"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "appleProb",
-                "from": "fruits",
-                "to": "apple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Probability",
-                        "args": [
-                            "0.5"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "caughtApple",
-                "from": "apple",
-                "to": "fruits",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "AttrChange",
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "x",
-                            "="
-                        ],
-                        "negated": true,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "a-left",
-                "from": "apple",
-                "to": "apple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Bowl', 'x')>$('Apple', 'x')"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    },
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ],
-                        "negated": false,
-                        "id": "condition2"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Left"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "a-right",
-                "from": "apple",
-                "to": "apple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Bowl', 'x')<$('Apple', 'x')"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    },
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ],
-                        "negated": false,
-                        "id": "condition2"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Right"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "follow-left",
-                "from": "onlyApple",
-                "to": "onlyApple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Bowl', 'x')>$('Apple', 'x')"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    },
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ],
-                        "negated": false,
-                        "id": "condition2"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Left"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "follow-right",
-                "from": "onlyApple",
-                "to": "onlyApple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Bowl', 'x')<$('Apple', 'x')"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    },
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ],
-                        "negated": false,
-                        "id": "condition2"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Right"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "BananasProb",
-                "from": "fruits",
-                "to": "bananas",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Probability",
-                        "args": [
-                            "1"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "caughtBananas",
-                "from": "bananas",
-                "to": "fruits",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "AttrChange",
-                        "args": [
-                            "Bananas",
-                            "x",
-                            "="
-                        ],
-                        "negated": true,
-                        "id": "condition1"
-                    }
-                ],
-                "inputEffects": []
-            },
-            {
-                "id": "b-left",
-                "from": "bananas",
-                "to": "bananas",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Bowl', 'x')>$('Bananas', 'x')"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    },
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
-                        ],
-                        "negated": false,
-                        "id": "condition2"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Left"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "b-right",
-                "from": "bananas",
-                "to": "bananas",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "$('Bowl', 'x')<$('Bananas', 'x')"
-                        ],
-                        "negated": false,
-                        "id": "condition1"
-                    },
-                    {
-                        "name": "Expr",
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
-                        ],
-                        "negated": false,
-                        "id": "condition2"
-                    }
-                ],
-                "inputEffects": [
-                    {
-                        "name": "InputKey",
-                        "id": "inputEffect1",
-                        "args": [
-                            "Right"
-                        ]
                     }
                 ]
             }

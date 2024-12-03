@@ -1,20 +1,30 @@
 [
     {
-        "id": "test",
         "usage": "program",
+        "id": "test",
         "startNodeId": "n0",
         "stopNodeIds": [
             "n2"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1",
-            "n2"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "n2",
+                "label": "n2"
+            }
         ],
         "edges": [
             {
                 "id": "varChange1",
+                "label": "varChange1",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": -1,
@@ -35,6 +45,7 @@
             },
             {
                 "id": "varChange2",
+                "label": "varChange2",
                 "from": "n1",
                 "to": "n2",
                 "forceTestAfter": -1,

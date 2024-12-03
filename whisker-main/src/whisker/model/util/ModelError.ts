@@ -2,7 +2,7 @@
 import {AbstractEdge} from "../components/AbstractEdge";
 import {Effect} from "../components/Effect";
 import {Condition} from "../components/Condition";
-import {ArgType} from "../schema/common";
+import {ArgType} from "./schema";
 
 function getEffectFailedOutput(edge: AbstractEdge, effect: Effect): string {
     const conditions = edge.conditions;

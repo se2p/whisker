@@ -1,19 +1,26 @@
 [
     {
-        "id": "background",
         "usage": "program",
+        "id": "background",
         "startNodeId": "n0",
         "stopNodeIds": [
             "n1"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            }
         ],
         "edges": [
             {
                 "id": "change",
+                "label": "change",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": -1,

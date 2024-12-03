@@ -1,7 +1,8 @@
 import {z} from "zod";
-import {CheckName, CHECK_NAMES} from "../components/Check";
-import {UserInputName, USER_INPUT_NAMES} from "../components/UserInput";
-import {nextId} from "./schema";
+import {CHECK_NAMES} from "../components/Check";
+import {USER_INPUT_NAMES} from "../components/UserInput";
+import {CheckName} from "../components/Check";
+import {UserInputName} from "../components/UserInput";
 
 const CheckName = z.enum(CHECK_NAMES);
 
@@ -39,7 +40,7 @@ export interface UserInputJSON {
     args: ArgType[];
 }
 
-export const UserInputJSON = z.object({
+const UserInputJSON = z.object({
     id: z.string(),
     name: UserInputName,
     args: z.array(ArgType),
@@ -56,7 +57,7 @@ export interface ModelNodeJSON {
     label: string;
 }
 
-export const ModelNodeJSON = z.object({
+const ModelNodeJSON = z.object({
     id: NodeID,
     label: z.string().optional(),
 });
@@ -71,7 +72,7 @@ export interface IModelEdgeJSON {
     conditions: CheckJSON[];
 }
 
-export const IModelEdgeJSON = z.object({
+const IModelEdgeJSON = z.object({
     id: EdgeID.default(() => `edge-undef-${nextId()}`),
     label: z.string().optional(),
     from: NodeID,
@@ -85,7 +86,7 @@ export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
     effects: CheckJSON[];
 }
 
-export const ProgramModelEdgeJSON = IModelEdgeJSON.extend({
+const ProgramModelEdgeJSON = IModelEdgeJSON.extend({
     effects: z.array(CheckJSON).default([]),
 });
 
@@ -101,15 +102,35 @@ const ModelUsage = z.union([
     z.literal("user"),
 ]);
 
-export interface ICommonModelJSON {
+export interface UserModelEdgeJSON extends IModelEdgeJSON {
+    effects: UserInputJSON[];
+}
+
+const UserModelEdgeJSON = IModelEdgeJSON.extend({
+    effects: z.array(UserInputJSON),
+});
+
+export type ModelEdgeJSON =
+    | ProgramModelEdgeJSON
+    | UserModelEdgeJSON
+    ;
+
+const ModelEdgeJSON = z.union([
+    ProgramModelEdgeJSON,
+    UserModelEdgeJSON,
+]);
+
+interface IModelJSON {
     id: string;
     usage: ModelUsage;
     startNodeId: string;
     stopNodeIds: string[];
     stopAllNodeIds: string[];
+    edges: IModelEdgeJSON[];
+    nodes: ModelNodeJSON[];
 }
 
-export const ICommonModelJSON = z.object({
+const IModelJSON = z.object({
     id: z.string().default(() => `id_undefined${nextId()}`),
     usage: ModelUsage,
     startNodeId: z.string({
@@ -117,4 +138,59 @@ export const ICommonModelJSON = z.object({
     }),
     stopNodeIds: z.array(z.string()).default([]),
     stopAllNodeIds: z.array(z.string()).default([]),
+    edges: z.array(ModelEdgeJSON),
+    nodes: z.array(ModelNodeJSON),
 });
+
+export interface UserModelJSON extends IModelJSON {
+    usage: "user";
+    edges: UserModelEdgeJSON[];
+}
+
+const UserModelJSON = IModelJSON.extend({
+    usage: z.literal("user"),
+    edges: z.array(UserModelEdgeJSON),
+});
+
+export interface ProgramModelJSON extends IModelJSON {
+    usage: "program";
+    edges: ProgramModelEdgeJSON[];
+}
+
+const ProgramModelJSON = IModelJSON.extend({
+    usage: z.literal("program"),
+    edges: z.array(ProgramModelEdgeJSON),
+});
+
+export interface EndModelJSON extends IModelJSON {
+    usage: "end";
+    edges: ProgramModelEdgeJSON[];
+}
+
+const EndModelJSON = IModelJSON.extend({
+    usage: z.literal("end"),
+    edges: z.array(ProgramModelEdgeJSON),
+});
+
+export type ModelJSON =
+    | UserModelJSON
+    | ProgramModelJSON
+    | EndModelJSON
+    ;
+
+const ModelJSON = z.discriminatedUnion("usage", [
+    UserModelJSON,
+    ProgramModelJSON,
+    EndModelJSON,
+]);
+
+let idUndefined = 0;
+
+function nextId(): number {
+    return idUndefined++;
+}
+
+export function parse(text: string): ModelJSON[] {
+    idUndefined = 0;
+    return ModelJSON.array().parse(JSON.parse(text)) as ModelJSON[];
+}

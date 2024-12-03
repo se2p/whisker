@@ -10,10 +10,12 @@
                 "label": "start"
             },
             {
-                "id": "space ship touched"
+                "id": "space ship touched",
+                "label": "space ship touched"
             },
             {
-                "id": "Says some text"
+                "id": "Says some text",
+                "label": "Says some text"
             },
             {
                 "id": "hidden",

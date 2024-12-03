@@ -7,9 +7,15 @@
             "end"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "init",
-            "end"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": []
     },
@@ -23,11 +29,23 @@
         "stopAllNodeIds": [
             "end"
         ],
-        "nodeIds": [
-            "init",
-            "start",
-            "text",
-            "end"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "text",
+                "label": "text"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": []
     },
@@ -41,15 +59,28 @@
         "stopAllNodeIds": [
             "end"
         ],
-        "nodeIds": [
-            "init",
-            "start",
-            "text",
-            "end"
+        "nodes": [
+            {
+                "id": "init",
+                "label": "init"
+            },
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "text",
+                "label": "text"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
         ],
         "edges": [
             {
                 "id": "init",
+                "label": "init",
                 "from": "init",
                 "to": "start",
                 "forceTestAfter": -1,

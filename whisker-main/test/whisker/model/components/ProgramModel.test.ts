@@ -5,7 +5,7 @@ import {getDummyTestDriver} from "../TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {CoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
-import {ProgramModelJSON} from "../../../../src/whisker/model/schema/canonical";
+import {ProgramModelJSON} from "../../../../src/whisker/model/util/schema";
 
 export class MockedModelNode<T extends ModelEdge> extends ModelNode<T> {
     private readonly fn: jest.Mock;

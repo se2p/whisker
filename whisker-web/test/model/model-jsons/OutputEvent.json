@@ -1,21 +1,34 @@
 [
     {
+        "usage": "program",
         "id": "instrumentation",
-        "usage": "program",
         "startNodeId": "n0",
         "stopNodeIds": [
             "n3"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1",
-            "n2",
-            "n3"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "n2",
+                "label": "n2"
+            },
+            {
+                "id": "n3",
+                "label": "n3"
+            }
         ],
         "edges": [
             {
                 "id": "saysHello",
+                "label": "saysHello",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": -1,
@@ -35,6 +48,7 @@
             },
             {
                 "id": "noOutput",
+                "label": "noOutput",
                 "from": "n1",
                 "to": "n2",
                 "forceTestAfter": -1,
@@ -54,6 +68,7 @@
             },
             {
                 "id": "saysHello2",
+                "label": "saysHello2",
                 "from": "n2",
                 "to": "n3",
                 "forceTestAfter": -1,
@@ -74,22 +89,35 @@
         ]
     },
     {
+        "usage": "program",
         "id": "instrumentation2",
-        "usage": "program",
         "startNodeId": "n0",
         "stopNodeIds": [
             "n3"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1",
-            "n2",
-            "n3"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "n2",
+                "label": "n2"
+            },
+            {
+                "id": "n3",
+                "label": "n3"
+            }
         ],
         "edges": [
             {
                 "id": "saysHello",
+                "label": "saysHello",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": -1,
@@ -111,6 +139,7 @@
             },
             {
                 "id": "noOutput",
+                "label": "noOutput",
                 "from": "n1",
                 "to": "n2",
                 "forceTestAfter": -1,
@@ -132,6 +161,7 @@
             },
             {
                 "id": "saysHello2",
+                "label": "saysHello2",
                 "from": "n2",
                 "to": "n3",
                 "forceTestAfter": -1,
@@ -154,22 +184,35 @@
         ]
     },
     {
-        "id": "instrumentation3",
         "usage": "program",
+        "id": "instrumentation3",
         "startNodeId": "n0",
         "stopNodeIds": [
             "n3"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1",
-            "n2",
-            "n3"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "n2",
+                "label": "n2"
+            },
+            {
+                "id": "n3",
+                "label": "n3"
+            }
         ],
         "edges": [
             {
                 "id": "saysHello",
+                "label": "saysHello",
                 "from": "n0",
                 "to": "n1",
                 "forceTestAfter": -1,
@@ -188,6 +231,7 @@
             },
             {
                 "id": "noOutput",
+                "label": "noOutput",
                 "from": "n1",
                 "to": "n2",
                 "forceTestAfter": -1,
@@ -206,6 +250,7 @@
             },
             {
                 "id": "saysHello2",
+                "label": "saysHello2",
                 "from": "n2",
                 "to": "n3",
                 "forceTestAfter": -1,

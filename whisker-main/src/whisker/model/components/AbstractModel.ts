@@ -4,17 +4,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {UserModel} from "./UserModel";
 import {EndModel, ProgramModel} from "./ProgramModel";
-import {LegacyModelJSON} from "../schema/legacy";
-import {ModelJSON} from "../schema/canonical";
-import {ModelUsage} from "../schema/common";
-
-export function isLegacyModelJSON(m: ModelJSON | LegacyModelJSON): m is LegacyModelJSON {
-    return "nodeIds" in m;
-}
-
-export function isModelJSON(m: ModelJSON | LegacyModelJSON): m is ModelJSON {
-    return "nodes" in m;
-}
+import {ModelJSON, ModelUsage} from "../util/schema";
 
 export type Model =
     | UserModel

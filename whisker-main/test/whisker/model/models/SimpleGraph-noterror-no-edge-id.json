@@ -7,9 +7,15 @@
             "n1"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            }
         ],
         "edges": [
             {
@@ -49,9 +55,15 @@
             "n1"
         ],
         "stopAllNodeIds": [],
-        "nodeIds": [
-            "n0",
-            "n1"
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            }
         ],
         "edges": [
             {

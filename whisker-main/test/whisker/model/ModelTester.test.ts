@@ -9,7 +9,7 @@ import {
     EndModel,
     ProgramModel,
 } from "../../../src/whisker/model/components/ProgramModel";
-import {EndModelJSON, ProgramModelJSON, UserModelJSON} from "../../../src/whisker/model/schema/canonical";
+import {EndModelJSON, ProgramModelJSON, UserModelJSON} from "../../../src/whisker/model/util/schema";
 
 describe('ModelTester', () => {
     test("Initially no models are loaded", () => {
