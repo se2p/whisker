@@ -249,7 +249,7 @@ class ModelEditor {
     saveCheck () {
         const type = $(ModelEditor.CHECK_CHOOSER).val();
         let args = [];
-        if (type === 'Expr' || type === 'Function'){
+        if (type === 'Expr'){
             args = $(`#${ModelEditor.INPUT_ID}${0}`).val()
                 .trim()
                 .split('\n');
@@ -322,7 +322,6 @@ class ModelEditor {
         case argType.attrName:
         case argType.costumeName:
         case argType.value:
-        case argType.functionC:
         case argType.expr:
             return value.trim().length > 0;
         default:
@@ -346,12 +345,12 @@ class ModelEditor {
         return this.currentModel.edges.some(e => e.effects.length > 0);
     }
 
-    /** Fill all empty conditions of edges with a always true condition */
+    /** Fill all empty conditions of edges with an always true condition */
     fillEmptyConditions () {
         const emptyConditions = {
             id: Math.random().toString(16)
                 .slice(2),
-            name: 'Function',
+            name: 'Expr',
             args: ['true'],
             negated: false
         };
@@ -1284,9 +1283,6 @@ class ModelEditor {
             this.appendInputWithPattern('modelEditor:yCoord', value, ModelEditor.Y_PATTERN,
                 i, 'max-width:60px;');
             break;
-        case argType.functionC:
-            this.appendAreaInput('modelEditor:function', value, 'javascript code...', i);
-            break;
         case argType.expr:
             this.appendAreaInput('modelEditor:expr', value, 'expression ...', i);
             break;
@@ -1406,7 +1402,7 @@ class ModelEditor {
         const key = `modelEditor:${check.name}`;
         let name = (check.negated ? '!' : '') + i18n.t(key);
 
-        if (check.name !== 'Expr' && check.name !== 'Function' && check.name !== 'Key') {
+        if (check.name !== 'Expr' && check.name !== 'Key') {
             name += ` (${check.args})`;
         } else if (check.name === 'Key') {
             name += ` (${i18n.t(`modelEditor:${check.args[0]}`)})`;
