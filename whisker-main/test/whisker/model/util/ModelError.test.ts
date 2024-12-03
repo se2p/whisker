@@ -10,7 +10,7 @@ import {Check} from "../../../../src/whisker/model/components/Check";
 describe('ModelError', () => {
     function getEdge(): ProgramModelEdge {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", -1, -1);
-        edge.addCondition(new Check("c1", "label", "Function", false, ["true"]));
+        edge.addCondition(new Check("c1", "label", "Expr", false, ["true"]));
         edge.addCondition(new Check("c2", "label", "Key", true, ["a"]));
         return edge;
     }

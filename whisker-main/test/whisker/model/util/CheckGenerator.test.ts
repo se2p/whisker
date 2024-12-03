@@ -1,7 +1,6 @@
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
 import {
     ComparisonNotKnownError,
-    FunctionEvalError,
     NotANumericalValueError,
     RGBRangeError,
     SpriteNotFoundError
@@ -460,52 +459,6 @@ describe('CheckGenerator', () => {
         expect(res()).toEqual(false);
     });
 
-    describe('getFunctionCheck()', () => {
-        it.each([[false, false], [false, true], [true, false], [true, true]])(
-            'Returns constant function for negated: %s, param: %s', (negated, value) => {
-                const f = CheckGenerator.getFunctionCheck(null, null, "", "", negated, String(value));
-                expect(f()).toBe(negated ? !value : value);
-            });
-
-        test('Throws Exception when function cannot be evaluated', () => {
-            expect(() => {
-                CheckGenerator.getFunctionCheck(null, null, "", "", false, "throw new Error(\"this is an error\");");
-            }).toThrow(FunctionEvalError);
-        });
-
-        test('Returned function actually uses TestDriver', () => {
-            const apple = new SpriteMock("apple");
-            const kiwi = new SpriteMock("kiwi");
-            const tdMock = new TestDriverMock([apple, kiwi]);
-            const cu = getDummyCheckUtility();
-            const fn = "(t) => t.getSprites(s => s.name == \"apple\").length == 1";
-            const f = CheckGenerator.getFunctionCheck(tdMock.getTestDriver(), cu, "label", graphID, false, fn);
-            expect(f()).toBe(true);
-            tdMock.currentSprites = [kiwi.sprite];
-            expect(f()).toBe(false);
-        });
-
-        test('Registers correct predicate at CheckUtility', () => {
-            const apple = new SpriteMock("apple", [{name: "sayText", value: "I am an apple"}]);
-            const tdMock = new TestDriverMock([apple]);
-            let check: ((sprite: Sprite) => boolean);
-            const mock = jest.fn();
-            const cu = getDummyCheckUtility();
-            cu.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
-                                 predicate: (sprite: Sprite) => boolean): void => {
-                check = predicate;
-                mock(spriteName, eventString, edgeLabel, graphID, predicate);
-            };
-            const fn = "(t) => t.getSprite(\"apple\").sayText == 'I am an apple'";
-            CheckGenerator.getFunctionCheck(tdMock.getTestDriver(), cu, "label", graphID, false, fn);
-            expect(mock).toHaveBeenCalledWith("apple", "Function:(t) => t.getSprite(\"apple\").sayText == 'I am an apple'", "label", graphID, check);
-            expect(check(apple.sprite)).toBe(true);
-            apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
-            tdMock.currentSprites = [apple.updateSprite()];
-            expect(check(apple.sprite)).toBe(false);
-        });
-    });
-
     describe('getOutputOnSpriteCheck()', () => {
         const dummyCU = getDummyCheckUtility();
         const banana = new SpriteMock("Banana");
@@ -662,6 +615,44 @@ describe('CheckGenerator', () => {
             const res = CheckGenerator.getExpressionCheck(t, cu, "label", graphID, false, expr);
             expect(visualEvent).toHaveBeenCalledTimes(1);
             expect(visualEvent).toHaveBeenCalledWith("Gate", "Expr:" + expr, "label", graphID, res);
+        });
+
+        it.each([[false, false], [false, true], [true, false], [true, true]])(
+            'Returns constant function for negated: %s, param: %s', (negated, value) => {
+                const f = CheckGenerator.getExpressionCheck(null, null, "", "", negated, String(value));
+                expect(f()).toBe(negated ? !value : value);
+            });
+
+        test('Can use TestDriver instead of $-function', () => {
+            const apple = new SpriteMock("apple");
+            const kiwi = new SpriteMock("kiwi");
+            const tdMock = new TestDriverMock([apple, kiwi]);
+            const cu = getDummyCheckUtility();
+            const fn = "t.getSprites(s => s.name == 'apple').length == 1";
+            const f = CheckGenerator.getExpressionCheck(tdMock.getTestDriver(), cu, "label", graphID, false, fn);
+            expect(f()).toBe(true);
+            tdMock.currentSprites = [kiwi.sprite];
+            expect(f()).toBe(false);
+        });
+
+        test('Registers correct predicate at CheckUtility', () => {
+            const apple = new SpriteMock("apple", [{name: "sayText", value: "I am an apple"}]);
+            const tdMock = new TestDriverMock([apple]);
+            let check: ((sprite: Sprite) => boolean);
+            const mock = jest.fn();
+            const cu = getDummyCheckUtility();
+            cu.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                                 predicate: (sprite: Sprite) => boolean): void => {
+                check = predicate;
+                mock(spriteName, eventString, edgeLabel, graphID, predicate);
+            };
+            const fn = "t.getSprite('apple').sayText == 'I am an apple'";
+            CheckGenerator.getExpressionCheck(tdMock.getTestDriver(), cu, "label", graphID, false, fn);
+            expect(mock).toHaveBeenCalledWith("apple", "Expr:t.getSprite('apple').sayText == 'I am an apple'", "label", graphID, check);
+            expect(check(apple.sprite)).toBe(true);
+            apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
+            tdMock.currentSprites = [apple.updateSprite()];
+            expect(check(apple.sprite)).toBe(false);
         });
     });
 

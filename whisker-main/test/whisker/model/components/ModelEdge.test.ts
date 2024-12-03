@@ -245,7 +245,7 @@ describe('Model edges', () => {
             edge.addCondition(new Check(id, label, "BackgroundChange", false, ["test"]));
             edge.addCondition(new Check(id, label, "Key", false, ["a"]));
             edge.addCondition(new Check(id, label, "SpriteTouching", false, ["apple", "bowl"]));
-            const eventStrings = ["BackgroundChange:differentArg", "Key:w", "Function:false"];
+            const eventStrings = ["BackgroundChange:differentArg", "Key:w", "Expr:false"];
             const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
             expect(result).toBe(edge.conditions);
         });
@@ -263,7 +263,7 @@ describe('Model edges', () => {
             edge.addCondition(new Check(id, label, "BackgroundChange", false, ["newBackground"]));
             edge.addCondition(new Check(id, label, "Key", false, ["d"]));
             edge.addCondition(new Check(id, label, "SpriteTouching", false, ["banana", "bowl"]));
-            const eventStrings = ["BackgroundChange:test", "Key:d", "Function:true"];
+            const eventStrings = ["BackgroundChange:test", "Key:d", "Expr:true"];
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
             expect(result).toStrictEqual([edge.conditions[0]]);
@@ -275,7 +275,7 @@ describe('Model edges', () => {
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             edge.addCondition(new Check(id, label, "BackgroundChange", false, ["newBackground"]));
             edge.addCondition(new Check(id, label, "Key", false, ["a"]));
-            edge.addCondition(new Check(id, label, "Function", false, ["true"]));
+            edge.addCondition(new Check(id, label, "Expr", false, ["true"]));
             edge.addEffect(new Check(id, label, "SpriteTouching", false, ["apple", "bowl"]));
             const eventStrings = ["BackgroundChange:stage", "Key:d"];
             edge.registerComponents(cu, tdMock.getTestDriver());

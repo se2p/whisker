@@ -307,9 +307,15 @@ describe('ModelUtil tests', function () {
 
     describe('getExpressionForEval', () => {
         const t = getDummyTestDriver();
-        test('throws exception when expression cannot be evaluated', () => {
-            // const expr = "throw new Exception(\"this is supposed to happen\")";
-            const expr = "\"some wrong syntax'\"";
+        test('throws exception when expression cannot be evaluated (wrong syntax)', () => {
+            const expr = "'some wrong syntax";
+            expect(() => {
+                ModelUtil.getExpressionForEval(t, expr);
+            }).toThrow(ExpressionSyntaxError);
+        });
+
+        test('throws exception when expression cannot be evaluated (exception', () => {
+            const expr = "throw new Exception(\"this is supposed to happen\")";
             expect(() => {
                 ModelUtil.getExpressionForEval(t, expr);
             }).toThrow(ExpressionSyntaxError);
@@ -335,23 +341,6 @@ describe('ModelUtil tests', function () {
             const expr = "{const value=$('apple', 'x');return value == 10}";
             const result = ModelUtil.getExpressionForEval(t, expr);
             expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
-        });
-
-        test('adds missing \' at the end of constant expression', () => {
-            const res = ModelUtil.getExpressionForEval(t, "'some text");
-            const f = eval(res.expr);
-            expect(f(t)).toBe("some text");
-        });
-
-        test('Escapes input so expression is not evaluated', () => {
-            const apple = new SpriteMock("apple");
-            const kiwi = new SpriteMock("kiwi");
-            const tdMock = new TestDriverMock([apple, kiwi]);
-            const t = tdMock.getTestDriver();
-            const expr = "t.getSprites(s => s.name == \"apple\").length == 1";
-            const result = ModelUtil.getExpressionForEval(t, expr);
-            const f = eval(result.expr);
-            expect(f(t)).toBe(expr);
         });
 
         test('Evaluated expression correct with dependencies', () => {
