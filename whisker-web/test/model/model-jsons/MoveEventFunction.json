@@ -55,9 +55,9 @@
                 "conditions": [
                     {
                         "id": "0",
-                        "name": "Function",
+                        "name": "Expr",
                         "args": [
-                            "(t) => {return t.getSprite('Sprite1').y == -10;}"
+                            "t.getSprite('Sprite1').y == -10"
                         ],
                         "negated": false
                     }
@@ -74,9 +74,9 @@
                 "conditions": [
                     {
                         "id": "0",
-                        "name": "Function",
+                        "name": "Expr",
                         "args": [
-                            "(t) => {return t.getSprite('Sprite1').y == 0;}"
+                            "t.getSprite('Sprite1').y == 0"
                         ],
                         "negated": false
                     }
@@ -93,9 +93,9 @@
                 "conditions": [
                     {
                         "id": "0",
-                        "name": "Function",
+                        "name": "Expr",
                         "args": [
-                            "(t) => {return t.getSprite('Sprite1').y < 0;}"
+                            "t.getSprite('Sprite1').y < 0"
                         ],
                         "negated": false
                     }
