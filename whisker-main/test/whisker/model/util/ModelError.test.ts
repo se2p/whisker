@@ -1,4 +1,3 @@
-import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {
     getEffectFailedOutput,
     getErrorOnEdgeOutput,
@@ -7,12 +6,13 @@ import {
 } from "../../../../src/whisker/model/util/ModelError";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
+import {Check} from "../../../../src/whisker/model/components/Check";
 
 describe('ModelError', () => {
     function getEdge(): ProgramModelEdge {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", -1, -1);
-        edge.addCondition(new Condition("c1", "label", "Function", false, ["true"]));
-        edge.addCondition(new Condition("c2", "label", "Key", true, ["a"]));
+        edge.addCondition(new Check("c1", "label", "Function", false, ["true"]));
+        edge.addCondition(new Check("c2", "label", "Key", true, ["a"]));
         return edge;
     }
 
@@ -24,7 +24,7 @@ describe('ModelError', () => {
 
     test("getEffectFailedOutput() with TimeBetween", () => {
         const edge = getEdge();
-        edge.addCondition(new Condition("c4", "label", "TimeBetween", true, ["123"]));
+        edge.addCondition(new Check("c4", "label", "TimeBetween", true, ["123"]));
         const effect = new Effect("e1", "label", "AttrComp", false, ["Apple", "x", ">", "0"]);
         expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrComp(Apple,x,>,0) after 123ms");
 
@@ -32,26 +32,26 @@ describe('ModelError', () => {
 
     test("getEffectFailedOutput() with TimeElapsed", () => {
         const edge = getEdge();
-        edge.addCondition(new Condition("c3", "label", "TimeElapsed", true, ["456"]));
+        edge.addCondition(new Check("c3", "label", "TimeElapsed", true, ["456"]));
         const effect = new Effect("e1", "label", "AttrChange", false, ["Apple", "x", "+"]);
         expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Apple,x,+) before 456ms elapsed");
     });
 
     test("getEffectFailedOutput() with TimeElapsed and TimeAfterEnd", () => {
         const edge = getEdge();
-        edge.addCondition(new Condition("c5", "label", "TimeAfterEnd", true, ["789"]));
-        edge.addCondition(new Condition("c4", "label", "TimeElapsed", true, ["456"]));
+        edge.addCondition(new Check("c5", "label", "TimeAfterEnd", true, ["789"]));
+        edge.addCondition(new Check("c4", "label", "TimeElapsed", true, ["456"]));
         const effect = new Effect("e1", "label", "AttrChange", false, ["Banana", "x", "+"]);
         expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Banana,x,+) before 456ms elapsed after 789ms");
     });
 
     test("getTimeLimitFailedAfterOutput()", () => {
-        const condition = new Condition("c6", "label", "Expr", false, ["$(Bowl.x)>0"]);
+        const condition = new Check("c6", "label", "Expr", false, ["$(Bowl.x)>0"]);
         expect(getTimeLimitFailedAfterOutput(getEdge(), condition, 50)).toEqual("graphID-label: Expr($(Bowl.x)>0) after 50ms");
     });
 
     test("getTimeLimitFailedAtOutput()", () => {
-        const condition = new Condition("c6", "label", "Click", false, ["Bowl"]);
+        const condition = new Check("c6", "label", "Click", false, ["Bowl"]);
         expect(getTimeLimitFailedAtOutput(getEdge(), condition, 42)).toEqual("graphID-label: Click(Bowl) at 42ms");
     });
 

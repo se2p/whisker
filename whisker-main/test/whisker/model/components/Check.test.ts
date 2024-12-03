@@ -1,6 +1,5 @@
 import {Check} from "../../../../src/whisker/model/components/Check";
 import {CheckGenerator} from "../../../../src/whisker/model/util/CheckGenerator";
-import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {getDummyTestDriver} from "../TestDriverMock";
 import {getDummyCheckUtility} from "../CheckUtilityMock";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
@@ -63,7 +62,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getAttributeComparisonCheck = fn;
         const args: ArgType[] = ["apple", "x", "<", 5];
-        const check = new Condition("id", "label", "AttrComp", negated, args);
+        const check = new Check("id", "label", "AttrComp", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -73,7 +72,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getAttributeChangeCheck = fn;
         const args: ArgType[] = ["apple", "size", "-"];
-        const check = new Condition("id", "label", "AttrChange", negated, args);
+        const check = new Check("id", "label", "AttrChange", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -83,7 +82,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getBackgroundChangeCheck = fn;
         const args: ArgType[] = ["newBackground"];
-        const check = new Condition("id", "label", "BackgroundChange", negated, args);
+        const check = new Check("id", "label", "BackgroundChange", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", negated, ...args);
@@ -93,7 +92,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getFunctionCheck = fn;
         const args: ArgType[] = ["() => true"];
-        const check = new Condition("id", "label", "Function", negated, args);
+        const check = new Check("id", "label", "Function", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -103,7 +102,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getOutputOnSpriteCheck = fn;
         const args: ArgType[] = ["apple", "i have fallen down"];
-        const check = new Condition("id", "label", "Output", negated, args);
+        const check = new Check("id", "label", "Output", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -113,7 +112,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getVariableChangeCheck = fn;
         const args: ArgType[] = ["apple", "x", "+"];
-        const check = new Condition("id", "label", "VarChange", negated, args);
+        const check = new Check("id", "label", "VarChange", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -123,7 +122,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getVariableComparisonCheck = fn;
         const args: ArgType[] = ["apple", "x", ">=", "7"];
-        const check = new Condition("id", "label", "VarComp", negated, args);
+        const check = new Check("id", "label", "VarComp", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -133,7 +132,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getSpriteTouchingCheck = fn;
         const args: ArgType[] = ["apple", "bowl"];
-        const check = new Condition("id", "label", "SpriteTouching", negated, args);
+        const check = new Check("id", "label", "SpriteTouching", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -143,7 +142,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getSpriteColorTouchingCheck = fn;
         const args: ArgType[] = ["apple", 128, 128, 128];
-        const check = new Condition("id", "label", "SpriteColor", negated, args);
+        const check = new Check("id", "label", "SpriteColor", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -153,7 +152,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getKeyDownCheck = fn;
         const args: ArgType[] = ["a"];
-        const check = new Condition("id", "label", "Key", negated, args);
+        const check = new Check("id", "label", "Key", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, negated, ...args);
@@ -163,7 +162,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getSpriteClickedCheck = fn;
         const args: ArgType[] = ["banana"];
-        const check = new Condition("id", "label", "Click", negated, args);
+        const check = new Check("id", "label", "Click", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
@@ -173,7 +172,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getExpressionCheck = fn;
         const args: ArgType[] = ["$(Cat. x) > 25"];
-        const check = new Condition("id", "label", "Expr", negated, args);
+        const check = new Check("id", "label", "Expr", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
@@ -183,7 +182,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getProbabilityCheck = fn;
         const args: ArgType[] = [0.5];
-        const check = new Condition("id", "label", "Probability", negated, args);
+        const check = new Check("id", "label", "Probability", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
@@ -193,7 +192,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getTimeElapsedCheck = fn;
         const args: ArgType[] = [1000];
-        const check = new Condition("id", "label", "TimeElapsed", negated, args);
+        const check = new Check("id", "label", "TimeElapsed", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
@@ -203,7 +202,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getTimeBetweenCheck = fn;
         const args: ArgType[] = [500];
-        const check = new Condition("id", "label", "TimeBetween", negated, args);
+        const check = new Check("id", "label", "TimeBetween", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
@@ -213,7 +212,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getNumberOfClonesCheck = fn;
         const args: ArgType[] = ["apple", ">=", "1"];
-        const check = new Condition("id", "label", "NbrOfClones", negated, args);
+        const check = new Check("id", "label", "NbrOfClones", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, false, ...args);
@@ -223,7 +222,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getNumberOfClonesCheck = fn;
         const args: ArgType[] = ["apple", "==", "1"];
-        const check = new Condition("id", "label", "NbrOfVisibleClones", negated, args);
+        const check = new Check("id", "label", "NbrOfVisibleClones", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, true, ...args);
@@ -233,7 +232,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getTouchingEdgeCheck = fn;
         const args: ArgType[] = ["apple"];
-        const check = new Condition("id", "label", "TouchingEdge", negated, args);
+        const check = new Check("id", "label", "TouchingEdge", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, "apple");
@@ -243,7 +242,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getTouchingEdgeCheck = fn;
         const args: ArgType[] = ["apple"];
-        const check = new Condition("id", "label", "TouchingHorizEdge", negated, args);
+        const check = new Check("id", "label", "TouchingHorizEdge", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, "apple", false);
@@ -253,7 +252,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getTouchingEdgeCheck = fn;
         const args: ArgType[] = ["apple"];
-        const check = new Condition("id", "label", "TouchingVerticalEdge", negated, args);
+        const check = new Check("id", "label", "TouchingVerticalEdge", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, "apple", true, false);
@@ -263,7 +262,7 @@ describe('Check', () => {
         const fn = jest.fn();
         CheckGenerator.getTimeAfterEndCheck = fn;
         const args: ArgType[] = [200];
-        const check = new Condition("id", "label", "TimeAfterEnd", negated, args);
+        const check = new Check("id", "label", "TimeAfterEnd", negated, args);
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, negated, ...args);
@@ -271,8 +270,8 @@ describe('Check', () => {
 
     test('Invalid comparison throws error', () => {
         expect(() => {
-            const c1 = new Condition("id", "label", "AttrComp", true, ["sprite", "var", "comp", "value"]);
-            const c2 = new Condition("id", "label", "AttrComp", true, ["sprite", "var", ">=", "value"]);
+            const c1 = new Check("id", "label", "AttrComp", true, ["sprite", "var", "comp", "value"]);
+            const c2 = new Check("id", "label", "AttrComp", true, ["sprite", "var", ">=", "value"]);
             Check.testForContradicting(c1, c2);
         }).toThrow();
     });

@@ -16,7 +16,7 @@ export class Effect extends Check {
      * @param args Arguments for the effect e.g. sprite names.
      */
     constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: ArgType[]) {
-        super(id, edgeLabel, name, args, negated);
+        super(id, edgeLabel, name, negated, args);
 
         if (name == "Output" || ((name == "AttrComp" || name == "AttrChange") && (args[1] == "sayText"))) {
             this._dependsOnSayText = true;

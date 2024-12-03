@@ -1,4 +1,3 @@
-import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {UserInput} from "../../../../src/whisker/model/components/UserInput";
 import {TestDriverMock} from "../TestDriverMock";
@@ -7,6 +6,7 @@ import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ProgramModelEdgeJSON, UserModelEdgeJSON} from "../../../../src/whisker/model/util/schema";
+import {Check} from "../../../../src/whisker/model/components/Check";
 
 describe('Model edges', () => {
     const id = "id";
@@ -15,16 +15,16 @@ describe('Model edges', () => {
     const from = "from";
     const to = "to";
 
-    function mockCondition(name: string, value: boolean): Condition {
+    function mockCondition(name: string, value: boolean): Check {
         return {
             id: name,
             check: jest.fn().mockReturnValue(value),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as Condition;
+        } as unknown as Check;
     }
 
-    function mockConditionWithError(name: string, value: string): Condition {
+    function mockConditionWithError(name: string, value: string): Check {
         return {
             id: name,
             check: (s1, s2) => {
@@ -32,7 +32,7 @@ describe('Model edges', () => {
             },
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as Condition;
+        } as unknown as Check;
     }
 
     function mockEffect(fn: jest.Mock): Effect {
@@ -89,7 +89,7 @@ describe('Model edges', () => {
 
     test("Reset does not clear conditions on ModelEdge", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
+        const condition = new Check(id, label, "BackgroundChange", false, ["test"]);
         edge.addCondition(condition);
         expect(edge.conditions.length).toBe(1);
         edge.reset();
@@ -99,7 +99,7 @@ describe('Model edges', () => {
     test("Program model edge", () => {
         const effect = new Effect(id, label, "BackgroundChange", false, ["test"]);
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
+        const condition = new Check(id, label, "BackgroundChange", false, ["test"]);
         edge.addEffect(effect);
         edge.addCondition(condition);
         expect(edge.effects.length).toBe(1);
@@ -108,7 +108,7 @@ describe('Model edges', () => {
     test("User model edge", () => {
         const inputEffect = new UserInput("id", "InputKey", ["left"]);
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
+        const condition = new Check(id, label, "BackgroundChange", false, ["test"]);
         edge.addUserInput(inputEffect);
         edge.addCondition(condition);
         expect(edge.userInputs.length).toBe(1);
@@ -120,7 +120,7 @@ describe('Model edges', () => {
     test("ProgramModelEdge.toJSON()", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
         const effect = new Effect(id, label, "BackgroundChange", false, ["test"]);
-        const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
+        const condition = new Check(id, label, "BackgroundChange", false, ["test"]);
         edge.addEffect(effect);
         edge.addCondition(condition);
         const actual = edge.toJSON();
@@ -140,7 +140,7 @@ describe('Model edges', () => {
     test("UserModelEdge.toJSON()", () => {
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
         const inputEffect = new UserInput("id", "InputKey", ["left"]);
-        const condition = new Condition(id, label, "BackgroundChange", false, ["test"]);
+        const condition = new Check(id, label, "BackgroundChange", false, ["test"]);
         edge.addUserInput(inputEffect);
         edge.addCondition(condition);
         const actual = edge.toJSON();
@@ -162,9 +162,9 @@ describe('Model edges', () => {
             const tdMock = new TestDriverMock([], 10);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             edge.lastTransition = 11;
-            edge.addCondition(new Condition(id, label, "BackgroundChange", false, ["test"]));
-            edge.addCondition(new Condition(id, label, "Key", false, ["a"]));
-            edge.addCondition(new Condition(id, label, "SpriteTouching", false, ["apple", "bowl"]));
+            edge.addCondition(new Check(id, label, "BackgroundChange", false, ["test"]));
+            edge.addCondition(new Check(id, label, "Key", false, ["a"]));
+            edge.addCondition(new Check(id, label, "SpriteTouching", false, ["apple", "bowl"]));
             const result = edge.checkConditions(tdMock.getTestDriver(), null, 5, 7);
             expect(result).toBe(edge.conditions);
         });
@@ -243,9 +243,9 @@ describe('Model edges', () => {
     describe("checkConditionsOnEvent()", () => {
         test("checkConditionsOnEvent() returns conditions when event string not contained", () => {
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.addCondition(new Condition(id, label, "BackgroundChange", false, ["test"]));
-            edge.addCondition(new Condition(id, label, "Key", false, ["a"]));
-            edge.addCondition(new Condition(id, label, "SpriteTouching", false, ["apple", "bowl"]));
+            edge.addCondition(new Check(id, label, "BackgroundChange", false, ["test"]));
+            edge.addCondition(new Check(id, label, "Key", false, ["a"]));
+            edge.addCondition(new Check(id, label, "SpriteTouching", false, ["apple", "bowl"]));
             const eventStrings = ["BackgroundChange:differentArg", "Key:w", "Function:false"];
             const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
             expect(result).toBe(edge.conditions);
@@ -261,9 +261,9 @@ describe('Model edges', () => {
             stage.updateSprite();
             tdMock.stage = stage.sprite;
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.addCondition(new Condition(id, label, "BackgroundChange", false, ["newBackground"]));
-            edge.addCondition(new Condition(id, label, "Key", false, ["d"]));
-            edge.addCondition(new Condition(id, label, "SpriteTouching", false, ["banana", "bowl"]));
+            edge.addCondition(new Check(id, label, "BackgroundChange", false, ["newBackground"]));
+            edge.addCondition(new Check(id, label, "Key", false, ["d"]));
+            edge.addCondition(new Check(id, label, "SpriteTouching", false, ["banana", "bowl"]));
             const eventStrings = ["BackgroundChange:test", "Key:d", "Function:true"];
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
@@ -274,9 +274,9 @@ describe('Model edges', () => {
             const cu = getDummyCheckUtility();
             const tdMock = new TestDriverMock();
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.addCondition(new Condition(id, label, "BackgroundChange", false, ["newBackground"]));
-            edge.addCondition(new Condition(id, label, "Key", false, ["a"]));
-            edge.addCondition(new Condition(id, label, "Function", false, ["true"]));
+            edge.addCondition(new Check(id, label, "BackgroundChange", false, ["newBackground"]));
+            edge.addCondition(new Check(id, label, "Key", false, ["a"]));
+            edge.addCondition(new Check(id, label, "Function", false, ["true"]));
             edge.addEffect(new Effect(id, label, "SpriteTouching", false, ["apple", "bowl"]));
             const eventStrings = ["BackgroundChange:stage", "Key:d"];
             edge.registerComponents(cu, tdMock.getTestDriver());

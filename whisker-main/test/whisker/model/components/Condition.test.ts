@@ -1,12 +1,11 @@
-import {Condition} from "../../../../src/whisker/model/components/Condition";
-import {CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
+import {Check, CHECK_NAMES, CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtilityMock} from "../CheckUtilityMock";
 import {ArgType, CheckJSON} from "../../../../src/whisker/model/util/schema";
 
 describe('Condition', () => {
 
     function checkConstructorThrows(c: CheckName, n: boolean, args: ArgType[]) {
-        expect(() => new Condition("id", "edgeID", c, n, args)).toThrow();
+        expect(() => new Check("id", "edgeID", c, n, args)).toThrow();
     }
 
     describe('Constructor throws for empty args', () => {
@@ -16,25 +15,25 @@ describe('Condition', () => {
 
     test("constructor throws for undefined id", () => {
         expect(() => {
-            new Condition(undefined, undefined, "BackgroundChange", true, ["test"]);
+            new Check(undefined, undefined, "BackgroundChange", true, ["test"]);
         }).toThrow();
     });
 
     test("constructor does not throw for undefined edgeLabel", () => {
         expect(() => {
-            new Condition("test", undefined, "BackgroundChange", true, ["test"]);
+            new Check("test", undefined, "BackgroundChange", true, ["test"]);
         }).not.toThrow();
     });
 
     test("Getters work properly", () => {
-        const c = new Condition("test", undefined, "BackgroundChange", true, ["test"]);
+        const c = new Check("test", undefined, "BackgroundChange", true, ["test"]);
         expect(c.id).toBe("test");
         expect(c.negated).toBe(true);
         expect(c.name).toBe("BackgroundChange");
         expect(c.args.length).toBe(1);
         expect(c.args[0]).toBe("test");
         expect(() => {
-            c.condition;
+            c.check;
         }).not.toThrow();
     });
 
@@ -43,7 +42,7 @@ describe('Condition', () => {
         const checkName = "BackgroundChange";
         const negated = true;
         const args: ArgType[] = ["test"];
-        const condition = new Condition(id, "edgeID", checkName, negated, args);
+        const condition = new Check(id, "edgeID", checkName, negated, args);
         const actual = condition.toJSON();
         const expected: CheckJSON = {
             id: id,
@@ -169,12 +168,12 @@ describe('Condition', () => {
         ];
 
         it.each(constructorArguments)('(%s, %s, %s) has the correct toString()', (c: CheckName, n: boolean, args: ArgType[], expected: string) => {
-            expect(new Condition("id", "edgeID", c, n, args).toString()).toBe(expected);
+            expect(new Check("id", "edgeID", c, n, args).toString()).toBe(expected);
         });
     });
 
     test('Condition.check() returns false before registerComponent()', () => {
-        const condition = new Condition("id", "edgeID", "AttrChange", false, ["test", "attr", "-"]);
+        const condition = new Check("id", "edgeID", "AttrChange", false, ["test", "attr", "-"]);
         expect(condition.check(1, 1)).toBe(false);
     });
 
@@ -182,9 +181,9 @@ describe('Condition', () => {
     const cu = cuMock.getCheckUtility();
 
     test('registerComponent() calculates correct effect', () => {
-        const effect = new Condition("id", "edgeID", "Key", true, ["a"]);
+        const effect = new Check("id", "edgeID", "Key", true, ["a"]);
         effect.registerComponents(null, cu, "graphID");
-        const func = effect.condition;
+        const func = effect.check;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(true);
         cuMock.pressedKeys["a"] = true;
@@ -192,7 +191,7 @@ describe('Condition', () => {
     });
 
     test('registerComponent() clears effect in error case', () => {
-        const condition = new Condition("id", "edgeID", "Key", true, ["a"]);
+        const condition = new Check("id", "edgeID", "Key", true, ["a"]);
         const error = new Error("this is a message");
         condition.registerComponents(null, cu, "graphID");
         condition.checkArgsWithTestDriver = (t, cu, args) => {
@@ -201,7 +200,7 @@ describe('Condition', () => {
         const fn = jest.fn();
         cu.addErrorOutput = fn;
         condition.registerComponents(null, cu, "graphID");
-        const func = condition.condition;
+        const func = condition.check;
         cuMock.pressedKeys["a"] = false;
         expect(func(0, 0)).toEqual(false);
         cuMock.pressedKeys["a"] = false;

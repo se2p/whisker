@@ -47,11 +47,11 @@ export class Check {
      * @param id Id for this check.
      * @param edgeLabel Label of the parent edge of the check.
      * @param name Type/name of the check.
-     * @param args List of arguments for the check.
      * @param negated Whether the check is negated.
+     * @param args List of arguments for the check.
      * @protected
      */
-    protected constructor(id: string, edgeLabel: string, name: CheckName, args: ArgType[], negated: boolean) {
+    constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: ArgType[]) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -112,8 +112,8 @@ export class Check {
      * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    check(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
-        return this._check(stepsSinceLastTransition, stepsSinceEnd);
+    get check(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
+        return this._check;
     }
 
     /**
@@ -225,7 +225,7 @@ export class Check {
     static testForContradictingWithEvents(check1: Check, eventStrings: string[]): boolean {
         return eventStrings.some((e) => {
             const {negated, name, args} = CheckUtility.splitEventString(e);
-            const checkDummy = new Check("dummy", "dummyEdge", name, args, negated);
+            const checkDummy = new Check("dummy", "dummyEdge", name, negated, args);
             return Check.testForContradicting(check1, checkDummy);
         });
     }
