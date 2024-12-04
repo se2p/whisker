@@ -7,7 +7,6 @@ const argType = {
     comp: 'comp',
     costumeName: 'costumeName',
     value: 'value',
-    functionC: 'function',
     keyName: 'keyName',
     r: 'r',
     g: 'g',
@@ -45,8 +44,6 @@ const checkLabelCodes = {
     BackgroundChange: [argType.costumeName],
     // 1 args: sprite name
     Click: [argType.spriteNameRegex],
-    // 1 args code
-    Function: [argType.functionC],
     // 1 args: key name
     Key: [argType.keyName],
     // 2 sprite name, string output
@@ -92,7 +89,6 @@ const placeholders = {
     comp: '=',
     costumeName: '',
     value: '',
-    functionC: 'true',
     keyName: 'space',
     r: '0',
     g: '0',

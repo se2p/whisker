@@ -12,47 +12,45 @@ describe('Check', () => {
         backUp[0] = CheckGenerator.getAttributeComparisonCheck;
         backUp[1] = CheckGenerator.getAttributeChangeCheck;
         backUp[2] = CheckGenerator.getBackgroundChangeCheck;
-        backUp[3] = CheckGenerator.getFunctionCheck;
-        backUp[4] = CheckGenerator.getOutputOnSpriteCheck;
-        backUp[5] = CheckGenerator.getVariableChangeCheck;
-        backUp[6] = CheckGenerator.getVariableComparisonCheck;
-        backUp[7] = CheckGenerator.getSpriteTouchingCheck;
-        backUp[8] = CheckGenerator.getSpriteColorTouchingCheck;
-        backUp[9] = CheckGenerator.getKeyDownCheck;
-        backUp[10] = CheckGenerator.getSpriteClickedCheck;
-        backUp[11] = CheckGenerator.getExpressionCheck;
-        backUp[12] = CheckGenerator.getProbabilityCheck;
-        backUp[13] = CheckGenerator.getTimeElapsedCheck;
-        backUp[14] = CheckGenerator.getTimeBetweenCheck;
+        backUp[3] = CheckGenerator.getOutputOnSpriteCheck;
+        backUp[4] = CheckGenerator.getVariableChangeCheck;
+        backUp[5] = CheckGenerator.getVariableComparisonCheck;
+        backUp[6] = CheckGenerator.getSpriteTouchingCheck;
+        backUp[7] = CheckGenerator.getSpriteColorTouchingCheck;
+        backUp[8] = CheckGenerator.getKeyDownCheck;
+        backUp[9] = CheckGenerator.getSpriteClickedCheck;
+        backUp[10] = CheckGenerator.getExpressionCheck;
+        backUp[11] = CheckGenerator.getProbabilityCheck;
+        backUp[12] = CheckGenerator.getTimeElapsedCheck;
+        backUp[13] = CheckGenerator.getTimeBetweenCheck;
+        backUp[14] = CheckGenerator.getNumberOfClonesCheck;
         backUp[15] = CheckGenerator.getNumberOfClonesCheck;
-        backUp[16] = CheckGenerator.getNumberOfClonesCheck;
+        backUp[16] = CheckGenerator.getTouchingEdgeCheck;
         backUp[17] = CheckGenerator.getTouchingEdgeCheck;
         backUp[18] = CheckGenerator.getTouchingEdgeCheck;
-        backUp[19] = CheckGenerator.getTouchingEdgeCheck;
-        backUp[20] = CheckGenerator.getTimeAfterEndCheck;
+        backUp[19] = CheckGenerator.getTimeAfterEndCheck;
     });
     afterEach(() => {
         CheckGenerator.getAttributeComparisonCheck = backUp[0];
         CheckGenerator.getAttributeChangeCheck = backUp[1];
         CheckGenerator.getBackgroundChangeCheck = backUp[2];
-        CheckGenerator.getFunctionCheck = backUp[3];
-        CheckGenerator.getOutputOnSpriteCheck = backUp[4];
-        CheckGenerator.getVariableChangeCheck = backUp[5];
-        CheckGenerator.getVariableComparisonCheck = backUp[6];
-        CheckGenerator.getSpriteTouchingCheck = backUp[7];
-        CheckGenerator.getSpriteColorTouchingCheck = backUp[8];
-        CheckGenerator.getKeyDownCheck = backUp[9];
-        CheckGenerator.getSpriteClickedCheck = backUp[10];
-        CheckGenerator.getExpressionCheck = backUp[11];
-        CheckGenerator.getProbabilityCheck = backUp[12];
-        CheckGenerator.getTimeElapsedCheck = backUp[13];
-        CheckGenerator.getTimeBetweenCheck = backUp[14];
+        CheckGenerator.getOutputOnSpriteCheck = backUp[3];
+        CheckGenerator.getVariableChangeCheck = backUp[4];
+        CheckGenerator.getVariableComparisonCheck = backUp[5];
+        CheckGenerator.getSpriteTouchingCheck = backUp[6];
+        CheckGenerator.getSpriteColorTouchingCheck = backUp[7];
+        CheckGenerator.getKeyDownCheck = backUp[8];
+        CheckGenerator.getSpriteClickedCheck = backUp[9];
+        CheckGenerator.getExpressionCheck = backUp[10];
+        CheckGenerator.getProbabilityCheck = backUp[11];
+        CheckGenerator.getTimeElapsedCheck = backUp[12];
+        CheckGenerator.getTimeBetweenCheck = backUp[13];
+        CheckGenerator.getNumberOfClonesCheck = backUp[14];
         CheckGenerator.getNumberOfClonesCheck = backUp[15];
-        CheckGenerator.getNumberOfClonesCheck = backUp[16];
+        CheckGenerator.getTouchingEdgeCheck = backUp[16];
         CheckGenerator.getTouchingEdgeCheck = backUp[17];
         CheckGenerator.getTouchingEdgeCheck = backUp[18];
-        CheckGenerator.getTouchingEdgeCheck = backUp[19];
-        CheckGenerator.getTimeAfterEndCheck = backUp[20];
+        CheckGenerator.getTimeAfterEndCheck = backUp[19];
     });
 
     const t = getDummyTestDriver();
@@ -88,16 +86,6 @@ describe('Check', () => {
         check.checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, "label", negated, ...args);
-    });
-
-    test('Function', () => {
-        const fn = jest.fn();
-        CheckGenerator.getFunctionCheck = fn;
-        const args: ArgType[] = ["() => true"];
-        const check = new Check("id", "label", "Function", negated, args);
-        check.checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, "label", graphID, negated, ...args);
     });
 
     test('Output', () => {
@@ -427,7 +415,6 @@ describe('Condition', () => {
             ["AttrComp", true, ["sprite", "attr", ">", "0"], "!AttrComp(sprite,attr,>,0)"],
             ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
             ["Click", true, ["test"], "!Click(test)"],
-            ["Function", true, ["()=>{return null;}"], "!Function(()=>{return null;})"],
             ["Key", true, ["test"], "!Key(test)"],
             ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
             ["SpriteColor", true, ["test", "0", "1", "2"], "!SpriteColor(test,0,1,2)"],
@@ -641,7 +628,6 @@ describe('Effect', () => {
             ["AttrComp", false, ["sprite", "attr", ">", "0"], "AttrComp(sprite,attr,>,0)"],
             ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
             ["Click", true, ["sprite"], "!Click(sprite)"],
-            ["Function", true, ["test"], "!Function(test)"],
             ["Key", true, ["test"], "!Key(test)"],
             ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
             ["SpriteColor", true, ["sprite", "0", "0", "0"], "!SpriteColor(sprite,0,0,0)"],
@@ -693,7 +679,6 @@ describe('Effect', () => {
                 new Check(id, edgeID, "VarChange", true, ["test", "var", "+"]),
                 new Check(id, edgeID, "AttrChange", true, ["test", "attr", "-"]),
                 new Check(id, edgeID, "BackgroundChange", true, ["test"]),
-                new Check(id, edgeID, "Function", true, ["test"]),
                 new Check(id, edgeID, "VarComp", true, ["sprite", "var", ">", "0"]),
                 new Check(id, edgeID, "AttrComp", true, ["sprite", "attr", ">", "0"]),
                 new Check(id, edgeID, "Key", true, ["right arrow"]),
@@ -719,12 +704,6 @@ describe('Effect', () => {
             assertSymmetricContradiction2(output, "Output", true, ["sprite1", "hi"], false);
             assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi"], false);
             assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi2"], true);
-        });
-
-        test("contradictions function", () => {
-            const functionE = new Check(id, edgeID, "Function", true, ["test"]);
-            assertSymmetricContradiction2(functionE, "Function", true, ["testblabla"], false);
-            assertSymmetricContradiction2(functionE, "Function", true, ["test"], false);
         });
 
         test("contradictions background", () => {
