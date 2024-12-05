@@ -24,17 +24,17 @@ describe('CheckUtility', () => {
 
     describe("get event string", () => {
         const params: [AbstractCheck, string][] = [
-            [newCheck('dummy', {id: 'id', name: "SpriteColor", negated: false, args: ["sprite1", 255, 0, 0]}), "SpriteColor:sprite1:255:0:0"],
-            [newCheck('dummy', {id: 'id', name: "Output", negated: false, args: ["sprite1", "halloo"]}), "Output:sprite1:halloo"],
-            [newCheck('dummy', {id: 'id', name: "AttrComp", negated: true, args: ["sprite1", "x", ">", "100"]}), "!AttrComp:sprite1:x:>:100"],
+            [newCheck('dummy', {name: "SpriteColor", negated: false, args: ["sprite1", 255, 0, 0]}), "SpriteColor:sprite1:255:0:0"],
+            [newCheck('dummy', {name: "Output", negated: false, args: ["sprite1", "halloo"]}), "Output:sprite1:halloo"],
+            [newCheck('dummy', {name: "AttrComp", negated: true, args: ["sprite1", "x", ">", "100"]}), "!AttrComp:sprite1:x:>:100"],
         ];
         it.each(params)("get event string for: %s", (check: AbstractCheck, expected: string) => {
                 expect(check.getEventString()).toBe(expected);
             });
 
         const effects: [AbstractCheck, string][] = [
-            [new SpriteTouching("dummy", {id: "test", negated: false, args: ["sprite1", "sprite2"]}), "SpriteTouching:sprite1:sprite2"],
-            [new AttrComp("dummy", {id: "test", negated: false, args: ["sprite1", "costume", "=", "costume2"]}), "AttrComp:sprite1:costume:=:costume2"]
+            [new SpriteTouching("dummy", {negated: false, args: ["sprite1", "sprite2"]}), "SpriteTouching:sprite1:sprite2"],
+            [new AttrComp("dummy", {negated: false, args: ["sprite1", "costume", "=", "costume2"]}), "AttrComp:sprite1:costume:=:costume2"]
         ];
         it.each(effects)('getEventString() with attributes of Check: %s', (check: AbstractCheck, expected: string) => {
             expect(check.getEventString()).toBe(expected);

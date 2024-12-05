@@ -216,7 +216,6 @@ export class CheckUtility extends EventEmitter {
             negated: negated,
             name: splits[0] as CheckName,
             args: splits.slice(1, splits.length),
-            id: "dummy",
         };
     }
 

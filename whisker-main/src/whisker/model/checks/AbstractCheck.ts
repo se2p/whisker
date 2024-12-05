@@ -21,20 +21,12 @@ export const SpriteName = z.union([
 export const VariableName = SpriteName;
 
 export interface ICheckJSON {
-    id: string
     name: string;
     negated: boolean;
     args: ArgType[];
 }
 
-let idUndefined = 0;
-
-function nextId(): number {
-    return idUndefined++;
-}
-
 export const ICheckJSON = z.object({
-    id: z.string().default(() => `check${nextId()}`),
     name: z.string(),
     negated: z.boolean(),
     args: z.array(z.string().or(z.number())),
@@ -91,10 +83,6 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      */
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): Check;
 
-    get id(): C["id"] {
-        return this._checkJSON.id;
-    }
-
     get name(): C["name"] {
         return this._checkJSON.name;
     }
@@ -126,7 +114,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     testForContradictingWithEvents(eventStrings: string[]): boolean {
         return eventStrings.some((e) => {
             const {negated, name, args} = CheckUtility.splitEventString(e);
-            return this.contradicts({id: "dummy", name, negated, args});
+            return this.contradicts({name, negated, args});
         });
     }
 

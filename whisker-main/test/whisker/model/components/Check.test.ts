@@ -30,7 +30,6 @@ import {CHECK_NAMES, CheckName, newCheck} from "../../../../src/whisker/model/ch
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {AbstractCheck} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {Pair} from "../../../../src/whisker/utils/Pair";
-import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 
 describe('Check', () => {
     const t = getDummyTestDriver();
@@ -41,7 +40,7 @@ describe('Check', () => {
     test('AttrComp', () => {
         const args: AttrCompArgs = ["apple", "x", "<", 5];
         const fn = jest.spyOn(AttrComp.prototype, '_checkArgsWithTestDriver').mockImplementationOnce(() => void 0);
-        const check = new AttrComp("label", {id: "id", negated, args});
+        const check = new AttrComp("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -50,7 +49,7 @@ describe('Check', () => {
     test('AttrChange', () => {
         const args: AttrChangeArgs = ["apple", "size", "-"];
         const fn = jest.spyOn(AttrChange.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new AttrChange("label", {id: "id", negated, args});
+        const check = new AttrChange("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -59,7 +58,7 @@ describe('Check', () => {
     test('BackgroundChange', () => {
         const args: BackgroundChangeArgs = ["newBackground"];
         const fn = jest.spyOn(BackgroundChange.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new BackgroundChange("label", {id: "id", negated, args});
+        const check = new BackgroundChange("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -68,7 +67,7 @@ describe('Check', () => {
     test('Output', () => {
         const args: OutputArgs = ["apple", "i have fallen down"];
         const fn = jest.spyOn(Output.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Output("label", {id: "id", negated, args});
+        const check = new Output("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -77,7 +76,7 @@ describe('Check', () => {
     test('VarChange', () => {
         const args: VarChangeArgs = ["apple", "x", "+"];
         const fn = jest.spyOn(VarChange.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new VarChange("label", {id: "id", negated, args});
+        const check = new VarChange("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -86,7 +85,7 @@ describe('Check', () => {
     test('VarComp', () => {
         const args: VarCompArgs = ["apple", "x", ">=", "7"];
         const fn = jest.spyOn(VarComp.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new VarComp("label", {id: "id", negated, args});
+        const check = new VarComp("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -95,7 +94,7 @@ describe('Check', () => {
     test('SpriteTouching', () => {
         const args: SpriteTouchingArgs = ["apple", "bowl"];
         const fn = jest.spyOn(SpriteTouching.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new SpriteTouching("label", {id: "id", negated, args});
+        const check = new SpriteTouching("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -104,7 +103,7 @@ describe('Check', () => {
     test('SpriteColor', () => {
         const args: SpriteColorArgs = ["apple", 128, 128, 128];
         const fn = jest.spyOn(SpriteColor.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new SpriteColor("label", {id: "id", negated, args});
+        const check = new SpriteColor("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -113,7 +112,7 @@ describe('Check', () => {
     test('Key', () => {
         const args: KeyArgs = ["a"];
         const fn = jest.spyOn(Key.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Key("label", {id: "id", negated, args});
+        const check = new Key("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -122,7 +121,7 @@ describe('Check', () => {
     test('Click', () => {
         const args: ClickArgs = ["banana"];
         const fn = jest.spyOn(Click.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Click("label", {id: "id", negated, args});
+        const check = new Click("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -131,7 +130,7 @@ describe('Check', () => {
     test('Expr', () => {
         const args: ExprArgs = ["$(Cat. x) > 25"];
         const fn = jest.spyOn(Expr.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Expr("label", {id: "id", negated, args});
+        const check = new Expr("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -140,7 +139,7 @@ describe('Check', () => {
     test('Probability', () => {
         const args: ProbabilityArgs = [0.5];
         const fn = jest.spyOn(Probability.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Probability("label", {id: "id", negated, args});
+        const check = new Probability("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -149,7 +148,7 @@ describe('Check', () => {
     test('TimeElapsed', () => {
         const args: TimeElapsedArgs = [1000];
         const fn = jest.spyOn(TimeElapsed.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TimeElapsed("label", {id: "id", negated, args});
+        const check = new TimeElapsed("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -158,7 +157,7 @@ describe('Check', () => {
     test('TimeBetween', () => {
         const args: TimeBetweenArgs = [500];
         const fn = jest.spyOn(TimeBetween.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TimeBetween("label", {id: "id", negated, args});
+        const check = new TimeBetween("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -167,7 +166,7 @@ describe('Check', () => {
     test('NbrOfClones', () => {
         const args: NbrOfClonesArgs = ["apple", ">=", 1];
         const fn = jest.spyOn(NbrOfClones.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new NbrOfClones("label", {id: "id", negated, args});
+        const check = new NbrOfClones("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -176,7 +175,7 @@ describe('Check', () => {
     test('NbrOfVisibleClones', () => {
         const args: NbrOfClonesArgs = ["apple", "==", 1];
         const fn = jest.spyOn(NbrOfVisibleClones.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new NbrOfVisibleClones("label", {id: "id", negated, args});
+        const check = new NbrOfVisibleClones("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -185,7 +184,7 @@ describe('Check', () => {
     test('TouchingEdge', () => {
         const args: TouchingEdgeArgs = ["apple"];
         const fn = jest.spyOn(TouchingEdge.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TouchingEdge("label", {id: "id", negated, args});
+        const check = new TouchingEdge("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -194,7 +193,7 @@ describe('Check', () => {
     test('TouchingHorizEdge', () => {
         const args: TouchingEdgeArgs = ["apple"];
         const fn = jest.spyOn(TouchingHorizEdge.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TouchingHorizEdge("label", {id: "id", negated, args});
+        const check = new TouchingHorizEdge("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -203,7 +202,7 @@ describe('Check', () => {
     test('TouchingVerticalEdge', () => {
         const args: TouchingEdgeArgs = ["apple"];
         const fn = jest.spyOn(TouchingVerticalEdge.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TouchingVerticalEdge("label", {id: "id", negated, args});
+        const check = new TouchingVerticalEdge("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
@@ -212,15 +211,15 @@ describe('Check', () => {
     test('TimeAfterEnd', () => {
         const args: TimeAfterEndArgs = [200];
         const fn = jest.spyOn(TimeAfterEnd.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TimeAfterEnd("label", {id: "id", negated, args});
+        const check = new TimeAfterEnd("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
         expect(fn).toBeCalledTimes(1);
         expect(fn).toHaveBeenCalledWith(t, cu, graphID);
     });
 
     test('Invalid comparison throws error', () => {
-        const c1 = new AttrComp("label", {id: "id", negated: true, args: ["sprite", "var", "comp", "value"]});
-        const c2 = new AttrComp("label", {id: "id", negated: true, args: ["sprite", "var", ">=", "value"]});
+        const c1 = new AttrComp("label", {negated: true, args: ["sprite", "var", "comp", "value"]});
+        const c2 = new AttrComp("label", {negated: true, args: ["sprite", "var", ">=", "value"]});
         expect(() => c1.contradicts(c2)).toThrow();
     });
 });
@@ -228,7 +227,7 @@ describe('Check', () => {
 
 describe('Condition', () => {
     function checkConstructorThrows(name: CheckName, negated: boolean, args) {
-        expect(() => newCheck("edgeID", {name, id: "id", negated, args})).toThrow();
+        expect(() => newCheck("edgeID", {name, negated, args})).toThrow();
     }
 
     describe.skip('Constructor throws for empty args', () => {
@@ -239,19 +238,18 @@ describe('Condition', () => {
 
     test.skip("constructor throws for undefined id", () => {
         expect(() => {
-            new BackgroundChange(undefined, {id: undefined, negated: true, args: ["test"]});
+            new BackgroundChange(undefined, {negated: true, args: ["test"]});
         }).toThrow();
     });
 
     test("constructor does not throw for undefined edgeLabel", () => {
         expect(() => {
-            new BackgroundChange(undefined, {id: "test", negated: true, args: ["test"]});
+            new BackgroundChange(undefined, {negated: true, args: ["test"]});
         }).not.toThrow();
     });
 
     test("Getters work properly", () => {
-        const c = new BackgroundChange(undefined, {id: "test", negated: true, args: ["test"]});
-        expect(c.id).toBe("test");
+        const c = new BackgroundChange(undefined, {negated: true, args: ["test"]});
         expect(c.negated).toBe(true);
         expect(c.name).toBe("BackgroundChange");
         expect(c.args.length).toBe(1);
@@ -266,10 +264,9 @@ describe('Condition', () => {
         const checkName = "BackgroundChange";
         const negated = true;
         const args: BackgroundChangeArgs = ["test"];
-        const condition = new BackgroundChange("edgeID", {id, negated, args});
+        const condition = new BackgroundChange("edgeID", {negated, args});
         const actual = condition.toJSON();
         const expected: BackgroundChangeJSON = {
-            id: id,
             name: checkName,
             negated: negated,
             args: args
@@ -391,12 +388,12 @@ describe('Condition', () => {
         ];
 
         it.each(constructorArguments)('(%s, %s, %s) has the correct toString()', (name: CheckName, negated: boolean, args, expected: string) => {
-            expect(newCheck("edgeID", {name, id: "id", negated, args: args as any}).toString()).toBe(expected);
+            expect(newCheck("edgeID", {name, negated, args: args as any}).toString()).toBe(expected);
         });
     });
 
     test('Condition.check() returns false before registerComponent()', () => {
-        const condition = new AttrChange("edgeID", {id: "id", negated: false, args: ["test", "attr", "-"]});
+        const condition = new AttrChange("edgeID", {negated: false, args: ["test", "attr", "-"]});
         expect(condition.check(1, 1)).toBe(false);
     });
 
@@ -404,7 +401,7 @@ describe('Condition', () => {
     const cu = cuMock.getCheckUtility();
 
     test('registerComponent() calculates correct effect', () => {
-        const effect = new Key("edgeID", {id: "id", negated: true, args: ["a"]});
+        const effect = new Key("edgeID", {negated: true, args: ["a"]});
         effect.registerComponents(null, cu, "graphID");
         const func = effect.check;
         cuMock.pressedKeys["a"] = false;
@@ -414,7 +411,7 @@ describe('Condition', () => {
     });
 
     test('registerComponent() clears effect in error case', () => {
-        const condition = new Key("edgeID", {id: "id", negated: true, args: ["a"]});
+        const condition = new Key("edgeID", {negated: true, args: ["a"]});
         const error = new Error("this is a message");
         condition.registerComponents(null, cu, "graphID");
         condition._checkArgsWithTestDriver = (t, cu, args) => {
@@ -446,18 +443,18 @@ describe('Effect', () => {
 
     function assertSymmetricContradiction2(effect1: AbstractCheck, name: CheckName, negated: boolean,
                                            args: ArgType[], expected: boolean) {
-        assertSymmetricContradiction(effect1, newCheck(edgeID, {id, name, negated, args: args as any}), expected);
+        assertSymmetricContradiction(effect1, newCheck(edgeID, {name, negated, args: args as any}), expected);
     }
 
     function checkConstructorThrows(name: CheckName, negated: boolean, args: ArgType[]) {
-        expect(() => newCheck(edgeID, {id, name, negated, args: args as any})).toThrow();
+        expect(() => newCheck(edgeID, {name, negated, args: args as any})).toThrow();
     }
 
     function mapToTwoEffects(checkName1: CheckName, negated1: boolean, args1: ArgType[],
                              checkName2: CheckName, negated2: boolean, args2: ArgType[], expected: boolean): [AbstractCheck, AbstractCheck, boolean] {
         return [
-            newCheck(edgeID, {id, name: checkName1, negated: negated1, args: args1 as any}),
-            newCheck(edgeID, {id, name: checkName2, negated: negated2, args: args2 as any}), expected
+            newCheck(edgeID, {name: checkName1, negated: negated1, args: args1 as any}),
+            newCheck(edgeID, {name: checkName2, negated: negated2, args: args2 as any}), expected
         ];
     }
 
@@ -472,14 +469,12 @@ describe('Effect', () => {
         const effects: [AbstractCheck, AbstractCheck, boolean][] = [];
         for (const option1 of optionsFirst) {
             const effect1 = newCheck(edgeLabel, {
-                id,
                 name: first,
                 negated: true,
                 args: [id, edgeLabel, option1, "0"] as any
             });
             for (const option2 of optionsSecond) {
                 const effect2 = newCheck(edgeLabel, {
-                    id,
                     name: second,
                     negated: true,
                     args: [id, edgeLabel, option2] as any
@@ -614,19 +609,19 @@ describe('Effect', () => {
         ];
         it.each(toStrings)('toString() of (%s, %s, %s)',
             (name: CheckName, negated: boolean, args: ArgType[], expected: string) => {
-                expect(newCheck(edgeID, {id, name, negated, args: args as any}).toString()).toBe(expected);
+                expect(newCheck(edgeID, {name, negated, args: args as any}).toString()).toBe(expected);
             });
     });
 
     test("effect.contradicts() throws for null argument", () => {
         expect(() => {
-            const effect = newCheck(edgeID, {id, name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]});
+            const effect = newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]});
             effect.contradicts(null);
         }).toThrow();
     });
 
     test("effect.check() returns false before calling registerComponents()", () => {
-        const effect = newCheck(edgeID, {id, name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]});
+        const effect = newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]});
         expect(effect.check(0, 0)).toBe(false);
     });
 
@@ -644,24 +639,24 @@ describe('Effect', () => {
             }
 
             const effects: AbstractCheck[] = [
-                newCheck(edgeID, {id, name: "Output", negated: true, args: ["sprite", "hi"]}),
-                newCheck(edgeID, {id, name: "VarChange", negated: true, args: ["test", "var", "+"]}),
-                newCheck(edgeID, {id, name: "AttrChange", negated: true, args: ["test", "attr", "-"]}),
-                newCheck(edgeID, {id, name: "BackgroundChange", negated: true, args: ["test"]}),
-                newCheck(edgeID, {id, name: "VarComp", negated: true, args: ["sprite", "var", ">", "0"]}),
-                newCheck(edgeID, {id, name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]}),
-                newCheck(edgeID, {id, name: "Key", negated: true, args: ["right arrow"]}),
-                newCheck(edgeID, {id, name: "Click", negated: true, args: ["sprite"]}),
-                newCheck(edgeID, {id, name: "SpriteColor", negated: true, args: ["sprite", 255, 0, 0]}),
-                newCheck(edgeID, {id, name: "SpriteTouching", negated: true, args: ["sprite", "sprite1"]}),
-                newCheck(edgeID, {id, name: "TouchingEdge", negated: true, args: ["sprite"]}),
-                newCheck(edgeID, {id, name: "NbrOfVisibleClones", negated: true, args: ["sprite", "=", 1]}),
-                newCheck(edgeID, {id, name: "NbrOfClones", negated: true, args: ["sprite", "=", 1]}),
-                newCheck(edgeID, {id, name: "TimeAfterEnd", negated: true, args: [1000]}),
-                newCheck(edgeID, {id, name: "TimeBetween", negated: true, args: [1000]}),
-                newCheck(edgeID, {id, name: "TimeElapsed", negated: true, args: [1000]}),
-                newCheck(edgeID, {id, name: "Probability", negated: true, args: [0]}),
-                newCheck(edgeID, {id, name: "Expr", negated: true, args: ["test"]}),
+                newCheck(edgeID, {name: "Output", negated: true, args: ["sprite", "hi"]}),
+                newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "var", "+"]}),
+                newCheck(edgeID, {name: "AttrChange", negated: true, args: ["test", "attr", "-"]}),
+                newCheck(edgeID, {name: "BackgroundChange", negated: true, args: ["test"]}),
+                newCheck(edgeID, {name: "VarComp", negated: true, args: ["sprite", "var", ">", "0"]}),
+                newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]}),
+                newCheck(edgeID, {name: "Key", negated: true, args: ["right arrow"]}),
+                newCheck(edgeID, {name: "Click", negated: true, args: ["sprite"]}),
+                newCheck(edgeID, {name: "SpriteColor", negated: true, args: ["sprite", 255, 0, 0]}),
+                newCheck(edgeID, {name: "SpriteTouching", negated: true, args: ["sprite", "sprite1"]}),
+                newCheck(edgeID, {name: "TouchingEdge", negated: true, args: ["sprite"]}),
+                newCheck(edgeID, {name: "NbrOfVisibleClones", negated: true, args: ["sprite", "=", 1]}),
+                newCheck(edgeID, {name: "NbrOfClones", negated: true, args: ["sprite", "=", 1]}),
+                newCheck(edgeID, {name: "TimeAfterEnd", negated: true, args: [1000]}),
+                newCheck(edgeID, {name: "TimeBetween", negated: true, args: [1000]}),
+                newCheck(edgeID, {name: "TimeElapsed", negated: true, args: [1000]}),
+                newCheck(edgeID, {name: "Probability", negated: true, args: [0]}),
+                newCheck(edgeID, {name: "Expr", negated: true, args: ["test"]}),
             ];
 
             it.each(createAllPairs(effects))('%s and %s do not contradict each other',
@@ -669,23 +664,22 @@ describe('Effect', () => {
         });
 
         test("contradictions output", () => {
-            const output = newCheck(edgeID, {id, name: "Output", negated: true, args: ["sprite", "hi"]});
+            const output = newCheck(edgeID, {name: "Output", negated: true, args: ["sprite", "hi"]});
             assertSymmetricContradiction2(output, "Output", true, ["sprite1", "hi"], false);
             assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi"], false);
             assertSymmetricContradiction2(output, "Output", true, ["sprite", "hi2"], true);
         });
 
         test("contradictions background", () => {
-            const background = newCheck(edgeID, {id, name: "BackgroundChange", negated: true, args: ["test"]});
+            const background = newCheck(edgeID, {name: "BackgroundChange", negated: true, args: ["test"]});
             assertSymmetricContradiction2(background, "BackgroundChange", true, ["test"], false);
             assertSymmetricContradiction2(background, "BackgroundChange", true, ["test2"], true);
         });
 
         describe("contradiction: variable change and comparison", () => {
             test('not the same sprite', () => {
-                const varChange = newCheck(edgeID, {id, name: "VarChange", negated: true, args: ["test", "var", "+"]});
+                const varChange = newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "var", "+"]});
                 const varComp = newCheck(edgeID, {
-                    id,
                     name: "VarComp",
                     negated: true,
                     args: ["sprite", "var", ">", "0"]
@@ -695,13 +689,11 @@ describe('Effect', () => {
 
             test('not the same var', () => {
                 const varChange = newCheck(edgeID, {
-                    id,
                     name: "VarChange",
                     negated: true,
                     args: ["sprite", "var", "+"]
                 });
                 const varComp = newCheck(edgeID, {
-                    id,
                     name: "VarComp",
                     negated: true,
                     args: ["sprite", "var2", ">", "0"]
@@ -719,13 +711,11 @@ describe('Effect', () => {
         describe("contradiction: attribute comparison and change", () => {
             test('not the same sprite', () => {
                 const attrChange = newCheck(edgeID, {
-                    id,
                     name: "AttrChange",
                     negated: true,
                     args: ["test", "var", "+"]
                 });
                 const attrComp = newCheck(edgeID, {
-                    id,
                     name: "AttrComp",
                     negated: true,
                     args: ["sprite", "var", ">", "0"]
@@ -735,13 +725,11 @@ describe('Effect', () => {
 
             test('not the same var', () => {
                 const attrChange = newCheck(edgeID, {
-                    id,
                     name: "AttrChange",
                     negated: true,
                     args: ["sprite", "var", "+"]
                 });
                 const attrComp = newCheck(edgeID, {
-                    id,
                     name: "AttrComp",
                     negated: true,
                     args: ["sprite", "var2", ">", "0"]
@@ -870,20 +858,19 @@ describe('Effect', () => {
         });
 
         test("contradiction: click", () => {
-            const effect1 = newCheck(edgeID, {id, name: "Click", negated: true, args: ["sprite1"]});
+            const effect1 = newCheck(edgeID, {name: "Click", negated: true, args: ["sprite1"]});
             assertSymmetricContradiction2(effect1, "Click", true, ["sprite2"], true);
             assertSymmetricContradiction2(effect1, "Click", true, ["sprite1"], false);
         });
 
         test("contradiction: key", () => {
-            const effect1 = newCheck(edgeID, {id, name: "Key", negated: true, args: ["left"]});
+            const effect1 = newCheck(edgeID, {name: "Key", negated: true, args: ["left"]});
             assertSymmetricContradiction2(effect1, "Key", true, ["right"], false);
             assertSymmetricContradiction2(effect1, "Key", true, ["left"], false);
         });
 
         test("contradiction: sprite color", () => {
             const effect1 = newCheck(edgeID, {
-                id,
                 name: "SpriteColor",
                 negated: true,
                 args: ["sprite1", 0, 0, 0]
@@ -894,20 +881,20 @@ describe('Effect', () => {
         });
 
         test("contradiction: sprite touching", () => {
-            const effect1 = newCheck(edgeID, {id, name: "SpriteTouching", negated: true, args: ["sprite1", "sprite2"]});
+            const effect1 = newCheck(edgeID, {name: "SpriteTouching", negated: true, args: ["sprite1", "sprite2"]});
             assertSymmetricContradiction2(effect1, "SpriteTouching", true, ["sprite2", "sprite3"], false);
             assertSymmetricContradiction2(effect1, "SpriteTouching", true, ["sprite1", "sprite3"], false);
         });
 
         test("contradiction: expr", () => {
-            const effect1 = newCheck(edgeID, {id, name: "Expr", negated: true, args: ["whatever"]});
+            const effect1 = newCheck(edgeID, {name: "Expr", negated: true, args: ["whatever"]});
             assertSymmetricContradiction2(effect1, "Expr", true, ["whatever2"], false);
             assertSymmetricContradiction2(effect1, "Click", true, ["whatever"], false);
         });
 
         // actually an effect with probability result is quite dumb to have....
         test("contradiction: probability", () => {
-            const effect1 = newCheck(edgeID, {id, name: "Probability", negated: true, args: [1]});
+            const effect1 = newCheck(edgeID, {name: "Probability", negated: true, args: [1]});
             assertSymmetricContradiction2(effect1, "Probability", true, ["0"], false);
             assertSymmetricContradiction2(effect1, "Probability", true, ["1"], false);
         });
@@ -943,13 +930,13 @@ describe('Effect', () => {
         });
 
         test("contradiction: expr", () => {
-            const effect1 = newCheck(edgeID, {id, name: "TouchingEdge", negated: true, args: ["sprite"]});
+            const effect1 = newCheck(edgeID, {name: "TouchingEdge", negated: true, args: ["sprite"]});
             assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite2"], false);
             assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite"], false);
         });
 
         test("contradiction negation", () => {
-            const effect1 = newCheck(edgeID, {id, name: "TouchingEdge", negated: true, args: ["sprite"]});
+            const effect1 = newCheck(edgeID, {name: "TouchingEdge", negated: true, args: ["sprite"]});
             assertSymmetricContradiction2(effect1, "TouchingEdge", true, ["sprite"], false);
             assertSymmetricContradiction2(effect1, "TouchingEdge", false, ["sprite2"], false);
             assertSymmetricContradiction2(effect1, "TouchingEdge", false, ["sprite"], true);
@@ -1018,14 +1005,13 @@ describe('Effect', () => {
 
         test('contradiction with event strings', () => {
             const attrComp = newCheck(edgeID, {
-                id,
                 name: "AttrComp",
                 negated: false,
                 args: ["sprite", "var", "=", "0"]
             });
 
-            const attrComp2 = new AttrComp(edgeID, {id, negated: true, args: ["sprite", "var", "<=", "2"]});
-            const attrComp3 = new AttrComp(edgeID, {id, negated: false, args: ["sprite", "var", "<=", "2"]});
+            const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "var", "<=", "2"]});
+            const attrComp3 = new AttrComp(edgeID, {negated: false, args: ["sprite", "var", "<=", "2"]});
 
             expect(attrComp.testForContradictingWithEvents([attrComp2.getEventString()])).toBe(true);
             expect(attrComp.testForContradictingWithEvents([attrComp3.getEventString()])).toBe(false);
@@ -1036,7 +1022,7 @@ describe('Effect', () => {
     const cu = cuMock.getCheckUtility();
 
     test('registerComponent() calculates correct effect', () => {
-        const effect = newCheck(edgeID, {id, name: "Key", negated: true, args: ["a"]});
+        const effect = newCheck(edgeID, {name: "Key", negated: true, args: ["a"]});
         effect.registerComponents(null, cu, "graphID");
         const func = effect.check;
         cuMock.pressedKeys["a"] = false;
@@ -1046,7 +1032,7 @@ describe('Effect', () => {
     });
 
     test('registerComponent() clears effect in error case', () => {
-        const effect = newCheck(edgeID, {id, name: "Key", negated: true, args: ["a"]});
+        const effect = newCheck(edgeID, {name: "Key", negated: true, args: ["a"]});
         const error = new Error("this is a message");
         effect.registerComponents(null, cu, "graphID");
         (effect as any)._checkArgsWithTestDriver = (t, cu, args) => {
