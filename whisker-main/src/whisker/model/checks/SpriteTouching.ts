@@ -35,7 +35,7 @@ export const SpriteTouchingJSON = ICheckJSON.extend({
 
 export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
     constructor(edgeLabel: string, json: OptionalName<SpriteTouchingJSON>) {
-        super(edgeLabel, {...json, name});
+        super(edgeLabel, {...json, name}, SpriteTouchingJSON.parse.bind(SpriteTouchingJSON));
     }
 
     /**

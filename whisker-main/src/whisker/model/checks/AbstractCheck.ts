@@ -52,18 +52,24 @@ export type Check = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) 
  * to be created once for every test run with a new test driver.
  */
 export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements ICheckJSON {
+    protected readonly _edgeLabel: string;
+    private readonly _checkJSON: C;
     private _check: Check;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
-     * @param _edgeLabel Label of the parent edge of the check.
-     * @param _checkJSON
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param checkJSON
+     * @param validate
      * @protected
      */
     protected constructor(
-        protected readonly _edgeLabel: string,
-        private readonly _checkJSON: C,
+        edgeLabel: string,
+        checkJSON: C,
+        validate: (checkJSON: C) => C,
     ) {
+        this._edgeLabel = edgeLabel;
+        this._checkJSON = validate(checkJSON);
         this._check = () => false;
     }
 

@@ -121,15 +121,13 @@ describe('CheckGenerator', () => {
             ];
 
             it.each(colorsNaN)('getKeyDownThrowsForColors(%d, %d, %d) throws NotANumericalValueError', (r: number, g: number, b: number) => {
-                const c = new SpriteColor('label', {id: 'id', negated: true, args: ["apple", r, g, b]});
-                c.registerComponents(t, dummyCU, graphID);
-                expect(dummyCU.addErrorOutput).toHaveBeenCalledWith('label', graphID, new NotANumericalValueError(undefined));
+                expect(() => new SpriteColor('label', {id: 'id', negated: true, args: ["apple", r, g, b]}))
+                    .toThrowError();
             });
 
             it.each(colorsWrongBounds)('getKeyDownThrowsForColors(%d, %d, %d) throws RGBRangeError', (r: number, g: number, b: number) => {
-                const c = new SpriteColor('label', {id: 'id', negated: true, args: ["apple", r, g, b]});
-                c.registerComponents(t, dummyCU, graphID);
-                expect(dummyCU.addErrorOutput).toHaveBeenCalledWith('label', graphID, new RGBRangeError());
+                expect(() => new SpriteColor('label', {id: 'id', negated: true, args: ["apple", r, g, b]}))
+                    .toThrowError();
             });
         });
 

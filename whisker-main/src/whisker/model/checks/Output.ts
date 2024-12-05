@@ -35,7 +35,7 @@ export const OutputJSON = ICheckJSON.extend({
 
 export class Output extends AbstractCheck<OutputJSON> {
     constructor(edgeLabel: string, json: OptionalName<OutputJSON>) {
-        super(edgeLabel, {...json, name});
+        super(edgeLabel, {...json, name}, OutputJSON.parse.bind(OutputJSON));
     }
 
     /**

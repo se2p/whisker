@@ -908,7 +908,7 @@ describe('Effect', () => {
         // actually an effect with probability result is quite dumb to have....
         test("contradiction: probability", () => {
             const effect1 = newCheck(edgeID, {id, name: "Probability", negated: true, args: [1]});
-            assertSymmetricContradiction2(effect1, "Probability", true, ["9"], false);
+            assertSymmetricContradiction2(effect1, "Probability", true, ["0"], false);
             assertSymmetricContradiction2(effect1, "Probability", true, ["1"], false);
         });
 

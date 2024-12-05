@@ -29,7 +29,7 @@ export const BackgroundChangeJSON = ICheckJSON.extend({
 
 export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
     constructor(edgeLabel: string, json: OptionalName<BackgroundChangeJSON>) {
-        super(edgeLabel, {...json, name});
+        super(edgeLabel, {...json, name}, BackgroundChangeJSON.parse.bind(BackgroundChangeJSON));
     }
 
     /**

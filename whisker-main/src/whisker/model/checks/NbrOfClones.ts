@@ -31,8 +31,8 @@ const NbrOfClonesArgs = z.tuple([
 abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClonesJSON> extends AbstractCheck<C> {
     private readonly _visible: boolean;
 
-    protected constructor(edgeLabel: string, json: C) {
-        super(edgeLabel, json);
+    protected constructor(edgeLabel: string, json: C, validate: (json: C) => C) {
+        super(edgeLabel, json, validate);
         this._visible = json.name === "NbrOfVisibleClones";
     }
 
@@ -78,7 +78,7 @@ export const NbrOfClonesJSON = ICheckJSON.extend({
 
 export class NbrOfClones extends AbstractNbrOfClones<NbrOfClonesJSON> {
     constructor(edgeLabel: string, json: OptionalName<NbrOfClonesJSON>) {
-        super(edgeLabel, {...json, name: name1});
+        super(edgeLabel, {...json, name: name1}, NbrOfClonesJSON.parse.bind(NbrOfClonesJSON));
     }
 }
 
@@ -96,6 +96,6 @@ export const NbrOfVisibleClonesJSON = ICheckJSON.extend({
 
 export class NbrOfVisibleClones extends AbstractNbrOfClones<NbrOfVisibleClonesJSON> {
     constructor(edgeLabel: string, json: OptionalName<NbrOfVisibleClonesJSON>) {
-        super(edgeLabel, {...json, name: name2});
+        super(edgeLabel, {...json, name: name2}, NbrOfVisibleClonesJSON.parse.bind(NbrOfVisibleClonesJSON));
     }
 }

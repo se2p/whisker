@@ -24,7 +24,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
     private readonly _code: string;
 
     constructor(edgeLabel: string, json: OptionalName<ExprJSON>) {
-        super(edgeLabel, {...json, name});
+        super(edgeLabel, {...json, name}, ExprJSON.parse.bind(ExprJSON));
         this._code = this.args.join("\n");
     }
 

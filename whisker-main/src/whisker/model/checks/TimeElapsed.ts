@@ -28,7 +28,7 @@ export const TimeElapsedJSON = ICheckJSON.extend({
 
 export class TimeElapsed extends AbstractCheck<TimeElapsedJSON> {
     constructor(edgeLabel: string, json: OptionalName<TimeElapsedJSON>) {
-        super(edgeLabel, {...json, name});
+        super(edgeLabel, {...json, name}, TimeElapsedJSON.parse.bind(TimeElapsedJSON));
     }
 
     /**
