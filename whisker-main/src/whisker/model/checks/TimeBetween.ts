@@ -1,9 +1,9 @@
-import {AbstractCheck, Check, ICheckJSON} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 
-const NAME = "TimeBetween" as const;
+const name = "TimeBetween" as const;
 
 export type TimeBetweenArgs = [
     /**
@@ -17,18 +17,18 @@ const TimeBetweenArgs = z.tuple([
 ]);
 
 export interface TimeBetweenJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: TimeBetweenArgs;
 }
 
 export const TimeBetweenJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: TimeBetweenArgs,
 });
 
 export class TimeBetween extends AbstractCheck<TimeBetweenJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: TimeBetweenArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<TimeBetweenJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -36,8 +36,8 @@ export class TimeBetween extends AbstractCheck<TimeBetweenJSON> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
-        const [timeInMS] = this._args;
-        const negated = this._negated;
+        const [timeInMS] = this.args;
+        const negated = this.negated;
         const time = ModelUtil.testNumber(timeInMS);
         const steps = t.vmWrapper.convertFromTimeToSteps(time);
         return (stepsSinceLastTransition) => {

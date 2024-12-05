@@ -1,10 +1,10 @@
-import {AbstractCheck, Check, ICheckJSON} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 
-const NAME = "BackgroundChange" as const;
+const name = "BackgroundChange" as const;
 
 export type BackgroundChangeArgs = [
     /**
@@ -18,18 +18,18 @@ const BackgroundChangeArgs = z.tuple([
 ]);
 
 export interface BackgroundChangeJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: BackgroundChangeArgs;
 }
 
 export const BackgroundChangeJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: BackgroundChangeArgs,
 });
 
 export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: BackgroundChangeArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<BackgroundChangeJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -37,8 +37,8 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
-        const [newBackground] = this._args;
-        const negated = this._negated;
+        const [newBackground] = this.args;
+        const negated = this.negated;
 
         // without movement
         return () => {

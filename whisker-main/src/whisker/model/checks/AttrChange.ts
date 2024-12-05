@@ -1,10 +1,10 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 
-const NAME = "AttrChange" as const;
+const name = "AttrChange" as const;
 
 export type AttrChangeArgs = [
     /**
@@ -32,18 +32,18 @@ const AttrChangeArgs = z.tuple([
 ]);
 
 export interface AttrChangeJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: AttrChangeArgs;
 }
 
 export const AttrChangeJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: AttrChangeArgs,
 });
 
 export class AttrChange extends AbstractCheck<AttrChangeJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: AttrChangeArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<AttrChangeJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -56,8 +56,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
         // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, change] = this._args;
-        const negated = this._negated;
+        let [pSpriteName, attrName, change] = this.args;
+        const negated = this.negated;
 
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
@@ -94,12 +94,12 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     }
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this._args;
-        const eventString = CheckUtility.getEventString(NAME, this._negated, pSpriteName, attrName, change);
+        const [pSpriteName, attrName, change] = this.args;
+        const eventString = CheckUtility.getEventString(name, this.negated, pSpriteName, attrName, change);
 
         cu.registerOnMoveEvent(spriteName, eventString, this._edgeLabel, graphID, (sprite) => {
             try {
-                return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -107,12 +107,12 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     }
 
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this._args;
-        const eventString = CheckUtility.getEventString(NAME, this._negated, pSpriteName, attrName == "currentCostumeName" ? "costume" : attrName, change);
+        const [pSpriteName, attrName, change] = this.args;
+        const eventString = CheckUtility.getEventString(name, this.negated, pSpriteName, attrName == "currentCostumeName" ? "costume" : attrName, change);
 
         cu.registerOnVisualChange(spriteName, eventString, this._edgeLabel, graphID, (sprite) => {
             try {
-                return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -120,6 +120,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     }
 
     override get dependsOnSayText(): boolean {
-        return this._args[1] === "sayText";
+        return this.args[1] === "sayText";
     }
 }

@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ArgType} from "../util/schema";
 import {ModelUtil} from "../util/ModelUtil";
@@ -6,7 +6,7 @@ import {ComparisonNotKnownError, ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
-const NAME = "AttrComp" as const;
+const name = "AttrComp" as const;
 
 export type AttrCompArgs = [
 
@@ -39,18 +39,18 @@ const AttrCompArgs = z.tuple([
 ]);
 
 export interface AttrCompJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: AttrCompArgs;
 }
 
 export const AttrCompJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: AttrCompArgs,
 });
 
 export class AttrComp extends AbstractCheck<AttrCompJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: AttrCompArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<AttrCompJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -62,9 +62,9 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
         // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, comparison, attrValue] = this._args;
+        let [pSpriteName, attrName, comparison, attrValue] = this.args;
         const edgeLabel = this._edgeLabel;
-        const negated = this._negated;
+        const negated = this.negated;
 
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
@@ -148,7 +148,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     }
 
     override get dependsOnSayText(): boolean {
-        return this._args[1] === "sayText";
+        return this.args[1] === "sayText";
     }
 
     override getEventString(): string {

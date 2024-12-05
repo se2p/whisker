@@ -1,10 +1,10 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
-const NAME = "Output" as const;
+const name = "Output" as const;
 
 export type OutputArgs = [
     /**
@@ -24,18 +24,18 @@ const OutputArgs = z.tuple([
 ]);
 
 export interface OutputJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: OutputArgs;
 }
 
 export const OutputJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: OutputArgs,
 });
 
 export class Output extends AbstractCheck<OutputJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: OutputArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<OutputJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -45,8 +45,8 @@ export class Output extends AbstractCheck<OutputJSON> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName, output] = this._args;
-        const negated = this._negated;
+        const [pSpriteName, output] = this.args;
+        const negated = this.negated;
         const edgeLabel = this._edgeLabel;
 
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;

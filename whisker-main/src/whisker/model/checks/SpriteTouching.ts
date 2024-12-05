@@ -1,10 +1,10 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
-const NAME = "SpriteTouching" as const;
+const name = "SpriteTouching" as const;
 
 export type SpriteTouchingArgs = [
     /**
@@ -29,13 +29,13 @@ export interface SpriteTouchingJSON extends ICheckJSON {
 }
 
 export const SpriteTouchingJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: SpriteTouchingArgs,
 });
 
 export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: SpriteTouchingArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<SpriteTouchingJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -47,8 +47,8 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
 
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName1, pSpriteName2] = this._args;
-        const negated = this._negated;
+        const [pSpriteName1, pSpriteName2] = this.args;
+        const negated = this.negated;
         const edgeLabel = this._edgeLabel;
 
         const spriteName1 = ModelUtil.checkSpriteExistence(t, pSpriteName1).name;

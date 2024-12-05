@@ -1,10 +1,10 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 
-const NAME = "Click" as const;
+const name = "Click" as const;
 
 export type ClickArgs = [
     /**
@@ -18,18 +18,18 @@ const ClickArgs = z.tuple([
 ]);
 
 export interface ClickJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: ClickArgs;
 }
 
 export const ClickJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: ClickArgs,
 });
 
 export class Click extends AbstractCheck<ClickJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: ClickArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<ClickJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -37,12 +37,12 @@ export class Click extends AbstractCheck<ClickJSON> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
-        const [pSpriteName] = this._args;
+        const [pSpriteName] = this.args;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anyTouchingMouse = sprites.some((s: Sprite) => s.visible && t.isMouseDown() && s.isTouchingMouse());
-            return !this._negated == anyTouchingMouse;
+            return !this.negated == anyTouchingMouse;
         };
     }
 }

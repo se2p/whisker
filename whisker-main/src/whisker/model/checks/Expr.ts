@@ -1,31 +1,31 @@
-import {AbstractCheck, Check, ICheckJSON} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
-const NAME = "Expr" as const;
+const name = "Expr" as const;
 
 export type ExprArgs = [string, ...string[]];
 
 const ExprArgs = z.string().array().nonempty();
 
 export interface ExprJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: ExprArgs;
 }
 
 export const ExprJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: ExprArgs,
 });
 
 export class Expr extends AbstractCheck<ExprJSON> {
     private readonly _code: string;
 
-    constructor(edgeLabel: string, id: string, negated: boolean, args: ExprArgs) {
-        super(edgeLabel, id, negated, NAME, args);
-        this._code = args.join("\n");
+    constructor(edgeLabel: string, json: OptionalName<ExprJSON>) {
+        super(edgeLabel, {...json, name});
+        this._code = this.args.join("\n");
     }
 
     /**
@@ -36,7 +36,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
         const e = ModelUtil.getExpressionForEval(t, this._code);
-        const check: () => boolean = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
+        const check: () => boolean = () => !this.negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
@@ -47,7 +47,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
 
     private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => boolean) {
         const edgeLabel = this._edgeLabel;
-        const eventString = CheckUtility.getEventString("Expr", this._negated, this._code);
+        const eventString = CheckUtility.getEventString("Expr", this.negated, this._code);
 
         d.varDependencies.forEach(dependency => {
             cu.registerVarEvent(dependency.varName, eventString, edgeLabel, graphID, predicate);

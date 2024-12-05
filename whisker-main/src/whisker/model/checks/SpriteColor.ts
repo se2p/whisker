@@ -1,11 +1,11 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
-const NAME = "SpriteColor" as const;
+const name = "SpriteColor" as const;
 
 export type SpriteColorArgs = [
     /**
@@ -39,18 +39,18 @@ const SpriteColorArgs = z.tuple([
 ]);
 
 export interface SpriteColorJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: SpriteColorArgs;
 }
 
 export const SpriteColorJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: SpriteColorArgs,
 });
 
 export class SpriteColor extends AbstractCheck<SpriteColorJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: SpriteColorArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<SpriteColorJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -61,8 +61,8 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName, pR, pG, pB] = this._args;
-        const negated = this._negated;
+        const [pSpriteName, pR, pG, pB] = this.args;
+        const negated = this.negated;
         const edgeLabel = this._edgeLabel;
 
         const r = ModelUtil.testNumber(pR);

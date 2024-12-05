@@ -4,6 +4,8 @@ import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 
+export type OptionalName<C extends CheckJSON> = Omit<C, "name"> & Partial<Pick<C, "name">>;
+
 export type SpriteName =
     | string
     | [string, ...string[]]
@@ -55,18 +57,12 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
      * @param _edgeLabel Label of the parent edge of the check.
-     * @param _id Id for this check.
-     * @param _negated Whether the check is negated.
-     * @param _name Type/name of the check.
-     * @param _args List of arguments for the check.
+     * @param _checkJSON
      * @protected
      */
     protected constructor(
         protected readonly _edgeLabel: string,
-        protected readonly _id: string,
-        protected readonly _negated: boolean,
-        protected readonly _name: C["name"],
-        protected readonly _args: C["args"],
+        private readonly _checkJSON: C,
     ) {
         this._check = () => false;
     }
@@ -89,33 +85,28 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      */
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): Check;
 
-    get id(): string {
-        return this._id;
+    get id(): C["id"] {
+        return this._checkJSON.id;
     }
 
     get name(): C["name"] {
-        return this._name;
+        return this._checkJSON.name;
     }
 
     get args(): C["args"] {
-        return this._args;
+        return this._checkJSON.args;
     }
 
-    get negated(): boolean {
-        return this._negated;
+    get negated(): C["negated"] {
+        return this._checkJSON.negated;
     }
 
     toJSON(): C {
-        return {
-            id: this.id,
-            name: this.name,
-            args: this.args,
-            negated: this.negated
-        } as C;
+        return JSON.parse(JSON.stringify(this._checkJSON));
     }
 
     private _equalsArgs(that: ICheckJSON): boolean {
-        return this.args.length === that.args.length && this._args.every((val, index) => val === that.args[index]);
+        return this.args.length === that.args.length && this.args.every((val, index) => val === that.args[index]);
     }
 
     equals(check: ICheckJSON): boolean {

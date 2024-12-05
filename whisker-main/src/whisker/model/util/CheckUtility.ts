@@ -307,7 +307,7 @@ export class CheckUtility extends EventEmitter {
      * @param graphID ID of the graph, where the error was thrown.
      * @param e Error that was thrown
      */
-    addErrorOutput(edgeLabel: string, graphID: string, e: unknown): void {
+    addErrorOutput(edgeLabel: string, graphID: string, e: Error): void {
         const message = getErrorMessage(e);
         const output = getErrorOnEdgeOutput(edgeLabel, graphID, message);
         this._failOrError(output, this._errorOutputs);

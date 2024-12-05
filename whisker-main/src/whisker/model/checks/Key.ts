@@ -1,8 +1,8 @@
-import {AbstractCheck, Check, ICheckJSON} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 
-const NAME = "Key" as const;
+const name = "Key" as const;
 
 export type KeyArgs = [
     /**
@@ -16,18 +16,18 @@ const KeyArgs = z.tuple([
 ]);
 
 export interface KeyJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: KeyArgs;
 }
 
 export const KeyJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: KeyArgs,
 });
 
 export class Key extends AbstractCheck<KeyJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: KeyArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<KeyJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -36,8 +36,8 @@ export class Key extends AbstractCheck<KeyJSON> {
      * @param cu Listener for the checks.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): Check {
-        const [key] = this._args;
-        const negated = this._negated;
+        const [key] = this.args;
+        const negated = this.negated;
         return () => {
             return !negated == cu.isKeyDown(key);
         };

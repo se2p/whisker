@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName, VariableName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName, VariableName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -6,7 +6,7 @@ import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
 
-const NAME = "VarChange" as const;
+const name = "VarChange" as const;
 
 export type VarChangeArgs = [
     /**
@@ -34,18 +34,18 @@ export const VarChangeArgs = z.tuple([
 ]);
 
 export interface VarChangeJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: VarChangeArgs;
 }
 
 export const VarChangeJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: VarChangeArgs,
 });
 
 export class VarChange extends AbstractCheck<VarChangeJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: VarChangeArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<VarChangeJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -55,8 +55,8 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName, varName, change] = this._args;
-        const negated = this._negated;
+        const [pSpriteName, varName, change] = this.args;
+        const negated = this.negated;
         const edgeLabel = this._edgeLabel;
 
         let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
@@ -67,7 +67,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
         sprite = foundSprite;
         const spriteName = sprite.name;
         const variableName = foundVar.name;
-        const eventString = CheckUtility.getEventString(NAME, negated, pSpriteName, varName, change);
+        const eventString = CheckUtility.getEventString(name, negated, pSpriteName, varName, change);
 
         function check(): boolean {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];

@@ -97,48 +97,50 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "TouchingHorizEdge",
 ]);
 
-export function newCheck(edgeLabel: string, {name, id, negated, args}: CheckJSON): AbstractCheck {
+export function newCheck(edgeLabel: string, checkJSON: CheckJSON): AbstractCheck {
+    const name = checkJSON.name;
+
     switch (name) {
         case "AttrChange":
-            return new AttrChange(edgeLabel, id, negated, args);
+            return new AttrChange(edgeLabel, checkJSON);
         case "AttrComp":
-            return new AttrComp(edgeLabel, id, negated, args);
+            return new AttrComp(edgeLabel, checkJSON);
         case "BackgroundChange":
-            return new BackgroundChange(edgeLabel, id, negated, args);
+            return new BackgroundChange(edgeLabel, checkJSON);
         case "Click":
-            return new Click(edgeLabel, id, negated, args);
+            return new Click(edgeLabel, checkJSON);
         case "Key":
-            return new Key(edgeLabel, id, negated, args);
+            return new Key(edgeLabel, checkJSON);
         case "Output":
-            return new Output(edgeLabel, id, negated, args);
+            return new Output(edgeLabel, checkJSON);
         case "SpriteColor":
-            return new SpriteColor(edgeLabel, id, negated, args);
+            return new SpriteColor(edgeLabel, checkJSON);
         case "SpriteTouching":
-            return new SpriteTouching(edgeLabel, id, negated, args);
+            return new SpriteTouching(edgeLabel, checkJSON);
         case "VarChange":
-            return new VarChange(edgeLabel, id, negated, args);
+            return new VarChange(edgeLabel, checkJSON);
         case "VarComp":
-            return new VarComp(edgeLabel, id, negated, args);
+            return new VarComp(edgeLabel, checkJSON);
         case "Expr":
-            return new Expr(edgeLabel, id, negated, args);
+            return new Expr(edgeLabel, checkJSON);
         case "Probability":
-            return new Probability(edgeLabel, id, negated, args);
+            return new Probability(edgeLabel, checkJSON);
         case "TimeElapsed":
-            return new TimeElapsed(edgeLabel, id, negated, args);
+            return new TimeElapsed(edgeLabel, checkJSON);
         case "TimeBetween":
-            return new TimeBetween(edgeLabel, id, negated, args);
+            return new TimeBetween(edgeLabel, checkJSON);
         case "TimeAfterEnd":
-            return new TimeAfterEnd(edgeLabel, id, negated, args);
+            return new TimeAfterEnd(edgeLabel, checkJSON);
         case "NbrOfClones":
-            return new NbrOfClones(edgeLabel, id, negated, args);
+            return new NbrOfClones(edgeLabel, checkJSON);
         case "NbrOfVisibleClones":
-            return new NbrOfVisibleClones(edgeLabel, id, negated, args);
+            return new NbrOfVisibleClones(edgeLabel, checkJSON);
         case "TouchingEdge":
-            return new TouchingEdge(edgeLabel, id, negated, args);
+            return new TouchingEdge(edgeLabel, checkJSON);
         case "TouchingVerticalEdge":
-            return new TouchingVerticalEdge(edgeLabel, id, negated, args);
+            return new TouchingVerticalEdge(edgeLabel, checkJSON);
         case "TouchingHorizEdge":
-            return new TouchingHorizEdge(edgeLabel, id, negated, args);
+            return new TouchingHorizEdge(edgeLabel, checkJSON);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

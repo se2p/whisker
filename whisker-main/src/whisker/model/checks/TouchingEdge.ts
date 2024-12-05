@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -16,8 +16,8 @@ const TouchingEdgeArgs = z.tuple([
 ]);
 
 abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON> extends AbstractCheck<C> {
-    protected constructor(edgeLabel: string, id: string, negated: boolean, name: typeof NAME1 | typeof NAME2 | typeof NAME3, args: TouchingEdgeArgs) {
-        super(edgeLabel, id, negated, name, args);
+    protected constructor(edgeLabel: string, json: C) {
+        super(edgeLabel, json);
     }
 
     /**
@@ -27,8 +27,8 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName] = this._args;
-        const negated = this._negated;
+        const [pSpriteName] = this.args;
+        const negated = this.negated;
         const edgeLabel = this._edgeLabel;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const check = this._getCheck();
@@ -48,21 +48,21 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
     protected abstract _getEventString(): string;
 }
 
-const NAME1 = "TouchingEdge" as const;
+const name1 = "TouchingEdge" as const;
 
 export interface TouchingEdgeJSON extends ICheckJSON {
-    name: typeof NAME1;
+    name: typeof name1;
     args: TouchingEdgeArgs;
 }
 
 export const TouchingEdgeJSON = ICheckJSON.extend({
-    name: z.literal(NAME1),
+    name: z.literal(name1),
     args: TouchingEdgeArgs,
 });
 
 export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: TouchingEdgeArgs) {
-        super(edgeLabel, id, negated, NAME1, args);
+    constructor(edgeLabel: string, json: OptionalName<TouchingEdgeJSON>) {
+        super(edgeLabel, {...json, name: name1});
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {
@@ -70,27 +70,27 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
     }
 
     protected override _getEventString(): string {
-        const [pSpriteName] = this._args;
-        return CheckUtility.getEventString(NAME1, this._negated, pSpriteName);
+        const [pSpriteName] = this.args;
+        return CheckUtility.getEventString(name1, this.negated, pSpriteName);
     }
 }
 
-const NAME2 = "TouchingHorizEdge" as const;
+const name2 = "TouchingHorizEdge" as const;
 
 export interface TouchingHorizEdgeJSON extends ICheckJSON {
-    name: typeof NAME2;
+    name: typeof name2;
     args: TouchingEdgeArgs;
 }
 
 export const TouchingHorizEdgeJSON = ICheckJSON.extend({
-    name: z.literal(NAME2),
+    name: z.literal(name2),
     args: TouchingEdgeArgs,
 });
 
 
 export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: TouchingEdgeArgs) {
-        super(edgeLabel, id, negated, NAME2, args);
+    constructor(edgeLabel: string, json: OptionalName<TouchingHorizEdgeJSON>) {
+        super(edgeLabel, {...json, name: name2});
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {
@@ -98,26 +98,26 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
     }
 
     protected override _getEventString(): string {
-        const [pSpriteName] = this._args;
-        return CheckUtility.getEventString(NAME2, this._negated, pSpriteName);
+        const [pSpriteName] = this.args;
+        return CheckUtility.getEventString(name2, this.negated, pSpriteName);
     }
 }
 
-const NAME3 = "TouchingVerticalEdge" as const;
+const name3 = "TouchingVerticalEdge" as const;
 
 export interface TouchingVerticalEdgeJSON extends ICheckJSON {
-    name: typeof NAME3;
+    name: typeof name3;
     args: TouchingEdgeArgs;
 }
 
 export const TouchingVerticalEdgeJSON = ICheckJSON.extend({
-    name: z.literal(NAME3),
+    name: z.literal(name3),
     args: TouchingEdgeArgs,
 });
 
 export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: TouchingEdgeArgs) {
-        super(edgeLabel, id, negated, NAME3, args);
+    constructor(edgeLabel: string, json: OptionalName<TouchingVerticalEdgeJSON>) {
+        super(edgeLabel, {...json, name: name3});
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {
@@ -125,7 +125,7 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
     }
 
     protected override _getEventString(): string {
-        const [pSpriteName] = this._args;
-        return CheckUtility.getEventString(NAME3, this._negated, pSpriteName);
+        const [pSpriteName] = this.args;
+        return CheckUtility.getEventString(name3, this.negated, pSpriteName);
     }
 }

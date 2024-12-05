@@ -1,11 +1,11 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName, VariableName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName, VariableName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ComparisonNotKnownError, ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
-const NAME = "VarComp" as const;
+const name = "VarComp" as const;
 
 export type VarCompArgs = [
     /**
@@ -37,18 +37,18 @@ const VarCompArgs = z.tuple([
 ]);
 
 export interface VarCompJSON extends ICheckJSON {
-    name: typeof NAME;
+    name: typeof name;
     args: VarCompArgs;
 }
 
 export const VarCompJSON = ICheckJSON.extend({
-    name: z.literal(NAME),
+    name: z.literal(name),
     args: VarCompArgs,
 });
 
 export class VarComp extends AbstractCheck<VarCompJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: VarCompArgs) {
-        super(edgeLabel, id, negated, NAME, args);
+    constructor(edgeLabel: string, json: OptionalName<VarCompJSON>) {
+        super(edgeLabel, {...json, name});
     }
 
     /**
@@ -59,8 +59,8 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName, varName, comparison, varValue] = this._args;
-        const negated = this._negated;
+        const [pSpriteName, varName, comparison, varValue] = this.args;
+        const negated = this.negated;
         const edgeLabel = this._edgeLabel;
         const {
             sprite: foundSprite,
@@ -68,7 +68,7 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
         } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
-        const eventString = CheckUtility.getEventString(NAME, negated, pSpriteName, varName,
+        const eventString = CheckUtility.getEventString(name, negated, pSpriteName, varName,
             comparison, varValue);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="

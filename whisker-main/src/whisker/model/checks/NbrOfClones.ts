@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ComparisonNotKnownError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
@@ -31,9 +31,9 @@ const NbrOfClonesArgs = z.tuple([
 abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClonesJSON> extends AbstractCheck<C> {
     private readonly _visible: boolean;
 
-    protected constructor(edgeLabel: string, id: string, negated: boolean, visible: boolean, name: "NbrOfClones" | "NbrOfVisibleClones", args: NbrOfClonesArgs) {
-        super(edgeLabel, id, negated, name, args);
-        this._visible = visible;
+    protected constructor(edgeLabel: string, json: C) {
+        super(edgeLabel, json);
+        this._visible = json.name === "NbrOfVisibleClones";
     }
 
     /**
@@ -41,8 +41,8 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): Check {
-        const [pSpriteName, comparison, nbr] = this._args;
-        const negated = this._negated;
+        const [pSpriteName, comparison, nbr] = this.args;
+        const negated = this.negated;
 
         const toCheckNbr = ModelUtil.testNumber(nbr);
         const sprite = ModelUtil.checkSpriteExistence(t, pSpriteName);
@@ -64,38 +64,38 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
     }
 }
 
-const NAME1 = "NbrOfClones" as const;
+const name1 = "NbrOfClones" as const;
 
 export interface NbrOfClonesJSON extends ICheckJSON {
-    name: typeof NAME1;
+    name: typeof name1;
     args: NbrOfClonesArgs;
 }
 
 export const NbrOfClonesJSON = ICheckJSON.extend({
-    name: z.literal(NAME1),
+    name: z.literal(name1),
     args: NbrOfClonesArgs,
 });
 
 export class NbrOfClones extends AbstractNbrOfClones<NbrOfClonesJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: NbrOfClonesArgs) {
-        super(edgeLabel, id, negated, false, NAME1, args);
+    constructor(edgeLabel: string, json: OptionalName<NbrOfClonesJSON>) {
+        super(edgeLabel, {...json, name: name1});
     }
 }
 
-const NAME2 = "NbrOfVisibleClones" as const;
+const name2 = "NbrOfVisibleClones" as const;
 
 export interface NbrOfVisibleClonesJSON extends ICheckJSON {
-    name: typeof NAME2;
+    name: typeof name2;
     args: NbrOfClonesArgs;
 }
 
 export const NbrOfVisibleClonesJSON = ICheckJSON.extend({
-    name: z.literal(NAME2),
+    name: z.literal(name2),
     args: NbrOfClonesArgs,
 });
 
 export class NbrOfVisibleClones extends AbstractNbrOfClones<NbrOfVisibleClonesJSON> {
-    constructor(edgeLabel: string, id: string, negated: boolean, args: NbrOfClonesArgs) {
-        super(edgeLabel, id, negated, true, NAME2, args);
+    constructor(edgeLabel: string, json: OptionalName<NbrOfVisibleClonesJSON>) {
+        super(edgeLabel, {...json, name: name2});
     }
 }

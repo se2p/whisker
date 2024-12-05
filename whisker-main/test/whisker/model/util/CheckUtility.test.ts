@@ -34,8 +34,8 @@ describe('CheckUtility', () => {
             });
 
         const effects: [AbstractCheck, string][] = [
-            [new SpriteTouching("dummy", "test", false, ["sprite1", "sprite2"]), "SpriteTouching:sprite1:sprite2"],
-            [new AttrComp("dummy", "test", false, ["sprite1", "costume", "=", "costume2"]), "AttrComp:sprite1:costume:=:costume2"]
+            [new SpriteTouching("dummy", {id: "test", negated: false, args: ["sprite1", "sprite2"]}), "SpriteTouching:sprite1:sprite2"],
+            [new AttrComp("dummy", {id: "test", negated: false, args: ["sprite1", "costume", "=", "costume2"]}), "AttrComp:sprite1:costume:=:costume2"]
         ];
         it.each(effects)('getEventString() with attributes of Check: %s', (check: AbstractCheck, expected: string) => {
             expect(CheckUtility.getEventString(check.name, check.negated, ...check.args)).toBe(expected);
