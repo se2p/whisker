@@ -31,8 +31,8 @@ const NbrOfClonesArgs = z.tuple([
 abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClonesJSON> extends AbstractCheck<C> {
     private readonly _visible: boolean;
 
-    protected constructor(id: string, edgeLabel: string, negated: boolean, visible: boolean, name: "NbrOfClones" | "NbrOfVisibleClones", args: NbrOfClonesArgs) {
-        super(id, edgeLabel, negated, name, args);
+    protected constructor(edgeLabel: string, id: string, negated: boolean, visible: boolean, name: "NbrOfClones" | "NbrOfVisibleClones", args: NbrOfClonesArgs) {
+        super(edgeLabel, id, negated, name, args);
         this._visible = visible;
     }
 
@@ -77,8 +77,8 @@ export const NbrOfClonesJSON = ICheckJSON.extend({
 });
 
 export class NbrOfClones extends AbstractNbrOfClones<NbrOfClonesJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: NbrOfClonesArgs) {
-        super(id, edgeLabel, negated, false, NAME1, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: NbrOfClonesArgs) {
+        super(edgeLabel, id, negated, false, NAME1, args);
     }
 }
 
@@ -95,7 +95,7 @@ export const NbrOfVisibleClonesJSON = ICheckJSON.extend({
 });
 
 export class NbrOfVisibleClones extends AbstractNbrOfClones<NbrOfVisibleClonesJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: NbrOfClonesArgs) {
-        super(id, edgeLabel, negated, true, NAME2, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: NbrOfClonesArgs) {
+        super(edgeLabel, id, negated, true, NAME2, args);
     }
 }

@@ -42,8 +42,8 @@ export const AttrChangeJSON = ICheckJSON.extend({
 });
 
 export class AttrChange extends AbstractCheck<AttrChangeJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: AttrChangeArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: AttrChangeArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

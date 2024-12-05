@@ -23,8 +23,8 @@ export const ExprJSON = ICheckJSON.extend({
 export class Expr extends AbstractCheck<ExprJSON> {
     private readonly _code: string;
 
-    constructor(id: string, edgeLabel: string, negated: boolean, args: ExprArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: ExprArgs) {
+        super(edgeLabel, id, negated, NAME, args);
         this._code = args.join("\n");
     }
 

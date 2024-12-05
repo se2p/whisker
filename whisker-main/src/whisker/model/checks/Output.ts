@@ -34,8 +34,8 @@ export const OutputJSON = ICheckJSON.extend({
 });
 
 export class Output extends AbstractCheck<OutputJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: OutputArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: OutputArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

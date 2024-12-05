@@ -16,8 +16,8 @@ const TouchingEdgeArgs = z.tuple([
 ]);
 
 abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON> extends AbstractCheck<C> {
-    protected constructor(id: string, edgeLabel: string, negated: boolean, name: typeof NAME1 | typeof NAME2 | typeof NAME3, args: TouchingEdgeArgs) {
-        super(id, edgeLabel, negated, name, args);
+    protected constructor(edgeLabel: string, id: string, negated: boolean, name: typeof NAME1 | typeof NAME2 | typeof NAME3, args: TouchingEdgeArgs) {
+        super(edgeLabel, id, negated, name, args);
     }
 
     /**
@@ -61,8 +61,8 @@ export const TouchingEdgeJSON = ICheckJSON.extend({
 });
 
 export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: TouchingEdgeArgs) {
-        super(id, edgeLabel, negated, NAME1, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: TouchingEdgeArgs) {
+        super(edgeLabel, id, negated, NAME1, args);
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {
@@ -89,8 +89,8 @@ export const TouchingHorizEdgeJSON = ICheckJSON.extend({
 
 
 export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: TouchingEdgeArgs) {
-        super(id, edgeLabel, negated, NAME2, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: TouchingEdgeArgs) {
+        super(edgeLabel, id, negated, NAME2, args);
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {
@@ -116,8 +116,8 @@ export const TouchingVerticalEdgeJSON = ICheckJSON.extend({
 });
 
 export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: TouchingEdgeArgs) {
-        super(id, edgeLabel, negated, NAME3, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: TouchingEdgeArgs) {
+        super(edgeLabel, id, negated, NAME3, args);
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {

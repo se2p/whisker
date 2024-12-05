@@ -49,8 +49,8 @@ export const SpriteColorJSON = ICheckJSON.extend({
 });
 
 export class SpriteColor extends AbstractCheck<SpriteColorJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: SpriteColorArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: SpriteColorArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

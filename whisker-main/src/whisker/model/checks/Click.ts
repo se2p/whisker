@@ -28,8 +28,8 @@ export const ClickJSON = ICheckJSON.extend({
 });
 
 export class Click extends AbstractCheck<ClickJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: ClickArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: ClickArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

@@ -34,8 +34,8 @@ export const SpriteTouchingJSON = ICheckJSON.extend({
 });
 
 export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: SpriteTouchingArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: SpriteTouchingArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

@@ -49,8 +49,8 @@ export const AttrCompJSON = ICheckJSON.extend({
 });
 
 export class AttrComp extends AbstractCheck<AttrCompJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: AttrCompArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: AttrCompArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

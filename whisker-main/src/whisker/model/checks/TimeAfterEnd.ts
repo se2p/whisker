@@ -27,8 +27,8 @@ export const TimeAfterEndJSON = ICheckJSON.extend({
 });
 
 export class TimeAfterEnd extends AbstractCheck<TimeAfterEndJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: TimeAfterEndArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: TimeAfterEndArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

@@ -47,8 +47,8 @@ export const VarCompJSON = ICheckJSON.extend({
 });
 
 export class VarComp extends AbstractCheck<VarCompJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: VarCompArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: VarCompArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

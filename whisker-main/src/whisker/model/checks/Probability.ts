@@ -29,8 +29,8 @@ export const ProbabilityJSON = ICheckJSON.extend({
 });
 
 export class Probability extends AbstractCheck<ProbabilityJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: ProbabilityArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: ProbabilityArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

@@ -27,8 +27,8 @@ export const TimeBetweenJSON = ICheckJSON.extend({
 });
 
 export class TimeBetween extends AbstractCheck<TimeBetweenJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: TimeBetweenArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: TimeBetweenArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

@@ -112,7 +112,7 @@ describe('ModelTester', () => {
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[2];
             const expectedEdge = new ProgramModelEdge("init", "init", "bowl3", "init", "start", -1, -1);
-            expectedEdge.addCondition(new Expr("condition1", undefined, false, ["true"]));
+            expectedEdge.addCondition(new Expr(undefined, "condition1", false, ["true"]));
             const expectedProgramModel = new EndModel("bowl3", "init", expectedNodesExtended,
                 {"e1": expectedEdge}, ["end"], ["end"]);
             const expected: EndModelJSON = {

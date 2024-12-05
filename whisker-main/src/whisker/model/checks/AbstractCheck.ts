@@ -54,16 +54,16 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
-     * @param _id Id for this check.
      * @param _edgeLabel Label of the parent edge of the check.
+     * @param _id Id for this check.
      * @param _negated Whether the check is negated.
      * @param _name Type/name of the check.
      * @param _args List of arguments for the check.
      * @protected
      */
     protected constructor(
-        protected readonly _id: string,
         protected readonly _edgeLabel: string,
+        protected readonly _id: string,
         protected readonly _negated: boolean,
         protected readonly _name: C["name"],
         protected readonly _args: C["args"],

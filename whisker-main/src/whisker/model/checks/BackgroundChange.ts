@@ -28,8 +28,8 @@ export const BackgroundChangeJSON = ICheckJSON.extend({
 });
 
 export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: BackgroundChangeArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: BackgroundChangeArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

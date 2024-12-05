@@ -44,8 +44,8 @@ export const VarChangeJSON = ICheckJSON.extend({
 });
 
 export class VarChange extends AbstractCheck<VarChangeJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: VarChangeArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: VarChangeArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**

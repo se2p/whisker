@@ -100,45 +100,45 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
 export function newCheck(edgeLabel: string, {name, id, negated, args}: CheckJSON): AbstractCheck {
     switch (name) {
         case "AttrChange":
-            return new AttrChange(id, edgeLabel, negated, args);
+            return new AttrChange(edgeLabel, id, negated, args);
         case "AttrComp":
-            return new AttrComp(id, edgeLabel, negated, args);
+            return new AttrComp(edgeLabel, id, negated, args);
         case "BackgroundChange":
-            return new BackgroundChange(id, edgeLabel, negated, args);
+            return new BackgroundChange(edgeLabel, id, negated, args);
         case "Click":
-            return new Click(id, edgeLabel, negated, args);
+            return new Click(edgeLabel, id, negated, args);
         case "Key":
-            return new Key(id, edgeLabel, negated, args);
+            return new Key(edgeLabel, id, negated, args);
         case "Output":
-            return new Output(id, edgeLabel, negated, args);
+            return new Output(edgeLabel, id, negated, args);
         case "SpriteColor":
-            return new SpriteColor(id, edgeLabel, negated, args);
+            return new SpriteColor(edgeLabel, id, negated, args);
         case "SpriteTouching":
-            return new SpriteTouching(id, edgeLabel, negated, args);
+            return new SpriteTouching(edgeLabel, id, negated, args);
         case "VarChange":
-            return new VarChange(id, edgeLabel, negated, args);
+            return new VarChange(edgeLabel, id, negated, args);
         case "VarComp":
-            return new VarComp(id, edgeLabel, negated, args);
+            return new VarComp(edgeLabel, id, negated, args);
         case "Expr":
-            return new Expr(id, edgeLabel, negated, args);
+            return new Expr(edgeLabel, id, negated, args);
         case "Probability":
-            return new Probability(id, edgeLabel, negated, args);
+            return new Probability(edgeLabel, id, negated, args);
         case "TimeElapsed":
-            return new TimeElapsed(id, edgeLabel, negated, args);
+            return new TimeElapsed(edgeLabel, id, negated, args);
         case "TimeBetween":
-            return new TimeBetween(id, edgeLabel, negated, args);
+            return new TimeBetween(edgeLabel, id, negated, args);
         case "TimeAfterEnd":
-            return new TimeAfterEnd(id, edgeLabel, negated, args);
+            return new TimeAfterEnd(edgeLabel, id, negated, args);
         case "NbrOfClones":
-            return new NbrOfClones(id, edgeLabel, negated, args);
+            return new NbrOfClones(edgeLabel, id, negated, args);
         case "NbrOfVisibleClones":
-            return new NbrOfVisibleClones(id, edgeLabel, negated, args);
+            return new NbrOfVisibleClones(edgeLabel, id, negated, args);
         case "TouchingEdge":
-            return new TouchingEdge(id, edgeLabel, negated, args);
+            return new TouchingEdge(edgeLabel, id, negated, args);
         case "TouchingVerticalEdge":
-            return new TouchingVerticalEdge(id, edgeLabel, negated, args);
+            return new TouchingVerticalEdge(edgeLabel, id, negated, args);
         case "TouchingHorizEdge":
-            return new TouchingHorizEdge(id, edgeLabel, negated, args);
+            return new TouchingHorizEdge(edgeLabel, id, negated, args);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

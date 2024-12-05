@@ -23,11 +23,11 @@ export interface KeyJSON extends ICheckJSON {
 export const KeyJSON = ICheckJSON.extend({
     name: z.literal(NAME),
     args: KeyArgs,
-})
+});
 
 export class Key extends AbstractCheck<KeyJSON> {
-    constructor(id: string, edgeLabel: string, negated: boolean, args: KeyArgs) {
-        super(id, edgeLabel, negated, NAME, args);
+    constructor(edgeLabel: string, id: string, negated: boolean, args: KeyArgs) {
+        super(edgeLabel, id, negated, NAME, args);
     }
 
     /**
