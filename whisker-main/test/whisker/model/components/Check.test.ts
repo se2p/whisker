@@ -230,16 +230,10 @@ describe('Condition', () => {
         expect(() => newCheck("edgeID", {name, negated, args})).toThrow();
     }
 
-    describe.skip('Constructor throws for empty args', () => {
+    describe('Constructor throws for empty args', () => {
 
         const constructorArguments: [CheckName, boolean, ArgType[]][] = CHECK_NAMES.map(c => [c, true, []]);
         it.each(constructorArguments)('throws for CheckName: %s', checkConstructorThrows);
-    });
-
-    test.skip("constructor throws for undefined id", () => {
-        expect(() => {
-            new BackgroundChange(undefined, {negated: true, args: ["test"]});
-        }).toThrow();
     });
 
     test("constructor does not throw for undefined edgeLabel", () => {
@@ -274,7 +268,7 @@ describe('Condition', () => {
         expect(actual).toStrictEqual(expected);
     });
 
-    describe.skip("not enough arguments in args for constructor", () => {
+    describe("not enough arguments in args for constructor", () => {
         describe("not enough arguments: sprite color", () => {
             const constructorArguments: [CheckName, boolean, ArgType[]][] = [
                 ["SpriteColor", true, ["test"]],
@@ -492,7 +486,7 @@ describe('Effect', () => {
         return getEffectsCombinationsFor("sprite", "var", first, optionsFirst, second, optionsSecond);
     }
 
-    describe.skip('Constructor throws exception vor invalid arguments', () => {
+    describe('Constructor throws exception vor invalid arguments', () => {
 
         describe('Constructor throws for empty args', () => {
             const constructorArguments: [CheckName, boolean, ArgType[]][] = CHECK_NAMES.map(c => [c, true, []]);
