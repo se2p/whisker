@@ -30,7 +30,11 @@ export const ProbabilityJSON = ICheckJSON.extend({
 
 export class Probability extends AbstractCheck<ProbabilityJSON> {
     constructor(edgeLabel: string, json: OptionalName<ProbabilityJSON>) {
-        super(edgeLabel, {...json, name}, ProbabilityJSON.parse.bind(ProbabilityJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: ProbabilityJSON): ProbabilityJSON {
+        return ProbabilityJSON.parse(checkJSON) as ProbabilityJSON;
     }
 
     /**

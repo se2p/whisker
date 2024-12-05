@@ -50,7 +50,11 @@ export const AttrCompJSON = ICheckJSON.extend({
 
 export class AttrComp extends AbstractCheck<AttrCompJSON> {
     constructor(edgeLabel: string, json: OptionalName<AttrCompJSON>) {
-        super(edgeLabel, {...json, name}, AttrCompJSON.parse.bind(AttrCompJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: AttrCompJSON): AttrCompJSON {
+        return AttrCompJSON.parse(checkJSON) as AttrCompJSON;
     }
 
     /**

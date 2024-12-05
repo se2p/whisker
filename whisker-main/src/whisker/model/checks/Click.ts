@@ -29,7 +29,11 @@ export const ClickJSON = ICheckJSON.extend({
 
 export class Click extends AbstractCheck<ClickJSON> {
     constructor(edgeLabel: string, json: OptionalName<ClickJSON>) {
-        super(edgeLabel, {...json, name}, ClickJSON.parse.bind(ClickJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: ClickJSON): ClickJSON {
+        return ClickJSON.parse(checkJSON) as ClickJSON;
     }
 
     /**

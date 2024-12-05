@@ -29,7 +29,11 @@ export const BackgroundChangeJSON = ICheckJSON.extend({
 
 export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
     constructor(edgeLabel: string, json: OptionalName<BackgroundChangeJSON>) {
-        super(edgeLabel, {...json, name}, BackgroundChangeJSON.parse.bind(BackgroundChangeJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: BackgroundChangeJSON): BackgroundChangeJSON {
+        return BackgroundChangeJSON.parse(checkJSON) as BackgroundChangeJSON;
     }
 
     /**

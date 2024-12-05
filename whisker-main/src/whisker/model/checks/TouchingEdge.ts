@@ -16,8 +16,8 @@ const TouchingEdgeArgs = z.tuple([
 ]);
 
 abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON> extends AbstractCheck<C> {
-    protected constructor(edgeLabel: string, json: C, validate: (json: C) => C) {
-        super(edgeLabel, json, validate);
+    protected constructor(edgeLabel: string, json: C) {
+        super(edgeLabel, json);
     }
 
     /**
@@ -60,7 +60,11 @@ export const TouchingEdgeJSON = ICheckJSON.extend({
 
 export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
     constructor(edgeLabel: string, json: OptionalName<TouchingEdgeJSON>) {
-        super(edgeLabel, {...json, name: name1}, TouchingEdgeJSON.parse.bind(TouchingEdgeJSON));
+        super(edgeLabel, {...json, name: name1});
+    }
+
+    protected _validate(checkJSON: TouchingEdgeJSON): TouchingEdgeJSON {
+        return TouchingEdgeJSON.parse(checkJSON) as TouchingEdgeJSON;
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {
@@ -83,7 +87,11 @@ export const TouchingHorizEdgeJSON = ICheckJSON.extend({
 
 export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON> {
     constructor(edgeLabel: string, json: OptionalName<TouchingHorizEdgeJSON>) {
-        super(edgeLabel, {...json, name: name2}, TouchingHorizEdgeJSON.parse.bind(TouchingHorizEdgeJSON));
+        super(edgeLabel, {...json, name: name2});
+    }
+
+    protected _validate(checkJSON: TouchingHorizEdgeJSON): TouchingHorizEdgeJSON {
+        return TouchingHorizEdgeJSON.parse(checkJSON) as TouchingHorizEdgeJSON;
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {
@@ -105,7 +113,11 @@ export const TouchingVerticalEdgeJSON = ICheckJSON.extend({
 
 export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON> {
     constructor(edgeLabel: string, json: OptionalName<TouchingVerticalEdgeJSON>) {
-        super(edgeLabel, {...json, name: name3}, TouchingVerticalEdgeJSON.parse.bind(TouchingVerticalEdgeJSON));
+        super(edgeLabel, {...json, name: name3});
+    }
+
+    protected _validate(checkJSON: TouchingVerticalEdgeJSON): TouchingVerticalEdgeJSON {
+        return TouchingVerticalEdgeJSON.parse(checkJSON) as TouchingVerticalEdgeJSON;
     }
 
     protected _getCheck(): (sprite: Sprite) => boolean {

@@ -45,7 +45,11 @@ export const VarChangeJSON = ICheckJSON.extend({
 
 export class VarChange extends AbstractCheck<VarChangeJSON> {
     constructor(edgeLabel: string, json: OptionalName<VarChangeJSON>) {
-        super(edgeLabel, {...json, name}, VarChangeJSON.parse.bind(VarChangeJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: VarChangeJSON): VarChangeJSON {
+        return VarChangeJSON.parse(checkJSON) as VarChangeJSON;
     }
 
     /**

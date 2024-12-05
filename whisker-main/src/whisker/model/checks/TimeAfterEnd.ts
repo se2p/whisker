@@ -28,7 +28,11 @@ export const TimeAfterEndJSON = ICheckJSON.extend({
 
 export class TimeAfterEnd extends AbstractCheck<TimeAfterEndJSON> {
     constructor(edgeLabel: string, json: OptionalName<TimeAfterEndJSON>) {
-        super(edgeLabel, {...json, name}, TimeAfterEndJSON.parse.bind(TimeAfterEndJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: TimeAfterEndJSON): TimeAfterEndJSON {
+        return TimeAfterEndJSON.parse(checkJSON) as TimeAfterEndJSON;
     }
 
     /**

@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON, CheckName} from "./newCheck";
+import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 
@@ -60,16 +60,14 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * Get a check instance and test whether enough arguments are provided for a check type.
      * @param edgeLabel Label of the parent edge of the check.
      * @param checkJSON
-     * @param validate
      * @protected
      */
     protected constructor(
         edgeLabel: string,
         checkJSON: C,
-        validate: (checkJSON: C) => C,
     ) {
         this._edgeLabel = edgeLabel;
-        this._checkJSON = validate(checkJSON);
+        this._checkJSON = this._validate(checkJSON);
         this._check = () => false;
     }
 
@@ -80,6 +78,8 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     get dependsOnSayText(): boolean {
         return false;
     }
+
+    protected abstract _validate(checkJSON: C): C;
 
     /**
      * Test the arguments for this check with the current test driver instance that has a loaded scratch program and

@@ -27,7 +27,11 @@ export const KeyJSON = ICheckJSON.extend({
 
 export class Key extends AbstractCheck<KeyJSON> {
     constructor(edgeLabel: string, json: OptionalName<KeyJSON>) {
-        super(edgeLabel, {...json, name}, KeyJSON.parse.bind(KeyJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: KeyJSON): KeyJSON {
+        return KeyJSON.parse(checkJSON) as KeyJSON;
     }
 
     /**

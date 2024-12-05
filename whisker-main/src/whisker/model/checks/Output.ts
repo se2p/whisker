@@ -35,7 +35,11 @@ export const OutputJSON = ICheckJSON.extend({
 
 export class Output extends AbstractCheck<OutputJSON> {
     constructor(edgeLabel: string, json: OptionalName<OutputJSON>) {
-        super(edgeLabel, {...json, name}, OutputJSON.parse.bind(OutputJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: OutputJSON): OutputJSON {
+        return OutputJSON.parse(checkJSON) as OutputJSON;
     }
 
     /**

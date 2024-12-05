@@ -35,7 +35,11 @@ export const SpriteTouchingJSON = ICheckJSON.extend({
 
 export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
     constructor(edgeLabel: string, json: OptionalName<SpriteTouchingJSON>) {
-        super(edgeLabel, {...json, name}, SpriteTouchingJSON.parse.bind(SpriteTouchingJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: SpriteTouchingJSON): SpriteTouchingJSON {
+        return SpriteTouchingJSON.parse(checkJSON) as SpriteTouchingJSON;
     }
 
     /**

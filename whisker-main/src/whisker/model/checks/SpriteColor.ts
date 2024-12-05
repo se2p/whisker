@@ -50,7 +50,11 @@ export const SpriteColorJSON = ICheckJSON.extend({
 
 export class SpriteColor extends AbstractCheck<SpriteColorJSON> {
     constructor(edgeLabel: string, json: OptionalName<SpriteColorJSON>) {
-        super(edgeLabel, {...json, name}, SpriteColorJSON.parse.bind(SpriteColorJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: SpriteColorJSON): SpriteColorJSON {
+        return SpriteColorJSON.parse(checkJSON) as SpriteColorJSON;
     }
 
     /**

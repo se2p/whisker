@@ -48,7 +48,11 @@ export const VarCompJSON = ICheckJSON.extend({
 
 export class VarComp extends AbstractCheck<VarCompJSON> {
     constructor(edgeLabel: string, json: OptionalName<VarCompJSON>) {
-        super(edgeLabel, {...json, name}, VarCompJSON.parse.bind(VarCompJSON));
+        super(edgeLabel, {...json, name});
+    }
+
+    protected _validate(checkJSON: VarCompJSON): VarCompJSON {
+        return VarCompJSON.parse(checkJSON) as VarCompJSON;
     }
 
     /**
