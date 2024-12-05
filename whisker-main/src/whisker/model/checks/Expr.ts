@@ -47,7 +47,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
 
     private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => boolean) {
         const edgeLabel = this._edgeLabel;
-        const eventString = CheckUtility.getEventString("Expr", this.negated, this._code);
+        const eventString = this.getEventString();
 
         d.varDependencies.forEach(dependency => {
             cu.registerVarEvent(dependency.varName, eventString, edgeLabel, graphID, predicate);

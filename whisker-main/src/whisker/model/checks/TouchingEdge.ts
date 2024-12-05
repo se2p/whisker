@@ -32,7 +32,7 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
         const edgeLabel = this._edgeLabel;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const check = this._getCheck();
-        const eventString = this._getEventString();
+        const eventString = this.getEventString();
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             return !negated == check(sprite);
         });
@@ -44,8 +44,6 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
     }
 
     protected abstract _getCheck(): (sprite: Sprite) => boolean;
-
-    protected abstract _getEventString(): string;
 }
 
 const name1 = "TouchingEdge" as const;
@@ -67,11 +65,6 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
 
     protected _getCheck(): (sprite: Sprite) => boolean {
         return (sprite: Sprite) => sprite.visible && sprite.isTouchingEdge();
-    }
-
-    protected override _getEventString(): string {
-        const [pSpriteName] = this.args;
-        return CheckUtility.getEventString(name1, this.negated, pSpriteName);
     }
 }
 
@@ -96,11 +89,6 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
     protected _getCheck(): (sprite: Sprite) => boolean {
         return (sprite: Sprite) => sprite.visible && sprite.isTouchingHorizEdge();
     }
-
-    protected override _getEventString(): string {
-        const [pSpriteName] = this.args;
-        return CheckUtility.getEventString(name2, this.negated, pSpriteName);
-    }
 }
 
 const name3 = "TouchingVerticalEdge" as const;
@@ -122,10 +110,5 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
 
     protected _getCheck(): (sprite: Sprite) => boolean {
         return (sprite: Sprite) => sprite.visible && sprite.isTouchingVerticalEdge();
-    }
-
-    protected override _getEventString(): string {
-        const [pSpriteName] = this.args;
-        return CheckUtility.getEventString(name3, this.negated, pSpriteName);
     }
 }

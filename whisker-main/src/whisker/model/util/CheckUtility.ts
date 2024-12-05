@@ -7,7 +7,6 @@ import Sprite from "../../../vm/sprite";
 import {AbstractCheck, ICheckJSON} from "../checks/AbstractCheck";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
-import {ArgType} from "./schema";
 import {CheckName} from "../checks/newCheck";
 
 type EffectCheck = { effect: AbstractCheck, edge: ProgramModelEdge, model: ProgramModel | EndModel };
@@ -201,17 +200,6 @@ export class CheckUtility extends EventEmitter {
         return this._testDriver.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyName);
         // replaced because of bug in test driver...
         // return this.testDriver.isKeyDown(keyName);
-    }
-
-    /**
-     * Get a string defining the event of a listener.
-     */
-    static getEventString(name: CheckName, negated: boolean, ...args: ArgType[]): string {
-        let string = negated ? "!" + name : name;
-        for (const arg of args) {
-            string += ":" + arg;
-        }
-        return string;
     }
 
     /**

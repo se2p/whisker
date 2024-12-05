@@ -1023,10 +1023,12 @@ describe('Effect', () => {
                 negated: false,
                 args: ["sprite", "var", "=", "0"]
             });
-            expect(attrComp.testForContradictingWithEvents([CheckUtility.getEventString("AttrComp", true,
-                "sprite", "var", "<=", "2")])).toBe(true);
-            expect(attrComp.testForContradictingWithEvents([CheckUtility.getEventString("AttrComp", false,
-                "sprite", "var", "<=", "2")])).toBe(false);
+
+            const attrComp2 = new AttrComp(edgeID, {id, negated: true, args: ["sprite", "var", "<=", "2"]});
+            const attrComp3 = new AttrComp(edgeID, {id, negated: false, args: ["sprite", "var", "<=", "2"]});
+
+            expect(attrComp.testForContradictingWithEvents([attrComp2.getEventString()])).toBe(true);
+            expect(attrComp.testForContradictingWithEvents([attrComp3.getEventString()])).toBe(false);
         });
     });
 

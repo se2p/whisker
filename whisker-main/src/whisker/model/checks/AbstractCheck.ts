@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON} from "./newCheck";
+import {CheckJSON, CheckName} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 
@@ -289,6 +289,14 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
             default:
                 return false;
         }
+    }
+
+    getEventString(): string {
+        let string = this.negated ? "!" + this.name : this.name;
+        for (const arg of this.args) {
+            string += ":" + arg;
+        }
+        return string;
     }
 
     toString(): string {

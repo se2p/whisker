@@ -67,7 +67,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
         sprite = foundSprite;
         const spriteName = sprite.name;
         const variableName = foundVar.name;
-        const eventString = CheckUtility.getEventString(name, negated, pSpriteName, varName, change);
+        const eventString = this.getEventString();
 
         function check(): boolean {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];

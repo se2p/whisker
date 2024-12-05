@@ -108,7 +108,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     private _attributeCompOnMove(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                  spriteName: string, pSpriteName: ArgType, attrName: string,
                                  comparison: string, attrValue: string): void {
-        const eventString = CheckUtility.getEventString("AttrComp", negated, pSpriteName, attrName, comparison, attrValue);
+        const eventString = this.getEventString();
 
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
@@ -122,7 +122,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     private _attributeCompOnVisual(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                    spriteName: string, pSpriteName: ArgType, attrName: string,
                                    comparison: string, attrValue: ArgType): void {
-        const eventString = CheckUtility.getEventString("AttrComp", negated, pSpriteName, attrName == "currentCostumeName" ? "costume" : attrName, comparison, attrValue);
+        const eventString = this.getEventString();
 
         cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
@@ -136,7 +136,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     private _attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                    spriteName: string, pSpriteName: ArgType, attrName: string,
                                    comparison: string, attrValue: ArgType): void {
-        const eventString = CheckUtility.getEventString("AttrComp", negated, pSpriteName, attrName, comparison, attrValue);
+        const eventString = this.getEventString();
 
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {

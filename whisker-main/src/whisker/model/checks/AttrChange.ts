@@ -95,7 +95,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
         const [pSpriteName, attrName, change] = this.args;
-        const eventString = CheckUtility.getEventString(name, this.negated, pSpriteName, attrName, change);
+        const eventString = this.getEventString();
 
         cu.registerOnMoveEvent(spriteName, eventString, this._edgeLabel, graphID, (sprite) => {
             try {
@@ -106,9 +106,20 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
         });
     }
 
+    override getEventString(): string {
+        // eslint-disable-next-line prefer-const
+        let [pSpriteName, attrName, change] = this.args;
+        attrName = attrName == "currentCostumeName" ? "costume" : attrName; // FIXME: why the case distinction? Without it, the override could be deleted...
+        let string = this.negated ? "!" + this.name : this.name;
+        for (const arg of  [pSpriteName, attrName, change]) {
+            string += ":" + arg;
+        }
+        return string;
+    }
+
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
         const [pSpriteName, attrName, change] = this.args;
-        const eventString = CheckUtility.getEventString(name, this.negated, pSpriteName, attrName == "currentCostumeName" ? "costume" : attrName, change);
+        const eventString = this.getEventString();
 
         cu.registerOnVisualChange(spriteName, eventString, this._edgeLabel, graphID, (sprite) => {
             try {

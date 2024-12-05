@@ -68,8 +68,7 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
         } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
-        const eventString = CheckUtility.getEventString(name, negated, pSpriteName, varName,
-            comparison, varValue);
+        const eventString = this.getEventString();
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
             && comparison != "<" && comparison != "<=") {

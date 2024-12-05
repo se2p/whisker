@@ -58,7 +58,7 @@ export class Output extends AbstractCheck<OutputJSON> {
             expression = ModelUtil.getExpressionForEval(t, `'${output}'`).expr;
         }
 
-        const eventString = CheckUtility.getEventString("Output", negated, pSpriteName, output);
+        const eventString = this.getEventString();
         const check: (s: Sprite) => boolean = (s) => {
             if (!s.sayText) {
                 return false;

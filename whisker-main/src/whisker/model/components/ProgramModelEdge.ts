@@ -59,7 +59,7 @@ export class ProgramModelEdge extends AbstractEdge {
 
         // look up if this edge has a condition that was triggered
         for (const c of this.conditions) {
-            const eventString = CheckUtility.getEventString(c.name, c.negated, ...c.args);
+            const eventString = c.getEventString();
             if (eventStrings.includes(eventString)) {
                 check = true;
                 break;
@@ -77,7 +77,7 @@ export class ProgramModelEdge extends AbstractEdge {
 
         const failed = [];
         for (const c of this.conditions) {
-            const eventString = CheckUtility.getEventString(c.name, c.negated, ...c.args);
+            const eventString = c.getEventString();
             if (!eventStrings.includes(eventString) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
                 failed.push(c);
                 break; // TODO check if this break should be here
@@ -89,7 +89,7 @@ export class ProgramModelEdge extends AbstractEdge {
 
     private _testEffectsOnEvent(eventStrings: string[]): boolean {
         for (const e of this._effects) {
-            const eventString = CheckUtility.getEventString(e.name, e.negated, ...e.args);
+            const eventString = e.getEventString();
 
             if (eventStrings.includes(eventString)) {
                 return true;
