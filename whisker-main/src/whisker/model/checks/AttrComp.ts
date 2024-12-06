@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, Comparison, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ArgType} from "../util/schema";
 import {ModelUtil} from "../util/ModelUtil";
@@ -23,7 +23,7 @@ export type AttrCompArgs = [
     /**
      * Mode of comparison, e.g. =, <, >, <=, >=
      */
-    comparison: string,
+    comparison: Comparison,
 
     /**
      * Value to compare to the attribute's current value.
@@ -34,7 +34,7 @@ export type AttrCompArgs = [
 const AttrCompArgs = z.tuple([
     SpriteName,
     z.string(),
-    z.string(),
+    Comparison,
     z.string().or(z.number()),
 ]);
 
@@ -111,7 +111,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
 
     private _attributeCompOnMove(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                  spriteName: string, pSpriteName: ArgType, attrName: string,
-                                 comparison: string, attrValue: string): void {
+                                 comparison: Comparison, attrValue: string): void {
         const eventString = this.getEventString();
 
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
@@ -125,7 +125,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
 
     private _attributeCompOnVisual(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                    spriteName: string, pSpriteName: ArgType, attrName: string,
-                                   comparison: string, attrValue: ArgType): void {
+                                   comparison: Comparison, attrValue: ArgType): void {
         const eventString = this.getEventString();
 
         cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
@@ -139,7 +139,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
 
     private _attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                    spriteName: string, pSpriteName: ArgType, attrName: string,
-                                   comparison: string, attrValue: ArgType): void {
+                                   comparison: Comparison, attrValue: ArgType): void {
         const eventString = this.getEventString();
 
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {

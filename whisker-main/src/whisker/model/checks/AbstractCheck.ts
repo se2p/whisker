@@ -20,6 +20,12 @@ export const SpriteName = z.union([
 
 export const VariableName = SpriteName;
 
+const comparisons = ["==", "=", ">", ">=", "<", "<="] as const;
+
+export type Comparison = typeof comparisons[number];
+
+export const Comparison = z.enum(comparisons);
+
 export interface ICheckJSON {
     name: string;
     negated: boolean;
@@ -54,10 +60,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * @param checkJSON
      * @protected
      */
-    protected constructor(
-        edgeLabel: string,
-        checkJSON: C,
-    ) {
+    protected constructor(edgeLabel: string, checkJSON: C) {
         this._edgeLabel = edgeLabel;
         this._checkJSON = this._validate(checkJSON);
         this._check = () => false;

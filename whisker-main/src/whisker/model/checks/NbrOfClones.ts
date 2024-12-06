@@ -1,6 +1,5 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, Check, Comparison, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
-import {ComparisonNotKnownError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
@@ -14,7 +13,7 @@ export type NbrOfClonesArgs = [
     /**
      * Mode of comparison, e.g. =, <, >, <=, >=
      */
-    comparison: string,
+    comparison: Comparison,
 
     /**
      * Number of clones.
@@ -24,7 +23,7 @@ export type NbrOfClonesArgs = [
 
 const NbrOfClonesArgs = z.tuple([
     SpriteName,
-    z.string(),
+    Comparison,
     z.coerce.number().nonnegative(),
 ]);
 
@@ -47,11 +46,6 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
         const toCheckNbr = ModelUtil.testNumber(nbr);
         const sprite = ModelUtil.checkSpriteExistence(t, pSpriteName);
         const spriteName = sprite.name;
-
-        if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
-            && comparison != "<=") {
-            throw new ComparisonNotKnownError(comparison);
-        }
 
         const spriteCondition = this._visible
             ? (sprite: Sprite) => sprite.name == spriteName && sprite.visible

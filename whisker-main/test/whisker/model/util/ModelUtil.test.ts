@@ -1,7 +1,6 @@
 import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 import {
     EmptyExpressionError,
-    ExpressionEnterError,
     ExpressionSyntaxError,
     SpriteNotFoundError,
     VariableNotFoundError
@@ -11,6 +10,7 @@ import {SpriteMock} from "../SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
+import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
@@ -59,10 +59,10 @@ describe('ModelUtil tests', function () {
 
     describe('compare()', () => {
         describe('exception for invalid input', () => {
-            const invalidInputs: [string, string, string][] = [
+            const invalidInputs: [string, string, Comparison][] = [
                 [undefined, "string", ">"],
                 ["0", undefined, ">"],
-                ["0", "string", "increase"],
+                ["0", "string", "increase" as Comparison],
                 ["0", "string", ">"],
                 ["string", "0", ">"],
 
@@ -75,7 +75,7 @@ describe('ModelUtil tests', function () {
                 ["0", "string", ">="],
                 ["string", "0", ">="],
 
-                ["1", "0", "<>="]
+                ["1", "0", "<>=" as Comparison]
             ];
             it.each(invalidInputs)('throw exception for: %s; %s, %s',
                 (value1, value2, comparison) => {
@@ -86,7 +86,7 @@ describe('ModelUtil tests', function () {
         });
 
         describe("correct result for compare()", () => {
-            const params: [string, string, string, boolean][] = [
+            const params: [string, string, Comparison, boolean][] = [
                 ["0", "-1", "<", false],
                 ["-1", "0", "<", true],
                 ["1", "1", "<", false],

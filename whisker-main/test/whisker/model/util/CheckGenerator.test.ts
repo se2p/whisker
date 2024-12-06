@@ -1,4 +1,4 @@
-import {ComparisonNotKnownError, SpriteNotFoundError} from "../../../../src/whisker/model/util/ModelError";
+import {SpriteNotFoundError} from "../../../../src/whisker/model/util/ModelError";
 import {SpriteMock} from "../SpriteMock";
 import {TestDriverMock} from "../TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
@@ -23,6 +23,7 @@ import {TimeElapsed} from "../../../../src/whisker/model/checks/TimeElapsed";
 import {TimeBetween} from "../../../../src/whisker/model/checks/TimeBetween";
 import {TimeAfterEnd} from "../../../../src/whisker/model/checks/TimeAfterEnd";
 import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../../src/whisker/model/checks/TouchingEdge";
+import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
 
 describe('CheckGenerator', () => {
 
@@ -227,11 +228,8 @@ describe('CheckGenerator', () => {
             expect(typeof c.check).toEqual(typeof (() => false));
         });
 
-        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: string) => {
-            const c = new VarComp('label', {negated: false, args: ["apple", "x", cmp, "3"]});
-            c.registerComponents(t, dummyCU, graphID);
-            c.check();
-            expect(dummyCU.addErrorOutput).toHaveBeenCalledWith('label', graphID, new ComparisonNotKnownError(cmp));
+        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: Comparison) => {
+            expect(() => new VarComp('label', {negated: false, args: ["apple", "x", cmp, "3"]})).toThrowError();
         });
 
         test('VarEvent is registered on CheckUtil', () => {
@@ -306,11 +304,8 @@ describe('CheckGenerator', () => {
         ];
         kiwi.updateSprite();
 
-        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: string) => {
-            const c = new AttrComp('label', {negated: false, args: ["kiwi", "size", cmp, "3"]});
-            c.registerComponents(t, dummyCU, graphID);
-            c.check();
-            expect(dummyCU.addErrorOutput).toHaveBeenCalledWith('label', graphID, new ComparisonNotKnownError(cmp));
+        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: Comparison) => {
+            expect(() => new AttrComp('label', {negated: false, args: ["kiwi", "size", cmp, "3"]})).toThrowError();
         });
 
         test('Has the correct return type', () => {
@@ -576,10 +571,7 @@ describe('CheckGenerator', () => {
             });
 
         test('throws exception for invalid comparison', () => {
-            const c = new NbrOfClones('label', {negated: true, args: ["banana", "<=>", 10]});
-            const cu =getDummyCheckUtility();
-            c.registerComponents(t, cu, graphID);
-            expect(cu.addErrorOutput).toHaveBeenCalledWith('label', graphID, new ComparisonNotKnownError("<=>"));
+            expect(() => new NbrOfClones('label', {negated: true, args: ["banana", "<=>" as Comparison, 10]})).toThrowError();
         });
     });
 

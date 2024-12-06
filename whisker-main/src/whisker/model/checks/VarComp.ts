@@ -1,7 +1,7 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName, VariableName} from "./AbstractCheck";
+import {AbstractCheck, Check, Comparison, ICheckJSON, OptionalName, SpriteName, VariableName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
-import {ComparisonNotKnownError, ErrorForVariable} from "../util/ModelError";
+import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
@@ -21,7 +21,7 @@ export type VarCompArgs = [
     /**
      * Mode of comparison, e.g. =, <, >, <=, >=
      */
-    comparison: string,
+    comparison: Comparison,
 
     /**
      * Value to compare to the variable's current value.
@@ -32,7 +32,7 @@ export type VarCompArgs = [
 const VarCompArgs = z.tuple([
     SpriteName,
     VariableName,
-    z.string(),
+    Comparison,
     z.string().or(z.number()),
 ]);
 
@@ -73,11 +73,6 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
         const eventString = this.getEventString();
-
-        if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
-            && comparison != "<" && comparison != "<=") {
-            throw new ComparisonNotKnownError(comparison);
-        }
 
         function check() {
             const sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];

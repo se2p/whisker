@@ -28,7 +28,7 @@ import {
 import {TimeAfterEnd, TimeAfterEndArgs} from "../../../../src/whisker/model/checks/TimeAfterEnd";
 import {CHECK_NAMES, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
-import {AbstractCheck} from "../../../../src/whisker/model/checks/AbstractCheck";
+import {AbstractCheck, Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 
 describe('Check', () => {
@@ -218,8 +218,8 @@ describe('Check', () => {
     });
 
     test('Invalid comparison throws error', () => {
-        const c1 = new AttrComp("label", {negated: true, args: ["sprite", "var", "comp", "value"]});
-        const c2 = new AttrComp("label", {negated: true, args: ["sprite", "var", ">=", "value"]});
+        const c1 = new AttrComp("label", {negated: true, args: ["sprite", "var", "<=", "value"]});
+        const c2 = {name: "AttrComp", negated: true, args: ["sprite", "var", "comp", "value"]};
         expect(() => c1.contradicts(c2)).toThrow();
     });
 });
