@@ -20,7 +20,6 @@ describe('Model edges', () => {
 
     function mockCondition(name: string, value: boolean): AbstractCheck {
         return {
-            id: name,
             check: jest.fn().mockReturnValue(value),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
@@ -29,7 +28,6 @@ describe('Model edges', () => {
 
     function mockConditionWithError(name: string, value: string): AbstractCheck {
         return {
-            id: name,
             check: (s1, s2) => {
                 throw new Error(value);
             },
