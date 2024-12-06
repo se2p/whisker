@@ -76,11 +76,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
-        if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
-            && comparison != "<=") {
-            throw new ComparisonNotKnownError(comparison);
-        }
-
         // on movement listener
         if (attrName == "x" || attrName == "y") {
             this._attributeCompOnMove(cu, edgeLabel, graphID, negated, spriteName, pSpriteName, attrName,
