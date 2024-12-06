@@ -50,21 +50,21 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
     }
 }
 
-const name1 = "TouchingEdge" as const;
+const touchingEdgeName = "TouchingEdge" as const;
 
 export interface TouchingEdgeJSON extends ICheckJSON {
-    name: typeof name1;
+    name: typeof touchingEdgeName;
     args: TouchingEdgeArgs;
 }
 
 export const TouchingEdgeJSON = ICheckJSON.extend({
-    name: z.literal(name1),
+    name: z.literal(touchingEdgeName),
     args: TouchingEdgeArgs,
 });
 
 export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
     constructor(edgeLabel: string, json: OptionalName<TouchingEdgeJSON>) {
-        super(edgeLabel, {...json, name: name1});
+        super(edgeLabel, {...json, name: touchingEdgeName});
     }
 
     protected _validate(checkJSON: TouchingEdgeJSON): TouchingEdgeJSON {
@@ -76,22 +76,22 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
     }
 }
 
-const name2 = "TouchingHorizEdge" as const;
+const touchingHorizEdgeName = "TouchingHorizEdge" as const;
 
 export interface TouchingHorizEdgeJSON extends ICheckJSON {
-    name: typeof name2;
+    name: typeof touchingHorizEdgeName;
     args: TouchingEdgeArgs;
 }
 
 export const TouchingHorizEdgeJSON = ICheckJSON.extend({
-    name: z.literal(name2),
+    name: z.literal(touchingHorizEdgeName),
     args: TouchingEdgeArgs,
 });
 
 
 export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON> {
     constructor(edgeLabel: string, json: OptionalName<TouchingHorizEdgeJSON>) {
-        super(edgeLabel, {...json, name: name2});
+        super(edgeLabel, {...json, name: touchingHorizEdgeName});
     }
 
     protected _validate(checkJSON: TouchingHorizEdgeJSON): TouchingHorizEdgeJSON {
@@ -103,21 +103,21 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
     }
 }
 
-const name3 = "TouchingVerticalEdge" as const;
+const touchingVerticalEdgeName = "TouchingVerticalEdge" as const;
 
 export interface TouchingVerticalEdgeJSON extends ICheckJSON {
-    name: typeof name3;
+    name: typeof touchingVerticalEdgeName;
     args: TouchingEdgeArgs;
 }
 
 export const TouchingVerticalEdgeJSON = ICheckJSON.extend({
-    name: z.literal(name3),
+    name: z.literal(touchingVerticalEdgeName),
     args: TouchingEdgeArgs,
 });
 
 export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON> {
     constructor(edgeLabel: string, json: OptionalName<TouchingVerticalEdgeJSON>) {
-        super(edgeLabel, {...json, name: name3});
+        super(edgeLabel, {...json, name: touchingVerticalEdgeName});
     }
 
     protected _validate(checkJSON: TouchingVerticalEdgeJSON): TouchingVerticalEdgeJSON {
