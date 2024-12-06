@@ -1,0 +1,147 @@
+import {AbstractCheck} from "./AbstractCheck";
+import {AttrChange, AttrChangeJSON} from "./AttrChange";
+import {AttrComp, AttrCompJSON} from "./AttrComp";
+import {Click, ClickJSON} from "./Click";
+import {Key, KeyJSON} from "./Key";
+import {Output, OutputJSON} from "./Output";
+import {SpriteColor, SpriteColorJSON} from "./SpriteColor";
+import {SpriteTouching, SpriteTouchingJSON} from "./SpriteTouching";
+import {VarChange, VarChangeJSON} from "./VarChange";
+import {VarComp, VarCompJSON} from "./VarComp";
+import {Expr, ExprJSON} from "./Expr";
+import {Probability, ProbabilityJSON} from "./Probability";
+import {TimeElapsed, TimeElapsedJSON} from "./TimeElapsed";
+import {TimeBetween, TimeBetweenJSON} from "./TimeBetween";
+import {TimeAfterEnd, TimeAfterEndJSON} from "./TimeAfterEnd";
+import {NbrOfClones, NbrOfClonesJSON, NbrOfVisibleClones, NbrOfVisibleClonesJSON} from "./NbrOfClones";
+import {
+    TouchingEdge,
+    TouchingEdgeJSON,
+    TouchingHorizEdge,
+    TouchingHorizEdgeJSON,
+    TouchingVerticalEdge,
+    TouchingVerticalEdgeJSON
+} from "./TouchingEdge";
+import {BackgroundChange, BackgroundChangeJSON} from "./BackgroundChange";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+import {z} from "zod";
+
+export type CheckJSON =
+    | AttrChangeJSON
+    | AttrCompJSON
+    | BackgroundChangeJSON
+    | ClickJSON
+    | KeyJSON
+    | OutputJSON
+    | SpriteColorJSON
+    | SpriteTouchingJSON
+    | VarChangeJSON
+    | VarCompJSON
+    | ExprJSON
+    | ProbabilityJSON
+    | TimeElapsedJSON
+    | TimeBetweenJSON
+    | TimeAfterEndJSON
+    | NbrOfClonesJSON
+    | NbrOfVisibleClonesJSON
+    | TouchingEdgeJSON
+    | TouchingVerticalEdgeJSON
+    | TouchingHorizEdgeJSON
+    ;
+
+export const CheckJSON = z.discriminatedUnion("name", [
+    AttrChangeJSON,
+    AttrCompJSON,
+    BackgroundChangeJSON,
+    ClickJSON,
+    KeyJSON,
+    OutputJSON,
+    SpriteColorJSON,
+    SpriteTouchingJSON,
+    VarChangeJSON,
+    VarCompJSON,
+    ExprJSON,
+    ProbabilityJSON,
+    TimeElapsedJSON,
+    TimeBetweenJSON,
+    TimeAfterEndJSON,
+    NbrOfClonesJSON,
+    NbrOfVisibleClonesJSON,
+    TouchingEdgeJSON,
+    TouchingVerticalEdgeJSON,
+    TouchingHorizEdgeJSON,
+]);
+
+export type CheckName = CheckJSON['name'];
+
+export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
+    "AttrChange",
+    "AttrComp",
+    "BackgroundChange",
+    "Click",
+    "Key",
+    "Output",
+    "SpriteColor",
+    "SpriteTouching",
+    "VarChange",
+    "VarComp",
+    "Expr",
+    "Probability",
+    "TimeElapsed",
+    "TimeBetween",
+    "TimeAfterEnd",
+    "NbrOfClones",
+    "NbrOfVisibleClones",
+    "TouchingEdge",
+    "TouchingVerticalEdge",
+    "TouchingHorizEdge",
+]);
+
+export function newCheck(edgeLabel: string, checkJSON: CheckJSON): AbstractCheck {
+    const name = checkJSON.name;
+
+    switch (name) {
+        case "AttrChange":
+            return new AttrChange(edgeLabel, checkJSON);
+        case "AttrComp":
+            return new AttrComp(edgeLabel, checkJSON);
+        case "BackgroundChange":
+            return new BackgroundChange(edgeLabel, checkJSON);
+        case "Click":
+            return new Click(edgeLabel, checkJSON);
+        case "Key":
+            return new Key(edgeLabel, checkJSON);
+        case "Output":
+            return new Output(edgeLabel, checkJSON);
+        case "SpriteColor":
+            return new SpriteColor(edgeLabel, checkJSON);
+        case "SpriteTouching":
+            return new SpriteTouching(edgeLabel, checkJSON);
+        case "VarChange":
+            return new VarChange(edgeLabel, checkJSON);
+        case "VarComp":
+            return new VarComp(edgeLabel, checkJSON);
+        case "Expr":
+            return new Expr(edgeLabel, checkJSON);
+        case "Probability":
+            return new Probability(edgeLabel, checkJSON);
+        case "TimeElapsed":
+            return new TimeElapsed(edgeLabel, checkJSON);
+        case "TimeBetween":
+            return new TimeBetween(edgeLabel, checkJSON);
+        case "TimeAfterEnd":
+            return new TimeAfterEnd(edgeLabel, checkJSON);
+        case "NbrOfClones":
+            return new NbrOfClones(edgeLabel, checkJSON);
+        case "NbrOfVisibleClones":
+            return new NbrOfVisibleClones(edgeLabel, checkJSON);
+        case "TouchingEdge":
+            return new TouchingEdge(edgeLabel, checkJSON);
+        case "TouchingVerticalEdge":
+            return new TouchingVerticalEdge(edgeLabel, checkJSON);
+        case "TouchingHorizEdge":
+            return new TouchingHorizEdge(edgeLabel, checkJSON);
+        default:
+            throw new NonExhaustiveCaseDistinction(name);
+    }
+}

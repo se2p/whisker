@@ -1,36 +1,14 @@
 import {z} from "zod";
-import {CHECK_NAMES} from "../components/Check";
-import {USER_INPUT_NAMES} from "../components/UserInput";
-import {CheckName} from "../components/Check";
-import {UserInputName} from "../components/UserInput";
+import {USER_INPUT_NAMES, UserInputName} from "../components/UserInput";
+import {CheckJSON} from "../checks/newCheck";
 
-const CheckName = z.enum(CHECK_NAMES);
-
-export type ArgType =
-    | string
-    | number
-    | string[]
-    ;
+export type ArgType = string | number | string[];
 
 const ArgType = z.union([
     z.string(),
     z.number(),
-    z.array(z.string()),
+    z.string().array(),
 ]);
-
-export interface CheckJSON {
-    id: string
-    name: CheckName;
-    negated: boolean;
-    args: ArgType[];
-}
-
-const CheckJSON = z.object({
-    id: z.string().default(() => `check${nextId()}`),
-    name: CheckName,
-    negated: z.boolean(),
-    args: z.array(ArgType),
-});
 
 const UserInputName = z.enum(USER_INPUT_NAMES);
 

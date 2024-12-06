@@ -4,12 +4,12 @@ import {AbstractEdge} from "../components/AbstractEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
-import {Check, CheckName} from "../components/Check";
+import {AbstractCheck, ICheckJSON} from "../checks/AbstractCheck";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
-import {ArgType} from "./schema";
+import {CheckName} from "../checks/newCheck";
 
-type EffectCheck = { effect: Check, edge: ProgramModelEdge, model: ProgramModel | EndModel };
+type EffectCheck = { effect: AbstractCheck, edge: ProgramModelEdge, model: ProgramModel | EndModel };
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -203,21 +203,10 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
-     * Get a string defining the event of a listener.
-     */
-    static getEventString(name: CheckName, negated: boolean, ...args: ArgType[]): string {
-        let string = negated ? "!" + name : name;
-        for (const arg of args) {
-            string += ":" + arg;
-        }
-        return string;
-    }
-
-    /**
      * Split up the event string.
      * @param eventString
      */
-    static splitEventString(eventString: string): { name: CheckName, negated: boolean, args: ArgType[] } {
+    static splitEventString(eventString: string): ICheckJSON {
         const negated = eventString.startsWith("!");
         if (negated) {
             eventString = eventString.substring(1, eventString.length);
@@ -226,7 +215,7 @@ export class CheckUtility extends EventEmitter {
         return {
             negated: negated,
             name: splits[0] as CheckName,
-            args: splits.slice(1, splits.length)
+            args: splits.slice(1, splits.length),
         };
     }
 
@@ -244,8 +233,8 @@ export class CheckUtility extends EventEmitter {
     /**
      * Check the registered effects of this step.
      */
-    checkEffects(): Check[] {
-        const contradictingEffects: Check[] = [];
+    checkEffects(): AbstractCheck[] {
+        const contradictingEffects: AbstractCheck[] = [];
         const doNotCheck: Record<number, boolean> = {};
         const newEffects: EffectCheck[] = [];
 
@@ -293,7 +282,7 @@ export class CheckUtility extends EventEmitter {
      * @param edge Edge that has a failed effect.
      * @param effect Effect that failed.
      */
-    addFailOutput(edge: AbstractEdge, effect: Check): void {
+    addFailOutput(edge: AbstractEdge, effect: AbstractCheck): void {
         const output = getEffectFailedOutput(edge, effect);
         this._failOrError(output, this._failOutputs);
         this._modelResult.addFail(output);
@@ -305,7 +294,7 @@ export class CheckUtility extends EventEmitter {
      * @param graphID ID of the graph, where the error was thrown.
      * @param e Error that was thrown
      */
-    addErrorOutput(edgeLabel: string, graphID: string, e: unknown): void {
+    addErrorOutput(edgeLabel: string, graphID: string, e: Error): void {
         const message = getErrorMessage(e);
         const output = getErrorOnEdgeOutput(edgeLabel, graphID, message);
         this._failOrError(output, this._errorOutputs);
