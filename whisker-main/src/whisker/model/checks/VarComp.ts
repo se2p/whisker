@@ -113,4 +113,8 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
 
         return this._checkComparison(thisComp, thatComp, this.args[3], that.args[3]);
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

@@ -94,4 +94,8 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON> {
     protected _contradicts(_that: SpriteColorJSON): boolean {
         return false; // A sprite can touch multiple different colors at the same time.
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

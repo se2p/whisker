@@ -39,6 +39,10 @@ abstract class AbstractTime<C extends TimeAfterEndJSON | TimeElapsedJSON | TimeB
     protected override _contradicts(_that: C): boolean {
         return false; // Time is not mutually exclusive.
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }
 
 const nameTimeAfterEnd = "TimeAfterEnd" as const;

@@ -50,4 +50,8 @@ export class Key extends AbstractCheck<KeyJSON> {
     protected _contradicts(_that: KeyJSON): boolean {
         return false; // Multiple keys can be pressed at the same time.
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

@@ -101,4 +101,8 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
 
         return this._checkChange(that);
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

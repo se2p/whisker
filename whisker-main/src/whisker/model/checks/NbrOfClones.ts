@@ -79,6 +79,10 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
 
         return this._checkComparison(thisComp, thatComp, thisNbr, thatNbr);
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }
 
 const nbrOfClonesName = "NbrOfClones" as const;

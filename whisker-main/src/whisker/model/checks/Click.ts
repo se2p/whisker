@@ -55,4 +55,8 @@ export class Click extends AbstractCheck<ClickJSON> {
         const [spriteNameThat] = that.args;
         return spriteNameThis !== spriteNameThat; // Cannot click on two different sprites at the same time.
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

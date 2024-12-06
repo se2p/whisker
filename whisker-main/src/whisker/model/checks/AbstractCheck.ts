@@ -71,9 +71,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         return this._check;
     }
 
-    get dependsOnSayText(): boolean {
-        return false;
-    }
+    abstract get dependsOnSayText(): boolean;
 
     protected abstract _validate(checkJSON: C): C;
 

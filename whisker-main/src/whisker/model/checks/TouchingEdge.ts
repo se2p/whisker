@@ -48,6 +48,10 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
     protected override _contradicts(_that: C): boolean {
         return false;
     }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }
 
 const touchingEdgeName = "TouchingEdge" as const;
