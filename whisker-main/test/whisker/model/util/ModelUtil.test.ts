@@ -435,7 +435,7 @@ describe('ModelUtil tests', function () {
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
-        const table: [string, ArgType | ArgType[]][] = [
+        const table: [string, ArgType][] = [
             ["throws exception if sprite does not exist", "Banane"],
             ["throws exception if sprite does not exist (multiple options)", ["Banane", "banane", "Banana", "banana"]],
             ["Regex does not work", "/owl/g"],
