@@ -10,9 +10,6 @@ import {VarChange, VarChangeJSON} from "./VarChange";
 import {VarComp, VarCompJSON} from "./VarComp";
 import {Expr, ExprJSON} from "./Expr";
 import {Probability, ProbabilityJSON} from "./Probability";
-import {TimeElapsed, TimeElapsedJSON} from "./TimeElapsed";
-import {TimeBetween, TimeBetweenJSON} from "./TimeBetween";
-import {TimeAfterEnd, TimeAfterEndJSON} from "./TimeAfterEnd";
 import {NbrOfClones, NbrOfClonesJSON, NbrOfVisibleClones, NbrOfVisibleClonesJSON} from "./NbrOfClones";
 import {
     TouchingEdge,
@@ -25,6 +22,7 @@ import {
 import {BackgroundChange, BackgroundChangeJSON} from "./BackgroundChange";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {z} from "zod";
+import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapsed, TimeElapsedJSON} from "./Time";
 
 export type CheckJSON =
     | AttrChangeJSON

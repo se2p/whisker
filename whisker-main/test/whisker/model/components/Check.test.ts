@@ -16,8 +16,6 @@ import {Key, KeyArgs} from "../../../../src/whisker/model/checks/Key";
 import {Click, ClickArgs} from "../../../../src/whisker/model/checks/Click";
 import {Expr, ExprArgs} from "../../../../src/whisker/model/checks/Expr";
 import {Probability, ProbabilityArgs} from "../../../../src/whisker/model/checks/Probability";
-import {TimeElapsed, TimeElapsedArgs} from "../../../../src/whisker/model/checks/TimeElapsed";
-import {TimeBetween, TimeBetweenArgs} from "../../../../src/whisker/model/checks/TimeBetween";
 import {NbrOfClones, NbrOfClonesArgs, NbrOfVisibleClones} from "../../../../src/whisker/model/checks/NbrOfClones";
 import {
     TouchingEdge,
@@ -25,11 +23,11 @@ import {
     TouchingHorizEdge,
     TouchingVerticalEdge
 } from "../../../../src/whisker/model/checks/TouchingEdge";
-import {TimeAfterEnd, TimeAfterEndArgs} from "../../../../src/whisker/model/checks/TimeAfterEnd";
 import {CHECK_NAMES, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
-import {AbstractCheck, Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
+import {AbstractCheck} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {Pair} from "../../../../src/whisker/utils/Pair";
+import {TimeAfterEnd, TimeArgs, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 
 describe('Check', () => {
     const t = getDummyTestDriver();
@@ -146,7 +144,7 @@ describe('Check', () => {
     });
 
     test('TimeElapsed', () => {
-        const args: TimeElapsedArgs = [1000];
+        const args: TimeArgs = [1000];
         const fn = jest.spyOn(TimeElapsed.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
         const check = new TimeElapsed("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
@@ -155,7 +153,7 @@ describe('Check', () => {
     });
 
     test('TimeBetween', () => {
-        const args: TimeBetweenArgs = [500];
+        const args: TimeArgs = [500];
         const fn = jest.spyOn(TimeBetween.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
         const check = new TimeBetween("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
@@ -209,7 +207,7 @@ describe('Check', () => {
     });
 
     test('TimeAfterEnd', () => {
-        const args: TimeAfterEndArgs = [200];
+        const args: TimeArgs = [200];
         const fn = jest.spyOn(TimeAfterEnd.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
         const check = new TimeAfterEnd("label", {negated, args});
         check._checkArgsWithTestDriver(t, cu, graphID);
