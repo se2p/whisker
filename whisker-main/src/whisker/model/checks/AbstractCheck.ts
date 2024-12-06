@@ -235,11 +235,9 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     protected abstract _contradicts(that: C): boolean;
 
     getEventString(): string {
-        let string = this.negated ? "!" + this.name : this.name;
-        for (const arg of this.args) {
-            string += ":" + arg;
-        }
-        return string;
+        const negated = this.negated ? "!" : "";
+        const args = this.args.join(":");
+        return `${negated}${this.name}:${args}`;
     }
 
     toString(): string {
