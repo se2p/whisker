@@ -56,6 +56,29 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
             return !negated == (ModelUtil.compare(sprites.length, toCheckNbr, comparison));
         };
     }
+
+
+    protected override _contradicts(that: C): boolean {
+        const [thisName, , thisNbr] = this.args;
+        const [thatName, , thatNbr] = that.args;
+
+        if (thisName !== thatName) {
+            return false;
+        }
+
+        let thisComp = this.args[1];
+        let thatComp = that.args[1];
+
+        if (this.negated) {
+            thisComp = this._getInvertedCompOp(thisComp);
+        }
+
+        if (that.negated) {
+            thatComp = this._getInvertedCompOp(thatComp);
+        }
+
+        return this._checkComparison(thisComp, thatComp, thisNbr, thatNbr);
+    }
 }
 
 const name1 = "NbrOfClones" as const;

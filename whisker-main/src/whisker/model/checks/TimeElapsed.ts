@@ -48,4 +48,8 @@ export class TimeElapsed extends AbstractCheck<TimeElapsedJSON> {
             return !negated == (steps <= t.getTotalStepsExecuted());
         };
     }
+
+    protected _contradicts(_that: TimeElapsedJSON): boolean {
+        return false; // Time is not mutually exclusive.
+    }
 }

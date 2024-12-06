@@ -44,6 +44,10 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
     }
 
     protected abstract _getCheck(): (sprite: Sprite) => boolean;
+
+    protected override _contradicts(_that: C): boolean {
+        return false;
+    }
 }
 
 const name1 = "TouchingEdge" as const;

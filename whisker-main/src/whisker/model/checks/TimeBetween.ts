@@ -48,4 +48,8 @@ export class TimeBetween extends AbstractCheck<TimeBetweenJSON> {
             return !negated == (steps <= stepsSinceLastTransition);
         };
     }
+
+    protected _contradicts(_that: TimeBetweenJSON): boolean {
+        return false; // Time is not mutually exclusive.
+    }
 }

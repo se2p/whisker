@@ -48,4 +48,8 @@ export class TimeAfterEnd extends AbstractCheck<TimeAfterEndJSON> {
             return !negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
         };
     }
+
+    protected _contradicts(_that: TimeAfterEndJSON): boolean {
+        return false; // Time is not mutually exclusive.
+    }
 }

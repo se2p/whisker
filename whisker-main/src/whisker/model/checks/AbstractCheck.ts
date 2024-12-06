@@ -3,6 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
 export type OptionalName<C extends CheckJSON> = Omit<C, "name"> & Partial<Pick<C, "name">>;
 
@@ -20,7 +21,7 @@ export const SpriteName = z.union([
 
 export const VariableName = SpriteName;
 
-const comparisons = ["==", "=", ">", ">=", "<", "<="] as const;
+const comparisons = ["==", "=", "!=", ">", ">=", "<", "<="] as const;
 
 export type Comparison = typeof comparisons[number];
 
@@ -107,11 +108,11 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     }
 
     equals(check: ICheckJSON): boolean {
-        return this.name == check.name && this.negated == check.negated && this._equalsArgs(check);
+        return this.name === check.name && this.negated === check.negated && this._equalsArgs(check);
     }
 
     isInvertedOf(check: ICheckJSON): boolean {
-        return this.name == check.name && this.negated != check.negated && this._equalsArgs(check);
+        return this.name === check.name && this.negated !== check.negated && this._equalsArgs(check);
     }
 
     testForContradictingWithEvents(eventStrings: string[]): boolean {
@@ -121,7 +122,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         });
     }
 
-    private _checkChange(that: ICheckJSON): boolean {
+    protected _checkChange(that: ICheckJSON): boolean {
         let change1 = String(this.args[2]);
         let change2 = String(that.args[2]);
         let negated1 = this.negated;
@@ -153,11 +154,13 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         return change == "+=" ? "-" : "+";
     }
 
-    private static _getInvertedCompOp(comp: ArgType): string {
+    protected _getInvertedCompOp(comp: Comparison): Comparison {
         switch (comp) {
             case "=":
             case "==":
                 return "!=";
+            case "!=":
+                return "==";
             case "<":
                 return ">=";
             case ">":
@@ -167,11 +170,11 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
             case "<=":
                 return ">";
             default:
-                throw new Error("unknown comparison");
+                throw new NonExhaustiveCaseDistinction(comp);
         }
     }
 
-    private static _checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
+    protected _checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
         const comparison1 = String(pComparison1);
         const comparison2 = String(pComparison2);
         const value1 = String(pValue1);
@@ -220,67 +223,18 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * @param that The other effect.
      */
     contradicts(that: ICheckJSON): boolean {
-        if (this.name != that.name || this.equals(that)) {
+        if (this.name !== that.name || this.equals(that)) {
             return false;
         }
+
         if (this.isInvertedOf(that)) {
             return true;
         }
 
-        let comp1: ArgType, comp2: ArgType;
-        switch (this.name) {
-            case "Click":
-                // you cant click on two different sprites at the same time
-                return this.args[0] != that.args[0];
-            case "BackgroundChange": // contradict if different costume names
-                return this.args[0] != that.args[0];
-            case "Output":
-                // contradict if same sprite name and different output
-                return this.args[0] == that.args[0] && this.args[1] != that.args[1];
-            case "VarChange":
-            case "AttrChange":
-                if (this.args[0] != that.args[0] || this.args[1] != that.args[1]) {
-                    return false;
-                }
-
-                return this._checkChange(that);
-            case "VarComp":
-            case "AttrComp":
-                if (this.args[0] != that.args[0] || this.args[1] != that.args[1]) {
-                    return false;
-                }
-
-                comp1 = this.args[2];
-                comp2 = that.args[2];
-                if (this.negated) {
-                    comp1 = AbstractCheck._getInvertedCompOp(comp1);
-                }
-                if (that.negated) {
-                    comp2 = AbstractCheck._getInvertedCompOp(comp2);
-                }
-
-                return AbstractCheck._checkComparison(comp1, comp2, this.args[3], that.args[3]);
-            case "NbrOfVisibleClones":
-            case "NbrOfClones":
-                if (this.args[0] != that.args[0]) {
-                    return false;
-                }
-
-                comp1 = this.args[1];
-                comp2 = that.args[1];
-                if (this.negated) {
-                    comp1 = AbstractCheck._getInvertedCompOp(comp1);
-                }
-                if (that.negated) {
-                    comp2 = AbstractCheck._getInvertedCompOp(comp2);
-                }
-
-                return AbstractCheck._checkComparison(comp1, comp2, this.args[2], that.args[2]);
-
-            default:
-                return false;
-        }
+        return this._contradicts(this._validate(that as C));
     }
+
+    protected abstract _contradicts(that: C): boolean;
 
     getEventString(): string {
         let string = this.negated ? "!" + this.name : this.name;

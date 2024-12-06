@@ -71,4 +71,8 @@ export class Expr extends AbstractCheck<ExprJSON> {
     override get dependsOnSayText(): boolean {
         return this._code.includes(".sayText");
     }
+
+    protected _contradicts(_that: ExprJSON): boolean {
+        return false; // TODO: Two expression could be contradicting. But not sure how to check this here?
+    }
 }

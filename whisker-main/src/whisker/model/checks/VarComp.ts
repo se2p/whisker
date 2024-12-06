@@ -87,4 +87,30 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
         cu.registerVarEvent(variableName, eventString, edgeLabel, graphID, check);
         return check;
     }
+
+    protected override _contradicts(that: VarCompJSON): boolean {
+        const [thisSpriteName, thisVarName] = this.args;
+        const [thatSpriteName, thatVarName] = that.args;
+
+        if (thisSpriteName !== thatSpriteName) {
+            return false;
+        }
+
+        if (thisVarName !== thatVarName) {
+            return false;
+        }
+
+        let thisComp = this.args[2];
+        let thatComp = that.args[2];
+
+        if (this.negated) {
+            thisComp = this._getInvertedCompOp(thisComp);
+        }
+
+        if (that.negated) {
+            thatComp = this._getInvertedCompOp(thatComp);
+        }
+
+        return this._checkComparison(thisComp, thatComp, this.args[3], that.args[3]);
+    }
 }

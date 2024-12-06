@@ -46,4 +46,8 @@ export class Key extends AbstractCheck<KeyJSON> {
             return !negated == cu.isKeyDown(key);
         };
     }
+
+    protected _contradicts(_that: KeyJSON): boolean {
+        return false; // Multiple keys can be pressed at the same time.
+    }
 }
