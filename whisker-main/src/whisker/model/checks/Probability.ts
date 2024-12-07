@@ -49,4 +49,12 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
             return !negated == (Randomness.getInstance().nextDouble() <= prob);
         };
     }
+
+    protected _contradicts(_that: ProbabilityJSON): boolean {
+        return false;
+    }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

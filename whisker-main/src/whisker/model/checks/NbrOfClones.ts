@@ -56,23 +56,50 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
             return !negated == (ModelUtil.compare(sprites.length, toCheckNbr, comparison));
         };
     }
+
+
+    protected override _contradicts(that: C): boolean {
+        const [thisName, , thisNbr] = this.args;
+        const [thatName, , thatNbr] = that.args;
+
+        if (thisName !== thatName) {
+            return false;
+        }
+
+        let thisComp = this.args[1];
+        let thatComp = that.args[1];
+
+        if (this.negated) {
+            thisComp = this._getInvertedCompOp(thisComp);
+        }
+
+        if (that.negated) {
+            thatComp = this._getInvertedCompOp(thatComp);
+        }
+
+        return this._checkComparison(thisComp, thatComp, thisNbr, thatNbr);
+    }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }
 
-const name1 = "NbrOfClones" as const;
+const nbrOfClonesName = "NbrOfClones" as const;
 
 export interface NbrOfClonesJSON extends ICheckJSON {
-    name: typeof name1;
+    name: typeof nbrOfClonesName;
     args: NbrOfClonesArgs;
 }
 
 export const NbrOfClonesJSON = ICheckJSON.extend({
-    name: z.literal(name1),
+    name: z.literal(nbrOfClonesName),
     args: NbrOfClonesArgs,
 });
 
 export class NbrOfClones extends AbstractNbrOfClones<NbrOfClonesJSON> {
     constructor(edgeLabel: string, json: OptionalName<NbrOfClonesJSON>) {
-        super(edgeLabel, {...json, name: name1});
+        super(edgeLabel, {...json, name: nbrOfClonesName});
     }
 
     protected _validate(checkJSON: NbrOfClonesJSON): NbrOfClonesJSON {
@@ -80,21 +107,21 @@ export class NbrOfClones extends AbstractNbrOfClones<NbrOfClonesJSON> {
     }
 }
 
-const name2 = "NbrOfVisibleClones" as const;
+const nbrOfVisibleClonesName = "NbrOfVisibleClones" as const;
 
 export interface NbrOfVisibleClonesJSON extends ICheckJSON {
-    name: typeof name2;
+    name: typeof nbrOfVisibleClonesName;
     args: NbrOfClonesArgs;
 }
 
 export const NbrOfVisibleClonesJSON = ICheckJSON.extend({
-    name: z.literal(name2),
+    name: z.literal(nbrOfVisibleClonesName),
     args: NbrOfClonesArgs,
 });
 
 export class NbrOfVisibleClones extends AbstractNbrOfClones<NbrOfVisibleClonesJSON> {
     constructor(edgeLabel: string, json: OptionalName<NbrOfVisibleClonesJSON>) {
-        super(edgeLabel, {...json, name: name2});
+        super(edgeLabel, {...json, name: nbrOfVisibleClonesName});
     }
 
     protected _validate(checkJSON: NbrOfVisibleClonesJSON): NbrOfVisibleClonesJSON {

@@ -86,4 +86,23 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
         cu.registerVarEvent(variableName, eventString, edgeLabel, graphID, check);
         return check;
     }
+
+    protected override _contradicts(that: VarChangeJSON): boolean {
+        const [spriteNameThis, varNameThis] = this.args;
+        const [spriteNameThat, varNameThat] = that.args;
+
+        if (spriteNameThis !== spriteNameThat) {
+            return false;
+        }
+
+        if (varNameThis !== varNameThat) {
+            return false;
+        }
+
+        return this._checkChange(that);
+    }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

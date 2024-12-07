@@ -80,8 +80,18 @@ export class Output extends AbstractCheck<OutputJSON> {
         };
     }
 
-
     override get dependsOnSayText(): true {
         return true;
+    }
+
+    protected override _contradicts(that: OutputJSON): boolean {
+        const [spriteThis, outputThis] = this.args;
+        const [spriteThat, outputThat] = that.args;
+
+        if (spriteThis !== spriteThat) {
+            return false;
+        }
+
+        return outputThis !== outputThat; // The same sprite cannot output two different things at the same time.
     }
 }

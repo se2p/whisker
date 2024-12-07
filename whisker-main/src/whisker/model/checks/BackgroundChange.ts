@@ -58,4 +58,14 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
             return negated;
         };
     }
+
+    protected override _contradicts(that: BackgroundChangeJSON): boolean {
+        const [thisCostume] = this.args;
+        const [thatCostume] = that.args;
+        return thisCostume !== thatCostume; // Cannot change to two different costumes at the same time.
+    }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
 }

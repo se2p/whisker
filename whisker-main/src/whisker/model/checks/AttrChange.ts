@@ -137,4 +137,19 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     override get dependsOnSayText(): boolean {
         return this.args[1] === "sayText";
     }
+
+    protected override _contradicts(that: AttrChangeJSON): boolean {
+        const [spriteNameThis, attrNameThis] = this.args;
+        const [spriteNameThat, attrNameThat] = that.args;
+
+        if (spriteNameThis !== spriteNameThat) {
+            return false;
+        }
+
+        if (attrNameThis !== attrNameThat) {
+            return false;
+        }
+
+        return this._checkChange(that);
+    }
 }

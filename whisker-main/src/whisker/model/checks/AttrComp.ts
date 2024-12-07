@@ -2,7 +2,7 @@ import {AbstractCheck, Check, Comparison, ICheckJSON, OptionalName, SpriteName} 
 import {CheckUtility} from "../util/CheckUtility";
 import {ArgType} from "../util/schema";
 import {ModelUtil} from "../util/ModelUtil";
-import {ComparisonNotKnownError, ErrorForAttribute} from "../util/ModelError";
+import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 
@@ -159,5 +159,31 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
             string += ":" + arg;
         }
         return string;
+    }
+
+    protected override _contradicts(that: AttrCompJSON): boolean {
+        const [thisSpriteName, thisAttrName] = this.args;
+        const [thatSpriteName, thatAttrName] = that.args;
+
+        if (thisSpriteName !== thatSpriteName) {
+            return false;
+        }
+
+        if (thisAttrName !== thatAttrName) {
+            return false;
+        }
+
+        let thisComp = this.args[2];
+        let thatComp = that.args[2];
+
+        if (this.negated) {
+            thisComp = this._getInvertedCompOp(thisComp);
+        }
+
+        if (that.negated) {
+            thatComp = this._getInvertedCompOp(thatComp);
+        }
+
+        return this._checkComparison(thisComp, thatComp, this.args[3], that.args[3]);
     }
 }

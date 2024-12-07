@@ -10,9 +10,7 @@ import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
 import {AttrChange} from "../../../../src/whisker/model/checks/AttrChange";
 import {Click} from "../../../../src/whisker/model/checks/Click";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
-import {TimeElapsed} from "../../../../src/whisker/model/checks/TimeElapsed";
-import {TimeAfterEnd} from "../../../../src/whisker/model/checks/TimeAfterEnd";
-import {TimeBetween} from "../../../../src/whisker/model/checks/TimeBetween";
+import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 
 describe('ModelError', () => {
     function getEdge(): ProgramModelEdge {

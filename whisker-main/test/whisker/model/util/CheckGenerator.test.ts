@@ -19,11 +19,9 @@ import {NbrOfClones, NbrOfVisibleClones} from "../../../../src/whisker/model/che
 import {Probability} from "../../../../src/whisker/model/checks/Probability";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
-import {TimeElapsed} from "../../../../src/whisker/model/checks/TimeElapsed";
-import {TimeBetween} from "../../../../src/whisker/model/checks/TimeBetween";
-import {TimeAfterEnd} from "../../../../src/whisker/model/checks/TimeAfterEnd";
 import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../../src/whisker/model/checks/TouchingEdge";
 import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
+import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 
 describe('CheckGenerator', () => {
 
