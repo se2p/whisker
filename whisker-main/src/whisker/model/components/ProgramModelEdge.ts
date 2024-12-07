@@ -49,7 +49,7 @@ export class ProgramModelEdge extends AbstractEdge {
 
     /**
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
-     * Effects are checked for Function:true Checks.
+     * Effects are checked for Expr:true Checks.
      */
     override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): AbstractCheck[] {
         if (this.failedForcedTest) {
@@ -63,7 +63,7 @@ export class ProgramModelEdge extends AbstractEdge {
             if (eventStrings.includes(eventString)) {
                 check = true;
                 break;
-            } else if (eventString == "Function:true" || eventString == "Probability:1") {
+            } else if (eventString == "Expr:true" || eventString == "Probability:1") {
                 check = this._testEffectsOnEvent(eventStrings);
                 if (check) {
                     break;
