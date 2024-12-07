@@ -73,6 +73,8 @@ export class Expr extends AbstractCheck<ExprJSON> {
     }
 
     protected _contradicts(_that: ExprJSON): boolean {
-        return false; // TODO: Two expression could be contradicting. But not sure how to check this here?
+        // Expressions are very powerful. While it's possible for two expressions to be contradicting, it's also very
+        // difficult to check it here. Thus, we assume that expressions have been crafted not to contradict each other.
+        return false;
     }
 }

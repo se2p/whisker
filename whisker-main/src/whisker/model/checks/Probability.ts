@@ -51,7 +51,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
     }
 
     protected _contradicts(_that: ProbabilityJSON): boolean {
-        return false; // TODO: I guess 0 and 1 could be problematic?
+        return false;
     }
 
     override get dependsOnSayText(): boolean {
