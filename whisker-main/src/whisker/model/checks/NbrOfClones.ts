@@ -102,19 +102,16 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
         }
     }
 
-    private _checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
-        const comparison1 = String(pComparison1);
-        const comparison2 = String(pComparison2);
+    private _checkComparison(comparison1: Comparison, comparison2: Comparison, pValue1: string | number, pValue2: string | number): boolean {
         const value1 = String(pValue1);
         const value2 = String(pValue2);
-
 
         if (comparison1 == "!=" || comparison2 == "!=") {
             return false;
         }
 
         // =
-        if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
+        if ((comparison1 == '=' || comparison1 == '==') && (comparison2 == '=' || comparison2 == '==')) {
             return value1 != value2;
         }
 
