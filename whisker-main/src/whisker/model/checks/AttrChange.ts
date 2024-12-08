@@ -137,4 +137,36 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
 
         return this._checkChange(that);
     }
+
+    private _checkChange(that: AttrChangeJSON): boolean {
+        let change1 = this.args[2];
+        let change2 = that.args[2];
+        let negated1 = this.negated;
+        let negated2 = that.negated;
+
+        if (change1.length == 2 && change2.length == 2) {
+            // += & +=, -= & -= are not getting until here, caught before call to checkChange
+            // += & -=, -= & += only tested here
+            return this.negated == that.negated;
+        }
+
+        if (change1.length == 2) {
+            change1 = this._getInvertedChangeOp(change1);
+            negated1 = !negated1;
+        } else if (change2.length == 2) {
+            change2 = this._getInvertedChangeOp(change2);
+            negated2 = !negated2;
+        }
+
+        if (change1 == change2) {
+            return negated1 != negated2;
+        }
+
+        return !negated1 && !negated2;
+    }
+
+    // only for += and -=
+    private _getInvertedChangeOp(change: string): string {
+        return change == "+=" ? "-" : "+";
+    }
 }

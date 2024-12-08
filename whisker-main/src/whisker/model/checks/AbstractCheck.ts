@@ -120,38 +120,6 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         });
     }
 
-    protected _checkChange(that: ICheckJSON): boolean {
-        let change1 = String(this.args[2]);
-        let change2 = String(that.args[2]);
-        let negated1 = this.negated;
-        let negated2 = that.negated;
-
-        if (change1.length == 2 && change2.length == 2) {
-            // += & +=, -= & -= are not getting until here, caught before call to checkChange
-            // += & -=, -= & += only tested here
-            return this.negated == that.negated;
-        }
-
-        if (change1.length == 2) {
-            change1 = AbstractCheck._getInvertedChangeOp(change1);
-            negated1 = !negated1;
-        } else if (change2.length == 2) {
-            change2 = AbstractCheck._getInvertedChangeOp(change2);
-            negated2 = !negated2;
-        }
-
-        if (change1 == change2) {
-            return negated1 != negated2;
-        }
-
-        return !negated1 && !negated2;
-    }
-
-    // only for += and -=
-    private static _getInvertedChangeOp(change: string): string {
-        return change == "+=" ? "-" : "+";
-    }
-
     protected _getInvertedCompOp(comp: Comparison): Comparison {
         switch (comp) {
             case "=":
