@@ -120,58 +120,6 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         });
     }
 
-    protected _getInvertedCompOp(comp: Comparison): Comparison {
-        switch (comp) {
-            case "=":
-            case "==":
-                return "!=";
-            case "!=":
-                return "==";
-            case "<":
-                return ">=";
-            case ">":
-                return "<=";
-            case ">=":
-                return "<";
-            case "<=":
-                return ">";
-            default:
-                throw new NonExhaustiveCaseDistinction(comp);
-        }
-    }
-
-    protected _checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
-        const comparison1 = String(pComparison1);
-        const comparison2 = String(pComparison2);
-        const value1 = String(pValue1);
-        const value2 = String(pValue2);
-
-
-        if (comparison1 == "!=" || comparison2 == "!=") {
-            return false;
-        }
-
-        // =
-        if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
-            return value1 != value2;
-        }
-
-        if (comparison1 == '=' || comparison1 == '==') {
-            return !eval(value1 + comparison2 + value2);
-        }
-
-        if (comparison2 == '=' || comparison2 == '==') {
-            return !eval(value2 + comparison1 + value1);
-        }
-
-        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
-            return false;
-        }
-
-        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
-    }
-
     /**
      * Register the check listener and test driver and check for errors.
      */
