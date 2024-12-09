@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 
@@ -26,7 +26,7 @@ export const KeyJSON = ICheckJSON.extend({
 });
 
 export class Key extends AbstractCheck<KeyJSON> {
-    constructor(edgeLabel: string, json: OptionalName<KeyJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<KeyJSON>) {
         super(edgeLabel, {...json, name});
     }
 

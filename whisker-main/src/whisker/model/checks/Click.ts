@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -28,7 +28,7 @@ export const ClickJSON = ICheckJSON.extend({
 });
 
 export class Click extends AbstractCheck<ClickJSON> {
-    constructor(edgeLabel: string, json: OptionalName<ClickJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<ClickJSON>) {
         super(edgeLabel, {...json, name});
     }
 

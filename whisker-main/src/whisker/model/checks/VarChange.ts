@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, OptionalName, SpriteName, VariableName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON, SpriteName, VariableName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -44,7 +44,7 @@ export const VarChangeJSON = ICheckJSON.extend({
 });
 
 export class VarChange extends AbstractCheck<VarChangeJSON> {
-    constructor(edgeLabel: string, json: OptionalName<VarChangeJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<VarChangeJSON>) {
         super(edgeLabel, {...json, name});
     }
 

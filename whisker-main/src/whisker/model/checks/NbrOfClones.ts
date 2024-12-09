@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, Comparison, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, Comparison, ICheckJSON, Optional, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -36,7 +36,7 @@ type TNbrOfClonesJSON =
 abstract class AbstractNbrOfClones<J extends TNbrOfClonesJSON = TNbrOfClonesJSON> extends AbstractCheck<J> {
     private readonly _visible: boolean;
 
-    protected constructor(edgeLabel: string, json: J) {
+    protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
         this._visible = json.name === "NbrOfVisibleClones";
     }
@@ -153,7 +153,7 @@ export const NbrOfClonesJSON = ICheckJSON.extend({
 });
 
 export class NbrOfClones extends AbstractNbrOfClones<NbrOfClonesJSON> {
-    constructor(edgeLabel: string, json: OptionalName<NbrOfClonesJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<NbrOfClonesJSON>) {
         super(edgeLabel, {...json, name: nbrOfClonesName});
     }
 
@@ -175,7 +175,7 @@ export const NbrOfVisibleClonesJSON = ICheckJSON.extend({
 });
 
 export class NbrOfVisibleClones extends AbstractNbrOfClones<NbrOfVisibleClonesJSON> {
-    constructor(edgeLabel: string, json: OptionalName<NbrOfVisibleClonesJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<NbrOfVisibleClonesJSON>) {
         super(edgeLabel, {...json, name: nbrOfVisibleClonesName});
     }
 

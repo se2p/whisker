@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {z} from "zod";
@@ -28,7 +28,7 @@ export const BackgroundChangeJSON = ICheckJSON.extend({
 });
 
 export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
-    constructor(edgeLabel: string, json: OptionalName<BackgroundChangeJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<BackgroundChangeJSON>) {
         super(edgeLabel, {...json, name});
     }
 

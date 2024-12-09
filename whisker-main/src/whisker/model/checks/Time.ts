@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, Optional, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 
@@ -32,7 +32,7 @@ type TTimeJSON =
 abstract class AbstractTime<J extends TTimeJSON = TTimeJSON> extends AbstractCheck<J> {
     protected readonly _steps: number;
 
-    protected constructor(edgeLabel: string, json: J) {
+    protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
     }
 
@@ -65,7 +65,7 @@ export const TimeAfterEndJSON = ITimeJSON.extend({
 });
 
 export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON> {
-    constructor(edgeLabel: string, json: OptionalName<TimeAfterEndJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<TimeAfterEndJSON>) {
         super(edgeLabel, {...json, name: nameTimeAfterEnd});
     }
 
@@ -96,7 +96,7 @@ export const TimeBetweenJSON = ITimeJSON.extend({
 });
 
 export class TimeBetween extends AbstractTime<TimeBetweenJSON> {
-    constructor(edgeLabel: string, json: OptionalName<TimeBetweenJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<TimeBetweenJSON>) {
         super(edgeLabel, {...json, name: nameTimeBetween});
     }
 
@@ -127,7 +127,7 @@ export const TimeElapsedJSON = ITimeJSON.extend({
 });
 
 export class TimeElapsed extends AbstractTime<TimeElapsedJSON> {
-    constructor(edgeLabel: string, json: OptionalName<TimeElapsedJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<TimeElapsedJSON>) {
         super(edgeLabel, {...json, name: nameTimeElapsed});
     }
 

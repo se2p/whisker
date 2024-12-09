@@ -385,7 +385,7 @@ describe('Condition', () => {
     });
 
     test('Condition.check() returns false before registerComponent()', () => {
-        const condition = new AttrChange("edgeID", {negated: false, args: ["test", "attr", "-"]});
+        const condition = new AttrChange("edgeID", {args: ["test", "attr", "-"]});
         expect(condition.check(1, 1)).toBe(false);
     });
 
@@ -1003,7 +1003,7 @@ describe('Effect', () => {
             });
 
             const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "var", "<=", "2"]});
-            const attrComp3 = new AttrComp(edgeID, {negated: false, args: ["sprite", "var", "<=", "2"]});
+            const attrComp3 = new AttrComp(edgeID, {args: ["sprite", "var", "<=", "2"]});
 
             expect(attrComp.testForContradictingWithEvents(new Checks([attrComp2]))).toBe(true);
             expect(attrComp.testForContradictingWithEvents(new Checks([attrComp3]))).toBe(false);

@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
@@ -49,7 +49,7 @@ export const SpriteColorJSON = ICheckJSON.extend({
 });
 
 export class SpriteColor extends AbstractCheck<SpriteColorJSON> {
-    constructor(edgeLabel: string, json: OptionalName<SpriteColorJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<SpriteColorJSON>) {
         super(edgeLabel, {...json, name});
     }
 

@@ -5,7 +5,8 @@ import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
 
-export type OptionalName<J extends CheckJSON> = Omit<J, "name"> & Partial<Pick<J, "name">>;
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
 export type SpriteName =
     | string
@@ -61,9 +62,9 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
      * @param checkJSON
      * @protected
      */
-    protected constructor(edgeLabel: string, checkJSON: J) {
+    protected constructor(edgeLabel: string, checkJSON: Optional<J, "negated">) {
         this._edgeLabel = edgeLabel;
-        this._checkJSON = this._validate(checkJSON);
+        this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
         this._check = () => false;
     }
 
