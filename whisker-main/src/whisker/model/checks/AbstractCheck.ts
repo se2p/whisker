@@ -45,16 +45,23 @@ export const ICheckJSON = z.object({
  * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
  * @param stepsSinceEnd Number of steps since the after run model tests started.
  */
-export type CheckFun = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => boolean;
+export type CheckFun0 = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => boolean;
+export type CheckFun1 = (stepsSinceLastTransition: number, stepsSinceEnd?: number) => boolean;
+export type CheckFun2 = (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
+export type CheckFun =
+    | CheckFun0
+    | CheckFun1
+    | CheckFun2
+    ;
 
 /**
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
  */
-export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
+export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: J;
-    private _check: CheckFun;
+    private _check: C;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -65,7 +72,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
     protected constructor(edgeLabel: string, checkJSON: Optional<J, "negated">) {
         this._edgeLabel = edgeLabel;
         this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
-        this._check = () => false;
+        this._check = (() => false) as C;
     }
 
     get name(): J["name"] {
@@ -80,7 +87,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
         return this._checkJSON.args;
     }
 
-    get check(): CheckFun {
+    get check(): C {
         return this._check;
     }
 
@@ -96,7 +103,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
      * @param cu Instance of the check utility for listening and checking more complex events.
      * @param graphID ID of the parent graph of the check.
      */
-    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun;
+    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): C;
 
     equals(that: AbstractCheck): boolean {
         return this.name === that.name && this._negated === that._negated && this._equalsArgs(that);
@@ -122,7 +129,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
             this._check = this._checkArgsWithTestDriver(t, cu, graphID);
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
-            this._check = () => false;
+            this._check = (() => false) as C;
         }
     }
 

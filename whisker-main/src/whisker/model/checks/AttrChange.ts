@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
@@ -41,7 +41,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
     args: AttrChangeArgs,
 });
 
-export class AttrChange extends AbstractCheck<AttrChangeJSON> {
+export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
     }
@@ -58,7 +58,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         // eslint-disable-next-line prefer-const
         let [pSpriteName, attrName, change] = this._args;
         const negated = this._negated;

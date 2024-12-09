@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 
@@ -25,7 +25,7 @@ export const KeyJSON = ICheckJSON.extend({
     args: KeyArgs,
 });
 
-export class Key extends AbstractCheck<KeyJSON> {
+export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<KeyJSON>) {
         super(edgeLabel, {...json, name});
     }
@@ -39,7 +39,7 @@ export class Key extends AbstractCheck<KeyJSON> {
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): CheckFun {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): CheckFun0 {
         const [key] = this._args;
         const negated = this._negated;
         return () => {

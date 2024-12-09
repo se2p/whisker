@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, Optional, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, Optional, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -30,7 +30,7 @@ type TTouchingEdge =
 abstract class AbstractTouchingEdge<
     J extends TTouchingEdgeJSON = TTouchingEdgeJSON,
     C extends TTouchingEdge = TTouchingEdge,
-> extends AbstractCheck<J> {
+> extends AbstractCheck<J, CheckFun0> {
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
     }
@@ -41,7 +41,7 @@ abstract class AbstractTouchingEdge<
      * @param cu Listener for checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName] = this._args;
         const negated = this._negated;
         const edgeLabel = this._edgeLabel;

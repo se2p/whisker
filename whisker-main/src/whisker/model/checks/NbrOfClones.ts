@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, Comparison, ICheckJSON, Optional, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, Comparison, ICheckJSON, Optional, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -33,7 +33,7 @@ type TNbrOfClonesJSON =
     | NbrOfVisibleClonesJSON
     ;
 
-abstract class AbstractNbrOfClones<J extends TNbrOfClonesJSON = TNbrOfClonesJSON> extends AbstractCheck<J> {
+abstract class AbstractNbrOfClones<J extends TNbrOfClonesJSON = TNbrOfClonesJSON> extends AbstractCheck<J, CheckFun0> {
     private readonly _visible: boolean;
 
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
@@ -45,7 +45,7 @@ abstract class AbstractNbrOfClones<J extends TNbrOfClonesJSON = TNbrOfClonesJSON
      * Get a method to check how many clones of a sprite are there.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): CheckFun {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): CheckFun0 {
         const [pSpriteName, comparison, nbr] = this._args;
         const negated = this._negated;
 

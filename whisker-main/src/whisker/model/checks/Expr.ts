@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -20,7 +20,7 @@ export const ExprJSON = ICheckJSON.extend({
     args: ExprArgs,
 });
 
-export class Expr extends AbstractCheck<ExprJSON> {
+export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
     private readonly _code: string;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<ExprJSON>) {
@@ -42,9 +42,9 @@ export class Expr extends AbstractCheck<ExprJSON> {
      * @param cu Listener for checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const e = ModelUtil.getExpressionForEval(t, this._code);
-        const check: () => boolean = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
+        const check = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {

@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
@@ -33,7 +33,7 @@ export const SpriteTouchingJSON = ICheckJSON.extend({
     args: SpriteTouchingArgs,
 });
 
-export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
+export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<SpriteTouchingJSON>) {
         super(edgeLabel, {...json, name});
     }
@@ -50,7 +50,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
      * @param graphID ID of the parent graph of the check.
 
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName1, pSpriteName2] = this._args;
         const negated = this._negated;
         const edgeLabel = this._edgeLabel;

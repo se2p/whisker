@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {Randomness} from "../../utils/Randomness";
 import {z} from "zod";
@@ -28,7 +28,7 @@ export const ProbabilityJSON = ICheckJSON.extend({
     args: ProbabilityArgs,
 });
 
-export class Probability extends AbstractCheck<ProbabilityJSON> {
+export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<ProbabilityJSON>) {
         super(edgeLabel, {...json, name});
     }
@@ -45,7 +45,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
      * Get a method that checks whether a random number is greater than the probability given. For randomness...
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
         const [probability] = this._args;
         const negated = this._negated;
         const prob = ModelUtil.testNumber(probability);
