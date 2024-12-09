@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, AttrName, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
@@ -27,7 +27,7 @@ export type AttrChangeArgs = [
 
 const AttrChangeArgs = z.tuple([
     SpriteName,
-    z.string(),
+    AttrName,
     z.string(),
 ]);
 
@@ -59,13 +59,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, change] = this._args;
+        const [pSpriteName, attrName, change] = this._args;
         const negated = this._negated;
-
-        if (attrName == "costume" || attrName == "currentCostume") {
-            attrName = "currentCostumeName";
-        }
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;

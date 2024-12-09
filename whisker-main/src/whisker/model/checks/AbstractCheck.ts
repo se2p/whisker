@@ -31,6 +31,11 @@ export const Comparison = z.preprocess(
     z.enum(comparisons)
 );
 
+export const AttrName = z.preprocess(
+    (attrName) => attrName === "costume" || attrName === "currentCostume" ? "currentCostumeName" : attrName,
+    z.string()
+);
+
 export interface ICheckJSON {
     name: string;
     negated: boolean;

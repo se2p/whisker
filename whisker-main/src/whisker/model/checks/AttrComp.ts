@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, Comparison, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, AttrName, CheckFun0, Comparison, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ArgType} from "../util/schema";
 import {ModelUtil} from "../util/ModelUtil";
@@ -22,7 +22,7 @@ export type AttrCompArgs = [
     attrName: string,
 
     /**
-     * Mode of comparison, e.g. =, <, >, <=, >=
+     * Mode of comparison, e.g. ==, <, >, <=, >=
      */
     comparison: Comparison,
 
@@ -34,7 +34,7 @@ export type AttrCompArgs = [
 
 const AttrCompArgs = z.tuple([
     SpriteName,
-    z.string(),
+    AttrName,
     Comparison,
     z.string().or(z.number()),
 ]);
@@ -66,14 +66,10 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, comparison, attrValue] = this._args;
+        const [pSpriteName, attrName, comparison, attrValue] = this._args;
         const edgeLabel = this._edgeLabel;
         const negated = this._negated;
 
-        if (attrName == "costume" || attrName == "currentCostume") {
-            attrName = "currentCostumeName";
-        }
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
