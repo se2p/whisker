@@ -5,6 +5,7 @@ import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
 import {AbstractCheck} from "../checks/AbstractCheck";
+import {Checks} from "../util/Checks";
 
 export type ModelEdge =
     | ProgramModelEdge
@@ -112,7 +113,7 @@ export abstract class AbstractEdge {
         return failedConditions;
     }
 
-    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): AbstractCheck[];
+    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): AbstractCheck[];
 
     set lastTransition(transition: number) {
         this._lastTransition = transition;

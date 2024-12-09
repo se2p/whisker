@@ -107,9 +107,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     private _attributeCompOnMove(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                  spriteName: string, pSpriteName: ArgType, attrName: string,
                                  comparison: Comparison, attrValue: string): void {
-        const eventString = this.getEventString();
-
-        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
@@ -121,9 +119,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     private _attributeCompOnVisual(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                    spriteName: string, pSpriteName: ArgType, attrName: string,
                                    comparison: Comparison, attrValue: ArgType): void {
-        const eventString = this.getEventString();
-
-        cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
+        cu.registerOnVisualChange(spriteName, this, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
@@ -135,9 +131,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     private _attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
                                    spriteName: string, pSpriteName: ArgType, attrName: string,
                                    comparison: Comparison, attrValue: ArgType): void {
-        const eventString = this.getEventString();
-
-        cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
+        cu.registerOutput(spriteName, this, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
@@ -148,17 +142,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
 
     override get dependsOnSayText(): boolean {
         return this.args[1] === "sayText";
-    }
-
-    override getEventString(): string {
-        // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, comparison, value] = this.args;
-        attrName = attrName == "currentCostume" ? "costume" : attrName; // FIXME: why the case distinction? Without it, the override could be deleted...
-        let string = this.negated ? "!" + this.name : this.name;
-        for (const arg of  [pSpriteName, attrName, comparison, value]) {
-            string += ":" + arg;
-        }
-        return string;
     }
 
     protected override _contradicts(that: AttrCompJSON): boolean {

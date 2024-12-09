@@ -28,6 +28,7 @@ import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {AbstractCheck} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {TimeAfterEnd, TimeArgs, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
+import { Checks } from "../../../../src/whisker/model/util/Checks";
 
 describe('Check', () => {
     const t = getDummyTestDriver();
@@ -1005,8 +1006,8 @@ describe('Effect', () => {
             const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "var", "<=", "2"]});
             const attrComp3 = new AttrComp(edgeID, {negated: false, args: ["sprite", "var", "<=", "2"]});
 
-            expect(attrComp.testForContradictingWithEvents([attrComp2.getEventString()])).toBe(true);
-            expect(attrComp.testForContradictingWithEvents([attrComp3.getEventString()])).toBe(false);
+            expect(attrComp.testForContradictingWithEvents(new Checks([attrComp2]))).toBe(true);
+            expect(attrComp.testForContradictingWithEvents(new Checks([attrComp3]))).toBe(false);
         });
     });
 

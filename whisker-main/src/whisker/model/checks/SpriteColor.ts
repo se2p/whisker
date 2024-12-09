@@ -76,9 +76,8 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON> {
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw new RGBRangeError();
         }
-        const eventString = this.getEventString();
         // on movement check sprite color
-        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, (sprite) => {
             return !negated == sprite.isTouchingColor([r, g, b]);
         });
 

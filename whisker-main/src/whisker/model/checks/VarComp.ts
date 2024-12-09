@@ -72,8 +72,6 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
         } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
-        const eventString = this.getEventString();
-
         function check() {
             const sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable = sprite.getVariable(variableName);
@@ -84,7 +82,7 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
             }
         }
 
-        cu.registerVarEvent(variableName, eventString, edgeLabel, graphID, check);
+        cu.registerVarEvent(variableName, this, edgeLabel, graphID, check);
         return check;
     }
 

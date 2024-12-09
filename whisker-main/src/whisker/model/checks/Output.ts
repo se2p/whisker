@@ -62,7 +62,6 @@ export class Output extends AbstractCheck<OutputJSON> {
             expression = ModelUtil.getExpressionForEval(t, `'${output}'`).expr;
         }
 
-        const eventString = this.getEventString();
         const check: (s: Sprite) => boolean = (s) => {
             if (!s.sayText) {
                 return false;
@@ -72,7 +71,7 @@ export class Output extends AbstractCheck<OutputJSON> {
             const expected = String(eval(expression)(t)).toLocaleLowerCase();
             return sayText.includes(expected);
         };
-        cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (s) => !negated == check(s));
+        cu.registerOutput(spriteName, this, edgeLabel, graphID, (s) => !negated == check(s));
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anySayText = sprites.some(check);

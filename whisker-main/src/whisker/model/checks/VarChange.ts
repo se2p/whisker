@@ -71,8 +71,6 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
         sprite = foundSprite;
         const spriteName = sprite.name;
         const variableName = foundVar.name;
-        const eventString = this.getEventString();
-
         function check(): boolean {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
@@ -83,7 +81,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
             }
         }
 
-        cu.registerVarEvent(variableName, eventString, edgeLabel, graphID, check);
+        cu.registerVarEvent(variableName, this, edgeLabel, graphID, check);
         return check;
     }
 

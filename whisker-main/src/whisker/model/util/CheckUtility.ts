@@ -4,10 +4,10 @@ import {AbstractEdge} from "../components/AbstractEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
-import {AbstractCheck, ICheckJSON} from "../checks/AbstractCheck";
+import {AbstractCheck} from "../checks/AbstractCheck";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
-import {CheckName} from "../checks/newCheck";
+import {Checks} from "./Checks";
 
 type EffectCheck = { effect: AbstractCheck, edge: ProgramModelEdge, model: ProgramModel | EndModel };
 
@@ -25,12 +25,12 @@ export class CheckUtility extends EventEmitter {
     private _onSayOrThinkChecks: Record<string, ((sprite: Sprite) => void)[]> = {};
     private _variableChecks: Record<string, (() => void)[]> = {};
 
-    private _registeredOnMove: string[] = [];
-    private _registeredVisualChange: string[] = [];
-    private _registeredOutput: string[] = [];
-    private _registeredVarEvents: string[] = [];
+    private _registeredOnMove: Checks = new Checks();
+    private _registeredVisualChange: Checks = new Checks();
+    private _registeredOutput: Checks = new Checks();
+    private _registeredVarEvents: Checks = new Checks();
 
-    private _eventStrings: string[] = [];
+    private _checks: Checks = new Checks();
 
     private _effectChecks: EffectCheck[] = [];
     private _failedOutputsEvents: EffectCheck[] = [];
@@ -65,10 +65,10 @@ export class CheckUtility extends EventEmitter {
         this._testDriver.vmWrapper.sprites.onVariableChangeModel((varName: string) => {
             if (this._variableChecks[varName] != null) {
                 this._variableChecks[varName].forEach(fun => fun());
-                if (this._eventStrings.length > 0) {
-                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._eventStrings);
+                if (this._checks.length > 0) {
+                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._checks);
                 }
-                this._eventStrings = [];
+                this._checks = new Checks();
             }
         });
     }
@@ -91,13 +91,13 @@ export class CheckUtility extends EventEmitter {
      * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
      * @param graphID ID of the parent graph of the check.
      * @param predicate Function checking if the predicate for the event is fulfilled.
-     * @param eventString String defining the event (see CheckUtility.getEventString)
+     * @param check String defining the event (see CheckUtility.getEventString)
      */
-    registerOnMoveEvent(spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+    registerOnMoveEvent(spriteName: string, check: AbstractCheck, edgeLabel: string, graphID: string,
                         predicate: (sprite: Sprite) => boolean): void {
-        if (!this._registeredOnMove.includes(eventString)) {
-            this._registeredOnMove.push(eventString);
-            this._register(this._onMovedChecks, eventString, spriteName, edgeLabel, graphID, predicate);
+        if (!this._registeredOnMove.includes(check)) {
+            this._registeredOnMove.push(check);
+            this._register(this._onMovedChecks, check, spriteName, edgeLabel, graphID, predicate);
         }
     }
 
@@ -105,36 +105,36 @@ export class CheckUtility extends EventEmitter {
      * Register a visual change event listener. (Attributes: size, direction, effect, visible, costume,
      * rotationStyle.  Also and x,y motions, but should be registered on move)
      * @param spriteName Name of the actual sprite.
-     * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param check Function checking if the predicate for the event is fulfilled.
      * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
      * @param graphID ID of the parent graph of the check.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOnVisualChange(spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+    registerOnVisualChange(spriteName: string, check: AbstractCheck, edgeLabel: string, graphID: string,
                            predicate: (sprite: Sprite) => boolean): void {
-        if (this._registeredVisualChange.indexOf(eventString) == -1) {
-            this._registeredVisualChange.push(eventString);
-            this._register(this._onVisualChecks, eventString, spriteName, edgeLabel, graphID, predicate);
+        if (!this._registeredVisualChange.includes(check)) {
+            this._registeredVisualChange.push(check);
+            this._register(this._onVisualChecks, check, spriteName, edgeLabel, graphID, predicate);
         }
     }
 
     /**
      * Register an output event on the visual change checks.
      * @param spriteName Name of the sprite.
-     * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param check Function checking if the predicate for the event is fulfilled.
      * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
      * @param graphID ID of the parent graph of the check.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOutput(spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+    registerOutput(spriteName: string, check: AbstractCheck, edgeLabel: string, graphID: string,
                    predicate: (sprite: Sprite) => boolean): void {
-        if (this._registeredOutput.indexOf(eventString) == -1) {
-            this._registeredOutput.push(eventString);
-            this._register(this._onSayOrThinkChecks, eventString, spriteName, edgeLabel, graphID, predicate);
+        if (!this._registeredOutput.includes(check)) {
+            this._registeredOutput.push(check);
+            this._register(this._onSayOrThinkChecks, check, spriteName, edgeLabel, graphID, predicate);
         }
     }
 
-    private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, eventString: string,
+    private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, check: AbstractCheck,
                       spriteName: string, edgeLabel: string, graphID: string, predicate: (sprite: Sprite) => boolean) {
         // no check for this sprite till now
         if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
@@ -145,7 +145,7 @@ export class CheckUtility extends EventEmitter {
             try {
                 const predicateResult = predicate(sprite);
                 if (predicateResult) {
-                    this._eventStrings.push(eventString);
+                    this._checks.push(check);
                 }
             } catch (e) {
                 this.addErrorOutput(edgeLabel, graphID, e);
@@ -158,12 +158,12 @@ export class CheckUtility extends EventEmitter {
      * @param varName Name of the variable.
      * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
      * @param graphID ID of the parent graph of the check.
-     * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param check Function checking if the predicate for the event is fulfilled.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerVarEvent(varName: string, eventString: string, edgeLabel: string, graphID: string, predicate: () => boolean): void {
-        if (this._registeredVarEvents.indexOf(eventString) == -1) {
-            this._registeredVarEvents.push(eventString);
+    registerVarEvent(varName: string, check: AbstractCheck, edgeLabel: string, graphID: string, predicate: () => boolean): void {
+        if (!this._registeredVarEvents.includes(check)) {
+            this._registeredVarEvents.push(check);
 
             if (this._variableChecks[varName] == undefined || this._variableChecks[varName] == null) {
                 this._variableChecks[varName] = [];
@@ -176,7 +176,7 @@ export class CheckUtility extends EventEmitter {
                     this.addErrorOutput(edgeLabel, graphID, e);
                 }
                 if (predicateResult) {
-                    this._eventStrings.push(eventString);
+                    this._checks.push(check);
                 }
             });
         }
@@ -185,10 +185,10 @@ export class CheckUtility extends EventEmitter {
     private _checkForEvent(checks: Record<string, ((sprite: Sprite) => void)[]>, sprite: Sprite): void {
         if (checks[sprite.name] != null) {
             checks[sprite.name].forEach(fun => fun(sprite));
-            if (this._eventStrings.length > 0) {
-                this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._eventStrings);
+            if (this._checks.length > 0) {
+                this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._checks);
             }
-            this._eventStrings = [];
+            this._checks = new Checks();
         }
     }
 
@@ -200,23 +200,6 @@ export class CheckUtility extends EventEmitter {
         return this._testDriver.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyName);
         // replaced because of bug in test driver...
         // return this.testDriver.isKeyDown(keyName);
-    }
-
-    /**
-     * Split up the event string.
-     * @param eventString
-     */
-    static splitEventString(eventString: string): ICheckJSON {
-        const negated = eventString.startsWith("!");
-        if (negated) {
-            eventString = eventString.substring(1, eventString.length);
-        }
-        const splits = eventString.split(":");
-        return {
-            negated: negated,
-            name: splits[0] as CheckName,
-            args: splits.slice(1, splits.length),
-        };
     }
 
     /**

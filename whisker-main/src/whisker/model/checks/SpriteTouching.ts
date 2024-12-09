@@ -58,10 +58,9 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
         const spriteName1 = ModelUtil.checkSpriteExistence(t, pSpriteName1).name;
         const spriteName2 = ModelUtil.checkSpriteExistence(t, pSpriteName2).name;
 
-        const eventString = this.getEventString();
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2
-        cu.registerOnMoveEvent(spriteName1, eventString, edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName1, this, edgeLabel, graphID, (sprite) => {
             return !negated == sprite.isTouchingSprite(spriteName2);
         });
 

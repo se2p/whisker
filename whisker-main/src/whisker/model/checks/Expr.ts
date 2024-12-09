@@ -51,19 +51,17 @@ export class Expr extends AbstractCheck<ExprJSON> {
 
     private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => boolean) {
         const edgeLabel = this._edgeLabel;
-        const eventString = this.getEventString();
-
         d.varDependencies.forEach(dependency => {
-            cu.registerVarEvent(dependency.varName, eventString, edgeLabel, graphID, predicate);
+            cu.registerVarEvent(dependency.varName, this, edgeLabel, graphID, predicate);
         });
 
         d.attrDependencies.forEach(({spriteName, attrName}) => {
             if (attrName == "x" || attrName == "y") {
-                cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, predicate);
+                cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, predicate);
             } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-                cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, predicate);
+                cu.registerOnVisualChange(spriteName, this, edgeLabel, graphID, predicate);
             } else if (attrName == "sayText") {
-                cu.registerOutput(spriteName, eventString, edgeLabel, graphID, predicate);
+                cu.registerOutput(spriteName, this, edgeLabel, graphID, predicate);
             }
         });
     }

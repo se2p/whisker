@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {AbstractEdge} from "./AbstractEdge";
 import {UserModelEdgeJSON} from "../util/schema";
 import {AbstractCheck} from "../checks/AbstractCheck";
+import {Checks} from "../util/Checks";
 
 /**
  * Edge structure that has input effects triggered if the conditions are fulfilled.
@@ -57,7 +58,7 @@ export class UserModelEdge extends AbstractEdge {
         });
     }
 
-    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _eventStrings: string[]): AbstractCheck[] {
+    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _checks: Checks): AbstractCheck[] {
         return this.conditions;
     }
 
