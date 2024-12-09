@@ -20,7 +20,7 @@ import {Probability} from "../../../../src/whisker/model/checks/Probability";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../../src/whisker/model/checks/TouchingEdge";
-import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
+import {AbstractCheck, Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 
 describe('CheckGenerator', () => {
@@ -129,7 +129,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             let check: (sprite: Sprite) => boolean;
             const cu = getDummyCheckUtility();
-            cu.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cu.registerOnMoveEvent = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                       predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
@@ -178,7 +178,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             let check: (sprite: Sprite) => boolean;
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cuMock.registerOnMoveEvent = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                           predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
@@ -237,7 +237,7 @@ describe('CheckGenerator', () => {
             const cu = cuMock.getCheckUtility();
             const c = new VarComp('label', {negated: false, args: ["apple", "x", "==", "2"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, "VarComp:apple:x:==:2", "label", graphID, c.check);
+            expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, "label", graphID, c.check);
         });
 
         test('Check works for stage', () => {
@@ -276,7 +276,7 @@ describe('CheckGenerator', () => {
             const cu = cuMock.getCheckUtility();
             const c = new VarChange('label', {negated: false, args: ["apple", "x", "+"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, "VarChange:apple:x:+", "label", graphID, c.check);
+            expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, "label", graphID, c.check);
         });
 
         test('Check works for stage', () => {
@@ -319,7 +319,7 @@ describe('CheckGenerator', () => {
             const cu = cuMock.getCheckUtility();
             const c = new AttrComp('label', {negated: false, args: ["kiwi", "x", "==", "7"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:x:==:7", "label", graphID, expect.anything());
+            expect(fn).toHaveBeenLastCalledWith("kiwi", c, "label", graphID, expect.anything());
         });
 
         test('OnVisualChange is registered on CheckUtil', () => {
@@ -329,14 +329,14 @@ describe('CheckGenerator', () => {
             const cu = cuMock.getCheckUtility();
             const c = new AttrComp('label', {negated: false, args: ["kiwi", "size", "<", "42"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:size:<:42", "label", graphID, expect.anything());
+            expect(fn).toHaveBeenLastCalledWith("kiwi", c, "label", graphID, expect.anything());
         });
 
         test('Output is registered on CheckUtil for changing output', () => {
             let check: ((sprite: Sprite) => boolean);
             const fn = jest.fn();
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cuMock.registerOutput = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                      predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
@@ -344,7 +344,7 @@ describe('CheckGenerator', () => {
             const cu = cuMock.getCheckUtility();
             const c = new AttrComp('label', {negated: false, args: ["kiwi", "sayText", "==", "this is some text"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith("kiwi", "AttrComp:kiwi:sayText:==:this is some text", "label", graphID, check);
+            expect(fn).toHaveBeenLastCalledWith("kiwi", c, "label", graphID, check);
             expect(check(kiwi.sprite)).toBe(true);
             kiwi.sayText = "the kiwi has nothing to say";
             kiwi.updateSprite();
@@ -358,7 +358,7 @@ describe('CheckGenerator', () => {
             let check: ((sprite: Sprite) => boolean);
             const fn = jest.fn();
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cuMock.registerOnMoveEvent = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                           predicate: (sprite: Sprite) => boolean) => {
                 check = predicate;
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
@@ -366,7 +366,7 @@ describe('CheckGenerator', () => {
             const cu = cuMock.getCheckUtility();
             const c = new AttrComp('label', {negated: false, args: ["apple", "x", "<=", "42"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith("apple", "AttrComp:apple:x:<=:42", "label", graphID, check);
+            expect(fn).toHaveBeenLastCalledWith("apple", c, "label", graphID, check);
             expect(check(sprite.sprite)).toBe(false);
             sprite.variables = [{name: "x", value: 0}];
             sprite.updateSprite();
@@ -382,7 +382,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             let check: ((sprite: Sprite) => boolean);
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOnVisualChange = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cuMock.registerOnVisualChange = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                              predicate: (sprite: Sprite) => boolean) => {
                 check = predicate;
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
@@ -390,7 +390,7 @@ describe('CheckGenerator', () => {
             const cu = cuMock.getCheckUtility();
             const c = new AttrComp('label', {negated: true, args: ["_stage_", "currentCostume", "==", "win"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith("_stage_", "!AttrComp:_stage_:costume:==:win", "label", graphID, check);
+            expect(fn).toHaveBeenLastCalledWith("_stage_", c, "label", graphID, check);
             expect(check(sprite.sprite)).toBe(true);
             sprite.currentCostumeName = "win";
             sprite.updateSprite();
@@ -452,14 +452,14 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             const cu = getDummyCheckUtility();
             let check: (sprite: Sprite) => boolean;
-            cu.registerOnVisualChange = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cu.registerOnVisualChange = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                          predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
             };
             const c = new AttrChange('label', {negated: false, args: ["apple", "size", "+"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith(apple.name, "AttrChange:apple:size:+", "label", graphID, check);
+            expect(fn).toHaveBeenLastCalledWith(apple.name, c, "label", graphID, check);
             expect(check(apple.sprite)).toBe(false);
         });
 
@@ -467,14 +467,14 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             const cu = getDummyCheckUtility();
             let check: (sprite: Sprite) => boolean;
-            cu.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cu.registerOnMoveEvent = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                       predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
             };
             const c = new AttrChange('label', {negated: false, args: ["apple", "x", "+"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenLastCalledWith(apple.name, "AttrChange:apple:x:+", "label", graphID, check);
+            expect(fn).toHaveBeenLastCalledWith(apple.name, c, "label", graphID, check);
             expect(check(apple.sprite)).toBe(false);
         });
 
@@ -529,14 +529,14 @@ describe('CheckGenerator', () => {
             const cu = getDummyCheckUtility();
             const fn = jest.fn();
             let check: (sprite: Sprite) => boolean;
-            cu.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cu.registerOutput = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                  predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, eventString, edgeLabel, graphID, predicate);
                 check = predicate;
             };
             const c = new Output('label', {negated: false, args: ["kiwi", "this is a text as well"]});
             c.registerComponents(t, cu, graphID);
-            expect(fn).toHaveBeenCalledWith("kiwi", "Output:kiwi:this is a text as well", "label", graphID, check);
+            expect(fn).toHaveBeenCalledWith("kiwi", c, "label", graphID, check);
             expect(check(kiwi.sprite)).toEqual(true);
             kiwi.sayText = "this is a different text";
             tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
@@ -563,13 +563,19 @@ describe('CheckGenerator', () => {
         ];
         it.each(table)('counts correct amount of %s with visible necessary == %s',
             (name, visible, count) => {
-                const c = new (visible ? NbrOfVisibleClones : NbrOfClones)('label', {negated: false, args: [name, "==", count]});
+                const c = new (visible ? NbrOfVisibleClones : NbrOfClones)('label', {
+                    negated: false,
+                    args: [name, "==", count]
+                });
                 c.registerComponents(t, null, graphID);
                 expect(c.check()).toBe(true);
             });
 
         test('throws exception for invalid comparison', () => {
-            expect(() => new NbrOfClones('label', {negated: true, args: ["banana", "<=>" as Comparison, 10]})).toThrowError();
+            expect(() => new NbrOfClones('label', {
+                negated: true,
+                args: ["banana", "<=>" as Comparison, 10]
+            })).toThrowError();
         });
     });
 
@@ -654,7 +660,7 @@ describe('CheckGenerator', () => {
             const c = new Expr('label', {negated: false, args: [expr]});
             c.registerComponents(t, cu, graphID);
             expect(moveEvent).toHaveBeenCalledTimes(1);
-            expect(moveEvent).toHaveBeenCalledWith("Boat", "Expr:" + expr, "label", graphID, c.check);
+            expect(moveEvent).toHaveBeenCalledWith("Boat", c, "label", graphID, c.check);
         });
 
         test('variable dependencies are correct', () => {
@@ -664,8 +670,8 @@ describe('CheckGenerator', () => {
             const c = new Expr('label', {negated: false, args: [expr]});
             c.registerComponents(t, cu, graphID);
             expect(varEvent).toHaveBeenCalledTimes(2);
-            expect(varEvent).toHaveBeenCalledWith("speed", "Expr:" + expr, "label", graphID, c.check);
-            expect(varEvent).toHaveBeenCalledWith("score", "Expr:" + expr, "label", graphID, c.check);
+            expect(varEvent).toHaveBeenCalledWith("speed", c, "label", graphID, c.check);
+            expect(varEvent).toHaveBeenCalledWith("score", c, "label", graphID, c.check);
         });
 
         test('onVisual dependencies are correct', () => {
@@ -675,7 +681,7 @@ describe('CheckGenerator', () => {
             const c = new Expr('label', {negated: false, args: [expr]});
             c.registerComponents(t, cu, graphID);
             expect(visualEvent).toHaveBeenCalledTimes(1);
-            expect(visualEvent).toHaveBeenCalledWith("Gate", "Expr:" + expr, "label", graphID, c.check);
+            expect(visualEvent).toHaveBeenCalledWith("Gate", c, "label", graphID, c.check);
         });
 
         it.each([[false, false], [false, true], [true, false], [true, true]])(
@@ -704,7 +710,7 @@ describe('CheckGenerator', () => {
             let check: ((sprite: Sprite) => boolean);
             const mock = jest.fn();
             const cu = getDummyCheckUtility();
-            cu.registerOutput = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cu.registerOutput = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                  predicate: (sprite: Sprite) => boolean): void => {
                 check = predicate;
                 mock(spriteName, eventString, edgeLabel, graphID, predicate);
@@ -712,7 +718,7 @@ describe('CheckGenerator', () => {
             const fn = "t.getSprite('apple').sayText == 'I am an apple'";
             const c = new Expr('label', {negated: false, args: [fn]});
             c.registerComponents(tdMock.getTestDriver(), cu, graphID);
-            expect(mock).toHaveBeenCalledWith("apple", "Expr:t.getSprite('apple').sayText == 'I am an apple'", "label", graphID, check);
+            expect(mock).toHaveBeenCalledWith("apple", c, "label", graphID, check);
             expect(check(apple.sprite)).toBe(true);
             apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
             tdMock.currentSprites = [apple.updateSprite()];
@@ -816,7 +822,7 @@ describe('CheckGenerator', () => {
             let check: ((sprite: Sprite) => boolean);
             const cu = getDummyCheckUtility();
             const fn = jest.fn();
-            cu.registerOnMoveEvent = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+            cu.registerOnMoveEvent = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
                                       predicate: (sprite: Sprite) => boolean): void => {
                 fn();
                 check = predicate;

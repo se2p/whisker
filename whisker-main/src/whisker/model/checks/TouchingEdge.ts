@@ -32,8 +32,7 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
         const edgeLabel = this._edgeLabel;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const check = this._getCheck();
-        const eventString = this.getEventString();
-        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, (sprite) => {
             return !negated == check(sprite);
         });
         return () => {

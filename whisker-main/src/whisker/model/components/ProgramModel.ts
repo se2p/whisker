@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {EdgeID, EndModelJSON, ProgramModelJSON} from "../util/schema";
+import {Checks} from "../util/Checks";
 
 export interface CoverageResult {
     total: number;
@@ -64,7 +65,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         return edge;
     }
 
-    testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: string[]): ProgramModelEdge | null {
+    testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: Checks): ProgramModelEdge | null {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.programEndStep,
             eventStrings);

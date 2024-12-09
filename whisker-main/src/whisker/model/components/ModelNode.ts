@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelNodeJSON} from "../util/schema";
+import {Checks} from "../util/Checks";
 
 export type ProgramModelNode = ModelNode<ProgramModelEdge>;
 export type UserModelNode = ModelNode<UserModelEdge>;
@@ -72,7 +73,7 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
      * Check the edges for a transition based on fired events.
      */
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                 eventStrings: string[]): E | null {
+                 eventStrings: Checks): E | null {
         for (const e of this.edges) {
             const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, eventStrings);
 

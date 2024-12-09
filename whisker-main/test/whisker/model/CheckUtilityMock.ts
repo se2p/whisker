@@ -1,7 +1,8 @@
 import {CheckUtility} from "../../../src/whisker/model/util/CheckUtility";
 import Sprite from "../../../src/vm/sprite";
+import {AbstractCheck} from "../../../src/whisker/model/checks/AbstractCheck";
 
-type Check = (spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+type Check = (spriteName: string, eventString: AbstractCheck, edgeLabel: string, graphID: string,
               predicate: (sprite: Sprite) => boolean) => void;
 
 export class CheckUtilityMock {

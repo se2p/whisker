@@ -10,6 +10,7 @@ import {BackgroundChange} from "../../../../src/whisker/model/checks/BackgroundC
 import {Key} from "../../../../src/whisker/model/checks/Key";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
+import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 describe('Model edges', () => {
     const id = "id";
@@ -236,7 +237,7 @@ describe('Model edges', () => {
             expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 10ms");
             result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual(conditions);
-            result = edge.checkConditionsOnEvent(11, 9, []);
+            result = edge.checkConditionsOnEvent(11, 9, new Checks());
             expect(result).toStrictEqual(conditions);
         });
     });
@@ -247,8 +248,12 @@ describe('Model edges', () => {
             edge.addCondition(new BackgroundChange(label, {negated: false, args: ["test"]}));
             edge.addCondition(new Key(label, {negated: false, args: ["a"]}));
             edge.addCondition(new SpriteTouching(label, {negated: false, args: ["apple", "bowl"]}));
-            const eventStrings = ["BackgroundChange:differentArg", "Key:w", "Expr:false"];
-            const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
+            const eventStrings = [
+                new BackgroundChange(edge.label, {negated: false, args: ["differentArg"]}),
+                new Key(edge.label, {negated: false, args: ["w"]}),
+                new Expr(edge.label, {negated: false, args: ["false"]}),
+            ];
+            const result = edge.checkConditionsOnEvent(5, 7, new Checks(eventStrings));
             expect(result).toBe(edge.conditions);
         });
 
@@ -265,9 +270,13 @@ describe('Model edges', () => {
             edge.addCondition(new BackgroundChange(label, {negated: false, args: ["newBackground"]}));
             edge.addCondition(new Key(label, {negated: false, args: ["d"]}));
             edge.addCondition(new SpriteTouching(label, {negated: false, args: ["banana", "bowl"]}));
-            const eventStrings = ["BackgroundChange:test", "Key:d", "Expr:true"];
+            const eventStrings = [
+                new BackgroundChange(edge.label, {negated: false, args: ["test"]}),
+                new Key(edge.label, {negated: false, args: ["d"]}),
+                new Expr(edge.label, {negated: false, args: ["true"]})
+            ];
             edge.registerComponents(cu, tdMock.getTestDriver());
-            const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
+            const result = edge.checkConditionsOnEvent(5, 7, new Checks(eventStrings));
             expect(result).toStrictEqual([edge.conditions[0]]);
         });
 
@@ -279,9 +288,12 @@ describe('Model edges', () => {
             edge.addCondition(new Key(label, {negated: false, args: ["a"]}));
             edge.addCondition(new Expr(label, {negated: false, args: ["true"]}));
             edge.addEffect(new SpriteTouching(label, {negated: false, args: ["apple", "bowl"]}));
-            const eventStrings = ["BackgroundChange:stage", "Key:d"];
+            const eventStrings = [
+                new BackgroundChange(edge.label, {negated: false, args: ["stage"]}),
+                new Key(edge.label, {negated: false, args: ["d"]}),
+            ];
             edge.registerComponents(cu, tdMock.getTestDriver());
-            const result = edge.checkConditionsOnEvent(5, 7, eventStrings);
+            const result = edge.checkConditionsOnEvent(5, 7, new Checks(eventStrings));
             expect(result).toStrictEqual(edge.conditions);
         });
     });

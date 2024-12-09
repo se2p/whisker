@@ -4,6 +4,7 @@ import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+import {Checks} from "../util/Checks";
 
 export type OptionalName<C extends CheckJSON> = Omit<C, "name"> & Partial<Pick<C, "name">>;
 
@@ -113,10 +114,9 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         return this.name === check.name && this.negated !== check.negated && this._equalsArgs(check);
     }
 
-    testForContradictingWithEvents(eventStrings: string[]): boolean {
+    testForContradictingWithEvents(eventStrings: Checks): boolean {
         return eventStrings.some((e) => {
-            const {negated, name, args} = CheckUtility.splitEventString(e);
-            return this.contradicts({name, negated, args});
+            return this.contradicts(e);
         });
     }
 
@@ -233,12 +233,6 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     }
 
     protected abstract _contradicts(that: C): boolean;
-
-    getEventString(): string {
-        const negated = this.negated ? "!" : "";
-        const args = this.args.join(":");
-        return `${negated}${this.name}:${args}`;
-    }
 
     toString(): string {
         const negated = this.negated ? "!" : "";

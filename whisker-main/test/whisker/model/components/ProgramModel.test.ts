@@ -6,6 +6,7 @@ import {ProgramModelEdge} from "../../../../src/whisker/model/components/Program
 import {CoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {ProgramModelJSON} from "../../../../src/whisker/model/util/schema";
+import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 export class MockedModelNode<T extends ModelEdge> extends ModelNode<T> {
     private readonly fn: jest.Mock;
@@ -267,7 +268,7 @@ describe('Program model', () => {
             return edges["1"];
         };
         model.programEndStep = 7;
-        model.testForEvent(t, null, [""]);
+        model.testForEvent(t, null, new Checks());
         expect(fn).toHaveBeenCalledWith(t, null, 2, 7);
         expect(model.currentState).toBe(nodes["n1"]);
     });

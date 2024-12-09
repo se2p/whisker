@@ -3,6 +3,9 @@ import TestDriver from "../../../test/test-driver";
 import {AbstractCheck} from "../checks/AbstractCheck";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
+import {Checks} from "../util/Checks";
+import {Expr} from "../checks/Expr";
+import {Probability} from "../checks/Probability";
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
@@ -51,7 +54,7 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Expr:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: string[]): AbstractCheck[] {
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: Checks): AbstractCheck[] {
         if (this.failedForcedTest) {
             return this.conditions;
         }
@@ -59,11 +62,10 @@ export class ProgramModelEdge extends AbstractEdge {
 
         // look up if this edge has a condition that was triggered
         for (const c of this.conditions) {
-            const eventString = c.getEventString();
-            if (eventStrings.includes(eventString)) {
+            if (eventStrings.includes(c)) {
                 check = true;
                 break;
-            } else if (eventString == "Expr:true" || eventString == "Probability:1") {
+            } else if (c instanceof Expr && c.args[0] === "true" || c instanceof Probability && c.args[0] === 1) {
                 check = this._testEffectsOnEvent(eventStrings);
                 if (check) {
                     break;
@@ -77,8 +79,7 @@ export class ProgramModelEdge extends AbstractEdge {
 
         const failed = [];
         for (const c of this.conditions) {
-            const eventString = c.getEventString();
-            if (!eventStrings.includes(eventString) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
+            if (!eventStrings.includes(c) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
                 failed.push(c);
                 break; // TODO check if this break should be here
             }
@@ -87,11 +88,9 @@ export class ProgramModelEdge extends AbstractEdge {
     }
 
 
-    private _testEffectsOnEvent(eventStrings: string[]): boolean {
+    private _testEffectsOnEvent(eventStrings: Checks): boolean {
         for (const e of this._effects) {
-            const eventString = e.getEventString();
-
-            if (eventStrings.includes(eventString)) {
+            if (eventStrings.includes(e)) {
                 return true;
             }
 

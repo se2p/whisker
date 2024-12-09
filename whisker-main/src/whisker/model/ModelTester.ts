@@ -20,6 +20,7 @@ import {
 import {loadModels} from "./util/loadModels";
 import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./util/schema";
 import {AbstractCheck} from "./checks/AbstractCheck";
+import {Checks} from "./util/Checks";
 
 export class ModelTester extends EventEmitter {
 
@@ -284,7 +285,7 @@ export class ModelTester extends EventEmitter {
         return this._testDriver!.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
 
-    private _onVMEvent(eventStrings: string[]) {
+    private _onVMEvent(eventStrings: Checks) {
         if (this._isRunning) {
             // logger.debug(eventStrings, this.testDriver.getTotalStepsExecuted());
             const models = this._modelStepCallback!.isActive() ? this._programModels : this._onTestEndModels;
