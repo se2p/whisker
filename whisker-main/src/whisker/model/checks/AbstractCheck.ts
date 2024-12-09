@@ -68,6 +68,18 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
         this._check = () => false;
     }
 
+    get name(): J["name"] {
+        return this._checkJSON.name;
+    }
+
+    protected get _negated(): J["negated"] {
+        return this._checkJSON.negated;
+    }
+
+    protected get _args(): J["args"] {
+        return this._checkJSON.args;
+    }
+
     get check(): CheckFun {
         return this._check;
     }
@@ -86,26 +98,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
      */
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun;
 
-    get name(): J["name"] {
-        return this._checkJSON.name;
-    }
-
-    protected get _negated(): J["negated"] {
-        return this._checkJSON.negated;
-    }
-
-    protected get _args(): J["args"] {
-        return this._checkJSON.args;
-    }
-
-    toJSON(): J {
-        return JSON.parse(JSON.stringify(this._checkJSON));
-    }
-
-    private _equalsArgs(that: AbstractCheck): boolean {
-        return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
-    }
-
     equals(that: AbstractCheck): boolean {
         return this.name === that.name && this._negated === that._negated && this._equalsArgs(that);
     }
@@ -114,10 +106,12 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
         return this.name === that.name && this._negated !== that._negated && this._equalsArgs(that);
     }
 
+    private _equalsArgs(that: AbstractCheck): boolean {
+        return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
+    }
+
     testForContradictingWithEvents(checks: Checks): boolean {
-        return checks.some((e) => {
-            return this.contradicts(e);
-        });
+        return checks.some((e) => this.contradicts(e));
     }
 
     /**
@@ -154,5 +148,9 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
         const negated = this._negated ? "!" : "";
         const args = this._args.join(',');
         return `${negated}${this.name}(${args})`;
+    }
+
+    toJSON(): J {
+        return JSON.parse(JSON.stringify(this._checkJSON));
     }
 }
