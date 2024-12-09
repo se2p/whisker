@@ -85,7 +85,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
      */
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun;
 
-    protected get _name(): J["name"] {
+    get name(): J["name"] {
         return this._checkJSON.name;
     }
 
@@ -106,11 +106,11 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
     }
 
     equals(that: AbstractCheck): boolean {
-        return this._name === that._name && this._negated === that._negated && this._equalsArgs(that);
+        return this.name === that.name && this._negated === that._negated && this._equalsArgs(that);
     }
 
     isInvertedOf(that: AbstractCheck): boolean {
-        return this._name === that._name && this._negated !== that._negated && this._equalsArgs(that);
+        return this.name === that.name && this._negated !== that._negated && this._equalsArgs(that);
     }
 
     testForContradictingWithEvents(checks: Checks): boolean {
@@ -136,7 +136,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
      * @param that The other effect.
      */
     contradicts(that: AbstractCheck): boolean {
-        if (this._name !== that._name || this.equals(that)) {
+        if (this.name !== that.name || this.equals(that)) {
             return false;
         }
 
@@ -152,6 +152,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
     toString(): string {
         const negated = this._negated ? "!" : "";
         const args = this._args.join(',');
-        return `${negated}${this._name}(${args})`;
+        return `${negated}${this.name}(${args})`;
     }
 }

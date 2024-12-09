@@ -3,8 +3,6 @@ import TestDriver from "../../../test/test-driver";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
 import {Checks} from "../util/Checks";
-import {Expr} from "../checks/Expr";
-import {Probability} from "../checks/Probability";
 import {Check} from "../checks/newCheck";
 
 /**
@@ -65,7 +63,7 @@ export class ProgramModelEdge extends AbstractEdge {
             if (checks.includes(c)) {
                 check = true;
                 break;
-            } else if (c instanceof Expr && c.code === "true" || c instanceof Probability && c.probability === 1) {
+            } else if (c.name === "Expr" && c.code === "true" || c.name === "Probability" && c.probability === 1) {
                 check = this._testEffectsOnEvent(checks);
                 if (check) {
                     break;
