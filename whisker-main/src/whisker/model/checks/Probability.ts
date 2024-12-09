@@ -33,6 +33,10 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
         super(edgeLabel, {...json, name});
     }
 
+    get probability(): number {
+        return this.args[0];
+    }
+
     protected _validate(checkJSON: ProbabilityJSON): ProbabilityJSON {
         return ProbabilityJSON.parse(checkJSON) as ProbabilityJSON;
     }
@@ -50,7 +54,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
         };
     }
 
-    protected _contradicts(_that: ProbabilityJSON): boolean {
+    protected _contradicts(_that: Probability): boolean {
         return false;
     }
 

@@ -5,7 +5,6 @@ import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {ArgType} from "../util/schema";
 
 const name = "VarComp" as const;
 
@@ -88,7 +87,7 @@ export class VarComp extends AbstractCheck<VarCompJSON> {
         return check;
     }
 
-    protected override _contradicts(that: VarCompJSON): boolean {
+    protected override _contradicts(that: VarComp): boolean {
         const [thisSpriteName, thisVarName] = this.args;
         const [thatSpriteName, thatVarName] = that.args;
 

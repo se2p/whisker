@@ -28,6 +28,10 @@ export class Expr extends AbstractCheck<ExprJSON> {
         this._code = this.args.join("\n");
     }
 
+    get code(): string {
+        return this._code;
+    }
+
     protected _validate(checkJSON: ExprJSON): ExprJSON {
         return ExprJSON.parse(checkJSON) as ExprJSON;
     }
@@ -70,7 +74,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
         return this._code.includes(".sayText");
     }
 
-    protected _contradicts(_that: ExprJSON): boolean {
+    protected _contradicts(_that: Expr): boolean {
         // Expressions are very powerful. While it's possible for two expressions to be contradicting, it's also very
         // difficult to check it here. Thus, we assume that expressions have been crafted not to contradict each other.
         return false;

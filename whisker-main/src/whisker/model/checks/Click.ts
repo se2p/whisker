@@ -50,7 +50,7 @@ export class Click extends AbstractCheck<ClickJSON> {
         };
     }
 
-    protected override _contradicts(that: ClickJSON): boolean {
+    protected override _contradicts(that: Click): boolean {
         const [spriteNameThis] = this.args;
         const [spriteNameThat] = that.args;
         return spriteNameThis !== spriteNameThat; // Cannot click on two different sprites at the same time.

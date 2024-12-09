@@ -4,7 +4,6 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {ArgType} from "../util/schema";
 
 export type NbrOfClonesArgs = [
     /**
@@ -29,7 +28,7 @@ const NbrOfClonesArgs = z.tuple([
     z.coerce.number().nonnegative(),
 ]);
 
-abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClonesJSON> extends AbstractCheck<C> {
+abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClonesJSON = NbrOfClonesJSON | NbrOfVisibleClonesJSON> extends AbstractCheck<C> {
     private readonly _visible: boolean;
 
     protected constructor(edgeLabel: string, json: C) {
@@ -60,7 +59,7 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
     }
 
 
-    protected override _contradicts(that: C): boolean {
+    protected override _contradicts(that: AbstractNbrOfClones): boolean {
         const [thisName, , thisNbr] = this.args;
         const [thatName, , thatNbr] = that.args;
 

@@ -47,7 +47,7 @@ export class Key extends AbstractCheck<KeyJSON> {
         };
     }
 
-    protected _contradicts(_that: KeyJSON): boolean {
+    protected _contradicts(_that: Key): boolean {
         return false; // Multiple keys can be pressed at the same time.
     }
 

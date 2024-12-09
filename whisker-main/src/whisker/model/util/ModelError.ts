@@ -2,6 +2,7 @@
 import {AbstractEdge} from "../components/AbstractEdge";
 import {ArgType} from "./schema";
 import {AbstractCheck} from "../checks/AbstractCheck";
+import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
 
 function getEffectFailedOutput(edge: AbstractEdge, effect: AbstractCheck): string {
     const conditions = edge.conditions;
@@ -9,10 +10,10 @@ function getEffectFailedOutput(edge: AbstractEdge, effect: AbstractCheck): strin
     let containsElapsed: string | null = null;
 
     for (const c of conditions) {
-        if (c.name == "TimeBetween" || c.name == "TimeAfterEnd") {
-            containsAfterTime = c.args[0].toString();
-        } else if (c.name == "TimeElapsed") {
-            containsElapsed = c.args[0].toString();
+        if (c instanceof TimeBetween || c instanceof TimeAfterEnd) {
+            containsAfterTime = c.millis.toString();
+        } else if (c instanceof TimeElapsed) {
+            containsElapsed = c.millis.toString();
         }
     }
 

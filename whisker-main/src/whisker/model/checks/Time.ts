@@ -23,20 +23,23 @@ const ITimeJSON = ICheckJSON.extend({
     args: TimeArgs,
 });
 
-abstract class AbstractTime<C extends TimeAfterEndJSON | TimeElapsedJSON | TimeBetweenJSON> extends AbstractCheck<C> {
+abstract class AbstractTime<C extends TimeAfterEndJSON | TimeElapsedJSON | TimeBetweenJSON = TimeAfterEndJSON | TimeElapsedJSON | TimeBetweenJSON> extends AbstractCheck<C> {
     protected readonly _steps: number;
 
     protected constructor(edgeLabel: string, json: C) {
         super(edgeLabel, json);
     }
 
+    public get millis(): number {
+        return this.args[0];
+    }
+
     protected _convertFromTimeToSteps(t): number {
-        const [timeInMs] = this.args;
-        const time = ModelUtil.testNumber(timeInMs);
+        const time = ModelUtil.testNumber(this.millis);
         return t.vmWrapper.convertFromTimeToSteps(time);
     }
 
-    protected override _contradicts(_that: C): boolean {
+    protected override _contradicts(_that: AbstractTime): boolean {
         return false; // Time is not mutually exclusive.
     }
 

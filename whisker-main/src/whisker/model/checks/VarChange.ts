@@ -85,7 +85,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
         return check;
     }
 
-    protected override _contradicts(that: VarChangeJSON): boolean {
+    protected override _contradicts(that: VarChange): boolean {
         const [spriteNameThis, varNameThis] = this.args;
         const [spriteNameThat, varNameThat] = that.args;
 
@@ -100,7 +100,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
         return this._checkChange(that);
     }
 
-    private _checkChange(that: VarChangeJSON): boolean {
+    private _checkChange(that: VarChange): boolean {
         let change1 = this.args[2];
         let change2 = that.args[2];
         let negated1 = this.negated;

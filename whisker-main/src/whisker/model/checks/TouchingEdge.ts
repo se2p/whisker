@@ -15,7 +15,7 @@ const TouchingEdgeArgs = z.tuple([
     SpriteName,
 ]);
 
-abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON> extends AbstractCheck<C> {
+abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON = TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON> extends AbstractCheck<C> {
     protected constructor(edgeLabel: string, json: C) {
         super(edgeLabel, json);
     }
@@ -44,7 +44,7 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
 
     protected abstract _getCheck(): (sprite: Sprite) => boolean;
 
-    protected override _contradicts(_that: C): boolean {
+    protected override _contradicts(_that: AbstractTouchingEdge): boolean {
         return false;
     }
 

@@ -123,7 +123,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
         return this.args[1] === "sayText";
     }
 
-    protected override _contradicts(that: AttrChangeJSON): boolean {
+    protected override _contradicts(that: AttrChange): boolean {
         const [spriteNameThis, attrNameThis] = this.args;
         const [spriteNameThat, attrNameThat] = that.args;
 
@@ -138,7 +138,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
         return this._checkChange(that);
     }
 
-    private _checkChange(that: AttrChangeJSON): boolean {
+    private _checkChange(that: AttrChange): boolean {
         let change1 = this.args[2];
         let change2 = that.args[2];
         let negated1 = this.negated;

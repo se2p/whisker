@@ -73,7 +73,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
         };
     }
 
-    protected _contradicts(_that: SpriteTouchingJSON): boolean {
+    protected _contradicts(_that: SpriteTouching): boolean {
         return false; // Any combination of 4 sprites may touch each other at the same time.
     }
 

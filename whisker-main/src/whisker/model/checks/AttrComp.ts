@@ -145,7 +145,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
         return this.args[1] === "sayText";
     }
 
-    protected override _contradicts(that: AttrCompJSON): boolean {
+    protected override _contradicts(that: AttrComp): boolean {
         const [thisSpriteName, thisAttrName] = this.args;
         const [thatSpriteName, thatAttrName] = that.args;
 

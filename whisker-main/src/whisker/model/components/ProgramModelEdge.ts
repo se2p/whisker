@@ -65,7 +65,7 @@ export class ProgramModelEdge extends AbstractEdge {
             if (checks.includes(c)) {
                 check = true;
                 break;
-            } else if (c instanceof Expr && c.args[0] === "true" || c instanceof Probability && c.args[0] === 1) {
+            } else if (c instanceof Expr && c.code === "true" || c instanceof Probability && c.probability === 1) {
                 check = this._testEffectsOnEvent(checks);
                 if (check) {
                     break;

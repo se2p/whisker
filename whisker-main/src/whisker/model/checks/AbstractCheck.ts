@@ -3,7 +3,6 @@ import {CheckUtility} from "../util/CheckUtility";
 import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
-import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {Checks} from "../util/Checks";
 
 export type OptionalName<C extends CheckJSON> = Omit<C, "name"> & Partial<Pick<C, "name">>;
@@ -86,15 +85,15 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      */
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): Check;
 
-    get name(): C["name"] {
+    public get name(): C["name"] {
         return this._checkJSON.name;
     }
 
-    get args(): C["args"] {
+    public get args(): C["args"] {
         return this._checkJSON.args;
     }
 
-    get negated(): C["negated"] {
+    public get negated(): C["negated"] {
         return this._checkJSON.negated;
     }
 
@@ -102,15 +101,15 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         return JSON.parse(JSON.stringify(this._checkJSON));
     }
 
-    private _equalsArgs(that: ICheckJSON): boolean {
+    private _equalsArgs(that: AbstractCheck): boolean {
         return this.args.length === that.args.length && this.args.every((val, index) => val === that.args[index]);
     }
 
-    equals(check: ICheckJSON): boolean {
+    equals(check: AbstractCheck): boolean {
         return this.name === check.name && this.negated === check.negated && this._equalsArgs(check);
     }
 
-    isInvertedOf(check: ICheckJSON): boolean {
+    isInvertedOf(check: AbstractCheck): boolean {
         return this.name === check.name && this.negated !== check.negated && this._equalsArgs(check);
     }
 
@@ -136,7 +135,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * Whether this effect contradicts another effect check.
      * @param that The other effect.
      */
-    contradicts(that: ICheckJSON): boolean {
+    contradicts(that: AbstractCheck): boolean {
         if (this.name !== that.name || this.equals(that)) {
             return false;
         }
@@ -145,10 +144,10 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
             return true;
         }
 
-        return this._contradicts(this._validate(that as C));
+        return this._contradicts(that);
     }
 
-    protected abstract _contradicts(that: C): boolean;
+    protected abstract _contradicts(that: AbstractCheck): boolean;
 
     toString(): string {
         const negated = this.negated ? "!" : "";

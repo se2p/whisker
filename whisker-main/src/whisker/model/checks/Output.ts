@@ -83,7 +83,7 @@ export class Output extends AbstractCheck<OutputJSON> {
         return true;
     }
 
-    protected override _contradicts(that: OutputJSON): boolean {
+    protected override _contradicts(that: Output): boolean {
         const [spriteThis, outputThis] = this.args;
         const [spriteThat, outputThat] = that.args;
 
