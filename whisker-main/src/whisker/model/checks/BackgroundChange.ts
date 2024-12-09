@@ -41,8 +41,8 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
-        const [newBackground] = this.args;
-        const negated = this.negated;
+        const [newBackground] = this._args;
+        const negated = this._negated;
 
         // without movement
         return () => {
@@ -60,8 +60,8 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
     }
 
     protected override _contradicts(that: BackgroundChange): boolean {
-        const [thisCostume] = this.args;
-        const [thatCostume] = that.args;
+        const [thisCostume] = this._args;
+        const [thatCostume] = that._args;
         return thisCostume !== thatCostume; // Cannot change to two different costumes at the same time.
     }
 

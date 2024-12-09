@@ -25,7 +25,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
 
     constructor(edgeLabel: string, json: OptionalName<ExprJSON>) {
         super(edgeLabel, {...json, name});
-        this._code = this.args.join("\n");
+        this._code = this._args.join("\n");
     }
 
     get code(): string {
@@ -44,7 +44,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
         const e = ModelUtil.getExpressionForEval(t, this._code);
-        const check: () => boolean = () => !this.negated == ModelUtil.evaluateExpression(t, e.expr);
+        const check: () => boolean = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {

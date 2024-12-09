@@ -50,7 +50,7 @@ export type Check = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) 
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
  */
-export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements ICheckJSON {
+export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: C;
     private _check: Check;
@@ -85,15 +85,15 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      */
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): Check;
 
-    public get name(): C["name"] {
+    protected get _name(): C["name"] {
         return this._checkJSON.name;
     }
 
-    public get args(): C["args"] {
+    protected get _args(): C["args"] {
         return this._checkJSON.args;
     }
 
-    public get negated(): C["negated"] {
+    protected get _negated(): C["negated"] {
         return this._checkJSON.negated;
     }
 
@@ -102,15 +102,15 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     }
 
     private _equalsArgs(that: AbstractCheck): boolean {
-        return this.args.length === that.args.length && this.args.every((val, index) => val === that.args[index]);
+        return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
     }
 
     equals(check: AbstractCheck): boolean {
-        return this.name === check.name && this.negated === check.negated && this._equalsArgs(check);
+        return this._name === check._name && this._negated === check._negated && this._equalsArgs(check);
     }
 
     isInvertedOf(check: AbstractCheck): boolean {
-        return this.name === check.name && this.negated !== check.negated && this._equalsArgs(check);
+        return this._name === check._name && this._negated !== check._negated && this._equalsArgs(check);
     }
 
     testForContradictingWithEvents(checks: Checks): boolean {
@@ -136,7 +136,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * @param that The other effect.
      */
     contradicts(that: AbstractCheck): boolean {
-        if (this.name !== that.name || this.equals(that)) {
+        if (this._name !== that._name || this.equals(that)) {
             return false;
         }
 
@@ -150,8 +150,8 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
     protected abstract _contradicts(that: AbstractCheck): boolean;
 
     toString(): string {
-        const negated = this.negated ? "!" : "";
-        const args = this.args.join(',');
-        return `${negated}${this.name}(${args})`;
+        const negated = this._negated ? "!" : "";
+        const args = this._args.join(',');
+        return `${negated}${this._name}(${args})`;
     }
 }

@@ -59,8 +59,8 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName, varName, change] = this.args;
-        const negated = this.negated;
+        const [pSpriteName, varName, change] = this._args;
+        const negated = this._negated;
         const edgeLabel = this._edgeLabel;
 
         let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
@@ -86,8 +86,8 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
     }
 
     protected override _contradicts(that: VarChange): boolean {
-        const [spriteNameThis, varNameThis] = this.args;
-        const [spriteNameThat, varNameThat] = that.args;
+        const [spriteNameThis, varNameThis] = this._args;
+        const [spriteNameThat, varNameThat] = that._args;
 
         if (spriteNameThis !== spriteNameThat) {
             return false;
@@ -101,15 +101,15 @@ export class VarChange extends AbstractCheck<VarChangeJSON> {
     }
 
     private _checkChange(that: VarChange): boolean {
-        let change1 = this.args[2];
-        let change2 = that.args[2];
-        let negated1 = this.negated;
-        let negated2 = that.negated;
+        let change1 = this._args[2];
+        let change2 = that._args[2];
+        let negated1 = this._negated;
+        let negated2 = that._negated;
 
         if (change1.length == 2 && change2.length == 2) {
             // += & +=, -= & -= are not getting until here, caught before call to checkChange
             // += & -=, -= & += only tested here
-            return this.negated == that.negated;
+            return this._negated == that._negated;
         }
 
         if (change1.length == 2) {

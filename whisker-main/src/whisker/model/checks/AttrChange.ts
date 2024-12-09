@@ -60,8 +60,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
         // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, change] = this.args;
-        const negated = this.negated;
+        let [pSpriteName, attrName, change] = this._args;
+        const negated = this._negated;
 
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
@@ -98,10 +98,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     }
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this.args;
+        const [pSpriteName, attrName, change] = this._args;
         cu.registerOnMoveEvent(spriteName, this, this._edgeLabel, graphID, (sprite) => {
             try {
-                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -109,10 +109,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     }
 
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this.args;
+        const [pSpriteName, attrName, change] = this._args;
         cu.registerOnVisualChange(spriteName, this, this._edgeLabel, graphID, (sprite) => {
             try {
-                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -120,12 +120,12 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     }
 
     override get dependsOnSayText(): boolean {
-        return this.args[1] === "sayText";
+        return this._args[1] === "sayText";
     }
 
     protected override _contradicts(that: AttrChange): boolean {
-        const [spriteNameThis, attrNameThis] = this.args;
-        const [spriteNameThat, attrNameThat] = that.args;
+        const [spriteNameThis, attrNameThis] = this._args;
+        const [spriteNameThat, attrNameThat] = that._args;
 
         if (spriteNameThis !== spriteNameThat) {
             return false;
@@ -139,15 +139,15 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
     }
 
     private _checkChange(that: AttrChange): boolean {
-        let change1 = this.args[2];
-        let change2 = that.args[2];
-        let negated1 = this.negated;
-        let negated2 = that.negated;
+        let change1 = this._args[2];
+        let change2 = that._args[2];
+        let negated1 = this._negated;
+        let negated2 = that._negated;
 
         if (change1.length == 2 && change2.length == 2) {
             // += & +=, -= & -= are not getting until here, caught before call to checkChange
             // += & -=, -= & += only tested here
-            return this.negated == that.negated;
+            return this._negated == that._negated;
         }
 
         if (change1.length == 2) {

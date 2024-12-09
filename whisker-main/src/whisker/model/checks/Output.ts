@@ -49,8 +49,8 @@ export class Output extends AbstractCheck<OutputJSON> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName, output] = this.args;
-        const negated = this.negated;
+        const [pSpriteName, output] = this._args;
+        const negated = this._negated;
         const edgeLabel = this._edgeLabel;
 
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
@@ -84,8 +84,8 @@ export class Output extends AbstractCheck<OutputJSON> {
     }
 
     protected override _contradicts(that: Output): boolean {
-        const [spriteThis, outputThis] = this.args;
-        const [spriteThat, outputThat] = that.args;
+        const [spriteThis, outputThis] = this._args;
+        const [spriteThat, outputThat] = that._args;
 
         if (spriteThis !== spriteThat) {
             return false;

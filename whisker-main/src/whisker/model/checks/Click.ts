@@ -41,18 +41,18 @@ export class Click extends AbstractCheck<ClickJSON> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
-        const [pSpriteName] = this.args;
+        const [pSpriteName] = this._args;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anyTouchingMouse = sprites.some((s: Sprite) => s.visible && t.isMouseDown() && s.isTouchingMouse());
-            return !this.negated == anyTouchingMouse;
+            return !this._negated == anyTouchingMouse;
         };
     }
 
     protected override _contradicts(that: Click): boolean {
-        const [spriteNameThis] = this.args;
-        const [spriteNameThat] = that.args;
+        const [spriteNameThis] = this._args;
+        const [spriteNameThat] = that._args;
         return spriteNameThis !== spriteNameThat; // Cannot click on two different sprites at the same time.
     }
 

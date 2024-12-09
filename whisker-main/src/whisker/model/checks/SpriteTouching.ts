@@ -51,8 +51,8 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
 
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName1, pSpriteName2] = this.args;
-        const negated = this.negated;
+        const [pSpriteName1, pSpriteName2] = this._args;
+        const negated = this._negated;
         const edgeLabel = this._edgeLabel;
 
         const spriteName1 = ModelUtil.checkSpriteExistence(t, pSpriteName1).name;

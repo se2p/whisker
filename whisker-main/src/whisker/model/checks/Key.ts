@@ -40,8 +40,8 @@ export class Key extends AbstractCheck<KeyJSON> {
      * @param cu Listener for the checks.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): Check {
-        const [key] = this.args;
-        const negated = this.negated;
+        const [key] = this._args;
+        const negated = this._negated;
         return () => {
             return !negated == cu.isKeyDown(key);
         };

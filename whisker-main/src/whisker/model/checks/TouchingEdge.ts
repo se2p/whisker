@@ -27,8 +27,8 @@ abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEd
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName] = this.args;
-        const negated = this.negated;
+        const [pSpriteName] = this._args;
+        const negated = this._negated;
         const edgeLabel = this._edgeLabel;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const check = this._getCheck();

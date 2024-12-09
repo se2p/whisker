@@ -41,8 +41,8 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): Check {
-        const [pSpriteName, comparison, nbr] = this.args;
-        const negated = this.negated;
+        const [pSpriteName, comparison, nbr] = this._args;
+        const negated = this._negated;
 
         const toCheckNbr = ModelUtil.testNumber(nbr);
         const sprite = ModelUtil.checkSpriteExistence(t, pSpriteName);
@@ -60,21 +60,21 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
 
 
     protected override _contradicts(that: AbstractNbrOfClones): boolean {
-        const [thisName, , thisNbr] = this.args;
-        const [thatName, , thatNbr] = that.args;
+        const [thisName, , thisNbr] = this._args;
+        const [thatName, , thatNbr] = that._args;
 
         if (thisName !== thatName) {
             return false;
         }
 
-        let thisComp = this.args[1];
-        let thatComp = that.args[1];
+        let thisComp = this._args[1];
+        let thatComp = that._args[1];
 
-        if (this.negated) {
+        if (this._negated) {
             thisComp = this._getInvertedCompOp(thisComp);
         }
 
-        if (that.negated) {
+        if (that._negated) {
             thatComp = this._getInvertedCompOp(thatComp);
         }
 

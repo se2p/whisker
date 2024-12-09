@@ -34,7 +34,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
     }
 
     get probability(): number {
-        return this.args[0];
+        return this._args[0];
     }
 
     protected _validate(checkJSON: ProbabilityJSON): ProbabilityJSON {
@@ -46,8 +46,8 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
-        const [probability] = this.args;
-        const negated = this.negated;
+        const [probability] = this._args;
+        const negated = this._negated;
         const prob = ModelUtil.testNumber(probability);
         return () => {
             return !negated == (Randomness.getInstance().nextDouble() <= prob);

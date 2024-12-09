@@ -67,9 +67,9 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
         // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, comparison, attrValue] = this.args;
+        let [pSpriteName, attrName, comparison, attrValue] = this._args;
         const edgeLabel = this._edgeLabel;
-        const negated = this.negated;
+        const negated = this._negated;
 
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
@@ -142,12 +142,12 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     }
 
     override get dependsOnSayText(): boolean {
-        return this.args[1] === "sayText";
+        return this._args[1] === "sayText";
     }
 
     protected override _contradicts(that: AttrComp): boolean {
-        const [thisSpriteName, thisAttrName] = this.args;
-        const [thatSpriteName, thatAttrName] = that.args;
+        const [thisSpriteName, thisAttrName] = this._args;
+        const [thatSpriteName, thatAttrName] = that._args;
 
         if (thisSpriteName !== thatSpriteName) {
             return false;
@@ -157,18 +157,18 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
             return false;
         }
 
-        let thisComp = this.args[2];
-        let thatComp = that.args[2];
+        let thisComp = this._args[2];
+        let thatComp = that._args[2];
 
-        if (this.negated) {
+        if (this._negated) {
             thisComp = this._getInvertedCompOp(thisComp);
         }
 
-        if (that.negated) {
+        if (that._negated) {
             thatComp = this._getInvertedCompOp(thatComp);
         }
 
-        return this._checkComparison(thisComp, thatComp, this.args[3], that.args[3]);
+        return this._checkComparison(thisComp, thatComp, this._args[3], that._args[3]);
     }
 
     private _getInvertedCompOp(comp: Comparison): Comparison {

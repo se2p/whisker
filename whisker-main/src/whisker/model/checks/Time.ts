@@ -31,7 +31,7 @@ abstract class AbstractTime<C extends TimeAfterEndJSON | TimeElapsedJSON | TimeB
     }
 
     public get millis(): number {
-        return this.args[0];
+        return this._args[0];
     }
 
     protected _convertFromTimeToSteps(t): number {
@@ -74,7 +74,7 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON> {
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
         const steps = this._convertFromTimeToSteps(t);
         return (_, stepsSinceEnd) => {
-            return !this.negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
+            return !this._negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
         };
     }
 }
@@ -105,7 +105,7 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON> {
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
         const steps = this._convertFromTimeToSteps(t);
         return (stepsSinceLastTransition) => {
-            return !this.negated == (steps <= stepsSinceLastTransition);
+            return !this._negated == (steps <= stepsSinceLastTransition);
         };
     }
 }
@@ -136,7 +136,7 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON> {
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
         const steps = this._convertFromTimeToSteps(t);
         return () => {
-            return !this.negated == (steps <= t.getTotalStepsExecuted());
+            return !this._negated == (steps <= t.getTotalStepsExecuted());
         };
     }
 }
