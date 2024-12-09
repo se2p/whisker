@@ -113,7 +113,7 @@ export abstract class AbstractEdge {
         return failedConditions;
     }
 
-    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: Checks): AbstractCheck[];
+    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): AbstractCheck[];
 
     set lastTransition(transition: number) {
         this._lastTransition = transition;

@@ -58,7 +58,7 @@ export class UserModelEdge extends AbstractEdge {
         });
     }
 
-    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _eventStrings: Checks): AbstractCheck[] {
+    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _checks: Checks): AbstractCheck[] {
         return this.conditions;
     }
 

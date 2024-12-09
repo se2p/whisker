@@ -248,12 +248,12 @@ describe('Model edges', () => {
             edge.addCondition(new BackgroundChange(label, {negated: false, args: ["test"]}));
             edge.addCondition(new Key(label, {negated: false, args: ["a"]}));
             edge.addCondition(new SpriteTouching(label, {negated: false, args: ["apple", "bowl"]}));
-            const eventStrings = [
+            const checks = [
                 new BackgroundChange(edge.label, {negated: false, args: ["differentArg"]}),
                 new Key(edge.label, {negated: false, args: ["w"]}),
                 new Expr(edge.label, {negated: false, args: ["false"]}),
             ];
-            const result = edge.checkConditionsOnEvent(5, 7, new Checks(eventStrings));
+            const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
             expect(result).toBe(edge.conditions);
         });
 
@@ -270,13 +270,13 @@ describe('Model edges', () => {
             edge.addCondition(new BackgroundChange(label, {negated: false, args: ["newBackground"]}));
             edge.addCondition(new Key(label, {negated: false, args: ["d"]}));
             edge.addCondition(new SpriteTouching(label, {negated: false, args: ["banana", "bowl"]}));
-            const eventStrings = [
+            const checks = [
                 new BackgroundChange(edge.label, {negated: false, args: ["test"]}),
                 new Key(edge.label, {negated: false, args: ["d"]}),
                 new Expr(edge.label, {negated: false, args: ["true"]})
             ];
             edge.registerComponents(cu, tdMock.getTestDriver());
-            const result = edge.checkConditionsOnEvent(5, 7, new Checks(eventStrings));
+            const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
             expect(result).toStrictEqual([edge.conditions[0]]);
         });
 
@@ -288,12 +288,12 @@ describe('Model edges', () => {
             edge.addCondition(new Key(label, {negated: false, args: ["a"]}));
             edge.addCondition(new Expr(label, {negated: false, args: ["true"]}));
             edge.addEffect(new SpriteTouching(label, {negated: false, args: ["apple", "bowl"]}));
-            const eventStrings = [
+            const checks = [
                 new BackgroundChange(edge.label, {negated: false, args: ["stage"]}),
                 new Key(edge.label, {negated: false, args: ["d"]}),
             ];
             edge.registerComponents(cu, tdMock.getTestDriver());
-            const result = edge.checkConditionsOnEvent(5, 7, new Checks(eventStrings));
+            const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
             expect(result).toStrictEqual(edge.conditions);
         });
     });

@@ -114,8 +114,8 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
         return this.name === check.name && this.negated !== check.negated && this._equalsArgs(check);
     }
 
-    testForContradictingWithEvents(eventStrings: Checks): boolean {
-        return eventStrings.some((e) => {
+    testForContradictingWithEvents(checks: Checks): boolean {
+        return checks.some((e) => {
             return this.contradicts(e);
         });
     }

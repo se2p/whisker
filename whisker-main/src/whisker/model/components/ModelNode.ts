@@ -73,9 +73,9 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
      * Check the edges for a transition based on fired events.
      */
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                 eventStrings: Checks): E | null {
+                 checks: Checks): E | null {
         for (const e of this.edges) {
-            const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, eventStrings);
+            const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks);
 
             if (result && result.length == 0) {
                 e.lastTransition = t.getTotalStepsExecuted() + 1;

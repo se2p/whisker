@@ -54,7 +54,7 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Expr:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, eventStrings: Checks): AbstractCheck[] {
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): AbstractCheck[] {
         if (this.failedForcedTest) {
             return this.conditions;
         }
@@ -62,11 +62,11 @@ export class ProgramModelEdge extends AbstractEdge {
 
         // look up if this edge has a condition that was triggered
         for (const c of this.conditions) {
-            if (eventStrings.includes(c)) {
+            if (checks.includes(c)) {
                 check = true;
                 break;
             } else if (c instanceof Expr && c.args[0] === "true" || c instanceof Probability && c.args[0] === 1) {
-                check = this._testEffectsOnEvent(eventStrings);
+                check = this._testEffectsOnEvent(checks);
                 if (check) {
                     break;
                 }
@@ -79,7 +79,7 @@ export class ProgramModelEdge extends AbstractEdge {
 
         const failed = [];
         for (const c of this.conditions) {
-            if (!eventStrings.includes(c) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
+            if (!checks.includes(c) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
                 failed.push(c);
                 break; // TODO check if this break should be here
             }
@@ -88,13 +88,13 @@ export class ProgramModelEdge extends AbstractEdge {
     }
 
 
-    private _testEffectsOnEvent(eventStrings: Checks): boolean {
+    private _testEffectsOnEvent(checks: Checks): boolean {
         for (const e of this._effects) {
-            if (eventStrings.includes(e)) {
+            if (checks.includes(e)) {
                 return true;
             }
 
-            if (e.testForContradictingWithEvents(eventStrings)) {
+            if (e.testForContradictingWithEvents(checks)) {
                 // tests whether an event contradicting an effect (of a true condition edge) is there
                 return true;
             }
