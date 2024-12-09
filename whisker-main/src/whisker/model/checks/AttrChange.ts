@@ -10,7 +10,7 @@ export type AttrChangeArgs = [
     /**
      * The name of the sprite whose attribute is evaluated
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 
     /**
      * Name of the attribute.

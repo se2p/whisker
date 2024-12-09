@@ -10,12 +10,12 @@ export type SpriteTouchingArgs = [
     /**
      * The name of the first sprite.
      */
-    pSpriteName1: SpriteName,
+    spriteName1: SpriteName,
 
     /**
      * The name of the second sprite.
      */
-    pSpriteName2: SpriteName,
+    spriteName2: SpriteName,
 ];
 
 const SpriteTouchingArgs = z.tuple([

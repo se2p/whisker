@@ -10,7 +10,7 @@ export type ClickArgs = [
     /**
      * The name of the sprite.
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 ];
 
 const ClickArgs = z.tuple([

@@ -8,7 +8,7 @@ export type TouchingEdgeArgs = [
     /**
      * The sprite name.
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 ];
 
 const TouchingEdgeArgs = z.tuple([

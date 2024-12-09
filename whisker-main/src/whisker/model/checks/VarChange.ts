@@ -12,7 +12,7 @@ export type VarChangeArgs = [
     /**
      * The name of the sprite whose variable is evaluated
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 
     /**
      * The name of the variable.

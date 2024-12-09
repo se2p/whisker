@@ -9,7 +9,7 @@ export type NbrOfClonesArgs = [
     /**
      * The sprite name.
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 
     /**
      * Mode of comparison, e.g. =, <, >, <=, >=

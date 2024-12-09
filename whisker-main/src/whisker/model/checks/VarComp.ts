@@ -12,7 +12,7 @@ export type VarCompArgs = [
     /**
      * The name of the sprite whose variable is being evaluated
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 
     /**
      * The name of the variable.

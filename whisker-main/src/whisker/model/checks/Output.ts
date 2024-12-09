@@ -10,7 +10,7 @@ export type OutputArgs = [
     /**
      * The name of the sprite.
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 
     /**
      * Output to say.
