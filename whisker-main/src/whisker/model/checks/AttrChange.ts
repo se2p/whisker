@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
@@ -58,7 +58,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON> {
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun {
         // eslint-disable-next-line prefer-const
         let [pSpriteName, attrName, change] = this._args;
         const negated = this._negated;

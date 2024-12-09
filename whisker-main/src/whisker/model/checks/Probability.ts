@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {Randomness} from "../../utils/Randomness";
 import {z} from "zod";
@@ -45,7 +45,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON> {
      * Get a method that checks whether a random number is greater than the probability given. For randomness...
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun {
         const [probability] = this._args;
         const negated = this._negated;
         const prob = ModelUtil.testNumber(probability);

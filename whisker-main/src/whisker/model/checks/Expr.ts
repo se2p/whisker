@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -42,7 +42,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
      * @param cu Listener for checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun {
         const e = ModelUtil.getExpressionForEval(t, this._code);
         const check: () => boolean = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, graphID, e, check);

@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
@@ -50,7 +50,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
      * @param graphID ID of the parent graph of the check.
 
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun {
         const [pSpriteName1, pSpriteName2] = this._args;
         const negated = this._negated;
         const edgeLabel = this._edgeLabel;

@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 
@@ -39,7 +39,7 @@ export class Key extends AbstractCheck<KeyJSON> {
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): CheckFun {
         const [key] = this._args;
         const negated = this._negated;
         return () => {

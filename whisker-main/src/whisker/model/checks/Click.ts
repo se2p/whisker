@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -40,7 +40,7 @@ export class Click extends AbstractCheck<ClickJSON> {
      * Get a method for checking whether a sprite was clicked.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun {
         const [pSpriteName] = this._args;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {

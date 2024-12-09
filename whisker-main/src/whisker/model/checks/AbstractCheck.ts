@@ -44,7 +44,7 @@ export const ICheckJSON = z.object({
  * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
  * @param stepsSinceEnd Number of steps since the after run model tests started.
  */
-export type Check = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => boolean;
+export type CheckFun = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => boolean;
 
 /**
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
@@ -53,7 +53,7 @@ export type Check = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) 
 export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: C;
-    private _check: Check;
+    private _check: CheckFun;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -67,7 +67,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
         this._check = () => false;
     }
 
-    get check(): Check {
+    get check(): CheckFun {
         return this._check;
     }
 
@@ -83,7 +83,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
      * @param cu Instance of the check utility for listening and checking more complex events.
      * @param graphID ID of the parent graph of the check.
      */
-    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): Check;
+    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun;
 
     protected get _name(): C["name"] {
         return this._checkJSON.name;

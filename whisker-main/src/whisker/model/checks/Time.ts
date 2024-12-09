@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 
@@ -71,7 +71,7 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON> {
      * Get a method that checks whether enough time has elapsed since the program ended.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun {
         const steps = this._convertFromTimeToSteps(t);
         return (_, stepsSinceEnd) => {
             return !this._negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
@@ -102,7 +102,7 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON> {
      * Get a method that checks whether enough time has elapsed since the last edge transition in the current model.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun {
         const steps = this._convertFromTimeToSteps(t);
         return (stepsSinceLastTransition) => {
             return !this._negated == (steps <= stepsSinceLastTransition);
@@ -133,7 +133,7 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON> {
      * Get a method that checks whether enough time has elapsed since the test runner started the test.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun {
         const steps = this._convertFromTimeToSteps(t);
         return () => {
             return !this._negated == (steps <= t.getTotalStepsExecuted());

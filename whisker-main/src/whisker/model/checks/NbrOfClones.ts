@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, Comparison, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, Comparison, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -40,7 +40,7 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
      * Get a method to check how many clones of a sprite are there.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): CheckFun {
         const [pSpriteName, comparison, nbr] = this._args;
         const negated = this._negated;
 

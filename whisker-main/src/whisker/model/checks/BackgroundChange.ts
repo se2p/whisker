@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, ICheckJSON, OptionalName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {z} from "zod";
@@ -40,7 +40,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON> {
      * Get a method checking whether the background of the stage changed.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun {
         const [newBackground] = this._args;
         const negated = this._negated;
 
