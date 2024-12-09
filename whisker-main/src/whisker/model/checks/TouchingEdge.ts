@@ -21,7 +21,16 @@ type TTouchingEdgeJSON =
     | TouchingVerticalEdgeJSON
     ;
 
-abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends AbstractCheck<J> {
+type TTouchingEdge =
+    | TouchingEdge
+    | TouchingHorizEdge
+    | TouchingVerticalEdge
+    ;
+
+abstract class AbstractTouchingEdge<
+    J extends TTouchingEdgeJSON = TTouchingEdgeJSON,
+    C extends TTouchingEdge = TTouchingEdge,
+> extends AbstractCheck<J> {
     protected constructor(edgeLabel: string, json: J) {
         super(edgeLabel, json);
     }
@@ -38,7 +47,7 @@ abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJ
         const edgeLabel = this._edgeLabel;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const check = this._getCheck();
-        cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, this._self(), edgeLabel, graphID, (sprite) => {
             return !negated == check(sprite);
         });
         return () => {
@@ -47,6 +56,8 @@ abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJ
             return !negated == anyTouchingEdge;
         };
     }
+
+    protected abstract _self(): C;
 
     protected abstract _getCheck(): (sprite: Sprite) => boolean;
 
@@ -71,7 +82,7 @@ export const TouchingEdgeJSON = ICheckJSON.extend({
     args: TouchingEdgeArgs,
 });
 
-export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
+export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON, TouchingEdge> {
     constructor(edgeLabel: string, json: OptionalName<TouchingEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingEdgeName});
     }
@@ -82,6 +93,10 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
 
     protected _getCheck(): (sprite: Sprite) => boolean {
         return (sprite: Sprite) => sprite.visible && sprite.isTouchingEdge();
+    }
+
+    protected _self(): TouchingEdge {
+        return this;
     }
 }
 
@@ -98,7 +113,7 @@ export const TouchingHorizEdgeJSON = ICheckJSON.extend({
 });
 
 
-export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON> {
+export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON, TouchingHorizEdge> {
     constructor(edgeLabel: string, json: OptionalName<TouchingHorizEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingHorizEdgeName});
     }
@@ -109,6 +124,10 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
 
     protected _getCheck(): (sprite: Sprite) => boolean {
         return (sprite: Sprite) => sprite.visible && sprite.isTouchingHorizEdge();
+    }
+
+    protected _self(): TouchingHorizEdge {
+        return this;
     }
 }
 
@@ -124,7 +143,7 @@ export const TouchingVerticalEdgeJSON = ICheckJSON.extend({
     args: TouchingEdgeArgs,
 });
 
-export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON> {
+export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON, TouchingVerticalEdge> {
     constructor(edgeLabel: string, json: OptionalName<TouchingVerticalEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingVerticalEdgeName});
     }
@@ -135,5 +154,9 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
 
     protected _getCheck(): (sprite: Sprite) => boolean {
         return (sprite: Sprite) => sprite.visible && sprite.isTouchingVerticalEdge();
+    }
+
+    protected _self(): TouchingVerticalEdge {
+        return this;
     }
 }

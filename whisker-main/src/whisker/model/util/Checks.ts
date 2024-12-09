@@ -1,17 +1,17 @@
-import {AbstractCheck} from "../checks/AbstractCheck";
+import {Check} from "../checks/newCheck";
 
 export class Checks {
-    private readonly _checks: AbstractCheck[] = [];
+    private readonly _checks: Check[] = [];
 
-    constructor(checks: readonly AbstractCheck[] = []) {
+    constructor(checks: readonly Check[] = []) {
         this.push(...checks);
     }
 
-    public push(...checks: readonly AbstractCheck[]): void {
+    public push(...checks: readonly Check[]): void {
         this._checks.push(...checks);
     }
 
-    includes(check: AbstractCheck): boolean {
+    includes(check: Check): boolean {
         return this._checks.some((c) => c.equals(check));
     }
 
@@ -19,7 +19,7 @@ export class Checks {
         return this._checks.length;
     }
 
-    public some(predicate: (check: AbstractCheck) => boolean): boolean {
+    public some(predicate: (check: Check) => boolean): boolean {
         return this._checks.some((check) => predicate(check));
     }
 }

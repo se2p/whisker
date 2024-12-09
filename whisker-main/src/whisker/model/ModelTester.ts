@@ -19,8 +19,8 @@ import {
 } from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./util/schema";
-import {AbstractCheck} from "./checks/AbstractCheck";
 import {Checks} from "./util/Checks";
+import {Check} from "./checks/newCheck";
 
 export class ModelTester extends EventEmitter {
 
@@ -408,7 +408,7 @@ export class ModelTester extends EventEmitter {
         return coverage;
     }
 
-    private _printContradictingEffects(contradictingEffects: AbstractCheck[]): void {
+    private _printContradictingEffects(contradictingEffects: Check[]): void {
         let output = "Model had to check contradicting effects! Skipping these.";
         contradictingEffects.forEach(effect => {
             output += "\n -- " + effect.toString();

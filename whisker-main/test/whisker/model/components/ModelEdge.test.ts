@@ -5,12 +5,12 @@ import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ProgramModelEdgeJSON, UserModelEdgeJSON} from "../../../../src/whisker/model/util/schema";
-import {AbstractCheck} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {BackgroundChange} from "../../../../src/whisker/model/checks/BackgroundChange";
 import {Key} from "../../../../src/whisker/model/checks/Key";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
+import {Check} from "../../../../src/whisker/model/checks/newCheck";
 
 describe('Model edges', () => {
     const id = "id";
@@ -19,26 +19,26 @@ describe('Model edges', () => {
     const from = "from";
     const to = "to";
 
-    function mockCondition(name: string, value: boolean): AbstractCheck {
+    function mockCondition(name: string, value: boolean): Check {
         return {
             check: jest.fn().mockReturnValue(value),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as AbstractCheck;
+        } as unknown as Check;
     }
 
-    function mockConditionWithError(name: string, value: string): AbstractCheck {
+    function mockConditionWithError(name: string, value: string): Check {
         return {
             check: (s1, s2) => {
                 throw new Error(value);
             },
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as AbstractCheck;
+        } as unknown as Check;
     }
 
-    function mockEffect(fn: jest.Mock): AbstractCheck {
-        return {registerComponents: fn} as unknown as AbstractCheck;
+    function mockEffect(fn: jest.Mock): Check {
+        return {registerComponents: fn} as unknown as Check;
     }
 
     function mockInputEffectRegister(register: jest.Mock, inputImmediate: jest.Mock): UserInput {
