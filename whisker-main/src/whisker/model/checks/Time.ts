@@ -23,10 +23,16 @@ const ITimeJSON = ICheckJSON.extend({
     args: TimeArgs,
 });
 
-abstract class AbstractTime<C extends TimeAfterEndJSON | TimeElapsedJSON | TimeBetweenJSON = TimeAfterEndJSON | TimeElapsedJSON | TimeBetweenJSON> extends AbstractCheck<C> {
+type TTimeJSON =
+    | TimeAfterEndJSON
+    | TimeElapsedJSON
+    | TimeBetweenJSON
+    ;
+
+abstract class AbstractTime<J extends TTimeJSON = TTimeJSON> extends AbstractCheck<J> {
     protected readonly _steps: number;
 
-    protected constructor(edgeLabel: string, json: C) {
+    protected constructor(edgeLabel: string, json: J) {
         super(edgeLabel, json);
     }
 

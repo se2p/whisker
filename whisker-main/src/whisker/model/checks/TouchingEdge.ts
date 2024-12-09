@@ -15,8 +15,14 @@ const TouchingEdgeArgs = z.tuple([
     SpriteName,
 ]);
 
-abstract class AbstractTouchingEdge<C extends TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON = TouchingEdgeJSON | TouchingHorizEdgeJSON | TouchingVerticalEdgeJSON> extends AbstractCheck<C> {
-    protected constructor(edgeLabel: string, json: C) {
+type TTouchingEdgeJSON =
+    | TouchingEdgeJSON
+    | TouchingHorizEdgeJSON
+    | TouchingVerticalEdgeJSON
+    ;
+
+abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends AbstractCheck<J> {
+    protected constructor(edgeLabel: string, json: J) {
         super(edgeLabel, json);
     }
 

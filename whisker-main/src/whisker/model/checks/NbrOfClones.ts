@@ -28,10 +28,15 @@ const NbrOfClonesArgs = z.tuple([
     z.coerce.number().nonnegative(),
 ]);
 
-abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClonesJSON = NbrOfClonesJSON | NbrOfVisibleClonesJSON> extends AbstractCheck<C> {
+type TNbrOfClonesJSON =
+    | NbrOfClonesJSON
+    | NbrOfVisibleClonesJSON
+    ;
+
+abstract class AbstractNbrOfClones<J extends TNbrOfClonesJSON = TNbrOfClonesJSON> extends AbstractCheck<J> {
     private readonly _visible: boolean;
 
-    protected constructor(edgeLabel: string, json: C) {
+    protected constructor(edgeLabel: string, json: J) {
         super(edgeLabel, json);
         this._visible = json.name === "NbrOfVisibleClones";
     }

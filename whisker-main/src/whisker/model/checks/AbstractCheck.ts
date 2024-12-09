@@ -5,7 +5,7 @@ import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
 
-export type OptionalName<C extends CheckJSON> = Omit<C, "name"> & Partial<Pick<C, "name">>;
+export type OptionalName<J extends CheckJSON> = Omit<J, "name"> & Partial<Pick<J, "name">>;
 
 export type SpriteName =
     | string
@@ -50,9 +50,9 @@ export type CheckFun = (stepsSinceLastTransition?: number, stepsSinceEnd?: numbe
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
  */
-export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
+export abstract class AbstractCheck<J extends CheckJSON = CheckJSON> {
     protected readonly _edgeLabel: string;
-    private readonly _checkJSON: C;
+    private readonly _checkJSON: J;
     private _check: CheckFun;
 
     /**
@@ -61,7 +61,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
      * @param checkJSON
      * @protected
      */
-    protected constructor(edgeLabel: string, checkJSON: C) {
+    protected constructor(edgeLabel: string, checkJSON: J) {
         this._edgeLabel = edgeLabel;
         this._checkJSON = this._validate(checkJSON);
         this._check = () => false;
@@ -73,7 +73,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
 
     abstract get dependsOnSayText(): boolean;
 
-    protected abstract _validate(checkJSON: C): C;
+    protected abstract _validate(checkJSON: J): J;
 
     /**
      * Test the arguments for this check with the current test driver instance that has a loaded scratch program and
@@ -85,19 +85,19 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
      */
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun;
 
-    protected get _name(): C["name"] {
+    protected get _name(): J["name"] {
         return this._checkJSON.name;
     }
 
-    protected get _args(): C["args"] {
-        return this._checkJSON.args;
-    }
-
-    protected get _negated(): C["negated"] {
+    protected get _negated(): J["negated"] {
         return this._checkJSON.negated;
     }
 
-    toJSON(): C {
+    protected get _args(): J["args"] {
+        return this._checkJSON.args;
+    }
+
+    toJSON(): J {
         return JSON.parse(JSON.stringify(this._checkJSON));
     }
 
@@ -105,12 +105,12 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> {
         return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
     }
 
-    equals(check: AbstractCheck): boolean {
-        return this._name === check._name && this._negated === check._negated && this._equalsArgs(check);
+    equals(that: AbstractCheck): boolean {
+        return this._name === that._name && this._negated === that._negated && this._equalsArgs(that);
     }
 
-    isInvertedOf(check: AbstractCheck): boolean {
-        return this._name === check._name && this._negated !== check._negated && this._equalsArgs(check);
+    isInvertedOf(that: AbstractCheck): boolean {
+        return this._name === that._name && this._negated !== that._negated && this._equalsArgs(that);
     }
 
     testForContradictingWithEvents(checks: Checks): boolean {
