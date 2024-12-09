@@ -48,7 +48,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         return () => {
             const stage = t.getStage();
             try {
-                if (ModelUtil.compare(stage["currentCostumeName"], newBackground, "=")) {
+                if (ModelUtil.compare(stage["currentCostumeName"], newBackground, "==")) {
                     return !negated;
                 }
             } catch (e) {

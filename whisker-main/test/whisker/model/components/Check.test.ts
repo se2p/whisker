@@ -374,8 +374,8 @@ describe('Condition', () => {
             ["TimeElapsed", true, ["1000"], "!TimeElapsed(1000)"],
             ["TimeBetween", true, ["1000"], "!TimeBetween(1000)"],
             ["TimeAfterEnd", true, ["1000"], "!TimeAfterEnd(1000)"],
-            ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,=,1)"],
-            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,=,1)"],
+            ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,==,1)"],
+            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,==,1)"],
             ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"]
         ];
 
@@ -595,8 +595,8 @@ describe('Effect', () => {
             ["TimeElapsed", true, ["1000"], "!TimeElapsed(1000)"],
             ["TimeBetween", true, ["1000"], "!TimeBetween(1000)"],
             ["TimeAfterEnd", true, ["1000"], "!TimeAfterEnd(1000)"],
-            ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,=,1)"],
-            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,=,1)"],
+            ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,==,1)"],
+            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,==,1)"],
             ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"],
         ];
         it.each(toStrings)('toString() of (%s, %s, %s)',
@@ -642,8 +642,8 @@ describe('Effect', () => {
                 newCheck(edgeID, {name: "SpriteColor", negated: true, args: ["sprite", 255, 0, 0]}),
                 newCheck(edgeID, {name: "SpriteTouching", negated: true, args: ["sprite", "sprite1"]}),
                 newCheck(edgeID, {name: "TouchingEdge", negated: true, args: ["sprite"]}),
-                newCheck(edgeID, {name: "NbrOfVisibleClones", negated: true, args: ["sprite", "=", 1]}),
-                newCheck(edgeID, {name: "NbrOfClones", negated: true, args: ["sprite", "=", 1]}),
+                newCheck(edgeID, {name: "NbrOfVisibleClones", negated: true, args: ["sprite", "==", 1]}),
+                newCheck(edgeID, {name: "NbrOfClones", negated: true, args: ["sprite", "==", 1]}),
                 newCheck(edgeID, {name: "TimeAfterEnd", negated: true, args: [1000]}),
                 newCheck(edgeID, {name: "TimeBetween", negated: true, args: [1000]}),
                 newCheck(edgeID, {name: "TimeElapsed", negated: true, args: [1000]}),
@@ -999,7 +999,7 @@ describe('Effect', () => {
             const attrComp = newCheck(edgeID, {
                 name: "AttrComp",
                 negated: false,
-                args: ["sprite", "var", "=", "0"]
+                args: ["sprite", "var", "==", "0"]
             });
 
             const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "var", "<=", "2"]});

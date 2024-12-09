@@ -22,11 +22,14 @@ export const SpriteName = z.union([
 
 export const VariableName = SpriteName;
 
-const comparisons = ["==", "=", "!=", ">", ">=", "<", "<="] as const;
+const comparisons = ["==", "!=", ">", ">=", "<", "<="] as const;
 
 export type Comparison = typeof comparisons[number];
 
-export const Comparison = z.enum(comparisons);
+export const Comparison = z.preprocess(
+    (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
+    z.enum(comparisons)
+);
 
 export interface ICheckJSON {
     name: string;

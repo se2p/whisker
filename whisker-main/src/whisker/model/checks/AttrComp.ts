@@ -173,7 +173,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
 
     private _getInvertedCompOp(comp: Comparison): Comparison {
         switch (comp) {
-            case "=":
             case "==":
                 return "!=";
             case "!=":
@@ -200,15 +199,15 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
         }
 
         // =
-        if ((comparison1 == '=' || comparison1 == '==') && (comparison2 == '=' || comparison2 == '==')) {
+        if ((comparison1 == '==') && (comparison2 == '==')) {
             return value1 != value2;
         }
 
-        if (comparison1 == '=' || comparison1 == '==') {
+        if (comparison1 == '==') {
             return !eval(value1 + comparison2 + value2);
         }
 
-        if (comparison2 == '=' || comparison2 == '==') {
+        if (comparison2 == '==') {
             return !eval(value2 + comparison1 + value1);
         }
 
