@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -20,12 +20,16 @@ export const ExprJSON = ICheckJSON.extend({
     args: ExprArgs,
 });
 
-export class Expr extends AbstractCheck<ExprJSON> {
+export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
     private readonly _code: string;
 
-    constructor(edgeLabel: string, json: OptionalName<ExprJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<ExprJSON>) {
         super(edgeLabel, {...json, name});
-        this._code = this.args.join("\n");
+        this._code = this._args.join("\n");
+    }
+
+    get code(): string {
+        return this._code;
     }
 
     protected _validate(checkJSON: ExprJSON): ExprJSON {
@@ -38,9 +42,9 @@ export class Expr extends AbstractCheck<ExprJSON> {
      * @param cu Listener for checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const e = ModelUtil.getExpressionForEval(t, this._code);
-        const check: () => boolean = () => !this.negated == ModelUtil.evaluateExpression(t, e.expr);
+        const check = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
@@ -70,7 +74,7 @@ export class Expr extends AbstractCheck<ExprJSON> {
         return this._code.includes(".sayText");
     }
 
-    protected _contradicts(_that: ExprJSON): boolean {
+    protected _contradicts(_that: Expr): boolean {
         // Expressions are very powerful. While it's possible for two expressions to be contradicting, it's also very
         // difficult to check it here. Thus, we assume that expressions have been crafted not to contradict each other.
         return false;

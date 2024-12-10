@@ -1,5 +1,14 @@
 import {z} from "zod";
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {
+    AbstractCheck,
+    CheckFun,
+    CheckFun0,
+    CheckFun1,
+    CheckFun2,
+    ICheckJSON,
+    Optional,
+    SlimCheckJSON
+} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 
@@ -23,20 +32,29 @@ const ITimeJSON = ICheckJSON.extend({
     args: TimeArgs,
 });
 
-abstract class AbstractTime<C extends TimeAfterEndJSON | TimeElapsedJSON | TimeBetweenJSON> extends AbstractCheck<C> {
+type TTimeJSON =
+    | TimeAfterEndJSON
+    | TimeElapsedJSON
+    | TimeBetweenJSON
+    ;
+
+abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     protected readonly _steps: number;
 
-    protected constructor(edgeLabel: string, json: C) {
+    protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
     }
 
+    public get millis(): number {
+        return this._args[0];
+    }
+
     protected _convertFromTimeToSteps(t): number {
-        const [timeInMs] = this.args;
-        const time = ModelUtil.testNumber(timeInMs);
+        const time = ModelUtil.testNumber(this.millis);
         return t.vmWrapper.convertFromTimeToSteps(time);
     }
 
-    protected override _contradicts(_that: C): boolean {
+    protected override _contradicts(_that: AbstractTime): boolean {
         return false; // Time is not mutually exclusive.
     }
 
@@ -55,8 +73,8 @@ export const TimeAfterEndJSON = ITimeJSON.extend({
     name: z.literal(nameTimeAfterEnd),
 });
 
-export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON> {
-    constructor(edgeLabel: string, json: OptionalName<TimeAfterEndJSON>) {
+export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<TimeAfterEndJSON>) {
         super(edgeLabel, {...json, name: nameTimeAfterEnd});
     }
 
@@ -68,10 +86,10 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON> {
      * Get a method that checks whether enough time has elapsed since the program ended.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun2 {
         const steps = this._convertFromTimeToSteps(t);
         return (_, stepsSinceEnd) => {
-            return !this.negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
+            return !this._negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
         };
     }
 }
@@ -86,8 +104,8 @@ export const TimeBetweenJSON = ITimeJSON.extend({
     name: z.literal(nameTimeBetween),
 });
 
-export class TimeBetween extends AbstractTime<TimeBetweenJSON> {
-    constructor(edgeLabel: string, json: OptionalName<TimeBetweenJSON>) {
+export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<TimeBetweenJSON>) {
         super(edgeLabel, {...json, name: nameTimeBetween});
     }
 
@@ -99,10 +117,10 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON> {
      * Get a method that checks whether enough time has elapsed since the last edge transition in the current model.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun1 {
         const steps = this._convertFromTimeToSteps(t);
         return (stepsSinceLastTransition) => {
-            return !this.negated == (steps <= stepsSinceLastTransition);
+            return !this._negated == (steps <= stepsSinceLastTransition);
         };
     }
 }
@@ -117,8 +135,8 @@ export const TimeElapsedJSON = ITimeJSON.extend({
     name: z.literal(nameTimeElapsed),
 });
 
-export class TimeElapsed extends AbstractTime<TimeElapsedJSON> {
-    constructor(edgeLabel: string, json: OptionalName<TimeElapsedJSON>) {
+export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<TimeElapsedJSON>) {
         super(edgeLabel, {...json, name: nameTimeElapsed});
     }
 
@@ -130,10 +148,10 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON> {
      * Get a method that checks whether enough time has elapsed since the test runner started the test.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): Check {
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
         const steps = this._convertFromTimeToSteps(t);
         return () => {
-            return !this.negated == (steps <= t.getTotalStepsExecuted());
+            return !this._negated == (steps <= t.getTotalStepsExecuted());
         };
     }
 }

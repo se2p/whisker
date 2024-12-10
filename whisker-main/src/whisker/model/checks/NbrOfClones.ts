@@ -1,14 +1,15 @@
-import {AbstractCheck, Check, Comparison, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, Comparison, ICheckJSON, Optional, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
 export type NbrOfClonesArgs = [
     /**
      * The sprite name.
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 
     /**
      * Mode of comparison, e.g. =, <, >, <=, >=
@@ -27,10 +28,15 @@ const NbrOfClonesArgs = z.tuple([
     z.coerce.number().nonnegative(),
 ]);
 
-abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClonesJSON> extends AbstractCheck<C> {
+type TNbrOfClonesJSON =
+    | NbrOfClonesJSON
+    | NbrOfVisibleClonesJSON
+    ;
+
+abstract class AbstractNbrOfClones<J extends TNbrOfClonesJSON = TNbrOfClonesJSON> extends AbstractCheck<J, CheckFun0> {
     private readonly _visible: boolean;
 
-    protected constructor(edgeLabel: string, json: C) {
+    protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
         this._visible = json.name === "NbrOfVisibleClones";
     }
@@ -39,9 +45,9 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
      * Get a method to check how many clones of a sprite are there.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): Check {
-        const [pSpriteName, comparison, nbr] = this.args;
-        const negated = this.negated;
+    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): CheckFun0 {
+        const [pSpriteName, comparison, nbr] = this._args;
+        const negated = this._negated;
 
         const toCheckNbr = ModelUtil.testNumber(nbr);
         const sprite = ModelUtil.checkSpriteExistence(t, pSpriteName);
@@ -58,26 +64,74 @@ abstract class AbstractNbrOfClones<C extends NbrOfClonesJSON | NbrOfVisibleClone
     }
 
 
-    protected override _contradicts(that: C): boolean {
-        const [thisName, , thisNbr] = this.args;
-        const [thatName, , thatNbr] = that.args;
+    protected override _contradicts(that: AbstractNbrOfClones): boolean {
+        const [thisName, , thisNbr] = this._args;
+        const [thatName, , thatNbr] = that._args;
 
         if (thisName !== thatName) {
             return false;
         }
 
-        let thisComp = this.args[1];
-        let thatComp = that.args[1];
+        let thisComp = this._args[1];
+        let thatComp = that._args[1];
 
-        if (this.negated) {
+        if (this._negated) {
             thisComp = this._getInvertedCompOp(thisComp);
         }
 
-        if (that.negated) {
+        if (that._negated) {
             thatComp = this._getInvertedCompOp(thatComp);
         }
 
         return this._checkComparison(thisComp, thatComp, thisNbr, thatNbr);
+    }
+
+    private _getInvertedCompOp(comp: Comparison): Comparison {
+        switch (comp) {
+            case "==":
+                return "!=";
+            case "!=":
+                return "==";
+            case "<":
+                return ">=";
+            case ">":
+                return "<=";
+            case ">=":
+                return "<";
+            case "<=":
+                return ">";
+            default:
+                throw new NonExhaustiveCaseDistinction(comp);
+        }
+    }
+
+    private _checkComparison(comparison1: Comparison, comparison2: Comparison, pValue1: string | number, pValue2: string | number): boolean {
+        const value1 = String(pValue1);
+        const value2 = String(pValue2);
+
+        if (comparison1 == "!=" || comparison2 == "!=") {
+            return false;
+        }
+
+        // =
+        if ((comparison1 == '==') && (comparison2 == '==')) {
+            return value1 != value2;
+        }
+
+        if (comparison1 == '==') {
+            return !eval(value1 + comparison2 + value2);
+        }
+
+        if (comparison2 == '==') {
+            return !eval(value2 + comparison1 + value1);
+        }
+
+        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
+        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
+            return false;
+        }
+
+        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
     }
 
     override get dependsOnSayText(): boolean {
@@ -98,7 +152,7 @@ export const NbrOfClonesJSON = ICheckJSON.extend({
 });
 
 export class NbrOfClones extends AbstractNbrOfClones<NbrOfClonesJSON> {
-    constructor(edgeLabel: string, json: OptionalName<NbrOfClonesJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<NbrOfClonesJSON>) {
         super(edgeLabel, {...json, name: nbrOfClonesName});
     }
 
@@ -120,7 +174,7 @@ export const NbrOfVisibleClonesJSON = ICheckJSON.extend({
 });
 
 export class NbrOfVisibleClones extends AbstractNbrOfClones<NbrOfVisibleClonesJSON> {
-    constructor(edgeLabel: string, json: OptionalName<NbrOfVisibleClonesJSON>) {
+    constructor(edgeLabel: string, json: SlimCheckJSON<NbrOfVisibleClonesJSON>) {
         super(edgeLabel, {...json, name: nbrOfVisibleClonesName});
     }
 

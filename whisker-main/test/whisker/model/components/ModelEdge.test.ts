@@ -5,12 +5,12 @@ import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ProgramModelEdgeJSON, UserModelEdgeJSON} from "../../../../src/whisker/model/util/schema";
-import {AbstractCheck} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {BackgroundChange} from "../../../../src/whisker/model/checks/BackgroundChange";
 import {Key} from "../../../../src/whisker/model/checks/Key";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
+import {Check} from "../../../../src/whisker/model/checks/newCheck";
 
 describe('Model edges', () => {
     const id = "id";
@@ -19,26 +19,26 @@ describe('Model edges', () => {
     const from = "from";
     const to = "to";
 
-    function mockCondition(name: string, value: boolean): AbstractCheck {
+    function mockCondition(name: string, value: boolean): Check {
         return {
             check: jest.fn().mockReturnValue(value),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as AbstractCheck;
+        } as unknown as Check;
     }
 
-    function mockConditionWithError(name: string, value: string): AbstractCheck {
+    function mockConditionWithError(name: string, value: string): Check {
         return {
             check: (s1, s2) => {
                 throw new Error(value);
             },
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as AbstractCheck;
+        } as unknown as Check;
     }
 
-    function mockEffect(fn: jest.Mock): AbstractCheck {
-        return {registerComponents: fn} as unknown as AbstractCheck;
+    function mockEffect(fn: jest.Mock): Check {
+        return {registerComponents: fn} as unknown as Check;
     }
 
     function mockInputEffectRegister(register: jest.Mock, inputImmediate: jest.Mock): UserInput {
@@ -91,7 +91,7 @@ describe('Model edges', () => {
 
     test("Reset does not clear conditions on ModelEdge", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new BackgroundChange(label, {negated: false, args: ["test"]});
+        const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addCondition(condition);
         expect(edge.conditions.length).toBe(1);
         edge.reset();
@@ -99,9 +99,9 @@ describe('Model edges', () => {
     });
 
     test("Program model edge", () => {
-        const effect = new BackgroundChange(label, {negated: false, args: ["test"]});
+        const effect = new BackgroundChange(label, {args: ["test"]});
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new BackgroundChange(label, {negated: false, args: ["test"]});
+        const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addEffect(effect);
         edge.addCondition(condition);
         expect(edge.effects.length).toBe(1);
@@ -110,7 +110,7 @@ describe('Model edges', () => {
     test("User model edge", () => {
         const inputEffect = new UserInput("id", "InputKey", ["left"]);
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new BackgroundChange(label, {negated: false, args: ["test"]});
+        const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addUserInput(inputEffect);
         edge.addCondition(condition);
         expect(edge.userInputs.length).toBe(1);
@@ -121,8 +121,8 @@ describe('Model edges', () => {
 
     test("ProgramModelEdge.toJSON()", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const effect = new BackgroundChange(label, {negated: false, args: ["test"]});
-        const condition = new BackgroundChange(label, {negated: false, args: ["test"]});
+        const effect = new BackgroundChange(label, {args: ["test"]});
+        const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addEffect(effect);
         edge.addCondition(condition);
         const actual = edge.toJSON();
@@ -142,7 +142,7 @@ describe('Model edges', () => {
     test("UserModelEdge.toJSON()", () => {
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
         const inputEffect = new UserInput("id", "InputKey", ["left"]);
-        const condition = new BackgroundChange(label, {negated: false, args: ["test"]});
+        const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addUserInput(inputEffect);
         edge.addCondition(condition);
         const actual = edge.toJSON();
@@ -164,9 +164,9 @@ describe('Model edges', () => {
             const tdMock = new TestDriverMock([], 10);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             edge.lastTransition = 11;
-            edge.addCondition(new BackgroundChange(label, {negated: false, args: ["test"]}));
-            edge.addCondition(new Key(label, {negated: false, args: ["a"]}));
-            edge.addCondition(new SpriteTouching(label, {negated: false, args: ["apple", "bowl"]}));
+            edge.addCondition(new BackgroundChange(label, {args: ["test"]}));
+            edge.addCondition(new Key(label, {args: ["a"]}));
+            edge.addCondition(new SpriteTouching(label, {args: ["apple", "bowl"]}));
             const result = edge.checkConditions(tdMock.getTestDriver(), null, 5, 7);
             expect(result).toBe(edge.conditions);
         });
@@ -245,13 +245,13 @@ describe('Model edges', () => {
     describe("checkConditionsOnEvent()", () => {
         test("checkConditionsOnEvent() returns conditions when event string not contained", () => {
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.addCondition(new BackgroundChange(label, {negated: false, args: ["test"]}));
-            edge.addCondition(new Key(label, {negated: false, args: ["a"]}));
-            edge.addCondition(new SpriteTouching(label, {negated: false, args: ["apple", "bowl"]}));
+            edge.addCondition(new BackgroundChange(label, {args: ["test"]}));
+            edge.addCondition(new Key(label, {args: ["a"]}));
+            edge.addCondition(new SpriteTouching(label, {args: ["apple", "bowl"]}));
             const checks = [
-                new BackgroundChange(edge.label, {negated: false, args: ["differentArg"]}),
-                new Key(edge.label, {negated: false, args: ["w"]}),
-                new Expr(edge.label, {negated: false, args: ["false"]}),
+                new BackgroundChange(edge.label, {args: ["differentArg"]}),
+                new Key(edge.label, {args: ["w"]}),
+                new Expr(edge.label, {args: ["false"]}),
             ];
             const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
             expect(result).toBe(edge.conditions);
@@ -267,13 +267,13 @@ describe('Model edges', () => {
             stage.updateSprite();
             tdMock.stage = stage.sprite;
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.addCondition(new BackgroundChange(label, {negated: false, args: ["newBackground"]}));
-            edge.addCondition(new Key(label, {negated: false, args: ["d"]}));
-            edge.addCondition(new SpriteTouching(label, {negated: false, args: ["banana", "bowl"]}));
+            edge.addCondition(new BackgroundChange(label, {args: ["newBackground"]}));
+            edge.addCondition(new Key(label, {args: ["d"]}));
+            edge.addCondition(new SpriteTouching(label, {args: ["banana", "bowl"]}));
             const checks = [
-                new BackgroundChange(edge.label, {negated: false, args: ["test"]}),
-                new Key(edge.label, {negated: false, args: ["d"]}),
-                new Expr(edge.label, {negated: false, args: ["true"]})
+                new BackgroundChange(edge.label, {args: ["test"]}),
+                new Key(edge.label, {args: ["d"]}),
+                new Expr(edge.label, {args: ["true"]})
             ];
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
@@ -284,13 +284,13 @@ describe('Model edges', () => {
             const cu = getDummyCheckUtility();
             const tdMock = new TestDriverMock();
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.addCondition(new BackgroundChange(label, {negated: false, args: ["newBackground"]}));
-            edge.addCondition(new Key(label, {negated: false, args: ["a"]}));
-            edge.addCondition(new Expr(label, {negated: false, args: ["true"]}));
-            edge.addEffect(new SpriteTouching(label, {negated: false, args: ["apple", "bowl"]}));
+            edge.addCondition(new BackgroundChange(label, {args: ["newBackground"]}));
+            edge.addCondition(new Key(label, {args: ["a"]}));
+            edge.addCondition(new Expr(label, {args: ["true"]}));
+            edge.addEffect(new SpriteTouching(label, {args: ["apple", "bowl"]}));
             const checks = [
-                new BackgroundChange(edge.label, {negated: false, args: ["stage"]}),
-                new Key(edge.label, {negated: false, args: ["d"]}),
+                new BackgroundChange(edge.label, {args: ["stage"]}),
+                new Key(edge.label, {args: ["d"]}),
             ];
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));

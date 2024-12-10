@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -10,7 +10,7 @@ export type OutputArgs = [
     /**
      * The name of the sprite.
      */
-    pSpriteName: SpriteName,
+    spriteName: SpriteName,
 
     /**
      * Output to say.
@@ -33,8 +33,8 @@ export const OutputJSON = ICheckJSON.extend({
     args: OutputArgs,
 });
 
-export class Output extends AbstractCheck<OutputJSON> {
-    constructor(edgeLabel: string, json: OptionalName<OutputJSON>) {
+export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<OutputJSON>) {
         super(edgeLabel, {...json, name});
     }
 
@@ -48,9 +48,9 @@ export class Output extends AbstractCheck<OutputJSON> {
      * @param cu  Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName, output] = this.args;
-        const negated = this.negated;
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+        const [pSpriteName, output] = this._args;
+        const negated = this._negated;
         const edgeLabel = this._edgeLabel;
 
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
@@ -83,9 +83,9 @@ export class Output extends AbstractCheck<OutputJSON> {
         return true;
     }
 
-    protected override _contradicts(that: OutputJSON): boolean {
-        const [spriteThis, outputThis] = this.args;
-        const [spriteThat, outputThat] = that.args;
+    protected override _contradicts(that: Output): boolean {
+        const [spriteThis, outputThis] = this._args;
+        const [spriteThat, outputThat] = that._args;
 
         if (spriteThis !== spriteThat) {
             return false;

@@ -1,4 +1,3 @@
-import {AbstractCheck} from "./AbstractCheck";
 import {AttrChange, AttrChangeJSON} from "./AttrChange";
 import {AttrComp, AttrCompJSON} from "./AttrComp";
 import {Click, ClickJSON} from "./Click";
@@ -70,6 +69,29 @@ export const CheckJSON = z.discriminatedUnion("name", [
     TouchingHorizEdgeJSON,
 ]);
 
+export type Check =
+    | AttrChange
+    | AttrComp
+    | BackgroundChange
+    | Click
+    | Key
+    | Output
+    | SpriteColor
+    | SpriteTouching
+    | VarChange
+    | VarComp
+    | Expr
+    | Probability
+    | TimeElapsed
+    | TimeBetween
+    | TimeAfterEnd
+    | NbrOfClones
+    | NbrOfVisibleClones
+    | TouchingEdge
+    | TouchingVerticalEdge
+    | TouchingHorizEdge
+    ;
+
 export type CheckName = CheckJSON['name'];
 
 export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
@@ -95,7 +117,7 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "TouchingHorizEdge",
 ]);
 
-export function newCheck(edgeLabel: string, checkJSON: CheckJSON): AbstractCheck {
+export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
     const name = checkJSON.name;
 
     switch (name) {

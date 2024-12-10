@@ -1,10 +1,11 @@
-import {AbstractCheck, Check, Comparison, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, AttrName, CheckFun0, Comparison, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ArgType} from "../util/schema";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
 const name = "AttrComp" as const;
 
@@ -21,7 +22,7 @@ export type AttrCompArgs = [
     attrName: string,
 
     /**
-     * Mode of comparison, e.g. =, <, >, <=, >=
+     * Mode of comparison, e.g. ==, <, >, <=, >=
      */
     comparison: Comparison,
 
@@ -33,7 +34,7 @@ export type AttrCompArgs = [
 
 const AttrCompArgs = z.tuple([
     SpriteName,
-    z.string(),
+    AttrName,
     Comparison,
     z.string().or(z.number()),
 ]);
@@ -48,8 +49,8 @@ export const AttrCompJSON = ICheckJSON.extend({
     args: AttrCompArgs,
 });
 
-export class AttrComp extends AbstractCheck<AttrCompJSON> {
-    constructor(edgeLabel: string, json: OptionalName<AttrCompJSON>) {
+export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
     }
 
@@ -64,15 +65,11 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        // eslint-disable-next-line prefer-const
-        let [pSpriteName, attrName, comparison, attrValue] = this.args;
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+        const [pSpriteName, attrName, comparison, attrValue] = this._args;
         const edgeLabel = this._edgeLabel;
-        const negated = this.negated;
+        const negated = this._negated;
 
-        if (attrName == "costume" || attrName == "currentCostume") {
-            attrName = "currentCostumeName";
-        }
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
@@ -141,12 +138,12 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
     }
 
     override get dependsOnSayText(): boolean {
-        return this.args[1] === "sayText";
+        return this._args[1] === "sayText";
     }
 
-    protected override _contradicts(that: AttrCompJSON): boolean {
-        const [thisSpriteName, thisAttrName] = this.args;
-        const [thatSpriteName, thatAttrName] = that.args;
+    protected override _contradicts(that: AttrComp): boolean {
+        const [thisSpriteName, thisAttrName] = this._args;
+        const [thatSpriteName, thatAttrName] = that._args;
 
         if (thisSpriteName !== thatSpriteName) {
             return false;
@@ -156,17 +153,65 @@ export class AttrComp extends AbstractCheck<AttrCompJSON> {
             return false;
         }
 
-        let thisComp = this.args[2];
-        let thatComp = that.args[2];
+        let thisComp = this._args[2];
+        let thatComp = that._args[2];
 
-        if (this.negated) {
+        if (this._negated) {
             thisComp = this._getInvertedCompOp(thisComp);
         }
 
-        if (that.negated) {
+        if (that._negated) {
             thatComp = this._getInvertedCompOp(thatComp);
         }
 
-        return this._checkComparison(thisComp, thatComp, this.args[3], that.args[3]);
+        return this._checkComparison(thisComp, thatComp, this._args[3], that._args[3]);
+    }
+
+    private _getInvertedCompOp(comp: Comparison): Comparison {
+        switch (comp) {
+            case "==":
+                return "!=";
+            case "!=":
+                return "==";
+            case "<":
+                return ">=";
+            case ">":
+                return "<=";
+            case ">=":
+                return "<";
+            case "<=":
+                return ">";
+            default:
+                throw new NonExhaustiveCaseDistinction(comp);
+        }
+    }
+
+    private _checkComparison(comparison1: Comparison, comparison2: Comparison, pValue1: string | number, pValue2: string | number): boolean {
+        const value1 = String(pValue1);
+        const value2 = String(pValue2);
+
+        if (comparison1 == "!=" || comparison2 == "!=") {
+            return false;
+        }
+
+        // =
+        if ((comparison1 == '==') && (comparison2 == '==')) {
+            return value1 != value2;
+        }
+
+        if (comparison1 == '==') {
+            return !eval(value1 + comparison2 + value2);
+        }
+
+        if (comparison2 == '==') {
+            return !eval(value2 + comparison1 + value1);
+        }
+
+        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
+        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
+            return false;
+        }
+
+        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
     }
 }

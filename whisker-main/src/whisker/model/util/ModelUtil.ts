@@ -185,7 +185,7 @@ export abstract class ModelUtil {
         if (value1 == undefined || value2 == undefined) {
             throw new Error("comparison with undefined value");
         }
-        if (comparison === "=" || comparison === "==") {
+        if (comparison === "==") {
             if (value1 == "true") {
                 value1 = true;
             } else if (value1 == "false") {

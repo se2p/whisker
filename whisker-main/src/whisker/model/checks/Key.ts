@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 
@@ -25,8 +25,8 @@ export const KeyJSON = ICheckJSON.extend({
     args: KeyArgs,
 });
 
-export class Key extends AbstractCheck<KeyJSON> {
-    constructor(edgeLabel: string, json: OptionalName<KeyJSON>) {
+export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<KeyJSON>) {
         super(edgeLabel, {...json, name});
     }
 
@@ -39,15 +39,15 @@ export class Key extends AbstractCheck<KeyJSON> {
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): Check {
-        const [key] = this.args;
-        const negated = this.negated;
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): CheckFun0 {
+        const [key] = this._args;
+        const negated = this._negated;
         return () => {
             return !negated == cu.isKeyDown(key);
         };
     }
 
-    protected _contradicts(_that: KeyJSON): boolean {
+    protected _contradicts(_that: Key): boolean {
         return false; // Multiple keys can be pressed at the same time.
     }
 

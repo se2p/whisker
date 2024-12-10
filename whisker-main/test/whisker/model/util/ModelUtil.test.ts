@@ -103,16 +103,16 @@ describe('ModelUtil tests', function () {
                 ["-1", "0", ">=", false],
                 ["1", "1", ">=", true],
 
-                ["0", "-1", "=", false],
-                ["-1", "0", "=", false],
-                ["1", "1", "=", true],
-                ["hallo", "hallo", "=", true],
-                ["1", "hallo", "=", false],
+                ["0", "-1", "==", false],
+                ["-1", "0", "==", false],
+                ["1", "1", "==", true],
+                ["hallo", "hallo", "==", true],
+                ["1", "hallo", "==", false],
 
-                ["true", "true", "=", true],
-                ["false", "false", "=", true],
-                ["true", "false", "=", false],
-                ["false", "true", "=", false]
+                ["true", "true", "==", true],
+                ["false", "false", "==", true],
+                ["true", "false", "==", false],
+                ["false", "true", "==", false]
             ];
             it.each(params)("testChange(%s, %s, %s) == %s",
                 (value1, value2, comparison, expected) => {

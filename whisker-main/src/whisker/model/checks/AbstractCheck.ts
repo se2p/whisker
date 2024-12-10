@@ -3,10 +3,10 @@ import {CheckUtility} from "../util/CheckUtility";
 import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
-import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {Checks} from "../util/Checks";
 
-export type OptionalName<C extends CheckJSON> = Omit<C, "name"> & Partial<Pick<C, "name">>;
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
 export type SpriteName =
     | string
@@ -22,11 +22,19 @@ export const SpriteName = z.union([
 
 export const VariableName = SpriteName;
 
-const comparisons = ["==", "=", "!=", ">", ">=", "<", "<="] as const;
+const comparisons = ["==", "!=", ">", ">=", "<", "<="] as const;
 
 export type Comparison = typeof comparisons[number];
 
-export const Comparison = z.enum(comparisons);
+export const Comparison = z.preprocess(
+    (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
+    z.enum(comparisons)
+);
+
+export const AttrName = z.preprocess(
+    (attrName) => attrName === "costume" || attrName === "currentCostume" ? "currentCostumeName" : attrName,
+    z.string()
+);
 
 export interface ICheckJSON {
     name: string;
@@ -45,16 +53,23 @@ export const ICheckJSON = z.object({
  * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
  * @param stepsSinceEnd Number of steps since the after run model tests started.
  */
-export type Check = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => boolean;
+export type CheckFun0 = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => boolean;
+export type CheckFun1 = (stepsSinceLastTransition: number, stepsSinceEnd?: number) => boolean;
+export type CheckFun2 = (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
+export type CheckFun =
+    | CheckFun0
+    | CheckFun1
+    | CheckFun2
+    ;
 
 /**
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
  */
-export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements ICheckJSON {
+export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
-    private readonly _checkJSON: C;
-    private _check: Check;
+    private readonly _checkJSON: J;
+    private _check: C;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -62,19 +77,31 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * @param checkJSON
      * @protected
      */
-    protected constructor(edgeLabel: string, checkJSON: C) {
+    protected constructor(edgeLabel: string, checkJSON: Optional<J, "negated">) {
         this._edgeLabel = edgeLabel;
-        this._checkJSON = this._validate(checkJSON);
-        this._check = () => false;
+        this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
+        this._check = (() => false) as C;
     }
 
-    get check(): Check {
+    get name(): J["name"] {
+        return this._checkJSON.name;
+    }
+
+    protected get _negated(): J["negated"] {
+        return this._checkJSON.negated;
+    }
+
+    protected get _args(): J["args"] {
+        return this._checkJSON.args;
+    }
+
+    get check(): C {
         return this._check;
     }
 
     abstract get dependsOnSayText(): boolean;
 
-    protected abstract _validate(checkJSON: C): C;
+    protected abstract _validate(checkJSON: J): J;
 
     /**
      * Test the arguments for this check with the current test driver instance that has a loaded scratch program and
@@ -84,124 +111,22 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * @param cu Instance of the check utility for listening and checking more complex events.
      * @param graphID ID of the parent graph of the check.
      */
-    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): Check;
+    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): C;
 
-    get name(): C["name"] {
-        return this._checkJSON.name;
+    equals(that: AbstractCheck): boolean {
+        return this.name === that.name && this._negated === that._negated && this._equalsArgs(that);
     }
 
-    get args(): C["args"] {
-        return this._checkJSON.args;
+    isInvertedOf(that: AbstractCheck): boolean {
+        return this.name === that.name && this._negated !== that._negated && this._equalsArgs(that);
     }
 
-    get negated(): C["negated"] {
-        return this._checkJSON.negated;
-    }
-
-    toJSON(): C {
-        return JSON.parse(JSON.stringify(this._checkJSON));
-    }
-
-    private _equalsArgs(that: ICheckJSON): boolean {
-        return this.args.length === that.args.length && this.args.every((val, index) => val === that.args[index]);
-    }
-
-    equals(check: ICheckJSON): boolean {
-        return this.name === check.name && this.negated === check.negated && this._equalsArgs(check);
-    }
-
-    isInvertedOf(check: ICheckJSON): boolean {
-        return this.name === check.name && this.negated !== check.negated && this._equalsArgs(check);
+    private _equalsArgs(that: AbstractCheck): boolean {
+        return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
     }
 
     testForContradictingWithEvents(checks: Checks): boolean {
-        return checks.some((e) => {
-            return this.contradicts(e);
-        });
-    }
-
-    protected _checkChange(that: ICheckJSON): boolean {
-        let change1 = String(this.args[2]);
-        let change2 = String(that.args[2]);
-        let negated1 = this.negated;
-        let negated2 = that.negated;
-
-        if (change1.length == 2 && change2.length == 2) {
-            // += & +=, -= & -= are not getting until here, caught before call to checkChange
-            // += & -=, -= & += only tested here
-            return this.negated == that.negated;
-        }
-
-        if (change1.length == 2) {
-            change1 = AbstractCheck._getInvertedChangeOp(change1);
-            negated1 = !negated1;
-        } else if (change2.length == 2) {
-            change2 = AbstractCheck._getInvertedChangeOp(change2);
-            negated2 = !negated2;
-        }
-
-        if (change1 == change2) {
-            return negated1 != negated2;
-        }
-
-        return !negated1 && !negated2;
-    }
-
-    // only for += and -=
-    private static _getInvertedChangeOp(change: string): string {
-        return change == "+=" ? "-" : "+";
-    }
-
-    protected _getInvertedCompOp(comp: Comparison): Comparison {
-        switch (comp) {
-            case "=":
-            case "==":
-                return "!=";
-            case "!=":
-                return "==";
-            case "<":
-                return ">=";
-            case ">":
-                return "<=";
-            case ">=":
-                return "<";
-            case "<=":
-                return ">";
-            default:
-                throw new NonExhaustiveCaseDistinction(comp);
-        }
-    }
-
-    protected _checkComparison(pComparison1: ArgType, pComparison2: ArgType, pValue1: ArgType, pValue2: ArgType): boolean {
-        const comparison1 = String(pComparison1);
-        const comparison2 = String(pComparison2);
-        const value1 = String(pValue1);
-        const value2 = String(pValue2);
-
-
-        if (comparison1 == "!=" || comparison2 == "!=") {
-            return false;
-        }
-
-        // =
-        if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
-            return value1 != value2;
-        }
-
-        if (comparison1 == '=' || comparison1 == '==') {
-            return !eval(value1 + comparison2 + value2);
-        }
-
-        if (comparison2 == '=' || comparison2 == '==') {
-            return !eval(value2 + comparison1 + value1);
-        }
-
-        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
-            return false;
-        }
-
-        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
+        return checks.some((e) => this.contradicts(e));
     }
 
     /**
@@ -212,7 +137,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
             this._check = this._checkArgsWithTestDriver(t, cu, graphID);
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
-            this._check = () => false;
+            this._check = (() => false) as C;
         }
     }
 
@@ -220,7 +145,7 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
      * Whether this effect contradicts another effect check.
      * @param that The other effect.
      */
-    contradicts(that: ICheckJSON): boolean {
+    contradicts(that: AbstractCheck): boolean {
         if (this.name !== that.name || this.equals(that)) {
             return false;
         }
@@ -229,14 +154,18 @@ export abstract class AbstractCheck<C extends CheckJSON = CheckJSON> implements 
             return true;
         }
 
-        return this._contradicts(this._validate(that as C));
+        return this._contradicts(that);
     }
 
-    protected abstract _contradicts(that: C): boolean;
+    protected abstract _contradicts(that: AbstractCheck): boolean;
 
     toString(): string {
-        const negated = this.negated ? "!" : "";
-        const args = this.args.join(',');
+        const negated = this._negated ? "!" : "";
+        const args = this._args.join(',');
         return `${negated}${this.name}(${args})`;
+    }
+
+    toJSON(): J {
+        return JSON.parse(JSON.stringify(this._checkJSON));
     }
 }

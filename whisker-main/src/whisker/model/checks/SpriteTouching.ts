@@ -1,4 +1,4 @@
-import {AbstractCheck, Check, ICheckJSON, OptionalName, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
@@ -10,12 +10,12 @@ export type SpriteTouchingArgs = [
     /**
      * The name of the first sprite.
      */
-    pSpriteName1: SpriteName,
+    spriteName1: SpriteName,
 
     /**
      * The name of the second sprite.
      */
-    pSpriteName2: SpriteName,
+    spriteName2: SpriteName,
 ];
 
 const SpriteTouchingArgs = z.tuple([
@@ -33,8 +33,8 @@ export const SpriteTouchingJSON = ICheckJSON.extend({
     args: SpriteTouchingArgs,
 });
 
-export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
-    constructor(edgeLabel: string, json: OptionalName<SpriteTouchingJSON>) {
+export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<SpriteTouchingJSON>) {
         super(edgeLabel, {...json, name});
     }
 
@@ -50,9 +50,9 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
      * @param graphID ID of the parent graph of the check.
 
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): Check {
-        const [pSpriteName1, pSpriteName2] = this.args;
-        const negated = this.negated;
+    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+        const [pSpriteName1, pSpriteName2] = this._args;
+        const negated = this._negated;
         const edgeLabel = this._edgeLabel;
 
         const spriteName1 = ModelUtil.checkSpriteExistence(t, pSpriteName1).name;
@@ -73,7 +73,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON> {
         };
     }
 
-    protected _contradicts(_that: SpriteTouchingJSON): boolean {
+    protected _contradicts(_that: SpriteTouching): boolean {
         return false; // Any combination of 4 sprites may touch each other at the same time.
     }
 

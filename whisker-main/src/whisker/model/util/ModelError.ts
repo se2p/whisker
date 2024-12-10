@@ -1,18 +1,19 @@
 // Model errors
 import {AbstractEdge} from "../components/AbstractEdge";
 import {ArgType} from "./schema";
-import {AbstractCheck} from "../checks/AbstractCheck";
+import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
+import {Check} from "../checks/newCheck";
 
-function getEffectFailedOutput(edge: AbstractEdge, effect: AbstractCheck): string {
+function getEffectFailedOutput(edge: AbstractEdge, effect: Check): string {
     const conditions = edge.conditions;
     let containsAfterTime: string | null = null;
     let containsElapsed: string | null = null;
 
     for (const c of conditions) {
-        if (c.name == "TimeBetween" || c.name == "TimeAfterEnd") {
-            containsAfterTime = c.args[0].toString();
-        } else if (c.name == "TimeElapsed") {
-            containsElapsed = c.args[0].toString();
+        if (c instanceof TimeBetween || c instanceof TimeAfterEnd) {
+            containsAfterTime = c.millis.toString();
+        } else if (c instanceof TimeElapsed) {
+            containsElapsed = c.millis.toString();
         }
     }
 
@@ -26,11 +27,11 @@ function getEffectFailedOutput(edge: AbstractEdge, effect: AbstractCheck): strin
     return result;
 }
 
-function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: AbstractCheck, ms: number): string {
+function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number): string {
     return edge.graphID + "-" + edge.label + ": " + condition.toString() + " after " + ms + "ms";
 }
 
-function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: AbstractCheck, ms: number): string {
+function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number): string {
     return edge.graphID + "-" + edge.label + ": " + condition.toString() + " at " + ms + "ms";
 }
 
