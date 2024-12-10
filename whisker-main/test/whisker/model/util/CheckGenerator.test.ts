@@ -20,8 +20,9 @@ import {Probability} from "../../../../src/whisker/model/checks/Probability";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../../src/whisker/model/checks/TouchingEdge";
-import {AbstractCheck, Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
+import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
 
 describe('CheckGenerator', () => {
 
@@ -129,7 +130,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             let check: (sprite: Sprite) => boolean;
             const cu = getDummyCheckUtility();
-            cu.registerOnMoveEvent = (spriteName: string, c: AbstractCheck, graphID: string,
+            cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
                                       predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, c, graphID, predicate);
                 check = predicate;
@@ -178,7 +179,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             let check: (sprite: Sprite) => boolean;
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOnMoveEvent = (spriteName: string, c: AbstractCheck, graphID: string,
+            cuMock.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
                                           predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, c, graphID, predicate);
                 check = predicate;
@@ -336,7 +337,7 @@ describe('CheckGenerator', () => {
             let check: ((sprite: Sprite) => boolean);
             const fn = jest.fn();
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOutput = (spriteName: string, c: AbstractCheck, graphID: string,
+            cuMock.registerOutput = (spriteName: string, c: Check, graphID: string,
                                      predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, c, graphID, predicate);
                 check = predicate;
@@ -358,7 +359,7 @@ describe('CheckGenerator', () => {
             let check: ((sprite: Sprite) => boolean);
             const fn = jest.fn();
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOnMoveEvent = (spriteName: string, c: AbstractCheck, graphID: string,
+            cuMock.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
                                           predicate: (sprite: Sprite) => boolean) => {
                 check = predicate;
                 fn(spriteName, c, graphID, predicate);
@@ -382,7 +383,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             let check: ((sprite: Sprite) => boolean);
             const cuMock = new CheckUtilityMock();
-            cuMock.registerOnVisualChange = (spriteName: string, c: AbstractCheck, graphID: string,
+            cuMock.registerOnVisualChange = (spriteName: string, c: Check, graphID: string,
                                              predicate: (sprite: Sprite) => boolean) => {
                 check = predicate;
                 fn(spriteName, c, graphID, predicate);
@@ -452,7 +453,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             const cu = getDummyCheckUtility();
             let check: (sprite: Sprite) => boolean;
-            cu.registerOnVisualChange = (spriteName: string, c: AbstractCheck, graphID: string,
+            cu.registerOnVisualChange = (spriteName: string, c: Check, graphID: string,
                                          predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, c, graphID, predicate);
                 check = predicate;
@@ -467,7 +468,7 @@ describe('CheckGenerator', () => {
             const fn = jest.fn();
             const cu = getDummyCheckUtility();
             let check: (sprite: Sprite) => boolean;
-            cu.registerOnMoveEvent = (spriteName: string, c: AbstractCheck, graphID: string,
+            cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
                                       predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, c, graphID, predicate);
                 check = predicate;
@@ -529,7 +530,7 @@ describe('CheckGenerator', () => {
             const cu = getDummyCheckUtility();
             const fn = jest.fn();
             let check: (sprite: Sprite) => boolean;
-            cu.registerOutput = (spriteName: string, c: AbstractCheck, graphID: string,
+            cu.registerOutput = (spriteName: string, c: Check, graphID: string,
                                  predicate: (sprite: Sprite) => boolean) => {
                 fn(spriteName, c, graphID, predicate);
                 check = predicate;
@@ -710,7 +711,7 @@ describe('CheckGenerator', () => {
             let check: ((sprite: Sprite) => boolean);
             const mock = jest.fn();
             const cu = getDummyCheckUtility();
-            cu.registerOutput = (spriteName: string, c: AbstractCheck, graphID: string,
+            cu.registerOutput = (spriteName: string, c: Check, graphID: string,
                                  predicate: (sprite: Sprite) => boolean): void => {
                 check = predicate;
                 mock(spriteName, c, graphID, predicate);
@@ -822,7 +823,7 @@ describe('CheckGenerator', () => {
             let check: ((sprite: Sprite) => boolean);
             const cu = getDummyCheckUtility();
             const fn = jest.fn();
-            cu.registerOnMoveEvent = (spriteName: string, c: AbstractCheck, graphID: string,
+            cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
                                       predicate: (sprite: Sprite) => boolean): void => {
                 fn();
                 check = predicate;
