@@ -44,7 +44,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const e = ModelUtil.getExpressionForEval(t, this._code);
-        const check = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
+        const check = () => !this.negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {

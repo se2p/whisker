@@ -1,10 +1,10 @@
-import {AbstractCheck, AttrName, CheckFun0, Comparison, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, AttrName, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+import {ComparingCheck, Comparison, contradicts} from "./comparisons";
 
 const name = "AttrComp" as const;
 
@@ -48,9 +48,17 @@ export const AttrCompJSON = ICheckJSON.extend({
     args: AttrCompArgs,
 });
 
-export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
+export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
+    }
+
+    get comparison(): Comparison {
+        return this._args[2];
+    }
+
+    get value(): string | number {
+        return this._args[3];
     }
 
     protected _validate(checkJSON: AttrCompJSON): AttrCompJSON {
@@ -66,7 +74,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName, comparison, attrValue] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
 
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
@@ -112,73 +120,10 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
         const [thisSpriteName, thisAttrName] = this._args;
         const [thatSpriteName, thatAttrName] = that._args;
 
-        if (thisSpriteName !== thatSpriteName) {
+        if (thisSpriteName !== thatSpriteName || thisAttrName !== thatAttrName) {
             return false;
         }
 
-        if (thisAttrName !== thatAttrName) {
-            return false;
-        }
-
-        let thisComp = this._args[2];
-        let thatComp = that._args[2];
-
-        if (this._negated) {
-            thisComp = this._getInvertedCompOp(thisComp);
-        }
-
-        if (that._negated) {
-            thatComp = this._getInvertedCompOp(thatComp);
-        }
-
-        return this._checkComparison(thisComp, thatComp, this._args[3], that._args[3]);
-    }
-
-    private _getInvertedCompOp(comp: Comparison): Comparison {
-        switch (comp) {
-            case "==":
-                return "!=";
-            case "!=":
-                return "==";
-            case "<":
-                return ">=";
-            case ">":
-                return "<=";
-            case ">=":
-                return "<";
-            case "<=":
-                return ">";
-            default:
-                throw new NonExhaustiveCaseDistinction(comp);
-        }
-    }
-
-    private _checkComparison(comparison1: Comparison, comparison2: Comparison, pValue1: string | number, pValue2: string | number): boolean {
-        const value1 = String(pValue1);
-        const value2 = String(pValue2);
-
-        if (comparison1 == "!=" || comparison2 == "!=") {
-            return false;
-        }
-
-        // =
-        if ((comparison1 == '==') && (comparison2 == '==')) {
-            return value1 != value2;
-        }
-
-        if (comparison1 == '==') {
-            return !eval(value1 + comparison2 + value2);
-        }
-
-        if (comparison2 == '==') {
-            return !eval(value2 + comparison1 + value1);
-        }
-
-        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
-            return false;
-        }
-
-        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
+        return contradicts(this, that);
     }
 }

@@ -22,7 +22,8 @@ import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../../src/whisker/model/checks/TouchingEdge";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
-import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
+
+import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
 
 describe('CheckGenerator', () => {
 

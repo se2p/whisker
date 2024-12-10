@@ -52,7 +52,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName1, pSpriteName2] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
 
         const spriteName1 = ModelUtil.checkSpriteExistence(t, pSpriteName1).name;
         const spriteName2 = ModelUtil.checkSpriteExistence(t, pSpriteName2).name;

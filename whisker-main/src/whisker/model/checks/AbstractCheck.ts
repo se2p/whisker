@@ -22,15 +22,6 @@ export const SpriteName = z.union([
 
 export const VariableName = SpriteName;
 
-const comparisons = ["==", "!=", ">", ">=", "<", "<="] as const;
-
-export type Comparison = typeof comparisons[number];
-
-export const Comparison = z.preprocess(
-    (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
-    z.enum(comparisons)
-);
-
 export const AttrName = z.preprocess(
     (attrName) => attrName === "costume" || attrName === "currentCostume" ? "currentCostumeName" : attrName,
     z.string()
@@ -91,7 +82,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return this._checkJSON.name;
     }
 
-    protected get _negated(): J["negated"] {
+    get negated(): J["negated"] {
         return this._checkJSON.negated;
     }
 
@@ -118,11 +109,11 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): C;
 
     equals(that: AbstractCheck): boolean {
-        return this.name === that.name && this._negated === that._negated && this._equalsArgs(that);
+        return this.name === that.name && this.negated === that.negated && this._equalsArgs(that);
     }
 
     isInvertedOf(that: AbstractCheck): boolean {
-        return this.name === that.name && this._negated !== that._negated && this._equalsArgs(that);
+        return this.name === that.name && this.negated !== that.negated && this._equalsArgs(that);
     }
 
     private _equalsArgs(that: AbstractCheck): boolean {
@@ -164,7 +155,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     protected abstract _contradicts(that: AbstractCheck): boolean;
 
     toString(): string {
-        const negated = this._negated ? "!" : "";
+        const negated = this.negated ? "!" : "";
         const args = this._args.join(',');
         return `${negated}${this.name}(${args})`;
     }

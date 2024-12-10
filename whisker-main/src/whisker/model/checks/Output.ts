@@ -50,7 +50,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, output] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
 
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         let expression: string;

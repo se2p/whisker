@@ -28,7 +28,8 @@ import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {TimeAfterEnd, TimeArgs, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
-import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
+
+import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
 
 describe('Check', () => {
     const t = getDummyTestDriver();

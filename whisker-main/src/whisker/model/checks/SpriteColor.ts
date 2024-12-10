@@ -66,7 +66,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, pR, pG, pB] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
 
         const r = ModelUtil.testNumber(pR);
         const g = ModelUtil.testNumber(pG);

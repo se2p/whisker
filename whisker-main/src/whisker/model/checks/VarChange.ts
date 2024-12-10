@@ -60,7 +60,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, varName, change] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
 
         let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const {
@@ -102,13 +102,13 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> {
     private _checkChange(that: VarChange): boolean {
         let change1 = this._args[2];
         let change2 = that._args[2];
-        let negated1 = this._negated;
-        let negated2 = that._negated;
+        let negated1 = this.negated;
+        let negated2 = that.negated;
 
         if (change1.length == 2 && change2.length == 2) {
             // += & +=, -= & -= are not getting until here, caught before call to checkChange
             // += & -=, -= & += only tested here
-            return this._negated == that._negated;
+            return this.negated == that.negated;
         }
 
         if (change1.length == 2) {

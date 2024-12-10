@@ -47,7 +47,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
         const [probability] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
         const prob = ModelUtil.testNumber(probability);
         return () => {
             return !negated == (Randomness.getInstance().nextDouble() <= prob);

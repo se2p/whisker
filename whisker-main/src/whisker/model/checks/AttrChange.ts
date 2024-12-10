@@ -60,7 +60,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName, change] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;
@@ -96,7 +96,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
         const [pSpriteName, attrName, change] = this._args;
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
             try {
-                return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -107,7 +107,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
         const [pSpriteName, attrName, change] = this._args;
         cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
             try {
-                return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -136,13 +136,13 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
     private _checkChange(that: AttrChange): boolean {
         let change1 = this._args[2];
         let change2 = that._args[2];
-        let negated1 = this._negated;
-        let negated2 = that._negated;
+        let negated1 = this.negated;
+        let negated2 = that.negated;
 
         if (change1.length == 2 && change2.length == 2) {
             // += & +=, -= & -= are not getting until here, caught before call to checkChange
             // += & -=, -= & += only tested here
-            return this._negated == that._negated;
+            return this.negated == that.negated;
         }
 
         if (change1.length == 2) {

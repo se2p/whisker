@@ -10,7 +10,8 @@ import {SpriteMock} from "../SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
-import {Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
+
+import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
