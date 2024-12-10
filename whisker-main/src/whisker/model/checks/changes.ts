@@ -21,10 +21,6 @@ const ChangeOp = z.preprocess(
     z.enum(changeOps)
 );
 
-function isChangeOp(op: Change): op is ChangeOp {
-    return changeOps.includes(op as ChangeOp);
-}
-
 /**
  * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
  */
@@ -47,11 +43,14 @@ export type Change =
 
 export const Change = ChangeOp.or(NumberLike);
 
-export interface ChangingCheck {
+export interface ChangingCheck<T extends Change = Change> {
     negated: boolean;
-    change: Change;
+    change: T;
 }
 
+function isNumCheck(check: ChangingCheck): check is ChangingCheck<number> {
+    return typeof check.change === "number";
+}
 /**
  * Tells whether the two given checks contradict each other. Every check represents a set of allowed number values.
  * Two checks are contradicting if the corresponding sets are disjoint.
@@ -60,59 +59,56 @@ export interface ChangingCheck {
  * @param check2 The second check
  */
 export function contradicts(check1: ChangingCheck, check2: ChangingCheck): boolean {
-    const change1 = check1.change;
-    const change2 = check2.change;
-
-    if (isChangeOp(change1) && isChangeOp(change2)) {
-        const op1 = check1.negated ? negate(change1) : change1;
-        const op2 = check2.negated ? negate(change2) : change2;
-
-        switch (op1) {
-            case "+":
-                return ["=", "-", "-="].includes(op2);
-            case "-":
-                return ["=", "+", "+="].includes(op2);
-            case "=":
-                return ["+", "-", "!="].includes(op2);
-            case "+=":
-                return op2 === "-";
-            case "-=":
-                return op2 === "+";
-            case "!=":
-                return op2 === "=";
-            default:
-                throw new NonExhaustiveCaseDistinction(op1);
-        }
+    if (isNumCheck(check1) && isNumCheck(check2)) {
+        return contradictsNum(check1, check2);
     }
 
-    const negated2 = check2.negated;
-
-    if (isChangeOp(change1) && !isChangeOp(change2)) {
-        const op2 = numberToChangeOp(change2);
-
-        if (!check2.negated) {
-            return contradicts(check1, {...check2, change: op2});
-        }
-
-        const op1 = check1.negated ? negate(change1) : change1;
-        return op1 === op2;
+    if (isNumCheck(check1)) {
+        return contradicts(toOpCheck(check1), check2);
     }
 
-    if (!isChangeOp(change1) && isChangeOp(change2)) {
-        return contradicts(check2, check1); // Handle via the symmetry of contradicts.
+    if (isNumCheck(check2)) {
+        return contradicts(check1, toOpCheck(check2));
     }
 
-    const negated1 = check1.negated;
+    return contradictsOp(check1 as ChangingCheck<ChangeOp>, check2 as ChangingCheck<ChangeOp>);
+}
+
+function contradictsNum(check1: ChangingCheck<number>, check2: ChangingCheck<number>): boolean {
+    const {negated: negated1, change: num1} = check1;
+    const {negated: negated2, change: num2} = check2;
 
     if (negated1 && negated2) {
         return false;
     }
 
-    if (!negated1 && !negated2) {
-        return change1 !== change2;
+    if (negated1 || negated2) {
+        return num1 === num2;
     }
 
-    return change1 === change2;
+    return num1 !== num2;
+}
+
+function contradictsOp(check1: ChangingCheck<ChangeOp>, check2: ChangingCheck<ChangeOp>): boolean {
+    const op1 = check1.negated ? negate(check1.change) : check1.change;
+    const op2 = check2.negated ? negate(check2.change) : check2.change;
+
+    switch (op1) {
+        case "+":
+            return ["=", "-", "-="].includes(op2);
+        case "-":
+            return ["=", "+", "+="].includes(op2);
+        case "=":
+            return ["+", "-", "!="].includes(op2);
+        case "+=":
+            return op2 === "-";
+        case "-=":
+            return op2 === "+";
+        case "!=":
+            return op2 === "=";
+        default:
+            throw new NonExhaustiveCaseDistinction(op1);
+    }
 }
 
 function negate(op: ChangeOp): ChangeOp {
@@ -134,14 +130,9 @@ function negate(op: ChangeOp): ChangeOp {
     }
 }
 
-function numberToChangeOp(n: number): ChangeOp {
-    if (n > 0) {
-        return "+";
-    }
-
-    if (n < 0) {
-        return "-";
-    }
-
-    return "=";
+function toOpCheck({change, negated}: ChangingCheck<number>): ChangingCheck<ChangeOp> {
+    return {
+        negated,
+        change: change > 0 ? "+" : change < 0 ? "-" : "=",
+    };
 }
