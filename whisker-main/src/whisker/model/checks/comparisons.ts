@@ -1,6 +1,5 @@
 import {z} from "zod";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {AbstractCheck} from "./AbstractCheck";
 
 export const comparisons = ["==", "!=", ">", ">=", "<", "<="] as const;
 
@@ -11,7 +10,11 @@ export const Comparison = z.preprocess(
     z.enum(comparisons)
 );
 
-export type ComparingCheck = AbstractCheck & { comparison: Comparison, value: string | number };
+export interface ComparingCheck {
+    comparison: Comparison;
+    value: string | number;
+    negated: boolean;
+}
 
 export function contradicts<T extends ComparingCheck>(check1: T, check2: T): boolean {
     const comp1 = getComparison(check1);
