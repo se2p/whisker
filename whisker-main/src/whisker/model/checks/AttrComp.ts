@@ -1,6 +1,5 @@
 import {AbstractCheck, AttrName, CheckFun0, Comparison, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ArgType} from "../util/schema";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
@@ -67,22 +66,26 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName, comparison, attrValue] = this._args;
-        const edgeLabel = this._edgeLabel;
         const negated = this._negated;
 
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
+        const listener = (sprite) => {
+            try {
+                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+            } catch (e) {
+                throw new ErrorForAttribute(pSpriteName, attrName, e);
+            }
+        };
+
         // on movement listener
         if (attrName == "x" || attrName == "y") {
-            this._attributeCompOnMove(cu, edgeLabel, graphID, negated, spriteName, pSpriteName, attrName,
-                comparison, String(attrValue));
-        } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName as string)) {
-            this._attributeCompOnVisual(cu, edgeLabel, graphID, negated, spriteName, pSpriteName, attrName as string,
-                comparison, attrValue);
+            cu.registerOnMoveEvent(spriteName, this, this._edgeLabel, graphID, listener);
+        } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+            cu.registerOnVisualChange(spriteName, this, this._edgeLabel, graphID, listener);
         } else if (attrName == "sayText") {
-            this._attributeCompOnOutput(cu, edgeLabel, graphID, negated, spriteName, pSpriteName,
-                attrName, comparison, attrValue);
+            cu.registerOutput(spriteName, this, this._edgeLabel, graphID, listener);
         }
 
         // without movement
@@ -99,42 +102,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
             }
             return negated;
         };
-    }
-
-    private _attributeCompOnMove(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                 spriteName: string, pSpriteName: ArgType, attrName: string,
-                                 comparison: Comparison, attrValue: string): void {
-        cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, (sprite) => {
-            try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
-            } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
-            }
-        });
-    }
-
-    private _attributeCompOnVisual(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                   spriteName: string, pSpriteName: ArgType, attrName: string,
-                                   comparison: Comparison, attrValue: ArgType): void {
-        cu.registerOnVisualChange(spriteName, this, edgeLabel, graphID, (sprite) => {
-            try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
-            } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
-            }
-        });
-    }
-
-    private _attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
-                                   spriteName: string, pSpriteName: ArgType, attrName: string,
-                                   comparison: Comparison, attrValue: ArgType): void {
-        cu.registerOutput(spriteName, this, edgeLabel, graphID, (sprite) => {
-            try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
-            } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
-            }
-        });
     }
 
     override get dependsOnSayText(): boolean {
