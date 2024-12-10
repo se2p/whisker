@@ -83,6 +83,10 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._check = (() => false) as C;
     }
 
+    get edgeLabel(): string {
+        return this._edgeLabel;
+    }
+
     get name(): J["name"] {
         return this._checkJSON.name;
     }

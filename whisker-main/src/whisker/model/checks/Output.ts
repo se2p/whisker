@@ -51,7 +51,6 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, output] = this._args;
         const negated = this._negated;
-        const edgeLabel = this._edgeLabel;
 
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         let expression: string;
@@ -71,7 +70,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             const expected = String(eval(expression)(t)).toLocaleLowerCase();
             return sayText.includes(expected);
         };
-        cu.registerOutput(spriteName, this, edgeLabel, graphID, (s) => !negated == check(s));
+        cu.registerOutput(spriteName, this, graphID, (s) => !negated == check(s));
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anySayText = sprites.some(check);

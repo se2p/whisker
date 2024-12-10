@@ -74,7 +74,6 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, varName, comparison, varValue] = this._args;
         const negated = this._negated;
-        const edgeLabel = this._edgeLabel;
         const {
             sprite: foundSprite,
             variable: foundVar
@@ -91,7 +90,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> {
             }
         }
 
-        cu.registerVarEvent(variableName, this, edgeLabel, graphID, check);
+        cu.registerVarEvent(variableName, this, graphID, check);
         return check;
     }
 

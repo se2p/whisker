@@ -94,7 +94,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
         const [pSpriteName, attrName, change] = this._args;
-        cu.registerOnMoveEvent(spriteName, this, this._edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
             try {
                 return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
@@ -105,7 +105,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> {
 
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
         const [pSpriteName, attrName, change] = this._args;
-        cu.registerOnVisualChange(spriteName, this, this._edgeLabel, graphID, (sprite) => {
+        cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
             try {
                 return !this._negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {

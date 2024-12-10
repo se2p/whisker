@@ -81,11 +81,11 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> {
 
         // on movement listener
         if (attrName == "x" || attrName == "y") {
-            cu.registerOnMoveEvent(spriteName, this, this._edgeLabel, graphID, listener);
+            cu.registerOnMoveEvent(spriteName, this, graphID, listener);
         } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-            cu.registerOnVisualChange(spriteName, this, this._edgeLabel, graphID, listener);
+            cu.registerOnVisualChange(spriteName, this, graphID, listener);
         } else if (attrName == "sayText") {
-            cu.registerOutput(spriteName, this, this._edgeLabel, graphID, listener);
+            cu.registerOutput(spriteName, this, graphID, listener);
         }
 
         // without movement

@@ -67,7 +67,6 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, pR, pG, pB] = this._args;
         const negated = this._negated;
-        const edgeLabel = this._edgeLabel;
 
         const r = ModelUtil.testNumber(pR);
         const g = ModelUtil.testNumber(pG);
@@ -77,7 +76,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
             throw new RGBRangeError();
         }
         // on movement check sprite color
-        cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
             return !negated == sprite.isTouchingColor([r, g, b]);
         });
 
