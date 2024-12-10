@@ -481,7 +481,7 @@ describe('CheckGenerator', () => {
         });
 
         test('Check is not a constant function', () => {
-            const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostume", "=="]});
+            const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostume", "="]});
             c.registerComponents(t, dummyCU, graphID);
             expect(c.check()).toEqual(true);
             stage.variables = [{

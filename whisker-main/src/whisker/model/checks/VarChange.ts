@@ -5,7 +5,7 @@ import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
-import {ChangingCheck, contradicts} from "./changes";
+import {Change, ChangingCheck, contradicts} from "./changes";
 
 const name = "VarChange" as const;
 
@@ -20,18 +20,13 @@ export type VarChangeArgs = [
      */
     varName: VariableName,
 
-    /**
-     * For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
-     * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
-     * change by an exact value '+<number>' or '<number>' or '-<number>'.
-     */
-    change: string,
+    change: Change,
 ];
 
 export const VarChangeArgs = z.tuple([
     SpriteName,
     VariableName,
-    z.string(),
+    Change,
 ]);
 
 export interface VarChangeJSON extends ICheckJSON {
@@ -49,7 +44,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         super(edgeLabel, {...json, name});
     }
 
-    get change(): string {
+    get change(): Change {
         return this._args[2];
     }
 

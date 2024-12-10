@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {ChangingCheck, contradicts} from "./changes";
+import {Change, ChangingCheck, contradicts} from "./changes";
 
 const name = "AttrChange" as const;
 
@@ -18,18 +18,13 @@ export type AttrChangeArgs = [
      */
     attrName: string,
 
-    /**
-     * For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
-     * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
-     * change by an exact value '+<number>' or '<number>' or '-<number>'.
-     */
-    change: string,
+    change: Change,
 ];
 
 const AttrChangeArgs = z.tuple([
     SpriteName,
     AttrName,
-    z.string(),
+    Change,
 ]);
 
 export interface AttrChangeJSON extends ICheckJSON {
@@ -47,7 +42,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         super(edgeLabel, {...json, name});
     }
 
-    get change(): string {
+    get change(): Change {
         return this._args[2];
     }
 
