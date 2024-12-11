@@ -20,7 +20,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Key",
                         "args": [
                             "down"
@@ -30,7 +30,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "InputKey",
                         "args": [
                             "up"
@@ -38,7 +38,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect2",
+
                         "name": "InputKey",
                         "args": [
                             "down"
@@ -46,7 +46,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect3",
+
                         "name": "InputKey",
                         "args": "left",
                         "negated": false

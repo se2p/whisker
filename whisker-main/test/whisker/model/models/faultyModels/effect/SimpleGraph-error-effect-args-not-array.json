@@ -20,7 +20,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -30,7 +30,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "Key",
                         "args": "up",
                         "negated": false

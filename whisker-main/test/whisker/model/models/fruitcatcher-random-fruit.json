@@ -37,7 +37,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -56,7 +56,7 @@
                 "forceTestAt": 31000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Output",
                         "args": [
                             "Bowl",
@@ -85,7 +85,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Key",
                         "args": [
                             "right arrow"
@@ -93,7 +93,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Key",
                         "args": [
                             "left arrow"
@@ -101,7 +101,7 @@
                         "negated": true
                     },
                     {
-                        "id": "condition3",
+
                         "name": "TouchingVerticalEdge",
                         "args": [
                             "Bowl"
@@ -111,7 +111,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrChange",
                         "args": [
                             "Bowl",
@@ -131,7 +131,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Key",
                         "args": [
                             "left arrow"
@@ -139,7 +139,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Key",
                         "args": [
                             "right arrow"
@@ -147,7 +147,7 @@
                         "negated": true
                     },
                     {
-                        "id": "condition3",
+
                         "name": "TouchingVerticalEdge",
                         "args": [
                             "Bowl"
@@ -157,7 +157,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrChange",
                         "args": [
                             "Bowl",
@@ -177,7 +177,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Key",
                         "args": [
                             "left arrow"
@@ -185,7 +185,7 @@
                         "negated": true
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Key",
                         "args": [
                             "right arrow"
@@ -195,7 +195,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrChange",
                         "args": [
                             "Bowl",
@@ -215,7 +215,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "TimeBetween",
                         "args": [
                             "1000"
@@ -225,7 +225,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "Output",
                         "args": [
                             "Bowl",
@@ -273,7 +273,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteColor",
                         "args": [
                             "(Apfel|Apple)",
@@ -295,7 +295,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "(Apfel|Apple)",
@@ -315,7 +315,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -336,7 +336,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -393,7 +393,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteColor",
                         "args": [
                             "(Apfel|Apple)",
@@ -406,7 +406,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "Output",
                         "args": [
                             "(Apfel|Apple)",
@@ -425,7 +425,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "TimeBetween",
                         "args": [
                             "1000"
@@ -435,7 +435,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "Output",
                         "args": [
                             "(Apfel|Apple)",
@@ -454,7 +454,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "(Apfel|Apple)",
@@ -474,7 +474,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -496,7 +496,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -548,7 +548,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -567,7 +567,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteColor",
                         "args": [
                             "Banan",
@@ -589,7 +589,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "effect1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -610,7 +610,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -632,7 +632,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "Banan",
@@ -652,7 +652,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -705,7 +705,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -724,7 +724,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteColor",
                         "args": [
                             "Banan",
@@ -746,7 +746,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -768,7 +768,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "Banan",
@@ -788,7 +788,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -809,7 +809,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -850,7 +850,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -860,7 +860,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect2",
+
                         "name": "VarComp",
                         "args": [
                             "_stage_",
@@ -871,7 +871,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect3",
+
                         "name": "AttrComp",
                         "args": [
                             "Bowl",
@@ -882,7 +882,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect4",
+
                         "name": "AttrComp",
                         "args": [
                             "Bowl",
@@ -893,7 +893,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect1",
+
                         "name": "AttrComp",
                         "args": [
                             "Apple",
@@ -904,7 +904,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect5",
+
                         "name": "AttrComp",
                         "args": [
                             "Bananas",
@@ -925,7 +925,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -935,7 +935,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrChange",
                         "args": [
                             "Bowl",
@@ -945,7 +945,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect2",
+
                         "name": "NbrOfVisibleClones",
                         "args": [
                             "(Apfel|Apple)",
@@ -955,7 +955,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect3",
+
                         "name": "NbrOfVisibleClones",
                         "args": [
                             "Banan",
@@ -996,7 +996,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -1008,7 +1008,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "TimeBetween",
                         "args": [
                             "1000"
@@ -1026,7 +1026,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarComp",
                         "args": [
                             "_stage_",
@@ -1037,7 +1037,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "TimeElapsed",
                         "args": [
                             "2000"
@@ -1079,7 +1079,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarComp",
                         "args": [
                             "_stage_",
@@ -1101,7 +1101,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarComp",
                         "args": [
                             "_stage_",
@@ -1123,7 +1123,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "effect1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -1135,7 +1135,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -1200,7 +1200,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -1219,7 +1219,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition4",
+
                         "name": "SpriteColor",
                         "args": [
                             "(Apfel|Apple)",
@@ -1241,7 +1241,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "(Apfel|Apple)",
@@ -1261,7 +1261,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -1282,7 +1282,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -1293,7 +1293,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -1314,7 +1314,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition2",
+
                         "name": "SpriteTouching",
                         "args": [
                             "Banan",
@@ -1334,7 +1334,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -1355,7 +1355,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition3",
+
                         "name": "SpriteColor",
                         "args": [
                             "Banan",
@@ -1377,7 +1377,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -1388,7 +1388,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -1409,7 +1409,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -1420,7 +1420,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -1442,7 +1442,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -1452,7 +1452,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -1501,7 +1501,7 @@
                 "forceTestAt": 5000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -1512,7 +1512,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -1534,7 +1534,7 @@
                 "forceTestAt": 5000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -1545,7 +1545,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -1566,7 +1566,7 @@
                 "forceTestAt": 10000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "(Apfel|Apple)",
@@ -1601,7 +1601,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -1613,7 +1613,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -1659,7 +1659,7 @@
                 "forceTestAt": 5000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -1670,7 +1670,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -1692,7 +1692,7 @@
                 "forceTestAt": 6000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -1703,7 +1703,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -1757,7 +1757,7 @@
                 "forceTestAt": 30000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -1778,7 +1778,7 @@
                 "forceTestAt": 30000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -1799,7 +1799,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "TimeElapsed",
                         "args": [
                             "250"
@@ -1818,7 +1818,7 @@
                 "forceTestAt": 30000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -1872,7 +1872,7 @@
                 "forceTestAt": 30000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -1893,7 +1893,7 @@
                 "forceTestAt": 30000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -1914,7 +1914,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "TimeElapsed",
                         "args": [
                             "250"
@@ -1933,7 +1933,7 @@
                 "forceTestAt": 30000,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -1969,7 +1969,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -1981,7 +1981,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrComp",
                         "args": [
                             "(Apfel|Apple)",
@@ -2002,7 +2002,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -2012,7 +2012,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "TouchingHorizEdge",
                         "args": [
                             "(Apfel|Apple)"
@@ -2033,7 +2033,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -2043,7 +2043,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect2",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -2092,7 +2092,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2114,7 +2114,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2127,7 +2127,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "TimeElapsed",
                         "args": [
                             "1000"
@@ -2145,7 +2145,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -2197,7 +2197,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -2216,7 +2216,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "Banan",
@@ -2236,7 +2236,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2258,7 +2258,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteColor",
                         "args": [
                             "Banan",
@@ -2271,7 +2271,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "Output",
                         "args": [
                             "Banan",
@@ -2290,7 +2290,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "TimeBetween",
                         "args": [
                             "1000"
@@ -2300,7 +2300,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "Output",
                         "args": [
                             "Banan",
@@ -2319,7 +2319,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2341,7 +2341,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -2351,7 +2351,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2362,7 +2362,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition3",
+
                         "name": "TouchingHorizEdge",
                         "args": [
                             "Banan"
@@ -2383,7 +2383,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -2393,7 +2393,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect2",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -2448,7 +2448,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -2467,7 +2467,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteTouching",
                         "args": [
                             "Banan",
@@ -2487,7 +2487,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2509,7 +2509,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteColor",
                         "args": [
                             "Banan",
@@ -2531,7 +2531,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2544,7 +2544,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "TimeBetween",
                         "args": [
                             "1000"
@@ -2562,7 +2562,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2575,7 +2575,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "TimeBetween",
                         "args": [
                             "1000"
@@ -2593,7 +2593,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrComp",
                         "args": [
                             "Banan",
@@ -2604,7 +2604,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -2644,7 +2644,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Bowl",
@@ -2654,7 +2654,7 @@
                         "negated": true
                     },
                     {
-                        "id": "condition2",
+
                         "name": "TouchingVerticalEdge",
                         "args": [
                             "Bowl"
@@ -2664,7 +2664,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "Expr",
                         "args": [
                             "Math.abs($(Bowl.old.x)-$(Bowl.x))==10"
@@ -2682,7 +2682,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -2742,7 +2742,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Probability",
                         "args": [
                             "0.05"
@@ -2761,7 +2761,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Probability",
                         "args": [
                             "0.1"
@@ -2780,7 +2780,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Probability",
                         "args": [
                             "0.2"
@@ -2799,7 +2799,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -2818,7 +2818,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "SpriteColor",
                         "args": [
                             "(Apfel|Apple)",
@@ -2829,7 +2829,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "TimeElapsed",
                         "args": [
                             "1000"
@@ -2848,7 +2848,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Apple.x)>=0"
@@ -2875,7 +2875,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Apple.x)<0"
@@ -2902,7 +2902,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Probability",
                         "args": [
                             "0.5"
@@ -2921,7 +2921,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",
@@ -2942,7 +2942,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Bowl.x)>$(Apple.x)"
@@ -2950,7 +2950,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Expr",
                         "args": [
                             "Math.abs($(Bowl.x)-$(Apple.x))>10"
@@ -2977,7 +2977,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Bowl.x)<$(Apple.x)"
@@ -2985,7 +2985,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Expr",
                         "args": [
                             "Math.abs($(Bowl.x)-$(Apple.x))>10"
@@ -3012,7 +3012,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Bowl.x)>$(Apple.x)"
@@ -3020,7 +3020,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Expr",
                         "args": [
                             "Math.abs($(Bowl.x)-$(Apple.x))>10"
@@ -3047,7 +3047,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Bowl.x)<$(Apple.x)"
@@ -3055,7 +3055,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Expr",
                         "args": [
                             "Math.abs($(Bowl.x)-$(Apple.x))>10"
@@ -3082,7 +3082,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Probability",
                         "args": [
                             "1"
@@ -3101,7 +3101,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -3122,7 +3122,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Bowl.x)>$(Bananas.x)"
@@ -3130,7 +3130,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Expr",
                         "args": [
                             "Math.abs($(Bowl.x)-$(Bananas.x))>10"
@@ -3157,7 +3157,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "$(Bowl.x)<$(Bananas.x)"
@@ -3165,7 +3165,7 @@
                         "negated": false
                     },
                     {
-                        "id": "condition2",
+
                         "name": "Expr",
                         "args": [
                             "Math.abs($(Bowl.x)-$(Bananas.x))>10"
@@ -3213,7 +3213,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "TimeAfterEnd",
                         "args": [
                             "2000"
@@ -3232,7 +3232,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "condition1",
+
                         "name": "Expr",
                         "args": [
                             "true"
@@ -3242,7 +3242,7 @@
                 ],
                 "effects": [
                     {
-                        "id": "effect1",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -3252,7 +3252,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect2",
+
                         "name": "VarChange",
                         "args": [
                             "_stage_",
@@ -3262,7 +3262,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect3",
+
                         "name": "AttrChange",
                         "args": [
                             "Banan",
@@ -3272,7 +3272,7 @@
                         "negated": false
                     },
                     {
-                        "id": "effect4",
+
                         "name": "AttrChange",
                         "args": [
                             "(Apfel|Apple)",

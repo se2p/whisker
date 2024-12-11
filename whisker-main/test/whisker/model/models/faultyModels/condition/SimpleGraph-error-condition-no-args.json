@@ -20,7 +20,7 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "effect1",
+
                         "name": "Key",
                         "negated": false
                     }
