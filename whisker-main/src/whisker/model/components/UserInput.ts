@@ -23,23 +23,17 @@ export type UserInputName = typeof USER_INPUT_NAMES[number];
  * Class for giving the Scratch VM immediate inputs.
  */
 export class UserInput {
-    private readonly _id: string;
     private readonly _name: UserInputName;
     private _userInput: (t: TestDriver) => void;
     private readonly _args: ArgType[];
 
     /**
      * Get an input effect. Checks the length of the arguments based on the input type.
-     * @param id Id for this effect.
      * @param name Type of the input effect
      * @param args Arguments for this input effect.
      */
-    constructor(id: string, name: UserInputName, args: ArgType[]) {
-        if (!id) {
-            throw new Error("No id given.");
-        }
+    constructor(name: UserInputName, args: ArgType[]) {
         this._name = name;
-        this._id = id;
         this._args = args;
         this._userInput = () => void 0;
 
@@ -137,7 +131,6 @@ export class UserInput {
 
     toJSON(): UserInputJSON {
         return {
-            id: this._id,
             name: this._name,
             args: this._args,
         };

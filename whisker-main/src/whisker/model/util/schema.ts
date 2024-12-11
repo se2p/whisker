@@ -13,13 +13,11 @@ const ArgType = z.union([
 const UserInputName = z.enum(USER_INPUT_NAMES);
 
 export interface UserInputJSON {
-    id: string;
     name: UserInputName;
     args: ArgType[];
 }
 
 const UserInputJSON = z.object({
-    id: z.string(),
     name: UserInputName,
     args: z.array(ArgType),
 });

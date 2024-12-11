@@ -108,7 +108,7 @@ describe('Model edges', () => {
     });
 
     test("User model edge", () => {
-        const inputEffect = new UserInput("id", "InputKey", ["left"]);
+        const inputEffect = new UserInput( "InputKey", ["left"]);
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
         const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addUserInput(inputEffect);
@@ -141,7 +141,7 @@ describe('Model edges', () => {
 
     test("UserModelEdge.toJSON()", () => {
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
-        const inputEffect = new UserInput("id", "InputKey", ["left"]);
+        const inputEffect = new UserInput( "InputKey", ["left"]);
         const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addUserInput(inputEffect);
         edge.addCondition(condition);

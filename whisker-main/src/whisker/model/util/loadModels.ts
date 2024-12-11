@@ -189,7 +189,7 @@ function addUserInputs(edge: UserModelEdge, rawUserInputs: UserInputJSON[]): voi
             i.args[0] = canonicalizeInputKey(i.args[0]);
         }
 
-        edge.addUserInput(new UserInput(i.id, i.name, i.args));
+        edge.addUserInput(new UserInput(i.name, i.args));
     }
 }
 
