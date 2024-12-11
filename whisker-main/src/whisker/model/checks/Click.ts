@@ -46,7 +46,7 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anyTouchingMouse = sprites.some((s: Sprite) => s.visible && t.isMouseDown() && s.isTouchingMouse());
-            return !this._negated == anyTouchingMouse;
+            return !this.negated == anyTouchingMouse;
         };
     }
 

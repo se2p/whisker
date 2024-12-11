@@ -42,7 +42,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
         const [newBackground] = this._args;
-        const negated = this._negated;
+        const negated = this.negated;
 
         // without movement
         return () => {

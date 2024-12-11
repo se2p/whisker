@@ -13,7 +13,8 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
-import {Comparison} from "../checks/AbstractCheck";
+
+import {Comparison} from "../checks/comparisons";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],

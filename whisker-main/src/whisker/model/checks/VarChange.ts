@@ -5,6 +5,7 @@ import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
+import {Change, ChangingCheck, contradicts} from "./changes";
 
 const name = "VarChange" as const;
 
@@ -19,18 +20,13 @@ export type VarChangeArgs = [
      */
     varName: VariableName,
 
-    /**
-     * For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
-     * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
-     * change by an exact value '+<number>' or '<number>' or '-<number>'.
-     */
-    change: string,
+    change: Change,
 ];
 
 export const VarChangeArgs = z.tuple([
     SpriteName,
     VariableName,
-    z.string(),
+    Change,
 ]);
 
 export interface VarChangeJSON extends ICheckJSON {
@@ -43,9 +39,13 @@ export const VarChangeJSON = ICheckJSON.extend({
     args: VarChangeArgs,
 });
 
-export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> {
+export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implements ChangingCheck {
     constructor(edgeLabel: string, json: SlimCheckJSON<VarChangeJSON>) {
         super(edgeLabel, {...json, name});
+    }
+
+    get change(): Change {
+        return this._args[2];
     }
 
     protected _validate(checkJSON: VarChangeJSON): VarChangeJSON {
@@ -60,8 +60,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, varName, change] = this._args;
-        const negated = this._negated;
-        const edgeLabel = this._edgeLabel;
+        const negated = this.negated;
 
         let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const {
@@ -71,6 +70,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> {
         sprite = foundSprite;
         const spriteName = sprite.name;
         const variableName = foundVar.name;
+
         function check(): boolean {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
@@ -81,7 +81,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> {
             }
         }
 
-        cu.registerVarEvent(variableName, this, edgeLabel, graphID, check);
+        cu.registerVarEvent(variableName, this, graphID, check);
         return check;
     }
 
@@ -89,47 +89,11 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> {
         const [spriteNameThis, varNameThis] = this._args;
         const [spriteNameThat, varNameThat] = that._args;
 
-        if (spriteNameThis !== spriteNameThat) {
+        if (spriteNameThis !== spriteNameThat || varNameThis !== varNameThat) {
             return false;
         }
 
-        if (varNameThis !== varNameThat) {
-            return false;
-        }
-
-        return this._checkChange(that);
-    }
-
-    private _checkChange(that: VarChange): boolean {
-        let change1 = this._args[2];
-        let change2 = that._args[2];
-        let negated1 = this._negated;
-        let negated2 = that._negated;
-
-        if (change1.length == 2 && change2.length == 2) {
-            // += & +=, -= & -= are not getting until here, caught before call to checkChange
-            // += & -=, -= & += only tested here
-            return this._negated == that._negated;
-        }
-
-        if (change1.length == 2) {
-            change1 = this._getInvertedChangeOp(change1);
-            negated1 = !negated1;
-        } else if (change2.length == 2) {
-            change2 = this._getInvertedChangeOp(change2);
-            negated2 = !negated2;
-        }
-
-        if (change1 == change2) {
-            return negated1 != negated2;
-        }
-
-        return !negated1 && !negated2;
-    }
-
-    // only for += and -=
-    private _getInvertedChangeOp(change: string): string {
-        return change == "+=" ? "-" : "+";
+        return contradicts(this, that);
     }
 
     override get dependsOnSayText(): boolean {

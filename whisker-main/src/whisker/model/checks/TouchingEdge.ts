@@ -43,11 +43,10 @@ abstract class AbstractTouchingEdge<
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName] = this._args;
-        const negated = this._negated;
-        const edgeLabel = this._edgeLabel;
+        const negated = this.negated;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const check = this._getCheck();
-        cu.registerOnMoveEvent(spriteName, this._self(), edgeLabel, graphID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, this._self(), graphID, (sprite) => {
             return !negated == check(sprite);
         });
         return () => {

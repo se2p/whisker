@@ -44,7 +44,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const e = ModelUtil.getExpressionForEval(t, this._code);
-        const check = () => !this._negated == ModelUtil.evaluateExpression(t, e.expr);
+        const check = () => !this.negated == ModelUtil.evaluateExpression(t, e.expr);
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
@@ -54,18 +54,17 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
     }
 
     private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => boolean) {
-        const edgeLabel = this._edgeLabel;
         d.varDependencies.forEach(dependency => {
-            cu.registerVarEvent(dependency.varName, this, edgeLabel, graphID, predicate);
+            cu.registerVarEvent(dependency.varName, this, graphID, predicate);
         });
 
         d.attrDependencies.forEach(({spriteName, attrName}) => {
             if (attrName == "x" || attrName == "y") {
-                cu.registerOnMoveEvent(spriteName, this, edgeLabel, graphID, predicate);
+                cu.registerOnMoveEvent(spriteName, this, graphID, predicate);
             } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-                cu.registerOnVisualChange(spriteName, this, edgeLabel, graphID, predicate);
+                cu.registerOnVisualChange(spriteName, this, graphID, predicate);
             } else if (attrName == "sayText") {
-                cu.registerOutput(spriteName, this, edgeLabel, graphID, predicate);
+                cu.registerOutput(spriteName, this, graphID, predicate);
             }
         });
     }

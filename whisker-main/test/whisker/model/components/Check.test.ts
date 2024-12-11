@@ -23,12 +23,13 @@ import {
     TouchingHorizEdge,
     TouchingVerticalEdge
 } from "../../../../src/whisker/model/checks/TouchingEdge";
-import {CHECK_NAMES, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
+import {Check, CHECK_NAMES, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
-import {AbstractCheck, Comparison} from "../../../../src/whisker/model/checks/AbstractCheck";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {TimeAfterEnd, TimeArgs, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
-import { Checks } from "../../../../src/whisker/model/util/Checks";
+import {Checks} from "../../../../src/whisker/model/util/Checks";
+
+import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
 
 describe('Check', () => {
     const t = getDummyTestDriver();
@@ -428,12 +429,12 @@ describe('Effect', () => {
 
     type TableEntry = [CheckName, boolean, ArgType[], CheckName, boolean, ArgType[], boolean];
 
-    function assertSymmetricContradiction(effect1: AbstractCheck, effect2: AbstractCheck, expected: boolean) {
+    function assertSymmetricContradiction(effect1: Check, effect2: Check, expected: boolean) {
         expect(effect1.contradicts(effect2)).toBe(expected);
         expect(effect2.contradicts(effect1)).toBe(expected);
     }
 
-    function assertSymmetricContradiction2(effect1: AbstractCheck, name: CheckName, negated: boolean,
+    function assertSymmetricContradiction2(effect1: Check, name: CheckName, negated: boolean,
                                            args: ArgType[], expected: boolean) {
         assertSymmetricContradiction(effect1, newCheck(edgeID, {name, negated, args: args as any}), expected);
     }
@@ -443,22 +444,22 @@ describe('Effect', () => {
     }
 
     function mapToTwoEffects(checkName1: CheckName, negated1: boolean, args1: ArgType[],
-                             checkName2: CheckName, negated2: boolean, args2: ArgType[], expected: boolean): [AbstractCheck, AbstractCheck, boolean] {
+                             checkName2: CheckName, negated2: boolean, args2: ArgType[], expected: boolean): [Check, Check, boolean] {
         return [
             newCheck(edgeID, {name: checkName1, negated: negated1, args: args1 as any}),
             newCheck(edgeID, {name: checkName2, negated: negated2, args: args2 as any}), expected
         ];
     }
 
-    function mapToRightFormat(table: TableEntry[]): [AbstractCheck, AbstractCheck, boolean][] {
+    function mapToRightFormat(table: TableEntry[]): [Check, Check, boolean][] {
         return table.map((entry: TableEntry) => {
             return mapToTwoEffects(...entry);
         });
     }
 
     function getEffectsCombinationsFor(id: string, edgeLabel: string, first: CheckName, optionsFirst: string[],
-                                       second: CheckName, optionsSecond: string[]): [AbstractCheck, AbstractCheck, boolean][] {
-        const effects: [AbstractCheck, AbstractCheck, boolean][] = [];
+                                       second: CheckName, optionsSecond: string[]): [Check, Check, boolean][] {
+        const effects: [Check, Check, boolean][] = [];
         for (const option1 of optionsFirst) {
             const effect1 = newCheck(edgeLabel, {
                 name: first,
@@ -480,7 +481,7 @@ describe('Effect', () => {
     const optionsFirst = [">", ">=", "=", "<=", "<"];
     const optionsSecond = ["+", "+=", "=", "-=", "-"];
 
-    function getEffectComparisonChangeCombinations(first: CheckName, second: CheckName): [AbstractCheck, AbstractCheck, boolean][] {
+    function getEffectComparisonChangeCombinations(first: CheckName, second: CheckName): [Check, Check, boolean][] {
         return getEffectsCombinationsFor("sprite", "var", first, optionsFirst, second, optionsSecond);
     }
 
@@ -630,7 +631,7 @@ describe('Effect', () => {
                 return pairs;
             }
 
-            const effects: AbstractCheck[] = [
+            const effects: Check[] = [
                 newCheck(edgeID, {name: "Output", negated: true, args: ["sprite", "hi"]}),
                 newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "var", "+"]}),
                 newCheck(edgeID, {name: "AttrChange", negated: true, args: ["test", "attr", "-"]}),
@@ -765,8 +766,8 @@ describe('Effect', () => {
                 ["AttrChange", true, ['sprite', 'var', '-'], "AttrChange", true, ['sprite', 'var', '-='], false],
 
                 // different values
-                ["VarChange", true, ['sprite', 'var', '-5'], "VarChange", true, ['sprite', 'var', '-7'], true],
-                ["VarChange", true, ['sprite', 'var', '+5'], "VarChange", true, ['sprite', 'var', '+7'], true],
+                ["VarChange", true, ['sprite', 'var', '-5'], "VarChange", true, ['sprite', 'var', '-7'], false],
+                ["VarChange", true, ['sprite', 'var', '+5'], "VarChange", true, ['sprite', 'var', '+7'], false],
                 ["AttrChange", false, ['sprite', 'var', '-5'], "AttrChange", false, ['sprite', 'var', '-7'], true],
                 ["AttrChange", false, ['sprite', 'var', '+5'], "AttrChange", false, ['sprite', 'var', '+7'], true],
             ];

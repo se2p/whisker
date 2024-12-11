@@ -89,7 +89,7 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun2 {
         const steps = this._convertFromTimeToSteps(t);
         return (_, stepsSinceEnd) => {
-            return !this._negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
+            return !this.negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
         };
     }
 }
@@ -120,7 +120,7 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun1 {
         const steps = this._convertFromTimeToSteps(t);
         return (stepsSinceLastTransition) => {
-            return !this._negated == (steps <= stepsSinceLastTransition);
+            return !this.negated == (steps <= stepsSinceLastTransition);
         };
     }
 }
@@ -151,7 +151,7 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
         const steps = this._convertFromTimeToSteps(t);
         return () => {
-            return !this._negated == (steps <= t.getTotalStepsExecuted());
+            return !this.negated == (steps <= t.getTotalStepsExecuted());
         };
     }
 }
