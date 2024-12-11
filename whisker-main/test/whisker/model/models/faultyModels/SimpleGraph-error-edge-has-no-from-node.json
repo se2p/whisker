@@ -19,7 +19,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-
                         "name": "keys",
                         "args": [
                             "Space"
@@ -29,7 +28,6 @@
                 ],
                 "effects": [
                     {
-
                         "name": "Output",
                         "args": [
                             "Cat",

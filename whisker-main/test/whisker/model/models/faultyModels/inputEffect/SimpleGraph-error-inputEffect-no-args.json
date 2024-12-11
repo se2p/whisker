@@ -30,7 +30,6 @@
                 ],
                 "effects": [
                     {
-
                         "name": "InputEffect",
                         "args": [
                             "up"

@@ -17,7 +17,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-
                         "name": "Key",
                         "args": [
                             "Space"
@@ -27,7 +26,6 @@
                 ],
                 "effects": [
                     {
-
                         "name": "Output",
                         "args": [
                             "Cat",
@@ -60,7 +58,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-
                         "name": "Key",
                         "args": [
                             "up arrow"
@@ -70,7 +67,6 @@
                 ],
                 "effects": [
                     {
-
                         "name": "Output",
                         "args": [
                             "Cat",
