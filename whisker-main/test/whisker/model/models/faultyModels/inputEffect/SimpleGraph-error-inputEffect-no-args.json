@@ -30,7 +30,6 @@
                 ],
                 "effects": [
                     {
-                        "id": "condition1",
                         "name": "InputEffect",
                         "args": [
                             "up"

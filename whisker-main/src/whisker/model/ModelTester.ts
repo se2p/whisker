@@ -11,12 +11,7 @@ import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
 import {UserModelEdge} from "./components/UserModelEdge";
 import {ProgramModelEdge} from "./components/ProgramModelEdge";
-import {
-    CoverageResult,
-    EndModel,
-    ExtendedCoverageResult,
-    ProgramModel,
-} from "./components/ProgramModel";
+import {CoverageResult, EndModel, ExtendedCoverageResult, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {EndModelJSON, ModelJSON, ProgramModelJSON, UserModelJSON} from "./util/schema";
 import {Checks} from "./util/Checks";

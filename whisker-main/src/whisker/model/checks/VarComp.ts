@@ -80,6 +80,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
+
         function check() {
             const sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable = sprite.getVariable(variableName);
