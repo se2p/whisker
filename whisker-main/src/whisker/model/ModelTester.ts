@@ -163,15 +163,13 @@ export class ModelTester extends EventEmitter {
     }
 
     private _getModelStepFunction() {
-        let checkProgramModels = [...this._programModels];
         return () => {
             this._checkUtility!.makeFailedOutputs();
             const notStoppedModels: ProgramModel[] = [];
-            checkProgramModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
+            this._programModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
             const contradictingEffects = this._checkUtility!.checkEffects();
             this._printContradictingEffects(contradictingEffects);
-            checkProgramModels = [...notStoppedModels];
-            if (checkProgramModels.length == 0) {
+            if (notStoppedModels.length == 0) {
                 this._modelStepCallback!.disable();
             }
         };
@@ -211,19 +209,17 @@ export class ModelTester extends EventEmitter {
     }
 
     private _getOnTestEndFunction() {
-        let afterStopModels = [...this._onTestEndModels];
         return () => {
             this._checkUtility!.makeFailedOutputs();
             const notStoppedModels: EndModel[] = [];
-            afterStopModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
+            this._onTestEndModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
             const contradictingEffects = this._checkUtility!.checkEffects();
             this._printContradictingEffects(contradictingEffects);
             if (notStoppedModels.length == 0) {
                 this._onTestEndCallback!.disable();
             }
-            afterStopModels = [...notStoppedModels];
 
-            afterStopModels.forEach(model => {
+            notStoppedModels.forEach(model => {
                 if (model.haltAllModels()) {
                     this._onTestEndCallback!.disable();
                     return;
@@ -237,10 +233,9 @@ export class ModelTester extends EventEmitter {
             return;
         }
 
-        let userModels = [...this._userModels];
         const userInputFun = () => {
             const notStoppedUserModels: UserModel[] = [];
-            userModels.forEach(model => {
+            this._userModels.forEach(model => {
                 const edge = model.makeOneTransition(this._testDriver!, this._checkUtility!);
                 if (edge instanceof UserModelEdge) {
                     edge.inputImmediate(this._testDriver!);
@@ -249,8 +244,7 @@ export class ModelTester extends EventEmitter {
                     notStoppedUserModels.push(model);
                 }
             });
-            userModels = notStoppedUserModels;
-            if (userModels.length == 0) {
+            if (notStoppedUserModels.length == 0) {
                 // logger.debug("Input generation per user models stopped.");
                 callback.disable();
             }
