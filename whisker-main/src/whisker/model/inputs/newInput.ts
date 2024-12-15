@@ -6,7 +6,7 @@ import {MouseDown, MouseDownJSON} from "./MouseDown";
 import {MouseMove, MouseMoveJSON} from "./MouseMove";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
-export type Input =
+export type UserInput =
     | ClickSprite
     | ClickStage
     | InputKey
@@ -15,7 +15,7 @@ export type Input =
     | MouseMove
     ;
 
-export type InputJSON =
+export type UserInputJSON =
     | ClickSpriteJSON
     | ClickStageJSON
     | InputKeyJSON
@@ -24,7 +24,7 @@ export type InputJSON =
     | MouseMoveJSON
     ;
 
-export type UserInputName = InputJSON['name'];
+export type UserInputName = UserInputJSON['name'];
 
 export const USER_INPUT_NAMES: readonly UserInputName[] = Object.freeze([
     "InputClickSprite",
@@ -35,7 +35,7 @@ export const USER_INPUT_NAMES: readonly UserInputName[] = Object.freeze([
     "InputText",
 ] as const);
 
-export function newInput(inputJSON: InputJSON): Input {
+export function newInput(inputJSON: UserInputJSON): UserInput {
     const name = inputJSON.name;
     switch (name) {
         case "InputClickSprite":
