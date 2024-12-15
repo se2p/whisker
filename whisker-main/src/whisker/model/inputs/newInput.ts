@@ -24,6 +24,17 @@ export type InputJSON =
     | MouseMoveJSON
     ;
 
+export type UserInputName = InputJSON['name'];
+
+export const USER_INPUT_NAMES: readonly UserInputName[] = Object.freeze([
+    "InputClickSprite",
+    "InputClickStage",
+    "InputKey",
+    "InputMouseDown",
+    "InputMouseMove",
+    "InputText",
+] as const);
+
 export function newInput(inputJSON: InputJSON): Input {
     const name = inputJSON.name;
     switch (name) {
