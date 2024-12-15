@@ -1,26 +1,8 @@
 import {z} from "zod";
-import {USER_INPUT_NAMES, UserInputName} from "../components/UserInput";
 import {CheckJSON} from "../checks/newCheck";
+import {UserInputJSON} from "../inputs/newUserInput";
 
 export type ArgType = string | number | string[];
-
-const ArgType = z.union([
-    z.string(),
-    z.number(),
-    z.string().array(),
-]);
-
-const UserInputName = z.enum(USER_INPUT_NAMES);
-
-export interface UserInputJSON {
-    name: UserInputName;
-    args: ArgType[];
-}
-
-const UserInputJSON = z.object({
-    name: UserInputName,
-    args: z.array(ArgType),
-});
 
 export type EdgeID = string;
 const EdgeID = z.string();

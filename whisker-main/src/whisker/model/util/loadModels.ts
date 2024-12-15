@@ -5,11 +5,11 @@ import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveC
 import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/AbstractEdge";
 import {UserModelEdge} from "../components/UserModelEdge";
-import {UserInput} from "../components/UserInput";
 import logger from "../../../util/logger";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
-import {EndModelJSON, ModelEdgeJSON, ModelJSON, parse, ProgramModelJSON, UserInputJSON, UserModelJSON} from "./schema";
+import {EndModelJSON, ModelEdgeJSON, ModelJSON, parse, ProgramModelJSON, UserModelJSON} from "./schema";
 import {CheckJSON, newCheck} from "../checks/newCheck";
+import {newUserInput, UserInputJSON} from "../inputs/newUserInput";
 
 interface Models {
     programModels: ProgramModel[],
@@ -184,13 +184,7 @@ function handleDuplicateEdgeIDs(edges: ModelEdgeJSON[]): void {
 }
 
 function addUserInputs(edge: UserModelEdge, rawUserInputs: UserInputJSON[]): void {
-    for (const i of rawUserInputs) {
-        if (i.name === "InputKey") {
-            i.args[0] = canonicalizeInputKey(i.args[0]);
-        }
-
-        edge.addUserInput(new UserInput(i.name, i.args));
-    }
+    rawUserInputs.forEach((i) => edge.addUserInput(newUserInput(i)));
 }
 
 function addEffects(edge: ProgramModelEdge, rawEffects: CheckJSON[]): void {
@@ -199,21 +193,4 @@ function addEffects(edge: ProgramModelEdge, rawEffects: CheckJSON[]): void {
 
 function addConditions(edge: ModelEdge, rawConditions: CheckJSON[]): void {
     rawConditions.forEach((c) => edge.addCondition(newCheck(edge.id, c)));
-}
-
-function canonicalizeInputKey(key: unknown): string {
-    const stringKey = String(key);
-
-    switch (stringKey.toLowerCase()) {
-        case "left":
-            return "left arrow";
-        case "right":
-            return "right arrow";
-        case "up":
-            return "up arrow";
-        case "down":
-            return "down arrow";
-        default:
-            return stringKey;
-    }
 }

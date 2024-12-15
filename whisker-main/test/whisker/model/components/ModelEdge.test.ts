@@ -1,4 +1,3 @@
-import {UserInput} from "../../../../src/whisker/model/components/UserInput";
 import {TestDriverMock} from "../TestDriverMock";
 import {SpriteMock} from "../SpriteMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
@@ -11,6 +10,8 @@ import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouchin
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {UserInput} from "../../../../src/whisker/model/inputs/newUserInput";
+import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
 
 describe('Model edges', () => {
     const id = "id";
@@ -108,7 +109,7 @@ describe('Model edges', () => {
     });
 
     test("User model edge", () => {
-        const inputEffect = new UserInput("InputKey", ["left"]);
+        const inputEffect = new InputKey("left");
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
         const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addUserInput(inputEffect);
@@ -141,7 +142,7 @@ describe('Model edges', () => {
 
     test("UserModelEdge.toJSON()", () => {
         const edge = new UserModelEdge(id, label, graphID, from, to, -1, -1);
-        const inputEffect = new UserInput("InputKey", ["left"]);
+        const inputEffect = new InputKey("left");
         const condition = new BackgroundChange(label, {args: ["test"]});
         edge.addUserInput(inputEffect);
         edge.addCondition(condition);
@@ -308,7 +309,7 @@ describe('Model edges', () => {
         expect(fn).toHaveBeenCalledTimes(3);
     });
 
-    test("UserModelEdge.registerComponents calls registerComponents on effects", () => {
+    test("UserModelEdge.registerComponents do not call registerComponents on effects", () => {
         const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
         const fn = jest.fn();
         edge.addUserInput(mockInputEffectRegister(fn, null));
@@ -316,7 +317,7 @@ describe('Model edges', () => {
         edge.addUserInput(mockInputEffectRegister(fn, null));
         edge.addUserInput(mockInputEffectRegister(fn, null));
         edge.registerComponents(null, null);
-        expect(fn).toHaveBeenCalledTimes(4);
+        expect(fn).toHaveBeenCalledTimes(0);
     });
 
     test("UserModelEdge.inputImmediate calls registerComponents on effects", () => {
