@@ -24,7 +24,7 @@ const ChangeOp = z.preprocess(
 /**
  * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
  */
-const NumberLike = z.union([
+export const NumberLike = z.union([
     z.number(),
     z.string().refine((s) => s !== "")
 ])
