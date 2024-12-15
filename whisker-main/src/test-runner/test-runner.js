@@ -462,7 +462,7 @@ class TestRunner extends EventEmitter {
         this._checkSeed(test);
 
         if (modelTester && modelTester.someModelLoaded()) {
-            await modelTester.prepareModel(testDriver, modelProps.caseSensitive);
+            modelTester.prepareModel(testDriver, modelProps.caseSensitive);
         }
 
         if (test) {

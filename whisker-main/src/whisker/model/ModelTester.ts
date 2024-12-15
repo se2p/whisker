@@ -121,7 +121,7 @@ export class ModelTester extends EventEmitter {
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      * @param t Instance of the test driver for this test run.
      */
-    async prepareModel(t: TestDriver): Promise<void> {
+    prepareModel(t: TestDriver): void {
         // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
