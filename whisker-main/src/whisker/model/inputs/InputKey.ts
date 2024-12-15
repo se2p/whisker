@@ -6,12 +6,32 @@ const name = "InputKey" as const;
 
 type InputKeyArgs = [string]; // The key to press.
 
+const Key = z.preprocess((key) => {
+    if (key === "left") {
+        return "left arrow";
+    }
+
+    if (key === "right") {
+        return "right arrow";
+    }
+
+    if (key === "up") {
+        return "up arrow";
+    }
+
+    if (key === "down") {
+        return "down arrow";
+    }
+
+    return key;
+}, z.string());
+
 export interface InputKeyJSON extends IUserInputJSON {
     name: typeof name;
     args: InputKeyArgs;
 }
 
-export const InputKeyArgs = z.tuple([z.string()]);
+export const InputKeyArgs = z.tuple([Key]);
 
 export const InputKeyJSON = z.object({
     name: z.literal(name),
