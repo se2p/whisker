@@ -43,6 +43,10 @@ export class MouseMove extends AbstractUserInput<MouseMoveJSON> {
         return this._inputJSON.args[1];
     }
 
+    protected _validate(json: MouseMoveJSON): MouseMoveJSON {
+        return MouseMoveJSON.parse(json) as MouseMoveJSON;
+    }
+
     protected _userInput(t: TestDriver): Promise<void> {
         const xFunc = ModelUtil.getNumberFunction(this._x, t);
         const yFunc = ModelUtil.getNumberFunction(this._y, t);

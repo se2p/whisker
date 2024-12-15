@@ -43,6 +43,10 @@ export class InputKey extends AbstractUserInput<InputKeyJSON> {
         super({name, args});
     }
 
+    protected _validate(json: InputKeyJSON): InputKeyJSON {
+        return InputKeyJSON.parse(json) as InputKeyJSON;
+    }
+
     private get _key(): string {
         return this._inputJSON.args[0];
     }

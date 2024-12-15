@@ -33,6 +33,10 @@ export class MouseDown extends AbstractUserInput<MouseDownJSON> {
         return this._inputJSON.args[0];
     }
 
+    protected _validate(json: MouseDownJSON): MouseDownJSON {
+        return MouseDownJSON.parse(json) as MouseDownJSON;
+    }
+
     protected _userInput(_t: TestDriver): Promise<void> {
         const mouseDownEvent = new MouseDownEvent(this._down);
         return mouseDownEvent.apply();

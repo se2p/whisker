@@ -11,7 +11,7 @@ export abstract class AbstractUserInput<J extends UserInputJSON> {
     protected readonly _inputJSON: J;
 
     protected constructor(inputJSON: J) {
-        this._inputJSON = inputJSON;
+        this._inputJSON = this._validate(inputJSON);
     }
 
     /**
@@ -22,6 +22,8 @@ export abstract class AbstractUserInput<J extends UserInputJSON> {
     }
 
     protected abstract _userInput(t: TestDriver): Promise<void>;
+
+    protected abstract _validate(json: J): J;
 
     toJSON(): J {
         return JSON.parse(JSON.stringify(this._inputJSON));

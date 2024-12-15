@@ -28,6 +28,10 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
         return this._inputJSON.args[0];
     }
 
+    protected _validate(json: InputTextJSON): InputTextJSON {
+        return InputTextJSON.parse(json) as InputTextJSON;
+    }
+
     protected _userInput(_t: TestDriver): Promise<void> {
         const textEvent = new TypeTextEvent(this._text);
         return textEvent.apply();

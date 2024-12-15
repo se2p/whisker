@@ -22,6 +22,10 @@ export class ClickStage extends AbstractUserInput<ClickStageJSON> {
         super({name, args});
     }
 
+    protected _validate(json: ClickStageJSON): ClickStageJSON {
+        return ClickStageJSON.parse(json) as ClickStageJSON;
+    }
+
     protected _userInput(_t: TestDriver): Promise<void> {
         const clickStageEvent = new ClickStageEvent();
         return clickStageEvent.apply();

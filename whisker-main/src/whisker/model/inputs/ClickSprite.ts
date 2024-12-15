@@ -30,6 +30,10 @@ export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
         return this._inputJSON.args[0];
     }
 
+    protected override _validate(json: ClickSpriteJSON): ClickSpriteJSON {
+        return ClickSpriteJSON.parse(json) as ClickSpriteJSON;
+    }
+
     protected _userInput(t: TestDriver): Promise<void> {
         const sprite = ModelUtil.checkSpriteExistence(t, this._spriteName);
         const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
