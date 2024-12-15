@@ -1,10 +1,9 @@
-import {UserInput} from "./UserInput";
 import TestDriver from "../../../test/test-driver";
-import {CheckUtility} from "../util/CheckUtility";
 import {AbstractEdge} from "./AbstractEdge";
 import {UserModelEdgeJSON} from "../util/schema";
 import {Checks} from "../util/Checks";
 import {Check} from "../checks/newCheck";
+import {UserInput} from "../inputs/newUserInput";
 
 /**
  * Edge structure that has input effects triggered if the conditions are fulfilled.
@@ -45,16 +44,6 @@ export class UserModelEdge extends AbstractEdge {
     inputImmediate(t: TestDriver): void {
         this._userInputs.forEach(inputEffect => {
             inputEffect.inputImmediate(t);
-        });
-    }
-
-    /**
-     *  Register the check listener and test driver on the conditions and input effects.
-     */
-    override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
-        super.registerComponents(checkListener, testDriver);
-        this._userInputs.forEach(effect => {
-            effect.registerComponents(testDriver);
         });
     }
 
