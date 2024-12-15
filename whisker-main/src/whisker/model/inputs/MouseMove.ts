@@ -11,10 +11,7 @@ type MouseMoveArgs = [number, number]; // The coordinates to move the mouse to.
 
 const MouseMoveArgs = z.tuple([NumberLike, NumberLike]);
 
-export interface MouseMoveJSON extends IUserInputJSON {
-    name: typeof name;
-    args: MouseMoveArgs;
-}
+export type MouseMoveJSON = IUserInputJSON<typeof name, MouseMoveArgs>;
 
 export const MouseMoveJSON = z.object({
     name: z.literal(name),

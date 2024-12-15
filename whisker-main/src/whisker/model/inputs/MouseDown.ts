@@ -14,10 +14,7 @@ const BooleanLike = z.union([
 
 const MouseDownArgs = z.tuple([BooleanLike]);
 
-export interface MouseDownJSON extends IUserInputJSON {
-    name: typeof name;
-    args: MouseDownArgs;
-}
+export type MouseDownJSON = IUserInputJSON<typeof name, MouseDownArgs>;
 
 export const MouseDownJSON = z.object({
     name: z.literal(name),

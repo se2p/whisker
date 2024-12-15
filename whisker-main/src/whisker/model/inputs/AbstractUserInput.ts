@@ -2,9 +2,9 @@ import TestDriver from "../../../test/test-driver";
 import {SpriteName} from "../checks/AbstractCheck";
 import {UserInputJSON} from "./newUserInput";
 
-export interface IUserInputJSON {
-    name: string;
-    args: (string | number | boolean | SpriteName)[]
+export interface IUserInputJSON<N extends string, A extends (string | number | boolean | SpriteName)[]> {
+    name: N;
+    args: A
 }
 
 export abstract class AbstractUserInput<J extends UserInputJSON> {

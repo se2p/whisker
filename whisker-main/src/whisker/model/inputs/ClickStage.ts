@@ -7,10 +7,7 @@ const name = "InputClickStage" as const;
 
 type ClickStageArgs = [];
 
-export interface ClickStageJSON extends IUserInputJSON {
-    name: typeof name;
-    args: ClickStageArgs;
-}
+export type ClickStageJSON = IUserInputJSON<typeof name, ClickStageArgs>;
 
 export const ClickStageJSON = z.object({
     name: z.literal(name),

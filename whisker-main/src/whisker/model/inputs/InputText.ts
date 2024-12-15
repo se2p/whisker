@@ -9,10 +9,7 @@ type InputTextArgs = [string]; // The text to input.
 
 const InputTextArgs = z.tuple([z.string()]);
 
-export interface InputTextJSON extends IUserInputJSON {
-    name: typeof name;
-    args: InputTextArgs;
-}
+export type InputTextJSON = IUserInputJSON<typeof name, InputTextArgs>;
 
 export const InputTextJSON = z.object({
     name: z.literal(name),

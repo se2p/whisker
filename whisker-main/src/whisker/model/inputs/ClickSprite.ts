@@ -11,10 +11,7 @@ type ClickSpriteArgs = [SpriteName]
 
 const ClickSpriteArgs = z.tuple([SpriteName]);
 
-export interface ClickSpriteJSON extends IUserInputJSON {
-    name: typeof name;
-    args: ClickSpriteArgs;
-}
+export type ClickSpriteJSON = IUserInputJSON<typeof name, ClickSpriteArgs>;
 
 export const ClickSpriteJSON = z.object({
     name: z.literal(name),

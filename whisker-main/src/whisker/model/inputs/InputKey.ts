@@ -11,10 +11,7 @@ const Key = z.preprocess(
     z.string()
 );
 
-export interface InputKeyJSON extends IUserInputJSON {
-    name: typeof name;
-    args: InputKeyArgs;
-}
+export type InputKeyJSON = IUserInputJSON<typeof name, InputKeyArgs>;
 
 export const InputKeyArgs = z.tuple([Key]);
 
