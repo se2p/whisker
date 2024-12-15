@@ -3,13 +3,15 @@ import TestDriver from "../../../test/test-driver";
 import {ModelUtil} from "../util/ModelUtil";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {z} from "zod";
-import {NumberLike} from "../checks/changes";
 
 const name = "InputMouseMove" as const;
 
-type MouseMoveArgs = [number, number]; // The coordinates to move the mouse to.
+// A coordinate (as number), or a JavaScript expression (its code as string) that evaluates to a coordinate.
+type CoordinateOrJSExpr = number | string;
+type MouseMoveArgs = [CoordinateOrJSExpr, CoordinateOrJSExpr];
 
-const MouseMoveArgs = z.tuple([NumberLike, NumberLike]);
+const CoordinateOrJSExpr = z.number().or(z.string());
+const MouseMoveArgs = z.tuple([CoordinateOrJSExpr, CoordinateOrJSExpr]);
 
 export type MouseMoveJSON = IUserInputJSON<typeof name, MouseMoveArgs>;
 
@@ -23,11 +25,11 @@ export class MouseMove extends AbstractUserInput<MouseMoveJSON> {
         super({name, args});
     }
 
-    private get _x(): number {
+    private get _x(): CoordinateOrJSExpr {
         return this._inputJSON.args[0];
     }
 
-    private get _y(): number {
+    private get _y(): CoordinateOrJSExpr {
         return this._inputJSON.args[1];
     }
 
