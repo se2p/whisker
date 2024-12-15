@@ -15,7 +15,11 @@ export class InputKey extends AbstractUserInput<InputKeyJSON> {
         super({name, args});
     }
 
+    private get _key(): string {
+        return this._inputJSON.args[0];
+    }
+
     protected _userInput(t: TestDriver): Promise<void> {
-        return Promise.resolve(undefined);
+        return t.inputImmediate({device: "keyboard", key: this._key, isDown: true, steps: 1});
     }
 }

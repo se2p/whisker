@@ -1,6 +1,8 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
 import {SpriteName} from "../checks/AbstractCheck";
+import {ModelUtil} from "../util/ModelUtil";
+import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 
 const name = "InputClickSprite" as const;
 
@@ -16,7 +18,13 @@ export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
         super({name, args});
     }
 
+    private get _spriteName(): SpriteName {
+        return this._inputJSON.args[0];
+    }
+
     protected _userInput(t: TestDriver): Promise<void> {
-        return Promise.resolve(undefined);
+        const sprite = ModelUtil.checkSpriteExistence(t, this._spriteName);
+        const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
+        return clickSpriteEvent.apply();
     }
 }

@@ -14,5 +14,16 @@ export abstract class AbstractUserInput<J extends InputJSON> {
         this._inputJSON = inputJSON;
     }
 
+    /**
+     * Input the saved input effects of this instance to the test driver.
+     */
+    async inputImmediate(t: TestDriver): Promise<void> {
+        return this._userInput(t);
+    }
+
     protected abstract _userInput(t: TestDriver): Promise<void>;
+
+    toJSON(): J {
+        return JSON.parse(JSON.stringify(this._inputJSON));
+    }
 }

@@ -1,5 +1,6 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
+import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 
 const name = "InputMouseDown" as const;
 
@@ -15,7 +16,12 @@ export class MouseDown extends AbstractUserInput<MouseDownJSON> {
         super({name, args});
     }
 
-    protected _userInput(t: TestDriver): Promise<void> {
-        return Promise.resolve(undefined);
+    private get _down(): boolean {
+        return this._inputJSON.args[0];
+    }
+
+    protected _userInput(_t: TestDriver): Promise<void> {
+        const mouseDownEvent = new MouseDownEvent(this._down);
+        return mouseDownEvent.apply();
     }
 }

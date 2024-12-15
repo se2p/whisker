@@ -1,5 +1,6 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
+import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 
 const name = "InputText" as const;
 
@@ -15,7 +16,12 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
         super({name, args});
     }
 
-    protected _userInput(t: TestDriver): Promise<void> {
-        return Promise.resolve(undefined);
+    private get _text(): string {
+        return this._inputJSON.args[0];
+    }
+
+    protected _userInput(_t: TestDriver): Promise<void> {
+        const textEvent = new TypeTextEvent(this._text);
+        return textEvent.apply();
     }
 }
