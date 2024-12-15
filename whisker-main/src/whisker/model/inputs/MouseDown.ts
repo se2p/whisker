@@ -10,9 +10,9 @@ export interface MouseDownJSON extends IUserInputJSON {
     args: MouseDownArgs;
 }
 
-export class MouseDown extends AbstractUserInput {
-    constructor() {
-        super();
+export class MouseDown extends AbstractUserInput<MouseDownJSON> {
+    constructor(args: MouseDownArgs) {
+        super({name, args});
     }
 
     protected _userInput(t: TestDriver): Promise<void> {

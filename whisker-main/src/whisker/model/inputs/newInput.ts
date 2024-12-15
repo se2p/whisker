@@ -28,17 +28,17 @@ export function newInput(inputJSON: InputJSON): Input {
     const name = inputJSON.name;
     switch (name) {
         case "InputClickSprite":
-            return new ClickSprite();
+            return new ClickSprite(inputJSON.args);
         case "InputClickStage":
-            return new ClickStage();
+            return new ClickStage(inputJSON.args);
         case "InputKey":
-            return new InputKey();
+            return new InputKey(inputJSON.args);
         case "InputText":
-            return new InputKey();
+            return new InputKey(inputJSON.args);
         case "InputMouseDown":
-            return new MouseDown();
+            return new MouseDown(inputJSON.args);
         case "InputMouseMove":
-            return new MouseMove();
+            return new MouseMove(inputJSON.args);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

@@ -11,9 +11,9 @@ export interface ClickSpriteJSON extends IUserInputJSON {
     args: ClickSpriteArgs;
 }
 
-export class ClickSprite extends AbstractUserInput {
-    constructor() {
-        super();
+export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
+    constructor(args: ClickSpriteArgs) {
+        super({name, args});
     }
 
     protected _userInput(t: TestDriver): Promise<void> {

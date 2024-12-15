@@ -10,9 +10,9 @@ export interface InputKeyJSON extends IUserInputJSON {
     args: InputKeyArgs;
 }
 
-export class InputKey extends AbstractUserInput {
-    constructor() {
-        super();
+export class InputKey extends AbstractUserInput<InputKeyJSON> {
+    constructor(args: InputKeyArgs) {
+        super({name, args});
     }
 
     protected _userInput(t: TestDriver): Promise<void> {

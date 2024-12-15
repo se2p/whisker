@@ -3,14 +3,16 @@ import TestDriver from "../../../test/test-driver";
 
 const name = "InputClickStage" as const;
 
+type ClickStageArgs = [];
+
 export interface ClickStageJSON extends IUserInputJSON {
     name: typeof name;
-    args: [];
+    args: ClickStageArgs;
 }
 
-export class ClickStage extends AbstractUserInput {
-    constructor() {
-        super();
+export class ClickStage extends AbstractUserInput<ClickStageJSON> {
+    constructor(args: ClickStageArgs = []) {
+        super({name, args});
     }
 
     protected _userInput(t: TestDriver): Promise<void> {
