@@ -51,7 +51,7 @@ export class InputKey extends AbstractUserInput<InputKeyJSON> {
         return this._inputJSON.args[0];
     }
 
-    protected _userInput(t: TestDriver): Promise<void> {
+    override async inputImmediate(t: TestDriver): Promise<void> {
         return t.inputImmediate({device: "keyboard", key: this._key, isDown: true, steps: 1});
     }
 }

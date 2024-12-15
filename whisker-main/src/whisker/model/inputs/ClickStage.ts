@@ -26,7 +26,7 @@ export class ClickStage extends AbstractUserInput<ClickStageJSON> {
         return ClickStageJSON.parse(json) as ClickStageJSON;
     }
 
-    protected _userInput(_t: TestDriver): Promise<void> {
+    override async inputImmediate(_t: TestDriver): Promise<void> {
         const clickStageEvent = new ClickStageEvent();
         return clickStageEvent.apply();
     }

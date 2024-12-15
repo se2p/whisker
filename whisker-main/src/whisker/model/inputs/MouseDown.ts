@@ -37,7 +37,7 @@ export class MouseDown extends AbstractUserInput<MouseDownJSON> {
         return MouseDownJSON.parse(json) as MouseDownJSON;
     }
 
-    protected _userInput(_t: TestDriver): Promise<void> {
+    override async inputImmediate(_t: TestDriver): Promise<void> {
         const mouseDownEvent = new MouseDownEvent(this._down);
         return mouseDownEvent.apply();
     }
