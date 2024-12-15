@@ -1,5 +1,6 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
+import {z} from "zod";
 
 const name = "InputKey" as const;
 
@@ -9,6 +10,13 @@ export interface InputKeyJSON extends IUserInputJSON {
     name: typeof name;
     args: InputKeyArgs;
 }
+
+export const InputKeyArgs = z.tuple([z.string()]);
+
+export const InputKeyJSON = z.object({
+    name: z.literal(name),
+    args: InputKeyArgs,
+});
 
 export class InputKey extends AbstractUserInput<InputKeyJSON> {
     constructor(args: InputKeyArgs) {

@@ -1,6 +1,7 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
+import {z} from "zod";
 
 const name = "InputClickStage" as const;
 
@@ -10,6 +11,11 @@ export interface ClickStageJSON extends IUserInputJSON {
     name: typeof name;
     args: ClickStageArgs;
 }
+
+export const ClickStageJSON = z.object({
+    name: z.literal(name),
+    args: z.tuple([]),
+});
 
 export class ClickStage extends AbstractUserInput<ClickStageJSON> {
     constructor(args: ClickStageArgs = []) {

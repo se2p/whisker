@@ -3,15 +3,23 @@ import TestDriver from "../../../test/test-driver";
 import {SpriteName} from "../checks/AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
+import {z} from "zod";
 
 const name = "InputClickSprite" as const;
 
 type ClickSpriteArgs = [SpriteName]
 
+const ClickSpriteArgs = z.tuple([SpriteName]);
+
 export interface ClickSpriteJSON extends IUserInputJSON {
     name: typeof name;
     args: ClickSpriteArgs;
 }
+
+export const ClickSpriteJSON = z.object({
+    name: z.literal(name),
+    args: ClickSpriteArgs,
+});
 
 export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
     constructor(args: ClickSpriteArgs) {

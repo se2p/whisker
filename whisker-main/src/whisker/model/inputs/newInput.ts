@@ -5,6 +5,7 @@ import {InputText, InputTextJSON} from "./InputText";
 import {MouseDown, MouseDownJSON} from "./MouseDown";
 import {MouseMove, MouseMoveJSON} from "./MouseMove";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+import {z} from "zod";
 
 export type UserInput =
     | ClickSprite
@@ -23,6 +24,15 @@ export type UserInputJSON =
     | MouseDownJSON
     | MouseMoveJSON
     ;
+
+export const UserInputJSON = z.discriminatedUnion("name", [
+    ClickSpriteJSON,
+    ClickStageJSON,
+    InputKeyJSON,
+    InputTextJSON,
+    MouseDownJSON,
+    MouseMoveJSON,
+]);
 
 export type UserInputName = UserInputJSON['name'];
 
