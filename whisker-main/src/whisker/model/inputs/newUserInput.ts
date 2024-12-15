@@ -45,7 +45,7 @@ export const USER_INPUT_NAMES: readonly UserInputName[] = Object.freeze([
     "InputText",
 ] as const);
 
-export function newInput(inputJSON: UserInputJSON): UserInput {
+export function newUserInput(inputJSON: UserInputJSON): UserInput {
     const name = inputJSON.name;
     switch (name) {
         case "InputClickSprite":

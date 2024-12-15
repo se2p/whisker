@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {SpriteName} from "../checks/AbstractCheck";
-import {UserInputJSON} from "./newInput";
+import {UserInputJSON} from "./newUserInput";
 
 export interface IUserInputJSON {
     name: string;
