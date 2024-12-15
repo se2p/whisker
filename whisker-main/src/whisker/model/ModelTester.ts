@@ -140,9 +140,9 @@ export class ModelTester extends EventEmitter {
         });
         this._userInputGen();
 
-        this._modelStepCallback = this._addModelCallback(this._getModelStepFunction(), true, "modelStep");
-        this._onTestEndCallback = this._addModelCallback(this._getOnTestEndFunction(), true, "stopModelsCheck");
-        this._haltAllCallback = this._addModelCallback(this._checkForHaltAll(), true, "checkForHalt");
+        this._modelStepCallback = this._addModelCallback(() => this._onModelStep(), true, "modelStep");
+        this._onTestEndCallback = this._addModelCallback(() => this._onTestEnd(), true, "stopModelsCheck");
+        this._haltAllCallback = this._addModelCallback(() => this._checkForHaltAll(), true, "checkForHalt");
 
         if (this._programModels.length == 0) {
             this._modelStepCallback?.disable();
@@ -162,31 +162,27 @@ export class ModelTester extends EventEmitter {
         }
     }
 
-    private _getModelStepFunction() {
-        return () => {
-            this._checkUtility!.makeFailedOutputs();
-            const notStoppedModels: ProgramModel[] = [];
-            this._programModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
-            const contradictingEffects = this._checkUtility!.checkEffects();
-            this._printContradictingEffects(contradictingEffects);
-            if (notStoppedModels.length == 0) {
-                this._modelStepCallback!.disable();
-            }
-        };
+    private _onModelStep(): void {
+        this._checkUtility!.makeFailedOutputs();
+        const notStoppedModels: ProgramModel[] = [];
+        this._programModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
+        const contradictingEffects = this._checkUtility!.checkEffects();
+        this._printContradictingEffects(contradictingEffects);
+        if (notStoppedModels.length == 0) {
+            this._modelStepCallback!.disable();
+        }
     }
 
-    private _checkForHaltAll() {
-        return () => {
-            if (!this._modelStepCallback!.isActive()) {
+    private _checkForHaltAll(): void {
+        if (!this._modelStepCallback!.isActive()) {
+            this._startOnTestEnd();
+            return;
+        }
+        this._programModels.forEach(model => {
+            if (model.haltAllModels()) {
                 this._startOnTestEnd();
-                return;
             }
-            this._programModels.forEach(model => {
-                if (model.haltAllModels()) {
-                    this._startOnTestEnd();
-                }
-            });
-        };
+        });
     }
 
     private _startOnTestEnd() {
@@ -208,24 +204,22 @@ export class ModelTester extends EventEmitter {
         this._onTestEndCallback!.enable();
     }
 
-    private _getOnTestEndFunction() {
-        return () => {
-            this._checkUtility!.makeFailedOutputs();
-            const notStoppedModels: EndModel[] = [];
-            this._onTestEndModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
-            const contradictingEffects = this._checkUtility!.checkEffects();
-            this._printContradictingEffects(contradictingEffects);
-            if (notStoppedModels.length == 0) {
-                this._onTestEndCallback!.disable();
-            }
+    private _onTestEnd(): void {
+        this._checkUtility!.makeFailedOutputs();
+        const notStoppedModels: EndModel[] = [];
+        this._onTestEndModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
+        const contradictingEffects = this._checkUtility!.checkEffects();
+        this._printContradictingEffects(contradictingEffects);
+        if (notStoppedModels.length == 0) {
+            this._onTestEndCallback!.disable();
+        }
 
-            notStoppedModels.forEach(model => {
-                if (model.haltAllModels()) {
-                    this._onTestEndCallback!.disable();
-                    return;
-                }
-            });
-        };
+        notStoppedModels.forEach(model => {
+            if (model.haltAllModels()) {
+                this._onTestEndCallback!.disable();
+                return;
+            }
+        });
     }
 
     private _userInputGen() {
