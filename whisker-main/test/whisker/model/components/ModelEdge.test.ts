@@ -320,12 +320,12 @@ describe('Model edges', () => {
         expect(fn).toHaveBeenCalledTimes(0);
     });
 
-    test("UserModelEdge.inputImmediate calls registerComponents on effects", () => {
+    test("UserModelEdge.inputImmediate calls registerComponents on effects", async () => {
         const edge = new UserModelEdge("id", "label", "graphId", "from", "to", -1, -1);
         const fn = jest.fn();
         edge.addUserInput(mockInputEffectRegister(null, fn));
         edge.addUserInput(mockInputEffectRegister(null, fn));
-        edge.inputImmediate(null);
+        await edge.inputImmediate(null);
         expect(fn).toHaveBeenCalledTimes(2);
     });
 });

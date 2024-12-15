@@ -41,10 +41,10 @@ export class UserModelEdge extends AbstractEdge {
     /**
      * Start the input effects of this edge.
      */
-    inputImmediate(t: TestDriver): void {
-        this._userInputs.forEach(inputEffect => {
-            inputEffect.inputImmediate(t);
-        });
+    async inputImmediate(t: TestDriver): Promise<void> {
+        for (const inputEffect of this._userInputs) {
+            await inputEffect.inputImmediate(t);
+        }
     }
 
     checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _checks: Checks): Check[] {

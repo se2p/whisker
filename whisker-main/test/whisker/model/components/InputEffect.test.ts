@@ -60,18 +60,18 @@ describe('InputEffect', () => {
         const t = tdMock.getTestDriver();
         Container.testDriver = t;
 
-        test("Mouse input effect", () => {
+        test("Mouse input effect", async () => {
             jest.mock('../../../../src/whisker/scratch/ScratchInterface');
             ScratchInterface.setMousePosition = jest.fn();
             const effect = new MouseMove(12, 34);
-            effect.inputImmediate(t);
+            await effect.inputImmediate(t);
             expect(ScratchInterface.setMousePosition).toHaveBeenCalledWith(new ScratchPosition(12, 34));
         });
 
-        test("Key input effect", () => {
+        test("Key input effect", async () => {
             tdMock.inputImmediate = jest.fn();
             const effect = new InputKey("b");
-            effect.inputImmediate(t);
+            await effect.inputImmediate(t);
             expect(tdMock.inputImmediate).toHaveBeenCalledWith([{
                 device: "keyboard",
                 key: "b",
@@ -80,34 +80,34 @@ describe('InputEffect', () => {
             }]);
         });
 
-        test("Text input effect", () => {
+        test("Text input effect", async () => {
             tdMock.typeText = jest.fn();
             const effect = new InputText("this is some text");
-            effect.inputImmediate(t);
+            await effect.inputImmediate(t);
             expect(tdMock.typeText).toHaveBeenCalledWith("this is some text");
         });
 
-        test("Mouse down input effect", () => {
+        test("Mouse down input effect", async () => {
             jest.mock('../../../../src/whisker/utils/Container');
             tdMock.mouseDown = jest.fn();
             const effect = new MouseDown(false);
-            effect.inputImmediate(t);
+            await effect.inputImmediate(t);
             expect(tdMock.mouseDown).toHaveBeenCalledWith(false);
         });
 
-        test("Click stage input effect", () => {
+        test("Click stage input effect", async () => {
             tdMock.clickStage = jest.fn();
             const effect = new ClickStage();
-            effect.inputImmediate(t);
+            await effect.inputImmediate(t);
             expect(tdMock.clickStage).toHaveBeenCalledWith();
         });
 
-        test("Click stage input effect", () => {
+        test("Click stage input effect", async () => {
             Container.config = {getClickDuration: () => 42} as unknown as WhiskerSearchConfiguration;
             tdMock.currentSprites = SpriteMock.stringsToSpriteArray(["apple", "bowl"]);
             tdMock.clickSprite = jest.fn();
             const effect = new ClickSprite(["bowl"]);
-            effect.inputImmediate(t);
+            await effect.inputImmediate(t);
             expect(tdMock.clickSprite).toHaveBeenCalledWith("bowl", 42);
         });
     });
