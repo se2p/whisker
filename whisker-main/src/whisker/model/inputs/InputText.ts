@@ -20,7 +20,7 @@ export const InputTextJSON = z.object({
 });
 
 export class InputText extends AbstractUserInput<InputTextJSON> {
-    constructor(args: InputTextArgs) {
+    constructor(...args: InputTextArgs) {
         super({name, args});
     }
 

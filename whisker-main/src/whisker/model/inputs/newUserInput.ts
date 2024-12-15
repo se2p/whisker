@@ -49,17 +49,17 @@ export function newUserInput(inputJSON: UserInputJSON): UserInput {
     const name = inputJSON.name;
     switch (name) {
         case "InputClickSprite":
-            return new ClickSprite(inputJSON.args);
+            return new ClickSprite(...inputJSON.args);
         case "InputClickStage":
-            return new ClickStage(inputJSON.args);
+            return new ClickStage(...inputJSON.args);
         case "InputKey":
-            return new InputKey(inputJSON.args);
+            return new InputKey(...inputJSON.args);
         case "InputText":
-            return new InputKey(inputJSON.args);
+            return new InputKey(...inputJSON.args);
         case "InputMouseDown":
-            return new MouseDown(inputJSON.args);
+            return new MouseDown(...inputJSON.args);
         case "InputMouseMove":
-            return new MouseMove(inputJSON.args);
+            return new MouseMove(...inputJSON.args);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

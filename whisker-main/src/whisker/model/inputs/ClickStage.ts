@@ -18,7 +18,7 @@ export const ClickStageJSON = z.object({
 });
 
 export class ClickStage extends AbstractUserInput<ClickStageJSON> {
-    constructor(args: ClickStageArgs = []) {
+    constructor(...args: ClickStageArgs) {
         super({name, args});
     }
 

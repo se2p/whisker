@@ -39,7 +39,7 @@ export const InputKeyJSON = z.object({
 });
 
 export class InputKey extends AbstractUserInput<InputKeyJSON> {
-    constructor(args: InputKeyArgs) {
+    constructor(...args: InputKeyArgs) {
         super({name, args});
     }
 

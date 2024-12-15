@@ -22,7 +22,7 @@ export const ClickSpriteJSON = z.object({
 });
 
 export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
-    constructor(args: ClickSpriteArgs) {
+    constructor(...args: ClickSpriteArgs) {
         super({name, args});
     }
 

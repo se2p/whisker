@@ -25,7 +25,7 @@ export const MouseDownJSON = z.object({
 });
 
 export class MouseDown extends AbstractUserInput<MouseDownJSON> {
-    constructor(args: MouseDownArgs) {
+    constructor(...args: MouseDownArgs) {
         super({name, args});
     }
 
