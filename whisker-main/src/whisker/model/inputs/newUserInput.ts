@@ -34,17 +34,6 @@ export const UserInputJSON = z.discriminatedUnion("name", [
     MouseMoveJSON,
 ]);
 
-export type UserInputName = UserInputJSON['name'];
-
-export const USER_INPUT_NAMES: readonly UserInputName[] = Object.freeze([
-    "InputClickSprite",
-    "InputClickStage",
-    "InputKey",
-    "InputMouseDown",
-    "InputMouseMove",
-    "InputText",
-] as const);
-
 export function newUserInput(inputJSON: UserInputJSON): UserInput {
     const name = inputJSON.name;
     switch (name) {
