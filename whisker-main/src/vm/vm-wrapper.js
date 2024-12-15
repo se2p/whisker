@@ -171,7 +171,7 @@ class VMWrapper {
     async step() {
         await this.vm.runtime.translateText2Speech();
 
-        this.callbacks.callCallbacks(false);
+        await this.callbacks.callCallbacks(false);
         await this._yield();
 
         if (!this.isScratchRunning()) {
@@ -184,7 +184,7 @@ class VMWrapper {
         this.inputs.performInputs();
         await this._yield();
 
-        this.modelCallbacks.callCallbacks(false);
+        await this.modelCallbacks.callCallbacks(false);
         await this._yield();
 
         this.sprites.update();
@@ -194,14 +194,14 @@ class VMWrapper {
         await this._yield();
 
         // do not stop even if this.isRunning=false!
-        this.modelCallbacks.callCallbacks(true);
+        await this.modelCallbacks.callCallbacks(true);
         await this._yield();
 
         if (!this.isScratchRunning()) {
             return null;
         }
 
-        this.callbacks.callCallbacks(true);
+        await this.callbacks.callCallbacks(true);
         await this._yield();
 
         if (!this.isScratchRunning()) {

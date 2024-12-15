@@ -11,7 +11,7 @@ class Callback {
         this._callbacks = callbacks;
 
         /**
-         * @type {Function} The function to wrap.
+         * @type {() => Promise<boolean>} The function to wrap.
          * @private
          */
         this._callback = callback;
@@ -34,7 +34,7 @@ class Callback {
 
     /**
      * Executes the wrapped {@link Callback} function.
-     * @returns {boolean} True if the callback was successfully executed, false otherwise.
+     * @returns {Promise<boolean>} True if the callback was successfully executed, false otherwise.
      */
     _call () {
         return this._callback();
@@ -75,13 +75,14 @@ class Callbacks {
     /**
      * Calls all stored {@link Callback} functions and removes them after their successful execution.
      * @param {boolean=} afterStep Indicates if function should be called after step.
+     * @return {Promise<void>}
      */
-    callCallbacks (afterStep) {
+    async callCallbacks (afterStep) {
         const callbacksToCall = [...this.callbacks];
 
         for (const callback of callbacksToCall) {
             if (callback.isActive() && callback._afterStep === afterStep) {
-                if (callback._call()) {
+                if (await callback._call()) {
                     this.removeCallback(callback);
                 }
             }
