@@ -1,4 +1,5 @@
 const Util = require("./util");
+const VMWrapper = require("./vm-wrapper");
 
 /**
  * Input data parameters:
@@ -101,6 +102,7 @@ class Input {
                 break;
             case 'text':
                 this._inputs.vmWrapper.vm.runtime.emit('ANSWER', data.answer);
+                this._inputs.vmWrapper.vm.runtime.emit('ANSWERED_PROGRAMMATICALLY');
                 break;
             case 'drag':
                 this._inputs.vmWrapper.sprites.getSprite(data.sprite).getScratchTarget().setXY(data.x, data.y);
@@ -170,7 +172,7 @@ class Input {
 
         //Convert time to steps; Ensures backwards compatibility with old Whisker-Tests.
         if (data.duration !== undefined && data.steps === undefined) {
-            data.steps = this._inputs.vmWrapper.convertFromTimeToSteps(data.duration);
+            data.steps = VMWrapper.convertFromTimeToSteps(data.duration);
         }
 
         // Safety check to ensure having a step duration >= 1
@@ -250,7 +252,7 @@ class Inputs {
     addInputs (inputs) {
         for (const data of inputs) {
             if (data.time !== undefined && data.steps === undefined) {
-                data.steps = this.vmWrapper.convertFromTimeToSteps(data.time);
+                data.steps = VMWrapper.convertFromTimeToSteps(data.time);
             }
             this.addInput(data.steps, data.input);
         }

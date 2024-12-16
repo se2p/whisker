@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -22,7 +22,9 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class WaitEvent extends ScratchEvent {
 
@@ -38,7 +40,51 @@ export class WaitEvent extends ScratchEvent {
         return `await t.runForSteps(${this._steps});`;
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        const yieldMultipleBlockId = uid();
+        const yieldCountBlockId = uid();
+
+        const yieldMultipleBlock: ScratchVMBlock =
+            {
+                "id": yieldMultipleBlockId,
+                "opcode": "bbt_yieldMultipleTimes",
+                "inputs": {
+                    "COUNT": {
+                        "name": "COUNT",
+                        "block": yieldCountBlockId,
+                        "shadow": yieldCountBlockId
+                    }
+                },
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const yieldCountBlock: ScratchVMBlock =
+            {
+                "id": yieldCountBlockId,
+                "opcode": "math_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": this._steps.toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": yieldMultipleBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        return {blocks: [yieldMultipleBlock, yieldCountBlock], first: yieldMultipleBlock, last: yieldMultipleBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `WaitEvent`;
         event[`args`] = {"steps": this._steps};
@@ -77,7 +123,7 @@ export class WaitEvent extends ScratchEvent {
         // Only enforce the UpperBound range if we do not use Neuroevolution and if the codon value is likely to not
         // stem from ExtensionLocalSearch as otherwise the local search operator would only reach wait dependent
         // statements once.
-        if(!Container.isNeuroevolution &&
+        if (!Container.isNeuroevolution &&
             this._steps % Container.config.getWaitStepUpperBound() !== 0 &&
             this._steps !== Container.config.searchAlgorithmProperties['integerRange'].max) {
             this._steps %= Container.config.getWaitStepUpperBound();

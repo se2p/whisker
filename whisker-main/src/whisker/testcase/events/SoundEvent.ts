@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -20,6 +20,9 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class SoundEvent extends ScratchEvent {
 
@@ -42,7 +45,51 @@ export class SoundEvent extends ScratchEvent {
         return `t.sendSound(${this._volume}, ${this._steps});`;
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        const setVolumeBlockId = uid();
+        const volumeInputBlockId = uid();
+
+        const setVolumeBlock: ScratchVMBlock =
+            {
+                "id": setVolumeBlockId,
+                "opcode": "bbt_simulateMicrophoneInput",
+                "inputs": {
+                    "VOLUME": {
+                        "name": "VOLUME",
+                        "block": volumeInputBlockId,
+                        "shadow": volumeInputBlockId
+                    }
+                },
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const volumeInputBlock: ScratchVMBlock =
+            {
+                "id": volumeInputBlockId,
+                "opcode": "math_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": this._volume.toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": setVolumeBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        return {blocks: [setVolumeBlock, volumeInputBlock], first: setVolumeBlock, last: setVolumeBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `SoundEvent`;
         event[`args`] = {"volume": this._volume};

@@ -6,6 +6,7 @@ import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
 import {Checks} from "../util/Checks";
 import {Check} from "../checks/newCheck";
+import VMWrapper from "../../../vm/vm-wrapper";
 
 export type ModelEdge =
     | ProgramModelEdge
@@ -151,10 +152,10 @@ export abstract class AbstractEdge {
      */
     registerComponents(checkListener: CheckUtility, t: TestDriver): void {
         if (this.forceTestAt != -1) {
-            this._forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
+            this._forceTestAtSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
         }
         if (this.forceTestAfter != -1) {
-            this._forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
+            this._forceTestAfterSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
         }
         this.conditions.forEach(cond => {
             cond.registerComponents(t, checkListener, this.graphID);

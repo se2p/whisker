@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -21,6 +21,9 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class ClickSpriteEvent extends ScratchEvent {
 
@@ -69,7 +72,67 @@ export class ClickSpriteEvent extends ScratchEvent {
         }
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        const blocks: ScratchVMBlock[] = [];
+
+        const mainBlockId = uid();
+        const mainBlock: ScratchVMBlock = {
+            "id": mainBlockId,
+            "opcode": null,
+            "inputs": {},
+            "fields": {
+                "SPRITE": {
+                    "name": "SPRITE",
+                    "value": this._target.sprite.clones[0].id // always use id of original target
+                }
+            },
+            "next": null,
+            "topLevel": false,
+            "parent": null,
+            "shadow": false,
+            "breakpoint": false
+        };
+
+        blocks.push(mainBlock);
+
+        if (this._target.isOriginal) {
+            mainBlock.opcode = "bbt_triggerSpriteClick";
+
+        } else {
+            const cloneInputBlockId = uid();
+
+            mainBlock.opcode = "bbt_triggerCloneClick";
+            mainBlock.inputs = {
+                "CLONE": {
+                    "name": "CLONE",
+                    "block": cloneInputBlockId,
+                    "shadow": cloneInputBlockId
+                }
+            };
+
+            blocks.push(
+                {
+                    "id": cloneInputBlockId,
+                    "opcode": "math_number",
+                    "inputs": {},
+                    "fields": {
+                        "NUM": {
+                            "name": "NUM",
+                            "value": this._target.sprite.clones.indexOf(this._target).toString()
+                        }
+                    },
+                    "next": null,
+                    "topLevel": false,
+                    "parent": mainBlockId,
+                    "shadow": true,
+                    "breakpoint": false
+                });
+        }
+
+        return {blocks: blocks, first: mainBlock, last: mainBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `ClickSpriteEvent`;
         if (this._target !== undefined) {

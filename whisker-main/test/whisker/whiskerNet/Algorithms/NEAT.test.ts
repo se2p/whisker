@@ -26,6 +26,7 @@ import {ParameterType} from "../../../../src/whisker/testcase/events/ParameterTy
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/Misc/NeuroevolutionUtil";
 import {generateNetworkInputs} from "../../TestUtils";
 import logger from "../../../../src/util/logger";
+import {ScratchScriptSnippet} from "../../../../src/types/ScratchScriptSnippet";
 
 describe('Test NEAT', () => {
 
@@ -178,6 +179,10 @@ describe('Test NEAT', () => {
         }
 
         toJavaScript(): string {
+            throw new Error("Method not implemented.");
+        }
+
+        toScratchBlocks(): ScratchScriptSnippet {
             throw new Error("Method not implemented.");
         }
 

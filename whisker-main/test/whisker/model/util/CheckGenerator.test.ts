@@ -2,6 +2,7 @@ import {SpriteNotFoundError} from "../../../../src/whisker/model/util/ModelError
 import {SpriteMock} from "../SpriteMock";
 import {TestDriverMock} from "../TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
+import VMWrapper from "../../../../src/vm/vm-wrapper";
 import Sprite from "../../../../src/vm/sprite";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Key} from "../../../../src/whisker/model/checks/Key";
@@ -731,7 +732,7 @@ describe('CheckGenerator', () => {
     test('getTimeElapsedCheck()', () => {
         const tdMock = new TestDriverMock();
         const t = tdMock.getTestDriver();
-        t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
+        VMWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
         const c = new TimeElapsed('label', {args: [1230]});
         c.registerComponents(t, null, graphID);
         tdMock.totalStepsExecuted = 122;
@@ -745,7 +746,7 @@ describe('CheckGenerator', () => {
     test('getTimeBetweenCheck()', () => {
         const tdMock = new TestDriverMock();
         const t = tdMock.getTestDriver();
-        t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
+        VMWrapper.convertFromTimeToSteps = (steps: number) => steps / 10;
         const c = new TimeBetween('label', {args: [3760]});
         c.registerComponents(t, null, graphID);
         expect(c.check(375)).toBe(false);
@@ -756,7 +757,7 @@ describe('CheckGenerator', () => {
     describe('getTimeAfterEndCheck()', () => {
         const tdMock = new TestDriverMock();
         const t = tdMock.getTestDriver();
-        t.vmWrapper.convertFromTimeToSteps = (steps: number) => steps / 100;
+        VMWrapper.convertFromTimeToSteps = (steps: number) => steps / 100;
         const c = new TimeAfterEnd('label', {args: [68800]});
         c.registerComponents(t, null, graphID);
         const table: [boolean, number, number, number][] = [

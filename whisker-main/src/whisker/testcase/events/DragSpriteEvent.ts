@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -23,7 +23,9 @@ import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
-
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class DragSpriteEvent extends ScratchEvent {
 
@@ -48,7 +50,80 @@ export class DragSpriteEvent extends ScratchEvent {
         return `t.dragSprite('${this._escapeSpriteName()}', ${this._x}, ${this._y}, ${this._target.cloneID});`;
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        const mainBlockId = uid();
+        const xBlockId = uid();
+        const yBlockId = uid();
+
+        const mainBlock: ScratchVMBlock =
+            {
+                "id": mainBlockId,
+                "opcode": "bbt_moveSpriteTo",
+                "inputs": {
+                    "X": {
+                        "name": "X",
+                        "block": xBlockId,
+                        "shadow": xBlockId
+                    },
+                    "Y": {
+                        "name": "Y",
+                        "block": yBlockId,
+                        "shadow": yBlockId
+                    }
+                },
+                "fields": {
+                    "SPRITE": {
+                        "name": "SPRITE",
+                        "value": this._target.id
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const xBlock: ScratchVMBlock =
+            {
+                "id": xBlockId,
+                "opcode": "math_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": this._x.toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": mainBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        const yBlock: ScratchVMBlock =
+            {
+                "id": yBlockId,
+                "opcode": "math_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": this._y.toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": mainBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        return {blocks: [mainBlock, xBlock, yBlock], first: mainBlock, last: mainBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `DragSpriteEvent`;
         event[`args`] = {"x": this._x, "y": this._y, "target": this._escapeSpriteName()};

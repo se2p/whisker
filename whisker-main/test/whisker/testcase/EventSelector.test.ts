@@ -5,6 +5,7 @@ import Arrays from "../../../src/whisker/utils/Arrays";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
+import {ScratchScriptSnippet} from "../../../src/types/ScratchScriptSnippet";
 
 class DummyEvent extends ScratchEvent {
 
@@ -42,6 +43,10 @@ class DummyEvent extends ScratchEvent {
 
     toJavaScript(): string {
         return "";
+    }
+
+    toScratchBlocks(): ScratchScriptSnippet {
+        return {blocks: [], first: null, last: null};
     }
 
     public toJSON(): Record<string, number | string> {

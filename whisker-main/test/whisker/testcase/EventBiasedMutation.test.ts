@@ -1,6 +1,7 @@
 import {EventBiasedMutation} from "../../../src/whisker/testcase/EventBiasedMutation";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {EventAndParameters} from "../../../src/whisker/testcase/ExecutionTrace";
+import {ScratchScriptSnippet} from "../../../src/types/ScratchScriptSnippet";
 
 abstract class ScratchEventMock extends ScratchEvent {
     apply(): Promise<void> {
@@ -23,6 +24,10 @@ abstract class ScratchEventMock extends ScratchEvent {
         throw new Error("Method not implemented.");
     }
 
+    toScratchBlocks(): ScratchScriptSnippet {
+        throw new Error("Method not implemented.");
+    }
+
     toString(): string {
         throw new Error("Method not implemented.");
     }
@@ -31,7 +36,7 @@ abstract class ScratchEventMock extends ScratchEvent {
         throw new Error("Method not implemented.");
     }
 
-    toJSON(): Record<string, any> {
+    toJSON(): Record<string, unknown> {
         throw new Error("Method not implemented.");
     }
 }

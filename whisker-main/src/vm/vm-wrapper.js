@@ -20,6 +20,7 @@ function pause(millis) {
  * Wraps the used virtual machine and extends existing functionality.
  */
 class VMWrapper {
+
     constructor(vm, project) {
 
         /**
@@ -226,7 +227,7 @@ class VMWrapper {
                 'missing any await-statements in your test.');
         }
 
-        steps = Math.min(steps, this.convertFromTimeToSteps(timeout));
+        steps = Math.min(steps, VMWrapper.convertFromTimeToSteps(timeout));
 
         this._scratchRunning = true;
 
@@ -322,7 +323,7 @@ class VMWrapper {
      * @returns {Promise<number>} Runtime in steps.
      */
     async runForSteps(steps) {
-        return this.convertFromTimeToSteps(await this.run({steps}));
+        return VMWrapper.convertFromTimeToSteps(await this.run({steps}));
     }
 
     /**
@@ -639,8 +640,17 @@ class VMWrapper {
      * @param {number} timeDuration The time in ms to convert.
      * @return {number} The converted time in steps.
      */
-    convertFromTimeToSteps(timeDuration) {
+    static convertFromTimeToSteps(timeDuration) {
         return timeDuration / STEP_TIME;
+    }
+
+    /**
+     * Converts the unit of steps into the unit of time.
+     * @param {number} steps The number of steps to convert.
+     * @return {number} The converted number of steps in ms.
+     */
+    static convertFromStepsToTime(steps) {
+        return steps * STEP_TIME;
     }
 
     /**
