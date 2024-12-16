@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -22,7 +22,10 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionUtil} from "../../whiskerNet/Misc/NeuroevolutionUtil";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import VMWrapper from "../../../vm/vm-wrapper";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 //TODO: This way of using the mouse down event turns out to work better for NE, maybe also worth a try for SB-Algorithms
 export class MouseDownForStepsEvent extends ScratchEvent {
@@ -42,7 +45,72 @@ export class MouseDownForStepsEvent extends ScratchEvent {
         return `t.mouseDownForSteps(${this._steps});`;
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        const clickBlockId = uid();
+
+        const clickBlock: ScratchVMBlock =
+            {
+                "id": clickBlockId,
+                "opcode": "bbt_clickCurrentCursorLocation",
+                "inputs": {},
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        if (this._steps === 1) {
+            return {blocks: [clickBlock], first: clickBlock, last: clickBlock};
+        }
+
+        const waitBlockId = uid();
+        const durationBlockId = uid();
+
+        clickBlock.parent = waitBlockId;
+
+        const waitBlock: ScratchVMBlock =
+            {
+                "id": waitBlockId,
+                "opcode": "control_wait",
+                "inputs": {
+                    "DURATION": {
+                        "name": "DURATION",
+                        "block": durationBlockId,
+                        "shadow": durationBlockId
+                    }
+                },
+                "fields": {},
+                "next": clickBlockId,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const durationBlock: ScratchVMBlock =
+            {
+                "id": durationBlockId,
+                "opcode": "math_positive_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": (VMWrapper.convertFromStepsToTime(this._steps) / 1000).toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": waitBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        return {blocks: [waitBlock, durationBlock, clickBlock], first: waitBlock, last: clickBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `MouseDownForStepsEvent`;
         event[`args`] = {"value": this._steps};

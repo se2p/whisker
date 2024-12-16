@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -20,6 +20,9 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class TypeTextEvent extends ScratchEvent {
 
@@ -40,7 +43,51 @@ export class TypeTextEvent extends ScratchEvent {
         return `t.typeText('${escaped}');`;
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        const simulateAnswerBlockId = uid();
+        const answerInputBlockId = uid();
+
+        const simulateAnswerBlock: ScratchVMBlock =
+            {
+                "id": simulateAnswerBlockId,
+                "opcode": "bbt_simulateAnswerInput",
+                "inputs": {
+                    "ANSWER": {
+                        "name": "ANSWER",
+                        "block": answerInputBlockId,
+                        "shadow": answerInputBlockId
+                    }
+                },
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const answerInputBlock: ScratchVMBlock =
+            {
+                "id": answerInputBlockId,
+                "opcode": "text",
+                "inputs": {},
+                "fields": {
+                    "TEXT": {
+                        "name": "TEXT",
+                        "value": this._text
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": simulateAnswerBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        return {blocks: [simulateAnswerBlock, answerInputBlock], first: simulateAnswerBlock, last: simulateAnswerBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `TypeTextEvent`;
         event[`args`] = {"text": this._text};

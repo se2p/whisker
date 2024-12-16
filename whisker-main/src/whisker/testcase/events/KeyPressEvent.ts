@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -23,6 +23,10 @@ import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import VMWrapper from "../../../vm/vm-wrapper";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class KeyPressEvent extends ScratchEvent {
 
@@ -53,7 +57,88 @@ export class KeyPressEvent extends ScratchEvent {
         }
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        if (this._steps === 1) {
+            return this._toScratchBlockPressAndRelease();
+        } else {
+            return this._toScratchBlockPressAndHold();
+        }
+    }
+
+    private _toScratchBlockPressAndRelease(): ScratchScriptSnippet {
+        const mainBlockId = uid();
+
+        const mainBlock: ScratchVMBlock =
+            {
+                "id": mainBlockId,
+                "opcode": "bbt_pressKeyAndRelease",
+                "inputs": {},
+                "fields": {
+                    "KEY": {
+                        "name": "KEY",
+                        "value": this._keyOption
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        return {blocks: [mainBlock], first: mainBlock, last: mainBlock};
+    }
+
+    private _toScratchBlockPressAndHold(): ScratchScriptSnippet {
+        const mainBlockId = uid();
+        const durationBlockId = uid();
+
+        const mainBlock =
+            {
+                "id": mainBlockId,
+                "opcode": "bbt_pressKeyAndHold",
+                "inputs": {
+                    "DURATION": {
+                        "name": "DURATION",
+                        "block": durationBlockId,
+                        "shadow": durationBlockId
+                    }
+                },
+                "fields": {
+                    "KEY": {
+                        "name": "KEY",
+                        "value": this._keyOption
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const durationBlock =
+            {
+                "id": durationBlockId,
+                "opcode": "math_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": (VMWrapper.convertFromStepsToTime(this._steps) / 1000).toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": mainBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        return {blocks: [mainBlock, durationBlock], first: mainBlock, last: mainBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `KeyPressEvent`;
         event[`args`] = {"key": this._keyOption, "steps": this._steps};

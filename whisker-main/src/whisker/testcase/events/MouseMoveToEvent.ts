@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -21,6 +21,10 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {ScratchPosition} from "../../scratch/ScratchPosition";
 import {ScratchInterface} from "../../scratch/ScratchInterface";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
+import {Container} from "../../utils/Container";
 
 export class MouseMoveToEvent extends ScratchEvent {
 
@@ -44,7 +48,79 @@ export class MouseMoveToEvent extends ScratchEvent {
         return `t.mouseMove(${Math.trunc(this._x)}, ${Math.trunc(this._y)});`;
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        // The MouseMoveEvent and the MouseMoveToEvent seem to have the same effect (same apply() logic).
+
+        const mainBlockId = uid();
+        const xInputBlockId = uid();
+        const yInputBlockId = uid();
+
+        const stageBounds = Container.vmWrapper.getStageSize();
+
+        const mainBlock: ScratchVMBlock =
+            {
+                "id": mainBlockId,
+                "opcode": "bbt_placeMousePointer",
+                "inputs": {
+                    "X": {
+                        "name": "X",
+                        "block": xInputBlockId,
+                        "shadow": xInputBlockId
+                    },
+                    "Y": {
+                        "name": "Y",
+                        "block": yInputBlockId,
+                        "shadow": yInputBlockId
+                    }
+                },
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const xInputBlock: ScratchVMBlock =
+            {
+                "id": xInputBlockId,
+                "opcode": "math_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": (this._x - (stageBounds.width / 2)).toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": mainBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        const yInputBlock: ScratchVMBlock =
+            {
+                "id": yInputBlockId,
+                "opcode": "math_number",
+                "inputs": {},
+                "fields": {
+                    "NUM": {
+                        "name": "NUM",
+                        "value": ((stageBounds.height / 2) - this._y).toString()
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": mainBlockId,
+                "shadow": true,
+                "breakpoint": false
+            };
+
+        return {blocks: [mainBlock, xInputBlock, yInputBlock], first: mainBlock, last: mainBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `MouseMoveToEvent`;
         event[`args`] = {"x": this._x, "y": this._y};

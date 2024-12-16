@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -20,6 +20,9 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class MouseDownEvent extends ScratchEvent {
 
@@ -38,14 +41,33 @@ export class MouseDownEvent extends ScratchEvent {
         return `t.mouseDown(${this._value});`;
     }
 
-    public toJSON(): Record<string, any> {
+    public toScratchBlocks(): ScratchScriptSnippet {
+        const mainBlockId = uid();
+
+        const mainBlock: ScratchVMBlock =
+            {
+                "id": mainBlockId,
+                "opcode": "bbt_clickCurrentCursorLocation",
+                "inputs": {},
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        return {blocks: [mainBlock], first: mainBlock, last: mainBlock};
+    }
+
+    public toJSON(): Record<string, unknown> {
         const event = {};
         event[`type`] = `MouseDownEvent`;
         event[`args`] = {"value": this._value};
         return event;
     }
 
-    public toString = () : string => {
+    public toString = (): string => {
         return "MouseDown " + this._value;
     }
 

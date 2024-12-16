@@ -22,7 +22,6 @@ export class TestDriverMock {
 
     public getTestDriver(): TestDriver {
         return {
-            vmWrapper: {convertFromTimeToSteps: i => i},
             getSprites: (filter: ((s: Sprite) => boolean), skipStage = true) => {
                 return Object.values(this.currentSprites).filter(s => filter(s) && (s != this.stage || !skipStage));
             },

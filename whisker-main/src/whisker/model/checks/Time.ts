@@ -11,6 +11,7 @@ import {
 } from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
+import VMWrapper from "../../../vm/vm-wrapper";
 
 export type TimeArgs = [
 
@@ -51,7 +52,7 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
 
     protected _convertFromTimeToSteps(t): number {
         const time = ModelUtil.testNumber(this.millis);
-        return t.vmWrapper.convertFromTimeToSteps(time);
+        return VMWrapper.convertFromTimeToSteps(time);
     }
 
     protected override _contradicts(_that: AbstractTime): boolean {

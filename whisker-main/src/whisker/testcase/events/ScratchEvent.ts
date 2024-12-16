@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Whisker contributors
+ * Copyright (C) 2024 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
  *
@@ -18,9 +18,10 @@
  *
  */
 
-import { RenderedTarget } from 'scratch-vm/src/sprites/rendered-target';
-import { Container } from "../../utils/Container";
-import { ParameterType } from "./ParameterType";
+import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
+import {Container} from "../../utils/Container";
+import {ParameterType} from "./ParameterType";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export type EventParameter =
     | number
@@ -68,6 +69,12 @@ export abstract class ScratchEvent {
     abstract toJavaScript(): string;
 
     /**
+     * Transforms an event into its Scratch Block representation, primarily using blocks
+     * from the Block-Based Testing extension.
+     */
+    abstract toScratchBlocks(): ScratchScriptSnippet;
+
+    /**
      * Transforms the event into a string representation.
      */
     abstract toString(): string;
@@ -75,7 +82,7 @@ export abstract class ScratchEvent {
     /**
      * Transforms the event into a JSON representation.
      */
-    abstract toJSON(): Record<string, any>
+    abstract toJSON(): Record<string, unknown>
 
     /**
      The stringIdentifier is not intended to be entirely unique. Its aim is to differentiate events based on
@@ -98,5 +105,3 @@ export abstract class ScratchEvent {
         return {x, y};
     }
 }
-
-
