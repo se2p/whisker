@@ -80,5 +80,5 @@ export function contradicts(check1: ComparingCheck, check2: ComparingCheck): boo
     }
 
     // < and >, < and >=, <= and >, <= and >=
-    return !(apply(check1, check2)) || !(apply(check2, check1));
+    return !apply(check1, check2) || !apply(check2, check1);
 }
