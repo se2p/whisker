@@ -62,16 +62,16 @@ export function contradicts(check1: ComparingCheck, check2: ComparingCheck): boo
     check1 = resolveNegation(check1);
     check2 = resolveNegation(check2);
 
-    if (check1.comparison === "!=" || check2.comparison === "!=") {
-        return false;
-    }
-
     if (check1.comparison === "==") {
         return !apply(check2, check1);
     }
 
     if (check2.comparison === "==") {
         return !apply(check1, check2);
+    }
+
+    if (check1.comparison === "!=" || check2.comparison === "!=") {
+        return false;
     }
 
     // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
