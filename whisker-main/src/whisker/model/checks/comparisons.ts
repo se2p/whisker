@@ -10,50 +10,19 @@ export const Comparison = z.preprocess(
     z.enum(comparisons)
 );
 
-export interface ComparingCheck {
-    comparison: Comparison;
-    value: string | number;
-    negated: boolean;
-}
+type BinCompFun = (x: unknown, y: unknown) => boolean;
 
-export function contradicts<T extends ComparingCheck>(check1: T, check2: T): boolean {
-    const comp1 = getComparison(check1);
-    const comp2 = getComparison(check2);
-    return _contradicts(comp1, comp2, check1.value, check2.value);
-}
+const opToFun: Record<Comparison, BinCompFun> = Object.freeze({
+    "==": (x, y) => x == y,
+    "!=": (x, y) => x != y,
+    ">": (x, y) => x > y,
+    "<": (x, y) => x < y,
+    ">=": (x, y) => x >= y,
+    "<=": (x, y) => x <= y,
+});
 
-function getComparison<T extends ComparingCheck>(check: T): Comparison {
-    const comparison = check.comparison;
-    return check.negated ? negate(comparison) : comparison;
-}
-
-function _contradicts(comparison1: Comparison, comparison2: Comparison, pValue1: string | number, pValue2: string | number): boolean {
-    const value1 = String(pValue1);
-    const value2 = String(pValue2);
-
-    if (comparison1 == "!=" || comparison2 == "!=") {
-        return false;
-    }
-
-    // =
-    if ((comparison1 == '==') && (comparison2 == '==')) {
-        return value1 != value2;
-    }
-
-    if (comparison1 == '==') {
-        return !eval(value1 + comparison2 + value2);
-    }
-
-    if (comparison2 == '==') {
-        return !eval(value2 + comparison1 + value1);
-    }
-
-    // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-    if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
-        return false;
-    }
-
-    return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
+function apply({comparison, value}: ComparingCheck, other: ComparingCheck): boolean {
+    return opToFun[comparison](other.value, value);
 }
 
 function negate(comp: Comparison): Comparison {
@@ -73,4 +42,43 @@ function negate(comp: Comparison): Comparison {
         default:
             throw new NonExhaustiveCaseDistinction(comp);
     }
+}
+
+export interface ComparingCheck {
+    comparison: Comparison;
+    value: string | number;
+    negated: boolean;
+}
+
+function resolveNegation({comparison, negated, value}: ComparingCheck): ComparingCheck {
+    return {
+        value,
+        negated: false,
+        comparison: negated ? negate(comparison) : comparison
+    };
+}
+
+export function contradicts(check1: ComparingCheck, check2: ComparingCheck): boolean {
+    check1 = resolveNegation(check1);
+    check2 = resolveNegation(check2);
+
+    if (check1.comparison === "!=" || check2.comparison === "!=") {
+        return false;
+    }
+
+    if (check1.comparison === "==") {
+        return !apply(check2, check1);
+    }
+
+    if (check2.comparison === "==") {
+        return !apply(check1, check2);
+    }
+
+    // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
+    if (check1.comparison.startsWith(check2.comparison) || check2.comparison.startsWith(check1.comparison)) {
+        return false;
+    }
+
+    // < and >, < and >=, <= and >, <= and >=
+    return !(apply(check1, check2)) || !(apply(check2, check1));
 }
