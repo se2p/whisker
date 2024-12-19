@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./comparisons";
+import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
 
 const name = "AttrComp" as const;
 

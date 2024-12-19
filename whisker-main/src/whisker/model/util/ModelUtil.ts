@@ -14,7 +14,7 @@ import {
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 
-import {ComparisonOp} from "../checks/comparisons";
+import {ComparisonOp} from "../checks/Comparison";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],

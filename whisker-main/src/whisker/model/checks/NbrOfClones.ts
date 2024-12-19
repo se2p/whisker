@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./comparisons";
+import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
 
 export type NbrOfClonesArgs = [
     /**

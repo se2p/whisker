@@ -11,7 +11,7 @@ import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 
-import {ComparisonOp} from "../../../../src/whisker/model/checks/comparisons";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
