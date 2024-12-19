@@ -1,5 +1,178 @@
 import {z} from "zod";
-import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+
+export type Comparison =
+    | Eq
+    | Neq
+    | Lt
+    | Leq
+    | Gt
+    | Geq
+    ;
+
+abstract class AbstractComparison {
+    protected constructor(private readonly _operand2: string | number) {
+    }
+
+    get operand2(): string | number {
+        return this._operand2;
+    }
+
+    abstract get operator(): ComparisonOp;
+
+    abstract apply(operand1: string | number): boolean;
+
+    contradicts(that: Comparison): boolean {
+        if (this.operator === "==") {
+            return !that.apply(this.operand2);
+        }
+
+        if (that.operator === "==") {
+            return !this.apply(that.operand2);
+        }
+
+        if (this.operator === "!=" || that.operator === "!=") {
+            return false;
+        }
+
+        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
+        if (this.operator.startsWith(that.operator) || that.operator.startsWith(this.operator)) {
+            return false;
+        }
+
+        // < and >, < and >=, <= and >, <= and >=
+        return !this.apply(that.operand2) || !that.apply(this.operand2);
+    }
+
+    abstract negate(): Comparison;
+
+    toString(): string {
+        return `x ${this.operator} ${this.operand2}`;
+    }
+}
+
+class Eq extends AbstractComparison {
+    constructor(operand2: string | number) {
+        super(operand2);
+    }
+
+    override get operator(): ComparisonOp {
+        return "==";
+    }
+
+    override apply(operand1: string | number): boolean {
+        return operand1 == this.operand2;
+    }
+
+    override negate(): Comparison {
+        return new Neq(this.operand2);
+    }
+}
+
+class Neq extends AbstractComparison {
+    constructor(operand2: string | number) {
+        super(operand2);
+    }
+
+    override get operator(): ComparisonOp {
+        return "!=";
+    }
+
+    override apply(operand1: string | number): boolean {
+        return operand1 != this.operand2;
+    }
+
+    override negate(): Comparison {
+        return new Eq(this.operand2);
+    }
+}
+
+class Leq extends AbstractComparison {
+    constructor(operand2: string | number) {
+        super(operand2);
+    }
+
+    override get operator(): ComparisonOp {
+        return "<=";
+    }
+
+    override apply(operand1: string | number): boolean {
+        return operand1 <= this.operand2;
+    }
+
+    override negate(): Comparison {
+        return new Gt(this.operand2);
+    }
+}
+
+class Lt extends AbstractComparison {
+    constructor(operand2: string | number) {
+        super(operand2);
+    }
+
+    override get operator(): ComparisonOp {
+        return "<";
+    }
+
+    override apply(operand1: string | number): boolean {
+        return operand1 < this.operand2;
+    }
+
+    override negate(): Comparison {
+        return new Geq(this.operand2);
+    }
+}
+
+class Gt extends AbstractComparison {
+    constructor(operand2: string | number) {
+        super(operand2);
+    }
+
+    override get operator(): ComparisonOp {
+        return ">";
+    }
+
+    override apply(operand1: string | number): boolean {
+        return operand1 > this.operand2;
+    }
+
+    override negate(): Comparison {
+        return new Leq(this.operand2);
+    }
+}
+
+class Geq extends AbstractComparison {
+    constructor(operand2: string | number) {
+        super(operand2);
+    }
+
+    override get operator(): ComparisonOp {
+        return ">=";
+    }
+
+    override apply(operand1: string | number): boolean {
+        return operand1 >= this.operand2;
+    }
+
+    override negate(): Comparison {
+        return new Lt(this.operand2);
+    }
+}
+
+type ComparisonCtor = new (operand2: string | number) => Comparison;
+
+const Comparison: Record<ComparisonOp, ComparisonCtor> = Object.freeze({
+    "==": Eq,
+    "!=": Neq,
+    "<": Lt,
+    ">": Gt,
+    "<=": Leq,
+    ">=": Geq,
+});
+
+export function newComparison({operator, value, negated}: ComparingCheck): Comparison {
+    const comparison = new Comparison[operator](value);
+    return negated ? comparison.negate() : comparison;
+}
 
 export const comparisonOps = ["==", "!=", ">", ">=", "<", "<="] as const;
 
@@ -10,75 +183,8 @@ export const ComparisonOp = z.preprocess(
     z.enum(comparisonOps)
 );
 
-type BinCompFun = (x: unknown, y: unknown) => boolean;
-
-const opToFun: Record<ComparisonOp, BinCompFun> = Object.freeze({
-    "==": (x, y) => x == y,
-    "!=": (x, y) => x != y,
-    ">": (x, y) => x > y,
-    "<": (x, y) => x < y,
-    ">=": (x, y) => x >= y,
-    "<=": (x, y) => x <= y,
-});
-
-function apply({operator, value}: ComparingCheck, other: ComparingCheck): boolean {
-    return opToFun[operator](other.value, value);
-}
-
-function negate(comp: ComparisonOp): ComparisonOp {
-    switch (comp) {
-        case "==":
-            return "!=";
-        case "!=":
-            return "==";
-        case "<":
-            return ">=";
-        case ">":
-            return "<=";
-        case ">=":
-            return "<";
-        case "<=":
-            return ">";
-        default:
-            throw new NonExhaustiveCaseDistinction(comp);
-    }
-}
-
 export interface ComparingCheck {
     operator: ComparisonOp;
     value: string | number;
     negated: boolean;
-}
-
-function resolveNegation({operator, negated, value}: ComparingCheck): ComparingCheck {
-    return {
-        value,
-        negated: false,
-        operator: negated ? negate(operator) : operator
-    };
-}
-
-export function contradicts(check1: ComparingCheck, check2: ComparingCheck): boolean {
-    check1 = resolveNegation(check1);
-    check2 = resolveNegation(check2);
-
-    if (check1.operator === "==") {
-        return !apply(check2, check1);
-    }
-
-    if (check2.operator === "==") {
-        return !apply(check1, check2);
-    }
-
-    if (check1.operator === "!=" || check2.operator === "!=") {
-        return false;
-    }
-
-    // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-    if (check1.operator.startsWith(check2.operator) || check2.operator.startsWith(check1.operator)) {
-        return false;
-    }
-
-    // < and >, < and >=, <= and >, <= and >=
-    return !apply(check1, check2) || !apply(check2, check1);
 }

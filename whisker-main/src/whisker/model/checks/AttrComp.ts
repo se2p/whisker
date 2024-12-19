@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, ComparisonOp, contradicts} from "./comparisons";
+import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./comparisons";
 
 const name = "AttrComp" as const;
 
@@ -49,8 +49,11 @@ export const AttrCompJSON = ICheckJSON.extend({
 });
 
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
+    private readonly _comparison: Comparison;
+
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
+        this._comparison = newComparison(this);
     }
 
     get operator(): ComparisonOp {
@@ -73,7 +76,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, attrName, comparison, attrValue] = this._args;
+        const [pSpriteName, attrName] = this._args;
         const negated = this.negated;
 
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
@@ -81,7 +84,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         const listener = (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return this._comparison.apply(sprite[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -101,7 +104,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
             try {
                 for (const s of sprites) {
-                    if (ModelUtil.compare(s[attrName], attrValue, comparison)) {
+                    if (this._comparison.apply(s[attrName])) {
                         return !negated;
                     }
                 }
@@ -124,6 +127,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             return false;
         }
 
-        return contradicts(this, that);
+        return this._comparison.contradicts(that._comparison);
     }
 }
