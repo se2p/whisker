@@ -2,6 +2,9 @@ import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {AssertionTargetState} from "./AssertionObserver";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
 
 export class TouchingEdgeAssertion extends WhiskerAssertion {
 
@@ -41,6 +44,58 @@ export class TouchingEdgeAssertion extends WhiskerAssertion {
         } else {
             return js`t.assert.not(${this.getTargetAccessor()}.isTouchingEdge(), "Expected ${this.getTargetName()} not to touch edge");`;
         }
+    }
+
+    toScratchBlocks(): ScratchScriptSnippet {
+        const assertConditionBlockId = uid();
+        const isTouchingBlockId = uid();
+
+        const assertConditionBlock: ScratchVMBlock =
+            {
+                "id": assertConditionBlockId,
+                "opcode": this._touching ? "bbt_assertCondition" : "bbt_assertConditionFalse",
+                "inputs": {
+                    "CONDITION": {
+                        "name": "CONDITION",
+                        "block": isTouchingBlockId,
+                        "shadow": null
+                    }
+                },
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const isTouchingBlock: ScratchVMBlock =
+            {
+                "id": isTouchingBlockId,
+                "opcode": "bbt_isTouching",
+                "inputs": {},
+                "fields": {
+                    "A": {
+                        "name": "A",
+                        "value": this._target.id.toString()
+                    },
+                    "B": {
+                        "name": "B",
+                        "value": "_edge_"
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": assertConditionBlockId,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        return {
+            blocks: [assertConditionBlock, isTouchingBlock],
+            first: assertConditionBlock,
+            last: assertConditionBlock
+        };
     }
 
     //static createFactory() : AssertionFactory<TouchingEdgeAssertion>{

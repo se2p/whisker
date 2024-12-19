@@ -11,5 +11,7 @@ export type ScratchVMBlock = {
     topLevel: boolean;
     parent: string | null;
     shadow: boolean;
+    x?: number | string;
+    y?: number | string;
     breakpoint: boolean;
 };

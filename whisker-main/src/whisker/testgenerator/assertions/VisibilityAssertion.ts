@@ -2,12 +2,15 @@ import {js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {AssertionTargetState} from "./AssertionObserver";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
 
 export class VisibilityAssertion extends WhiskerAssertion {
 
     private readonly _visibility: boolean;
 
-    constructor (target: RenderedTarget, visibility: boolean, cloneIndex?: number) {
+    constructor(target: RenderedTarget, visibility: boolean, cloneIndex?: number) {
         super(target, cloneIndex);
         this._visibility = visibility;
     }
@@ -29,6 +32,55 @@ export class VisibilityAssertion extends WhiskerAssertion {
             return `assert ${this.getTargetName()} is not visible`;
         }
     }
+
+    toScratchBlocks(): ScratchScriptSnippet {
+        const assertConditionBlockId = uid();
+        const conditionBlockId = uid();
+
+        const assertBlock: ScratchVMBlock =
+            {
+                "id": assertConditionBlockId,
+                "opcode": this._visibility ? "bbt_assertCondition" : "bbt_assertConditionFalse",
+                "inputs": {
+                    "CONDITION": {
+                        "name": "CONDITION",
+                        "block": conditionBlockId,
+                        "shadow": null
+                    }
+                },
+                "fields": {},
+                "next": null,
+                "topLevel": false,
+                "parent": null,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        const conditionBlock =
+            {
+                "id": conditionBlockId,
+                "opcode": "bbt_isSpriteVisible",
+                "inputs": {},
+                "fields": {
+                    "SPRITE": {
+                        "name": "SPRITE",
+                        "value": this._target.id
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": assertConditionBlockId,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        return {
+            blocks: [assertBlock, conditionBlock],
+            first: assertBlock,
+            last: assertBlock
+        };
+    }
+
     toJavaScript(): string {
         if (this._visibility) {
             return js`t.assert.ok(${this.getTargetAccessor()}.visible, "Expected ${this.getTargetName()} to be visible");`;
@@ -37,7 +89,7 @@ export class VisibilityAssertion extends WhiskerAssertion {
         }
     }
 
-    static createFactory() : AssertionFactory<VisibilityAssertion>{
+    static createFactory(): AssertionFactory<VisibilityAssertion> {
         return new (class implements AssertionFactory<VisibilityAssertion> {
             createAssertions(state: Map<string, AssertionTargetState>): VisibilityAssertion[] {
                 const assertions = [];

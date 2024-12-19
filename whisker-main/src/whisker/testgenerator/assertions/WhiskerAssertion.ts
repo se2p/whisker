@@ -1,6 +1,9 @@
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import Arrays from "../../utils/Arrays";
 import {AssertionTargetState} from "./AssertionObserver";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
 
 export abstract class WhiskerAssertion {
 
@@ -21,6 +24,9 @@ export abstract class WhiskerAssertion {
 
     // JavaScript representation
     abstract toJavaScript(): string;
+
+    // Block representation
+    abstract toScratchBlocks(): ScratchScriptSnippet | null;
 
     protected getTarget(): RenderedTarget {
         return this._target;
@@ -76,4 +82,79 @@ export function js(strings: TemplateStringsArray, ...keys: unknown[]): string {
         }
     }
     return str + Arrays.last(strings.raw);
+}
+
+/**
+ * As many assertion types are equality assertions with the left value being a block
+ * and the right value being a fixed value, this function generates a block construct
+ * to represent such equality assertions.
+ */
+export function generateEqualityAssertion(leftBlockId: string, rightValue: string):
+    [ScratchVMBlock, ScratchVMBlock, ScratchVMBlock] {
+
+    const assertEqualsBlockId = uid();
+    const assertEqualsBlockAId = uid();
+    const assertEqualsBlockBId = uid();
+
+    const assertEqualsBlock: ScratchVMBlock =
+        {
+            "id": assertEqualsBlockId,
+            "opcode": "bbt_assertEquals",
+            "inputs": {
+                "A": {
+                    "name": "A",
+                    "block": leftBlockId,
+                    "shadow": assertEqualsBlockAId
+                },
+                "B": {
+                    "name": "B",
+                    "block": assertEqualsBlockBId,
+                    "shadow": assertEqualsBlockBId
+                }
+            },
+            "fields": {},
+            "next": null,
+            "topLevel": false,
+            "parent": null,
+            "shadow": false,
+            "breakpoint": false
+        };
+
+    const assertEqualsBlockA: ScratchVMBlock =
+        {
+            "id": assertEqualsBlockAId,
+            "opcode": "text",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": ""
+                }
+            },
+            "next": null,
+            "topLevel": true,
+            "parent": null,
+            "shadow": true,
+            "breakpoint": false
+        };
+
+    const assertEqualsBlockB: ScratchVMBlock =
+        {
+            "id": assertEqualsBlockBId,
+            "opcode": "text",
+            "inputs": {},
+            "fields": {
+                "TEXT": {
+                    "name": "TEXT",
+                    "value": rightValue
+                }
+            },
+            "next": null,
+            "topLevel": false,
+            "parent": assertEqualsBlockId,
+            "shadow": true,
+            "breakpoint": false
+        };
+
+    return [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB];
 }

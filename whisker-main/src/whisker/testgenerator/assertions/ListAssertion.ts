@@ -1,17 +1,20 @@
-import {js, WhiskerAssertion} from "./WhiskerAssertion";
+import {generateEqualityAssertion, js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 //import Variable from "../scratch-vm/@types/scratch-vm/engine/variable";
 import Variable from 'scratch-vm/src/engine/variable.js';
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {AssertionTargetState} from "./AssertionObserver";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
 
 export class ListAssertion extends WhiskerAssertion {
 
     private readonly _variableID: string;
     private readonly _variableName: string;
-    private readonly _variableValue: [];
+    private readonly _variableValue: Array<unknown>;
 
-    constructor(target: RenderedTarget, variableID: string, variableName: string, variableValue: []) {
+    constructor(target: RenderedTarget, variableID: string, variableName: string, variableValue: Array<unknown>) {
         super(target);
         this._variableID = variableID;
         this._variableName = variableName;
@@ -22,7 +25,7 @@ export class ListAssertion extends WhiskerAssertion {
         for (const targetState of state.values()) {
             if (targetState.target === this._target) {
                 if (Array.isArray(targetState.variables[this._variableID].value)) {
-                    const listVariable = targetState.variables[this._variableID].value as [];
+                    const listVariable = targetState.variables[this._variableID].value as Array<unknown>;
                     return listVariable.length == this._variableValue.length;
                 }
             }
@@ -41,6 +44,38 @@ export class ListAssertion extends WhiskerAssertion {
         } else {
             return js`t.assert.equal(${this.getTargetAccessor()}.getList("${this._variableName}").value.length, ${this._variableValue.length}, "Expected list ${this._variableName} of sprite ${this.getTargetName()} to have length ${this._variableValue.length}");`;
         }
+    }
+
+    toScratchBlocks(): ScratchScriptSnippet {
+        const lengthOfListBlockId = uid();
+        const [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB]
+            = generateEqualityAssertion(lengthOfListBlockId, this._variableValue.length.toString());
+
+        const lengthOfListBlock: ScratchVMBlock =
+            {
+                "id": lengthOfListBlockId,
+                "opcode": "data_lengthoflist",
+                "inputs": {},
+                "fields": {
+                    "LIST": {
+                        "name": "LIST",
+                        "id": this._variableID,
+                        "value": this._variableName,
+                        "variableType": "list"
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": assertEqualsBlock.id,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        return {
+            blocks: [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB, lengthOfListBlock],
+            first: assertEqualsBlock,
+            last: assertEqualsBlock
+        };
     }
 
     static createFactory(): AssertionFactory<ListAssertion> {
