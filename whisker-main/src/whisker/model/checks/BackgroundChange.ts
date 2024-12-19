@@ -1,5 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
@@ -48,7 +47,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         return () => {
             const stage = t.getStage();
             try {
-                if (ModelUtil.compare(stage["currentCostumeName"], newBackground, "==")) {
+                if (stage["currentCostumeName"] === newBackground) {
                     return !negated;
                 }
             } catch (e) {

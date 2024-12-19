@@ -176,46 +176,6 @@ export abstract class ModelUtil {
         return Number(value.toString());
     }
 
-    /**
-     * Compare to values to each other.
-     * @param value1 Value on the left side of the comparison equation.
-     * @param value2 Value on the right side of the comparison equation.
-     * @param comparison Comparison mode, =|==, <, <=, >=, >
-     */
-    static compare(value1: ParamType, value2: ParamType, comparison: ComparisonOp): boolean {
-        if (value1 == undefined || value2 == undefined) {
-            throw new Error("comparison with undefined value");
-        }
-        if (comparison === "==") {
-            if (value1 == "true") {
-                value1 = true;
-            } else if (value1 == "false") {
-                value1 = false;
-            }
-            if (value2 == "true") {
-                value2 = true;
-            } else if (value2 == "false") {
-                value2 = false;
-            }
-            return value1 == value2;
-        }
-        value1 = this.testNumber(value1);
-        value2 = this.testNumber(value2);
-
-        switch (comparison) {
-            case ">":
-                return value1 > value2;
-            case "<":
-                return value1 < value2;
-            case "<=":
-                return value1 <= value2;
-            case ">=":
-                return value1 >= value2;
-            default:
-                throw new ComparisonNotKnownError(comparison);
-        }
-    }
-
     private static _isAnAttribute(attrName: string): boolean {
         return this._testAttributeName(attrName) ||
             (attrName.startsWith('old.') && this._testAttributeName(attrName.substring(4)));
