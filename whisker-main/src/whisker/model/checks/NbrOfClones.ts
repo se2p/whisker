@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ComparingCheck, Comparison, contradicts} from "./comparisons";
+import {ComparingCheck, ComparisonOp, contradicts} from "./comparisons";
 
 export type NbrOfClonesArgs = [
     /**
@@ -14,7 +14,7 @@ export type NbrOfClonesArgs = [
     /**
      * Mode of comparison, e.g. =, <, >, <=, >=
      */
-    comparison: Comparison,
+    comparisonOp: ComparisonOp,
 
     /**
      * Number of clones.
@@ -24,7 +24,7 @@ export type NbrOfClonesArgs = [
 
 const NbrOfClonesArgs = z.tuple([
     SpriteName,
-    Comparison,
+    ComparisonOp,
     z.coerce.number().nonnegative(),
 ]);
 
@@ -49,7 +49,7 @@ abstract class AbstractNbrOfClones<
         this._visible = json.name === "NbrOfVisibleClones";
     }
 
-    get comparison(): Comparison {
+    get operator(): ComparisonOp {
         return this._args[1];
     }
 

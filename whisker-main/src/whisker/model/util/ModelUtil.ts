@@ -14,7 +14,7 @@ import {
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 
-import {Comparison} from "../checks/comparisons";
+import {ComparisonOp} from "../checks/comparisons";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -182,7 +182,7 @@ export abstract class ModelUtil {
      * @param value2 Value on the right side of the comparison equation.
      * @param comparison Comparison mode, =|==, <, <=, >=, >
      */
-    static compare(value1: ParamType, value2: ParamType, comparison: Comparison): boolean {
+    static compare(value1: ParamType, value2: ParamType, comparison: ComparisonOp): boolean {
         if (value1 == undefined || value2 == undefined) {
             throw new Error("comparison with undefined value");
         }

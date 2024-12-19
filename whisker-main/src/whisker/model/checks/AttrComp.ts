@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, contradicts} from "./comparisons";
+import {ComparingCheck, ComparisonOp, contradicts} from "./comparisons";
 
 const name = "AttrComp" as const;
 
@@ -23,7 +23,7 @@ export type AttrCompArgs = [
     /**
      * Mode of comparison, e.g. ==, <, >, <=, >=
      */
-    comparison: Comparison,
+    comparisonOp: ComparisonOp,
 
     /**
      * Value to compare to the attribute's current value.
@@ -34,7 +34,7 @@ export type AttrCompArgs = [
 const AttrCompArgs = z.tuple([
     SpriteName,
     AttrName,
-    Comparison,
+    ComparisonOp,
     z.string().or(z.number()),
 ]);
 
@@ -53,7 +53,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         super(edgeLabel, {...json, name});
     }
 
-    get comparison(): Comparison {
+    get operator(): ComparisonOp {
         return this._args[2];
     }
 

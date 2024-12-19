@@ -29,7 +29,7 @@ import {Pair} from "../../../../src/whisker/utils/Pair";
 import {TimeAfterEnd, TimeArgs, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
 
-import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/comparisons";
 
 describe('Check', () => {
     const t = getDummyTestDriver();
@@ -218,7 +218,7 @@ describe('Check', () => {
     });
 
     test('Invalid comparison throws error', () => {
-        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "var", "comp" as Comparison, "value"]}))
+        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "var", "comp" as ComparisonOp, "value"]}))
             .toThrow();
     });
 });

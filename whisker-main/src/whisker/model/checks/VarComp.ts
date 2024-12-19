@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, contradicts} from "./comparisons";
+import {ComparingCheck, ComparisonOp, contradicts} from "./comparisons";
 
 const name = "VarComp" as const;
 
@@ -22,7 +22,7 @@ export type VarCompArgs = [
     /**
      * Mode of comparison, e.g. =, <, >, <=, >=
      */
-    comparison: Comparison,
+    comparisonOp: ComparisonOp,
 
     /**
      * Value to compare to the variable's current value.
@@ -33,7 +33,7 @@ export type VarCompArgs = [
 const VarCompArgs = z.tuple([
     SpriteName,
     VariableName,
-    Comparison,
+    ComparisonOp,
     z.string().or(z.number()),
 ]);
 
@@ -56,7 +56,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return VarCompJSON.parse(checkJSON) as VarCompJSON;
     }
 
-    get comparison(): Comparison {
+    get operator(): ComparisonOp {
         return this._args[2];
     }
 

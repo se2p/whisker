@@ -1,18 +1,18 @@
 import {z} from "zod";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
-export const comparisons = ["==", "!=", ">", ">=", "<", "<="] as const;
+export const comparisonOps = ["==", "!=", ">", ">=", "<", "<="] as const;
 
-export type Comparison = typeof comparisons[number];
+export type ComparisonOp = typeof comparisonOps[number];
 
-export const Comparison = z.preprocess(
+export const ComparisonOp = z.preprocess(
     (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
-    z.enum(comparisons)
+    z.enum(comparisonOps)
 );
 
 type BinCompFun = (x: unknown, y: unknown) => boolean;
 
-const opToFun: Record<Comparison, BinCompFun> = Object.freeze({
+const opToFun: Record<ComparisonOp, BinCompFun> = Object.freeze({
     "==": (x, y) => x == y,
     "!=": (x, y) => x != y,
     ">": (x, y) => x > y,
@@ -21,11 +21,11 @@ const opToFun: Record<Comparison, BinCompFun> = Object.freeze({
     "<=": (x, y) => x <= y,
 });
 
-function apply({comparison, value}: ComparingCheck, other: ComparingCheck): boolean {
-    return opToFun[comparison](other.value, value);
+function apply({operator, value}: ComparingCheck, other: ComparingCheck): boolean {
+    return opToFun[operator](other.value, value);
 }
 
-function negate(comp: Comparison): Comparison {
+function negate(comp: ComparisonOp): ComparisonOp {
     switch (comp) {
         case "==":
             return "!=";
@@ -45,16 +45,16 @@ function negate(comp: Comparison): Comparison {
 }
 
 export interface ComparingCheck {
-    comparison: Comparison;
+    operator: ComparisonOp;
     value: string | number;
     negated: boolean;
 }
 
-function resolveNegation({comparison, negated, value}: ComparingCheck): ComparingCheck {
+function resolveNegation({operator, negated, value}: ComparingCheck): ComparingCheck {
     return {
         value,
         negated: false,
-        comparison: negated ? negate(comparison) : comparison
+        operator: negated ? negate(operator) : operator
     };
 }
 
@@ -62,20 +62,20 @@ export function contradicts(check1: ComparingCheck, check2: ComparingCheck): boo
     check1 = resolveNegation(check1);
     check2 = resolveNegation(check2);
 
-    if (check1.comparison === "==") {
+    if (check1.operator === "==") {
         return !apply(check2, check1);
     }
 
-    if (check2.comparison === "==") {
+    if (check2.operator === "==") {
         return !apply(check1, check2);
     }
 
-    if (check1.comparison === "!=" || check2.comparison === "!=") {
+    if (check1.operator === "!=" || check2.operator === "!=") {
         return false;
     }
 
     // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-    if (check1.comparison.startsWith(check2.comparison) || check2.comparison.startsWith(check1.comparison)) {
+    if (check1.operator.startsWith(check2.operator) || check2.operator.startsWith(check1.operator)) {
         return false;
     }
 

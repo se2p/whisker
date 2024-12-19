@@ -11,7 +11,7 @@ import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 
-import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/comparisons";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
@@ -60,10 +60,10 @@ describe('ModelUtil tests', function () {
 
     describe('compare()', () => {
         describe('exception for invalid input', () => {
-            const invalidInputs: [string, string, Comparison][] = [
+            const invalidInputs: [string, string, ComparisonOp][] = [
                 [undefined, "string", ">"],
                 ["0", undefined, ">"],
-                ["0", "string", "increase" as Comparison],
+                ["0", "string", "increase" as ComparisonOp],
                 ["0", "string", ">"],
                 ["string", "0", ">"],
 
@@ -76,7 +76,7 @@ describe('ModelUtil tests', function () {
                 ["0", "string", ">="],
                 ["string", "0", ">="],
 
-                ["1", "0", "<>=" as Comparison]
+                ["1", "0", "<>=" as ComparisonOp]
             ];
             it.each(invalidInputs)('throw exception for: %s; %s, %s',
                 (value1, value2, comparison) => {
@@ -87,7 +87,7 @@ describe('ModelUtil tests', function () {
         });
 
         describe("correct result for compare()", () => {
-            const params: [string, string, Comparison, boolean][] = [
+            const params: [string, string, ComparisonOp, boolean][] = [
                 ["0", "-1", "<", false],
                 ["-1", "0", "<", true],
                 ["1", "1", "<", false],
