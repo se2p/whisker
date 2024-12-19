@@ -15,7 +15,7 @@ import {ScratchScriptSnippet} from "../../../src/types/ScratchScriptSnippet";
 import {ScratchVMBlock} from "../../../src/types/ScratchVMBlock";
 import VMWrapper from "../../../src/vm/vm-wrapper";
 
-describe("Test the correct conversion of WhiskerTest events and assertions to their Block-Based Test representation", () => {
+describe("Test the correct conversion of WhiskerTest events to their Block-Based Test representation", () => {
 
     test("ClickSpriteEvent: click on a sprite", () => {
 

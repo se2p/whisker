@@ -1,6 +1,5 @@
 import {escaped, js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
-//import Variable from "../scratch-vm/@types/scratch-vm/engine/variable";
 import Variable from 'scratch-vm/src/engine/variable.js';
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {AssertionTargetState} from "./AssertionObserver";
@@ -40,6 +39,11 @@ export class VariableAssertion extends WhiskerAssertion {
         }
     }
 
+    toScratchBlocks(): null {
+        // TODO accessing sprite-local variables across sprites (currently) not implementable with BBTs
+        return null;
+    }
+
     private getValue(): string {
         return escaped(this._variableValue);
     }
@@ -76,7 +80,7 @@ export class VariableAssertion extends WhiskerAssertion {
     private static _variableBelongsToTarget(variableID: string, target: RenderedTarget): boolean {
         for (const block of Object.values(target.blocks._blocks)) {
             if (("fields" in block && 'VARIABLE' in block['fields'] && block['fields']['VARIABLE']['id'] === variableID) ||
-            target.isStage) {
+                target.isStage) {
                 return true;
             }
         }

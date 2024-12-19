@@ -1,13 +1,16 @@
-import {js, WhiskerAssertion} from "./WhiskerAssertion";
+import {generateEqualityAssertion, js, WhiskerAssertion} from "./WhiskerAssertion";
 import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {AssertionTargetState} from "./AssertionObserver";
+import uid from "scratch-vm/src/util/uid";
+import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
+import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
 
 export class LayerAssertion extends WhiskerAssertion {
 
     private readonly _layer: number;
 
-    constructor (target: RenderedTarget, layer: number, cloneIndex?: number) {
+    constructor(target: RenderedTarget, layer: number, cloneIndex?: number) {
         super(target, cloneIndex);
         this._layer = layer;
     }
@@ -25,6 +28,7 @@ export class LayerAssertion extends WhiskerAssertion {
     toString(): string {
         return `assert ${this.getTargetName()} has layer ${this._layer}`;
     }
+
     toJavaScript(): string {
         if (this._target.isOriginal) {
             return js`t.assert.equal(${this.getTargetAccessor()}.layerOrder, ${this._layer}, "Expected ${this.getTargetName()} to be at layer ${this._layer}");`;
@@ -33,7 +37,41 @@ export class LayerAssertion extends WhiskerAssertion {
         }
     }
 
-    static createFactory() : AssertionFactory<LayerAssertion>{
+    toScratchBlocks(): ScratchScriptSnippet {
+        const attributeBlockId = uid();
+        const [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB]
+            = generateEqualityAssertion(attributeBlockId, this._layer.toString());
+
+        const attributeBlock: ScratchVMBlock =
+            {
+                "id": attributeBlockId,
+                "opcode": "bbt_attributeOf",
+                "inputs": {},
+                "fields": {
+                    "ATTRIBUTE": {
+                        "name": "ATTRIBUTE",
+                        "value": "layer"
+                    },
+                    "SPRITE": {
+                        "name": "SPRITE",
+                        "value": this._target.id
+                    }
+                },
+                "next": null,
+                "topLevel": false,
+                "parent": assertEqualsBlock.id,
+                "shadow": false,
+                "breakpoint": false
+            };
+
+        return {
+            blocks: [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB, attributeBlock],
+            first: assertEqualsBlock,
+            last: assertEqualsBlock
+        };
+    }
+
+    static createFactory(): AssertionFactory<LayerAssertion> {
         return new (class implements AssertionFactory<LayerAssertion> {
             createAssertions(state: Map<string, AssertionTargetState>): LayerAssertion[] {
                 const assertions = [];
