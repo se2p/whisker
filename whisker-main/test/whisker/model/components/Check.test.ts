@@ -846,6 +846,11 @@ describe('Effect', () => {
                 ["VarComp", false, ["sprite", "var", "<=", "3"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
                 ["VarComp", false, ["sprite", "var", "<=", "1"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
                 ["VarComp", false, ["sprite", "var", "<=", "-1"], "VarComp", false, ["sprite", "var", ">=", "1"], true],
+
+                ["VarComp", false, ["sprite", "var", "=", "3"], "VarComp", false, ["sprite", "var", "!=", "3"], true],
+                ["VarComp", false, ["sprite", "var", "=", "3"], "VarComp", true, ["sprite", "var", "!=", "3"], false],
+                ["VarComp", true, ["sprite", "var", "=", "1"], "VarComp", false, ["sprite", "var", "!=", "1"], false],
+                ["VarComp", true, ["sprite", "var", "=", "1"], "VarComp", true, ["sprite", "var", "!=", "1"], true],
             ];
             it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
         });
