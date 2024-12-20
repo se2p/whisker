@@ -10491,11 +10491,6 @@ yoga-layout-prebuilt@^1.9.6:
   dependencies:
     "@types/yoga-layout" "1.9.2"
 
-zod-fast-check@^0.10.1:
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/zod-fast-check/-/zod-fast-check-0.10.1.tgz#e0819a5cf0b4ad03dd3f2cc02fde910e739a63e9"
-  integrity sha512-P+rqsg//CQZSFaG61QNRdnrDn8ARTxoMi4P0/GqRvyBjIiVXQCHB6R8yqkAwQNNSFxMD9cdDoPtOZRBe0rfwNg==
-
 zod@3.23.8, zod@^3.23.8:
   version "3.23.8"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
