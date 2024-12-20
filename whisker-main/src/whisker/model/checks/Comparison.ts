@@ -1,4 +1,5 @@
 import {z} from "zod";
+import {Optional} from "./AbstractCheck";
 
 export type Comparison =
     | Eq
@@ -169,7 +170,7 @@ const Comparison: Record<ComparisonOp, ComparisonCtor> = Object.freeze({
     ">=": Geq,
 });
 
-export function newComparison({operator, value, negated}: ComparingCheck): Comparison {
+export function newComparison({operator, value, negated = false}: Optional<ComparingCheck, 'negated'>): Comparison {
     const comparison = new Comparison[operator](value);
     return negated ? comparison.negate() : comparison;
 }
