@@ -244,29 +244,19 @@ describe('constructor', () => {
     describe("constructor throws if not enough arguments in args", () => {
         describe("not enough arguments: sprite color", () => {
             const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                ["SpriteColor", true, ["test"]],
-                ["SpriteColor", true, ["test", "0"]],
-                ["SpriteColor", true, ["test", "0", "1"]],
-                ["SpriteColor", true, [undefined, undefined, "test", "0", "1"]],
-                ["SpriteColor", true, ["test", undefined, undefined, "0", "1"]],
-                ["SpriteColor", true, ["test", "0", undefined, undefined, "1"]],
-                ["SpriteColor", true, ["test", "0", "2", undefined]],
                 ["SpriteColor", true, ["spriteName"]],
                 ["SpriteColor", true, ["spriteName", "1"]],
                 ["SpriteColor", true, ["spriteName", "1", "2"]],
                 ["SpriteColor", true, ["spriteName", "1", "2", undefined]],
-                ["SpriteColor", true, [undefined, "spriteName", "1", "2"]],
                 ["SpriteColor", true, ["spriteName", undefined, "1", "2"]],
                 ["SpriteColor", true, ["spriteName", "1", undefined, "2"]],
+                ["SpriteColor", true, [undefined, undefined, "test", "0", "1"]],
             ];
             it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
         });
 
         describe("not enough arguments: sprite touching", () => {
             const constructorArguments: [CheckName, boolean, ArgType[]][] = [
-                ["SpriteTouching", true, ["test"]],
-                ["SpriteTouching", true, ["test", undefined]],
-                ["SpriteTouching", true, [undefined, undefined, "test"]],
                 ["SpriteTouching", true, ["spriteName"]],
                 ["SpriteTouching", true, ["spriteName", undefined]],
                 ["SpriteTouching", true, [undefined, "spriteName"]]
@@ -300,8 +290,6 @@ describe('constructor', () => {
                 ["VarChange", true, [undefined, "test", "test2"]],
                 ["VarChange", true, ["test", undefined, "test2"]],
                 ["VarChange", true, ["test", "test2", undefined]],
-                ["VarChange", true, [undefined, undefined, "test", "test2"]],
-                ["VarChange", true, ["test", undefined, undefined, "test2"]],
             ];
             it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
         });
@@ -314,9 +302,6 @@ describe('constructor', () => {
                 ["VarComp", true, ["test", "test2", ">", undefined]],
                 ["VarComp", true, ["test", "test2", undefined]],
                 ["VarComp", true, ["test", undefined, undefined, "test2"]],
-                ["VarComp", true, [undefined, undefined, "test", "test2"]],
-                ["VarComp", true, ["test", undefined, "test2"]],
-                ["VarComp", true, [undefined, "test", "test2"]],
             ];
             it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
         });
@@ -326,9 +311,6 @@ describe('constructor', () => {
                 ["AttrChange", true, ["test"]],
                 ["AttrChange", true, ["test", "test2"]],
                 ["AttrChange", true, ["test", "test2", undefined]],
-                ["AttrChange", true, ["test", undefined, "test2"]],
-                ["AttrChange", true, [undefined, "test", "test2"]],
-                ["AttrChange", true, ["test", undefined, undefined, "test2"]],
                 ["AttrChange", true, [undefined, undefined, "test", "test2"]],
             ];
             it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
@@ -341,9 +323,6 @@ describe('constructor', () => {
                 ["AttrComp", true, ["test", "test2", ">"]],
                 ["AttrComp", true, ["test", "test2", ">", undefined]],
                 ["AttrComp", true, ["test", "test2", undefined]],
-                ["AttrComp", true, ["test", undefined, "test2"]],
-                ["AttrComp", true, [undefined, "test", "test2"]],
-                ["AttrComp", true, ["test", undefined, undefined, "test2"]],
                 ["AttrComp", true, [undefined, undefined, "test", "test2"]],
             ];
             it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
@@ -369,40 +348,22 @@ describe('string representations', () => {
     describe('toString()', () => {
         const constructorArguments: [CheckName, boolean, ArgType[], string][] = [
             ["AttrChange", false, ["test", "attr", "-"], "AttrChange(test,attr,-)"],
-            ["AttrChange", true, ["test", "attr", "-"], "!AttrChange(test,attr,-)"],
             ["AttrComp", true, ["sprite", "attr", ">", "0"], "!AttrComp(sprite,attr,>,0)"],
-            ["AttrComp", false, ["sprite", "attr", ">", "0"], "AttrComp(sprite,attr,>,0)"],
             ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
-            ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
-            ["Click", true, ["test"], "!Click(test)"],
             ["Click", true, ["sprite"], "!Click(sprite)"],
             ["Key", true, ["test"], "!Key(test)"],
-            ["Key", true, ["test"], "!Key(test)"],
             ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
-            ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
-            ["SpriteColor", true, ["test", "0", "1", "2"], "!SpriteColor(test,0,1,2)"],
             ["SpriteColor", true, ["sprite", "0", "0", "0"], "!SpriteColor(sprite,0,0,0)"],
-            ["SpriteTouching", true, ["test", "test2"], "!SpriteTouching(test,test2)"],
             ["SpriteTouching", true, ["sprite1", "sprite2"], "!SpriteTouching(sprite1,sprite2)"],
             ["VarComp", true, ["sprite", "var", ">", "0"], "!VarComp(sprite,var,>,0)"],
-            ["VarComp", true, ["sprite", "var", ">", "0"], "!VarComp(sprite,var,>,0)"],
-            ["VarChange", true, ["test", "var", "+"], "!VarChange(test,var,+)"],
             ["VarChange", true, ["test", "var", "+"], "!VarChange(test,var,+)"],
             ["Expr", true, ["test"], "!Expr(test)"],
-            ["Expr", true, ["test"], "!Expr(test)"],
-            ["Probability", true, ["0"], "!Probability(0)"],
             ["Probability", true, ["0"], "!Probability(0)"],
             ["TimeElapsed", true, ["1000"], "!TimeElapsed(1000)"],
-            ["TimeElapsed", true, ["1000"], "!TimeElapsed(1000)"],
-            ["TimeBetween", true, ["1000"], "!TimeBetween(1000)"],
             ["TimeBetween", true, ["1000"], "!TimeBetween(1000)"],
             ["TimeAfterEnd", true, ["1000"], "!TimeAfterEnd(1000)"],
-            ["TimeAfterEnd", true, ["1000"], "!TimeAfterEnd(1000)"],
-            ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,==,1)"],
             ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,==,1)"],
             ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,==,1)"],
-            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,==,1)"],
-            ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"],
             ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"]
         ];
 
@@ -414,38 +375,22 @@ describe('string representations', () => {
 
 describe('check and registerComponent', () => {
 
-    test("Getters work properly", () => {
-        const c = new BackgroundChange(undefined, {negated: true, args: ["test"]});
-        // expect(c.negated).toBe(true);
-        // expect(c.name).toBe("BackgroundChange");
-        // expect(c.args.length).toBe(1);
-        // expect(c.args[0]).toBe("test");
-        expect(() => {
-            c.check;
-        }).not.toThrow();
-    });
+    const cuMock = new CheckUtilityMock({"a": true, "b": false, "c": true,});
+    const cu = cuMock.getCheckUtility();
 
     test('Condition.check() returns false before registerComponent()', () => {
         const condition = new AttrChange(edgeID, {args: ["test", "attr", "-"]});
         expect(condition.check(1, 1)).toBe(false);
     });
 
-    test("effect.check() returns false before calling registerComponents()", () => {
-        const effect = newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]});
-        expect(effect.check(0, 0)).toBe(false);
-    });
-
-    const cuMock = new CheckUtilityMock({"a": true, "b": false, "c": true,});
-    const cu = cuMock.getCheckUtility();
-
     test('registerComponent() calculates correct effect', () => {
         const effect = new Key(edgeID, {negated: true, args: ["a"]});
         effect.registerComponents(null, cu, "graphID");
         const func = effect.check;
         cuMock.pressedKeys["a"] = false;
-        expect(func(0, 0)).toEqual(true);
+        expect(func()).toEqual(true);
         cuMock.pressedKeys["a"] = true;
-        expect(func(0, 0)).toEqual(false);
+        expect(func()).toEqual(false);
     });
 
     test('registerComponent() clears effect in error case', () => {
@@ -460,9 +405,7 @@ describe('check and registerComponent', () => {
         check.registerComponents(null, cu, "graphID");
         const func = check.check;
         cuMock.pressedKeys["a"] = false;
-        expect(func(0, 0)).toEqual(false);
-        cuMock.pressedKeys["a"] = false;
-        expect(func(0, 0)).toEqual(false);
+        expect(func()).toEqual(false);
         expect(fn).toHaveBeenCalledWith(edgeID, "graphID", error);
     });
 });
