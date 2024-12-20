@@ -35,17 +35,10 @@ describe('CheckGenerator', () => {
         const cu = cuMock.getCheckUtility();
         const keyCheck = new Key('label', {args: ['a']});
         keyCheck.registerComponents(null, cu, graphID);
-
-        test('Has the correct return type', () => {
-            expect(typeof keyCheck.check).toEqual(typeof (() => false));
-        });
-
-        test('Returned Function evaluates to the correct values', () => {
-            cuMock.pressedKeys["a"] = true;
-            expect(keyCheck.check()).toEqual(true);
-            cuMock.pressedKeys["a"] = false;
-            expect(keyCheck.check()).toEqual(false);
-        });
+        cuMock.pressedKeys["a"] = true;
+        expect(keyCheck.check()).toEqual(true);
+        cuMock.pressedKeys["a"] = false;
+        expect(keyCheck.check()).toEqual(false);
     });
 
     describe('getSpriteClickedCheck()', () => {
@@ -71,18 +64,11 @@ describe('CheckGenerator', () => {
             expect(cu.addErrorOutput).toHaveBeenCalledWith(edgeLabel, graphID, new SpriteNotFoundError('banana'));
         });
 
-        test('Has the correct return type', () => {
-            const apple = new SpriteMock("apple");
-            tdMock.currentSprites = [apple.sprite];
-            expect(typeof clickCheck.check).toEqual(typeof (() => false));
-        });
-
         it.each([true, false])('returns correct sprite if possible (negated: %s)', (negated: boolean) => {
             const apple = new SpriteMock("apple");
             const tdMock = new TestDriverMock();
             tdMock.currentSprites = SpriteMock.toSpriteArray([
-                new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("kiwi"), apple
-                // when adding new SpriteMock("pineapple") the test fails. This does not seem right -> potential bug
+                new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("kiwi"), apple, new SpriteMock("pineapple")
             ]);
 
             const clickCheck = new Click(edgeLabel, {negated, args: ['apple']});
@@ -103,7 +89,6 @@ describe('CheckGenerator', () => {
     describe('getSpriteColorTouchingCheck()', () => {
         const tdMock = new TestDriverMock();
         tdMock.currentSprites = [new SpriteMock("apple").sprite];
-        const t = tdMock.getTestDriver();
         const dummyCU = getDummyCheckUtility();
 
         describe('Throws for wrong RGB values', () => {
@@ -149,12 +134,6 @@ describe('CheckGenerator', () => {
             expect(check(kiwi.sprite)).toEqual(false);
         });
 
-        test('Has the correct return type', () => {
-            const c = new SpriteColor('label', {args: ["apple", 0, 255, 0]});
-            c.registerComponents(tdMock.getTestDriver(), dummyCU, graphID);
-            expect(typeof c.check).toEqual(typeof (() => false));
-        });
-
         it.each([true, false])('returned function depends on touchingColor (negated: %s)', (negated: boolean) => {
             const kiwi = new SpriteMock("kiwi");
             tdMock.currentSprites = SpriteMock.toSpriteArray([
@@ -195,12 +174,6 @@ describe('CheckGenerator', () => {
             expect(check(kiwi.sprite)).toEqual(true);
         });
 
-        test('Has the correct return type', () => {
-            const c = new SpriteTouching("label", {args: ["apple", "banana"]});
-            c.registerComponents(t, dummyCU, graphID);
-            expect(typeof c.check).toEqual(typeof (() => false));
-        });
-
         it.each([true, false])('returned function depends on touchingSprite (negated: %s)', (negated: boolean) => {
             banana.touchingSprite = true;
             const c = new SpriteTouching("label", {negated: negated, args: ["banana", "kiwi"]});
@@ -222,12 +195,6 @@ describe('CheckGenerator', () => {
         apple.variables = [{name: "x", value: 2}];
         stage.variables = [{name: "x", value: 10}];
         tdMock.stage = stage.sprite;
-
-        test('Has the correct return type', () => {
-            const c = new VarComp('label', {args: ["apple", "x", "<", "3"]});
-            c.registerComponents(t, dummyCU, graphID);
-            expect(typeof c.check).toEqual(typeof (() => false));
-        });
 
         it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: Comparison) => {
             expect(() => new VarComp('label', {args: ["apple", "x", cmp, "3"]})).toThrowError();
@@ -266,12 +233,6 @@ describe('CheckGenerator', () => {
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
 
-        test('Has the correct return type', () => {
-            const c = new VarChange('label', {args: ["apple", "x", "+"]});
-            c.registerComponents(t, dummyCU, graphID);
-            expect(typeof c.check).toEqual(typeof (() => false));
-        });
-
         test('VarEvent is registered on CheckUtil', () => {
             const fn = jest.fn();
             const cuMock = new CheckUtilityMock();
@@ -307,12 +268,6 @@ describe('CheckGenerator', () => {
 
         it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: Comparison) => {
             expect(() => new AttrComp('label', {args: ["kiwi", "size", cmp, "3"]})).toThrowError();
-        });
-
-        test('Has the correct return type', () => {
-            const c = new AttrComp('label', {args: ["kiwi", "size", "<", "3"]});
-            c.registerComponents(t, dummyCU, graphID);
-            expect(typeof c.check).toEqual(typeof (() => false));
         });
 
         test('OnMoveEvent is registered on CheckUtil', () => {
@@ -444,12 +399,6 @@ describe('CheckGenerator', () => {
         const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), apple, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
-
-        test('Has the correct return type', () => {
-            const c = new AttrChange('label', {args: ["apple", "x", "-"]});
-            c.registerComponents(t, dummyCU, graphID);
-            expect(typeof c.check).toEqual(typeof (() => false));
-        });
 
         test('VarEvent is registered on CheckUtil', () => {
             const fn = jest.fn();
