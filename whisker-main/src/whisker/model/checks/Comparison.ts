@@ -175,7 +175,7 @@ export function newComparison({operator, value, negated = false}: Optional<Compa
     return negated ? comparison.negate() : comparison;
 }
 
-export const comparisonOps = ["==", "!=", ">", ">=", "<", "<="] as const;
+export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);
 
 export type ComparisonOp = typeof comparisonOps[number];
 
