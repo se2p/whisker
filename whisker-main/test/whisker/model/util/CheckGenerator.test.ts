@@ -258,7 +258,6 @@ describe('CheckGenerator', () => {
         const banana = new SpriteMock("banana");
         const tdMock = new TestDriverMock([banana, new SpriteMock("bowl"), kiwi, apple]);
         const t = tdMock.getTestDriver();
-        const dummyCU = getDummyCheckUtility();
         kiwi.variables = [
             {name: "x", value: 2},
             {name: "size", value: 10},
