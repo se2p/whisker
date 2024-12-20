@@ -1,227 +1,18 @@
-import {getDummyTestDriver} from "../TestDriverMock";
-import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
-import {AttrComp, AttrCompArgs} from "../../../../src/whisker/model/checks/AttrComp";
-import {AttrChange, AttrChangeArgs} from "../../../../src/whisker/model/checks/AttrChange";
+import {CheckUtilityMock} from "../CheckUtilityMock";
+import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
+import {AttrChange} from "../../../../src/whisker/model/checks/AttrChange";
 import {
     BackgroundChange,
     BackgroundChangeArgs,
     BackgroundChangeJSON
 } from "../../../../src/whisker/model/checks/BackgroundChange";
-import {Output, OutputArgs} from "../../../../src/whisker/model/checks/Output";
-import {VarChange, VarChangeArgs} from "../../../../src/whisker/model/checks/VarChange";
-import {VarComp, VarCompArgs} from "../../../../src/whisker/model/checks/VarComp";
-import {SpriteTouching, SpriteTouchingArgs} from "../../../../src/whisker/model/checks/SpriteTouching";
-import {SpriteColor, SpriteColorArgs} from "../../../../src/whisker/model/checks/SpriteColor";
-import {Key, KeyArgs} from "../../../../src/whisker/model/checks/Key";
-import {Click, ClickArgs} from "../../../../src/whisker/model/checks/Click";
-import {Expr, ExprArgs} from "../../../../src/whisker/model/checks/Expr";
-import {Probability, ProbabilityArgs} from "../../../../src/whisker/model/checks/Probability";
-import {NbrOfClones, NbrOfClonesArgs, NbrOfVisibleClones} from "../../../../src/whisker/model/checks/NbrOfClones";
-import {
-    TouchingEdge,
-    TouchingEdgeArgs,
-    TouchingHorizEdge,
-    TouchingVerticalEdge
-} from "../../../../src/whisker/model/checks/TouchingEdge";
+import {Key} from "../../../../src/whisker/model/checks/Key";
 import {Check, CHECK_NAMES, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
-import {TimeAfterEnd, TimeArgs, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
-
-describe('Check', () => {
-    const t = getDummyTestDriver();
-    const cu = getDummyCheckUtility();
-    const graphID = "graphID";
-    const negated = false;
-
-    test('AttrComp', () => {
-        const args: AttrCompArgs = ["apple", "x", "<", 5];
-        const fn = jest.spyOn(AttrComp.prototype, '_checkArgsWithTestDriver').mockImplementationOnce(() => void 0);
-        const check = new AttrComp("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('AttrChange', () => {
-        const args: AttrChangeArgs = ["apple", "size", "-"];
-        const fn = jest.spyOn(AttrChange.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new AttrChange("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('BackgroundChange', () => {
-        const args: BackgroundChangeArgs = ["newBackground"];
-        const fn = jest.spyOn(BackgroundChange.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new BackgroundChange("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('Output', () => {
-        const args: OutputArgs = ["apple", "i have fallen down"];
-        const fn = jest.spyOn(Output.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Output("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('VarChange', () => {
-        const args: VarChangeArgs = ["apple", "x", "+"];
-        const fn = jest.spyOn(VarChange.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new VarChange("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('VarComp', () => {
-        const args: VarCompArgs = ["apple", "x", ">=", "7"];
-        const fn = jest.spyOn(VarComp.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new VarComp("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('SpriteTouching', () => {
-        const args: SpriteTouchingArgs = ["apple", "bowl"];
-        const fn = jest.spyOn(SpriteTouching.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new SpriteTouching("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('SpriteColor', () => {
-        const args: SpriteColorArgs = ["apple", 128, 128, 128];
-        const fn = jest.spyOn(SpriteColor.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new SpriteColor("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('Key', () => {
-        const args: KeyArgs = ["a"];
-        const fn = jest.spyOn(Key.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Key("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('Click', () => {
-        const args: ClickArgs = ["banana"];
-        const fn = jest.spyOn(Click.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Click("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('Expr', () => {
-        const args: ExprArgs = ["$(Cat. x) > 25"];
-        const fn = jest.spyOn(Expr.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Expr("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('Probability', () => {
-        const args: ProbabilityArgs = [0.5];
-        const fn = jest.spyOn(Probability.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new Probability("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('TimeElapsed', () => {
-        const args: TimeArgs = [1000];
-        const fn = jest.spyOn(TimeElapsed.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TimeElapsed("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('TimeBetween', () => {
-        const args: TimeArgs = [500];
-        const fn = jest.spyOn(TimeBetween.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TimeBetween("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('NbrOfClones', () => {
-        const args: NbrOfClonesArgs = ["apple", ">=", 1];
-        const fn = jest.spyOn(NbrOfClones.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new NbrOfClones("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('NbrOfVisibleClones', () => {
-        const args: NbrOfClonesArgs = ["apple", "==", 1];
-        const fn = jest.spyOn(NbrOfVisibleClones.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new NbrOfVisibleClones("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('TouchingEdge', () => {
-        const args: TouchingEdgeArgs = ["apple"];
-        const fn = jest.spyOn(TouchingEdge.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TouchingEdge("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('TouchingHorizEdge', () => {
-        const args: TouchingEdgeArgs = ["apple"];
-        const fn = jest.spyOn(TouchingHorizEdge.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TouchingHorizEdge("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('TouchingVerticalEdge', () => {
-        const args: TouchingEdgeArgs = ["apple"];
-        const fn = jest.spyOn(TouchingVerticalEdge.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TouchingVerticalEdge("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('TimeAfterEnd', () => {
-        const args: TimeArgs = [200];
-        const fn = jest.spyOn(TimeAfterEnd.prototype, "_checkArgsWithTestDriver").mockImplementationOnce(() => void 0);
-        const check = new TimeAfterEnd("label", {negated, args});
-        check._checkArgsWithTestDriver(t, cu, graphID);
-        expect(fn).toBeCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(t, cu, graphID);
-    });
-
-    test('Invalid comparison throws error', () => {
-        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "var", "comp" as Comparison, "value"]}))
-            .toThrow();
-    });
-});
 
 function checkConstructorThrows(name: CheckName, negated: boolean, args) {
     expect(() => newCheck(edgeID, {name, negated, args})).toThrow();
@@ -234,6 +25,11 @@ describe('constructor', () => {
         expect(() => {
             new BackgroundChange(undefined, {negated: true, args: ["test"]});
         }).not.toThrow();
+    });
+
+    test('Invalid comparison throws error', () => {
+        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "var", "comp" as Comparison, "value"]}))
+            .toThrow();
     });
 
     describe('Constructor throws for empty args', () => {
