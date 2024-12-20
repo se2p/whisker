@@ -2,8 +2,8 @@ import {UserModel} from "../../../../src/whisker/model/components/UserModel";
 import {ModelNode, UserModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
 import {MockedModelNode} from "./ProgramModel.test";
-import {getDummyCheckUtility} from "../CheckUtilityMock";
-import {getDummyTestDriver} from "../TestDriverMock";
+import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
+import {getDummyTestDriver} from "../mocks/TestDriverMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {UserModelJSON} from "../../../../src/whisker/model/util/schema";
 

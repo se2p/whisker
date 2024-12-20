@@ -1,7 +1,7 @@
 import {SpriteNotFoundError} from "../../../../src/whisker/model/util/ModelError";
-import {SpriteMock} from "../SpriteMock";
-import {TestDriverMock} from "../TestDriverMock";
-import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
+import {SpriteMock} from "../mocks/SpriteMock";
+import {TestDriverMock} from "../mocks/TestDriverMock";
+import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import VMWrapper from "../../../../src/vm/vm-wrapper";
 import Sprite from "../../../../src/vm/sprite";
 import {ArgType} from "../../../../src/whisker/model/util/schema";

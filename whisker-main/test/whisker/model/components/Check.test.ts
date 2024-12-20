@@ -1,4 +1,4 @@
-import {CheckUtilityMock} from "../CheckUtilityMock";
+import {CheckUtilityMock} from "../mocks/CheckUtilityMock";
 import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
 import {AttrChange} from "../../../../src/whisker/model/checks/AttrChange";
 import {
@@ -193,7 +193,7 @@ describe('check and registerComponent', () => {
         const check = new Key(edgeID, {negated: true, args: ["a"]});
         const error = new Error("this is a message");
         check.registerComponents(null, cu, "graphID");
-        check._checkArgsWithTestDriver = (t, cu, args) => {
+        check._checkArgsWithTestDriver = () => {
             throw error;
         };
         const fn = jest.fn();

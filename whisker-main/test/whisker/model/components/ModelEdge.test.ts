@@ -1,6 +1,6 @@
-import {TestDriverMock} from "../TestDriverMock";
-import {SpriteMock} from "../SpriteMock";
-import {CheckUtilityMock, getDummyCheckUtility} from "../CheckUtilityMock";
+import {TestDriverMock} from "../mocks/TestDriverMock";
+import {SpriteMock} from "../mocks/SpriteMock";
+import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ProgramModelEdgeJSON, UserModelEdgeJSON} from "../../../../src/whisker/model/util/schema";

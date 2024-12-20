@@ -1,7 +1,7 @@
 import {ModelNode, ProgramModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
-import {getDummyCheckUtility} from "../CheckUtilityMock";
-import {getDummyTestDriver} from "../TestDriverMock";
+import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
+import {getDummyTestDriver} from "../mocks/TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {CoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";

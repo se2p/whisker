@@ -1,4 +1,4 @@
-import {CheckUtility} from "../../../src/whisker/model/util/CheckUtility";
+import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
 
 export class CheckUtilityMock {
 

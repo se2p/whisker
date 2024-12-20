@@ -1,4 +1,4 @@
-import Sprite from "../../../src/vm/sprite";
+import Sprite from "../../../../src/vm/sprite";
 
 export class SpriteMock {
     public readonly name: string;

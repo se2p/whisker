@@ -1,8 +1,8 @@
-import {TestDriverMock} from "../TestDriverMock";
+import {TestDriverMock} from "../mocks/TestDriverMock";
 import {ScratchInterface} from "../../../../src/whisker/scratch/ScratchInterface";
 import {ScratchPosition} from "../../../../src/whisker/scratch/ScratchPosition";
 import {Container} from "../../../../src/whisker/utils/Container";
-import {SpriteMock} from "../SpriteMock";
+import {SpriteMock} from "../mocks/SpriteMock";
 import {WhiskerSearchConfiguration} from "../../../../src/whisker/utils/WhiskerSearchConfiguration";
 import {newUserInput, UserInputJSON} from "../../../../src/whisker/model/inputs/newUserInput";
 import {MouseMove} from "../../../../src/whisker/model/inputs/MouseMove";
