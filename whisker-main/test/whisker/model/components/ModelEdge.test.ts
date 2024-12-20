@@ -30,7 +30,7 @@ describe('Model edges', () => {
 
     function mockConditionWithError(name: string, value: string): Check {
         return {
-            check: (s1, s2) => {
+            check: () => {
                 throw new Error(value);
             },
             registerComponents: jest.fn(),
