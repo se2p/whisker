@@ -77,7 +77,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
-        const negated = this.negated;
 
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
@@ -105,13 +104,13 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             try {
                 for (const s of sprites) {
                     if (this._comparison.apply(s[attrName])) {
-                        return !negated;
+                        return true;
                     }
                 }
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
-            return negated;
+            return false;
         };
     }
 
