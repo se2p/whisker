@@ -60,7 +60,11 @@ class Eq extends AbstractComparison {
         return "==";
     }
 
-    override apply(operand1: string | number): boolean {
+    override apply(operand1: string | number | boolean): boolean {
+        if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
+            operand1 = String(operand1);
+        }
+
         return operand1 == this.operand2;
     }
 
@@ -78,7 +82,11 @@ class Neq extends AbstractComparison {
         return "!=";
     }
 
-    override apply(operand1: string | number): boolean {
+    override apply(operand1: string | number | boolean): boolean {
+        if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
+            operand1 = String(operand1);
+        }
+
         return operand1 != this.operand2;
     }
 
