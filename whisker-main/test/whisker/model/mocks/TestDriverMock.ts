@@ -1,5 +1,5 @@
-import Sprite from "../../../src/vm/sprite";
-import TestDriver from "../../../src/test/test-driver";
+import Sprite from "../../../../src/vm/sprite";
+import TestDriver from "../../../../src/test/test-driver";
 import {SpriteMock} from "./SpriteMock";
 
 export class TestDriverMock {

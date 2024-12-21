@@ -5,8 +5,8 @@ import {
     SpriteNotFoundError,
     VariableNotFoundError
 } from "../../../../src/whisker/model/util/ModelError";
-import {getDummyTestDriver, TestDriverMock} from "../TestDriverMock";
-import {SpriteMock} from "../SpriteMock";
+import {getDummyTestDriver, TestDriverMock} from "../mocks/TestDriverMock";
+import {SpriteMock} from "../mocks/SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
