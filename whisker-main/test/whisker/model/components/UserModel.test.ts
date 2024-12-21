@@ -2,8 +2,8 @@ import {UserModel} from "../../../../src/whisker/model/components/UserModel";
 import {ModelNode, UserModelNode} from "../../../../src/whisker/model/components/ModelNode";
 import TestDriver from "../../../../src/test/test-driver";
 import {MockedModelNode} from "./ProgramModel.test";
-import {getDummyCheckUtility} from "../CheckUtilityMock";
-import {getDummyTestDriver} from "../TestDriverMock";
+import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
+import {getDummyTestDriver} from "../mocks/TestDriverMock";
 import {UserModelEdge} from "../../../../src/whisker/model/components/UserModelEdge";
 import {UserModelJSON} from "../../../../src/whisker/model/util/schema";
 
@@ -25,19 +25,9 @@ function getNodesAndEdgesForBiggerModel(): [Record<string, UserModelNode>, Recor
     return [nodes, edges];
 }
 
-function getBiggerModel(): [MockedUserModel, Record<string, UserModelNode>, Record<string, UserModelEdge>] {
+function getBiggerModel(): [UserModel, Record<string, UserModelNode>, Record<string, UserModelEdge>] {
     const [nodes, edges] = getNodesAndEdgesForBiggerModel();
-    return [new MockedUserModel("id", "start", nodes, edges, ["end"], []), nodes, edges];
-}
-
-class MockedUserModel extends UserModel {
-    get currentStateOfModel(): UserModelNode {
-        return super.currentState;
-    }
-
-    set currentStateOfModel(value: UserModelNode) {
-        super.currentState = value;
-    }
+    return [new UserModel("id", "start", nodes, edges, ["end"], []), nodes, edges];
 }
 
 describe('User model', () => {
