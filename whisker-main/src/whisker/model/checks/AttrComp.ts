@@ -101,16 +101,13 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // without movement
         return () => {
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
+            const quantifier = (this.negated ? sprites.every : sprites.some).bind(sprites);
+
             try {
-                for (const s of sprites) {
-                    if (this._comparison.apply(s[attrName])) {
-                        return true;
-                    }
-                }
+                return quantifier((s: Sprite) => this._comparison.apply(s[attrName]));
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
-            return false;
         };
     }
 

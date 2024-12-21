@@ -364,7 +364,7 @@ describe('CheckGenerator', () => {
             kiwi.clones[0].updateSprite();
             const c = new AttrComp('label', {negated, args: ["kiwi", "x", "<", "3"]});
             c.registerComponents(t, cu, graphID);
-            expect(c.check()).toEqual(true);
+            expect(c.check()).toEqual(!negated);
         });
 
         it.each([false, true])('Returned function includes clones (negated: %s)', (negated) => {
@@ -379,7 +379,7 @@ describe('CheckGenerator', () => {
             kiwi.clones.forEach(c => c.updateSprite());
             const c = new AttrComp('label', {negated, args: ["kiwi", "x", ">", "15"]});
             c.registerComponents(t, cu, graphID);
-            expect(c.check()).toEqual(true);
+            expect(c.check()).toEqual(!negated);
         });
     });
 
