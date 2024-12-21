@@ -11,7 +11,7 @@ import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 
-import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 
 describe('ModelUtil tests', function () {
     describe('testChange()', () => {
@@ -54,70 +54,6 @@ describe('ModelUtil tests', function () {
             it.each(params)('testChange(%s, %s, %s) == %s',
                 (oldValue, newValue, change, expected) => {
                     expect(ModelUtil.testChange(oldValue, newValue, change)).toBe(expected);
-                });
-        });
-    });
-
-    describe('compare()', () => {
-        describe('exception for invalid input', () => {
-            const invalidInputs: [string, string, Comparison][] = [
-                [undefined, "string", ">"],
-                ["0", undefined, ">"],
-                ["0", "string", "increase" as Comparison],
-                ["0", "string", ">"],
-                ["string", "0", ">"],
-
-                ["string", "0", "<"],
-                ["0", "string", "<"],
-
-                ["0", "string", ">="],
-                ["string", "0", ">="],
-
-                ["0", "string", ">="],
-                ["string", "0", ">="],
-
-                ["1", "0", "<>=" as Comparison]
-            ];
-            it.each(invalidInputs)('throw exception for: %s; %s, %s',
-                (value1, value2, comparison) => {
-                    expect(() => {
-                        ModelUtil.compare(value1, value2, comparison);
-                    }).toThrow();
-                });
-        });
-
-        describe("correct result for compare()", () => {
-            const params: [string, string, Comparison, boolean][] = [
-                ["0", "-1", "<", false],
-                ["-1", "0", "<", true],
-                ["1", "1", "<", false],
-
-                ["0", "-1", "<=", false],
-                ["-1", "0", "<=", true],
-                ["1", "1", "<=", true],
-
-                ["0", "-1", ">", true],
-                ["-1", "0", ">", false],
-                ["1", "1", ">", false],
-
-                ["0", "-1", ">=", true],
-                ["-1", "0", ">=", false],
-                ["1", "1", ">=", true],
-
-                ["0", "-1", "==", false],
-                ["-1", "0", "==", false],
-                ["1", "1", "==", true],
-                ["hallo", "hallo", "==", true],
-                ["1", "hallo", "==", false],
-
-                ["true", "true", "==", true],
-                ["false", "false", "==", true],
-                ["true", "false", "==", false],
-                ["false", "true", "==", false]
-            ];
-            it.each(params)("testChange(%s, %s, %s) == %s",
-                (value1, value2, comparison, expected) => {
-                    expect(ModelUtil.compare(value1, value2, comparison)).toBe(expected);
                 });
         });
     });

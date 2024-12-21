@@ -983,6 +983,13 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
+"@fast-check/jest@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@fast-check/jest/-/jest-2.0.3.tgz#441a541c1c2c4bf883663bfe003fa97bf14a57ae"
+  integrity sha512-3bRtz5kmM2GyLSm9qkDEepeulPaMWZMjjXhOl1G6TCuIghDCPN75pKi2FjXVhkRjTZc6TlMjrcX4f0rTGwM2bQ==
+  dependencies:
+    fast-check "^3.0.0"
+
 "@fortawesome/fontawesome-free@^5.15.4":
   version "5.15.4"
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.15.4.tgz#ecda5712b61ac852c760d8b3c79c96adca5554e5"
@@ -4583,6 +4590,13 @@ falafel@^2.1.0:
     acorn "^7.1.1"
     isarray "^2.0.1"
 
+fast-check@^3.0.0:
+  version "3.23.2"
+  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-3.23.2.tgz#0129f1eb7e4f500f58e8290edc83c670e4a574a2"
+  integrity sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==
+  dependencies:
+    pure-rand "^6.1.0"
+
 fast-deep-equal@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-1.1.0.tgz#c053477817c86b51daa853c81e059b733d023614"
@@ -8087,6 +8101,11 @@ puppeteer@^22.12.1:
     cosmiconfig "^9.0.0"
     devtools-protocol "0.0.1299070"
     puppeteer-core "22.12.1"
+
+pure-rand@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-6.1.0.tgz#d173cf23258231976ccbdb05247c9787957604f2"
+  integrity sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==
 
 q@^1.1.2:
   version "1.5.1"

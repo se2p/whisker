@@ -12,7 +12,7 @@ import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
 
-import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 
 function checkConstructorThrows(name: CheckName, negated: boolean, args) {
     expect(() => newCheck(edgeID, {name, negated, args})).toThrow();
@@ -28,7 +28,7 @@ describe('constructor', () => {
     });
 
     test('Invalid comparison throws error', () => {
-        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "var", "comp" as Comparison, "value"]}))
+        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "var", "comp" as ComparisonOp, "value"]}))
             .toThrow();
     });
 

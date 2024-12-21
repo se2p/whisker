@@ -44,6 +44,7 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@fast-check/jest": "^2.0.3",
         "tsc-watch": "^6.0.0"
     }
 }

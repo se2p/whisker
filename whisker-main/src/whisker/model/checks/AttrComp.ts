@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, contradicts} from "./comparisons";
+import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
 
 const name = "AttrComp" as const;
 
@@ -23,7 +23,7 @@ export type AttrCompArgs = [
     /**
      * Mode of comparison, e.g. ==, <, >, <=, >=
      */
-    comparison: Comparison,
+    comparisonOp: ComparisonOp,
 
     /**
      * Value to compare to the attribute's current value.
@@ -34,7 +34,7 @@ export type AttrCompArgs = [
 const AttrCompArgs = z.tuple([
     SpriteName,
     AttrName,
-    Comparison,
+    ComparisonOp,
     z.string().or(z.number()),
 ]);
 
@@ -49,11 +49,14 @@ export const AttrCompJSON = ICheckJSON.extend({
 });
 
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
+    private readonly _comparison: Comparison;
+
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
+        this._comparison = newComparison(this);
     }
 
-    get comparison(): Comparison {
+    get operator(): ComparisonOp {
         return this._args[2];
     }
 
@@ -73,15 +76,14 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, attrName, comparison, attrValue] = this._args;
-        const negated = this.negated;
+        const [pSpriteName, attrName] = this._args;
 
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         const listener = (sprite) => {
             try {
-                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+                return this._comparison.apply(sprite[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -99,16 +101,13 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // without movement
         return () => {
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
+            const quantifier = (this.negated ? sprites.every : sprites.some).bind(sprites);
+
             try {
-                for (const s of sprites) {
-                    if (ModelUtil.compare(s[attrName], attrValue, comparison)) {
-                        return !negated;
-                    }
-                }
+                return quantifier((s: Sprite) => this._comparison.apply(s[attrName]));
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
-            return negated;
         };
     }
 
@@ -124,6 +123,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             return false;
         }
 
-        return contradicts(this, that);
+        return this._comparison.contradicts(that._comparison);
     }
 }

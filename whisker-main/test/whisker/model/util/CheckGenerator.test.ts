@@ -24,7 +24,7 @@ import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../..
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 
-import {Comparison} from "../../../../src/whisker/model/checks/comparisons";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 
 describe('CheckGenerator', () => {
 
@@ -196,7 +196,7 @@ describe('CheckGenerator', () => {
         stage.variables = [{name: "x", value: 10}];
         tdMock.stage = stage.sprite;
 
-        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: Comparison) => {
+        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: ComparisonOp) => {
             expect(() => new VarComp('label', {args: ["apple", "x", cmp, "3"]})).toThrowError();
         });
 
@@ -265,7 +265,7 @@ describe('CheckGenerator', () => {
         ];
         kiwi.updateSprite();
 
-        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: Comparison) => {
+        it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: ComparisonOp) => {
             expect(() => new AttrComp('label', {args: ["kiwi", "size", cmp, "3"]})).toThrowError();
         });
 
@@ -525,7 +525,7 @@ describe('CheckGenerator', () => {
         test('throws exception for invalid comparison', () => {
             expect(() => new NbrOfClones('label', {
                 negated: true,
-                args: ["banana", "<=>" as Comparison, 10]
+                args: ["banana", "<=>" as ComparisonOp, 10]
             })).toThrowError();
         });
     });
