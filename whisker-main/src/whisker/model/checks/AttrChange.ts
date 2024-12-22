@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {Change, ChangingCheck, contradicts} from "./changes";
+import {Change, ChangingCheck, contradicts} from "./Change";
 
 const name = "AttrChange" as const;
 

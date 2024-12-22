@@ -5,7 +5,7 @@ import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
-import {Change, ChangingCheck, contradicts} from "./changes";
+import {Change, ChangingCheck, contradicts} from "./Change";
 
 const name = "VarChange" as const;
 
