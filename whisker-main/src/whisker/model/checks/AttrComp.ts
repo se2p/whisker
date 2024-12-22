@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, ComparisonOp, newQuantifiedComparison, QuantifiedComparison} from "./Comparison";
 
 const name = "AttrComp" as const;
 
@@ -49,11 +49,11 @@ export const AttrCompJSON = ICheckJSON.extend({
 });
 
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
-    private readonly _comparison: Comparison;
+    private readonly _comparison: QuantifiedComparison;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
-        this._comparison = newComparison(this);
+        this._comparison = newQuantifiedComparison(this);
     }
 
     get operator(): ComparisonOp {
@@ -83,7 +83,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         const listener = (sprite) => {
             try {
-                return this._comparison.apply(sprite[attrName]);
+                return this._comparison.apply([sprite[attrName]]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -101,10 +101,9 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // without movement
         return () => {
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
-            const quantifier = (this.negated ? sprites.every : sprites.some).bind(sprites);
 
             try {
-                return quantifier((s: Sprite) => this._comparison.apply(s[attrName]));
+                return this._comparison.apply(sprites.map((s) => s[attrName]));
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
