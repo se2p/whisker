@@ -62,8 +62,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, varName, change] = this._args;
-        const negated = this.negated;
+        const [pSpriteName, varName] = this._args;
 
         let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const {
@@ -74,15 +73,18 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         const spriteName = sprite.name;
         const variableName = foundVar.name;
 
-        function check(): boolean {
+        const check = () => {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
             try {
-                return !negated == ModelUtil.testChange(variable.old.value, variable.value, change);
+                return this._change.apply(
+                    ModelUtil.testNumber(variable.old.value),
+                    ModelUtil.testNumber(variable.value)
+                );
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }
-        }
+        };
 
         cu.registerVarEvent(variableName, this, graphID, check);
         return check;

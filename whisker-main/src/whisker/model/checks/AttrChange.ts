@@ -62,7 +62,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, attrName, change] = this._args;
+        const [pSpriteName, attrName] = this._args;
         const negated = this.negated;
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
@@ -84,7 +84,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             try {
                 for (const s of sprites) {
-                    if (ModelUtil.testChange(s.old[attrName], s[attrName], change)) {
+                    if (this._change.apply(s.old[attrName], s[attrName]) !== negated) {
                         return !negated;
                     }
                 }
@@ -96,10 +96,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
     }
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this._args;
+        const [pSpriteName, attrName] = this._args;
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
             try {
-                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return this._change.apply(sprite.old[attrName], sprite[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -107,10 +107,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
     }
 
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this._args;
+        const [pSpriteName, attrName] = this._args;
         cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
             try {
-                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return this._change.apply(sprite.old[attrName], sprite[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
