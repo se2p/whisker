@@ -3,7 +3,6 @@ import TestDriver from "../../../test/test-driver";
 import {
     AttributeNotFoundError,
     ChangeComparisonNotKnownError,
-    ComparisonNotKnownError,
     EmptyExpressionError,
     ExpressionSyntaxError,
     ExprEvalError,
@@ -13,8 +12,6 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
-
-import {ComparisonOp} from "../checks/Comparison";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],

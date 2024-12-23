@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {Change, ChangingCheck, contradicts} from "./Change";
+import {Change, ChangingCheck, newChange, NumberOrChangeOp} from "./Change";
 
 const name = "AttrChange" as const;
 
@@ -18,13 +18,13 @@ export type AttrChangeArgs = [
      */
     attrName: string,
 
-    change: Change,
+    change: NumberOrChangeOp,
 ];
 
 const AttrChangeArgs = z.tuple([
     SpriteName,
     AttrName,
-    Change,
+    NumberOrChangeOp,
 ]);
 
 export interface AttrChangeJSON extends ICheckJSON {
@@ -38,11 +38,14 @@ export const AttrChangeJSON = ICheckJSON.extend({
 });
 
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
+    private readonly _change: Change;
+
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
+        this._change = newChange(this);
     }
 
-    get change(): Change {
+    get change(): NumberOrChangeOp {
         return this._args[2];
     }
 
@@ -126,6 +129,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             return false;
         }
 
-        return contradicts(this, that);
+        return this._change.contradicts(that._change);
     }
 }

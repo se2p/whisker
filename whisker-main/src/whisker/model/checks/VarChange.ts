@@ -5,7 +5,7 @@ import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
-import {Change, ChangingCheck, contradicts} from "./Change";
+import {Change, ChangingCheck, newChange, NumberOrChangeOp} from "./Change";
 
 const name = "VarChange" as const;
 
@@ -20,13 +20,13 @@ export type VarChangeArgs = [
      */
     varName: VariableName,
 
-    change: Change,
+    change: NumberOrChangeOp,
 ];
 
 export const VarChangeArgs = z.tuple([
     SpriteName,
     VariableName,
-    Change,
+    NumberOrChangeOp,
 ]);
 
 export interface VarChangeJSON extends ICheckJSON {
@@ -40,11 +40,14 @@ export const VarChangeJSON = ICheckJSON.extend({
 });
 
 export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implements ChangingCheck {
+    private readonly _change: Change;
+
     constructor(edgeLabel: string, json: SlimCheckJSON<VarChangeJSON>) {
         super(edgeLabel, {...json, name});
+        this._change = newChange(this);
     }
 
-    get change(): Change {
+    get change(): NumberOrChangeOp {
         return this._args[2];
     }
 
@@ -93,7 +96,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
             return false;
         }
 
-        return contradicts(this, that);
+        return this._change.contradicts(that._change);
     }
 
     override get dependsOnSayText(): boolean {

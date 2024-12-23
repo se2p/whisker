@@ -1,5 +1,209 @@
 import {z} from "zod";
-import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+
+export type Change =
+    | Eq
+    | Neq
+    | Plus
+    | Minus
+    | PlusEq
+    | MinusEq
+    ;
+
+interface IChange {
+    apply(before: number, after: number): boolean;
+
+    negate(): Change;
+
+    contradicts(that: Change): boolean;
+
+    operator: ChangeOp;
+}
+
+class Eq implements IChange {
+    constructor(private readonly _offset: number = 0) {
+    }
+
+    apply(before: number, after: number): boolean {
+        return before + this._offset === after;
+    }
+
+    negate(): Change {
+        return new Neq(this._offset);
+    }
+
+    contradicts(that: Change): boolean {
+        if (that.operator === "=") {
+            return this.offset !== that.offset;
+        }
+
+        if (that.operator === "!=") {
+            return this.offset === that.offset;
+        }
+
+        if (this.offset > 0) {
+            return ["-", "-="].includes(that.operator);
+        }
+
+        if (this.offset < 0) {
+            return ["+", "+="].includes(that.operator);
+        }
+
+        return ["+", "-"].includes(that.operator);
+    }
+
+    get offset(): number {
+        return this._offset;
+    }
+
+    get operator(): "=" {
+        return "=";
+    }
+}
+
+class Eq0 extends Eq {
+    constructor() {
+        super(0);
+    }
+
+    override apply(before: number | string, after: number | string): boolean {
+        return before === after;
+    }
+
+    override negate(): Change {
+        return new Neq0();
+    }
+}
+
+class Neq implements IChange {
+    constructor(private readonly _offset: number = 0) {
+    }
+
+    apply(before: number, after: number): boolean {
+        return before + this._offset !== after;
+    }
+
+    negate(): Change {
+        return new Eq(this._offset);
+    }
+
+    contradicts(that: Change): boolean {
+        if (that.operator === "=") {
+            return this.offset === that.offset;
+        }
+
+        return false;
+    }
+
+    get operator(): "!=" {
+        return "!=";
+    }
+
+    get offset(): number {
+        return this._offset;
+    }
+}
+
+class Neq0 extends Neq {
+    constructor() {
+        super(0);
+    }
+
+    override apply(before: number | string, after: number | string): boolean {
+        return before !== after;
+    }
+
+    override negate(): Change {
+        return new Eq0();
+    }
+}
+
+class Plus implements IChange {
+    apply(before: number, after: number): boolean {
+        return before < after;
+    }
+
+    negate(): Change {
+        return new MinusEq();
+    }
+
+    contradicts(that: Change): boolean {
+        if (that.operator === "=") {
+            return !(that.offset > 0);
+        }
+
+        return ["-", "-="].includes(that.operator);
+    }
+
+    get operator(): "+" {
+        return "+";
+    }
+}
+
+class Minus implements IChange {
+    apply(before: number, after: number): boolean {
+        return before > after;
+    }
+
+    negate(): Change {
+        return new PlusEq();
+    }
+
+    contradicts(that: Change): boolean {
+        if (that.operator === "=") {
+            return !(that.offset < 0);
+        }
+
+        return ["+", "+="].includes(that.operator);
+    }
+
+    get operator(): "-" {
+        return "-";
+    }
+}
+
+class PlusEq implements IChange {
+    apply(before: number, after: number): boolean {
+        return before <= after;
+    }
+
+    negate(): Change {
+        return new Minus();
+    }
+
+    contradicts(that: Change): boolean {
+        if (that.operator === "=") {
+            return !(that.offset >= 0);
+        }
+
+        return that.operator === "-";
+    }
+
+    get operator(): "+=" {
+        return "+=";
+    }
+}
+
+class MinusEq implements IChange {
+    apply(before: number, after: number): boolean {
+        return before >= after;
+    }
+
+    negate(): Change {
+        return new Plus();
+    }
+
+    contradicts(that: Change): boolean {
+        if (that.operator === "=") {
+            return !(that.offset <= 0);
+        }
+
+        return that.operator === "+";
+    }
+
+    get operator(): "-=" {
+        return "-=";
+    }
+}
 
 const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
 
@@ -31,117 +235,30 @@ const NumberLike = z.union([
     .pipe(z.coerce.number())
     .refine((n) => !Number.isNaN(n));
 
-/**
- * For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same.
- * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
- * change by an exact value '+<number>' or '<number>' or '-<number>'.
- */
-export type Change =
-    | ChangeOp
+export type NumberOrChangeOp =
     | number
+    | ChangeOp
     ;
 
-export const Change = ChangeOp.or(NumberLike);
+export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 
-export interface ChangingCheck<T extends Change = Change> {
+const Change: Record<ChangeOp, new () => Change> = Object.freeze({
+    "=": Eq0,
+    "!=": Neq0,
+    "+": Plus,
+    "-": Minus,
+    "+=": PlusEq,
+    "-=": MinusEq,
+});
+
+export function newChange({change: numOp, negated = false}: ChangingCheck): Change {
+    const change = typeof numOp === "number"
+        ? new Eq(numOp)
+        : new Change[numOp]();
+    return negated ? change.negate() : change;
+}
+
+export interface ChangingCheck {
+    change: NumberOrChangeOp;
     negated: boolean;
-    change: T;
-}
-
-function isNumCheck(check: ChangingCheck): check is ChangingCheck<number> {
-    return typeof check.change === "number";
-}
-
-/**
- * Tells whether the two given checks contradict each other. Every check represents a set of allowed number values.
- * Two checks are contradicting if the corresponding sets are disjoint.
- *
- * @param check1 The first check
- * @param check2 The second check
- */
-export function contradicts(check1: ChangingCheck, check2: ChangingCheck): boolean {
-    // If given two number checks, we try to determine if there's a contradiction on the precise "number"-level.
-    if (isNumCheck(check1) && isNumCheck(check2)) {
-        return contradictsNum(check1, check2);
-    }
-
-    // Otherwise, we have at least one operator check. Then, we have to convert the other check to the same level
-    // if necessary, and try to determine a contradiction on the coarser "operator"-level.
-
-    if (isNumCheck(check1)) {
-        return contradicts(toOpCheck(check1), check2);
-    }
-
-    if (isNumCheck(check2)) {
-        return contradicts(check1, toOpCheck(check2));
-    }
-
-    return contradictsOp(check1 as ChangingCheck<ChangeOp>, check2 as ChangingCheck<ChangeOp>);
-}
-
-function contradictsNum(check1: ChangingCheck<number>, check2: ChangingCheck<number>): boolean {
-    const {negated: negated1, change: num1} = check1;
-    const {negated: negated2, change: num2} = check2;
-
-    if (negated1 && negated2) {
-        // Essentially, we have two singleton sets, and create their complements in R (real numbers), before
-        // intersecting them. This set is never empty, hence no contradiction possible.
-        return false;
-    }
-
-    if (negated1 || negated2) {
-        // Exactly one of the two is negated. Contradiction only possible if both numbers are the same.
-        return num1 === num2;
-    }
-
-    // No negation. Contradiction only possible if the numbers are not the same.
-    return num1 !== num2;
-}
-
-function contradictsOp(check1: ChangingCheck<ChangeOp>, check2: ChangingCheck<ChangeOp>): boolean {
-    const op1 = check1.negated ? negate(check1.change) : check1.change;
-    const op2 = check2.negated ? negate(check2.change) : check2.change;
-
-    switch (op1) {
-        case "+":
-            return ["=", "-", "-="].includes(op2); // All the operators that don't allow for an increase.
-        case "-":
-            return ["=", "+", "+="].includes(op2); // All the operators that don't allow for a decrease.
-        case "=":
-            return ["+", "-", "!="].includes(op2); // All the operators that don't allow for staying the same.
-        case "+=":
-            return op2 === "-"; // The only operator allowing neither increase nor staying the same.
-        case "-=":
-            return op2 === "+"; // The only operation allowing neither decrease nor staying the same.
-        case "!=":
-            return op2 === "="; // The only operator allowing neither increase nor decrease.
-        default:
-            throw new NonExhaustiveCaseDistinction(op1);
-    }
-}
-
-function negate(op: ChangeOp): ChangeOp {
-    switch (op) {
-        case "+":
-            return "-=";
-        case "-":
-            return "+=";
-        case "+=":
-            return "-";
-        case "-=":
-            return "+";
-        case "=":
-            return "!=";
-        case "!=":
-            return "=";
-        default:
-            throw new NonExhaustiveCaseDistinction(op);
-    }
-}
-
-function toOpCheck({change, negated}: ChangingCheck<number>): ChangingCheck<ChangeOp> {
-    return {
-        negated,
-        change: change > 0 ? "+" : change < 0 ? "-" : "=",
-    };
 }
