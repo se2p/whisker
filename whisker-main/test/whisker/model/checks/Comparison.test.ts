@@ -1,8 +1,8 @@
 import {fc, it} from "@fast-check/jest";
 import {ComparisonOp, comparisonOps, newComparison} from "../../../../src/whisker/model/checks/Comparison";
 
-const number = () => fc.double({noNaN: true});
-const xy = () => fc.tuple(number(), number());
+const number = fc.double({noNaN: true});
+const xy = fc.tuple(number, number);
 
 describe.each([
     ["==", "!=", false, true, false],
@@ -25,20 +25,20 @@ describe.each([
         expect(d.operator).toStrictEqual(nop);
     });
 
-    it.prop([number(), fc.boolean()])(`has y as 2nd operand`, (value, negated) => {
+    it.prop([number, fc.boolean()])(`has y as 2nd operand`, (value, negated) => {
         const c = newComparison({operator, value, negated});
         expect(c.operand2).toStrictEqual(value);
     });
 
-    it.prop([number()])("implements toString() correctly", (value) => {
+    it.prop([number])("implements toString() correctly", (value) => {
         const c = newComparison({operator, value});
         expect(c.toString()).toStrictEqual(`x ${operator} ${value}`);
     });
 
     describe.each([
-        ["x < y", resLt, xy().filter(([x, y]) => x < y)],
-        ["x > y", resGt, xy().filter(([x, y]) => x > y)],
-        ["x == y", resEq, number().map((x) => [x, x])],
+        ["x < y", resLt, xy.filter(([x, y]) => x < y)],
+        ["x > y", resGt, xy.filter(([x, y]) => x > y)],
+        ["x == y", resEq, number.map((x) => [x, x])],
     ])("when %s", (_, expected, arbitrary) => {
         it.prop([arbitrary])(`is ${expected}`, ([x, value]) => {
             const c = newComparison({operator, value});
@@ -51,24 +51,24 @@ describe.each([
         });
     });
 
-    it.prop([xy()])("is idempotent regarding double negation", ([x, value]) => {
+    it.prop([xy])("is idempotent regarding double negation", ([x, value]) => {
         const c = newComparison({operator, value});
         const expected = c.apply(x);
         expect(c.negate().negate().apply(x)).toBe(expected);
     });
 
-    it.prop([xy()])("has the same result when negated directly or retroactively", ([x, value]) => {
+    it.prop([xy])("has the same result when negated directly or retroactively", ([x, value]) => {
         const d = newComparison({operator, value, negated: true}); // directly negated
         const c = newComparison({operator, value}).negate(); // retroactively negated
         expect(c.apply(x)).toBe(d.apply(x));
     });
 
-    it.prop([number()])("never contradicts itself", (value) => {
+    it.prop([number])("never contradicts itself", (value) => {
         const c = newComparison({operator, value});
         expect(c.contradicts(c)).toBe(false);
     });
 
-    it.prop([number()])("always contradicts its negation", (value) => {
+    it.prop([number])("always contradicts its negation", (value) => {
         const c = newComparison({operator, value});
         const d = newComparison({operator, value, negated: true});
         expect(c.contradicts(c.negate())).toBe(true);
@@ -77,35 +77,35 @@ describe.each([
 });
 
 describe.each([
-    ["==", "==", xy().filter(([y, b]) => y != b), true, "if y != b"],
-    ["==", "!=", xy().filter(([y, b]) => y != b), false, "if y != b"],
-    ["==", "!=", number().map((y) => [y, y]), true, "if y == b"],
-    ["==", ">", xy().filter(([y, b]) => y > b), false, "if y > b"],
-    ["==", ">", xy().filter(([y, b]) => y <= b), true, "if y <= b"],
-    ["==", ">=", xy().filter(([y, b]) => y >= b), false, "if y >= b"],
-    ["==", ">=", xy().filter(([y, b]) => y < b), true, "if y < b"],
-    ["==", "<", xy().filter(([y, b]) => y < b), false, "if y < b"],
-    ["==", "<", xy().filter(([y, b]) => y >= b), true, "if y >= b"],
-    ["==", "<=", xy().filter(([y, b]) => y <= b), false, "if y <= b"],
-    ["==", "<=", xy().filter(([y, b]) => y > b), true, "if y > b"],
+    ["==", "==", xy.filter(([y, b]) => y != b), true, "if y != b"],
+    ["==", "!=", xy.filter(([y, b]) => y != b), false, "if y != b"],
+    ["==", "!=", number.map((y) => [y, y]), true, "if y == b"],
+    ["==", ">", xy.filter(([y, b]) => y > b), false, "if y > b"],
+    ["==", ">", xy.filter(([y, b]) => y <= b), true, "if y <= b"],
+    ["==", ">=", xy.filter(([y, b]) => y >= b), false, "if y >= b"],
+    ["==", ">=", xy.filter(([y, b]) => y < b), true, "if y < b"],
+    ["==", "<", xy.filter(([y, b]) => y < b), false, "if y < b"],
+    ["==", "<", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
+    ["==", "<=", xy.filter(([y, b]) => y <= b), false, "if y <= b"],
+    ["==", "<=", xy.filter(([y, b]) => y > b), true, "if y > b"],
 
-    ["!=", ">", xy(), false, "always"],
-    ["!=", ">=", xy(), false, "always"],
-    ["!=", "<", xy(), false, "always"],
-    ["!=", "<=", xy(), false, "always"],
+    ["!=", ">", xy, false, "always"],
+    ["!=", ">=", xy, false, "always"],
+    ["!=", "<", xy, false, "always"],
+    ["!=", "<=", xy, false, "always"],
 
-    [">", ">=", xy(), false, "always"],
-    [">", "<", xy().filter(([y, b]) => y >= b), true, "if y >= b"],
-    [">", "<", xy().filter(([y, b]) => y < b), false, "if y < b"],
-    [">", "<=", xy().filter(([y, b]) => y >= b), true, "if y >= b"],
-    [">", "<=", xy().filter(([y, b]) => y < b), false, "if y < b"],
+    [">", ">=", xy, false, "always"],
+    [">", "<", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
+    [">", "<", xy.filter(([y, b]) => y < b), false, "if y < b"],
+    [">", "<=", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
+    [">", "<=", xy.filter(([y, b]) => y < b), false, "if y < b"],
 
-    [">=", "<", xy().filter(([y, b]) => y < b), false, "if y < b"],
-    [">=", "<", xy().filter(([y, b]) => y >= b), true, "if y >= b"],
-    [">=", "<=", xy().filter(([y, b]) => y <= b), false, "if y <= b"],
-    [">=", "<=", xy().filter(([y, b]) => y > b), true, "if y > b"],
+    [">=", "<", xy.filter(([y, b]) => y < b), false, "if y < b"],
+    [">=", "<", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
+    [">=", "<=", xy.filter(([y, b]) => y <= b), false, "if y <= b"],
+    [">=", "<=", xy.filter(([y, b]) => y > b), true, "if y > b"],
 
-    ["<", "<=", xy(), false, "always"],
+    ["<", "<=", xy, false, "always"],
 ])('The contradiction of "x %s y" and "a %s b"',
     (op1: ComparisonOp, op2: ComparisonOp, arbitrary, expected, condition) => {
         it.prop([arbitrary])(`${condition} is ${expected}`, ([y, b]) => {
