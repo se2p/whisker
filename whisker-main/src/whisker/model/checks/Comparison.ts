@@ -197,3 +197,63 @@ export interface ComparingCheck {
     value: string | number;
     negated: boolean;
 }
+
+export type QuantifiedComparison =
+    | UniversalComparison
+    | ExistentialComparison
+    ;
+
+export function newQuantifiedComparison(
+    {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>
+): QuantifiedComparison {
+    const comparison = newComparison({operator, value});
+
+    return negated
+        ? new UniversalComparison(comparison.negate())
+        : new ExistentialComparison(comparison);
+}
+
+abstract class AbstractQuantifiedComparison {
+    protected constructor(private readonly _comparison: Comparison) {
+    }
+
+    get comparison(): Comparison {
+        return this._comparison;
+    }
+
+    abstract apply(values: (string | number)[]): boolean;
+
+    abstract contradicts(that: QuantifiedComparison): boolean;
+}
+
+class UniversalComparison extends AbstractQuantifiedComparison {
+    constructor(comparison: Comparison) {
+        super(comparison);
+    }
+
+    override apply(values: (string | number)[]): boolean {
+        return values.every((v) => this.comparison.apply(v));
+    }
+
+    override contradicts(that: QuantifiedComparison): boolean {
+        return this.comparison.contradicts(that.comparison);
+    }
+}
+
+class ExistentialComparison extends AbstractQuantifiedComparison {
+    constructor(comparison: Comparison) {
+        super(comparison);
+    }
+
+    override apply(values: (string | number)[]): boolean {
+        return values.some((v) => this.comparison.apply(v));
+    }
+
+    override contradicts(that: QuantifiedComparison): boolean {
+        if (that instanceof ExistentialComparison) {
+            return false;
+        }
+
+        return this.comparison.contradicts(that.comparison);
+    }
+}
