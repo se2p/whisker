@@ -84,7 +84,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             try {
                 for (const s of sprites) {
-                    if (this._change.apply(s.old[attrName], s[attrName]) !== negated) {
+                    if (this._change.apply(s[attrName], s.old[attrName]) !== negated) {
                         return !negated;
                     }
                 }
@@ -99,7 +99,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         const [pSpriteName, attrName] = this._args;
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
             try {
-                return this._change.apply(sprite.old[attrName], sprite[attrName]);
+                return this._change.apply(sprite[attrName], sprite.old[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -110,7 +110,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         const [pSpriteName, attrName] = this._args;
         cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
             try {
-                return this._change.apply(sprite.old[attrName], sprite[attrName]);
+                return this._change.apply(sprite[attrName], sprite.old[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }

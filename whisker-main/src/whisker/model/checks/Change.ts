@@ -23,8 +23,8 @@ class Eq implements IChange {
     constructor(private readonly _offset: number = 0) {
     }
 
-    apply(before: number, after: number): boolean {
-        return before + this._offset === after;
+    apply(after: number, before: number): boolean {
+        return after === before + this._offset;
     }
 
     negate(): Change {
@@ -65,8 +65,8 @@ class Eq0 extends Eq {
         super(0);
     }
 
-    override apply(before: number | string, after: number | string): boolean {
-        return before === after;
+    override apply(after: number | string, before: number | string): boolean {
+        return after === before;
     }
 
     override negate(): Change {
@@ -78,8 +78,8 @@ class Neq implements IChange {
     constructor(private readonly _offset: number = 0) {
     }
 
-    apply(before: number, after: number): boolean {
-        return before + this._offset !== after;
+    apply(after: number, before: number): boolean {
+        return after !== before + this._offset;
     }
 
     negate(): Change {
@@ -108,8 +108,8 @@ class Neq0 extends Neq {
         super(0);
     }
 
-    override apply(before: number | string, after: number | string): boolean {
-        return before !== after;
+    override apply(after: number | string, before: number | string): boolean {
+        return after !== before;
     }
 
     override negate(): Change {
@@ -118,8 +118,8 @@ class Neq0 extends Neq {
 }
 
 class Plus implements IChange {
-    apply(before: number, after: number): boolean {
-        return before < after;
+    apply(after: number, before: number): boolean {
+        return after > before;
     }
 
     negate(): Change {
@@ -140,8 +140,8 @@ class Plus implements IChange {
 }
 
 class Minus implements IChange {
-    apply(before: number, after: number): boolean {
-        return before > after;
+    apply(after: number, before: number): boolean {
+        return after < before;
     }
 
     negate(): Change {
@@ -162,8 +162,8 @@ class Minus implements IChange {
 }
 
 class PlusEq implements IChange {
-    apply(before: number, after: number): boolean {
-        return before <= after;
+    apply(after: number, before: number): boolean {
+        return after >= before;
     }
 
     negate(): Change {
@@ -184,8 +184,8 @@ class PlusEq implements IChange {
 }
 
 class MinusEq implements IChange {
-    apply(before: number, after: number): boolean {
-        return before >= after;
+    apply(after: number, before: number): boolean {
+        return after <= before;
     }
 
     negate(): Change {

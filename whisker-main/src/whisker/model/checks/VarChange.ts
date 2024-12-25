@@ -78,8 +78,8 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
             const variable: Variable = sprite.getVariable(variableName);
             try {
                 return this._change.apply(
-                    ModelUtil.testNumber(variable.old.value),
-                    ModelUtil.testNumber(variable.value)
+                    ModelUtil.testNumber(variable.value),
+                    ModelUtil.testNumber(variable.old.value)
                 );
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
