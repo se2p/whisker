@@ -3,10 +3,10 @@ import {z} from "zod";
 export type Change =
     | Eq
     | Neq
-    | Plus
-    | Minus
-    | PlusEq
-    | MinusEq
+    | Gt
+    | Lt
+    | Geq
+    | Leq
     ;
 
 interface IChange {
@@ -117,13 +117,13 @@ class Neq0 extends Neq {
     }
 }
 
-class Plus implements IChange {
+class Gt implements IChange {
     apply(after: number, before: number): boolean {
         return after > before;
     }
 
     negate(): Change {
-        return new MinusEq();
+        return new Leq();
     }
 
     contradicts(that: Change): boolean {
@@ -139,13 +139,13 @@ class Plus implements IChange {
     }
 }
 
-class Minus implements IChange {
+class Lt implements IChange {
     apply(after: number, before: number): boolean {
         return after < before;
     }
 
     negate(): Change {
-        return new PlusEq();
+        return new Geq();
     }
 
     contradicts(that: Change): boolean {
@@ -161,13 +161,13 @@ class Minus implements IChange {
     }
 }
 
-class PlusEq implements IChange {
+class Geq implements IChange {
     apply(after: number, before: number): boolean {
         return after >= before;
     }
 
     negate(): Change {
-        return new Minus();
+        return new Lt();
     }
 
     contradicts(that: Change): boolean {
@@ -183,13 +183,13 @@ class PlusEq implements IChange {
     }
 }
 
-class MinusEq implements IChange {
+class Leq implements IChange {
     apply(after: number, before: number): boolean {
         return after <= before;
     }
 
     negate(): Change {
-        return new Plus();
+        return new Gt();
     }
 
     contradicts(that: Change): boolean {
@@ -245,10 +245,10 @@ export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 const Change: Record<ChangeOp, new () => Change> = Object.freeze({
     "=": Eq0,
     "!=": Neq0,
-    "+": Plus,
-    "-": Minus,
-    "+=": PlusEq,
-    "-=": MinusEq,
+    "+": Gt,
+    "-": Lt,
+    "+=": Geq,
+    "-=": Leq,
 });
 
 export function newChange({change: numOp, negated = false}: ChangingCheck): Change {
