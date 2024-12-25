@@ -1,4 +1,6 @@
 import {z} from "zod";
+import {Optional} from "./AbstractCheck";
+import {Pair} from "../../utils/Pair";
 
 export type Change =
     | Eq
@@ -261,4 +263,64 @@ export function newChange({change: numOp, negated = false}: ChangingCheck): Chan
 export interface ChangingCheck {
     change: NumberOrChangeOp;
     negated: boolean;
+}
+
+export type QuantifiedChange =
+    | UniversalChange
+    | ExistentialChange
+    ;
+
+export function newQuantifiedChange(
+    {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>
+): QuantifiedChange {
+    const change = newChange({change: numOp, negated: false});
+
+    return negated
+        ? new UniversalChange(change.negate())
+        : new ExistentialChange(change);
+}
+
+abstract class AbstractQuantifiedChange {
+    protected constructor(private readonly _change: Change) {
+    }
+
+    get change(): Change {
+        return this._change;
+    }
+
+    abstract apply(values: Pair<number>[]): boolean;
+
+    abstract contradicts(that: QuantifiedChange): boolean;
+}
+
+class UniversalChange extends AbstractQuantifiedChange {
+    constructor(change: Change) {
+        super(change);
+    }
+
+    override apply(values: Pair<number>[]): boolean {
+        return values.every(([after, before]) => this.change.apply(after, before));
+    }
+
+    override contradicts(that: QuantifiedChange): boolean {
+        return this.change.contradicts(that.change);
+    }
+}
+
+class ExistentialChange extends AbstractQuantifiedChange {
+    constructor(change: Change) {
+        super(change);
+    }
+
+    override apply(values: Pair<number>[]): boolean {
+        return values.some(([after, before]) => this.change.apply(after, before));
+    }
+
+    override contradicts(that: QuantifiedChange): boolean {
+        if (that instanceof ExistentialChange) {
+            return false;
+        }
+
+        return this.change.contradicts(that.change);
+    }
 }
