@@ -207,9 +207,9 @@ class Leq implements IChange {
     }
 }
 
-const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
+export const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
 
-type ChangeOp = typeof changeOps[number];
+export type ChangeOp = typeof changeOps[number];
 
 const ChangeOp = z.preprocess(
     (change) => { // Canonicalize operators, handle aliases.
@@ -253,7 +253,7 @@ const Change: Record<ChangeOp, new () => Change> = Object.freeze({
     "-=": Leq,
 });
 
-export function newChange({change: numOp, negated = false}: ChangingCheck): Change {
+export function newChange({change: numOp, negated = false}: Optional<ChangingCheck, "negated">): Change {
     const change = typeof numOp === "number"
         ? new Eq(numOp)
         : new Change[numOp]();
