@@ -1,211 +1,77 @@
 import {z} from "zod";
 import {Optional} from "./AbstractCheck";
 import {Pair} from "../../utils/Pair";
+import {Comparison, newComparison} from "./Comparison";
 
-export type Change =
-    | Eq
-    | Neq
-    | Gt
-    | Lt
-    | Geq
-    | Leq
-    ;
+// TODO: factor our quantification
 
-interface IChange {
-    apply(before: number, after: number): boolean;
-
-    negate(): Change;
-
-    contradicts(that: Change): boolean;
-
-    operator: ChangeOp;
-}
-
-class Eq implements IChange {
-    constructor(private readonly _offset: number = 0) {
+export class Change {
+    protected constructor(private readonly _comparison: Comparison) {
     }
 
     apply(after: number, before: number): boolean {
-        return after === before + this._offset;
-    }
-
-    negate(): Change {
-        return new Neq(this._offset);
+        return this._comparison.apply(after - before);
     }
 
     contradicts(that: Change): boolean {
-        if (that.operator === "=") {
-            return this.offset !== that.offset;
-        }
-
-        if (that.operator === "!=") {
-            return this.offset === that.offset;
-        }
-
-        if (this.offset > 0) {
-            return ["-", "-="].includes(that.operator);
-        }
-
-        if (this.offset < 0) {
-            return ["+", "+="].includes(that.operator);
-        }
-
-        return ["+", "-"].includes(that.operator);
+        return this._comparison.contradicts(that._comparison);
     }
 
-    get offset(): number {
-        return this._offset;
+    negate(): Change {
+        return new Change(this._comparison.negate());
     }
 
-    get operator(): "=" {
-        return "=";
+    static from(numberOrChangeOp: NumberOrChangeOp): Change {
+        // Special handling to support string operands as the subtraction trick would not work.
+        switch (numberOrChangeOp) {
+            case "=":
+                return eq0;
+            case "!=":
+                return neq0;
+        }
+
+        if (typeof numberOrChangeOp === "number") {
+            return new Change(newComparison({operator: "==", value: numberOrChangeOp}));
+        }
+
+        const operator = ({
+            "+": ">",
+            "-": "<",
+            "+=": ">=",
+            "-=": "<="
+        } as const)[numberOrChangeOp];
+
+        return new Change(newComparison({operator, value: 0}));
     }
 }
 
-class Eq0 extends Eq {
+const eq0 = new class Eq0 extends Change {
     constructor() {
-        super(0);
+        super(newComparison({operator: "==", value: 0}));
     }
 
-    override apply(after: number | string, before: number | string): boolean {
-        return after === before;
+    override apply(after: string | number, before: string | number): boolean {
+        return after == before;
     }
 
     override negate(): Change {
-        return new Neq0();
+        return neq0;
     }
-}
+};
 
-class Neq implements IChange {
-    constructor(private readonly _offset: number = 0) {
-    }
-
-    apply(after: number, before: number): boolean {
-        return after !== before + this._offset;
-    }
-
-    negate(): Change {
-        return new Eq(this._offset);
-    }
-
-    contradicts(that: Change): boolean {
-        if (that.operator === "=") {
-            return this.offset === that.offset;
-        }
-
-        return false;
-    }
-
-    get operator(): "!=" {
-        return "!=";
-    }
-
-    get offset(): number {
-        return this._offset;
-    }
-}
-
-class Neq0 extends Neq {
+const neq0 = new class Neq0 extends Change {
     constructor() {
-        super(0);
+        super(newComparison({operator: "!=", value: 0}));
     }
 
-    override apply(after: number | string, before: number | string): boolean {
-        return after !== before;
+    override apply(after: string | number, before: string | number): boolean {
+        return after != before;
     }
 
     override negate(): Change {
-        return new Eq0();
+        return eq0;
     }
-}
-
-class Gt implements IChange {
-    apply(after: number, before: number): boolean {
-        return after > before;
-    }
-
-    negate(): Change {
-        return new Leq();
-    }
-
-    contradicts(that: Change): boolean {
-        if (that.operator === "=") {
-            return !(that.offset > 0);
-        }
-
-        return ["-", "-="].includes(that.operator);
-    }
-
-    get operator(): "+" {
-        return "+";
-    }
-}
-
-class Lt implements IChange {
-    apply(after: number, before: number): boolean {
-        return after < before;
-    }
-
-    negate(): Change {
-        return new Geq();
-    }
-
-    contradicts(that: Change): boolean {
-        if (that.operator === "=") {
-            return !(that.offset < 0);
-        }
-
-        return ["+", "+="].includes(that.operator);
-    }
-
-    get operator(): "-" {
-        return "-";
-    }
-}
-
-class Geq implements IChange {
-    apply(after: number, before: number): boolean {
-        return after >= before;
-    }
-
-    negate(): Change {
-        return new Lt();
-    }
-
-    contradicts(that: Change): boolean {
-        if (that.operator === "=") {
-            return !(that.offset >= 0);
-        }
-
-        return that.operator === "-";
-    }
-
-    get operator(): "+=" {
-        return "+=";
-    }
-}
-
-class Leq implements IChange {
-    apply(after: number, before: number): boolean {
-        return after <= before;
-    }
-
-    negate(): Change {
-        return new Gt();
-    }
-
-    contradicts(that: Change): boolean {
-        if (that.operator === "=") {
-            return !(that.offset <= 0);
-        }
-
-        return that.operator === "+";
-    }
-
-    get operator(): "-=" {
-        return "-=";
-    }
-}
+};
 
 export const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
 
@@ -244,19 +110,8 @@ export type NumberOrChangeOp =
 
 export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 
-const Change: Record<ChangeOp, new () => Change> = Object.freeze({
-    "=": Eq0,
-    "!=": Neq0,
-    "+": Gt,
-    "-": Lt,
-    "+=": Geq,
-    "-=": Leq,
-});
-
-export function newChange({change: numOp, negated = false}: Optional<ChangingCheck, "negated">): Change {
-    const change = typeof numOp === "number"
-        ? new Eq(numOp)
-        : new Change[numOp]();
+export function newChange({change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">): Change {
+    const change = Change.from(numberOrChangeOp);
     return negated ? change.negate() : change;
 }
 

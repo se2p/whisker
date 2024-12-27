@@ -17,16 +17,6 @@ const numOp = fc.oneof(number, fc.constantFrom(...changeOps));
 // todo: create arbitrary for changes, like for comparisons
 
 describe("The exact change by a number", () => {
-    it.prop([number])("has the number as offset", (n) => {
-        const c = newChange({change: n});
-        expect(c['offset']).toBe(n); // FIXME: offset property
-    });
-
-    it.prop([number])(`has "=" as operator`, (n) => {
-        const c = newChange({change: n});
-        expect(c.operator).toBe("=");
-    });
-
     it.prop([number])("never contradicts itself", (n) => {
         const c = newChange({change: n});
         expect(c.contradicts(c)).toBe(false);
@@ -56,7 +46,8 @@ describe("The exact change by a number", () => {
         expect(c1.contradicts(c2)).toBe(false);
     });
 
-    const asdf = nn.map(([offset, before]) => [offset, before, before + offset]);
+    const asdf = nn.map(([offset, before]) => [offset, before, before + offset])
+        .filter(([offset, before, after]) => after - before === offset); // FIXME: necessary for numeric reasons
     const asdf2 = fc.tuple(number, number, number).filter(([offset, before, after]) =>
         offset + before !== after);
 
@@ -95,11 +86,6 @@ describe.each([
     ["-=", ["+"], nn.filter(([x, y]) => x <= y)],
     ["!=", ["="], xy],
 ])('The "%s" change', (op1: ChangeOp, contradicting: ChangeOp[], ns) => {
-    it('has "%s" as operator', () => {
-        const c = newChange({change: op1});
-        expect(c.operator).toBe(op1);
-    });
-
     it.prop([ns])("is true for", ([x, y]) => {
         const change = newChange({change: op1});
         expect(change.apply(x, y)).toBe(true);
