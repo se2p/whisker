@@ -3,8 +3,6 @@ import {Optional} from "./AbstractCheck";
 import {Pair} from "../../utils/Pair";
 import {Comparison, newComparison} from "./Comparison";
 
-// TODO: factor our quantification
-
 export class Change {
     protected constructor(private readonly _comparison: Comparison) {
     }
