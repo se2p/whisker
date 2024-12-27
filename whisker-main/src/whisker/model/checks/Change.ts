@@ -232,7 +232,7 @@ const ChangeOp = z.preprocess(
  */
 const NumberLike = z.union([
     z.number(),
-    z.string().refine((s) => s !== "")
+    z.string().refine((s) => s.trim() !== "")
 ])
     .pipe(z.coerce.number())
     .refine((n) => !Number.isNaN(n));
