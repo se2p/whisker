@@ -2,8 +2,6 @@ import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {
     AttributeNotFoundError,
-    ChangeComparisonNotKnownError,
-    ComparisonNotKnownError,
     EmptyExpressionError,
     ExpressionSyntaxError,
     ExprEvalError,
@@ -13,8 +11,6 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
-
-import {ComparisonOp} from "../checks/Comparison";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -105,51 +101,6 @@ export abstract class ModelUtil {
         const attrName = String(pAttrName);
         if (!this._isAnAttribute(attrName)) {
             throw new AttributeNotFoundError(spriteName, attrName);
-        }
-    }
-
-    /**
-     * Test whether a value changed.
-     * @param oldValue Old value.
-     * @param newValue New value.
-     * @param pChange For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='. "+=" for
-     * increase or staying the same."-=" for decrease or staying the same. For a numerical
-     * change by an exact value '+<number>' or '<number>' or '-<number>'.
-     * "+=" for increase or staying the same."-=" for decrease or staying the same.
-     */
-    static testChange(oldValue: string | string[] | null, newValue: string | string[] | null, pChange: ArgType): boolean {
-        let change = String(pChange);
-        if (oldValue == undefined || newValue == undefined || change == undefined) {
-            throw new Error("Undefined value.");
-        }
-
-        if (change == '=' || change == '==') {
-            return oldValue == newValue;
-        }
-        const oldValueNumber = this.testNumber(oldValue);
-        const newValueNumber = this.testNumber(newValue);
-
-        if (change != "" && change != "+=" && change.startsWith("+") && change.length > 1) {
-            change = change.substring(1, change.length);
-        }
-
-        if (!isNaN(Number(change.toString()))) {
-            return oldValueNumber + Number(change) === newValueNumber;
-        }
-
-        switch (change) {
-            case '+':
-            case '++':
-                return oldValueNumber < newValueNumber;
-            case '-':
-            case '--':
-                return oldValueNumber > newValueNumber;
-            case '+=':
-                return oldValueNumber <= newValueNumber;
-            case '-=':
-                return oldValueNumber >= newValueNumber;
-            default:
-                throw new ChangeComparisonNotKnownError(change);
         }
     }
 

@@ -5,7 +5,7 @@ import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
-import {Change, ChangingCheck, contradicts} from "./changes";
+import {Change, ChangingCheck, newChange, NumberOrChangeOp} from "./Change";
 
 const name = "VarChange" as const;
 
@@ -20,13 +20,13 @@ export type VarChangeArgs = [
      */
     varName: VariableName,
 
-    change: Change,
+    change: NumberOrChangeOp,
 ];
 
 export const VarChangeArgs = z.tuple([
     SpriteName,
     VariableName,
-    Change,
+    NumberOrChangeOp,
 ]);
 
 export interface VarChangeJSON extends ICheckJSON {
@@ -40,11 +40,14 @@ export const VarChangeJSON = ICheckJSON.extend({
 });
 
 export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implements ChangingCheck {
+    private readonly _change: Change;
+
     constructor(edgeLabel: string, json: SlimCheckJSON<VarChangeJSON>) {
         super(edgeLabel, {...json, name});
+        this._change = newChange(this);
     }
 
-    get change(): Change {
+    get change(): NumberOrChangeOp {
         return this._args[2];
     }
 
@@ -59,8 +62,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, varName, change] = this._args;
-        const negated = this.negated;
+        const [pSpriteName, varName] = this._args;
 
         let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const {
@@ -71,15 +73,18 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         const spriteName = sprite.name;
         const variableName = foundVar.name;
 
-        function check(): boolean {
+        const check = () => {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
             try {
-                return !negated == ModelUtil.testChange(variable.old.value, variable.value, change);
+                return this._change.apply(
+                    ModelUtil.testNumber(variable.value),
+                    ModelUtil.testNumber(variable.old.value)
+                );
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }
-        }
+        };
 
         cu.registerVarEvent(variableName, this, graphID, check);
         return check;
@@ -93,7 +98,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
             return false;
         }
 
-        return contradicts(this, that);
+        return this._change.contradicts(that._change);
     }
 
     override get dependsOnSayText(): boolean {

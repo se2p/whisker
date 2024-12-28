@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {Change, ChangingCheck, contradicts} from "./changes";
+import {ChangingCheck, newQuantifiedChange, NumberOrChangeOp, QuantifiedChange} from "./Change";
 
 const name = "AttrChange" as const;
 
@@ -18,13 +18,13 @@ export type AttrChangeArgs = [
      */
     attrName: string,
 
-    change: Change,
+    change: NumberOrChangeOp,
 ];
 
 const AttrChangeArgs = z.tuple([
     SpriteName,
     AttrName,
-    Change,
+    NumberOrChangeOp,
 ]);
 
 export interface AttrChangeJSON extends ICheckJSON {
@@ -38,11 +38,14 @@ export const AttrChangeJSON = ICheckJSON.extend({
 });
 
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
+    private readonly _change: QuantifiedChange;
+
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
+        this._change = newQuantifiedChange(this);
     }
 
-    get change(): Change {
+    get change(): NumberOrChangeOp {
         return this._args[2];
     }
 
@@ -59,8 +62,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, attrName, change] = this._args;
-        const negated = this.negated;
+        const [pSpriteName, attrName] = this._args;
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;
@@ -80,23 +82,18 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return () => {
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             try {
-                for (const s of sprites) {
-                    if (ModelUtil.testChange(s.old[attrName], s[attrName], change)) {
-                        return !negated;
-                    }
-                }
+                return this._change.apply(sprites.map((s) => [s[attrName], s.old[attrName]]));
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
-            return negated;
         };
     }
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this._args;
+        const [pSpriteName, attrName] = this._args;
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
             try {
-                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return this._change.apply([[sprite[attrName], sprite.old[attrName]]]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -104,10 +101,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
     }
 
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName, change] = this._args;
+        const [pSpriteName, attrName] = this._args;
         cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
             try {
-                return !this.negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return this._change.apply([[sprite[attrName], sprite.old[attrName]]]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -126,6 +123,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             return false;
         }
 
-        return contradicts(this, that);
+        return this._change.contradicts(that._change);
     }
 }
