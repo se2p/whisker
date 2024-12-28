@@ -1,5 +1,6 @@
 import {z} from "zod";
 import {Optional} from "./AbstractCheck";
+import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 
 export type Comparison =
     | Eq
@@ -10,7 +11,7 @@ export type Comparison =
     | Geq
     ;
 
-abstract class AbstractComparison {
+abstract class AbstractComparison implements Quantifiable<Comparison> {
     protected constructor(private readonly _operand2: string | number) {
     }
 
@@ -198,62 +199,12 @@ export interface ComparingCheck {
     negated: boolean;
 }
 
-export type QuantifiedComparison =
-    | UniversalComparison
-    | ExistentialComparison
-    ;
-
 export function newQuantifiedComparison(
     {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>
-): QuantifiedComparison {
+): Quantification<Comparison> {
     const comparison = newComparison({operator, value});
 
     return negated
-        ? new UniversalComparison(comparison.negate())
-        : new ExistentialComparison(comparison);
-}
-
-abstract class AbstractQuantifiedComparison {
-    protected constructor(private readonly _comparison: Comparison) {
-    }
-
-    get comparison(): Comparison {
-        return this._comparison;
-    }
-
-    abstract apply(values: (string | number)[]): boolean;
-
-    abstract contradicts(that: QuantifiedComparison): boolean;
-}
-
-class UniversalComparison extends AbstractQuantifiedComparison {
-    constructor(comparison: Comparison) {
-        super(comparison);
-    }
-
-    override apply(values: (string | number)[]): boolean {
-        return values.every((v) => this.comparison.apply(v));
-    }
-
-    override contradicts(that: QuantifiedComparison): boolean {
-        return this.comparison.contradicts(that.comparison);
-    }
-}
-
-class ExistentialComparison extends AbstractQuantifiedComparison {
-    constructor(comparison: Comparison) {
-        super(comparison);
-    }
-
-    override apply(values: (string | number)[]): boolean {
-        return values.some((v) => this.comparison.apply(v));
-    }
-
-    override contradicts(that: QuantifiedComparison): boolean {
-        if (that instanceof ExistentialComparison) {
-            return false;
-        }
-
-        return this.comparison.contradicts(that.comparison);
-    }
+        ? new Universal(comparison.negate())
+        : new Existential(comparison);
 }

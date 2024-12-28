@@ -205,7 +205,7 @@ const universal = changingCheck(true).map((json) => [newQuantifiedChange(json), 
 describe("A quantified change", () => {
     it.prop([universal, number, number])("has the same result as the underlying change for singleton arrays",
         ([q, c], x, y) => {
-            expect(q.apply([[x, y]])).toBe(c.apply(x, y));
+            expect(q.apply([[x, y]] as [number, number][])).toBe(c.apply(x, y));
         });
 
     it.prop([quantified, fc.array(n2, {minLength: 2}).map((a) => [a, shuffle(a)])])(
@@ -235,7 +235,7 @@ describe("An existentially quantified change", () => {
 
     it.each([...changeOps, -1, 0, 1])('is true if at least one element satisfies the change ("%s")',
         (change: NumberOrChangeOp) => {
-            const array: Pair<number>[] = [[1, 1], [2, 1], [1, 2]];
+            const array: [number, number][] = [[1, 1], [2, 1], [1, 2]];
             const q = newQuantifiedChange({change, negated: false});
             expect(q.apply(array)).toBe(true);
         });
@@ -290,7 +290,7 @@ describe("A universally quantified change", () => {
 
     it.each([...changeOps, -1, 0, 1])(
         'is false if at least one element does not satisfy the change ("%s")', (change: NumberOrChangeOp) => {
-            const array: Pair<number>[] = [[1, 1], [2, 1], [1, 2]];
+            const array: [number, number][] = [[1, 1], [2, 1], [1, 2]];
             const q = newQuantifiedChange({change, negated: true});
             expect(q.apply(array)).toBe(false);
         });

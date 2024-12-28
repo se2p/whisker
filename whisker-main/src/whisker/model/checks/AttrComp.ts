@@ -4,7 +4,8 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, ComparisonOp, newQuantifiedComparison, QuantifiedComparison} from "./Comparison";
+import {ComparingCheck, Comparison, ComparisonOp, newQuantifiedComparison} from "./Comparison";
+import {Quantification} from "./Quantification";
 
 const name = "AttrComp" as const;
 
@@ -49,7 +50,7 @@ export const AttrCompJSON = ICheckJSON.extend({
 });
 
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
-    private readonly _comparison: QuantifiedComparison;
+    private readonly _comparison: Quantification<Comparison>;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
@@ -83,7 +84,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         const listener = (sprite) => {
             try {
-                return this._comparison.apply([sprite[attrName]]);
+                return this._comparison.applySingle(sprite[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
