@@ -317,7 +317,7 @@ describe('Contradictions', () => {
     test("contradictions background", () => {
         const background = newCheck(edgeID, {name: "BackgroundChange", negated: true, args: ["test"]});
         assertSymmetricContradiction2(background, "BackgroundChange", true, ["test"], false);
-        assertSymmetricContradiction2(background, "BackgroundChange", true, ["test2"], true);
+        assertSymmetricContradiction2(background, "BackgroundChange", true, ["test2"], false);
     });
 
     describe("contradiction: variable change and comparison", () => {
