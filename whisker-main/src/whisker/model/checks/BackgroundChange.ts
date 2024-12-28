@@ -2,6 +2,7 @@ import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractChe
 import {ErrorForAttribute} from "../util/ModelError";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
+import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
 
 const name = "BackgroundChange" as const;
 
@@ -26,13 +27,24 @@ export const BackgroundChangeJSON = ICheckJSON.extend({
     args: BackgroundChangeArgs,
 });
 
-export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckFun0> {
+export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckFun0> implements ComparingCheck {
+    private readonly _comparison: Comparison;
+
     constructor(edgeLabel: string, json: SlimCheckJSON<BackgroundChangeJSON>) {
         super(edgeLabel, {...json, name});
+        this._comparison = newComparison(this);
     }
 
     protected _validate(checkJSON: BackgroundChangeJSON): BackgroundChangeJSON {
         return BackgroundChangeJSON.parse(checkJSON) as BackgroundChangeJSON;
+    }
+
+    get operator(): ComparisonOp {
+        return "==";
+    }
+
+    get value(): string {
+        return this._args[0];
     }
 
     /**
@@ -40,21 +52,14 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
-        const [newBackground] = this._args;
-        const negated = this.negated;
-
         // without movement
         return () => {
-            const stage = t.getStage();
             try {
-                if (stage["currentCostumeName"] === newBackground) {
-                    return !negated;
-                }
+                return this._comparison.apply(t.getStage()["currentCostumeName"]);
             } catch (e) {
                 // should not even happen...
                 throw new ErrorForAttribute("_stage_", "costume", e);
             }
-            return negated;
         };
     }
 
