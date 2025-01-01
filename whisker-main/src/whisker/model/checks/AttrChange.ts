@@ -3,7 +3,8 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {ChangingCheck, newQuantifiedChange, NumberOrChangeOp, QuantifiedChange} from "./Change";
+import {Change, ChangingCheck, newQuantifiedChange, NumberOrChangeOp} from "./Change";
+import {Quantification} from "./Quantification";
 
 const name = "AttrChange" as const;
 
@@ -38,7 +39,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
 });
 
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
-    private readonly _change: QuantifiedChange;
+    private readonly _change: Quantification<Change>;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
@@ -93,7 +94,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         const [pSpriteName, attrName] = this._args;
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
             try {
-                return this._change.apply([[sprite[attrName], sprite.old[attrName]]]);
+                return this._change.applySingle(sprite[attrName], sprite.old[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -104,7 +105,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         const [pSpriteName, attrName] = this._args;
         cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
             try {
-                return this._change.apply([[sprite[attrName], sprite.old[attrName]]]);
+                return this._change.applySingle(sprite[attrName], sprite.old[attrName]);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }

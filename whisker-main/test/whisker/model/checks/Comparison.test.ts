@@ -6,7 +6,7 @@ import {
     newComparison,
     newQuantifiedComparison
 } from "../../../../src/whisker/model/checks/Comparison";
-import Arrays from "../../../../src/whisker/utils/Arrays";
+import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
 
 const number = fc.double({noNaN: true});
 const xy = fc.tuple(number, number);
@@ -128,125 +128,26 @@ describe.each([
         });
     });
 
-function shuffle(a) {
-    a = [...a];
-    Arrays.shuffle(a);
-    return a;
-}
-
-function comparingCheck(negated: boolean | null = null): fc.Arbitrary<ComparingCheck> {
+function comparingCheck(negated: boolean): fc.Arbitrary<ComparingCheck> {
     return fc.record({
         operator: fc.constantFrom(...comparisonOps),
         value: number,
-        negated: negated === null ? fc.boolean() : fc.constantFrom(negated),
+        negated: fc.constantFrom(negated),
     });
 }
 
-const quantified = comparingCheck().map((json) => [newQuantifiedComparison(json), newComparison(json)] as const);
-const existential = comparingCheck(false).map((json) => [newQuantifiedComparison(json), newComparison(json)] as const);
-const universal = comparingCheck(true).map((json) => [newQuantifiedComparison(json), newComparison(json)] as const);
-
-describe("A quantified comparison", () => {
-    it.prop([universal, number])("has the same result as the underlying comparison for singleton arrays",
-        ([q, c], n) => {
-            expect(q.apply([n])).toBe(c.apply(n));
-        });
-
-    it.prop([quantified, fc.array(number, {minLength: 2}).map((a) => [a, shuffle(a)])])(
-        "has the same result regardless of the order of elements", ([q], [a1, a2]) => {
-            expect(q.apply(a1)).toBe(q.apply(a2));
-        });
-
-    it.prop([quantified])("never contradicts itself", ([q]) => {
-        expect(q.contradicts(q)).toBe(false);
+describe("newQuantifiedChange", () => {
+    it.prop([comparingCheck(false)])("returns an Existential when not negated", (c) => {
+        const q = newQuantifiedComparison(c);
+        expect(q).toBeInstanceOf(Existential);
+        expect(q.wrapped).toStrictEqual(newComparison(c));
     });
 
-    it.prop([comparingCheck()])("always contradicts its negation", (json) => {
-        const q = newQuantifiedComparison(json);
-        const p = newQuantifiedComparison({...json, negated: !json.negated});
-        expect(q.contradicts(p)).toBe(true);
+    it.prop([comparingCheck(true)])("returns a Universal when negated", (c) => {
+        const q = newQuantifiedComparison(c);
+        expect(q).toBeInstanceOf(Universal);
+        expect(q.wrapped).toStrictEqual(newComparison({...c, negated: true}));
     });
-
-    it.prop([quantified, quantified])("has a symmetric contradicts() method", ([q1], [q2]) => {
-        expect(q1.contradicts(q2)).toBe(q2.contradicts(q1));
-    });
-});
-
-describe("An existentially quantified comparison", () => {
-    it.prop([existential])("is always false for empty arrays", ([q]) => {
-        expect(q.apply([])).toBe(false);
-    });
-
-    it.each([
-        ["<=", 3, [1, 2, 3, 4, 5]],
-        ["<", 2, [0, 1, 2, 3, 4]],
-        [">=", 1, [0, 1, 2, 3, 4]],
-        [">", 1, [0, 1, 2, 3, 4]],
-        ["!=", 4, [3, 4, 4, 4, 4]],
-        ["==", 5, [0, 1, 2, 3, 5]],
-    ])('is true if at least one element satisfies the comparison ("%s")', (operator: ComparisonOp, value, array) => {
-        const q = newQuantifiedComparison({operator, value, negated: false});
-        expect(q.apply(array)).toBe(true);
-    });
-
-    it.each([
-        ["<=", 0, [1, 2, 3, 4, 5]],
-        ["<", 0, [0, 1, 2, 3, 4]],
-        [">=", 5, [0, 1, 2, 3, 4]],
-        [">", 4, [0, 1, 2, 3, 4]],
-        ["!=", 4, [4, 4, 4, 4, 4]],
-        ["==", 4, [0, 1, 2, 3, 5]],
-    ])('is false if no element satisfies the comparison ("%s")', (operator: ComparisonOp, value, array) => {
-        const q = newQuantifiedComparison({operator, value, negated: false});
-        expect(q.apply(array)).toBe(false);
-    });
-
-    it.prop([existential, existential])("never contradicts other existential comparisons", ([q1], [q2]) => {
-        expect(q1.contradicts(q2)).toBe(false);
-    });
-
-    it.prop([existential, universal])(
-        "contradicts a universally quantified comparison if the underlying comparisons contradict",
-        ([q1, c1], [q2, c2]) => {
-            expect(q1.contradicts(q2)).toBe(c1.contradicts(c2));
-        });
-});
-
-describe("A universally quantified comparison", () => {
-    it.prop([universal])("is always true for empty arrays", ([q]) => {
-        expect(q.apply([])).toBe(true);
-    });
-
-    it.each([
-        ["<=", 0, [1, 2, 3, 4, 5]],
-        ["<", 0, [0, 1, 2, 3, 4]],
-        [">=", 5, [0, 1, 2, 3, 4]],
-        [">", 4, [0, 1, 2, 3, 4]],
-        ["!=", 4, [4, 4, 4, 4, 4]],
-        ["==", 4, [0, 1, 2, 3, 5]],
-    ])('is true if all elements satisfy the comparison ("%s")', (operator: ComparisonOp, value, array) => {
-        const q = newQuantifiedComparison({operator, value, negated: true});
-        expect(q.apply(array)).toBe(true);
-    });
-
-    it.each([
-        ["<=", 0, [1, 2, 3, 4, 0]],
-        ["<", 0, [0, 1, -1, 3, 4]],
-        [">=", 5, [0, 1, 2, 3, 5]],
-        [">", 4, [0, 1, 2, 3, 5]],
-        ["!=", 4, [4, 4, 3, 4, 4]],
-        ["==", 4, [0, 4, 2, 3, 5]],
-    ])('is false if at least one element does not satisfy the comparison ("%s")',
-        (operator: ComparisonOp, value, array) => {
-            const q = newQuantifiedComparison({operator, value, negated: true});
-            expect(q.apply(array)).toBe(false);
-        });
-
-    it.prop([universal, quantified])(
-        "contradicts another quantified comparison if the underlying comparisons contradict",
-        ([q1, c1], [q2, c2]) => {
-            expect(q1.contradicts(q2)).toBe(c1.contradicts(c2));
-        });
 });
 
 describe("The schema validation for comparison operators", () => {

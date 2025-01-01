@@ -7,8 +7,7 @@ import {
     newQuantifiedChange,
     NumberOrChangeOp
 } from "../../../../src/whisker/model/checks/Change";
-import Arrays from "../../../../src/whisker/utils/Arrays";
-import {Pair} from "../../../../src/whisker/utils/Pair";
+import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
 
 // Generators for 1-tuples, 2-tuples, and 3-tuples of numbers.
 const number = fc.double({noNaN: true});
@@ -185,121 +184,25 @@ describe("A change", () => {
     });
 });
 
-function shuffle(a) {
-    a = [...a];
-    Arrays.shuffle(a);
-    return a;
-}
-
-function changingCheck(negated: boolean | null = null): fc.Arbitrary<ChangingCheck> {
+function changingCheck(negated: boolean): fc.Arbitrary<ChangingCheck> {
     return fc.record({
         change: numOp,
-        negated: negated === null ? fc.boolean() : fc.constantFrom(negated),
+        negated: fc.constantFrom(negated),
     });
 }
 
-const quantified = changingCheck().map((json) => [newQuantifiedChange(json), newChange(json)] as const);
-const existential = changingCheck(false).map((json) => [newQuantifiedChange(json), newChange(json)] as const);
-const universal = changingCheck(true).map((json) => [newQuantifiedChange(json), newChange(json)] as const);
-
-describe("A quantified change", () => {
-    it.prop([universal, number, number])("has the same result as the underlying change for singleton arrays",
-        ([q, c], x, y) => {
-            expect(q.apply([[x, y]])).toBe(c.apply(x, y));
-        });
-
-    it.prop([quantified, fc.array(n2, {minLength: 2}).map((a) => [a, shuffle(a)])])(
-        "has the same result regardless of the order of elements", ([q], [a1, a2]) => {
-            expect(q.apply(a1)).toBe(q.apply(a2));
-        });
-
-    it.prop([quantified])("never contradicts itself", ([q]) => {
-        expect(q.contradicts(q)).toBe(false);
+describe("newQuantifiedChange", () => {
+    it.prop([changingCheck(false)])("returns an Existential when not negated", (c) => {
+        const q = newQuantifiedChange(c);
+        expect(q).toBeInstanceOf(Existential);
+        expect(q.wrapped).toStrictEqual(newChange(c));
     });
 
-    it.prop([changingCheck()])("always contradicts its negation", (json) => {
-        const q = newQuantifiedChange(json);
-        const p = newQuantifiedChange({...json, negated: !json.negated});
-        expect(q.contradicts(p)).toBe(true);
+    it.prop([changingCheck(true)])("returns a Universal when negated", (c) => {
+        const q = newQuantifiedChange(c);
+        expect(q).toBeInstanceOf(Universal);
+        expect(q.wrapped).toStrictEqual(newChange({...c, negated: true}));
     });
-
-    it.prop([quantified, quantified])("has a symmetric contradicts() method", ([q1], [q2]) => {
-        expect(q1.contradicts(q2)).toBe(q2.contradicts(q1));
-    });
-});
-
-describe("An existentially quantified change", () => {
-    it.prop([existential])("is always false for empty arrays", ([q]) => {
-        expect(q.apply([])).toBe(false);
-    });
-
-    it.each([...changeOps, -1, 0, 1])('is true if at least one element satisfies the change ("%s")',
-        (change: NumberOrChangeOp) => {
-            const array: Pair<number>[] = [[1, 1], [2, 1], [1, 2]];
-            const q = newQuantifiedChange({change, negated: false});
-            expect(q.apply(array)).toBe(true);
-        });
-
-    it.each([
-        ["+", [[1, 2], [0, 0]]],
-        ["-", [[1, 1], [2, 1]]],
-        ["+=", [[1, 2], [0, 1]]],
-        ["-=", [[2, 1], [1, 0]]],
-        ["=", [[4, 3], [1, 2]]],
-        ["!=", [[1, 1], [0, 0]]],
-        [5, [[1, 2], [4, 0]]],
-        [0, [[1, 2], [3, 4]]],
-        [-2, [[3, 2], [0, 3]]],
-    ] as [NumberOrChangeOp, [number, number][]][])(
-        'is false if no element satisfies the change ("%s")', (change, array) => {
-            const q = newQuantifiedChange({change, negated: false});
-            expect(q.apply(array)).toBe(false);
-        });
-
-    it.prop([existential, existential])("never contradicts other existential changes", ([q1], [q2]) => {
-        expect(q1.contradicts(q2)).toBe(false);
-    });
-
-    it.prop([existential, universal])(
-        "contradicts a universally quantified change if the underlying changes contradict",
-        ([q1, c1], [q2, c2]) => {
-            expect(q1.contradicts(q2)).toBe(c1.contradicts(c2));
-        });
-});
-
-describe("A universally quantified change", () => {
-    it.prop([universal])("is always true for empty arrays", ([q]) => {
-        expect(q.apply([])).toBe(true);
-    });
-
-    it.each([
-        ["-=", [[2, 1], [1, 0]]],
-        ["+=", [[0, 1], [1, 2]]],
-        ["-", [[2, 1], [0, 0]]],
-        ["+", [[1, 1], [-1, 0]]],
-        ["!=", [[4, 4], [1, 1]]],
-        ["=", [[2, 1], [1, 0]]],
-        [0, [[7, 2], [5, 0]]],
-        [1, [[1, 1], [4, 4]]],
-        [-3, [[0, 2], [1, 3]]],
-    ] as [NumberOrChangeOp, [number, number][]][])(
-        'is true if all elements satisfy the change ("%s")', (change, array) => {
-            const q = newQuantifiedChange({change, negated: true});
-            expect(q.apply(array)).toBe(true);
-        });
-
-    it.each([...changeOps, -1, 0, 1])(
-        'is false if at least one element does not satisfy the change ("%s")', (change: NumberOrChangeOp) => {
-            const array: Pair<number>[] = [[1, 1], [2, 1], [1, 2]];
-            const q = newQuantifiedChange({change, negated: true});
-            expect(q.apply(array)).toBe(false);
-        });
-
-    it.prop([universal, quantified])(
-        "contradicts another quantified change if the underlying changes contradict",
-        ([q1, c1], [q2, c2]) => {
-            expect(q1.contradicts(q2)).toBe(c1.contradicts(c2));
-        });
 });
 
 const numberLike = fc.oneof(number, number.map((n) => `${n}`));

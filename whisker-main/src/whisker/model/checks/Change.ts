@@ -1,9 +1,9 @@
 import {z} from "zod";
 import {Optional} from "./AbstractCheck";
-import {Pair} from "../../utils/Pair";
 import {Comparison, newComparison} from "./Comparison";
+import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 
-export class Change {
+export class Change implements Quantifiable<Change> {
     protected constructor(private readonly _comparison: Comparison) {
     }
 
@@ -118,62 +118,12 @@ export interface ChangingCheck {
     negated: boolean;
 }
 
-export type QuantifiedChange =
-    | UniversalChange
-    | ExistentialChange
-    ;
-
 export function newQuantifiedChange(
     {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>
-): QuantifiedChange {
+): Quantification<Change> {
     const change = newChange({change: numOp, negated: false});
 
     return negated
-        ? new UniversalChange(change.negate())
-        : new ExistentialChange(change);
-}
-
-abstract class AbstractQuantifiedChange {
-    protected constructor(private readonly _change: Change) {
-    }
-
-    get change(): Change {
-        return this._change;
-    }
-
-    abstract apply(values: Pair<number>[]): boolean;
-
-    abstract contradicts(that: QuantifiedChange): boolean;
-}
-
-class UniversalChange extends AbstractQuantifiedChange {
-    constructor(change: Change) {
-        super(change);
-    }
-
-    override apply(values: Pair<number>[]): boolean {
-        return values.every(([after, before]) => this.change.apply(after, before));
-    }
-
-    override contradicts(that: QuantifiedChange): boolean {
-        return this.change.contradicts(that.change);
-    }
-}
-
-class ExistentialChange extends AbstractQuantifiedChange {
-    constructor(change: Change) {
-        super(change);
-    }
-
-    override apply(values: Pair<number>[]): boolean {
-        return values.some(([after, before]) => this.change.apply(after, before));
-    }
-
-    override contradicts(that: QuantifiedChange): boolean {
-        if (that instanceof ExistentialChange) {
-            return false;
-        }
-
-        return this.change.contradicts(that.change);
-    }
+        ? new Universal(change.negate())
+        : new Existential(change);
 }
