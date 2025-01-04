@@ -78,7 +78,7 @@ class ModelEditor {
 
     // checking arguments
     static NOT_EMPTY_PATTERN = /^\S+$/g;
-    static CHANGE_PATTERN = /^(-=|\+=|=|[+-]|([+-]?)[0-9]+)$/g;
+    static CHANGE_PATTERN = /^(-=|\+=|=|[+-]|([+-]?)([0-9]+\.)?[0-9]+)$/g;
     static TIME_PATTERN = /^([0-9]+)$/g;
     static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
     static RGB_PATTERN = /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/g;
@@ -288,9 +288,7 @@ class ModelEditor {
         const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         const name = $(ModelEditor.CHECK_CHOOSER).val();
         if (this.checkIndex === -1) {
-            const id = Math.random().toString(16)
-                .slice(2);
-            chosenCheckList.push({id, args, negated, name});
+            chosenCheckList.push({args, negated, name});
         } else {
             chosenCheckList[this.checkIndex].args = args;
             chosenCheckList[this.checkIndex].negated = negated;
@@ -322,8 +320,9 @@ class ModelEditor {
         case argType.attrName:
         case argType.costumeName:
         case argType.value:
-        case argType.expr:
             return value.trim().length > 0;
+        case argType.expr:
+            return true; // expressions are used for output checks which can have value "" (sprite.sayText)
         default:
             return true;
         }
@@ -348,8 +347,6 @@ class ModelEditor {
     /** Fill all empty conditions of edges with an always true condition */
     fillEmptyConditions () {
         const emptyConditions = {
-            id: Math.random().toString(16)
-                .slice(2),
             name: 'Expr',
             args: ['true'],
             negated: false
@@ -1298,7 +1295,7 @@ class ModelEditor {
             placeholder: placeholder
         }).val(value)
             .on('keyup change', () => {
-                if (textarea.val().match(ModelEditor.NOT_EMPTY_PATTERN) === null) {
+                if (textarea.val().trim().length === 0 && key === 'modelEditor:expr') {
                     textarea.addClass(ModelEditor.INVALID_INPUT_CLASS);
                 } else {
                     textarea.removeClass(ModelEditor.INVALID_INPUT_CLASS);
