@@ -210,11 +210,15 @@ function forwardConsoleMessages(page, id = "") {
     });
 }
 
-function logErrors(page) {
+function logErrors(page, id = "") {
+    if (id !== "") {
+        id = `Whisker Web #${id} `;
+    }
+
     page.on('error', (error) => {
-        logger.error(error);
+        logger.error(`${id}Page crash:`, error);
     }).on('pageerror', (error) => {
-        logger.error(error);
+        logger.error(`${id}Uncaught error in page:`, error);
     });
 }
 

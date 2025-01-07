@@ -593,7 +593,7 @@ class Whiskers {
             whisker = await this.acquire();
             return await callback(whisker);
         } catch (e) {
-            logger.error(e);
+            logger.error("Callback error:", e);
         } finally {
             await this.release(whisker);
         }
@@ -618,7 +618,7 @@ class Whiskers {
             await pool.start();
             return await callback(pool);
         } catch (e) {
-            logger.error(e);
+            logger.error("Pool error:", e);
         } finally {
             if (pool !== null) {
                 await pool.shutdown();
