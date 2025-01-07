@@ -555,6 +555,7 @@ class Whiskers {
         whisker._timings.openBrowser = 0;
         whisker._timings.loadWhiskerWeb = 0;
 
+        whisker.reason = null;
         whisker.disableEvaluationTimeout();
 
         if (whisker.page.isClosed()) {
