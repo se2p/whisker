@@ -24,6 +24,13 @@ const {opts} = require("./cli");
  */
 
 /**
+ * @typedef {Object} MemoryUsage
+ * @property {number} max - The maximum heap size that can be allocated, in MiB
+ * @property {number} alloc - The currently allocated heap size, in MiB
+ * @property {number} used - The amount of memory the heap actually uses, in MiB
+ */
+
+/**
  * @typedef {Object} PoolOptions
  * @property {number} [whiskers] - How many Whisker instances the pool should have
  * @property {number} [ttl] - How often a resource can be handed out before it is destroyed. Use 0 to disable.
@@ -146,6 +153,13 @@ class Whisker {
          * @private
          */
         this._page = page;
+
+        /**
+         * The current memory usage of the page.
+         * @type {MemoryUsage|null}
+         * @private
+         */
+        this._memory = null;
 
         /**
          * Temporary directory of this resource.
@@ -404,6 +418,41 @@ class Whisker {
 
         return !this._page.isClosed();
     }
+
+    async _updateMemoryUsage() {
+        // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
+        this._memory = await this._page.evaluate(() => {
+            const memory = window.performance.memory;
+
+            if (!memory) {
+                return null;
+            }
+
+            // Properties are implemented as getters, thus not JSON serializable. Explicit destructuring necessary.
+            const {usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit} = memory;
+            return {
+                used: Math.round(usedJSHeapSize / 1024 / 1024),
+                alloc: Math.round(totalJSHeapSize / 1024 / 1024),
+                max: Math.round(jsHeapSizeLimit / 1024 / 1024),
+            };
+        });
+    }
+
+    _printMemoryUsage() {
+        if (this._memory === null) {
+            logger.debug(`Whisker #${this._id} memory usage unavailable`);
+            return;
+        }
+
+        const {used, alloc, max} = this._memory;
+
+        // It should hold that used <= alloc <= max.
+        logger.debug(`Whisker #${this._id} memory: ` + [
+            `used ${used} MiB (${Math.round(used / max * 100)} %)`,
+            `alloc ${alloc} MiB (${Math.round(alloc / max * 100)} %)`,
+            `limit at ${max} MiB (100 %)`,
+        ].join(", "));
+    }
 }
 
 /**
@@ -568,6 +617,8 @@ class Whiskers {
         if (this._pool.isBorrowedResource(whisker)) {
             await this._pool.release(whisker);
         }
+
+        await whisker._updateMemoryUsage();
     }
 
     /**
