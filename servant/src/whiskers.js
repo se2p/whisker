@@ -1,12 +1,11 @@
 const logger = require("./logger");
 const genericPool = require("generic-pool");
 const fs = require("fs");
-const {openNewBrowser, configureWhiskerWeb} = require("./whisker-web");
+const {openNewBrowser, forwardConsoleMessages} = require("./whisker-web");
 const {switchToProjectTab} = require("./common");
 const path = require("path");
 const os = require("os");
 const {clearTimeout} = require("node:timers");
-const {numberOfJobs} = require("./cli").opts;
 const {Mutex} = require('async-mutex');
 const {opts} = require("./cli");
 
@@ -107,8 +106,8 @@ class Whisker {
         // Configure the page and load Whisker Web.
         const page = (await browser.pages())[0];
         before = Date.now();
-        await configureWhiskerWeb(page, {waitUntil: "load", id: `#${id}`});
         const whisker = new Whisker(pool, id, browser, page, timings);
+        await whisker._configurePage();
         await whisker.enableKeepaliveWatchdog();
         await initWhiskerOnce(pool, whisker);
         timings.loadWhiskerWeb = Date.now() - before;
@@ -195,6 +194,24 @@ class Whisker {
          * @private
          */
         this._timings = timings;
+    }
+
+    async _configurePage() {
+        // The meaning of each event is explained here: https://pptr.dev/api/puppeteer.pageevent#enumeration-members
+        this._page.on('error', (error) => {
+            this._reason = "Page crash";
+            logger.error(`Whisker Web #${this._id}: ${this._reason}:`, error);
+        }).on('pageerror', (error) => {
+            this._reason = "Uncaught error in page";
+            logger.error(`Whisker Web #${this._id}: ${this._reason}:`, error);
+        });
+
+        forwardConsoleMessages(this._page, this._id);
+
+        // Set navigation timeout to 5 min
+        this._page.setDefaultNavigationTimeout(300000);
+
+        await this._page.goto(opts.whiskerUrl, {waitUntil: "load"});
     }
 
     get id() {
@@ -288,10 +305,10 @@ class Whisker {
     }
 
     /**
-     * If the keepaliveWatchdog is not refreshed within the timeout, the browser closes. The intention is to detect page
+     * If the keepaliveWatchdog is not refreshed before the timeout, the browser closes. The intention is to detect page
      * hangs, deadlocks, and other errors that make the whole page unresponsive. For example, when this bug [1] in the
-     * Scratch VM happens the entire page freezes and can no longer be closed. The only reliable escape hook is to close
-     * the entire browser.
+     * Scratch VM happens the entire page freezes and can no longer be closed. Another example are sporadic page crashes
+     * in Chromium/puppeteer itself (Whisker issue #380). The only reliable escape hook is to close the entire browser.
      * [1] https://github.com/scratchfoundation/scratch-vm/issues/2282
      */
     keepAlive() {
@@ -308,8 +325,13 @@ class Whisker {
         this._keepaliveWatchdog = this._keepaliveWatchdog !== null
             ? this._keepaliveWatchdog.refresh()
             : setTimeout(async () => {
-                logger.info(`Whisker #${this._id} froze after ${timeout} ms!`);
-                this._reason = "The page froze";
+                logger.info(`Whisker #${this._id} dead after ${timeout} ms!`);
+
+                if (this._reason === null) {
+                    // If no reason for death until now (e.g., page crash or uncaught error), assume the VM has frozen.
+                    this._reason = "The page froze";
+                }
+
                 await this._pool.destroy(this);
             }, timeout);
     }
@@ -411,7 +433,7 @@ class Whisker {
  * @type {PoolOptions}
  */
 const defaultPoolOptions = {
-    whiskers: numberOfJobs,
+    whiskers: opts.numberOfJobs,
     ttl: 0,
     keepaliveTimeout: 0,
     initWhiskerOnce: (_whisker) => {

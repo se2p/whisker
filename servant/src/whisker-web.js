@@ -3,7 +3,7 @@ const Minilog = require('minilog');
 const {format} = require("util");
 const logger = require("./logger");
 const opts = require("./cli").opts;
-const {headless, whiskerUrl} = opts;
+const {headless} = opts;
 
 // Workaround for Whisker issue #241
 async function openNewBrowserWithRetry(options) {
@@ -210,37 +210,7 @@ function forwardConsoleMessages(page, id = "") {
     });
 }
 
-function logErrors(page, id = "") {
-    if (id !== "") {
-        id = `Whisker Web #${id} `;
-    }
-
-    page.on('error', (error) => {
-        logger.error(`${id}Page crash:`, error);
-    }).on('pageerror', (error) => {
-        logger.error(`${id}Uncaught error in page:`, error);
-    });
-}
-
-async function openNewPage(browser) {
-    const page = await browser.newPage({context: Date.now()});
-    return await configureWhiskerWeb(page);
-}
-
-async function configureWhiskerWeb(page, {waitUntil = "networkidle0", id = ""} = {}) {
-    logErrors(page);
-    forwardConsoleMessages(page, id);
-
-    // Set navigation timeout to 5 min
-    page.setDefaultNavigationTimeout(300000);
-
-    await page.goto(whiskerUrl, {waitUntil});
-
-    return page;
-}
-
 module.exports = {
     openNewBrowser,
-    openNewPage,
-    configureWhiskerWeb
+    forwardConsoleMessages,
 };
