@@ -210,13 +210,11 @@ function forwardConsoleMessages(page, id = "") {
     });
 }
 
-function rejectOnError(page) {
+function logErrors(page) {
     page.on('error', (error) => {
         logger.error(error);
-        return Promise.reject(error);
     }).on('pageerror', (error) => {
         logger.error(error);
-        return Promise.reject(error);
     });
 }
 
@@ -226,7 +224,7 @@ async function openNewPage(browser) {
 }
 
 async function configureWhiskerWeb(page, {waitUntil = "networkidle0", id = ""} = {}) {
-    rejectOnError(page);
+    logErrors(page);
     forwardConsoleMessages(page, id);
 
     // Set navigation timeout to 5 min
