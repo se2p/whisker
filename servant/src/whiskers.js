@@ -49,35 +49,6 @@ const {opts} = require("./cli");
 const whiskerKeepaliveExposedName = "__whisker_keepalive__";
 
 /**
- * Initializes Whisker Web.
- *
- * @param pool {Whiskers} The pool that manages the page.
- * @param whisker {Whisker} The Whisker Web instance to initialize
- * @return Promise<void>
- */
-async function initWhiskerOnce(pool, whisker) {
-    const page = whisker._page;
-
-    /*
-     * Page initialization code common to all use cases.
-     */
-    await page.evaluate((opts) => {
-        if (opts.seed) document.querySelector('#seed').value = opts.seed;
-        if (opts.acceleration) document.querySelector('#acceleration-value').innerText = opts.acceleration;
-        if (opts.useSaveStates) document.querySelector("#use-save-states").checked = opts.useSaveStates;
-    }, {...opts, acceleration: String(opts.acceleration)}); // Infinity (as number) is not JSON serializable.
-
-    // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
-    // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
-    await switchToProjectTab(page, true);
-
-    /*
-     * Page initialization code specific to the current Whisker subcommand.
-     */
-    await pool._initWhiskerOnce(whisker);
-}
-
-/**
  * The resource that will be handed out by the pool.
  */
 class Whisker {
@@ -109,7 +80,7 @@ class Whisker {
         const whisker = new Whisker(pool, id, browser, page, timings);
         await whisker._configurePage();
         await whisker.enableKeepaliveWatchdog();
-        await initWhiskerOnce(pool, whisker);
+        await whisker._initWhiskerWeb();
         timings.loadWhiskerWeb = Date.now() - before;
         logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
 
@@ -196,6 +167,11 @@ class Whisker {
         this._timings = timings;
     }
 
+    /**
+     * Sets up the page.
+     * @return {Promise<void>}
+     * @private
+     */
     async _configurePage() {
         // The meaning of each event is explained here: https://pptr.dev/api/puppeteer.pageevent#enumeration-members
         this._page.on('error', (error) => {
@@ -212,6 +188,32 @@ class Whisker {
         this._page.setDefaultNavigationTimeout(300000);
 
         await this._page.goto(opts.whiskerUrl, {waitUntil: "load"});
+    }
+
+    /**
+     * Initializes Whisker Web.
+     * @return Promise<void>
+     * @private
+     */
+    async _initWhiskerWeb() {
+        // Page initialization code common to all use cases.
+        await this._page.evaluate((opts) => {
+            if (opts.seed) document.querySelector('#seed').value = opts.seed;
+            if (opts.acceleration) document.querySelector('#acceleration-value').innerText = opts.acceleration;
+            if (opts.useSaveStates) document.querySelector("#use-save-states").checked = opts.useSaveStates;
+        }, {
+            ...opts,
+            acceleration: String(opts.acceleration), // Infinity (as number) is not JSON serializable.
+        });
+
+        // VERY IMPORTANT: The "My Project" tab must be selected and the Scratch stage must be visible before running
+        // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
+        await switchToProjectTab(this._page, true);
+
+        /*
+         * Page initialization code specific to the current Whisker subcommand.
+         */
+        await this._pool._initWhiskerOnce(this);
     }
 
     get id() {
