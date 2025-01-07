@@ -75,12 +75,12 @@ class Whisker {
         logger.info(`Browser #${id} opened after ${timings.openBrowser} ms`);
 
         // Configure the page and load Whisker Web.
-        const page = (await browser.pages())[0];
         before = Date.now();
+        const page = (await browser.pages())[0];
         const whisker = new Whisker(pool, id, browser, page, timings);
-        await whisker._configurePage();
         await whisker.enableKeepaliveWatchdog();
-        await whisker._initWhiskerWeb();
+        await whisker._configurePage();
+        await whisker._loadWhiskerWeb();
         timings.loadWhiskerWeb = Date.now() - before;
         logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
 
@@ -168,7 +168,7 @@ class Whisker {
     }
 
     /**
-     * Sets up the page.
+     * Sets up the page, in particular forwarding of console log messages.
      * @return {Promise<void>}
      * @private
      */
@@ -186,8 +186,6 @@ class Whisker {
 
         // Set navigation timeout to 5 min
         this._page.setDefaultNavigationTimeout(300000);
-
-        await this._page.goto(opts.whiskerUrl, {waitUntil: "load"});
     }
 
     /**
@@ -195,7 +193,9 @@ class Whisker {
      * @return Promise<void>
      * @private
      */
-    async _initWhiskerWeb() {
+    async _loadWhiskerWeb() {
+        await this._page.goto(opts.whiskerUrl, {waitUntil: "load"}); // https://pptr.dev/api/puppeteer.waitforoptions
+
         // Page initialization code common to all use cases.
         await this._page.evaluate((opts) => {
             if (opts.seed) document.querySelector('#seed').value = opts.seed;
