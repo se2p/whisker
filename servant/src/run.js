@@ -229,4 +229,5 @@ module.exports = () => Whiskers.withNewPool((pool) => run(pool), {
     // Avoid opening more browser windows than necessary.
     whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs),
     initWhiskerOnce: ({page}) => configureWhiskerWebInstance(page),
+    keepaliveTimeout: 5000,
 });
