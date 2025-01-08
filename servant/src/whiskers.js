@@ -618,7 +618,8 @@ class Whiskers {
             whisker = await this.acquire();
             return await callback(whisker);
         } catch (e) {
-            logger.error("Callback error:", e);
+            const prefix = whisker === null ? "" : `Whisker #${whisker.id}: `;
+            logger.error(`${prefix}Callback error:`, e);
         } finally {
             await this.release(whisker);
         }
