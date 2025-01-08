@@ -82,8 +82,8 @@ class ModelEditor {
     static TIME_PATTERN = /^([0-9]+)$/g;
     static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
     static RGB_PATTERN = /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/g;
-    static X_PATTERN = /^(-?([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-3][0-9]|240))$/g; // scratch window with -240 - 240
-    static Y_PATTERN = /^(-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180))$/g; // scratch window height -180 - 180
+    static X_PATTERN = /^.*$/g; // can be either a number or an expr which could be anything
+    static Y_PATTERN = /^.*$/g; // can be either a number or an expr which could be anything
     static INVALID_INPUT_CLASS = 'model-invalid-input';
 
     /**
@@ -312,9 +312,7 @@ class ModelEditor {
         case argType.b:
             return value.match(ModelEditor.RGB_PATTERN);
         case argType.coordX:
-            return value.match(ModelEditor.X_PATTERN);
         case argType.coordY:
-            return value.match(ModelEditor.Y_PATTERN);
         case argType.spriteNameRegex:
         case argType.varNameRegex:
         case argType.attrName:
