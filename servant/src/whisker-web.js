@@ -176,9 +176,16 @@ function forwardConsoleMessages(page, id = "") {
         return Promise.all(args
             .map(async (arg) => {
                 // Try to extract the stack trace from errors.
-                const a = await arg.evaluate((arg) => arg instanceof Error
-                    ? decodeURIComponent(arg.stack)
-                    : arg, arg);
+                let a;
+
+                try {
+                    a = await arg.evaluate((arg) => arg instanceof Error
+                        ? decodeURIComponent(arg.stack)
+                        : arg, arg);
+                } catch (e) {
+                    // Workaround for issue #384.
+                    a = `Error while forwarding browser logs: ${e}`;
+                }
 
                 if (typeof a === "string") {
                     return a;
