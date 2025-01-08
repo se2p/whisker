@@ -1,5 +1,16 @@
 const Util = require("./util");
-const VMWrapper = require("./vm-wrapper");
+
+/**
+ * Converts the given time duration (in milliseconds) into a number of VM steps.
+ *
+ * @param vmWrapper An instance of the VMWrapper class with which to perform the conversion.
+ * @param duration The duration to convert
+ * @return {number} The number of steps corresponding to the duration
+ */
+function convertFromTimeToSteps(vmWrapper, duration) {
+    // Accessing the static convertFromTimeToSteps() method through the constructor is a workaround for issue #381.
+    return vmWrapper.constructor.convertFromTimeToSteps(duration);
+}
 
 /**
  * Input data parameters:
@@ -172,7 +183,7 @@ class Input {
 
         //Convert time to steps; Ensures backwards compatibility with old Whisker-Tests.
         if (data.duration !== undefined && data.steps === undefined) {
-            data.steps = VMWrapper.convertFromTimeToSteps(data.duration);
+            data.steps = convertFromTimeToSteps(this._inputs.vmWrapper, data.duration);
         }
 
         // Safety check to ensure having a step duration >= 1
@@ -252,7 +263,7 @@ class Inputs {
     addInputs (inputs) {
         for (const data of inputs) {
             if (data.time !== undefined && data.steps === undefined) {
-                data.steps = VMWrapper.convertFromTimeToSteps(data.time);
+                data.steps = convertFromTimeToSteps(this.vmWrapper, data.time);
             }
             this.addInput(data.steps, data.input);
         }
