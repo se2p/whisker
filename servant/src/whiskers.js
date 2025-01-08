@@ -88,9 +88,9 @@ class Whisker {
         before = Date.now();
         const page = (await browser.pages())[0];
         const whisker = new Whisker(pool, id, browser, page, timings);
-        await whisker.enableKeepaliveWatchdog();
         await whisker._configurePage();
         await whisker._loadWhiskerWeb();
+        await whisker.enableKeepaliveWatchdog();
         timings.loadWhiskerWeb = Date.now() - before;
         logger.info(`Whisker Web #${id} loaded after ${timings.loadWhiskerWeb} ms`);
 
