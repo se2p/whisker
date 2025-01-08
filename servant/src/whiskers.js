@@ -36,7 +36,7 @@ const {opts} = require("./cli");
  * @property {number} [ttl] - How often a resource can be handed out before it is destroyed. Use 0 to disable.
  * @property {number} [memThreshold] - How much percent of the maximum allocatable heap size the resource is allowed to
  *                                     use. If exceeded, the resource is destroyed. Use a value between 0 (exclusive)
- *                                     and 1 (inclusive). Use 0 to disable.
+ *                                     and 1 (inclusive). The default is 1 (effectively disabling the limit).
  * @property {number} [keepaliveTimeout] - Destroys the browser if it has been unresponsive for the given number of
  *                                         milliseconds. Use 0 to disable.
  * @property {function(Whisker): Promise<void>} [initWhiskerOnce] - A function that performs additional initialization
@@ -423,10 +423,10 @@ class Whisker {
             return false;
         }
 
-        if (this._memory !== null && this._pool._memThreshold !== 0) {
+        if (this._memory !== null && this._pool._memThreshold < 1) {
             const usage = this._memory.used / this._memory.max;
 
-            if (!(usage < this._pool._memThreshold)) {
+            if (usage > this._pool._memThreshold) {
                 logger.info(`Whisker #${this._id} exceeded the allowed memory usage...`);
                 return false;
             }
@@ -436,10 +436,6 @@ class Whisker {
     }
 
     async _updateMemoryUsage() {
-        if (this._pool._memThreshold === 0) { // 0 means disabled, hence no need to take a measurement.
-            return;
-        }
-
         let memory = null;
 
         try {
@@ -467,10 +463,6 @@ class Whisker {
     }
 
     _printMemoryUsage() {
-        if (this._pool._memThreshold === 0) {
-            return;
-        }
-
         if (this._memory === null) {
             logger.debug(`Whisker #${this._id} memory usage unavailable`);
             return;
@@ -495,7 +487,7 @@ const defaultPoolOptions = {
     whiskers: numberOfJobs,
     ttl: 0,
     keepaliveTimeout: 0,
-    memThreshold: 0,
+    memThreshold: 1,
     initWhiskerOnce: (_whisker) => {
         /* noop, but users can provide a custom function. */
     },
@@ -563,7 +555,7 @@ class Whiskers {
          * @type {number}
          * @private
          */
-        this._memThreshold = Math.min(1, Math.max(0, opts.memThreshold)); // Clamp value to interval [0, 1].
+        this._memThreshold = Math.min(1, Math.max(Number.MIN_VALUE, opts.memThreshold)); // Clamp value to interval (0, 1].
 
         /**
          * A mutex to ensure that only one browser is opened at once.
