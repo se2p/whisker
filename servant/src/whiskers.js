@@ -23,9 +23,19 @@ const {opts} = require("./cli");
  */
 
 /**
+ * @typedef {Object} MemoryUsage
+ * @property {number} max - The maximum heap size that can be allocated, in MiB
+ * @property {number} alloc - The currently allocated heap size, in MiB
+ * @property {number} used - The amount of memory the heap actually uses, in MiB
+ */
+
+/**
  * @typedef {Object} PoolOptions
  * @property {number} [whiskers] - How many Whisker instances the pool should have
  * @property {number} [ttl] - How often a resource can be handed out before it is destroyed. Use 0 to disable.
+ * @property {number} [memThreshold] - How much percent of the maximum allocatable heap size the resource is allowed to
+ *                                     use. If exceeded, the resource is destroyed. Use a value between 0 (exclusive)
+ *                                     and 1 (inclusive). The default is 1 (effectively disabling the limit).
  * @property {number} [keepaliveTimeout] - Destroys the browser if it has been unresponsive for the given number of
  *                                         milliseconds. Use 0 to disable.
  * @property {function(Whisker): Promise<void>} [initWhiskerOnce] - A function that performs additional initialization
@@ -116,6 +126,13 @@ class Whisker {
          * @private
          */
         this._page = page;
+
+        /**
+         * The current memory usage of the page.
+         * @type {MemoryUsage|null}
+         * @private
+         */
+        this._memory = null;
 
         /**
          * Temporary directory of this resource.
@@ -426,7 +443,63 @@ class Whisker {
             return false;
         }
 
-        return !this._page.isClosed();
+        if (this._page.isClosed()) {
+            return false;
+        }
+
+        if (this._memory !== null && this._pool._memThreshold < 1) {
+            const usage = this._memory.used / this._memory.max;
+
+            if (usage > this._pool._memThreshold) {
+                logger.info(`Whisker #${this._id} exceeded the allowed memory usage...`);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    async _updateMemoryUsage() {
+        let memory = null;
+
+        try {
+            // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
+            memory = await this._page.evaluate(() => {
+                const memory = window.performance.memory;
+
+                if (!memory) {
+                    return null;
+                }
+
+                // Properties are implemented as getters, thus not JSON serializable. Explicit destructuring necessary.
+                const {usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit} = memory;
+                return {
+                    used: Math.round(usedJSHeapSize / 1024 / 1024),
+                    alloc: Math.round(totalJSHeapSize / 1024 / 1024),
+                    max: Math.round(jsHeapSizeLimit / 1024 / 1024),
+                };
+            });
+        } catch (e) {
+            logger.error(`Whisker #${this._id}: Error fetching memory usage:`, e);
+        } finally {
+            this._memory = memory;
+        }
+    }
+
+    _printMemoryUsage() {
+        if (this._memory === null) {
+            logger.debug(`Whisker #${this._id} memory usage unavailable`);
+            return;
+        }
+
+        const {used, alloc, max} = this._memory;
+
+        // It should hold that used <= alloc <= max.
+        logger.debug(`Whisker #${this._id} memory: ` + [
+            `used ${used} MiB (${Math.round(used / max * 100)} %)`,
+            `alloc ${alloc} MiB (${Math.round(alloc / max * 100)} %)`,
+            `limit at ${max} MiB (100 %)`,
+        ].join(", "));
     }
 }
 
@@ -438,6 +511,7 @@ const defaultPoolOptions = {
     whiskers: opts.numberOfJobs,
     ttl: 0,
     keepaliveTimeout: 0,
+    memThreshold: 1,
     initWhiskerOnce: (_whisker) => {
         /* noop, but users can provide a custom function. */
     },
@@ -498,6 +572,14 @@ class Whiskers {
          * @private
          */
         this._ttl = opts.ttl < 1 ? Infinity : opts.ttl;
+
+        /**
+         * How much amount (in percent) of the maximum allocatable heap memory the resource may consume before it will
+         * be destroyed.
+         * @type {number}
+         * @private
+         */
+        this._memThreshold = Math.min(1, Math.max(Number.MIN_VALUE, opts.memThreshold)); // Clamp value to interval (0, 1].
 
         /**
          * A mutex to ensure that only one browser is opened at once.
@@ -588,11 +670,15 @@ class Whiskers {
                 'It is generally not recommended to do so, because it prevents reusing the page objects.',
                 'Please check your code for unintended operations such as "page.close()" to avoid this warning.',
             ].join("\n"));
+        } else {
+            await whisker._updateMemoryUsage();
         }
 
         if (this._pool.isBorrowedResource(whisker)) {
             await this._pool.release(whisker);
         }
+
+        whisker._printMemoryUsage();
     }
 
     /**
