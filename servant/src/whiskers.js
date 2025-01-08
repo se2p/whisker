@@ -645,13 +645,14 @@ class Whiskers {
                 'It is generally not recommended to do so, because it prevents reusing the page objects.',
                 'Please check your code for unintended operations such as "page.close()" to avoid this warning.',
             ].join("\n"));
+        } else {
+            await whisker._updateMemoryUsage();
         }
 
         if (this._pool.isBorrowedResource(whisker)) {
             await this._pool.release(whisker);
         }
 
-        await whisker._updateMemoryUsage();
         whisker._printMemoryUsage();
     }
 
