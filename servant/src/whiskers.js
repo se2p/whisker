@@ -440,22 +440,30 @@ class Whisker {
             return;
         }
 
-        // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
-        this._memory = await this._page.evaluate(() => {
-            const memory = window.performance.memory;
+        let memory = null;
 
-            if (!memory) {
-                return null;
-            }
+        try {
+            // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
+            memory = await this._page.evaluate(() => {
+                const memory = window.performance.memory;
 
-            // Properties are implemented as getters, thus not JSON serializable. Explicit destructuring necessary.
-            const {usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit} = memory;
-            return {
-                used: Math.round(usedJSHeapSize / 1024 / 1024),
-                alloc: Math.round(totalJSHeapSize / 1024 / 1024),
-                max: Math.round(jsHeapSizeLimit / 1024 / 1024),
-            };
-        });
+                if (!memory) {
+                    return null;
+                }
+
+                // Properties are implemented as getters, thus not JSON serializable. Explicit destructuring necessary.
+                const {usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit} = memory;
+                return {
+                    used: Math.round(usedJSHeapSize / 1024 / 1024),
+                    alloc: Math.round(totalJSHeapSize / 1024 / 1024),
+                    max: Math.round(jsHeapSizeLimit / 1024 / 1024),
+                };
+            });
+        } catch (e) {
+            logger.error(`Whisker #${this._id}: Error fetching memory usage:`, e);
+        } finally {
+            this._memory = memory;
+        }
     }
 
     _printMemoryUsage() {
