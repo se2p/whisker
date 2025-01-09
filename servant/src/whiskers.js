@@ -184,7 +184,9 @@ class Whisker {
         this._timings = timings;
 
         /**
-         * Tells whether the resource is no longer operational because it has already been destroyed.
+         * Tells whether the resource is no longer operational. If `true`, it's not safe to do anything with the browser
+         * or its pages anymore. The variable will be set to `true` when destruction is imminent, it is also `true`
+         * while destruction is in progress, and it remains `true` after the resource is destroyed.
          * @type {boolean}
          * @private
          */
