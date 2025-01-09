@@ -182,6 +182,13 @@ class Whisker {
          * @private
          */
         this._timings = timings;
+
+        /**
+         * Tells whether the resource is no longer operational because it has already been destroyed.
+         * @type {boolean}
+         * @private
+         */
+        this._destroyed = false;
     }
 
     /**
@@ -201,7 +208,7 @@ class Whisker {
 
         forwardConsoleMessages(this._page, this._id);
 
-        // Set navigation timeout to 5 min
+        // Set navigation timeout to 5 min. See issue #241 and MR !443.
         this._page.setDefaultNavigationTimeout(300000);
     }
 
@@ -227,9 +234,7 @@ class Whisker {
         // the tests. Otherwise, wrong results might be reported. See commit 63b21e58.
         await switchToProjectTab(this._page, true);
 
-        /*
-         * Page initialization code specific to the current Whisker subcommand.
-         */
+        // Page initialization code specific to the current Whisker subcommand.
         await this._pool._initWhiskerOnce(this);
     }
 
@@ -390,6 +395,12 @@ class Whisker {
      * @return {Promise<void>}
      */
     async destroy() {
+        if (this._destroyed) { // To avoid issue #385.
+            return;
+        }
+
+        this._destroyed = true;
+
         logger.info(`Destroying Whisker #${this._id}`);
 
         await this.disableKeepaliveWatchdog();
@@ -428,7 +439,7 @@ class Whisker {
      * @return {boolean} `true` if all OK, `false` otherwise.
      */
     validate() {
-        if (this._pool === null) {
+        if (this._destroyed) {
             return false;
         }
 
@@ -438,10 +449,6 @@ class Whisker {
         }
 
         this._useCount++;
-
-        if (this._browser === null || this._page === null || this._tmpDir === null) {
-            return false;
-        }
 
         if (this._page.isClosed()) {
             return false;
@@ -460,11 +467,15 @@ class Whisker {
     }
 
     async _updateMemoryUsage() {
-        let memory = null;
+        this._memory = null;
+
+        if (this._destroyed) {
+            return;
+        }
 
         try {
             // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
-            memory = await this._page.evaluate(() => {
+            this._memory = await this._page.evaluate(() => {
                 const memory = window.performance.memory;
 
                 if (!memory) {
@@ -481,8 +492,6 @@ class Whisker {
             });
         } catch (e) {
             logger.error(`Whisker #${this._id}: Error fetching memory usage:`, e);
-        } finally {
-            this._memory = memory;
         }
     }
 
