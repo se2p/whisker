@@ -491,7 +491,8 @@ class Whisker {
                 };
             });
         } catch (e) {
-            logger.error(`Whisker #${this._id}: Error fetching memory usage:`, e);
+            // This can happen when the page is already crashed/frozen/closed, similar to issue #384.
+            logger.warn(`Whisker #${this._id}: Error fetching memory usage:`, e);
         }
     }
 
