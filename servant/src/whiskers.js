@@ -397,7 +397,7 @@ class Whisker {
      * @return {Promise<void>}
      */
     async destroy() {
-        if (this._destroyed) { // To avoid issue #385.
+        if (this._destroyed) { // To avoid issue #385 and other race conditions.
             return;
         }
 
@@ -409,10 +409,6 @@ class Whisker {
         this.disableEvaluationTimeout();
 
         try {
-            if (this._browser === null) { // This can happen if the same browser is closed in rapid succession.
-                return;
-            }
-
             const before = Date.now();
             await this._browser.close();
             logger.info(`Whisker #${this._id} destroyed after`, Date.now() - before, "ms");
