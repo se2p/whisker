@@ -82,8 +82,11 @@ class ModelEditor {
     static TIME_PATTERN = /^([0-9]+)$/g;
     static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
     static RGB_PATTERN = /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/g;
+    // TODO: These patterns match everything, thus it's not really necessary to check them, and they could be removed.
+    //  But currently, we still need them as a workaround, because appendInputWithPattern() expects a regex as argument.
     static X_PATTERN = /^.*$/g; // can be either a number or an expr which could be anything
     static Y_PATTERN = /^.*$/g; // can be either a number or an expr which could be anything
+
     static INVALID_INPUT_CLASS = 'model-invalid-input';
 
     /**
