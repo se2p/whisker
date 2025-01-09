@@ -28,7 +28,7 @@ export class VariableLengthConstrainedChromosomeMutation extends AbstractVariabl
         super(min, max, length, reservedCodons, gaussianMutationPower);
     }
 
-    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+    override getMutationProbability(idx: number, numberOfCodons: number): number {
         return 1 / numberOfCodons;
     }
 

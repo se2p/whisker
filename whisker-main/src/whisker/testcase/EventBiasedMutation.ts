@@ -26,7 +26,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
         super(min, max, length, reservedCodons, gaussianMutationPower);
     }
 
-    protected _getMutationProbability(idx: number): number {
+    override getMutationProbability(idx: number): number {
         return this._probabilities[idx];
     }
 
