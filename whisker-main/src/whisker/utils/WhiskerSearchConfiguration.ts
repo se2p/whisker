@@ -768,4 +768,11 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getCoverageStableCount(): number {
+        if ('networkFitness' in this._config && this._config['networkFitness']['stableCount']) {
+            return this._config['networkFitness']['stableCount'];
+        }
+        return 1;
+    }
+
 }
