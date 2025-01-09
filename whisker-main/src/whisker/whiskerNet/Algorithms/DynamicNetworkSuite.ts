@@ -381,6 +381,11 @@ export class DynamicNetworkSuite {
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
+            const winningState = StatisticsCollector.getInstance().getWinningStateForProject(projectName);
+            const winningObjective = [...this.statementMap.values()]
+                .find(obj => (obj as StatementFitnessFunction).getNodeId() == winningState);
+            const winningKey = [...this.statementMap.entries()]
+                .find(([, objective]) => objective === winningObjective)[0];
 
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
@@ -393,6 +398,8 @@ export class DynamicNetworkSuite {
                 branches: branches,
                 branchCoverageTest: Math.round((branchCovered / branches) * 100) / 100,
                 branchCoverageSuite: Math.round((this.branchArchive.size / branches) * 100) / 100,
+                wonTest: await test.determineCoveredObjective(winningObjective),
+                wonSuite: this.statementArchive.has(winningKey),
                 score: test.score,
                 playTime: test.playTime,
                 surpriseNodeAdequacy: test.averageLSA,

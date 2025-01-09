@@ -123,7 +123,7 @@ export class StatisticsCollector {
 
     set projectName(value: string) {
         this._projectName = value;
-        this._winningState = winningStates[this._projectName.replace(".sb3", "")];
+        this._winningState = this.getWinningStateForProject(value);
     }
 
     get configName(): string {
@@ -422,12 +422,14 @@ export class StatisticsCollector {
         let csv = "projectName,testName,id,seed," +
             "totalStatements,testStatementCoverage,suiteStatementCoverage," +
             "totalBranches,testBranchCoverage,suiteBranchCoverage," +
+            "testWon,suiteWon," +
             "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
                 testResult.statements, testResult.statementCoverageTest, testResult.statementCoverageSuite,
                 testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
+                testResult.wonTest, testResult.wonSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
                 testResult.avgUncertainty, testResult.isMutant];
             const dataRow = data.join(",").concat("\n");
@@ -548,18 +550,22 @@ export class StatisticsCollector {
         this.updateHighestBranchCoverage(covered / this._branches.size);
     }
 
-    public getCoveredStatements(): Set<StatementFitnessFunction> {
+    private _getCoveredStatements(): Set<StatementFitnessFunction> {
         const stableCount = Container.config.getCoverageStableCount();
         return new Set(
             [...this._statements.entries()]
-                .filter(([,coverCount]) => coverCount >= stableCount)
-                .map(([st,]) => st)
+                .filter(([, coverCount]) => coverCount >= stableCount)
+                .map(([st]) => st)
         );
     }
 
     private _isWinningStateCovered(): boolean {
-        const coveredStatements = this.getCoveredStatements();
+        const coveredStatements = this._getCoveredStatements();
         return [...coveredStatements].some(stat => stat.getNodeId().includes(this._winningState));
+    }
+
+    public getWinningStateForProject(project: string): string {
+        return winningStates[project.replace(".sb3", "")];
     }
 
     public reset(): void {
@@ -585,6 +591,8 @@ export interface NetworkTestSuiteResults {
     branches: number,
     branchCoverageTest: number,
     branchCoverageSuite: number,
+    wonTest: boolean,
+    wonSuite: boolean,
     score: number,
     playTime: number,
     surpriseNodeAdequacy: number,
