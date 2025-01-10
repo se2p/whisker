@@ -117,13 +117,17 @@ export class StatisticsCollector {
         return StatisticsCollector._instance;
     }
 
+    public static getWinningStateForProject(project: string): string {
+        return winningStates[project.replace(".sb3", "")];
+    }
+
     get projectName(): string {
         return this._projectName;
     }
 
     set projectName(value: string) {
         this._projectName = value;
-        this._winningState = this.getWinningStateForProject(value);
+        this._winningState = StatisticsCollector.getWinningStateForProject(value);
     }
 
     get configName(): string {
@@ -562,10 +566,6 @@ export class StatisticsCollector {
     private _isWinningStateCovered(): boolean {
         const coveredStatements = this._getCoveredStatements();
         return [...coveredStatements].some(stat => stat.getNodeId().includes(this._winningState));
-    }
-
-    public getWinningStateForProject(project: string): string {
-        return winningStates[project.replace(".sb3", "")];
     }
 
     public reset(): void {

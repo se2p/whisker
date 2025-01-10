@@ -381,7 +381,7 @@ export class DynamicNetworkSuite {
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
-            const winningState = StatisticsCollector.getInstance().getWinningStateForProject(projectName);
+            const winningState = StatisticsCollector.getWinningStateForProject(projectName);
             const winningObjective = [...this.statementMap.values()]
                 .find(obj => (obj as StatementFitnessFunction).getNodeId() == winningState);
             const winningKey = [...this.statementMap.entries()]
