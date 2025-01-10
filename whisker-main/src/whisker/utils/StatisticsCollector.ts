@@ -59,7 +59,6 @@ export class StatisticsCollector {
     private _branches: Map<BranchCoverageFitnessFunction, number>;
     private _statementCoverage: number
     private _branchCoverage: number
-    private _winningState: string;
 
     // Neuroevolution
     private _highestNetworkFitness: number;
@@ -127,7 +126,6 @@ export class StatisticsCollector {
 
     set projectName(value: string) {
         this._projectName = value;
-        this._winningState = StatisticsCollector.getWinningStateForProject(value);
     }
 
     get configName(): string {
@@ -565,7 +563,8 @@ export class StatisticsCollector {
 
     private _isWinningStateCovered(): boolean {
         const coveredStatements = this._getCoveredStatements();
-        return [...coveredStatements].some(stat => stat.getNodeId().includes(this._winningState));
+        const winningState = StatisticsCollector.getWinningStateForProject(this._projectName);
+        return [...coveredStatements].some(stat => stat.getNodeId().includes(winningState));
     }
 
     public reset(): void {
