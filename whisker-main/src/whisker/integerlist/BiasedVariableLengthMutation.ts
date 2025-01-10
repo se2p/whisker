@@ -32,7 +32,7 @@ import {IntegerListChromosome} from "./IntegerListChromosome";
  */
 export class BiasedVariableLengthMutation extends AbstractVariableLengthMutation<IntegerListChromosome> {
 
-    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+    override getMutationProbability(idx: number, numberOfCodons: number): number {
         Preconditions.checkArgument(idx < numberOfCodons);
         return 2 * (idx + 1) / (numberOfCodons * (numberOfCodons + 1));
     }

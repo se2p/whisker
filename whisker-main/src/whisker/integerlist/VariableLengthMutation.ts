@@ -25,7 +25,7 @@ import {IntegerListChromosome} from './IntegerListChromosome';
  * Mutates every codon with the same probability.
  */
 export class VariableLengthMutation extends AbstractVariableLengthMutation<IntegerListChromosome> {
-    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+    override getMutationProbability(idx: number, numberOfCodons: number): number {
         return 1 / numberOfCodons;
     }
 

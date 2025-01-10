@@ -56,7 +56,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @param numberOfCodons the total number of mutation candidates.
      * @returns number defining the mutation probability of the codon at position idx.
      */
-    protected abstract _getMutationProbability(idx: number, numberOfCodons: number): number;
+    abstract getMutationProbability(idx: number, numberOfCodons: number): number;
 
     abstract apply(chromosome: T): T;
 
@@ -78,7 +78,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
         eventGroups = eventGroups.slice(0, maxGroupLength + 1);
         let index = 0;
         while (index < maxGroupLength) {
-            if (this._random.nextDouble() < this._getMutationProbability(index, maxGroupLength)) {
+            if (this._random.nextDouble() < this.getMutationProbability(index, maxGroupLength)) {
                 index = this._mutateEventAndParameter(eventGroups, index);
             }
             index++;
