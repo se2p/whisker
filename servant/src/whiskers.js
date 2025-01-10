@@ -603,6 +603,14 @@ class Whiskers {
          * @private
          */
         this._initWhiskerOnce = opts.initWhiskerOnce.bind(null);
+
+        /**
+         * Contains all resources that are currently in the pool. Since `generic-pool` doesn't expose this, we have to
+         * manage it ourselves. Should only be used for bookkeeping, not to implement any business logic!
+         * @type {Set<Whisker>}
+         * @private
+         */
+        this._resources = new Set();
     }
 
     /**
@@ -622,6 +630,7 @@ class Whiskers {
             return Whisker.create(this, id);
         });
         logger.info(`Created Whisker #${id} after`, Date.now() - before, "ms");
+        this._resources.add(whisker);
         return whisker;
     }
 
@@ -631,6 +640,8 @@ class Whiskers {
      * @return {Promise<void>}
      */
     destroy(whisker) {
+        this._resources.delete(whisker);
+
         // Sometimes, the pool throws an error saying "Resource not currently part of this pool", even though
         // the resource clearly originated from the pool. I don't know why this happens (maybe I'm misusing the
         // API?) but the following workaround avoids the problem, and it doesn't seem to break anything.
