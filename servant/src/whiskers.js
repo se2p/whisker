@@ -264,6 +264,10 @@ class Whisker {
         return this._timings;
     }
 
+    get memory() {
+        return this._memory;
+    }
+
     /**
      * Uploads the Scratch project (given by its path, which should end in *.sb3) to this Whisker Web page. By default,
      * also waits up to 10 seconds for the project to actually finish uploading. Throws an error if this times out.
@@ -480,13 +484,12 @@ class Whisker {
                     return null;
                 }
 
-                // Properties are implemented as getters, thus not JSON serializable. Explicit destructuring necessary.
                 const {usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit} = memory;
-                return {
+                return Object.freeze({ // Freeze to avoid clients tampering with the values.
                     used: Math.round(usedJSHeapSize / 1024 / 1024),
                     alloc: Math.round(totalJSHeapSize / 1024 / 1024),
                     max: Math.round(jsHeapSizeLimit / 1024 / 1024),
-                };
+                });
             });
         } catch (e) {
             // This can happen when the page is already crashed/frozen/closed, similar to issue #384.
@@ -568,6 +571,13 @@ class Whiskers {
         });
 
         /**
+         * How many resources the pool should contain at any given time.
+         * @type {number}
+         * @private
+         */
+        this._whiskers = opts.whiskers;
+
+        /**
          * Number of milliseconds after which a browser will be destroyed if it has been found to be unresponsive.
          * @type {number}
          * @private
@@ -634,6 +644,33 @@ class Whiskers {
         return whisker;
     }
 
+    _printMemoryUsage() {
+        if (this._whiskers < 2) {
+            return;
+        }
+
+        const {used, alloc, max, unk} = [...this._resources].reduce((z, r) => {
+            const m = r.memory;
+
+            if (m === null) {
+                return {...z, unk: z.unk + 1};
+            }
+
+            return {
+                used: z.used + m.used,
+                alloc: z.alloc + m.alloc,
+                max: z.max + m.max,
+                unk: z.unk,
+            };
+        }, {used: 0, alloc: 0, max: 0, unk: 0});
+
+        logger.debug(`Whiskers total memory (? ${unk}, # ${this._resources.size}, T ${this._whiskers}): ` + [
+            `used ${used} MiB (${Math.round(used / max * 100)} %)`,
+            `alloc ${alloc} MiB (${Math.round(alloc / max * 100)} %)`,
+            `limit at ${max} MiB (100 %)`,
+        ].join(", "));
+    }
+
     /**
      * Destroys the given resource.
      * @param whisker {Whisker} The resource to destroy.
@@ -698,6 +735,7 @@ class Whiskers {
         }
 
         whisker._printMemoryUsage();
+        this._printMemoryUsage();
     }
 
     /**
