@@ -656,11 +656,11 @@ class Whiskers {
 
     /**
      * Hand back the resource to the pool.
-     * @param {Whisker} whisker The resource to hand back.
+     * @param {Whisker|null} whisker The resource to hand back.
      * @return {Promise<void>}
      */
     async release(whisker) {
-        if (whisker === null) {
+        if (whisker === null || whisker._destroyed) { // To handle race conditions with destroy(), see issue #390.
             return;
         }
 
