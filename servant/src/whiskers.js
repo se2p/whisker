@@ -664,6 +664,10 @@ class Whiskers {
             };
         }, {used: 0, alloc: 0, max: 0, unk: 0});
 
+        // MR !582:
+        // ? = Number of browsers for which memory consumption could not be retrieved
+        // # = Number of browsers that currently exist
+        // T = Total number of browsers that the pool should maintain
         logger.debug(`Whiskers total memory (? ${unk}, # ${this._resources.size}, T ${this._whiskers}): ` + [
             `used ${used} MiB (${Math.round(used / max * 100)} %)`,
             `alloc ${alloc} MiB (${Math.round(alloc / max * 100)} %)`,
