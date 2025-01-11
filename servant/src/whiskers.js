@@ -264,6 +264,10 @@ class Whisker {
         return this._timings;
     }
 
+    get memory() {
+        return this._memory;
+    }
+
     /**
      * Uploads the Scratch project (given by its path, which should end in *.sb3) to this Whisker Web page. By default,
      * also waits up to 10 seconds for the project to actually finish uploading. Throws an error if this times out.
@@ -480,13 +484,12 @@ class Whisker {
                     return null;
                 }
 
-                // Properties are implemented as getters, thus not JSON serializable. Explicit destructuring necessary.
                 const {usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit} = memory;
-                return {
+                return Object.freeze({ // Freeze to avoid clients tampering with the values.
                     used: Math.round(usedJSHeapSize / 1024 / 1024),
                     alloc: Math.round(totalJSHeapSize / 1024 / 1024),
                     max: Math.round(jsHeapSizeLimit / 1024 / 1024),
-                };
+                });
             });
         } catch (e) {
             // This can happen when the page is already crashed/frozen/closed, similar to issue #384.
@@ -568,6 +571,13 @@ class Whiskers {
         });
 
         /**
+         * How many resources the pool should contain at any given time.
+         * @type {number}
+         * @private
+         */
+        this._whiskers = opts.whiskers;
+
+        /**
          * Number of milliseconds after which a browser will be destroyed if it has been found to be unresponsive.
          * @type {number}
          * @private
@@ -603,6 +613,14 @@ class Whiskers {
          * @private
          */
         this._initWhiskerOnce = opts.initWhiskerOnce.bind(null);
+
+        /**
+         * Contains all resources that are currently in the pool. Since `generic-pool` doesn't expose this, we have to
+         * manage it ourselves. Should only be used for bookkeeping, not to implement any business logic!
+         * @type {Set<Whisker>}
+         * @private
+         */
+        this._resources = new Set();
     }
 
     /**
@@ -622,7 +640,39 @@ class Whiskers {
             return Whisker.create(this, id);
         });
         logger.info(`Created Whisker #${id} after`, Date.now() - before, "ms");
+        this._resources.add(whisker);
         return whisker;
+    }
+
+    _printMemoryUsage() {
+        if (this._whiskers < 2) {
+            return;
+        }
+
+        const {used, alloc, max, unk} = [...this._resources].reduce((z, r) => {
+            const m = r.memory;
+
+            if (m === null) {
+                return {...z, unk: z.unk + 1};
+            }
+
+            return {
+                used: z.used + m.used,
+                alloc: z.alloc + m.alloc,
+                max: z.max + m.max,
+                unk: z.unk,
+            };
+        }, {used: 0, alloc: 0, max: 0, unk: 0});
+
+        // MR !582:
+        // ? = Number of browsers for which memory consumption could not be retrieved
+        // # = Number of browsers that currently exist
+        // T = Total number of browsers that the pool should maintain
+        logger.debug(`Whiskers total memory (? ${unk}, # ${this._resources.size}, T ${this._whiskers}): ` + [
+            `used ${used} MiB (${Math.round(used / max * 100)} %)`,
+            `alloc ${alloc} MiB (${Math.round(alloc / max * 100)} %)`,
+            `limit at ${max} MiB (100 %)`,
+        ].join(", "));
     }
 
     /**
@@ -631,6 +681,8 @@ class Whiskers {
      * @return {Promise<void>}
      */
     destroy(whisker) {
+        this._resources.delete(whisker);
+
         // Sometimes, the pool throws an error saying "Resource not currently part of this pool", even though
         // the resource clearly originated from the pool. I don't know why this happens (maybe I'm misusing the
         // API?) but the following workaround avoids the problem, and it doesn't seem to break anything.
@@ -687,6 +739,7 @@ class Whiskers {
         }
 
         whisker._printMemoryUsage();
+        this._printMemoryUsage();
     }
 
     /**
