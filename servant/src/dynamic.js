@@ -8,6 +8,7 @@ const {
     output,
     configPath,
     testPath,
+    winningStates
 } = opts;
 
 // Dynamic Test suite using Neuroevolution
@@ -33,6 +34,10 @@ async function configureWhiskerWebInstance(page) {
         document.querySelector('#container').activationTraceRepetitions = opts.activationTraces;
         document.querySelector('#container').minimiseSuite = opts.minimiseSuite;
     }, opts);
+
+    if (winningStates) {
+        await page.evaluate(w => document.querySelector('#container').winningStates = w, fs.readFileSync(winningStates, 'utf8'));
+    }
 
     logger.info('Web Instance Configuration Complete');
 }

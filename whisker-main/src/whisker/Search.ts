@@ -162,8 +162,9 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number, seedString: string, groundTruth?: string): Promise<Array<string>> {
+    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
+                     configName: string, accelerationFactor: number, seedString: string, groundTruth?: string,
+                     winningStates?:string): Promise<Array<string>> {
         logger.info("Starting Search based algorithm");
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
@@ -180,6 +181,7 @@ export class Search {
             return this.handleEmptyProject();
         }
         config._setReservedCodons(vm);
+        config.setWinningStates(JSON.parse(winningStates));
         logger.info(this.vm);
 
         await util.prepare(accelerationFactor || 1);

@@ -80,6 +80,7 @@ export class WhiskerSearchConfiguration {
 
     private readonly _config: Record<string, any>;
     private readonly _properties: (SearchAlgorithmProperties<any> | NeuroevolutionTestGenerationParameter | BasicNeuroevolutionParameter);
+    private _winningStates: Record<string, string>;
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
@@ -773,6 +774,14 @@ export class WhiskerSearchConfiguration {
             return this._config['networkFitness']['stableCount'];
         }
         return 1;
+    }
+
+    public setWinningStates(winningStates: Record<string, string>): void {
+        this._winningStates = winningStates;
+    }
+
+    public getWinningStateForProject(projectName: string) :string {
+        return this._winningStates[projectName.replace(".sb3", "")];
     }
 
 }

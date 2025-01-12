@@ -24,7 +24,6 @@ import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunc
 import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
-import winningStates from "./winningStates.json";
 
 
 /**
@@ -114,10 +113,6 @@ export class StatisticsCollector {
         }
 
         return StatisticsCollector._instance;
-    }
-
-    public static getWinningStateForProject(project: string): string {
-        return winningStates[project.replace(".sb3", "")];
     }
 
     get projectName(): string {
@@ -561,10 +556,15 @@ export class StatisticsCollector {
         );
     }
 
-    private _isWinningStateCovered(): boolean {
+    private _isWinningStateCovered(): string {
         const coveredStatements = this._getCoveredStatements();
-        const winningState = StatisticsCollector.getWinningStateForProject(this._projectName);
-        return [...coveredStatements].some(stat => stat.getNodeId().includes(winningState));
+        const winningState = Container.config.getWinningStateForProject(this._projectName);
+        if (! winningState) {
+            return "NA";
+        }
+        const won = [...coveredStatements]
+            .some(stat => stat.getNodeId().includes(winningState));
+        return `${won}`;
     }
 
     public reset(): void {
@@ -590,8 +590,8 @@ export interface NetworkTestSuiteResults {
     branches: number,
     branchCoverageTest: number,
     branchCoverageSuite: number,
-    wonTest: boolean,
-    wonSuite: boolean,
+    wonTest: string,
+    wonSuite: string,
     score: number,
     playTime: number,
     surpriseNodeAdequacy: number,

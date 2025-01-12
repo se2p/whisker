@@ -86,6 +86,7 @@ export class DynamicNetworkSuite {
      */
     protected initialiseExecutionParameter(): void {
         const config = new WhiskerSearchConfiguration(this._testSuiteJSON['Configs']);
+        config.setWinningStates(JSON.parse(this.properties.winningStates as string));
         this.parameter = config.dynamicSuiteParameter;
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
         Container.config = config;
@@ -381,11 +382,7 @@ export class DynamicNetworkSuite {
             const currentUncertainty = [...test.testUncertainty.values()];
             const averageUncertainty = currentUncertainty.reduce((pv, cv) => pv + cv, 0) / currentUncertainty.length;
             const isMutant = this.isMutant(test, this.testCases[i], true);
-            const winningState = StatisticsCollector.getWinningStateForProject(projectName);
-            const winningObjective = [...this.statementMap.values()]
-                .find(obj => (obj as StatementFitnessFunction).getNodeId() == winningState);
-            const winningKey = [...this.statementMap.entries()]
-                .find(([, objective]) => objective === winningObjective)[0];
+            const [wonTest, wonSuite] = await this._getWinningResults(projectName, test);
 
             const testResult: NetworkTestSuiteResults = {
                 projectName: projectName,
@@ -398,8 +395,8 @@ export class DynamicNetworkSuite {
                 branches: branches,
                 branchCoverageTest: Math.round((branchCovered / branches) * 100) / 100,
                 branchCoverageSuite: Math.round((this.branchArchive.size / branches) * 100) / 100,
-                wonTest: await test.determineCoveredObjective(winningObjective),
-                wonSuite: this.statementArchive.has(winningKey),
+                wonTest: wonTest,
+                wonSuite: wonSuite,
                 score: test.score,
                 playTime: test.playTime,
                 surpriseNodeAdequacy: test.averageLSA,
@@ -435,7 +432,7 @@ export class DynamicNetworkSuite {
             return true;
         }
 
-        // If we encounter surprising node activations we suspect a mutant.
+        // If we encounter surprising node activations, we suspect a mutant.
         if (executedTest.surpriseCount > 0) {
             if (printReason) {
                 logger.debug(`Surprising node activation count of ${executedTest.surpriseCount}`);
@@ -455,5 +452,28 @@ export class DynamicNetworkSuite {
         const vmWrapper = util.getVMWrapper();
         this.initialiseFitnessTargets(vmWrapper.vm);
         this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', false);
+    }
+
+    /**
+     * Determines whether the test/suite has reached the winning state.
+     * @param projectName the name of the project.
+     * @param test the test that should be evaluated.
+     * @returns tuple defining whether the test/suite was able to reach the winning state.
+     * @private
+     */
+    private async _getWinningResults(projectName: string, test: NeatChromosome): Promise<[string, string]> {
+        const winningState = Container.config.getWinningStateForProject(projectName);
+
+        if (!winningState) {
+            return ["NA", "NA"];
+        }
+
+        const winningObjective = [...this.statementMap.values()]
+            .find(obj => (obj as StatementFitnessFunction).getNodeId() == winningState);
+        const winningKey = [...this.statementMap.entries()]
+            .find(([, objective]) => objective === winningObjective)[0];
+        const wonTest = `${await test.determineCoveredObjective(winningObjective)}`;
+        const wonSuite = `${this.statementArchive.has(winningKey)}`;
+        return [wonTest, wonSuite];
     }
 }
