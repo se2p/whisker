@@ -209,7 +209,7 @@ class Whisker {
 
             // Workaround for #391.
             if (this._pool._crashOn.includes("error")) {
-                logger.error(`${message} DELIBERATELY CRASHING WHISKER!`);
+                logger.error(message, "DELIBERATELY CRASHING WHISKER!");
                 throw error;
             }
 
@@ -220,7 +220,7 @@ class Whisker {
 
             // Workaround for #391.
             if (this._pool._crashOn.includes("pageerror")) {
-                logger.error(`${message} DELIBERATELY CRASHING WHISKER!`);
+                logger.error(message, "DELIBERATELY CRASHING WHISKER!");
                 throw error;
             }
 
