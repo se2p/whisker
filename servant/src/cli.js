@@ -132,7 +132,7 @@ class WhiskerSubCommand extends Command {
     optionWinningStates() {
         return this.option(
             '-w, --winning-states <Path>',
-            'path to file (".json") with winning states',
+            'path to file (".json") that maps project names to block ids that represent winning states',
             (winningStates) => util.processFilePathExists(winningStates, '.json'),
         );
     }
