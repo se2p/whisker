@@ -89,7 +89,7 @@ export class DynamicNetworkSuite {
         this.parameter = config.dynamicSuiteParameter;
 
         if (this.properties.winningStates) {
-            config.setWinningStates(JSON.parse(this.properties.winningStates as string));
+            config.parseWinningStates(this.properties.winningStates as string);
         }
 
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);

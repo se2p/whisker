@@ -208,7 +208,7 @@ seed ${configSeed} defined within the config files.`);
         }
 
         if (winningStates) {
-            config.setWinningStates(JSON.parse(winningStates));
+            config.parseWinningStates(winningStates);
         }
 
         StatisticsCollector.getInstance().reset();

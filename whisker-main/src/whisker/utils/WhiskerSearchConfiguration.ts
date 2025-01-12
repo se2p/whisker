@@ -68,6 +68,7 @@ import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChrom
 import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
 import {CosineStateNovelty} from "../whiskerNet/NetworkFitness/Novelty/CosineStateNovelty";
 import {NetworkFitnessFunctionType} from "../whiskerNet/NetworkFitness/NetworkFitnessFunctionType";
+import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 
 
 class ConfigException implements Error {
@@ -776,8 +777,12 @@ export class WhiskerSearchConfiguration {
         return 1;
     }
 
-    public setWinningStates(winningStates: Record<string, string>): void {
-        this._winningStates = winningStates;
+    public parseWinningStates(winningStates: string): void {
+        try {
+            this._winningStates = JSON.parse(winningStates);
+        } catch (e) {
+            throw new IllegalArgumentException("Invalid winning states JSON: " + e);
+        }
     }
 
     public getWinningStateForProject(projectName: string): string | null {
