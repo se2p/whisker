@@ -89,7 +89,7 @@ export class DynamicNetworkSuite {
         this.parameter = config.dynamicSuiteParameter;
 
         if (this.properties.winningStates) {
-            config.parseWinningStates(this.properties.winningStates as string);
+            StatisticsCollector.getInstance().parseWinningStates(this.properties.winningStates as string);
         }
 
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
@@ -466,7 +466,7 @@ export class DynamicNetworkSuite {
      * @private
      */
     private async _getWinningResults(projectName: string, test: NeatChromosome): Promise<[string, string]> {
-        const winningState = Container.config.getWinningStateForProject(projectName);
+        const winningState = StatisticsCollector.getInstance().getWinningStateForProject(projectName);
 
         if (!winningState) {
             return ["NA", "NA"];

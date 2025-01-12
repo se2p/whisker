@@ -24,6 +24,7 @@ import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunc
 import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
+import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 
 
 /**
@@ -56,8 +57,9 @@ export class StatisticsCollector {
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
     private _statements: Map<StatementFitnessFunction, number>;
     private _branches: Map<BranchCoverageFitnessFunction, number>;
-    private _statementCoverage: number
-    private _branchCoverage: number
+    private _statementCoverage: number;
+    private _branchCoverage: number;
+    private _winningStates: Record<string, string>;
 
     // Neuroevolution
     private _highestNetworkFitness: number;
@@ -558,13 +560,28 @@ export class StatisticsCollector {
 
     private _isWinningStateCovered(): string {
         const coveredStatements = this._getCoveredStatements();
-        const winningState = Container.config.getWinningStateForProject(this._projectName);
+        const winningState = this.getWinningStateForProject(this._projectName);
         if (! winningState) {
             return "NA";
         }
         const won = [...coveredStatements]
             .some(stat => stat.getNodeId().includes(winningState));
         return `${won}`;
+    }
+
+    public parseWinningStates(winningStates: string): void {
+        try {
+            this._winningStates = JSON.parse(winningStates);
+        } catch (e) {
+            throw new IllegalArgumentException("Invalid winning states JSON: " + e);
+        }
+    }
+
+    public getWinningStateForProject(projectName: string): string | null {
+        if (!this._winningStates) {
+            return null;
+        }
+        return this._winningStates[projectName.replace(".sb3", "")];
     }
 
     public reset(): void {

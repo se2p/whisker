@@ -776,20 +776,4 @@ export class WhiskerSearchConfiguration {
         }
         return 1;
     }
-
-    public parseWinningStates(winningStates: string): void {
-        try {
-            this._winningStates = JSON.parse(winningStates);
-        } catch (e) {
-            throw new IllegalArgumentException("Invalid winning states JSON: " + e);
-        }
-    }
-
-    public getWinningStateForProject(projectName: string): string | null {
-        if (!this._winningStates) {
-            return null;
-        }
-        return this._winningStates[projectName.replace(".sb3", "")];
-    }
-
 }
