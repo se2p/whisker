@@ -180,7 +180,7 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
-        config._setReservedCodons(vm);
+        config.setReservedCodons(vm);
         config.setWinningStates(JSON.parse(winningStates));
         logger.info(this.vm);
 
