@@ -86,8 +86,12 @@ export class DynamicNetworkSuite {
      */
     protected initialiseExecutionParameter(): void {
         const config = new WhiskerSearchConfiguration(this._testSuiteJSON['Configs']);
-        config.setWinningStates(JSON.parse(this.properties.winningStates as string));
         this.parameter = config.dynamicSuiteParameter;
+
+        if (this.properties.winningStates) {
+            config.setWinningStates(JSON.parse(this.properties.winningStates as string));
+        }
+
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
         Container.config = config;
     }

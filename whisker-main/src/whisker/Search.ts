@@ -181,7 +181,6 @@ export class Search {
             return this.handleEmptyProject();
         }
         config.setReservedCodons(vm);
-        config.setWinningStates(JSON.parse(winningStates));
         logger.info(this.vm);
 
         await util.prepare(accelerationFactor || 1);
@@ -206,6 +205,10 @@ seed ${configSeed} defined within the config files.`);
         // Check presence of groundTruth for Neatest + backpropagation.
         if(groundTruth){
             Container.backpropagationData = JSON.parse(groundTruth);
+        }
+
+        if (winningStates) {
+            config.setWinningStates(JSON.parse(winningStates));
         }
 
         StatisticsCollector.getInstance().reset();
