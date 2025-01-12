@@ -780,9 +780,9 @@ export class WhiskerSearchConfiguration {
         this._winningStates = winningStates;
     }
 
-    public getWinningStateForProject(projectName: string): string {
+    public getWinningStateForProject(projectName: string): string | null {
         if (!this._winningStates) {
-            return undefined;
+            return null;
         }
         return this._winningStates[projectName.replace(".sb3", "")];
     }
