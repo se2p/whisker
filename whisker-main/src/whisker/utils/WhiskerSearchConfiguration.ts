@@ -68,7 +68,6 @@ import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChrom
 import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
 import {CosineStateNovelty} from "../whiskerNet/NetworkFitness/Novelty/CosineStateNovelty";
 import {NetworkFitnessFunctionType} from "../whiskerNet/NetworkFitness/NetworkFitnessFunctionType";
-import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 
 
 class ConfigException implements Error {
@@ -81,7 +80,6 @@ export class WhiskerSearchConfiguration {
 
     private readonly _config: Record<string, any>;
     private readonly _properties: (SearchAlgorithmProperties<any> | NeuroevolutionTestGenerationParameter | BasicNeuroevolutionParameter);
-    private _winningStates: Record<string, string>;
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
