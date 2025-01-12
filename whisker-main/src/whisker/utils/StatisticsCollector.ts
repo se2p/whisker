@@ -24,6 +24,8 @@ import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunc
 import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
+import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
+
 
 /**
  * Singleton class to collect statistics from search runs
@@ -55,8 +57,9 @@ export class StatisticsCollector {
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
     private _statements: Map<StatementFitnessFunction, number>;
     private _branches: Map<BranchCoverageFitnessFunction, number>;
-    private _statementCoverage: number
-    private _branchCoverage: number
+    private _statementCoverage: number;
+    private _branchCoverage: number;
+    private _winningStates: Record<string, string>;
 
     // Neuroevolution
     private _highestNetworkFitness: number;
@@ -370,15 +373,16 @@ export class StatisticsCollector {
         const coverageValues = values.join(",");
 
         const headers = ["projectName", "configName", "fitnessFunctionCount", "statements",
-            "statementCoverage", "branches", "branchCoverage", "iterationCount", "testsuiteEventCount",
+            "statementCoverage", "branches", "branchCoverage", "won", "iterationCount", "testsuiteEventCount",
             "executedEventsCount", "executedTests", "minimizedTests", "minimizedEvents", "averageTestExecutionTime",
             "bestTestSuiteSize", "fitnessEvaluations", "generatedTestsForFullCoverage", "searchTimeForFullCoverage"];
         const headerRow = headers.join(",").concat(",", coverageHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount,
             this._statements.size, this._statementCoverage, this._branches.size, this._branchCoverage,
-            this._iterationCount, this._testEventCount, this._eventsCount, this._executedTests, this._minimizedTests,
-            this._minimizedEvents, this._averageTestExecutionTime, this._bestTestSuiteSize,
-            this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
+            this._isWinningStateCovered(), this._iterationCount, this._testEventCount, this._eventsCount,
+            this._executedTests, this._minimizedTests, this._minimizedEvents, this._averageTestExecutionTime,
+            this._bestTestSuiteSize, this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage,
+            this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
     }
@@ -401,11 +405,11 @@ export class StatisticsCollector {
 
         // Default header and data arrays
         const headers = ["projectName", "configName", "statements", "statementCoverage", "branches",
-            "branchCoverage", "iterationCount", "numberFitnessEvaluations", "searchTimeForFullCoverage",
+            "branchCoverage", "won", "iterationCount", "numberFitnessEvaluations", "searchTimeForFullCoverage",
             'gdTime', 'gdEpochs'];
         const data = [this._projectName, this._configName, this._statements.size,
-            this._statementCoverage, this._branches.size, this._branchCoverage, this._iterationCount,
-            this._numberFitnessEvaluations, this._timeToReachFullCoverage, gdTime, gdEpochs];
+            this._statementCoverage, this._branches.size, this._branchCoverage, this._isWinningStateCovered(),
+            this._iterationCount, this._numberFitnessEvaluations, this._timeToReachFullCoverage, gdTime, gdEpochs];
 
         // Combine the header and data arrays
         const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
@@ -417,12 +421,14 @@ export class StatisticsCollector {
         let csv = "projectName,testName,id,seed," +
             "totalStatements,testStatementCoverage,suiteStatementCoverage," +
             "totalBranches,testBranchCoverage,suiteBranchCoverage," +
+            "testWon,suiteWon," +
             "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
                 testResult.statements, testResult.statementCoverageTest, testResult.statementCoverageSuite,
                 testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
+                testResult.wonTest, testResult.wonSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
                 testResult.avgUncertainty, testResult.isMutant];
             const dataRow = data.join(",").concat("\n");
@@ -450,7 +456,7 @@ export class StatisticsCollector {
         const truncateFitnessTimeline = maxTimeStep !== undefined && 0 <= maxTimeStep;
 
         // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
-        // that time, and not until the final time.
+        // that time and not until the final time.
         // Therefore, the number of columns should be padded so that the number of columns is always identical.
         if (truncateFitnessTimeline) {
             const nextTimeStamp = timestamps[timestamps.length - 1] + sampleStepSize;
@@ -543,6 +549,41 @@ export class StatisticsCollector {
         this.updateHighestBranchCoverage(covered / this._branches.size);
     }
 
+    private _getCoveredStatements(): Set<StatementFitnessFunction> {
+        const stableCount = Container.config.getCoverageStableCount();
+        return new Set(
+            [...this._statements.entries()]
+                .filter(([, coverCount]) => coverCount >= stableCount)
+                .map(([st]) => st)
+        );
+    }
+
+    private _isWinningStateCovered(): string {
+        const coveredStatements = this._getCoveredStatements();
+        const winningState = this.getWinningStateForProject(this._projectName);
+        if (! winningState) {
+            return "NA";
+        }
+        const won = [...coveredStatements]
+            .some(stat => stat.getNodeId().includes(winningState));
+        return `${won}`;
+    }
+
+    public parseWinningStates(winningStates: string): void {
+        try {
+            this._winningStates = JSON.parse(winningStates);
+        } catch (e) {
+            throw new IllegalArgumentException("Invalid winning states JSON: " + e);
+        }
+    }
+
+    public getWinningStateForProject(projectName: string): string | null {
+        if (!this._winningStates) {
+            return null;
+        }
+        return this._winningStates[projectName.replace(".sb3", "")];
+    }
+
     public reset(): void {
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
@@ -566,6 +607,8 @@ export interface NetworkTestSuiteResults {
     branches: number,
     branchCoverageTest: number,
     branchCoverageSuite: number,
+    wonTest: string,
+    wonSuite: string,
     score: number,
     playTime: number,
     surpriseNodeAdequacy: number,

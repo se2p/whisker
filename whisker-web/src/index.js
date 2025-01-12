@@ -276,9 +276,10 @@ const runSearch = async function () {
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
     const groundTruth = document.querySelector('#container').groundTruth;
+    const winningStates = document.querySelector('#container').winningStates;
 
     const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
-        projectName, config, configName, accelerationFactor, seed, groundTruth);
+        projectName, config, configName, accelerationFactor, seed, groundTruth, winningStates);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
@@ -506,6 +507,7 @@ const runAllTests = async function () {
             properties.minimiseSuite = document.querySelector('#container').minimiseSuite;
             properties.downloadMutants = mutantDownload;
             properties.activationTraceRepetitions = document.querySelector('#container').activationTraceRepetitions;
+            properties.winningStates = document.querySelector('#container').winningStates;
 
             const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
                 properties);

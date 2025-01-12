@@ -129,6 +129,14 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionWinningStates() {
+        return this.option(
+            '-w, --winning-states <Path>',
+            'path to file (".json") that maps project names to block ids that represent winning states',
+            (winningStates) => util.processFilePathExists(winningStates, '.json'),
+        );
+    }
+
     requireTestPathForRun() {
         customChecks.push(function checkBBTLimitations() {
             if (!(opts.testPath && opts.testPath.endsWith('.sb3'))) {
@@ -372,7 +380,8 @@ const subCommands = [
             'path to directory for generated tests',
             (testDir) => util.processDirPathExists(testDir),
             __dirname)
-        .optionGroundTruthPath(),
+        .optionGroundTruthPath()
+        .optionWinningStates(),
 
     newSubCommand('dynamic')
         .description('dynamic test suites using Neuroevolution')
@@ -387,7 +396,8 @@ const subCommands = [
         .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()
-        .optionMaxMutants(),
+        .optionMaxMutants()
+        .optionWinningStates(),
 
     newSubCommand('model')
         .description('test with model')

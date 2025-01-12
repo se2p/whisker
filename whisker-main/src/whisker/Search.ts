@@ -162,8 +162,9 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number, seedString: string, groundTruth?: string): Promise<Array<string>> {
+    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
+                     configName: string, accelerationFactor: number, seedString: string, groundTruth?: string,
+                     winningStates?:string): Promise<Array<string>> {
         logger.info("Starting Search based algorithm");
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
@@ -179,7 +180,7 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
-        config._setReservedCodons(vm);
+        config.setReservedCodons(vm);
         logger.info(this.vm);
 
         await util.prepare(accelerationFactor || 1);
@@ -204,6 +205,10 @@ seed ${configSeed} defined within the config files.`);
         // Check presence of groundTruth for Neatest + backpropagation.
         if(groundTruth){
             Container.backpropagationData = JSON.parse(groundTruth);
+        }
+
+        if (winningStates) {
+            StatisticsCollector.getInstance().parseWinningStates(winningStates);
         }
 
         StatisticsCollector.getInstance().reset();

@@ -154,12 +154,12 @@ export class WhiskerSearchConfiguration {
     }
 
     /**
-     * Sets the number of reservedCodons for each event (event-codon + overapproximation of required
-     * parameter-codons) by traversing all events contained within a Scratch project in the search of the maximum
-     * amount of required parameters per event.
+     * Sets the number of reservedCodons for each event (event-codon + over-approximation of required parameter-codons)
+     * by traversing all events contained within a Scratch project in the search
+     * of the maximum number of required parameters per event.
      * @param vm the virtual machine containing the given Scratch project.
      */
-    public _setReservedCodons(vm: VirtualMachine): void {
+    public setReservedCodons(vm: VirtualMachine): void {
         const eventExtractor = new StaticScratchEventExtractor(vm);
         const programEvents = eventExtractor.extractEvents(vm);
         const numSearchParams = programEvents.map(event => event.numSearchParameter());
@@ -768,4 +768,10 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getCoverageStableCount(): number {
+        if ('networkFitness' in this._config && this._config['networkFitness']['stableCount']) {
+            return this._config['networkFitness']['stableCount'];
+        }
+        return 1;
+    }
 }

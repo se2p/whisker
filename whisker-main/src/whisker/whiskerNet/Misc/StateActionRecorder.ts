@@ -345,7 +345,7 @@ export class StateActionRecorder extends EventEmitter {
                 parameter = {"X": event.getParameters()[0] / 240, "Y": event.getParameters()[1] / 180}; // Coordinates.
                 break;
             case "MouseDownForStepsEvent":
-                parameter = {"Steps": Math.min(event.getParameters().pop() / Container.config.getPressDurationUpperBound(), 1)}; // Steps;
+                parameter = {"Steps": Math.min(event.getParameters().pop() / Container.config.getClickDuration(), 1)}; // Steps;
                 this._checkForMouseMove(true);
                 break;
             case "ClickSpriteEvent":

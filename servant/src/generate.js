@@ -7,6 +7,7 @@ const {
     scratchPath,
     configPath,
     groundTruth,
+    winningStates,
 } = require("./cli").opts;
 const Whiskers = require("./whiskers");
 
@@ -37,6 +38,9 @@ async function configureWhiskerWebInstance(whisker) {
     }
     if (groundTruth) {
         await page.evaluate(g => document.querySelector('#container').groundTruth = g, fs.readFileSync(groundTruth, 'utf8'));
+    }
+    if (winningStates) {
+        await page.evaluate(w => document.querySelector('#container').winningStates = w, fs.readFileSync(winningStates, 'utf8'));
     }
     logger.info('Web Instance Configuration Complete');
 }
