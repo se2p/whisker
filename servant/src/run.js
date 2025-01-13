@@ -230,4 +230,5 @@ module.exports = () => Whiskers.withNewPool((pool) => run(pool), {
     whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs),
     initWhiskerOnce: ({page}) => configureWhiskerWebInstance(page),
     keepaliveTimeout: 5000,
+    crashOn: ["pageerror", "error"], // FIXME: Issue #392
 });

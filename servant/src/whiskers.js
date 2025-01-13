@@ -38,6 +38,9 @@ const {opts} = require("./cli");
  *                                     and 1 (inclusive). The default is 1 (effectively disabling the limit).
  * @property {number} [keepaliveTimeout] - Destroys the browser if it has been unresponsive for the given number of
  *                                         milliseconds. Use 0 to disable.
+ * @property {string[]} [crashOn] - DEPRECATED and DISCOURAGED. DO NOT USE THIS IN NEW CODE! Crash the page on the
+ *                                  given events. Workaround for issue #391 until #392 is properly addressed.
+ *
  * @property {function(Whisker): Promise<void>} [initWhiskerOnce] - A function that performs additional initialization
  *                                                                  of Whisker Web when it is first created by the pool.
  */
@@ -202,10 +205,26 @@ class Whisker {
         // The meaning of each event is explained here: https://pptr.dev/api/puppeteer.pageevent#enumeration-members
         this._page.on('error', (error) => {
             this._reason = "Page crash";
-            logger.error(`Whisker Web #${this._id}: ${this._reason}:`, error);
+            const message = `Whisker Web #${this._id}: ${this._reason}:`;
+
+            // Workaround for #391.
+            if (this._pool._crashOn.includes("error")) {
+                logger.error(message, "DELIBERATELY CRASHING WHISKER!");
+                throw error;
+            }
+
+            logger.error(message, error);
         }).on('pageerror', (error) => {
             this._reason = "Uncaught error in page";
-            logger.error(`Whisker Web #${this._id}: ${this._reason}:`, error);
+            const message = `Whisker Web #${this._id}: ${this._reason}:`;
+
+            // Workaround for #391.
+            if (this._pool._crashOn.includes("pageerror")) {
+                logger.error(message, "DELIBERATELY CRASHING WHISKER!");
+                throw error;
+            }
+
+            logger.error(message, error);
         });
 
         forwardConsoleMessages(this._page, this._id);
@@ -526,6 +545,7 @@ const defaultPoolOptions = {
     initWhiskerOnce: (_whisker) => {
         /* noop, but users can provide a custom function. */
     },
+    crashOn: [], // Deprecated.
 };
 
 class Whiskers {
@@ -598,6 +618,20 @@ class Whiskers {
          * @private
          */
         this._memThreshold = Math.min(1, Math.max(Number.MIN_VALUE, opts.memThreshold)); // Clamp value to interval (0, 1].
+
+        if (opts.crashOn.length > 0) {
+            logger.warn("The `crashOn` option is deprecated. Please see issue #392 how to fix this.");
+        }
+
+        /**
+         * DISCOURAGED. Which events the browser should crash on. Workaround for issue #391 (please see #392 what to do
+         * instead.) Should always be the empty array. Legacy code often uses `["error", "pageerror"]`. Other events are
+         * not supported.
+         * @deprecated
+         * @type {string[]}
+         * @private
+         */
+        this._crashOn = [...opts.crashOn];
 
         /**
          * A mutex to ensure that only one browser is opened at once.
