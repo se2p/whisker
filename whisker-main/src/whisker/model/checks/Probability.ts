@@ -50,7 +50,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
         const negated = this.negated;
         const prob = ModelUtil.testNumber(probability);
         return () => {
-            return !negated == (Randomness.getInstance().nextDouble() <= prob);
+            return !negated == (Randomness.getInstance().nextDouble() < prob);
         };
     }
 
