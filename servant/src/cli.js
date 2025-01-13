@@ -318,7 +318,7 @@ class WhiskerSubCommand extends Command {
     optionRecordingTime() {
         return this.option(
             '-rt, --recording-time <Integer>',
-            'Sets the time for how long gameplay should be recorded in seconds.',
+            'Limits the time for how long gameplay should be recorded in seconds (default: Infinity).',
             seconds => util.processPositiveInt(seconds),
             Infinity);
     }
