@@ -23,8 +23,5 @@ if (fs.existsSync(prettifyPath)) {
     // The module must export a single function "accepting the "pool" argument.
     const module = resolve(relativeToServantDir("src"), subcommand);
     const runSubcommand = require(module);
-    logger.debug("RUNSUBCOMMAND: ", runSubcommand)
-    logger.debug("MODULE: ", module)
-    logger.debug("SUBCOMMAND: ", subcommand)
     await runSubcommand();
 })();
