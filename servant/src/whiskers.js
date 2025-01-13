@@ -7,7 +7,7 @@ const path = require("path");
 const os = require("os");
 const {clearTimeout} = require("node:timers");
 const {Mutex} = require('async-mutex');
-const {opts} = require("./cli");
+const {opts, subcommand} = require("./cli");
 
 /**
  * @typedef {import("generic-pool").Pool} Pool
@@ -759,11 +759,13 @@ class Whiskers {
         whisker.disableEvaluationTimeout();
 
         if (whisker.page.isClosed()) {
-            logger.warn([
-                `It seems you closed the page for Whisker #${whisker.id} manually.`,
-                'It is generally not recommended to do so, because it prevents reusing the page objects.',
-                'Please check your code for unintended operations such as "page.close()" to avoid this warning.',
-            ].join("\n"));
+            if (subcommand !== "open") { // When using "open", it's fine if the window is closed manually.
+                logger.warn([
+                    `It seems you closed the page for Whisker #${whisker.id} manually.`,
+                    'It is generally not recommended to do so, because it prevents reusing the page objects.',
+                    'Please check your code for unintended operations such as "page.close()" to avoid this warning.',
+                ].join("\n"));
+            }
         } else {
             await whisker._updateMemoryUsage();
         }
