@@ -1,4 +1,3 @@
-const {switchToProjectTab} = require("./common");
 const {
     scratchPath,
     stateActionRecorder,
@@ -32,7 +31,6 @@ async function openWindow({page}) {
         await (await page.$('#stop-scratch')).click();
         await new Promise((resolve) => setTimeout(resolve, 1000));  // Give StateActionRecorder time to parse data.
         await (await page.$('#record')).click();
-        await (await page.$('#scratch-stage')).focus();
 
         // Wait 10 seconds for the recording to be downloaded.
         start = Date.now();
@@ -50,34 +48,22 @@ async function openWindow({page}) {
     }
 }
 
-async function configureWhiskerWebInstance(whisker) {
+async function configureRecordProject(whisker) {
     const page = whisker.page;
-    if (recordProject) {
-        await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
+    await page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
+    await whisker.uploadProject(recordProject.path);
+}
 
-        // Upload File
-        await whisker.uploadProject(recordProject.path);
-
-        // Switch to Project tab and specify the required parameters.
-        await switchToProjectTab(page, false);
-        await (await page.$('#scratch-stage')).focus();
-        await page.evaluate(() => {
-            window.scroll(0, 180);
-        });
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-    } else {
-        if (scratchPath) {
-            await whisker.uploadProject(scratchPath.path);
-        }
-        logger.debug("CONFIG: ", configPath)
-        await (await whisker.page.$('#fileselect-config')).uploadFile(configPath);
-        await switchToProjectTab(whisker.page, false);
-        if (stateActionRecorder) {
-            await whisker.page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
-        }
+async function configureOpen(whisker) {
+    if (scratchPath) {
+        await whisker.uploadProject(scratchPath.path);
+    }
+    await (await whisker.page.$('#fileselect-config')).uploadFile(configPath);
+    if (stateActionRecorder) {
+        await whisker.page.evaluate(s => document.querySelector('#container').stateActionRecorder = s, true);
     }
 }
 
 module.exports = () => Whiskers.withNewPool((pool) => pool.run(openWindow), {
-    initWhiskerOnce: (whisker) => configureWhiskerWebInstance(whisker),
+    initWhiskerOnce: (whisker) => recordProject ? configureRecordProject(whisker) : configureOpen(whisker),
 });
