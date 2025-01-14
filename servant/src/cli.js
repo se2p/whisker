@@ -204,7 +204,7 @@ class WhiskerSubCommand extends Command {
             '-c, --config-path <Path>',
             'path to a configuration file (".json")',
             (configPath) => util.processFilePathExists(configPath, '.json'),
-            relativeToServantDir('../config/Neuroevolution/neatestBackprop.json')
+            relativeToServantDir('../config/mio.json')
         );
     }
 
@@ -317,9 +317,10 @@ class WhiskerSubCommand extends Command {
 
     optionRecordingTime() {
         return this.option(
-            '-t, --time <Integer>',
-            'Sets the time for how long gameplay should be recorded in seconds.',
-            seconds => util.processPositiveInt(seconds));
+            '-rt, --recording-time <Integer>',
+            'Limits the time for how long gameplay should be recorded in seconds (default: Infinity).',
+            seconds => util.processPositiveInt(seconds),
+            Infinity);
     }
 
     /**
