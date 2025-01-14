@@ -11,6 +11,7 @@ import lodashClonedeep from 'lodash.clonedeep';
 import Statistics from "../../utils/Statistics";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import logger from "../../../util/logger";
+import assert from "assert";
 
 export class GradientDescent {
 
@@ -32,10 +33,13 @@ export class GradientDescent {
         "SQUARED_ERROR": (prediction: number, label: number): number => -(label - prediction),
 
         // Activation functions
-        "SIGMOID": (prediction: number): number => prediction * (1 - prediction),
-        "TANH": (prediction: number): number => 1 - Math.pow(Math.tanh(prediction), 2),
-        "RELU": (prediction: number): number => prediction >= 0 ? 1 : 0,
-        "NONE": (): number => 1
+        "NONE": (): number => 1,
+        "SIGMOID": (activationValue: number): number => activationValue * (1 - activationValue),
+        "RELU": (activationValue: number): number => activationValue >= 0 ? 1 : 0,
+
+        // tanh(x)' = 1 - tanh^2(x). But in our case, x = activationValue = tanh(x).
+        // Thus tanh(x)' = 1 - activationValue^2
+        "TANH": (activationValue: number): number => 1 - activationValue * activationValue
     } as const;
 
     /**
@@ -336,7 +340,7 @@ export class GradientDescent {
         let loss = 0;
         for (const node of classNodes) {
             const trueValue = labels.get(node.event.stringIdentifier());
-            const node_error = trueValue * Math.log(node.activationValue);
+            const node_error = trueValue * Math.log(Math.max(node.activationValue, 1e-15));
             loss += node_error;
         }
         return -loss;
@@ -421,15 +425,13 @@ export class GradientDescent {
     public _adjustWeights(network: NetworkChromosome, epoch: number): void {
         // Fetch learning rate.
         const learningRate = this._getLearningRate(epoch);
+        network.connections.forEach(connection => connection.weight -= learningRate * connection.gradient);
+        this.resetGradients(network);
+    }
 
-        // Update the weight and reset the gradient value for each connection.
-        for (const connection of network.connections) {
-            connection.weight -= learningRate * connection.gradient;
-            connection.gradient = 0;
-        }
-
-        // Reset intermediate gradients in neurons.
+    private resetGradients(network: NetworkChromosome): void {
         network.getAllNodes().forEach(node => node.gradient = 0);
+        network.connections.forEach(connection => connection.gradient = 0);
     }
 
     public extractDataForStatement(statement: string): StateActionRecord {
