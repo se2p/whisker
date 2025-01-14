@@ -64,6 +64,8 @@ async function configureOpen(whisker) {
     }
 }
 
+// Initialises a single Whisker instance in a browser window based on the provided CLI options
+// and runs the openWindow function.
 module.exports = () => Whiskers.withNewPool((pool) => pool.run(openWindow), {
     initWhiskerOnce: (whisker) => recordProject ? configureRecordProject(whisker) : configureOpen(whisker),
 });
