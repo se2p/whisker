@@ -18,9 +18,6 @@ import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
 import WhiskerUtil from "../../../test/whisker-util";
-import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
-import {TestChromosome} from "../../testcase/TestChromosome";
-import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 import logger from "../../../util/logger";
 
 
@@ -57,6 +54,8 @@ export class StateActionRecorder extends EventEmitter {
         super();
         this._scratch = scratch;
         this._vm = scratch.vm;
+        this._vm.setInterrogativeDebuggerSupported(false);
+        this._vm.registerCoverageTracer();
         const util = new WhiskerUtil(scratch.vm, scratch.project);
         Container.vm = this._vm;
         Container.vmWrapper = new VMWrapper(this._vm, this._scratch);
@@ -95,7 +94,7 @@ export class StateActionRecorder extends EventEmitter {
         this._checkForWaitInterval = window.setInterval(this._checkForWaitCallBack, 500);
         this._lastActionStep = this._getCurrentStepCount();
 
-        // Start with clean state.
+        // Start with a clean state.
         this._lastActionStep = 0;
         this._lastMouseMoveStep = 0;
         this._mousePressedStep = 0;
@@ -109,7 +108,9 @@ export class StateActionRecorder extends EventEmitter {
      */
     public onStopAll(): void {
         // Fetch coverage and add run to recording after a short delay to make sure that the vm finished gracefully.
-        setTimeout(async () => {this.addStateActionRecordsToRecording();}, 1000);
+        setTimeout(async () => {
+            this.addStateActionRecordsToRecording();
+        }, 1000);
         this._scratch.off(Scratch.INPUT_LISTENER_KEY, this._onInput);
         clearInterval(this._checkForWaitInterval);
     }
@@ -244,8 +245,8 @@ export class StateActionRecorder extends EventEmitter {
                 } else if (availableActions.includes(new MouseDownForStepsEvent().stringIdentifier())) {
                     // Check if we had a long period without any actions being executed.
                     this._checkForWait(false);
-                    // Register mouse down Event and
-                    // save current step count to compute the number of steps the mouse has been pressed.
+                    // Register mouse down Event and save the current step count
+                    // to compute the number of steps the mouse has been pressed.
                     this._stateAtAction.set(this.MOUSE_DOWN_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
                     this._mousePressedStep = this._getCurrentStepCount();
                 }
@@ -293,7 +294,7 @@ export class StateActionRecorder extends EventEmitter {
     private _checkForWait(periodicCheck = true): void {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
-        // Only add Waits if the vm permits us to do so and we have a saved state for it.
+        // Only add Waits if the vm permits us to do so, and if we have a saved state for it.
         // Don't add a Wait if another action is currently being executed.
         if (availableActions.includes("WaitEvent") && this._stateAtAction.has('WaitEvent') && this._stateAtAction.size == 1) {
             // Add a Wait if the function was called from a periodic check, in which case we only add a WaitEvent
@@ -389,22 +390,14 @@ export class StateActionRecorder extends EventEmitter {
      * Adds an {@link ActionRecord} to the global {@link Recording}.
      */
     public addStateActionRecordsToRecording(): void {
-        const coverage = this._vm.getTraces().blockCoverage;
-
-        // Check for branch Coverage. We have to generate a chromosome stub to work around the fitness interface.
-        const branchFactory = new BranchCoverageFitnessFunctionFactory();
-        const branchTargets = branchFactory.extractFitnessFunctions(this._vm, []);
-        const chromosomeStub = new TestChromosome([], null, null);
-        chromosomeStub.trace = new ExecutionTrace(this._vm.getTraces().branchDistances, undefined);
-        for (const branchTarget of branchTargets) {
-            if (branchTarget.isCovered(chromosomeStub)) {
-                coverage.add(branchTarget.getNodeId());
-            }
-        }
+        const coverageTraces = this._vm.getTraces();
+        const blockCoverage = coverageTraces.blockCoverage;
+        const branchCoverage = coverageTraces.branchCoverage;
+        const coverageSet: Set<string> = new Set([...blockCoverage, ...branchCoverage]);
 
         const fullRecord: Recording = {
             recordings: [...this._actionRecords],
-            coverage: [...coverage.values()]
+            coverage: [...coverageSet.values()]
         };
         this._fullRecordings.push(fullRecord);
         this._actionRecords = [];
@@ -415,8 +408,8 @@ export class StateActionRecorder extends EventEmitter {
     }
 
     /**
-     * Transforms the recording into a json object that can be transformed into a string and downloaded as '.json' file.
-     * @returns downloadable json format.
+     * Transforms the recording into a JSON object that can be transformed into a string and downloaded as '.json' file.
+     * @returns downloadable JSON format.
      */
     getRecord(): Record<string, unknown> {
         // Remove empty records.
