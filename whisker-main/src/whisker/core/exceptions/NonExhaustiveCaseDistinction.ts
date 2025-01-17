@@ -1,6 +1,6 @@
 /**
  * Represents a non-exhaustive case distinction, i.e., typically an `if`-`else` or `switch`-`case` construct where not
- * all possible outcomes have been handled. The error serves as workaround to enforce exhaustiveness checks by the type
+ * all possible outcomes have been handled. The error serves as a hack to enforce exhaustiveness checks by the type
  * checker, using TypeScript's `never` type.
  *
  * @example
