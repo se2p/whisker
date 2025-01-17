@@ -4,8 +4,8 @@ import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
+import {Optional} from "../../utils/Optional";
 
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
 export type SpriteName =

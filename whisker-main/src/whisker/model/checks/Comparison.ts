@@ -1,6 +1,6 @@
 import {z} from "zod";
-import {Optional} from "./AbstractCheck";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
+import {Optional} from "../../utils/Optional";
 
 export type Comparison =
     | Eq

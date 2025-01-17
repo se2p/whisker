@@ -6,12 +6,12 @@ import {
     CheckFun1,
     CheckFun2,
     ICheckJSON,
-    Optional,
     SlimCheckJSON
 } from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import VMWrapper from "../../../vm/vm-wrapper";
+import {Optional} from "../../utils/Optional";
 
 export type TimeArgs = [
 
