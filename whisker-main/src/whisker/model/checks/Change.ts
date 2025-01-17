@@ -1,7 +1,7 @@
 import {z} from "zod";
-import {Optional} from "./AbstractCheck";
 import {Comparison, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
+import {Optional} from "../../utils/Optional";
 
 export class Change implements Quantifiable<Change> {
     protected constructor(private readonly _comparison: Comparison) {

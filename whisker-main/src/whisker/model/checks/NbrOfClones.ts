@@ -1,9 +1,10 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, Optional, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {Optional} from "../../utils/Optional";
 
 export type NbrOfClonesArgs = [
     /**
