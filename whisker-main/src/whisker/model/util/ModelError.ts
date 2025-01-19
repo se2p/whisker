@@ -53,6 +53,12 @@ export class AttributeNotFoundError extends Error {
     }
 }
 
+export class EffectNotFoundError extends Error {
+    constructor(spriteName: string, effectName: string) {
+        super(`Effect not found: ${spriteName}.effects[${effectName}]`);
+    }
+}
+
 export class SpriteNotFoundError extends Error {
     constructor(spriteName: string) {
         super("Sprite not found: " + spriteName);

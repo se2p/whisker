@@ -1,7 +1,7 @@
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {
-    AttributeNotFoundError,
+    AttributeNotFoundError, EffectNotFoundError,
     EmptyExpressionError,
     ExpressionSyntaxError,
     ExprEvalError,
@@ -105,6 +105,18 @@ export abstract class ModelUtil {
     }
 
     /**
+     * Check the effect name.
+     * @param spriteName Sprite's name.
+     * @param pEffectName Name of the attribute e.g. x.
+     */
+    static checkEffectExistence(spriteName: string, pEffectName: ArgType): void {
+        const attrName = String(pEffectName);
+        if (!this._isAnEffect(attrName)) {
+            throw new EffectNotFoundError(spriteName, attrName);
+        }
+    }
+
+    /**
      * Test whether a value is a number.
      */
     static testNumber(value: ParamType): number {
@@ -150,6 +162,18 @@ export abstract class ModelUtil {
             "sayText",
             "rotationStyle",
         ].includes(attrName);
+    }
+
+    private static _isAnEffect(effectName: string): boolean {
+        return [
+            "color",
+            "fisheye",
+            "whirl",
+            "pixelate",
+            "mosaic",
+            "brightness",
+            "ghost",
+        ].includes(effectName);
     }
 
     /**
