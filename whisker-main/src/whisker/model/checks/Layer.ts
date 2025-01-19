@@ -7,6 +7,8 @@ import {CheckJSON} from "./newCheck";
 
 const name = "Layer" as const;
 
+export type FirstOrLastLayer = "First" | "Last";
+
 export type LayerArgs = [
     /**
      * Name of the key.
@@ -16,12 +18,12 @@ export type LayerArgs = [
     /**
      * Flag if the sprite should be on the first layer.
      */
-    isFirstLayer: boolean,
+    isFirstLayer: FirstOrLastLayer,
 ];
 
 const LayerArgs = z.tuple([
     SpriteName,
-    z.boolean(),
+    z.literal("First").or(z.literal("Last")),
 ]);
 
 export interface LayerJSON extends ICheckJSON {
@@ -43,7 +45,7 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
         const pSpriteName = this._args[0];
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
-            const expected = this._args[1]
+            const expected = this._args[1] === "First"
                 ? Math.max(t.getSprites((s: Sprite) => true).map((s: Sprite) => s.layerOrder))
                 : 1;
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
