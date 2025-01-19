@@ -19,6 +19,7 @@ import {
     TouchingVerticalEdgeJSON
 } from "./TouchingEdge";
 import {BackgroundChange, BackgroundChangeJSON} from "./BackgroundChange";
+import {Layer, LayerJSON} from "./Layer";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {z} from "zod";
 import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapsed, TimeElapsedJSON} from "./Time";
@@ -44,6 +45,7 @@ export type CheckJSON =
     | TouchingEdgeJSON
     | TouchingVerticalEdgeJSON
     | TouchingHorizEdgeJSON
+    | LayerJSON
     ;
 
 export const CheckJSON = z.discriminatedUnion("name", [
@@ -67,6 +69,7 @@ export const CheckJSON = z.discriminatedUnion("name", [
     TouchingEdgeJSON,
     TouchingVerticalEdgeJSON,
     TouchingHorizEdgeJSON,
+    LayerJSON,
 ]);
 
 export type Check =
@@ -90,6 +93,7 @@ export type Check =
     | TouchingEdge
     | TouchingVerticalEdge
     | TouchingHorizEdge
+    | Layer
     ;
 
 export type CheckName = CheckJSON['name'];
@@ -115,6 +119,7 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "TouchingEdge",
     "TouchingVerticalEdge",
     "TouchingHorizEdge",
+    "Layer",
 ]);
 
 export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
@@ -161,6 +166,8 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             return new TouchingVerticalEdge(edgeLabel, checkJSON);
         case "TouchingHorizEdge":
             return new TouchingHorizEdge(edgeLabel, checkJSON);
+            case "Layer":
+                return new Layer(edgeLabel, checkJSON);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }
