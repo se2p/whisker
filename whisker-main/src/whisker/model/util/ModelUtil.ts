@@ -1,7 +1,8 @@
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {
-    AttributeNotFoundError, EffectNotFoundError,
+    AttributeNotFoundError,
+    EffectNotFoundError,
     EmptyExpressionError,
     ExpressionSyntaxError,
     ExprEvalError,
@@ -174,6 +175,42 @@ export abstract class ModelUtil {
             "brightness",
             "ghost",
         ].includes(effectName);
+    }
+
+    /**
+     * Calls {@link ModelUtil.getExpectedDirectionForSprite1LookingAtTarget} with the x and y coordinates of s2
+     * @param s1 Sprite looking at another sprite
+     * @param s2 some sprite
+     */
+    public static getExpectedDirectionForSprite1LookingAtSprite2(s1: Sprite, s2: Sprite): number {
+        return ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s1, s2.x, s2.y);
+    }
+
+    /**
+     * Calls {@link ModelUtil.getExpectedDirectionForSprite1LookingAtTarget} with the x and y coordinates of the mouse
+     * @param s1 Sprite looking at another sprite
+     * @param t Test-Driver for retrieving the coordinates of the mouse
+     */
+    public static getExpectedDirectionForSprite1LookingAtMouse(s1: Sprite, t: TestDriver): number {
+        const pos: { x: number, y: number } = t.getMousePos();
+        return ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s1, pos.x, pos.y);
+    }
+
+    /**
+     * Calculates the direction of sprite s1 if it looks at some target coordinates. The rotation style does not matter,
+     * since s1.direction changes independent on the graphic visible on screen.
+     *
+     * @param s1 Sprite looking at something
+     * @param x x-coordinate of the target
+     * @param y y-coordinate of the target
+     */
+    public static getExpectedDirectionForSprite1LookingAtTarget(s1: Sprite, x: number, y: number): number {
+        const xDif = x - s1.x;
+        const yDif = y - s1.y;
+        const expectedDegrees = xDif === 0 ? 0 : (360 + (Math.atan2(yDif, xDif) * 180.0) / Math.PI) % 360;
+        const expectedDirection = (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
+        // console.log(`actual: ${s1.direction.toPrecision(5)}, expected: ${expectedDirection.toPrecision(5)}, degrees: ${expectedDegrees.toPrecision(5)}, xDif: ${xDif.toPrecision(5)}, yDif: ${yDif.toPrecision(5)}, ${s1.name}:(${s1.x.toPrecision(5)}, ${s1.y.toPrecision(5)}), target:(${x.toPrecision(5)}, ${y.toPrecision(5)})`);
+        return expectedDirection;
     }
 
     /**

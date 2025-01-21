@@ -24,6 +24,7 @@ import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveC
 import {z} from "zod";
 import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapsed, TimeElapsedJSON} from "./Time";
 import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
+import {LookTo, LookToJSON} from "./LookTo";
 
 export type CheckJSON =
     | AttrChangeJSON
@@ -48,6 +49,7 @@ export type CheckJSON =
     | TouchingHorizEdgeJSON
     | LayerJSON
     | ClearedEffectJSON
+    | LookToJSON
     ;
 
 export const CheckJSON = z.discriminatedUnion("name", [
@@ -73,6 +75,7 @@ export const CheckJSON = z.discriminatedUnion("name", [
     TouchingHorizEdgeJSON,
     LayerJSON,
     ClearedEffectJSON,
+    LookToJSON,
 ]);
 
 export type Check =
@@ -98,6 +101,7 @@ export type Check =
     | TouchingHorizEdge
     | Layer
     | ClearedEffect
+    | LookTo
     ;
 
 export type CheckName = CheckJSON['name'];
@@ -175,6 +179,8 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             return new Layer(edgeLabel, checkJSON);
         case "ClearedEffects":
             return new ClearedEffect(edgeLabel, checkJSON);
+        case "LookTo":
+            return new LookTo(edgeLabel, checkJSON);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }
