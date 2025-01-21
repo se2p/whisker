@@ -53,12 +53,6 @@ export class AttributeNotFoundError extends Error {
     }
 }
 
-export class EffectNotFoundError extends Error {
-    constructor(spriteName: string, effectName: string) {
-        super(`Effect not found: ${spriteName}.effects[${effectName}]`);
-    }
-}
-
 export class SpriteNotFoundError extends Error {
     constructor(spriteName: string) {
         super("Sprite not found: " + spriteName);
@@ -95,12 +89,6 @@ export class EmptyExpressionError extends Error {
     }
 }
 
-export class ExpressionEnterError extends Error {
-    constructor() {
-        super("Sprite/variable expression may not contain new line element.");
-    }
-}
-
 export class RGBRangeError extends Error {
     constructor() {
         super("RGB ranges not correct.");
@@ -110,6 +98,12 @@ export class RGBRangeError extends Error {
 export class ErrorForVariable extends Error {
     constructor(spriteName: ArgType, varName: ArgType, error: unknown) {
         super(spriteName + "." + varName + ": " + getErrorMessage(error));
+    }
+}
+
+export class ErrorForEffect extends Error {
+    constructor(spriteName: ArgType, effectName: ArgType, error: unknown) {
+        super(spriteName + ".effect[\"" + effectName + "\"]: " + getErrorMessage(error));
     }
 }
 
