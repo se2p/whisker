@@ -1,7 +1,7 @@
 import {AbstractCheck, AttrName, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
-import {ErrorForAttribute} from "../util/ModelError";
+import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, newQuantifiedComparison} from "./Comparison";
@@ -51,10 +51,12 @@ export const AttrCompJSON = ICheckJSON.extend({
 
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Quantification<Comparison>;
+    private readonly _isForEffect: boolean;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
         this._comparison = newQuantifiedComparison(this);
+        this._isForEffect = ModelUtil.isAnEffect(this._args[1]);
     }
 
     get operator(): ComparisonOp {
@@ -80,29 +82,49 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         const [pSpriteName, attrName] = this._args;
 
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
-        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+        if (!this._isForEffect) {
+            ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+        }
 
-        const listener = (sprite) => {
-            try {
-                return this._comparison.applySingle(sprite[attrName]);
-            } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
+        const listener = this._isForEffect
+            ? (sprite: Sprite) => {
+                try {
+                    return this._comparison.applySingle(sprite[attrName]);
+                } catch (e) {
+                    throw new ErrorForAttribute(pSpriteName, attrName, e);
+                }
             }
-        };
+            : (sprite: Sprite) => {
+                try {
+                    return this._comparison.applySingle(sprite.effects[attrName]);
+                } catch (e) {
+                    throw new ErrorForEffect(pSpriteName, attrName, e);
+                }
+            }
+        ;
 
         // on movement listener
         if (attrName == "x" || attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
         } else if (attrName == "sayText") {
             cu.registerOutput(spriteName, this, graphID, listener);
         }
 
         // without movement
+        if(this._isForEffect){
+            return () => {
+                const sprites: Sprite[] = t.getSprite(spriteName).getClones(true);
+                try {
+                    return this._comparison.apply(sprites.map((s) => s.effects[attrName]));
+                } catch (e) {
+                    throw new ErrorForEffect(pSpriteName, attrName, e);
+                }
+            };
+        }
         return () => {
-            const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
-
+            const sprites: Sprite[] = t.getSprite(spriteName).getClones(true);
             try {
                 return this._comparison.apply(sprites.map((s) => s[attrName]));
             } catch (e) {
