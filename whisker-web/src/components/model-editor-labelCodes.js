@@ -17,7 +17,8 @@ const argType = {
     time: 'time',
     bool: 'bool',
     coordX: 'coordX',
-    coordY: 'coordY'
+    coordY: 'coordY',
+    layerSelection: 'firstOrLastLayer'
 };
 
 const inputLabelCodes = {
@@ -75,7 +76,13 @@ const checkLabelCodes = {
     // 1 // sprite name regex
     TouchingVerticalEdge: [argType.spriteNameRegex],
     // 1 // sprite name regex
-    TouchingHorizEdge: [argType.spriteNameRegex]
+    TouchingHorizEdge: [argType.spriteNameRegex],
+    // 2 // sprite name regex, selected layer
+    Layer: [argType.spriteNameRegex, argType.layerSelection],
+    // 2 // sprite name regex, target (sprite or mouse pointer)
+    LookTo: [argType.spriteNameRegex, argType.spriteNameRegex],
+    // 1 // sprite name regex
+    ClearedEffects: [argType.spriteNameRegex]
 };
 
 const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter', 'a', 'b', 'c', 'd', 'e', 'f',
@@ -99,7 +106,8 @@ const placeholders = {
     time: '0',
     bool: 'true',
     coordX: '0',
-    coordY: '0'
+    coordY: '0',
+    layerSelection: 'First or Last'
 };
 
 export {argType, checkLabelCodes, inputLabelCodes, keys, placeholders};
