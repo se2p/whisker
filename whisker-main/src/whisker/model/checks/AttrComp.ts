@@ -89,14 +89,14 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         const listener = this._isForEffect
             ? (sprite: Sprite) => {
                 try {
-                    return this._comparison.applySingle(sprite[attrName]);
+                    return this._comparison.applySingle(sprite.effects[attrName]);
                 } catch (e) {
                     throw new ErrorForAttribute(pSpriteName, attrName, e);
                 }
             }
             : (sprite: Sprite) => {
                 try {
-                    return this._comparison.applySingle(sprite.effects[attrName]);
+                    return this._comparison.applySingle(sprite[attrName]);
                 } catch (e) {
                     throw new ErrorForEffect(pSpriteName, attrName, e);
                 }
