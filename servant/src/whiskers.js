@@ -340,7 +340,7 @@ class Whisker {
     /**
      * Disables the keepalive watchdog timer. Afterward, `keepAlive()` will have no more effect.
      */
-    async disableKeepaliveWatchdog() {
+    disableKeepaliveWatchdog() {
         this._keepaliveWatchdogEnabled = false;
         clearTimeout(this._keepaliveWatchdog);
     }
@@ -428,7 +428,7 @@ class Whisker {
 
         logger.info(`Destroying Whisker #${this._id}`);
 
-        await this.disableKeepaliveWatchdog();
+        this.disableKeepaliveWatchdog();
         this.disableEvaluationTimeout();
 
         try {
