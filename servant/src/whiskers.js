@@ -391,6 +391,10 @@ class Whisker {
      */
     enableEvaluationTimeout(ms) {
         this._evaluationTimeLimit = setTimeout(async () => {
+            if (this._destroyed) { // To avoid issue #399.
+                return;
+            }
+
             logger.info(`Whisker #${this._id} timed out!`);
             this._reason = `Evaluation time limit of ${ms} ms reached`;
 
