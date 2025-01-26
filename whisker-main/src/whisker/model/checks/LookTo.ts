@@ -47,10 +47,11 @@ export class LookTo extends AbstractCheck<LookToJSON, CheckFun0> {
         return () => {
             const rotatingSprite: Sprite = t.getSprite(spriteNameRotate);
             const expectedDirection = this._args[1] == "mouse-pointer"
-                ? ModelUtil.getExpectedDirectionForSprite1LookingAtMouse(rotatingSprite, t)
+                ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(rotatingSprite, t)
                 : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(rotatingSprite, t.getSprite(this._args[1]));
             const sprites = rotatingSprite.getClones(true);
-            const anyHasCorrectDirection = sprites.some((s: Sprite) => s.direction == expectedDirection);
+            const check = (s:Sprite) => ModelUtil.checkDirectionWithinDelta(s,expectedDirection);
+            const anyHasCorrectDirection = sprites.some(check);
             return !this.negated == anyHasCorrectDirection;
         };
     }

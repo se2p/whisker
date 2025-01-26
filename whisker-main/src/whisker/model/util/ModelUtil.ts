@@ -183,7 +183,7 @@ export abstract class ModelUtil {
      * @param s1 Sprite looking at another sprite
      * @param t Test-Driver for retrieving the coordinates of the mouse
      */
-    public static getExpectedDirectionForSprite1LookingAtMouse(s1: Sprite, t: TestDriver): number {
+    public static getExpectedDirectionForSpriteLookingAtMouse(s1: Sprite, t: TestDriver): number {
         const pos: { x: number, y: number } = t.getMousePos();
         return ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s1, pos.x, pos.y);
     }
@@ -203,6 +203,29 @@ export abstract class ModelUtil {
         const expectedDirection = (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
         // console.log(`actual: ${s1.direction.toPrecision(5)}, expected: ${expectedDirection.toPrecision(5)}, degrees: ${expectedDegrees.toPrecision(5)}, xDif: ${xDif.toPrecision(5)}, yDif: ${yDif.toPrecision(5)}, ${s1.name}:(${s1.x.toPrecision(5)}, ${s1.y.toPrecision(5)}), target:(${x.toPrecision(5)}, ${y.toPrecision(5)})`);
         return expectedDirection;
+    }
+
+    public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = true): boolean {
+        let result :boolean;
+        if (!useMode || sprite.rotationStyle == "All round") {
+            const lowerBound = expected - delta;
+            const upperBound = expected + delta;
+            if (lowerBound <= -180) {
+                result = sprite.direction <= upperBound || sprite.direction >= 180 - delta;
+            } else if (upperBound > 180) {
+                result = sprite.direction >= lowerBound || sprite.direction < -180 + delta;
+            } else {
+                result = lowerBound <= sprite.direction && sprite.direction <= upperBound;
+            }
+        } else {
+            // mode is used -> for "do not rotate" any value is fine and otherwise the sign must be equal.F
+            // If either the expected or the actual direction = 0 then any direction is allowed.
+            result = sprite.rotationStyle == "do not rotate" || Math.sign(expected) * Math.sign(sprite.direction) >= 0;
+        }
+        if(!result){
+            console.debug(`${result} for ${sprite.name} with style: ${sprite.rotationStyle}, direction: ${sprite.direction}, expected: ${expected}`);
+        }
+        return result;
     }
 
     /**
