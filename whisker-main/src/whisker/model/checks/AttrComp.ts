@@ -81,7 +81,8 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
 
-        const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
+        const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
+        const spriteName = sprite.name;
         if (!this._isForEffect) {
             ModelUtil.checkAttributeExistence(t, spriteName, attrName);
         }
@@ -115,7 +116,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // without movement
         if (this._isForEffect) {
             return () => {
-                const sprites: Sprite[] = t.getSprite(spriteName).getClones(true);
+                const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
                 try {
                     return this._comparison.apply(sprites.map((s) => s.effects[attrName]));
                 } catch (e) {
@@ -124,7 +125,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             };
         }
         return () => {
-            const sprites: Sprite[] = t.getSprite(spriteName).getClones(true);
+            const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             try {
                 return this._comparison.apply(sprites.map((s) => s[attrName]));
             } catch (e) {
