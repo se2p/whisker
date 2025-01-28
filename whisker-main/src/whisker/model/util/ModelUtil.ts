@@ -207,26 +207,19 @@ export abstract class ModelUtil {
     }
 
     public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = true): boolean {
-        let result: boolean;
         if (!useMode || sprite.rotationStyle == "All round") {
             const lowerBound = expected - delta;
             const upperBound = expected + delta;
             if (lowerBound <= -180) {
-                result = sprite.direction <= upperBound || sprite.direction >= 180 - delta;
+                return sprite.direction <= upperBound || sprite.direction >= 180 - delta;
             } else if (upperBound > 180) {
-                result = sprite.direction >= lowerBound || sprite.direction < -180 + delta;
-            } else {
-                result = lowerBound <= sprite.direction && sprite.direction <= upperBound;
+                return sprite.direction >= lowerBound || sprite.direction < -180 + delta;
             }
-        } else {
-            // mode is used -> for "do not rotate" any value is fine and otherwise the sign must be equal.F
-            // If either the expected or the actual direction = 0 then any direction is allowed.
-            result = sprite.rotationStyle == "do not rotate" || Math.sign(expected) * Math.sign(sprite.direction) >= 0;
+            return lowerBound <= sprite.direction && sprite.direction <= upperBound;
         }
-        if (!result) {
-            console.debug(`${result} for ${sprite.name} with style: ${sprite.rotationStyle}, direction: ${sprite.direction}, expected: ${expected}`);
-        }
-        return result;
+        // mode is used -> for "do not rotate" any value is fine and otherwise the sign must be equal.F
+        // If either the expected or the actual direction = 0 then any direction is allowed.
+        return sprite.rotationStyle == "do not rotate" || Math.sign(expected) * Math.sign(sprite.direction) >= 0;
     }
 
     /**
