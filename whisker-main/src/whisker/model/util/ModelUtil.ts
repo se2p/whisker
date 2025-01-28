@@ -118,11 +118,12 @@ export abstract class ModelUtil {
     /**
      * Returns the value as a number if possible or null otherwise.
      * @param value The value to be converted to a number
+     * @param defaultValue This value is returned when {@linkcode value} is not a number
      * @return The input converted to a number
      */
-    private static returnNumberIfPossible(value: ParamType): number | null {
+    public static returnNumberIfPossible(value: ParamType, defaultValue: number | null = null): number | null {
         if (value == null || value === '' || isNaN(Number(value))) {
-            return null;
+            return defaultValue;
         }
         return Number(value.toString());
     }
@@ -206,7 +207,7 @@ export abstract class ModelUtil {
     }
 
     public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = true): boolean {
-        let result :boolean;
+        let result: boolean;
         if (!useMode || sprite.rotationStyle == "All round") {
             const lowerBound = expected - delta;
             const upperBound = expected + delta;
@@ -222,7 +223,7 @@ export abstract class ModelUtil {
             // If either the expected or the actual direction = 0 then any direction is allowed.
             result = sprite.rotationStyle == "do not rotate" || Math.sign(expected) * Math.sign(sprite.direction) >= 0;
         }
-        if(!result){
+        if (!result) {
             console.debug(`${result} for ${sprite.name} with style: ${sprite.rotationStyle}, direction: ${sprite.direction}, expected: ${expected}`);
         }
         return result;
@@ -307,6 +308,9 @@ export abstract class ModelUtil {
     public static evaluateExpression(t: TestDriver, expression: string): unknown {
         const $ = (spriteName: string, attribute: string, custom: boolean) =>
             this.getValueForSubExpression(t, spriteName, attribute, custom);
+        if(expression.includes("const s1=$('Cat');\nconst s2=$('Force Attack');\nreturn s1.x==s2.x&&s1.y==s2.y")){
+            console.log(`Cat.x=${t.getSprite("Cat").x}==${t.getSprite("Force Attack").x} && Cat.y=${t.getSprite("Cat").y}==${t.getSprite("Force Attack").y}`);
+        }
         return eval(expression)(t, $);
     }
 
