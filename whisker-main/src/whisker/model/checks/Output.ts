@@ -67,7 +67,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             }
 
             const sayText = s.sayText.toLocaleLowerCase();
-            const expected = String(eval(expression)(t)).toLocaleLowerCase();
+            const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
             return sayText.includes(expected);
         };
         cu.registerOutput(spriteName, this, graphID, (s) => !negated == check(s));
