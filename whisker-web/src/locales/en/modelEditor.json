@@ -113,7 +113,7 @@
     "TouchingVerticalEdge": "Sprite - Vertical Border",
     "TouchingHorizEdge": "Sprite - Horizontal Border",
     "Layer": "Layer (First or Last)",
-    "LookTo": "Sprite Points to",
+    "PointsTo": "Sprite points to",
     "ClearedEffects": "Sprite has no Effect",
     "InputClickSprite": "Click Sprite",
     "InputClickStage": "Click Background",

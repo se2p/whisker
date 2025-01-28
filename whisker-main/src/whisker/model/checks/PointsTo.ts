@@ -5,9 +5,9 @@ import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {CheckJSON} from "./newCheck";
 
-const name = "LookTo" as const;
+const name = "PointsTo" as const;
 
-export type LookToArgs = [
+export type PointsToArgs = [
     /**
      * Name of the sprite looking in the direction of something.
      */
@@ -19,23 +19,23 @@ export type LookToArgs = [
     otherObject: SpriteName | "mouse-pointer",
 ];
 
-const LookToArgs = z.tuple([
+const PointsToArgs = z.tuple([
     SpriteName,
     SpriteName.or(z.literal("mouse-pointer")),
 ]);
 
-export interface LookToJSON extends ICheckJSON {
+export interface PointsToJSON extends ICheckJSON {
     name: typeof name;
-    args: LookToArgs;
+    args: PointsToArgs;
 }
 
-export const LookToJSON = ICheckJSON.extend({
+export const PointsToJSON = ICheckJSON.extend({
     name: z.literal(name),
-    args: LookToArgs,
+    args: PointsToArgs,
 });
 
-export class LookTo extends AbstractCheck<LookToJSON, CheckFun0> {
-    constructor(edgeLabel: string, json: SlimCheckJSON<LookToJSON>) {
+export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<PointsToJSON>) {
         super(edgeLabel, {...json, name});
     }
 
@@ -56,12 +56,12 @@ export class LookTo extends AbstractCheck<LookToJSON, CheckFun0> {
         };
     }
 
-    protected _contradicts(that: LookTo): boolean {
+    protected _contradicts(that: PointsTo): boolean {
         return false; // two different objects can be at the same location
     }
 
-    protected _validate(checkJSON: LookToJSON): LookToJSON {
-        return CheckJSON.parse(checkJSON) as LookToJSON;
+    protected _validate(checkJSON: PointsToJSON): PointsToJSON {
+        return CheckJSON.parse(checkJSON) as PointsToJSON;
     }
 
     get dependsOnSayText(): boolean {

@@ -190,7 +190,7 @@ export abstract class ModelUtil {
     }
 
     /**
-     * Calculates the direction of sprite s1 if it looks at some target coordinates. The rotation style does not matter,
+     * Calculates the direction of sprite s1 if it points at some target coordinates. The rotation style does not matter,
      * since s1.direction changes independent on the graphic visible on screen.
      *
      * @param s1 Sprite looking at something

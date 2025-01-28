@@ -80,7 +80,7 @@ const checkLabelCodes = {
     // 2 // sprite name regex, selected layer
     Layer: [argType.spriteNameRegex, argType.layerSelection],
     // 2 // sprite name regex, target (sprite or mouse pointer)
-    LookTo: [argType.spriteNameRegex, argType.spriteNameRegex],
+    PointsTo: [argType.spriteNameRegex, argType.spriteNameRegex],
     // 1 // sprite name regex
     ClearedEffects: [argType.spriteNameRegex]
 };
