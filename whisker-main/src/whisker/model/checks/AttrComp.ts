@@ -113,7 +113,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         }
 
         // without movement
-        if(this._isForEffect){
+        if (this._isForEffect) {
             return () => {
                 const sprites: Sprite[] = t.getSprite(spriteName).getClones(true);
                 try {

@@ -50,7 +50,7 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
                 ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(rotatingSprite, t)
                 : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(rotatingSprite, t.getSprite(this._args[1]));
             const sprites = rotatingSprite.getClones(true);
-            const check = (s:Sprite) => ModelUtil.checkDirectionWithinDelta(s,expectedDirection);
+            const check = (s: Sprite) => ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
             const anyHasCorrectDirection = sprites.some(check);
             return !this.negated == anyHasCorrectDirection;
         };

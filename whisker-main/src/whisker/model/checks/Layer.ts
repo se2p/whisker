@@ -48,7 +48,7 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
             const expected = this._args[1] === "First"
                 ? Math.max(...t.getSprites(s => true).map((s: Sprite) => ModelUtil.returnNumberIfPossible(s.layerOrder, -1)))
                 : 1;
-            const sprites:Sprite[] = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
+            const sprites: Sprite[] = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anyHasCorrectLayer = sprites.some((s: Sprite) => s.layerOrder == expected);
             //console.debug(`expected layer: ${this._args[1]}/${expected}, actual: ${sprites.map(s => s.layerOrder)}`);
             return !this.negated == anyHasCorrectLayer;

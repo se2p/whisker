@@ -45,7 +45,7 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const anyHasNoEffect = sprites.some((s:Sprite) => Object.values(s.effects).every(v => v === 0));
+            const anyHasNoEffect = sprites.some((s: Sprite) => Object.values(s.effects).every(v => v === 0));
             return !this.negated == anyHasNoEffect;
         };
     }
