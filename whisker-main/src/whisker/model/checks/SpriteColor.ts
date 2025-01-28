@@ -4,6 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import TestDriver from "../../../test/test-driver";
 
 const name = "SpriteColor" as const;
 
@@ -64,7 +65,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, pR, pG, pB] = this._args;
         const negated = this.negated;
 

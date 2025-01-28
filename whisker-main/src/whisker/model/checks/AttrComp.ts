@@ -6,6 +6,7 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, newQuantifiedComparison} from "./Comparison";
 import {Quantification} from "./Quantification";
+import TestDriver from "../../../test/test-driver";
 
 const name = "AttrComp" as const;
 
@@ -78,7 +79,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);

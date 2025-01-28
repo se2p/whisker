@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {CheckJSON} from "./newCheck";
+import TestDriver from "../../../test/test-driver";
 
 const name = "PointsTo" as const;
 
@@ -39,7 +40,14 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    /**
+     * Get a method whether a sprite points to the mouse/another sprite.
+     *
+     * @param t Instance of the test driver.
+     * @param cu Listener for the checks.
+     * @param graphID ID of the parent graph of the check.
+     */
+    protected _checkArgsWithTestDriver(t:TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const spriteNameRotate = ModelUtil.checkSpriteExistence(t, this._args[0]).name;
         if (this._args[1] != "mouse-pointer") {
             ModelUtil.checkSpriteExistence(t, this._args[1]).name;

@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {CheckJSON} from "./newCheck";
+import TestDriver from "../../../test/test-driver";
 
 const name = "Layer" as const;
 
@@ -41,7 +42,13 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    /**
+     * Get a method for checking whether a sprite is on the first/last layer.
+     * @param t Instance of the test driver.
+     * @param cu Listener for the checks.
+     * @param graphID ID of the parent graph of the check.
+     */
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const pSpriteName = this._args[0];
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {

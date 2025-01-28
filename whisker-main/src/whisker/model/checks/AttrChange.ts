@@ -6,6 +6,7 @@ import {z} from "zod";
 import {Change, ChangingCheck, newQuantifiedChange, NumberOrChangeOp} from "./Change";
 import {Quantification} from "./Quantification";
 import Sprite from "../../../vm/sprite";
+import TestDriver from "../../../test/test-driver";
 
 const name = "AttrChange" as const;
 
@@ -65,7 +66,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
