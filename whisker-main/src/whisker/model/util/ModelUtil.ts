@@ -308,9 +308,6 @@ export abstract class ModelUtil {
     public static evaluateExpression(t: TestDriver, expression: string): unknown {
         const $ = (spriteName: string, attribute: string, custom: boolean) =>
             this.getValueForSubExpression(t, spriteName, attribute, custom);
-        if(expression.includes("const s1=$('Cat');\nconst s2=$('Force Attack');\nreturn s1.x==s2.x&&s1.y==s2.y")){
-            console.log(`Cat.x=${t.getSprite("Cat").x}==${t.getSprite("Force Attack").x} && Cat.y=${t.getSprite("Cat").y}==${t.getSprite("Force Attack").y}`);
-        }
         return eval(expression)(t, $);
     }
 
