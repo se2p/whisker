@@ -65,4 +65,16 @@ describe('AttributeChange', () => {
         tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
         expect(c.check()).toEqual(false);
     });
+
+    test('Can check change of effects', () => {
+        const effects: Record<string, number> = {color: 10};
+        const bowl = new SpriteMock("bowl", [{name: "effects", value: effects}]);
+        bowl.old = new SpriteMock("bowl", [{name: "effects", value: {color: 0}}]);
+        const mock = new TestDriverMock([banana, bowl, apple, stage]);
+        const c = new AttrChange('label', {negated: false, args: ["bowl", "color", 10]});
+        c.registerComponents(mock.getTestDriver(), dummyCU, graphID);
+        expect(c.check()).toEqual(true);
+        effects["color"] = 20;
+        expect(c.check()).toEqual(false);
+    });
 });

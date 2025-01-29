@@ -2,7 +2,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
-import {CheckUtilityMock} from "../mocks/CheckUtilityMock";
+import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 
@@ -136,5 +136,17 @@ describe('AttributeComparison', () => {
         const c = new AttrComp('label', {negated, args: ["kiwi", "x", ">", "15"]});
         c.registerComponents(t, cu, graphID);
         expect(c.check()).toEqual(!negated);
+    });
+
+    test('Can check value of effects', () => {
+        const effects: Record<string, number> = {fisheye: 10};
+        const bowl = new SpriteMock("bowl", [{name: "effects", value: effects}]);
+        bowl.old = new SpriteMock("bowl", [{name: "effects", value: {fisheye: 0}}]);
+        const mock = new TestDriverMock([banana, bowl, apple]);
+        const c = new AttrComp('label', {negated: false, args: ["bowl", "fisheye", "==", 25]});
+        c.registerComponents(mock.getTestDriver(), getDummyCheckUtility(), graphID);
+        expect(c.check()).toEqual(false);
+        effects["fisheye"] = 25;
+        expect(c.check()).toEqual(true);
     });
 });
