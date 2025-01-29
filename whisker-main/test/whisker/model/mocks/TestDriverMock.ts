@@ -7,6 +7,7 @@ export class TestDriverMock {
     public stage: Sprite;
     public isMouseDown: boolean;
     public totalStepsExecuted = 0;
+    public mousePos = {x: 0, y: 0};
     public inputImmediate: (...args: any[]) => void;
     public typeText: (text: string) => void;
     public mouseDown: (value: boolean) => void;
@@ -34,6 +35,7 @@ export class TestDriverMock {
             mouseDown: (value: boolean) => this.mouseDown(value),
             clickStage: () => this.clickStage(),
             clickSprite: (name: string, steps: number) => this.clickSprite(name, steps),
+            getMousePos: () => this.mousePos
         } as unknown as TestDriver;
     }
 }

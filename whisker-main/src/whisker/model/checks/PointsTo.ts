@@ -3,7 +3,6 @@ import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
-import {CheckJSON} from "./newCheck";
 import TestDriver from "../../../test/test-driver";
 
 const name = "PointsTo" as const;
@@ -69,7 +68,7 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
     }
 
     protected _validate(checkJSON: PointsToJSON): PointsToJSON {
-        return CheckJSON.parse(checkJSON) as PointsToJSON;
+        return PointsToJSON.parse(checkJSON) as PointsToJSON;
     }
 
     get dependsOnSayText(): boolean {
