@@ -10,7 +10,7 @@ describe('ClearedEffectsTest', () => {
     const cu = getDummyCheckUtility();
 
     it.each([true, false])('Check for first layer works properly (negated: %s)', (negated: boolean) => {
-        const effects:Record<string, number> = {color: 0, fisheye: 0};
+        const effects: Record<string, number> = {color: 0, fisheye: 0};
         const banana = new SpriteMock("banana", [{name: "effects", value: effects}]);
         const tdMock = new TestDriverMock([banana]);
         const t = tdMock.getTestDriver();
@@ -21,7 +21,7 @@ describe('ClearedEffectsTest', () => {
 
 
     test('Check is not a constant return value', () => {
-        const effects:Record<string, number> = {color: 0, fisheye: 0};
+        const effects: Record<string, number> = {color: 0, fisheye: 0};
         const banana = new SpriteMock("banana", [{name: "effects", value: effects}]);
         const tdMock = new TestDriverMock([banana]);
         const t = tdMock.getTestDriver();

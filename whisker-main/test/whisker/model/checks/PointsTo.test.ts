@@ -8,8 +8,14 @@ describe('PointsToTest', () => {
     const graphID = "graphID";
     const edgeLabel = 'edgeID';
     const mocks = [
-        new SpriteMock("banana", [{name: "x", value: 10}, {name: "y", value: 10}, {name: "direction", value: 135}, {name: "rotationStyle", value: "All round"}]),
-        new SpriteMock("bowl", [{name: "x", value: 0}, {name: "y", value: 0}, {name: "direction", value: 45}, {name: "rotationStyle", value: "All round"}])
+        new SpriteMock("banana", [{name: "x", value: 10}, {name: "y", value: 10}, {
+            name: "direction",
+            value: 135
+        }, {name: "rotationStyle", value: "All round"}]),
+        new SpriteMock("bowl", [{name: "x", value: 0}, {name: "y", value: 0}, {
+            name: "direction",
+            value: 45
+        }, {name: "rotationStyle", value: "All round"}])
     ];
     const cu = getDummyCheckUtility();
     const tdMock = new TestDriverMock(mocks);
