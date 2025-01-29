@@ -93,6 +93,10 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
             .filter(([edgeID, covered]) => covered)
             .map(([edgeID]) => edgeID);
 
+        const notCoveredIds = Object.keys(this.edges).filter(k => !this.coverageCurrentRun[k]);
+        if (notCoveredIds.length > 0) {
+            console.debug(`${this.id} not covered (${notCoveredIds.length}/${Object.keys(this.edges).length}): ${notCoveredIds}`);
+        }
         return {
             covered: covered,
             total: Object.keys(this.edges).length

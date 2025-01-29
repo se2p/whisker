@@ -38,6 +38,7 @@ export class SpriteMock {
             x: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("x"),
             y: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("y"),
             layerOrder:  this.variables == null ? 0 : this.getValueOfVariableOrUndefined("layerOrder"),
+            effects:  this.variables == null ? 0 : this.getValueOfVariableOrUndefined("effects"),
             size: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("size"),
             sayText: this.sayText || this.variables == null ? this.sayText : this.getValueOfVariableOrUndefined("sayText"),
             currentCostumeName: this.currentCostumeName || this.variables == null ? this.currentCostumeName : this.getValueOfVariableOrUndefined("currentCostumeName"),
