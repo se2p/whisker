@@ -65,12 +65,6 @@ export class ComparisonNotKnownError extends Error {
     }
 }
 
-export class FunctionEvalError extends Error {
-    constructor(e: unknown) {
-        super("Function cannot be evaluated:\n" + getErrorMessage(e));
-    }
-}
-
 export class ExprEvalError extends Error {
     constructor(e: unknown) {
         super("Expression cannot be evaluated:\n" + getErrorMessage(e));

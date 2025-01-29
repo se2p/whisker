@@ -354,4 +354,48 @@ describe('ModelUtil tests', function () {
         });
     });
 
+    describe('getExpectedDirectionForSprite1LookingAtTarget()', () => {
+        const sprite = new SpriteMock("Bowl", [{name: "x", value: 0}, {name: "y", value: 0}]).updateSprite();
+        const table: [number, number, number][] = [
+            [0, 123, 0],
+            [12, 12, 45],
+            [50, 0, 90],
+            [25, -25, 135],
+            [0, -78, 180],
+            [-44, 44, -45],
+            [-34, 0, -90],
+            [-5, -5, -135],
+        ];
+        it.each(table)('expected direction for resulting vector(%s,%s): %s degrees in scratch', (x, y, expected) => {
+            expect(ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(sprite, x, y)).toBe(expected);
+        });
+        const tableWithOffset: [number, number, number, number, number][] = [
+            [23, 10, 23, 133, 0],
+            [-10, -10, 2, 2, 45],
+            [100, 35, 150, 35, 90],
+            [-1, -12, 24, -37, 135],
+            [- 99, 12, -99, -90, 180],
+            [13, 12, -31, 56, -45],
+            [0, 16, -34, 16, -90],
+            [10, 3, 5, -2, -135],
+        ];
+
+        it.each(tableWithOffset)('expected direction for -(%s,%s)+(%s,%s): %s degrees in scratch', (sx, sy, x, y, expected) => {
+            const s = new SpriteMock("Bowl", [{name: "x", value: sx}, {name: "y", value: sy}]).updateSprite();
+            expect(ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s, x, y)).toBe(expected);
+        });
+    });
+
+    describe('checkCyclicValueWithinDelta()', () => {
+        const table: [boolean, number, number, number, number, number][] = [
+            [true, 0, 3.0, 0, -10, 10],
+            [false, 0, 3.0, 3.1, -10, 10],
+            [true, -8, 3.0, 9.5, -10, 10],
+            [true, 9.5, 3.0, -8, -10, 10],
+            [false, 39, 3.5, 3, 0, 40],
+        ];
+        it.each(table)('Returns %s for %s is not more than %s away from %s (for cycle from %s to %s)', (result, actual, delta, expected, min, max) => {
+            expect(ModelUtil.checkCyclicValueWithinDelta(actual, expected, min, max, delta)).toBe(result);
+        });
+    });
 });

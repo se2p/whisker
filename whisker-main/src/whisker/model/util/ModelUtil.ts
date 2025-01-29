@@ -200,26 +200,40 @@ export abstract class ModelUtil {
     public static getExpectedDirectionForSprite1LookingAtTarget(s1: Sprite, x: number, y: number): number {
         const xDif = x - s1.x;
         const yDif = y - s1.y;
+        if (xDif == 0) {
+            return yDif > 0 ? 0 : 180;
+        }
         const expectedDegrees = xDif === 0 ? 0 : (360 + (Math.atan2(yDif, xDif) * 180.0) / Math.PI) % 360;
-        const expectedDirection = (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
-        // console.log(`actual: ${s1.direction.toPrecision(5)}, expected: ${expectedDirection.toPrecision(5)}, degrees: ${expectedDegrees.toPrecision(5)}, xDif: ${xDif.toPrecision(5)}, yDif: ${yDif.toPrecision(5)}, ${s1.name}:(${s1.x.toPrecision(5)}, ${s1.y.toPrecision(5)}), target:(${x.toPrecision(5)}, ${y.toPrecision(5)})`);
-        return expectedDirection;
+        return (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
     }
 
     public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = true): boolean {
         if (!useMode || sprite.rotationStyle == "All round") {
-            const lowerBound = expected - delta;
-            const upperBound = expected + delta;
-            if (lowerBound <= -180) {
-                return sprite.direction <= upperBound || sprite.direction >= 180 - delta;
-            } else if (upperBound > 180) {
-                return sprite.direction >= lowerBound || sprite.direction < -180 + delta;
-            }
-            return lowerBound <= sprite.direction && sprite.direction <= upperBound;
+            return ModelUtil.checkCyclicValueWithinDelta(sprite.direction, expected, -180, 180, delta);
         }
-        // mode is used -> for "do not rotate" any value is fine and otherwise the sign must be equal.F
+        // mode is used -> for "do not rotate" any value is fine and otherwise the sign must be equal.
         // If either the expected or the actual direction = 0 then any direction is allowed.
         return sprite.rotationStyle == "do not rotate" || Math.sign(expected) * Math.sign(sprite.direction) >= 0;
+    }
+
+    /**
+     * Checks if a value is within a delta range of the value it should be for cyclic values.
+     * @param actual The actual value of the variable
+     * @param expected The value the variable should have
+     * @param min The lower bound
+     * @param max The upper bound
+     * @param delta Defines the range of valid values
+     * @return true if the value is within the valid cyclic bound
+     */
+    public static checkCyclicValueWithinDelta(actual: number, expected: number, min: number, max: number, delta: number): boolean {
+        const lowerBound = expected - delta;
+        const upperBound = expected + delta;
+        if (lowerBound <= min) {
+            return actual <= upperBound || actual >= max - (min - lowerBound);
+        } else if (upperBound >= max) {
+            return actual >= lowerBound || actual <= min + (upperBound - max);
+        }
+        return lowerBound <= actual && actual <= upperBound;
     }
 
     /**
