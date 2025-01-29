@@ -3,7 +3,6 @@ import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
-import {CheckJSON} from "./newCheck";
 import TestDriver from "../../../test/test-driver";
 
 const name = "Layer" as const;
@@ -69,7 +68,7 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
     }
 
     protected _validate(checkJSON: LayerJSON): LayerJSON {
-        return CheckJSON.parse(checkJSON) as LayerJSON;
+        return LayerJSON.parse(checkJSON) as LayerJSON;
     }
 
     get dependsOnSayText(): boolean {
