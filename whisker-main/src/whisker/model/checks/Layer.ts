@@ -56,7 +56,6 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
                 : 1;
             const sprites: Sprite[] = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anyHasCorrectLayer = sprites.some((s: Sprite) => s.layerOrder == expected);
-            //console.debug(`expected layer: ${this._args[1]}/${expected}, actual: ${sprites.map(s => s.layerOrder)}`);
             return !this.negated == anyHasCorrectLayer;
         };
     }
