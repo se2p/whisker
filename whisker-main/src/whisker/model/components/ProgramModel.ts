@@ -5,6 +5,7 @@ import {AbstractModel} from "./AbstractModel";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {EdgeID, EndModelJSON, ProgramModelJSON} from "../util/schema";
 import {Checks} from "../util/Checks";
+import logger from "../../../util/logger";
 
 export interface CoverageResult {
     total: number;
@@ -95,7 +96,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
 
         const notCoveredIds = Object.keys(this.edges).filter(k => !this.coverageCurrentRun[k]);
         if (notCoveredIds.length > 0) {
-            console.debug(`${this.id} not covered (${notCoveredIds.length}/${Object.keys(this.edges).length}): ${notCoveredIds}`);
+            logger.debug(`${this.id} not covered (${notCoveredIds.length}/${Object.keys(this.edges).length}): ${notCoveredIds}`);
         }
         return {
             covered: covered,
