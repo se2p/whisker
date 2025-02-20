@@ -185,8 +185,9 @@ export abstract class ModelUtil {
      * @param t Test-Driver for retrieving the coordinates of the mouse
      */
     public static getExpectedDirectionForSpriteLookingAtMouse(s1: Sprite, t: TestDriver): number {
-        const pos: { x: number, y: number } = t.getMousePos();
-        return ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s1, pos.x, pos.y);
+        const {x, y} = t.getMousePos();
+        return ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s1, x, y);
+
     }
 
     /**
