@@ -97,7 +97,7 @@ export class ErrorForVariable extends Error {
 
 export class ErrorForEffect extends Error {
     constructor(spriteName: ArgType, effectName: ArgType, error: unknown) {
-        super(spriteName + ".effect[\"" + effectName + "\"]: " + getErrorMessage(error));
+        super(`${spriteName}.effect["${effectName}"]: ${getErrorMessage(error)}`);
     }
 }
 
