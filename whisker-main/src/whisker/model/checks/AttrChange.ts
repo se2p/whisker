@@ -86,24 +86,22 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             this._registerOnVisualAttrChange(cu, graphID, spriteName);
         }
 
-        if (this._isForEffect) {
-            return () => {
-                const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
-                try {
-                    return this._change.apply(sprites.map((s) => [s.effects[attrName], s.old.effects[attrName]]));
-                } catch (e) {
-                    throw new ErrorForEffect(pSpriteName, attrName, e);
-                }
-            };
-        }
         return () => {
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
+            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+
             try {
-                return this._change.apply(sprites.map((s) => [s[attrName], s.old[attrName]]));
+                return this._change.apply(sprites.map((s) => this._getAttr(s, attrName)));
             } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
+                throw new Exception(pSpriteName, attrName, e);
             }
         };
+    }
+
+    private _getAttr(s: Sprite, attrName: string) {
+        return this._isForEffect
+            ? [s.effects[attrName], s.old.effects[attrName]]
+            : [s[attrName], s.old[attrName]];
     }
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
@@ -119,26 +117,16 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
 
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
         const [pSpriteName, attrName] = this._args;
-        let f: (sprite: Sprite) => boolean;
-        if (this._isForEffect) {
-            f = (sprite: Sprite) => {
-                try {
-                    return this._change.applySingle(sprite.effects[attrName], sprite.old[attrName]);
-                } catch (e) {
-                    throw new ErrorForAttribute(pSpriteName, attrName, e);
-                }
-            };
-        } else {
-            f = (sprite: Sprite) => {
-                try {
-                    return this._change.applySingle(sprite[attrName], sprite.old[attrName]);
-                } catch (e) {
-                    throw new ErrorForEffect(spriteName, attrName, e);
-                }
-            };
-        }
-        cu.registerOnVisualChange(spriteName, this, graphID, f);
+        const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+        cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
+            try {
+                return this._change.applySingle(...this._getAttr(sprite, attrName));
+            } catch (e) {
+                throw new Exception(pSpriteName, attrName, e);
+            }
+        });
     }
+
 
     override get dependsOnSayText(): boolean {
         return this._args[1] === "sayText";
