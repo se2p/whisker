@@ -208,8 +208,8 @@ export abstract class ModelUtil {
         return (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
     }
 
-    public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = true): boolean {
-        if (!useMode || sprite.rotationStyle == "All round") {
+    public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = false): boolean {
+        if (!useMode || sprite.rotationStyle == "all round") {
             return ModelUtil.checkCyclicValueWithinDelta(sprite.direction, expected, -180, 180, delta);
         }
         // mode is used -> for "do not rotate" any value is fine and otherwise the sign must be equal.
