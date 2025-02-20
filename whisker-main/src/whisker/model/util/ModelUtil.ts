@@ -204,7 +204,7 @@ export abstract class ModelUtil {
         if (xDif == 0) {
             return yDif > 0 ? 0 : 180;
         }
-        const expectedDegrees = xDif === 0 ? 0 : (360 + (Math.atan2(yDif, xDif) * 180.0) / Math.PI) % 360;
+        const expectedDegrees = (360 + (Math.atan2(yDif, xDif) * 180.0) / Math.PI) % 360;
         return (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
     }
 
