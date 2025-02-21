@@ -94,8 +94,7 @@ export class TargetStatementPopulation extends NeatPopulation {
         }
 
         const randomNumber = Randomness.getInstance().nextDouble();
-        const gradientDescentProb = (this.hyperParameter as NeatestParameter).gradientDescentProb;
-        if (randomNumber <= gradientDescentProb) {
+        if (randomNumber <= (this.hyperParameter as NeatestParameter).gradientDescentParameter.probability) {
             Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
         }
     }

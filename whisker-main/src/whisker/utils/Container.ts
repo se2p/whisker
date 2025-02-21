@@ -22,5 +22,4 @@ export class Container {
     static backpropagationData: Record<string, unknown>;
     static backpropagationInstance: GradientDescent;
     static neatestTargetId: string
-    static dynamicRecordingFraction = 0;
 }

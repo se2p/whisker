@@ -101,15 +101,9 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         this._toggleEnableConnectionTimes = mutationConfig.toggleEnableConnectionTimes as number;
         this._mutateEnableConnection = mutationConfig.mutateEnableConnection as number;
 
-        if (neuroevolutionParameter !== undefined && neuroevolutionParameter instanceof NeatestParameter) {
-            this._gradientDescentEnabled = neuroevolutionParameter.applyGradientDescent;
-            this._gradientDescentProbability = neuroevolutionParameter.gradientDescentProb;
-
-            if (this._gradientDescentEnabled && this._gradientDescentProbability > 0) {
-                this._backpropagation = new GradientDescent(Container.backpropagationData,
-                    neuroevolutionParameter.gradientDescentParameter, neuroevolutionParameter.dataAugmentation);
-                Container.backpropagationInstance = this._backpropagation;
-            }
+        if (neuroevolutionParameter instanceof NeatestParameter && neuroevolutionParameter.gradientDescentParameter.probability > 0) {
+            this._backpropagation = new GradientDescent(Container.backpropagationData, neuroevolutionParameter.gradientDescentParameter);
+            Container.backpropagationInstance = this._backpropagation;
         }
     }
 

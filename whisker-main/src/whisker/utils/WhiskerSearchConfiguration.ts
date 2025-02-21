@@ -279,33 +279,14 @@ export class WhiskerSearchConfiguration {
             // Check whether we will apply gradient descent.
             if ('gradientDescent' in this._config) {
                 const gradientDescent = this._config['gradientDescent'];
-                properties.applyGradientDescent = true;
-                properties.gradientDescentProb = gradientDescent['probability'];
                 properties.gradientDescentParameter = {
+                    probability: gradientDescent['probability'],
                     learningRate: gradientDescent['learningRate'],
                     learningRateAlgorithm: gradientDescent['learningRateAlgorithm'],
                     epochs: gradientDescent['epochs'],
                     batchSize: gradientDescent['batchSize'],
                     combinePlayerRecordings: gradientDescent['combinePlayerRecordings'],
-                    labelSmoothing: gradientDescent['labelSmoothing'],
-                    l2Regularisation: gradientDescent['l2Regularisation']
                 };
-
-                // Check for data augmentation.
-                if ('dataAugmentation' in gradientDescent) {
-                    const augmentationProperties = gradientDescent['dataAugmentation'];
-                    properties.dataAugmentation = {
-                        doAugment: augmentationProperties['doAugment'],
-                        augmentFactor: augmentationProperties['augmentFactor'],
-                        disturbStateProb: augmentationProperties['disturbStateProb'],
-                        disturbStatePower: augmentationProperties['disturbStatePower']
-                    };
-                }
-
-                // Check for Peer-To-Peer sharing.
-                if ('dynamicRecordingFraction' in gradientDescent) {
-                    Container.dynamicRecordingFraction = gradientDescent['dynamicRecordingFraction'];
-                }
             }
         }
 

@@ -3,7 +3,7 @@ import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {FitnessFunction} from "../../search/FitnessFunction";
-import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
+import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {Randomness} from "../../utils/Randomness";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
@@ -15,7 +15,6 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import assert from "assert";
 import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
-import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 
@@ -132,11 +131,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Used for transforming the network into a TestChromosome for evaluating its StatementFitness.
      */
     private _codons: number[] = [];
-
-    /**
-     * Records the network behaviour during its execution by mapping input states to the executed actions.
-     */
-    private _stateActionPairs: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
 
     /**
      * Random number generator.
@@ -686,32 +680,6 @@ export abstract class NetworkChromosome extends Chromosome {
         return outputFeatures;
     }
 
-    /**
-     * Updates the record of encountered state and executed actions.
-     * @param state the encountered state.
-     * @param action the executed action for the encountered state.
-     */
-    public updateStateActionPair(state: InputFeatures, action: EventAndParameters): void {
-
-        // Convert inputFeatures to ObjectInputFeatures for gradient descent.
-        const objectInputFeatures: ObjectInputFeatures = {};
-        for (const [sprite, featureGroups] of state.entries()) {
-            objectInputFeatures[sprite] = Object.fromEntries(featureGroups);
-        }
-
-        // Convert action to eventAndParametersObject for gradient descent
-        const parameterNames = action.event.getSearchParameterNames();
-        const parameter = {};
-        for (let i = 0; i < parameterNames.length; i++) {
-            parameter[parameterNames[i]] = action.parameters[i];
-        }
-        const eventObject: eventAndParametersObject = {
-            event: action.event.stringIdentifier(),
-            parameter: parameter
-        };
-        this._stateActionPairs.set(objectInputFeatures, eventObject);
-    }
-
     get uID(): number {
         return this._uID;
     }
@@ -882,10 +850,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set openStatementTargets(value: Map<number, number>) {
         this._openStatementTargets = value;
-    }
-
-    get stateActionPairs(): StateActionRecord {
-        return this._stateActionPairs;
     }
 }
 

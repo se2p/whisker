@@ -6,7 +6,6 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {FitnessFunction} from "../../search/FitnessFunction";
-import {eventAndParametersObject, ObjectInputFeatures, StateActionRecord} from "../Misc/GradientDescent";
 import logger from "../../../util/logger";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 
@@ -17,11 +16,6 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
      * Random number generator.
      */
     private _random: Randomness
-
-    /**
-     * Safes the collected recordings of a single network evaluation.
-     */
-    private _dynamicRecordingBuffer: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
 
     constructor(private _stableCount: number, private _earlyStop: boolean) {
         this._random = Randomness.getInstance();
@@ -35,7 +29,6 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
      * @returns Promise<number> the fitness of the given network based on reliable statement coverage.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
-        this._dynamicRecordingBuffer.clear();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
         await executor.execute(network);
         network.resetOpenStatement();
@@ -46,15 +39,9 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         if (fitness > 0) {
             network.fitness = 1 - fitness;
         } else {
-            network.fitness = 1;
-
-            // If Peer-To-Peer Sharing is activated, add collected trace to recording buffer.
-            if (Container.backpropagationInstance && Container.dynamicRecordingFraction > 0) {
-                this._dynamicRecordingBuffer = new Map([...this._dynamicRecordingBuffer, ...network.stateActionPairs]);
-            }
-
             // If we cover the statement, we want to ensure using different seeds that we would cover this statement
             // in other circumstances as well.
+            network.fitness = 1;
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
 
@@ -81,29 +68,13 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         for (const seed of repetitionSeeds) {
             Randomness.setScratchSeed(seed, true);
             const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
-            if (eventSelection === 'random') {
-                // Re-execute the saved sequence from the first run
-                await executor.executeSavedTrace(network);
-            } else {
-                // Let the network decided on what to do...
-                await executor.execute(network);
-            }
-
+            eventSelection === 'random' ? await executor.executeSavedTrace(network) : await executor.execute(network);
             await this.updateUncoveredMap(network);
             if (await network.targetFitness.isCovered(network)) {
                 network.fitness++;
             }
-
-            // If Peer-To-Peer Sharing is activated, add collected state-action trace to gradient descent ground truth.
-            if (await network.targetFitness.isCovered(network) &&
-                Container.backpropagationInstance && Container.dynamicRecordingFraction > 0) {
-                this._dynamicRecordingBuffer = new Map([...this._dynamicRecordingBuffer, ...network.stateActionPairs]);
-            }
-
             await executor.resetState();
         }
-        // Add dynamically recorded data to training dataset.
-        this._addDynamicRecordToTrainingDataset();
 
         // Reset to the old Scratch seed and network attributes.
         Randomness.setScratchSeed(originalSeed, true);
@@ -145,8 +116,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
     }
 
     /**
-     * Updates the map of uncovered targets by the number of times the given network was able to cover a respective
-     * target.
+     * Updates the map of uncovered targets by the number of times the given network covered a respective target.
      * @param network the network chromosome that has finished its playthrough.
      */
     private async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
@@ -165,46 +135,5 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
 
     get stableCount(): number {
         return this._stableCount;
-    }
-
-    /**
-     * Adds a random subset of collected state-action traces to the gradient descent ground truth data.
-     */
-    private _addDynamicRecordToTrainingDataset(): void {
-        if (Container.dynamicRecordingFraction <= 0) {
-            return;
-        }
-
-        const extractionSize = Math.floor(this._dynamicRecordingBuffer.size * Container.dynamicRecordingFraction);
-        const stateKeys: ObjectInputFeatures[] = [...this._dynamicRecordingBuffer.keys()];
-
-        for (let i = 0; i < extractionSize; i++) {
-            const randomKey = this._random.pick(stateKeys);
-            const event = this._normaliseActionParameter(this._dynamicRecordingBuffer.get(randomKey));
-            Container.backpropagationInstance.training_data.set(randomKey, event);
-            stateKeys.slice(stateKeys.indexOf(randomKey), 1);
-        }
-
-        logger.debug(`Picked ${extractionSize} data points and increased Dataset size to ${Container.backpropagationInstance.training_data.size}`);
-    }
-
-    /**
-     * Normalises executed event parameter.
-     * @param event the event object hosting the executed event parameter.
-     */
-    private _normaliseActionParameter(event: eventAndParametersObject): eventAndParametersObject {
-        if (event.event == "WaitEvent") {
-            event.parameter = {'Duration': Math.min(event.parameter['Duration'] / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
-        } else if (event.event.startsWith("KeyPressEvent")) {
-            event.parameter = {'Steps': Math.min(event.parameter['Steps'] / Container.config.getPressDurationUpperBound(), 1)};      // Press duration
-        } else if (event.event == "TypeNumberEvent") {
-            event.parameter = {"Number": event.parameter['Number']};   // Number
-        } else if (event.event == "MouseMoveEvent") {
-            event.parameter = {"X": event['X'] / 240, "Y": event['Y'] / 180}; // Coordinates.
-        } else if (event.event == "MouseDownForStepsEvent") {
-            event.parameter = {"Steps": Math.min(event['Steps'] / Container.config.getPressDurationUpperBound(), 1)}; // Steps;
-        }
-
-        return event;
     }
 }

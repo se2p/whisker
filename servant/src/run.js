@@ -15,6 +15,7 @@ const {
     testPath,
     output,
     numberOfJobs,
+    keepaliveTimeout
 } = opts;
 
 async function testByWhiskerTestsuite(pool) {
@@ -229,6 +230,6 @@ module.exports = () => Whiskers.withNewPool((pool) => run(pool), {
     // Avoid opening more browser windows than necessary.
     whiskers: Math.min(getProjectsInScratchPath().length, numberOfJobs),
     initWhiskerOnce: ({page}) => configureWhiskerWebInstance(page),
-    keepaliveTimeout: 5000,
+    keepaliveTimeout: keepaliveTimeout ? keepaliveTimeout : 5000,
     crashOn: ["pageerror", "error"], // FIXME: Issue #392
 });

@@ -36,4 +36,33 @@ export class NeuroevolutionUtil {
     public static relu(x: number): number {
         return Math.max(0, x);
     }
+
+    /**
+     * Computes the cosine similarity between two maps.
+     * Keys present in one map but not the other are padded as 0.
+     * @param map1 the first map to be compared.
+     * @param map2 the second map to be compared.
+     * @returns the cosine similarity between the two maps.
+     */
+    public static cosineSimilarityOfMaps(map1: Map<string, number>, map2: Map<string, number>): number {
+        const keys = new Set([...map1.keys(), ...map2.keys()]);
+        let dotProduct = 0;
+        let magnitude1 = 0;
+        let magnitude2 = 0;
+
+        for (const key of keys) {
+            const value1 = map1.get(key) ?? 0;
+            const value2 = map2.get(key) ?? 0;
+
+            dotProduct += value1 * value2;
+            magnitude1 += value1 * value1;
+            magnitude2 += value2 * value2;
+        }
+
+        if (magnitude1 === 0 || magnitude2 === 0) {
+            return 0;
+        }
+
+        return dotProduct / (Math.sqrt(magnitude1) * Math.sqrt(magnitude2));
+    }
 }

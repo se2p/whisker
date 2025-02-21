@@ -417,8 +417,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         }
 
         // Calculate the compatibility distance according to the number of matching, excess and disjoint genes.
-        const disjointFactor = (disjoint * this.hyperParameter.disjointCoefficient);
-        const excessFactor = (excess * this.hyperParameter.excessCoefficient);
+        const disjointFactor = (disjoint * this.hyperParameter.disjointCoefficient) / maxSize;
+        const excessFactor = (excess * this.hyperParameter.excessCoefficient) / maxSize;
         const weightCoefficient = this.hyperParameter.weightCoefficient;
         if (matching === 0) {
             return disjointFactor + excessFactor;

@@ -110,6 +110,11 @@ class WhiskerSubCommand extends Command {
             (_, v) => v === 2 ? v : v + 1,
             0
         );
+        this.option(
+            '--keepalive-timeout <Integer>',
+            'Timeout in seconds for the keepalive timeout',
+            (timeout) => util.processPositiveInt(timeout) * 1000,
+        );
     }
 
     // noinspection JSUnusedGlobalSymbols

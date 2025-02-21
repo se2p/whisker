@@ -8,7 +8,8 @@ const {
     output,
     configPath,
     testPath,
-    winningStates
+    winningStates,
+    keepaliveTimeout
 } = opts;
 
 // Dynamic Test suite using Neuroevolution
@@ -85,6 +86,6 @@ async function runDynamicTestSuite(whisker, path) {
 
 module.exports = () => Whiskers.withNewPool((pool) => generateDynamicTests(pool), {
     initWhiskerOnce: ({page}) => configureWhiskerWebInstance(page),
-    keepaliveTimeout: 5000,
+    keepaliveTimeout: keepaliveTimeout ? keepaliveTimeout : 5000,
     crashOn: ["pageerror", "error"], // FIXME: Issue #392
 });
