@@ -67,6 +67,10 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return this._args[3];
     }
 
+    override reasonForFailSummary(): string {
+        return this._comparison.reasonForFailSummary();
+    }
+
     /**
      * Get a method for checking whether a variable has a given comparison with a given value fulfilled.
      *

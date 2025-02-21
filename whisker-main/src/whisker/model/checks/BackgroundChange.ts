@@ -47,6 +47,10 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         return this._args[0];
     }
 
+    override reasonForFailSummary(): string {
+        return this._comparison.reasonForFailSummary();
+    }
+
     /**
      * Get a method checking whether the background of the stage changed.
      * @param t Instance of the test driver.

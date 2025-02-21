@@ -94,6 +94,10 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return this._check;
     }
 
+    reasonForFailSummary():string {
+        return "";
+    }
+
     abstract get dependsOnSayText(): boolean;
 
     protected abstract _validate(checkJSON: J): J;

@@ -54,6 +54,10 @@ abstract class AbstractNbrOfClones<
         return this._args[2];
     }
 
+    override reasonForFailSummary(): string {
+        return this._comparison.reasonForFailSummary();
+    }
+
     /**
      * Get a method to check how many clones of a sprite are there.
      * @param t Instance of the test driver.

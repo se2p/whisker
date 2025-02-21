@@ -57,6 +57,10 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         this._comparison = newQuantifiedComparison(this);
     }
 
+    override reasonForFailSummary(): string {
+        return this._comparison.wrapped.reasonForFailSummary();
+    }
+
     get operator(): ComparisonOp {
         return this._args[2];
     }

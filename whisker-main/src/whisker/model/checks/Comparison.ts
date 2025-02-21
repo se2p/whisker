@@ -12,16 +12,28 @@ export type Comparison =
     ;
 
 abstract class AbstractComparison implements Quantifiable<Comparison> {
+    lastComparedValue: unknown;
+
     protected constructor(private readonly _operand2: string | number) {
+        this.lastComparedValue = undefined;
     }
 
     get operand2(): string | number {
         return this._operand2;
     }
 
+    reasonForFailSummary(): string {
+        return `actual value: ${this.lastComparedValue}`;
+    }
+
     abstract get operator(): ComparisonOp;
 
-    abstract apply(operand1: string | number): boolean;
+    apply(operand1: string | number): boolean{
+        this.lastComparedValue = operand1;
+        return this.applyWithoutLog(operand1);
+    }
+
+    protected abstract applyWithoutLog(operand1: string | number): boolean;
 
     contradicts(that: Comparison): boolean {
         if (this.operator === "==") {
@@ -61,7 +73,7 @@ class Eq extends AbstractComparison {
         return "==";
     }
 
-    override apply(operand1: string | number | boolean): boolean {
+    override applyWithoutLog(operand1: string | number | boolean): boolean {
         if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
             operand1 = String(operand1);
         }
@@ -83,7 +95,7 @@ class Neq extends AbstractComparison {
         return "!=";
     }
 
-    override apply(operand1: string | number | boolean): boolean {
+    override applyWithoutLog(operand1: string | number | boolean): boolean {
         if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
             operand1 = String(operand1);
         }
@@ -105,7 +117,7 @@ class Leq extends AbstractComparison {
         return "<=";
     }
 
-    override apply(operand1: string | number): boolean {
+    override applyWithoutLog(operand1: string | number): boolean {
         return operand1 <= this.operand2;
     }
 
@@ -123,7 +135,7 @@ class Lt extends AbstractComparison {
         return "<";
     }
 
-    override apply(operand1: string | number): boolean {
+    override applyWithoutLog(operand1: string | number): boolean {
         return operand1 < this.operand2;
     }
 
@@ -141,7 +153,7 @@ class Gt extends AbstractComparison {
         return ">";
     }
 
-    override apply(operand1: string | number): boolean {
+    override applyWithoutLog(operand1: string | number): boolean {
         return operand1 > this.operand2;
     }
 
@@ -159,7 +171,7 @@ class Geq extends AbstractComparison {
         return ">=";
     }
 
-    override apply(operand1: string | number): boolean {
+    override applyWithoutLog(operand1: string | number): boolean {
         return operand1 >= this.operand2;
     }
 
