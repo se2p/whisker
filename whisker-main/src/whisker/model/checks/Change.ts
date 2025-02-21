@@ -4,10 +4,20 @@ import {Existential, Quantifiable, Quantification, Universal} from "./Quantifica
 import {Optional} from "../../utils/Optional";
 
 export class Change implements Quantifiable<Change> {
+    private lastUsedCurrentValue:unknown;
+    private lastUsedOldValue:unknown;
     protected constructor(private readonly _comparison: Comparison) {
+        this.lastUsedCurrentValue = undefined;
+        this.lastUsedOldValue = undefined;
+    }
+
+    reasonForFailSummary(): string {
+        return `current value: ${this.lastUsedCurrentValue}, old value: ${this.lastUsedOldValue}`;
     }
 
     apply(after: number, before: number): boolean {
+        this.lastUsedCurrentValue = after;
+        this.lastUsedOldValue = before;
         return this._comparison.apply(after - before);
     }
 

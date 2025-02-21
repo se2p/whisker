@@ -54,6 +54,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return AttrChangeJSON.parse(checkJSON) as AttrChangeJSON;
     }
 
+    override reasonForFailSummary(): string {
+        return this._change.wrapped.reasonForFailSummary();
+    }
+
     /**
      * Get a method checking whether an attribute of a sprite changed.
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText

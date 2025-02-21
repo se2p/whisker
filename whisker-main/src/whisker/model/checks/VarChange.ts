@@ -55,6 +55,10 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return VarChangeJSON.parse(checkJSON) as VarChangeJSON;
     }
 
+    override reasonForFailSummary(): string {
+        return this._change.reasonForFailSummary();
+    }
+
     /**
      * Get a method checking whether a variable value of a sprite changed.
      * @param t Instance of the test driver.
