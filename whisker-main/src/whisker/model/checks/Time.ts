@@ -41,16 +41,23 @@ type TTimeJSON =
 
 abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     protected readonly _steps: number;
+    protected _lastActualSteps: number;
 
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
+        this._steps = this._convertFromTimeToSteps();
+        this._lastActualSteps = undefined;
     }
 
     public get millis(): number {
         return this._args[0];
     }
 
-    protected _convertFromTimeToSteps(t): number {
+    override reasonForFailSummary(): string {
+        return `"expected"-steps: ${this._steps}, actual: ${this._lastActualSteps}`;
+    }
+
+    private _convertFromTimeToSteps(): number {
         const time = ModelUtil.testNumber(this.millis);
         return VMWrapper.convertFromTimeToSteps(time);
     }
@@ -88,9 +95,9 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun2 {
-        const steps = this._convertFromTimeToSteps(t);
         return (_, stepsSinceEnd) => {
-            return !this.negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
+            this._lastActualSteps = t.getTotalStepsExecuted() - stepsSinceEnd;
+            return !this.negated == (this._steps <= this._lastActualSteps);
         };
     }
 }
@@ -119,9 +126,9 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun1 {
-        const steps = this._convertFromTimeToSteps(t);
         return (stepsSinceLastTransition) => {
-            return !this.negated == (steps <= stepsSinceLastTransition);
+            this._lastActualSteps = stepsSinceLastTransition;
+            return !this.negated == (this._steps <= this._lastActualSteps);
         };
     }
 }
@@ -150,9 +157,9 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
      * @param t Instance of the test driver.
      */
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
-        const steps = this._convertFromTimeToSteps(t);
         return () => {
-            return !this.negated == (steps <= t.getTotalStepsExecuted());
+            this._lastActualSteps = t.getTotalStepsExecuted();
+            return !this.negated == (this._steps <= this._lastActualSteps);
         };
     }
 }
