@@ -34,12 +34,18 @@ export const OutputJSON = ICheckJSON.extend({
 });
 
 export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
+    private lastSayTextValue:string
     constructor(edgeLabel: string, json: SlimCheckJSON<OutputJSON>) {
         super(edgeLabel, {...json, name});
+        this.lastSayTextValue = "";
     }
 
     protected _validate(checkJSON: OutputJSON): OutputJSON {
         return OutputJSON.parse(checkJSON) as OutputJSON;
+    }
+
+    override reasonForFailSummary(): string {
+        return `actual text: ${this.lastSayTextValue}`;
     }
 
     /**
@@ -63,12 +69,13 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
 
         const check: (s: Sprite) => boolean = (s) => {
             if (!s.sayText) {
+                this.lastSayTextValue = s.sayText;
                 return false;
             }
 
-            const sayText = s.sayText.toLocaleLowerCase();
+            this.lastSayTextValue = s.sayText.toLocaleLowerCase();
             const expected = String(eval(expression)(t)).toLocaleLowerCase();
-            return sayText.includes(expected);
+            return this.lastSayTextValue.includes(expected);
         };
         cu.registerOutput(spriteName, this, graphID, (s) => !negated == check(s));
         return () => {
