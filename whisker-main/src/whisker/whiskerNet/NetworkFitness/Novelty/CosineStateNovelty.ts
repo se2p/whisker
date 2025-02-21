@@ -1,7 +1,7 @@
 import {NetworkChromosome} from "../../Networks/NetworkChromosome";
 import {NoveltyFitness} from "./NoveltyFitness";
 import {InputFeatures} from "../../Misc/InputExtraction";
-import similarity from "compute-cosine-similarity";
+import {NeuroevolutionUtil} from "../../Misc/NeuroevolutionUtil";
 
 export class CosineStateNovelty extends NoveltyFitness<Map<string, number>> {
 
@@ -23,17 +23,8 @@ export class CosineStateNovelty extends NoveltyFitness<Map<string, number>> {
      * @returns distance between the two states based on the cosine similarity.
      */
     protected compareBehaviours(state1: Map<string, number>, state2: Map<string, number>): number {
-        const keys = new Set([...state1.keys(), ...state2.keys()]);
-        const valueArray1: number[] = [];
-        const valueArray2: number[] = [];
-
-        for (const key of keys) {
-            valueArray1.push(state1.get(key) ?? 0);
-            valueArray2.push(state2.get(key) ?? 0);
-        }
-
         // Invert similarity score since we model novelty objectives as maximisation targets.
-        return 1 - (similarity(valueArray1, valueArray2) + 1) / 2;
+        return 1 - (NeuroevolutionUtil.cosineSimilarityOfMaps(state1, state2) + 1) / 2;
     }
 
     /**

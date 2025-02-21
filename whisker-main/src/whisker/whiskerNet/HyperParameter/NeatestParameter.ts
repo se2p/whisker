@@ -1,5 +1,5 @@
 import {NeuroevolutionTestGenerationParameter} from "./NeuroevolutionTestGenerationParameter";
-import {augmentationParameter, gradientDescentParameter} from "../Misc/GradientDescent";
+import {gradientDescentParameter} from "../Misc/GradientDescent";
 
 export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     /**
@@ -27,38 +27,16 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     // Gradient Descent.
 
     /**
-     * Whether to use gradient descent for network training.
-     */
-    private _applyGradientDescent = false;
-
-    /**
-     * Probability of applying gradient descent instead of genetic weight mutation.
-     */
-    private _gradientDescentProb = 0.5
-
-    /**
      * Parameter for the gradient descent algorithm.
      */
     private _gradientDescentParameter: gradientDescentParameter = {
+        probability: 0,
         learningRate: 0.001,
         learningRateAlgorithm: 'Static',
         epochs: 1000,
         combinePlayerRecordings: false,
         batchSize: 1,
-        labelSmoothing: 0,
-        l2Regularisation: 0
     };
-
-    /**
-     * Parameter for augmenting gradient descent ground truth data.
-     */
-    private _dataAugmentation: augmentationParameter = {
-        doAugment: false,
-        augmentFactor: 0,
-        disturbStateProb: 0,
-        disturbStatePower: 0
-    };
-
 
     get switchTargetCount(): number {
         return this._switchTargetCount;
@@ -92,22 +70,6 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
         this._randomFraction = value;
     }
 
-    get applyGradientDescent(): boolean {
-        return this._applyGradientDescent;
-    }
-
-    set applyGradientDescent(value: boolean) {
-        this._applyGradientDescent = value;
-    }
-
-    get gradientDescentProb(): number {
-        return this._gradientDescentProb;
-    }
-
-    set gradientDescentProb(value: number) {
-        this._gradientDescentProb = value;
-    }
-
     get gradientDescentParameter(): gradientDescentParameter {
         return this._gradientDescentParameter;
     }
@@ -115,15 +77,6 @@ export class NeatestParameter extends NeuroevolutionTestGenerationParameter {
     set gradientDescentParameter(value: gradientDescentParameter) {
         this._gradientDescentParameter = value;
     }
-
-    get dataAugmentation(): augmentationParameter {
-        return this._dataAugmentation;
-    }
-
-    set dataAugmentation(value: augmentationParameter) {
-        this._dataAugmentation = value;
-    }
-
 }
 
 export type PopulationGeneration = 'random' | 'direct_parent' | 'global_solutions';

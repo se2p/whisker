@@ -8,6 +8,7 @@ const {
     configPath,
     groundTruth,
     winningStates,
+    keepaliveTimeout
 } = require("./cli").opts;
 const Whiskers = require("./whiskers");
 
@@ -93,6 +94,6 @@ async function runGeneticSearch(page) {
 
 module.exports = () => Whiskers.withNewPool((pool) => pool.run(generateTests), {
     initWhiskerOnce: (whisker) => configureWhiskerWebInstance(whisker),
-    keepaliveTimeout: 120000,
+    keepaliveTimeout: keepaliveTimeout ? keepaliveTimeout : 120000,
     crashOn: ["pageerror", "error"], // FIXME: Issue #392
 });

@@ -70,7 +70,6 @@ export class NetworkExecutor {
 
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
-        network.stateActionPairs.clear();
 
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch(this._vm);
@@ -131,13 +130,7 @@ export class NetworkExecutor {
                 }
             }
             network.codons.push(eventIndex);
-            const nextEventAndParams = await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
-
-            // Record the state action pair if dynamicRecordTracing is activated
-            // and a valid action has been selected.
-            if (Container.dynamicRecordingFraction > 0 && nextEventAndParams !== undefined && !(nextEvent instanceof WaitEvent)) {
-                network.updateStateActionPair(spriteFeatures, nextEventAndParams);
-            }
+            await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
 
             // Record the activation trace and increase the stepCount.
             this.recordActivationTrace(network, stepCount, spriteFeatures);

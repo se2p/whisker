@@ -28,7 +28,6 @@
     "dependencies": {
         "assert": "^2.0.0",
         "clean-yaml-object": "^0.1.0",
-        "compute-cosine-similarity": "^1.1.0",
         "js-yaml": "^4.1.0",
         "lodash.clonedeep": "^4.5.0",
         "lodash.defaults": "^4.2.0",
