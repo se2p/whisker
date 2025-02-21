@@ -44,7 +44,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
 
     /**
      * Get a method that checks whether a random number is greater than the probability given. For randomness...
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver (unused).
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

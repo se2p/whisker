@@ -39,7 +39,7 @@ abstract class AbstractTouchingEdge<
 
     /**
      * Get a method to check whether a sprite is touching an edge.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for checking if a sprite or its clones is touching an edge.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

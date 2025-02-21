@@ -62,7 +62,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
      * Get a method checking whether an attribute of a sprite changed.
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText
      * (only = allowed);
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

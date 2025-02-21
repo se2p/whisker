@@ -75,7 +75,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
     /**
      * Get a method for checking whether a sprite's attribute has a given comparison with a given value fulfilled.
      *
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

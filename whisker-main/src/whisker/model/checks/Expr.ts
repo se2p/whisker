@@ -39,7 +39,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
 
     /**
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for evaluating expression.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

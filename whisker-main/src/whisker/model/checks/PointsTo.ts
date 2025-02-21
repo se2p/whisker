@@ -42,7 +42,7 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
     /**
      * Get a method whether a sprite points to the mouse/another sprite.
      *
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the direction attribute of a sprite and its clones.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

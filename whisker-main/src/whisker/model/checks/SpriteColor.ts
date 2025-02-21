@@ -61,7 +61,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
     /**
      * Get a method whether a sprite touches a color.
      *
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for checking if a sprite or its clones are touching a color.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

@@ -57,7 +57,7 @@ abstract class AbstractNbrOfClones<
 
     /**
      * Get a method to check how many clones of a sprite are there.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver to retrieve the number of clones of a sprite.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

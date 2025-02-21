@@ -45,7 +45,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
 
     /**
      * Get a method checking whether a sprite has the given output included in their sayText.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the sayText value of a sprite and its clones
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

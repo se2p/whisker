@@ -58,7 +58,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
 
     /**
      * Get a method checking whether a variable value of a sprite changed.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the current and old values of a sprites and its clones attribute.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */

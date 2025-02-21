@@ -78,7 +78,7 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
 
     /**
      * Get a method that checks whether enough time has elapsed since the program ended.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the total number of steps executed.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
