@@ -88,22 +88,15 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             ModelUtil.checkAttributeExistence(t, spriteName, attrName);
         }
 
-        const listener = this._isForEffect
-            ? (sprite: Sprite) => {
-                try {
-                    return this._comparison.applySingle(sprite.effects[attrName]);
-                } catch (e) {
-                    throw new ErrorForAttribute(pSpriteName, attrName, e);
-                }
+
+        const listener = (sprite: Sprite) => {
+            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+            try {
+                return this._comparison.applySingle(this._getAttr(sprite, attrName));
+            } catch (e) {
+                throw new Exception(pSpriteName, attrName, e);
             }
-            : (sprite: Sprite) => {
-                try {
-                    return this._comparison.applySingle(sprite[attrName]);
-                } catch (e) {
-                    throw new ErrorForEffect(pSpriteName, attrName, e);
-                }
-            }
-        ;
+        };
 
         // on movement listener
         if (attrName == "x" || attrName == "y") {
@@ -114,25 +107,20 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             cu.registerOutput(spriteName, this, graphID, listener);
         }
 
-        // without movement
-        if (this._isForEffect) {
-            return () => {
-                const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
-                try {
-                    return this._comparison.apply(sprites.map((s) => s.effects[attrName]));
-                } catch (e) {
-                    throw new ErrorForEffect(pSpriteName, attrName, e);
-                }
-            };
-        }
         return () => {
-            const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
+            const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
+            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+
             try {
-                return this._comparison.apply(sprites.map((s) => s[attrName]));
+                return this._comparison.apply(sprites.map((s) => this._getAttr(s, attrName)));
             } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
+                throw new Exception(pSpriteName, attrName, e);
             }
         };
+    }
+
+    private _getAttr(s: Sprite, attrName: string) {
+        return this._isForEffect ? s.effects[attrName] : s[attrName];
     }
 
     override get dependsOnSayText(): boolean {
