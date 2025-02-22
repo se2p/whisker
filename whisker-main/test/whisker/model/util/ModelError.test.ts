@@ -23,14 +23,16 @@ describe('ModelError', () => {
     test("getEffectFailedOutput()", () => {
         const edge = getEdge();
         const effect = new AttrChange("label", {args: ["Apple", "x", "+"]});
-        expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Apple,x,+)");
+        const expected = "graphID-label: AttrChange(Apple,x,+) current value: undefined, old value: undefined";
+        expect(getEffectFailedOutput(edge, effect)).toEqual(expected);
     });
 
     test("getEffectFailedOutput() with TimeBetween", () => {
         const edge = getEdge();
         edge.addCondition(new TimeBetween("label", {negated: true, args: [123]}));
         const effect = new AttrComp("label", {args: ["Apple", "x", ">", "0"]});
-        expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrComp(Apple,x,>,0) after 123ms");
+        const expected = "graphID-label: AttrComp(Apple,x,>,0) after 123ms actual value: undefined";
+        expect(getEffectFailedOutput(edge, effect)).toEqual(expected);
 
     });
 
@@ -38,7 +40,8 @@ describe('ModelError', () => {
         const edge = getEdge();
         edge.addCondition(new TimeElapsed("label", {negated: true, args: [456]}));
         const effect = new AttrChange("label", {args: ["Apple", "x", "+"]});
-        expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Apple,x,+) before 456ms elapsed");
+        const expected = "graphID-label: AttrChange(Apple,x,+) before 456ms elapsed current value: undefined, old value: undefined";
+        expect(getEffectFailedOutput(edge, effect)).toEqual(expected);
     });
 
     test("getEffectFailedOutput() with TimeElapsed and TimeAfterEnd", () => {
@@ -46,11 +49,13 @@ describe('ModelError', () => {
         edge.addCondition(new TimeAfterEnd("label", {negated: true, args: [789]}));
         edge.addCondition(new TimeElapsed("label", {negated: true, args: [456]}));
         const effect = new AttrChange("label", {args: ["Banana", "x", "+"]});
-        expect(getEffectFailedOutput(edge, effect)).toEqual("graphID-label: AttrChange(Banana,x,+) before 456ms elapsed after 789ms");
+        const expected = "graphID-label: AttrChange(Banana,x,+) before 456ms elapsed after 789ms current value: undefined, old value: undefined";
+        expect(getEffectFailedOutput(edge, effect)).toEqual(expected);
     });
 
     test("getTimeLimitFailedAfterOutput()", () => {
         const condition = new Expr("label", {args: ["$(Bowl.x)>0"]});
+        // the expression was not evaluated so there is no logged last value
         expect(getTimeLimitFailedAfterOutput(getEdge(), condition, 50)).toEqual("graphID-label: Expr($(Bowl.x)>0) after 50ms");
     });
 
