@@ -24,7 +24,8 @@ function getEffectFailedOutput(edge: AbstractEdge, effect: Check): string {
     if (containsAfterTime != null) {
         result += ` after ${containsAfterTime}ms`;
     }
-    return result;
+    const reason = effect.reasonForFailSummary();
+    return reason ? `${result} ${reason}` : result;
 }
 
 function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number): string {
