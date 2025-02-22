@@ -12,10 +12,10 @@ export type Comparison =
     ;
 
 abstract class AbstractComparison implements Quantifiable<Comparison> {
-    lastComparedValue: unknown;
+    private _lastComparedValue: unknown;
 
     protected constructor(private readonly _operand2: string | number) {
-        this.lastComparedValue = undefined;
+        this._lastComparedValue = undefined;
     }
 
     get operand2(): string | number {
@@ -23,13 +23,13 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
     }
 
     reasonForFailSummary(): string {
-        return `actual value: ${this.lastComparedValue}`;
+        return `actual value: ${this._lastComparedValue}`;
     }
 
     abstract get operator(): ComparisonOp;
 
     apply(operand1: string | number): boolean{
-        this.lastComparedValue = operand1;
+        this._lastComparedValue = operand1;
         return this.applyWithoutLog(operand1);
     }
 
