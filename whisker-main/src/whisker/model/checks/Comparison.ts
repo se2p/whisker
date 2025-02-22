@@ -28,7 +28,7 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
 
     abstract get operator(): ComparisonOp;
 
-    apply(operand1: string | number): boolean{
+    apply(operand1: string | number): boolean {
         this._lastComparedValue = operand1;
         return this.applyWithoutLog(operand1);
     }

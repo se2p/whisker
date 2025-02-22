@@ -94,7 +94,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return this._check;
     }
 
-    reasonForFailSummary():string {
+    reasonForFailSummary(): string {
         return "";
     }
 

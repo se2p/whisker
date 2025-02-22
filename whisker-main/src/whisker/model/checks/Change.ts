@@ -4,8 +4,9 @@ import {Existential, Quantifiable, Quantification, Universal} from "./Quantifica
 import {Optional} from "../../utils/Optional";
 
 export class Change implements Quantifiable<Change> {
-    private _lastUsedCurrentValue:unknown;
-    private _lastUsedOldValue:unknown;
+    private _lastUsedCurrentValue: unknown;
+    private _lastUsedOldValue: unknown;
+
     protected constructor(private readonly _comparison: Comparison) {
         this._lastUsedCurrentValue = undefined;
         this._lastUsedOldValue = undefined;

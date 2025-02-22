@@ -34,7 +34,8 @@ export const OutputJSON = ICheckJSON.extend({
 });
 
 export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
-    private _lastSayTextValue:string
+    private _lastSayTextValue: string
+
     constructor(edgeLabel: string, json: SlimCheckJSON<OutputJSON>) {
         super(edgeLabel, {...json, name});
         this._lastSayTextValue = "";

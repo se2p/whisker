@@ -3,7 +3,6 @@ import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {keys} from "../../../../../whisker-web/src/components/model-editor-labelCodes";
 
 const name = "Expr" as const;
 
@@ -23,7 +22,7 @@ export const ExprJSON = ICheckJSON.extend({
 
 export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
     private readonly _code: string;
-    private log:Record<string, string>;
+    private log: Record<string, string>;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<ExprJSON>) {
         super(edgeLabel, {...json, name});
