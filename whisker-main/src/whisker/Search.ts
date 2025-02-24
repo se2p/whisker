@@ -58,15 +58,6 @@ export class Search {
         return await testGenerator.generateTests(project);
     }
 
-    private printTests(tests: WhiskerTest[]): void {
-        let i = 0;
-        logger.info(`Total number of tests: ${tests.length}`);
-        for (const test of tests) {
-            logger.info(`Test ${i}:\n${test.toString()}`);
-            i++;
-        }
-    }
-
     private testsToString(tests: WhiskerTest[]): string {
         const converter = new JavaScriptConverter();
         return converter.getSuiteText(tests);
@@ -216,10 +207,8 @@ seed ${configSeed} defined within the config files.`);
         StatisticsCollector.getInstance().configName = configName;
         const testListWithSummary = await this.execute(project, config);
         const tests = testListWithSummary.testList;
-        this.printTests(tests);
-        const csvOutput = this.outputCSV(config);
-
         const javaScriptText = this.testsToString(tests);
+        const csvOutput = this.outputCSV(config);
         return [javaScriptText, testListWithSummary.summary, csvOutput];
     }
 }
