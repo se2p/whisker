@@ -62,7 +62,6 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
 
     protected _contradicts(that: Layer): boolean {
         // if there is only one layer a sprite can be at the first and last layer at the same time
-        // this._args[0] == that._args[0] && this._args[1] != that._args[1]
         return false;
     }
 
