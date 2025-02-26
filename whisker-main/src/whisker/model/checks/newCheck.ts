@@ -25,6 +25,7 @@ import {z} from "zod";
 import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapsed, TimeElapsedJSON} from "./Time";
 import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
 import {PointsTo, PointsToJSON} from "./PointsTo";
+import {AnyKey, AnyKeyJSON} from "./AnyKey";
 
 export type CheckJSON =
     | AttrChangeJSON
@@ -32,6 +33,7 @@ export type CheckJSON =
     | BackgroundChangeJSON
     | ClickJSON
     | KeyJSON
+    | AnyKeyJSON
     | OutputJSON
     | SpriteColorJSON
     | SpriteTouchingJSON
@@ -58,6 +60,7 @@ export const CheckJSON = z.discriminatedUnion("name", [
     BackgroundChangeJSON,
     ClickJSON,
     KeyJSON,
+    AnyKeyJSON,
     OutputJSON,
     SpriteColorJSON,
     SpriteTouchingJSON,
@@ -84,6 +87,7 @@ export type Check =
     | BackgroundChange
     | Click
     | Key
+    | AnyKey
     | Output
     | SpriteColor
     | SpriteTouching
@@ -111,6 +115,7 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "AttrComp",
     "BackgroundChange",
     "Click",
+    "AnyKey",
     "Key",
     "Output",
     "SpriteColor",
@@ -146,6 +151,8 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             return new Click(edgeLabel, checkJSON);
         case "Key":
             return new Key(edgeLabel, checkJSON);
+        case "AnyKey":
+            return new AnyKey(edgeLabel, checkJSON);
         case "Output":
             return new Output(edgeLabel, checkJSON);
         case "SpriteColor":

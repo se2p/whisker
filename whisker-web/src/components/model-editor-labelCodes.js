@@ -82,7 +82,9 @@ const checkLabelCodes = {
     // 2 // sprite name regex, target (sprite or mouse pointer)
     PointsTo: [argType.spriteNameRegex, argType.spriteNameRegex],
     // 1 // sprite name regex
-    ClearedEffects: [argType.spriteNameRegex]
+    ClearedEffects: [argType.spriteNameRegex],
+    // 0
+    AnyKey: []
 };
 
 const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter', 'a', 'b', 'c', 'd', 'e', 'f',

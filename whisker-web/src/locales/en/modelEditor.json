@@ -113,6 +113,7 @@
     "TouchingVerticalEdge": "Sprite - Vertical Border",
     "TouchingHorizEdge": "Sprite - Horizontal Border",
     "Layer": "Layer (First or Last)",
+    "AnyKey": "Any key pressed",
     "PointsTo": "Sprite points to",
     "ClearedEffects": "Sprite has no Effect",
     "InputClickSprite": "Click Sprite",

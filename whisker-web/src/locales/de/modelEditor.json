@@ -112,6 +112,7 @@
     "TouchingVerticalEdge": "Sprite - Vertikale Kante",
     "TouchingHorizEdge": "Sprite - Horizontale Kante",
     "Layer": "Ebene (Erste oder Letzte)",
+    "AnyKey": "Beliebige Taste gedrückt",
     "PointsTo": "Sprite schaut zu",
     "ClearedEffects": "Sprite ohne Effecte",
     "InputClickSprite": "Klicke Sprite",

@@ -8,6 +8,7 @@ import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {Checks} from "./Checks";
 import {Check} from "../checks/newCheck";
+import logger from "../../../util/logger";
 
 type EffectCheck = { effect: Check, edge: ProgramModelEdge, model: ProgramModel | EndModel };
 
@@ -196,6 +197,14 @@ export class CheckUtility extends EventEmitter {
         return this._testDriver.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyName);
         // replaced because of bug in test driver...
         // return this.testDriver.isKeyDown(keyName);
+    }
+
+    /**
+     * Check whether any key was pressed at the beginning of the step.
+     */
+    isAnyKeyDown(): boolean {
+        logger.debug(this._testDriver.vmWrapper.vm.runtime.ioDevices.keyboard._keysPressed);
+        return this._testDriver.vmWrapper.vm.runtime.ioDevices.keyboard._keysPressed.length>0;
     }
 
     /**
