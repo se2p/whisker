@@ -1,0 +1,163 @@
+[
+    {
+        "id": "program",
+        "usage": "program",
+        "startNodeId": "0",
+        "nodes": [
+            {
+                "id": "0",
+                "label": "start"
+            },
+            {
+                "id": "key pressed",
+                "label": "key pressed"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "e91ed9cc8bd538",
+                "label": "key pressed",
+                "from": "0",
+                "to": "key pressed",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "args": [],
+                        "negated": false,
+                        "name": "AnyKey"
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "36c4ba6668355",
+                "label": "cat says something",
+                "from": "key pressed",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "args": [
+                            "Sprite1",
+                            "Any Key was pressed"
+                        ],
+                        "negated": false,
+                        "name": "Output"
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "id": "input",
+        "usage": "user",
+        "startNodeId": "0",
+        "nodes": [
+            {
+                "id": "0",
+                "label": "start"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "edges": [
+            {
+                "id": "b088416f7dbd28",
+                "label": "press a",
+                "from": "0",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "args": [
+                            0.33
+                        ],
+                        "negated": false,
+                        "name": "Probability"
+                    }
+                ],
+                "effects": [
+                    {
+                        "args": [
+                            "a"
+                        ],
+                        "negated": false,
+                        "name": "InputKey"
+                    }
+                ]
+            },
+            {
+                "id": "bee9d29e0ce14",
+                "label": "press enter",
+                "from": "0",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "args": [
+                            0.5
+                        ],
+                        "negated": false,
+                        "name": "Probability"
+                    }
+                ],
+                "effects": [
+                    {
+                        "args": [
+                            "enter"
+                        ],
+                        "negated": false,
+                        "name": "InputKey"
+                    }
+                ]
+            },
+            {
+                "id": "53363a1dca7e6",
+                "label": "press 2",
+                "from": "0",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "args": [
+                            "2"
+                        ],
+                        "negated": false,
+                        "name": "InputKey"
+                    }
+                ]
+            }
+        ]
+    }
+]
