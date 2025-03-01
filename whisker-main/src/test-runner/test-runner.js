@@ -146,11 +146,15 @@ class TestRunner extends EventEmitter {
                 modelProps.duration = 35000;
             }
 
+            const indices = modelTester.userModelCount > 0
+                ? Array.from({length: 10}, (_, i) => i)
+                :[-1];
             for (let i = 0; i < modelProps.repetitions; i++) {
                 // TODO: It would be better here to use the loadSaveState function.
                 //  However there seem to be timing issues with the models.
                 this.util = await this._loadProject(vm, project, props);
-                for (let uM = 0; uM < modelTester.userModelCount; ++uM) {
+                for (let t = 0; t < indices.length; ++t) {
+                    const uM = indices[t];
                     await this.vmWrapper.resetProject(this.saveState);
                     const startTime = Date.now();
                     const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
