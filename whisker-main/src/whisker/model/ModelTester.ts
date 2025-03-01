@@ -21,6 +21,7 @@ export class ModelTester extends EventEmitter {
 
     private _programModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
+    private _runningUserModels: UserModel[] = [];
     private _onTestEndModels: EndModel[] = [];
 
     private _checkUtility: CheckUtility | null;
@@ -96,6 +97,10 @@ export class ModelTester extends EventEmitter {
         return this._userModels.length > 0;
     }
 
+    get userModelCount(): number {
+        return this._userModels.length;
+    }
+
     running(): boolean {
         if (!this._isRunning) {
             return false;
@@ -120,14 +125,18 @@ export class ModelTester extends EventEmitter {
     /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      * @param t Instance of the test driver for this test run.
+     * @param UMIndex Index of the UserModel to use for generating input.
+     *                       If the index is not valid all UserModels are used.
      */
-    prepareModel(t: TestDriver): void {
+    prepareModel(t: TestDriver, UMIndex = -1): void {
         // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
         Container.testDriver = t;
 
-        const allModels = [...this._programModels, ...this._userModels, ...this._onTestEndModels];
+        this._runningUserModels = 0 <= UMIndex && UMIndex < this.userModelCount ? [this._userModels[UMIndex]] : [];
+        logger.debug(`start test with user model with ids: ${this._runningUserModels.map(u => u.id)}`);
+        const allModels = [...this._programModels, ...this._runningUserModels, ...this._onTestEndModels];
         this._result = new ModelResult();
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
         this._checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this._onVMEvent.bind(this));
@@ -198,7 +207,7 @@ export class ModelTester extends EventEmitter {
             model.setTransitionsStartTo(steps);
             model.programEndStep = steps;
         });
-        this._userModels.forEach(model => {
+        this._runningUserModels.forEach(model => {
             model.stepNbrOfProgramEnd = steps;
         });
         this._onTestEndCallback!.enable();
@@ -223,28 +232,24 @@ export class ModelTester extends EventEmitter {
     }
 
     private _userInputGen() {
-        if (!this.userModelsLoaded()) {
+        if (this._runningUserModels.length == 0) {
             return;
         }
 
         const userInputFun = () => {
-            const notStoppedUserModels: UserModel[] = [];
-            this._userModels.forEach(model => {
+            let stop = false;
+            this._runningUserModels.forEach(model => {
                 const edge = model.makeOneTransition(this._testDriver!, this._checkUtility!);
                 if (edge instanceof UserModelEdge) {
                     edge.inputImmediate(this._testDriver!);
                 }
-                if (!model.stopped()) {
-                    notStoppedUserModels.push(model);
-                }
+                stop = stop || model.stopped();
             });
-            if (notStoppedUserModels.length == 0) {
-                // logger.debug("Input generation per user models stopped.");
+            if (stop) {
                 callback.disable();
             }
         };
         const callback = this._addModelCallback(userInputFun, false, "inputOfUserModel");
-        return callback;
     }
 
     private _addModelCallback(fun: () => void, afterStep = false, name: string) {

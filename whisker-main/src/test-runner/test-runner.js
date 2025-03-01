@@ -150,19 +150,21 @@ class TestRunner extends EventEmitter {
                 // TODO: It would be better here to use the loadSaveState function.
                 //  However there seem to be timing issues with the models.
                 this.util = await this._loadProject(vm, project, props);
-                const startTime = Date.now();
-                let result = await this._executeTest(vm, undefined, modelTester, props, modelProps);
-                result.modelResult.testNbr = i;
-                this.emit(TestRunner.TEST_MODEL, result);
-                testResults.push(result);
-
-                // Record the results
-                const duration = (Date.now() - startTime) / 1000;
-                const coverage = this._extractCoverage();
-                const modelResults = this._extractModelCSVData(result.modelResult);
-                const seed = Randomness.scratchSeed;
-                csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
-                    duration, undefined, modelResults);
+                for (let uM = 0; uM < modelTester.userModelCount; ++uM) {
+                    await this.vmWrapper.resetProject(this.saveState);
+                    const startTime = Date.now();
+                    const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
+                    result.modelResult.testNbr = i * modelTester.userModelCount + uM;
+                    this.emit(TestRunner.TEST_MODEL, result);
+                    testResults.push(result);
+                    // Record the results
+                    const duration = (Date.now() - startTime) / 1000;
+                    const coverage = this._extractCoverage();
+                    const modelResults = this._extractModelCSVData(result.modelResult);
+                    const seed = Randomness.scratchSeed;
+                    csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
+                        duration, undefined, modelResults);
+                }
             }
             finalResults[projectName] = testResults;
         } else {
@@ -434,11 +436,12 @@ class TestRunner extends EventEmitter {
      * @param {number} defaultTimeoutPerTest .
      *
      * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
+     * @param userModelIndex index of the used UserModel
      * @returns {Promise<TestResult>} .
      * @private
      */
     async _executeTest(vm, test, modelTester, props,
-                       modelProps, defaultTimeoutPerTest = 0) {
+                       modelProps, defaultTimeoutPerTest = 0, userModelIndex=-1) {
         const result = new TestResult(test);
         const testDriver = this.util.getTestDriver(
             {
@@ -462,7 +465,7 @@ class TestRunner extends EventEmitter {
         this._checkSeed(test);
 
         if (modelTester && modelTester.someModelLoaded()) {
-            modelTester.prepareModel(testDriver, modelProps.caseSensitive);
+            modelTester.prepareModel(testDriver, userModelIndex);
         }
 
         if (test) {
