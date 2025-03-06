@@ -5,6 +5,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {Change, ChangingCheck, newQuantifiedChange, NumberOrChangeOp} from "./Change";
 import {Quantification} from "./Quantification";
+import {fail} from "./CheckResult";
 
 const name = "AttrChange" as const;
 
@@ -54,10 +55,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return AttrChangeJSON.parse(checkJSON) as AttrChangeJSON;
     }
 
-    override reasonForFailSummary(): string {
-        return this._change.wrapped.reasonForFailSummary();
-    }
-
     /**
      * Get a method checking whether an attribute of a sprite changed.
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText
@@ -87,7 +84,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return () => {
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             try {
-                return this._change.apply(sprites.map((s) => [s[attrName], s.old[attrName]]));
+                const res = this._change.apply(sprites.map((s) => [s[attrName], s.old[attrName]]));
+                return res.passed === true ? res : fail(`${spriteName}.${attrName}: ${res.reason}`);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }

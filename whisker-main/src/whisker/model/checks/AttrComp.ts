@@ -6,6 +6,7 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, newQuantifiedComparison} from "./Comparison";
 import {Quantification} from "./Quantification";
+import {fail} from "./CheckResult";
 
 const name = "AttrComp" as const;
 
@@ -57,10 +58,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         this._comparison = newQuantifiedComparison(this);
     }
 
-    override reasonForFailSummary(): string {
-        return this._comparison.wrapped.reasonForFailSummary();
-    }
-
     get operator(): ComparisonOp {
         return this._args[2];
     }
@@ -88,7 +85,8 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         const listener = (sprite) => {
             try {
-                return this._comparison.applySingle(sprite[attrName]);
+                const res = this._comparison.applySingle(sprite[attrName]);
+                return res.passed === true ? res : fail(`${spriteName}.${attrName}: ${res.reason}`);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -106,9 +104,9 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // without movement
         return () => {
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
-
             try {
-                return this._comparison.apply(sprites.map((s) => s[attrName]));
+                const res = this._comparison.apply(sprites.map((s) => s[attrName]));
+                return res.passed === true ? res : fail(`${spriteName}.${attrName}: ${res.reason}`);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }

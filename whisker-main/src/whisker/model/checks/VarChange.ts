@@ -6,6 +6,7 @@ import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
 import {Change, ChangingCheck, newChange, NumberOrChangeOp} from "./Change";
+import {fail} from "./CheckResult";
 
 const name = "VarChange" as const;
 
@@ -55,10 +56,6 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return VarChangeJSON.parse(checkJSON) as VarChangeJSON;
     }
 
-    override reasonForFailSummary(): string {
-        return this._change.reasonForFailSummary();
-    }
-
     /**
      * Get a method checking whether a variable value of a sprite changed.
      * @param t Instance of the test driver.
@@ -81,10 +78,13 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
             try {
-                return this._change.apply(
+                const res = this._change.apply(
                     ModelUtil.testNumber(variable.value),
                     ModelUtil.testNumber(variable.old.value)
                 );
+                return res.passed === true
+                    ? res
+                    : fail(`${spriteName}.${variableName}: ${res.reason}`);
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }

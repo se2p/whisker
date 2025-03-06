@@ -4,6 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
+import {any, CheckResult, pass, fail} from "./CheckResult";
 
 export type TouchingEdgeArgs = [
     /**
@@ -46,20 +47,27 @@ abstract class AbstractTouchingEdge<
         const [pSpriteName] = this._args;
         const negated = this.negated;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
-        const check = this._getCheck();
+        const touchingEdgeCheck = this._getCheck();
         cu.registerOnMoveEvent(spriteName, this._self(), graphID, (sprite) => {
-            return !negated == check(sprite);
+            return (negated !== touchingEdgeCheck(sprite).passed) ? pass() : fail("(reason unknown)");
         });
+
+        const edge = {
+            [touchingEdgeName]: "an edge",
+            [touchingHorizEdgeName]: "a horizontal edge",
+            [touchingVerticalEdgeName]: "a vertical edge",
+        }[this.name];
+
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);
-            const anyTouchingEdge = sprites.some(check);
-            return !negated == anyTouchingEdge;
+            const reason = `Expected sprite "${spriteName}" not to touch ${edge}`;
+            return any(touchingEdgeCheck, negated, reason, sprites);
         };
     }
 
     protected abstract _self(): C;
 
-    protected abstract _getCheck(): (sprite: Sprite) => boolean;
+    protected abstract _getCheck(): (sprite: Sprite) => CheckResult;
 
     protected override _contradicts(_that: AbstractTouchingEdge): boolean {
         return false;
@@ -91,8 +99,18 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON, Touchin
         return TouchingEdgeJSON.parse(checkJSON) as TouchingEdgeJSON;
     }
 
-    protected _getCheck(): (sprite: Sprite) => boolean {
-        return (sprite: Sprite) => sprite.visible && sprite.isTouchingEdge();
+    protected _getCheck(): (sprite: Sprite) => CheckResult {
+        return (sprite: Sprite) => {
+            if (!sprite.visible) {
+                return fail(`Expected sprite "${sprite.name}" to be visible`);
+            }
+
+            if (!sprite.isTouchingEdge()) {
+                return fail(`Expected sprite "${sprite.name}" to touch an edge`);
+            }
+
+            return pass();
+        };
     }
 
     protected _self(): TouchingEdge {
@@ -122,8 +140,18 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
         return TouchingHorizEdgeJSON.parse(checkJSON) as TouchingHorizEdgeJSON;
     }
 
-    protected _getCheck(): (sprite: Sprite) => boolean {
-        return (sprite: Sprite) => sprite.visible && sprite.isTouchingHorizEdge();
+    protected _getCheck(): (sprite: Sprite) => CheckResult {
+        return (sprite: Sprite) => {
+            if (!sprite.visible) {
+                return fail(`Expected sprite "${sprite.name}" to be visible`);
+            }
+
+            if (!sprite.isTouchingHorizEdge()) {
+                return fail(`Expected sprite "${sprite.name}" to touch a horizontal edge`);
+            }
+
+            return pass();
+        };
     }
 
     protected _self(): TouchingHorizEdge {
@@ -152,8 +180,18 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
         return TouchingVerticalEdgeJSON.parse(checkJSON) as TouchingVerticalEdgeJSON;
     }
 
-    protected _getCheck(): (sprite: Sprite) => boolean {
-        return (sprite: Sprite) => sprite.visible && sprite.isTouchingVerticalEdge();
+    protected _getCheck(): (sprite: Sprite) => CheckResult {
+        return (sprite: Sprite) => {
+            if (!sprite.visible) {
+                return fail(`Expected sprite "${sprite.name}" to be visible`);
+            }
+
+            if (!sprite.isTouchingVerticalEdge()) {
+                return fail(`Expected sprite "${sprite.name}" to touch a vertical edge`);
+            }
+
+            return pass();
+        };
     }
 
     protected _self(): TouchingVerticalEdge {

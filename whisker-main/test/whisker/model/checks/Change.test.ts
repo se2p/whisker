@@ -8,6 +8,7 @@ import {
     NumberOrChangeOp
 } from "../../../../src/whisker/model/checks/Change";
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 // Generators for 1-tuples, 2-tuples, and 3-tuples of numbers.
 const number = fc.double({noNaN: true});
@@ -48,7 +49,7 @@ describe("A change", () => {
         "returns the same result regardless if negated immediately or retroactively", (change, x, y) => {
             const c = newChange({change, negated: true}); // immediate negation
             const d = newChange({change}).negate(); // retroactive negation
-            expect(c.apply(x, y)).toBe(d.apply(x, y));
+            expect(c.apply(x, y)).toStrictEqual(d.apply(x, y));
         });
 
     it.prop([change, change])("has a symmetric contradicts() method", (c1, c2) => {
@@ -57,7 +58,7 @@ describe("A change", () => {
 
     it.prop([change, number, number])("is idempotent regarding double negation", (change, x, y) => {
         const expected = change.apply(x, y);
-        expect(change.negate().negate().apply(x, y)).toBe(expected);
+        expect(change.negate().negate().apply(x, y)).toStrictEqual(expected);
     });
 
     describe("by a number", () => {
@@ -85,18 +86,18 @@ describe("A change", () => {
         it.prop([n2.map(([c, b]) => [c, b, b + c]).filter(([c, b, a]) => a - b === c)])(
             "returns true for the correct delta", ([change, before, after]) => {
                 const c = newChange({change});
-                expect(c.apply(after, before)).toBe(true);
+                expect(c.apply(after, before)).toStrictEqual(pass());
             });
 
         it.prop([n3.filter(([c, b, a]) => a - b !== c)])(
             "returns false for incorrect deltas", ([change, before, after]) => {
                 const c = newChange({change});
-                expect(c.apply(after, before)).toBe(false);
+                expect(c.apply(after, before)).toStrictEqual(fail(expect.any(String)));
             });
 
         it.prop([fc.oneof(eq, ne)])("has a symmetric apply() method if the delta is 0", ([before, after]) => {
             const c = newChange({change: 0});
-            expect(c.apply(before, after)).toBe(c.apply(after, before));
+            expect(c.apply(before, after).passed).toStrictEqual(c.apply(after, before).passed);
         });
     });
 
@@ -159,7 +160,7 @@ describe("A change", () => {
             expect(c1.contradicts(c2)).toBe(true);
         });
 
-        it.prop([compat])("it does not contradicts changes with compatible deltas", (change) => {
+        it.prop([compat])("it does not contradict changes with compatible deltas", (change) => {
             const c1 = newChange({change: op});
             const c2 = newChange({change});
             expect(c1.contradicts(c2)).toBe(false);
@@ -167,18 +168,18 @@ describe("A change", () => {
 
         it.prop([passing])("is true for the correct delta", ([x, y]) => {
             const change = newChange({change: op});
-            expect(change.apply(x, y)).toBe(true);
+            expect(change.apply(x, y)).toStrictEqual(pass());
         });
 
         it.prop([failing])("is false for incorrect deltas", ([x, y]) => {
             const change = newChange({change: op});
-            expect(change.apply(x, y)).toBe(false);
+            expect(change.apply(x, y)).toStrictEqual(fail(expect.any(String)));
         });
 
         if (op === "=" || op === "!=") {
             it.prop([fc.oneof(eq, ne)])("has a symmetric apply() method", ([x, y]) => {
                 const change = newChange({change: op});
-                expect(change.apply(x, y)).toBe(change.apply(y, x));
+                expect(change.apply(x, y).passed).toStrictEqual(change.apply(y, x).passed);
             });
         }
     });

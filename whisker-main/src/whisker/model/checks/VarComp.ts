@@ -5,6 +5,7 @@ import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {fail} from "./CheckResult";
 
 const name = "VarComp" as const;
 
@@ -67,10 +68,6 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return this._args[3];
     }
 
-    override reasonForFailSummary(): string {
-        return this._comparison.reasonForFailSummary();
-    }
-
     /**
      * Get a method for checking whether a variable has a given comparison with a given value fulfilled.
      *
@@ -91,7 +88,10 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
             const sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable = sprite.getVariable(variableName);
             try {
-                return this._comparison.apply(variable.value);
+                const res = this._comparison.apply(variable.value);
+                return res.passed === true
+                    ? res
+                    : fail(`${spriteName}.${variableName}: ${res.reason}`);
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }

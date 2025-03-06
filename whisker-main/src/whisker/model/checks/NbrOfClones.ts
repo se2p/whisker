@@ -54,10 +54,6 @@ abstract class AbstractNbrOfClones<
         return this._args[2];
     }
 
-    override reasonForFailSummary(): string {
-        return this._comparison.reasonForFailSummary();
-    }
-
     /**
      * Get a method to check how many clones of a sprite are there.
      * @param t Instance of the test driver.
@@ -74,7 +70,8 @@ abstract class AbstractNbrOfClones<
 
         return () => {
             const sprites = t.getSprites(spriteCondition);
-            return this._comparison.apply(sprites.length);
+            const res = this._comparison.apply(sprites.length);
+            return res.passed === true ? res : fail(`Number of "${spriteName}" clones: ${res.reason}`);
         };
     }
 

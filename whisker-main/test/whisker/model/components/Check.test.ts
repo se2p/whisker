@@ -13,6 +13,7 @@ import {Pair} from "../../../../src/whisker/utils/Pair";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 function checkConstructorThrows(name: CheckName, negated: boolean, args) {
     expect(() => newCheck(edgeID, {name, negated, args})).toThrow();
@@ -176,7 +177,8 @@ describe('check and registerComponent', () => {
 
     test('Condition.check() returns false before registerComponent()', () => {
         const condition = new AttrChange(edgeID, {args: ["test", "attr", "-"]});
-        expect(condition.check(1, 1)).toBe(false);
+        const reason = "The check is not initialized: registerComponents has not been called yet!"
+        expect(condition.check(1, 1)).toStrictEqual(fail(reason));
     });
 
     test('registerComponent() calculates correct effect', () => {
@@ -184,9 +186,10 @@ describe('check and registerComponent', () => {
         effect.registerComponents(null, cu, "graphID");
         const func = effect.check;
         cuMock.pressedKeys["a"] = false;
-        expect(func()).toEqual(true);
+        expect(func()).toStrictEqual(pass());
         cuMock.pressedKeys["a"] = true;
-        expect(func()).toEqual(false);
+        const reason = 'Expected key "a" not to be pressed';
+        expect(func()).toStrictEqual(fail(reason));
     });
 
     test('registerComponent() clears effect in error case', () => {
@@ -201,7 +204,8 @@ describe('check and registerComponent', () => {
         check.registerComponents(null, cu, "graphID");
         const func = check.check;
         cuMock.pressedKeys["a"] = false;
-        expect(func()).toEqual(false);
+        const reason = `There was an error setting up the check: ${error.message}`;
+        expect(func()).toEqual(fail(reason));
         expect(fn).toHaveBeenCalledWith(edgeID, "graphID", error);
     });
 });

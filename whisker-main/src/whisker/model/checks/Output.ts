@@ -3,6 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import {any, pass, fail} from "./CheckResult";
 
 const name = "Output" as const;
 
@@ -34,19 +35,12 @@ export const OutputJSON = ICheckJSON.extend({
 });
 
 export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
-    private _lastSayTextValue: string
-    private _lastExpected: string
-
     constructor(edgeLabel: string, json: SlimCheckJSON<OutputJSON>) {
         super(edgeLabel, {...json, name});
     }
 
     protected _validate(checkJSON: OutputJSON): OutputJSON {
         return OutputJSON.parse(checkJSON) as OutputJSON;
-    }
-
-    override reasonForFailSummary(): string {
-        return `actual text: ${this._lastSayTextValue}, expected: ${this._lastExpected}`;
     }
 
     /**
@@ -68,21 +62,30 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             expression = ModelUtil.getExpressionForEval(t, `'${output}'`).expr;
         }
 
-        const check: (s: Sprite) => boolean = (s) => {
-            if (!s.sayText) {
-                this._lastSayTextValue = s.sayText;
-                return false;
+        const expected = String(eval(expression)(t)).toLocaleLowerCase();
+
+        const sayTextCheck = (s: Sprite) => {
+            if (s.sayText === null) {
+                return fail(`Expected sprite "${spriteName}" to say "${expected}" but got no speech`);
             }
 
-            this._lastSayTextValue = s.sayText.toLocaleLowerCase();
-            this._lastExpected = String(eval(expression)(t)).toLocaleLowerCase();
-            return this._lastSayTextValue.includes(this._lastExpected);
+            const actual = s.sayText.toLocaleLowerCase();
+
+            if (!actual.includes(expected)) {
+                return fail(`Expected sprite "${spriteName}" to say "${expected}" but got "${actual}"`);
+            }
+
+            return pass();
         };
-        cu.registerOutput(spriteName, this, graphID, (s) => !negated == check(s));
+
+        cu.registerOutput(spriteName, this, graphID, (s) => {
+            return (negated !== sayTextCheck(s).passed) ? pass() : fail("(reason unknown)");
+        });
+
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const anySayText = sprites.some(check);
-            return !negated == anySayText;
+            const reason = `Expected sprite "${spriteName}" not to say "${expected}"`;
+            return any(sayTextCheck, this.negated, reason, sprites);
         };
     }
 

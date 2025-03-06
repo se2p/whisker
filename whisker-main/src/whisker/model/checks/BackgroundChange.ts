@@ -1,8 +1,9 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {ErrorForAttribute} from "../util/ModelError";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {fail} from "./CheckResult";
+import {ErrorForAttribute} from "../util/ModelError";
 
 const name = "BackgroundChange" as const;
 
@@ -47,10 +48,6 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         return this._args[0];
     }
 
-    override reasonForFailSummary(): string {
-        return this._comparison.reasonForFailSummary();
-    }
-
     /**
      * Get a method checking whether the background of the stage changed.
      * @param t Instance of the test driver.
@@ -58,8 +55,12 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
     override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
         // without movement
         return () => {
+            const actual = t.getStage()["currentCostumeName"];
             try {
-                return this._comparison.apply(t.getStage()["currentCostumeName"]);
+                const res = this._comparison.apply(actual);
+                return res.passed === true
+                    ? res
+                    : fail(`Expected current background to be "${this.value}" but got "${actual}"`);
             } catch (e) {
                 // should not even happen...
                 throw new ErrorForAttribute("_stage_", "costume", e);

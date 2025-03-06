@@ -2,24 +2,26 @@ import {z} from "zod";
 import {Comparison, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
+import {CheckResult, fail, pass} from "./CheckResult";
 
 export class Change implements Quantifiable<Change> {
-    private _lastUsedCurrentValue: unknown;
-    private _lastUsedOldValue: unknown;
-
     protected constructor(private readonly _comparison: Comparison) {
-        this._lastUsedCurrentValue = undefined;
-        this._lastUsedOldValue = undefined;
     }
 
-    reasonForFailSummary(): string {
-        return `current value: ${this._lastUsedCurrentValue}, old value: ${this._lastUsedOldValue}`;
-    }
+    apply(after: number, before: number): CheckResult {
+        const expected = {
+            "<": "decrease",
+            "<=": "stay the same or decrease",
+            ">": "increase",
+            ">=": "stay the same or increase",
+        }[this._comparison.operator];
 
-    apply(after: number, before: number): boolean {
-        this._lastUsedCurrentValue = after;
-        this._lastUsedOldValue = before;
-        return this._comparison.apply(after - before);
+        const actual = after - before;
+        const res = this._comparison.apply(actual);
+        return res.passed === true
+            ? res
+            : fail(`Expected variable to ${expected} but got a change of ${actual}: `
+                + `${before} (before) vs. ${after} (after)`);
     }
 
     contradicts(that: Change): boolean {
@@ -59,8 +61,10 @@ const eq0 = new class Eq0 extends Change {
         super(newComparison({operator: "==", value: 0}));
     }
 
-    override apply(after: string | number, before: string | number): boolean {
-        return after == before;
+    override apply(after: string | number, before: string | number): CheckResult {
+        return after == before
+            ? pass()
+            : fail(`Expected variable not to change, but got "${before}" (before) vs. "${after}" (after)`);
     }
 
     override negate(): Change {
@@ -73,8 +77,10 @@ const neq0 = new class Neq0 extends Change {
         super(newComparison({operator: "!=", value: 0}));
     }
 
-    override apply(after: string | number, before: string | number): boolean {
-        return after != before;
+    override apply(after: string | number, before: string | number): CheckResult {
+        return after != before
+            ? pass()
+            : fail(`Expected variable to change, but got "${before}" before and after`);
     }
 
     override negate(): Change {

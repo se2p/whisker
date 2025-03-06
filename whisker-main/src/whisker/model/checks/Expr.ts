@@ -3,6 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import {CheckResult, fail, pass} from "./CheckResult";
 
 const name = "Expr" as const;
 
@@ -22,12 +23,10 @@ export const ExprJSON = ICheckJSON.extend({
 
 export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
     private readonly _code: string;
-    private log: Record<string, string>;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<ExprJSON>) {
         super(edgeLabel, {...json, name});
         this._code = this._args.join("\n");
-        this.log = {};
     }
 
     get code(): string {
@@ -36,10 +35,6 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
 
     protected _validate(checkJSON: ExprJSON): ExprJSON {
         return ExprJSON.parse(checkJSON) as ExprJSON;
-    }
-
-    override reasonForFailSummary(): string {
-        return Object.entries(this.log).map(([key, value]) => `${key}->${value}`).join(", ");
     }
 
     /**
@@ -51,8 +46,10 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
         const e = ModelUtil.getExpressionForEval(t, this._code);
         const check = () => {
-            this.log = {};
-            return !this.negated == ModelUtil.evaluateExpression(t, e.expr, this.log);
+            const log = {};
+            return this.negated !== ModelUtil.evaluateExpression(t, e.expr, log)
+                ? pass()
+                : fail(Object.entries(log).map(([key, value]) => `${key}->${value}`).join(", "));
         };
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
@@ -62,7 +59,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         return check;
     }
 
-    private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => boolean) {
+    private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult) {
         d.varDependencies.forEach(dependency => {
             cu.registerVarEvent(dependency.varName, this, graphID, predicate);
         });

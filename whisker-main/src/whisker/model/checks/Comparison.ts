@@ -1,6 +1,7 @@
 import {z} from "zod";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
+import {CheckResult, fail, pass} from "./CheckResult";
 
 export type Comparison =
     | Eq
@@ -12,36 +13,24 @@ export type Comparison =
     ;
 
 abstract class AbstractComparison implements Quantifiable<Comparison> {
-    private _lastComparedValue: unknown;
-
     protected constructor(private readonly _operand2: string | number) {
-        this._lastComparedValue = undefined;
     }
 
     get operand2(): string | number {
         return this._operand2;
     }
 
-    reasonForFailSummary(): string {
-        return `actual value: ${this._lastComparedValue}`;
-    }
-
     abstract get operator(): ComparisonOp;
 
-    apply(operand1: string | number): boolean {
-        this._lastComparedValue = operand1;
-        return this.applyWithoutLog(operand1);
-    }
-
-    protected abstract applyWithoutLog(operand1: string | number): boolean;
+    abstract apply(operand1: string | number): CheckResult;
 
     contradicts(that: Comparison): boolean {
         if (this.operator === "==") {
-            return !that.apply(this.operand2);
+            return !that.apply(this.operand2).passed;
         }
 
         if (that.operator === "==") {
-            return !this.apply(that.operand2);
+            return !this.apply(that.operand2).passed;
         }
 
         if (this.operator === "!=" || that.operator === "!=") {
@@ -54,7 +43,7 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
         }
 
         // < and >, < and >=, <= and >, <= and >=
-        return !this.apply(that.operand2) || !that.apply(this.operand2);
+        return !this.apply(that.operand2).passed || !that.apply(this.operand2).passed;
     }
 
     abstract negate(): Comparison;
@@ -73,12 +62,14 @@ class Eq extends AbstractComparison {
         return "==";
     }
 
-    override applyWithoutLog(operand1: string | number | boolean): boolean {
+    override apply(operand1: string | number | boolean): CheckResult {
         if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
             operand1 = String(operand1);
         }
 
-        return operand1 == this.operand2;
+        return operand1 == this.operand2
+            ? pass()
+            : fail(`Expected value to be "${this.operand2}", but got "${operand1}"`);
     }
 
     override negate(): Comparison {
@@ -95,12 +86,14 @@ class Neq extends AbstractComparison {
         return "!=";
     }
 
-    override applyWithoutLog(operand1: string | number | boolean): boolean {
+    override apply(operand1: string | number | boolean): CheckResult {
         if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
             operand1 = String(operand1);
         }
 
-        return operand1 != this.operand2;
+        return operand1 != this.operand2
+            ? pass()
+            : fail(`Expected value not to be "${operand1}"`);
     }
 
     override negate(): Comparison {
@@ -117,8 +110,10 @@ class Leq extends AbstractComparison {
         return "<=";
     }
 
-    override applyWithoutLog(operand1: string | number): boolean {
-        return operand1 <= this.operand2;
+    override apply(operand1: string | number): CheckResult {
+        return operand1 <= this.operand2
+            ? pass()
+            : fail(`Expected value to be less than or equal to ${this.operand2}, but got ${operand1}`);
     }
 
     override negate(): Comparison {
@@ -135,8 +130,10 @@ class Lt extends AbstractComparison {
         return "<";
     }
 
-    override applyWithoutLog(operand1: string | number): boolean {
-        return operand1 < this.operand2;
+    override apply(operand1: string | number): CheckResult {
+        return operand1 < this.operand2
+            ? pass()
+            : fail(`Expected value to be less than ${this.operand2}, but got ${operand1}`);
     }
 
     override negate(): Comparison {
@@ -153,8 +150,10 @@ class Gt extends AbstractComparison {
         return ">";
     }
 
-    override applyWithoutLog(operand1: string | number): boolean {
-        return operand1 > this.operand2;
+    override apply(operand1: string | number): CheckResult {
+        return operand1 > this.operand2
+            ? pass()
+            : fail(`Expected value to be greater than ${this.operand2}, but got ${operand1}`);
     }
 
     override negate(): Comparison {
@@ -171,8 +170,10 @@ class Geq extends AbstractComparison {
         return ">=";
     }
 
-    override applyWithoutLog(operand1: string | number): boolean {
-        return operand1 >= this.operand2;
+    override apply(operand1: string | number): CheckResult {
+        return operand1 >= this.operand2
+            ? pass()
+            : fail(`Expected value to be greater than or equal to ${this.operand2}, but got ${operand1}`);
     }
 
     override negate(): Comparison {

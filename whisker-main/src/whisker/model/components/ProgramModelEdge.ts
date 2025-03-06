@@ -77,7 +77,7 @@ export class ProgramModelEdge extends AbstractEdge {
 
         const failed = [];
         for (const c of this.conditions) {
-            if (!checks.includes(c) && !c.check(stepsSinceLastTransition, stepsSinceEnd)) {
+            if (!checks.includes(c) && !c.check(stepsSinceLastTransition, stepsSinceEnd).passed) {
                 failed.push(c);
                 break; // TODO check if this break should be here
             }
