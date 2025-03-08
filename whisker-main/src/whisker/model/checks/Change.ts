@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {Comparison, newComparison} from "./Comparison";
+import {Comparison, ComparisonOp, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, fail, pass} from "./CheckResult";
@@ -9,18 +9,20 @@ export class Change implements Quantifiable<Change> {
     }
 
     apply(after: number, before: number): CheckResult {
-        const expected = {
+        const expected = ({
+            "==": `change by ${this._comparison.operand2}`,
+            "!=": "change",
             "<": "decrease",
             "<=": "stay the same or decrease",
             ">": "increase",
             ">=": "stay the same or increase",
-        }[this._comparison.operator];
+        } as Record<ComparisonOp, string>)[this._comparison.operator];
 
         const actual = after - before;
         const res = this._comparison.apply(actual);
         return res.passed === true
             ? res
-            : fail(`Expected variable to ${expected} but got a change of ${actual}: `
+            : fail(`Expected variable to ${expected}, but got a change of ${actual}: `
                 + `${before} (before) vs. ${after} (after)`);
     }
 

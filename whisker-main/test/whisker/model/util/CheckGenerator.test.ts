@@ -253,7 +253,7 @@ describe('CheckGenerator', () => {
             c.registerComponents(t, dummyCU, graphID);
             expect(c.check()).toEqual(pass());
             stage.variables = [{name: "Punkte", value: 10, old: {name: "Punkte", value: 9}}];
-            const reason = "_stage_.Punkte: Expected variable to decrease but got a change of 1: " +
+            const reason = "_stage_.Punkte: Expected variable to decrease, but got a change of 1: " +
                 "9 (before) vs. 10 (after)";
             expect(c.check()).toEqual(fail(reason));
         });
@@ -421,7 +421,7 @@ describe('CheckGenerator', () => {
             const c = new AttrChange('label', {args: ["apple", "size", "+"]});
             c.registerComponents(t, cu, graphID);
             expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-            const reason = "Expected variable to increase but got a change of -10: " +
+            const reason = "Expected variable to increase, but got a change of -10: " +
                 "20 (before) vs. 10 (after)";
             expect(check(apple.sprite)).toStrictEqual(fail(reason));
         });
@@ -438,7 +438,7 @@ describe('CheckGenerator', () => {
             const c = new AttrChange('label', {args: ["apple", "x", "+"]});
             c.registerComponents(t, cu, graphID);
             expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-            const reason = "Expected variable to increase but got a change of -40: " +
+            const reason = "Expected variable to increase, but got a change of -40: " +
                 "42 (before) vs. 2 (after)";
             expect(check(apple.sprite)).toStrictEqual(fail(reason));
         });
