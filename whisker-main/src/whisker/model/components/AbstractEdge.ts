@@ -86,7 +86,7 @@ export abstract class AbstractEdge {
 
             for (const c of this.conditions) {
                 try {
-                    if (!c.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                    if (!c.check(stepsSinceLastTransition, stepsSinceEnd).passed) {
                         this.failedForcedTest = true;
                         failedConditions.push(c);
                         cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t));
@@ -102,7 +102,7 @@ export abstract class AbstractEdge {
         // time limit not reached
         for (const c of this.conditions) {
             try {
-                if (!c.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                if (!c.check(stepsSinceLastTransition, stepsSinceEnd).passed) {
                     failedConditions.push(c);
                 }
             } catch (e) {
