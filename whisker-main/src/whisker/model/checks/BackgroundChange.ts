@@ -2,7 +2,6 @@ import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractChe
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
-import {fail} from "./CheckResult";
 import {ErrorForAttribute} from "../util/ModelError";
 
 const name = "BackgroundChange" as const;
@@ -56,11 +55,9 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         // without movement
         return () => {
             const actual = t.getStage()["currentCostumeName"];
+            const reason = `Expected current background to be "${this.value}" but got "${actual}"`;
             try {
-                const res = this._comparison.apply(actual);
-                return res.passed === true
-                    ? res
-                    : fail(`Expected current background to be "${this.value}" but got "${actual}"`);
+                return this._comparison.apply(actual).replace(reason);
             } catch (e) {
                 // should not even happen...
                 throw new ErrorForAttribute("_stage_", "costume", e);

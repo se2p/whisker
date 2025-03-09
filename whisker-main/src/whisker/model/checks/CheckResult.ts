@@ -2,15 +2,55 @@ import Sprite from "../../../vm/sprite";
 
 interface ICheckResult {
     passed: boolean;
+
+    enhance(context: string): CheckResult;
+
+    replace(reason: string): CheckResult;
 }
 
-export interface PassedCheck extends ICheckResult {
+interface PassedCheck extends ICheckResult {
     passed: true;
 }
 
-export interface FailedCheck extends ICheckResult {
+interface FailedCheck extends ICheckResult {
     passed: false;
     reason: string;
+}
+
+class PassedCheckImpl implements PassedCheck {
+    get passed(): true {
+        return true;
+    }
+
+    enhance(_ctx: string): CheckResult {
+        return this;
+    }
+
+    replace(_reason: string): CheckResult {
+        return this;
+    }
+}
+
+class FailedCheckImpl implements FailedCheck {
+    constructor(private readonly _reason: string) {
+
+    }
+
+    get passed(): false {
+        return false;
+    }
+
+    get reason(): string {
+        return this._reason;
+    }
+
+    enhance(ctx: string): CheckResult {
+        return new FailedCheckImpl(`${ctx}: ${this._reason}`);
+    }
+
+    replace(reason: string): CheckResult {
+        return new FailedCheckImpl(reason);
+    }
 }
 
 export type CheckResult =
@@ -19,16 +59,15 @@ export type CheckResult =
     ;
 
 export function pass(): PassedCheck {
-    return {
-        passed: true,
-    };
+    return new PassedCheckImpl();
 }
 
 export function fail(reason: string): FailedCheck {
-    return {
-        passed: false,
-        reason: reason,
-    };
+    return new FailedCheckImpl(reason);
+}
+
+export function result(b: boolean, reason: string, negated = false): CheckResult {
+    return (negated !== b) ? pass() : fail(reason);
 }
 
 export function any(

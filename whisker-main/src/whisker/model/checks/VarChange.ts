@@ -6,7 +6,6 @@ import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
 import {Change, ChangingCheck, newChange, NumberOrChangeOp} from "./Change";
-import {fail} from "./CheckResult";
 
 const name = "VarChange" as const;
 
@@ -77,14 +76,12 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         const check = () => {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
+            const context = `${spriteName}.${variableName}`;
             try {
-                const res = this._change.apply(
+                return this._change.apply(
                     ModelUtil.testNumber(variable.value),
                     ModelUtil.testNumber(variable.old.value)
-                );
-                return res.passed === true
-                    ? res
-                    : fail(`${spriteName}.${variableName}: ${res.reason}`);
+                ).enhance(context);
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }

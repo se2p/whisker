@@ -82,11 +82,11 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         const spriteName = ModelUtil.getStageOrSprite(t, pSpriteName).name;
         ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+        const context = `${spriteName}.${attrName}`;
 
         const listener = (sprite) => {
             try {
-                const res = this._comparison.applySingle(sprite[attrName]);
-                return res.passed === true ? res : fail(`${spriteName}.${attrName}: ${res.reason}`);
+                return this._comparison.applySingle(sprite[attrName]).enhance(context);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }
@@ -105,8 +105,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return () => {
             const sprites: Sprite[] = t.getSprites((s: Sprite) => s.name == spriteName, false)[0].getClones(true);
             try {
-                const res = this._comparison.apply(sprites.map((s) => s[attrName]));
-                return res.passed === true ? res : fail(`${spriteName}.${attrName}: ${res.reason}`);
+                return this._comparison.apply(sprites.map((s) => s[attrName])).enhance(context);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }

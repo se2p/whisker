@@ -12,7 +12,7 @@ import {Checks} from "../../../../src/whisker/model/util/Checks";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {UserInput} from "../../../../src/whisker/model/inputs/newUserInput";
 import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
-import {pass, fail} from "../../../../src/whisker/model/checks/CheckResult";
+import {result} from "../../../../src/whisker/model/checks/CheckResult";
 
 describe('Model edges', () => {
     const id = "id";
@@ -23,7 +23,7 @@ describe('Model edges', () => {
 
     function mockCondition(name: string, value: boolean): Check {
         return {
-            check: jest.fn().mockReturnValue(value ? pass() : fail("(unknown reason)")),
+            check: jest.fn().mockReturnValue(result(value, "(unknown reason)")),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
         } as unknown as Check;

@@ -1,7 +1,7 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {pass, fail} from "./CheckResult";
+import {result} from "./CheckResult";
 
 const name = "Key" as const;
 
@@ -43,11 +43,11 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t, cu: CheckUtility, _graphID: string): CheckFun0 {
         const [key] = this._args;
         const negated = this.negated;
-        return () => {
-            return negated !== cu.isKeyDown(key)
-                ? pass()
-                : fail(`Expected key "${key}"` + (negated ? " not " : " ") + "to be pressed");
-        };
+        return () => result(
+            cu.isKeyDown(key),
+            `Expected key "${key}"` + (negated ? " not " : " ") + "to be pressed",
+            negated,
+        );
     }
 
     protected _contradicts(_that: Key): boolean {

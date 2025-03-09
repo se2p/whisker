@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, pass, fail} from "./CheckResult";
+import {any, pass, fail, result} from "./CheckResult";
 
 const name = "SpriteTouching" as const;
 
@@ -60,9 +60,8 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
 
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2
-        cu.registerOnMoveEvent(spriteName1, this, graphID, (sprite) => {
-            return (negated !== sprite.isTouchingSprite(spriteName2)) ? pass() : fail("(reason unknown)");
-        });
+        cu.registerOnMoveEvent(spriteName1, this, graphID, (sprite) =>
+            result(sprite.isTouchingSprite(spriteName2), "(reason unknown)", negated));
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it,
         // also test clones of spriteName1
@@ -81,7 +80,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
 
             const sprites = t.getSprites((s: Sprite) => s.name === spriteName1, false);
             const reason = `Expected sprite "${spriteName1}" not to touch "${spriteName2}"`;
-            return any(touchingCheck, this.negated, reason, sprites);
+            return any(touchingCheck, negated, reason, sprites);
         };
     }
 

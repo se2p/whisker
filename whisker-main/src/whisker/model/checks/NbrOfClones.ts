@@ -70,8 +70,8 @@ abstract class AbstractNbrOfClones<
 
         return () => {
             const sprites = t.getSprites(spriteCondition);
-            const res = this._comparison.apply(sprites.length);
-            return res.passed === true ? res : fail(`Number of "${spriteName}" clones: ${res.reason}`);
+            const context = `Number of "${spriteName}" clones`;
+            return this._comparison.apply(sprites.length).enhance(context);
         };
     }
 

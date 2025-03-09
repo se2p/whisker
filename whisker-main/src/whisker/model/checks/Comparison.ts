@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
-import {CheckResult, fail, pass} from "./CheckResult";
+import {CheckResult, result} from "./CheckResult";
 
 export type Comparison =
     | Eq
@@ -67,9 +67,8 @@ class Eq extends AbstractComparison {
             operand1 = String(operand1);
         }
 
-        return operand1 == this.operand2
-            ? pass()
-            : fail(`Expected value to be "${this.operand2}", but got "${operand1}"`);
+        const reason = `Expected value to be "${this.operand2}", but got "${operand1}"`;
+        return result(operand1 == this.operand2, reason);
     }
 
     override negate(): Comparison {
@@ -91,9 +90,8 @@ class Neq extends AbstractComparison {
             operand1 = String(operand1);
         }
 
-        return operand1 != this.operand2
-            ? pass()
-            : fail(`Expected value not to be "${operand1}"`);
+        const reason = `Expected value not to be "${operand1}"`;
+        return result(operand1 != this.operand2, reason);
     }
 
     override negate(): Comparison {
@@ -111,9 +109,8 @@ class Leq extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        return operand1 <= this.operand2
-            ? pass()
-            : fail(`Expected value to be less than or equal to ${this.operand2}, but got ${operand1}`);
+        const reason = `Expected value to be less than or equal to ${this.operand2}, but got ${operand1}`;
+        return result(operand1 <= this.operand2, reason);
     }
 
     override negate(): Comparison {
@@ -131,9 +128,8 @@ class Lt extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        return operand1 < this.operand2
-            ? pass()
-            : fail(`Expected value to be less than ${this.operand2}, but got ${operand1}`);
+        const reason = `Expected value to be less than ${this.operand2}, but got ${operand1}`;
+        return result(operand1 < this.operand2, reason);
     }
 
     override negate(): Comparison {
@@ -151,9 +147,8 @@ class Gt extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        return operand1 > this.operand2
-            ? pass()
-            : fail(`Expected value to be greater than ${this.operand2}, but got ${operand1}`);
+        const reason = `Expected value to be greater than ${this.operand2}, but got ${operand1}`;
+        return result(operand1 > this.operand2, reason);
     }
 
     override negate(): Comparison {
@@ -171,9 +166,8 @@ class Geq extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        return operand1 >= this.operand2
-            ? pass()
-            : fail(`Expected value to be greater than or equal to ${this.operand2}, but got ${operand1}`);
+        const reason = `Expected value to be greater than or equal to ${this.operand2}, but got ${operand1}`;
+        return result(operand1 >= this.operand2, reason);
     }
 
     override negate(): Comparison {

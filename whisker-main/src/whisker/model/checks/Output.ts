@@ -3,7 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, pass, fail} from "./CheckResult";
+import {any, pass, fail, result} from "./CheckResult";
 
 const name = "Output" as const;
 
@@ -79,7 +79,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         };
 
         cu.registerOutput(spriteName, this, graphID, (s) => {
-            return (negated !== sayTextCheck(s).passed) ? pass() : fail("(reason unknown)");
+            return result(sayTextCheck(s).passed, "(reason unknown)", negated);
         });
 
         return () => {

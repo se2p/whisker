@@ -3,7 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {CheckResult, fail, pass} from "./CheckResult";
+import {CheckResult, result} from "./CheckResult";
 
 const name = "Expr" as const;
 
@@ -47,9 +47,11 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         const e = ModelUtil.getExpressionForEval(t, this._code);
         const check = () => {
             const log = {};
-            return this.negated !== ModelUtil.evaluateExpression(t, e.expr, log)
-                ? pass()
-                : fail(Object.entries(log).map(([key, value]) => `${key}->${value}`).join(", "));
+            return result(
+                Boolean(ModelUtil.evaluateExpression(t, e.expr, log)),
+                Object.entries(log).map(([key, value]) => `${key}->${value}`).join(", "),
+                this.negated,
+            );
         };
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);

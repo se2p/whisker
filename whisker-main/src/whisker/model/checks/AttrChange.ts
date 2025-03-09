@@ -5,7 +5,6 @@ import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {Change, ChangingCheck, newQuantifiedChange, NumberOrChangeOp} from "./Change";
 import {Quantification} from "./Quantification";
-import {fail} from "./CheckResult";
 
 const name = "AttrChange" as const;
 
@@ -83,9 +82,9 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
 
         return () => {
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
+            const context = `${spriteName}.${attrName}`;
             try {
-                const res = this._change.apply(sprites.map((s) => [s[attrName], s.old[attrName]]));
-                return res.passed === true ? res : fail(`${spriteName}.${attrName}: ${res.reason}`);
+                return this._change.apply(sprites.map((s) => [s[attrName], s.old[attrName]])).enhance(context);
             } catch (e) {
                 throw new ErrorForAttribute(pSpriteName, attrName, e);
             }

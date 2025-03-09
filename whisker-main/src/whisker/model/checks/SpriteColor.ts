@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {pass, fail, any} from "./CheckResult";
+import {pass, fail, any, result} from "./CheckResult";
 
 const name = "SpriteColor" as const;
 
@@ -81,7 +81,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
 
         // on movement check sprite color
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
-            return (negated !== sprite.isTouchingColor(color)) ? pass() : fail("(reason unknown)");
+            return result(sprite.isTouchingColor(color), "(reason unknown)", negated);
         });
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
@@ -101,7 +101,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
 
             const sprites = t.getSprites((s: Sprite) => s.name === spriteName, false);
             const reason = `Expected sprite "${spriteName}" not to touch color ${color}`;
-            return any(touchingColorCheck, this.negated, reason, sprites);
+            return any(touchingColorCheck, negated, reason, sprites);
         };
     }
 
