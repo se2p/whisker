@@ -159,6 +159,6 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
         return () => this.negated !== (this._steps <= t.getTotalStepsExecuted())
             ? pass()
             : fail(`Expected ${this.negated ? "no more than" : "at least"} ${this._steps} steps ` +
-                "since the program started");
+                `since the program started, but got ${t.getTotalStepsExecuted()}`);
     }
 }

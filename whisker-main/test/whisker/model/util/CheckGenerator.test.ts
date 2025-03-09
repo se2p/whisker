@@ -707,7 +707,7 @@ describe('CheckGenerator', () => {
         const c = new TimeElapsed('label', {args: [1230]});
         c.registerComponents(t, null, graphID);
         tdMock.totalStepsExecuted = 122;
-        const reason = "Expected at least 123 steps since the program started";
+        const reason = "Expected at least 123 steps since the program started, but got 122";
         expect(c.check()).toStrictEqual(fail(reason));
         tdMock.totalStepsExecuted = 123;
         expect(c.check()).toStrictEqual(pass());
