@@ -63,9 +63,9 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             expression = ModelUtil.getExpressionForEval(t, `'${output}'`).expr;
         }
 
-        const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
-
         const sayTextCheck = (s: Sprite) => {
+            const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
+
             if (s.sayText === null) {
                 return fail(`Expected sprite "${spriteName}" to say "${expected}" but got no speech`);
             }
