@@ -1,6 +1,6 @@
 import {fc, it} from "@fast-check/jest";
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
-import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {fail, pass, result} from "../../../../src/whisker/model/checks/CheckResult";
 
 /**
  * Randomly generated 1-dimensional array of arbitrary length, containing arbitrary elements.
@@ -59,7 +59,7 @@ function newQuantifiable({apply = null, contradicts = null} = {}) {
 /*
  * Generators for random predicates, existential quantifiers, and universal quantifiers.
  */
-const pred = fc.func(fc.boolean().map((b) => b ? pass() : fail("dummy")));
+const pred = fc.func(fc.boolean().map((b) => b ? pass() : fail({})));
 const exist = fc.tuple(pred, pred).map(([apply, contradicts]) => new Existential(newQuantifiable({apply, contradicts})));
 const univ = fc.tuple(pred, pred).map(([apply, contradicts]) => new Universal(newQuantifiable({apply, contradicts})));
 const quant = fc.oneof(exist, univ);
@@ -124,21 +124,19 @@ describe("Quantification", () => {
 describe("Existential", () => {
     describe("apply()", () => {
         it.prop([exist])("is always false for empty arrays", (e) => {
-            expect(e.apply([])).toStrictEqual(fail("There are no elements to check!"));
+            expect(e.apply([])).toStrictEqual(fail({message: "There are no elements to check!"}));
         });
 
         it.prop([arr2idx])("is true if at least one element satisfies the predicate", ([a, i]) => {
             const w = newQuantifiable();
             // The indexes determine which apply() calls return true.
-            w.apply.mockImplementation(() => i.includes(w.apply.mock.calls.length - 1)
-                ? pass()
-                : fail("Should never happen"));
+            w.apply.mockImplementation(() => result(i.includes(w.apply.mock.calls.length - 1), {}));
             const e = new Existential(w);
             expect(e.apply(a)).toStrictEqual(pass());
         });
 
         it.prop([arr2])("is false if no element satisfies the predicate", (a) => {
-            const reason = "No element satisfies the predicate";
+            const reason = {message: "No element satisfies the predicate"};
             const e = new Existential(newQuantifiable({apply: () => fail(reason)}));
             expect(e.apply(a)).toStrictEqual(fail(reason));
         });
@@ -168,11 +166,9 @@ describe("Universal", () => {
 
         it.prop([arr2idx])("is false if at least one element does not satisfy the condition", ([a, i]) => {
             const w = newQuantifiable();
-            const reason = "The element failed the the check";
+            const reason = {message: "The element failed the the check"};
             // The indexes determine which apply() calls return false.
-            w.apply.mockImplementation(() => !i.includes(w.apply.mock.calls.length - 1)
-                ? pass()
-                : fail(reason));
+            w.apply.mockImplementation(() => result(!i.includes(w.apply.mock.calls.length - 1), reason));
             const u = new Universal(w);
             expect(u.apply(a)).toStrictEqual(fail(reason));
         });

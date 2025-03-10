@@ -72,8 +72,8 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     protected constructor(edgeLabel: string, checkJSON: Optional<J, "negated">) {
         this._edgeLabel = edgeLabel;
         this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
-        const reason = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
-        this._check = (() => fail(reason)) as C;
+        const message = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
+        this._check = (() => fail({message})) as C;
     }
 
     get edgeLabel(): string {
@@ -134,8 +134,8 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
             this._check = this._checkArgsWithTestDriver(t, cu, graphID);
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
-            const reason = `There was an error setting up the check: ${e instanceof Error ? e.message : e}`;
-            this._check = (() => fail(reason)) as C;
+            const message = `There was an error setting up the check: ${e instanceof Error ? e.message : e}`;
+            this._check = (() => fail({message})) as C;
         }
     }
 

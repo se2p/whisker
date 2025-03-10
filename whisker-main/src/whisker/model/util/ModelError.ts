@@ -4,7 +4,7 @@ import {ArgType} from "./schema";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
 import {Check} from "../checks/newCheck";
 
-function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reasons: Map<Check, string>): string {
+function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reasons: Map<Check, Record<string, unknown>>): string {
     const conditions = edge.conditions;
     let containsAfterTime: string | null = null;
     let containsElapsed: string | null = null;
@@ -25,7 +25,7 @@ function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reasons: Map<C
         result += ` after ${containsAfterTime}ms`;
     }
     const reason = reasons.get(effect);
-    return reason ? `${result} ${reason}` : result;
+    return reason ? `${result} ${JSON.stringify(reason)}` : result;
 }
 
 function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number): string {

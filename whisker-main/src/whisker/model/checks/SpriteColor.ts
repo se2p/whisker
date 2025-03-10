@@ -82,7 +82,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
 
         // on movement check sprite color
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
-            return result(sprite.isTouchingColor(color), "(reason unknown)", negated);
+            return result(sprite.isTouchingColor(color), {}, negated);
         });
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
@@ -90,19 +90,18 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         return () => {
             const touchingColorCheck = (s: Sprite) => {
                 if (!s.visible) {
-                    return fail(`Expected sprite "${s}" to be visible`);
+                    return fail({message: `Expected sprite "${s}" to be visible`});
                 }
 
                 if (!s.isTouchingColor(color)) {
-                    return fail(`Expected sprite "${s}" to touch color ${color}`);
+                    return fail({message: `Expected sprite "${s}" to touch color ${color}`});
                 }
 
                 return pass();
             };
 
             const sprites = t.getSprites((s: Sprite) => s.name === spriteName, false);
-            const reason = `Expected sprite "${spriteName}" not to touch color ${color}`;
-            return any(touchingColorCheck, negated, reason, sprites);
+            return any(touchingColorCheck, negated, sprites);
         };
     }
 

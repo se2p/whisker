@@ -57,10 +57,8 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         // without movement
         return () => {
-            const actual = t.getStage()["currentCostumeName"];
-            const reason = `Expected current background to be "${this.value}" but got "${actual}"`;
             try {
-                return this._comparison.apply(actual).replace(reason);
+                return this._comparison.apply(t.getStage()["currentCostumeName"]);
             } catch (e) {
                 // should not even happen...
                 throw new ErrorForAttribute("_stage_", "costume", e);

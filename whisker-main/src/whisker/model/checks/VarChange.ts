@@ -77,12 +77,11 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         const check = () => {
             const sprite: Sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable: Variable = sprite.getVariable(variableName);
-            const context = `${spriteName}.${variableName}`;
             try {
                 return this._change.apply(
                     ModelUtil.testNumber(variable.value),
                     ModelUtil.testNumber(variable.old.value)
-                ).enhance(context);
+                );
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }

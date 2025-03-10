@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
-import {any, CheckResult, pass, fail} from "./CheckResult";
+import {any, CheckResult, pass, fail, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 
 export type TouchingEdgeArgs = [
@@ -49,20 +49,12 @@ abstract class AbstractTouchingEdge<
         const negated = this.negated;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         const touchingEdgeCheck = this._getCheck();
-        cu.registerOnMoveEvent(spriteName, this._self(), graphID, (sprite) => {
-            return (negated !== touchingEdgeCheck(sprite).passed) ? pass() : fail("(reason unknown)");
-        });
-
-        const edge = {
-            [touchingEdgeName]: "an edge",
-            [touchingHorizEdgeName]: "a horizontal edge",
-            [touchingVerticalEdgeName]: "a vertical edge",
-        }[this.name];
+        cu.registerOnMoveEvent(spriteName, this._self(), graphID, (sprite) =>
+            result(touchingEdgeCheck(sprite).passed, {}, negated));
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);
-            const reason = `Expected sprite "${spriteName}" not to touch ${edge}`;
-            return any(touchingEdgeCheck, negated, reason, sprites);
+            return any(touchingEdgeCheck, negated, sprites);
         };
     }
 
@@ -103,11 +95,11 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON, Touchin
     protected _getCheck(): (sprite: Sprite) => CheckResult {
         return (sprite: Sprite) => {
             if (!sprite.visible) {
-                return fail(`Expected sprite "${sprite.name}" to be visible`);
+                return fail({message: `Expected sprite "${sprite.name}" to be visible`});
             }
 
             if (!sprite.isTouchingEdge()) {
-                return fail(`Expected sprite "${sprite.name}" to touch an edge`);
+                return fail({message: `Expected sprite "${sprite.name}" to touch an edge`});
             }
 
             return pass();
@@ -144,11 +136,11 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
     protected _getCheck(): (sprite: Sprite) => CheckResult {
         return (sprite: Sprite) => {
             if (!sprite.visible) {
-                return fail(`Expected sprite "${sprite.name}" to be visible`);
+                return fail({message: `Expected sprite "${sprite.name}" to be visible`});
             }
 
             if (!sprite.isTouchingHorizEdge()) {
-                return fail(`Expected sprite "${sprite.name}" to touch a horizontal edge`);
+                return fail({message: `Expected sprite "${sprite.name}" to touch a horizontal edge`});
             }
 
             return pass();
@@ -184,11 +176,11 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
     protected _getCheck(): (sprite: Sprite) => CheckResult {
         return (sprite: Sprite) => {
             if (!sprite.visible) {
-                return fail(`Expected sprite "${sprite.name}" to be visible`);
+                return fail({message: `Expected sprite "${sprite.name}" to be visible`});
             }
 
             if (!sprite.isTouchingVerticalEdge()) {
-                return fail(`Expected sprite "${sprite.name}" to touch a vertical edge`);
+                return fail({message: `Expected sprite "${sprite.name}" to touch a vertical edge`});
             }
 
             return pass();

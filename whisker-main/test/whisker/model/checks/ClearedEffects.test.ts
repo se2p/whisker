@@ -17,7 +17,7 @@ describe('ClearedEffectsTest', () => {
         const t = tdMock.getTestDriver();
         const check = new ClearedEffect(edgeLabel, {negated: negated, args: ['banana']});
         check.registerComponents(t, cu, graphID);
-        expect(check.check()).toStrictEqual(negated ? fail(expect.any(String)) : pass());
+        expect(check.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
 
@@ -30,6 +30,6 @@ describe('ClearedEffectsTest', () => {
         check.registerComponents(t, cu, graphID);
         expect(check.check()).toStrictEqual(pass());
         effects["color"] = 10;
-        expect(check.check()).toStrictEqual(fail(expect.any(String)));
+        expect(check.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });

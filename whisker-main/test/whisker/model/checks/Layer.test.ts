@@ -22,13 +22,13 @@ describe('LayerTest', () => {
     it.each([true, false])('Check for first layer works properly (negated: %s)', (negated: boolean) => {
         const check = new Layer(edgeLabel, {negated: negated, args: ['pineapple', 'First']});
         check.registerComponents(t, cu, graphID);
-        expect(check.check()).toStrictEqual(negated ? fail(expect.any(String)) : pass());
+        expect(check.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
     it.each([true, false])('Check for last layer works properly (negated: %s)', (negated: boolean) => {
         const check = new Layer(edgeLabel, {negated: negated, args: ['banana', 'Last']});
         check.registerComponents(t, cu, graphID);
-        expect(check.check()).toStrictEqual(negated ? fail(expect.any(String)) : pass());
+        expect(check.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
     test('Check is not a constant return value', () => {
@@ -40,6 +40,6 @@ describe('LayerTest', () => {
         const newSprite = new SpriteMock("firstSprite");
         newSprite.variables = [{name: "layerOrder", value: 100}];
         tdm.currentSprites = SpriteMock.toSpriteArray([...mocks, newSprite]);
-        expect(check.check()).toStrictEqual(fail(expect.any(String)));
+        expect(check.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });

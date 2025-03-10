@@ -42,7 +42,7 @@ export class Existential<T extends Quantifiable<T>> extends AbstractQuantificati
     }
 
     override apply(args: unknown[]): CheckResult {
-        let res: CheckResult = fail("There are no elements to check!");
+        let res: CheckResult = fail({message: "There are no elements to check!"});
 
         for (const a of args) {
             res = this._apply(a);

@@ -87,9 +87,12 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun2 {
         return (_, stepsSinceEnd) => {
             const steps = t.getTotalStepsExecuted() - stepsSinceEnd;
-            const reason =
-                `Expected ${this.negated ? "no more than" : "at least"} ${this._steps} steps ` +
-                `since the program ended, but got ${steps}`;
+            const reason = {
+                expected: this._steps,
+                actual: steps,
+                total: t.getTotalStepsExecuted(),
+                stepsSinceEnd,
+            };
             return result(this._steps <= steps, reason, this.negated);
         };
     }
@@ -120,9 +123,7 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
      */
     override _checkArgsWithTestDriver(t: TestDriver, _cu: CheckUtility, _graphID: string): CheckFun1 {
         return (stepsSinceLastTransition) => {
-            const reason =
-                `Expected ${this.negated ? "no more than" : "at least"} ${this._steps} steps ` +
-                `since the last transition in the model, but got ${stepsSinceLastTransition}`;
+            const reason = {actual: stepsSinceLastTransition, expected: this._steps};
             return result(this._steps <= stepsSinceLastTransition, reason, this.negated);
         };
     }
@@ -154,10 +155,7 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t: TestDriver, _cu: CheckUtility, _graphID: string): CheckFun0 {
         return () => {
             const steps = t.getTotalStepsExecuted();
-            const reason =
-                `Expected ${this.negated ? "no more than" : "at least"} ${this._steps} steps ` +
-                `since the program started, but got ${steps}`;
-            return result(this._steps <= steps, reason, this.negated);
+            return result(this._steps <= steps, {actual: steps, expected: this._steps}, this.negated);
         };
     }
 }

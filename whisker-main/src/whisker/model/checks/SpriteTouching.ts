@@ -61,26 +61,26 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2
         cu.registerOnMoveEvent(spriteName1, this, graphID, (sprite) =>
-            result(sprite.isTouchingSprite(spriteName2), "(reason unknown)", negated));
+            result(sprite.isTouchingSprite(spriteName2), {}, negated));
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it,
         // also test clones of spriteName1
         return () => {
             const touchingCheck = (s: Sprite) => {
                 if (!s.visible) {
-                    return fail(`Expected sprite "${s}" to be visible`);
+                    return fail({message: `Expected sprite "${s}" to be visible`
+                });
                 }
 
                 if (!s.isTouchingSprite(spriteName2)) {
-                    return fail(`Expected sprite "${s}" to touch sprite "${spriteName2}"`);
+                    return fail({message: `Expected sprite "${s}" to touch sprite "${spriteName2}"`});
                 }
 
                 return pass();
             };
 
             const sprites = t.getSprites((s: Sprite) => s.name === spriteName1, false);
-            const reason = `Expected sprite "${spriteName1}" not to touch "${spriteName2}"`;
-            return any(touchingCheck, negated, reason, sprites);
+            return any(touchingCheck, negated, sprites);
         };
     }
 

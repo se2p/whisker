@@ -67,8 +67,7 @@ class Eq extends AbstractComparison {
             operand1 = String(operand1);
         }
 
-        const reason = `Expected value to be "${this.operand2}", but got "${operand1}"`;
-        return result(operand1 == this.operand2, reason);
+        return result(operand1 == this.operand2, {actual: operand1, expected: this.operand2});
     }
 
     override negate(): Comparison {
@@ -90,8 +89,7 @@ class Neq extends AbstractComparison {
             operand1 = String(operand1);
         }
 
-        const reason = `Expected value not to be "${operand1}"`;
-        return result(operand1 != this.operand2, reason);
+        return result(operand1 != this.operand2, {actual: operand1});
     }
 
     override negate(): Comparison {
@@ -109,8 +107,7 @@ class Leq extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        const reason = `Expected value to be less than or equal to ${this.operand2}, but got ${operand1}`;
-        return result(operand1 <= this.operand2, reason);
+        return result(operand1 <= this.operand2, {actual: operand1, expected: this.operand2});
     }
 
     override negate(): Comparison {
@@ -128,8 +125,7 @@ class Lt extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        const reason = `Expected value to be less than ${this.operand2}, but got ${operand1}`;
-        return result(operand1 < this.operand2, reason);
+        return result(operand1 < this.operand2, {actual: operand1, expected: this.operand2});
     }
 
     override negate(): Comparison {
@@ -147,8 +143,7 @@ class Gt extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        const reason = `Expected value to be greater than ${this.operand2}, but got ${operand1}`;
-        return result(operand1 > this.operand2, reason);
+        return result(operand1 > this.operand2, {actual: operand1, expected: this.operand2});
     }
 
     override negate(): Comparison {
@@ -166,8 +161,7 @@ class Geq extends AbstractComparison {
     }
 
     override apply(operand1: string | number): CheckResult {
-        const reason = `Expected value to be greater than or equal to ${this.operand2}, but got ${operand1}`;
-        return result(operand1 >= this.operand2, reason);
+        return result(operand1 >= this.operand2, {actual: operand1, expected: this.operand2});
     }
 
     override negate(): Comparison {

@@ -6,7 +6,6 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, newQuantifiedComparison} from "./Comparison";
 import {Quantification} from "./Quantification";
-import {fail} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 
 const name = "AttrComp" as const;
@@ -88,13 +87,11 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         if (!this._isForEffect) {
             ModelUtil.checkAttributeExistence(t, spriteName, attrName);
         }
-        const context = `${spriteName}.${attrName}`;
-
 
         const listener = (sprite: Sprite) => {
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
             try {
-                return this._comparison.applySingle(this._getAttr(sprite, attrName)).enhance(context);
+                return this._comparison.applySingle(this._getAttr(sprite, attrName));
             } catch (e) {
                 throw new Exception(pSpriteName, attrName, e);
             }
@@ -114,7 +111,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
-                return this._comparison.apply(sprites.map((s) => this._getAttr(s, attrName))).enhance(context);
+                return this._comparison.apply(sprites.map((s) => this._getAttr(s, attrName)));
             } catch (e) {
                 throw new Exception(pSpriteName, attrName, e);
             }

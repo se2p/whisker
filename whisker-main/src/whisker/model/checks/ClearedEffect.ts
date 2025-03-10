@@ -4,7 +4,7 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
-import {any, fail, pass} from "./CheckResult";
+import {any, fail, pass, result} from "./CheckResult";
 
 const name = "ClearedEffects" as const;
 
@@ -49,9 +49,8 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const reason = `Expected ${spriteName} to have ${this.negated ? "some" : "no"} active effect.`;
-            const check = (s: Sprite) => Object.values(s.effects).every(v => v === 0) ? pass() : fail("Some effect was non zero");
-            return any(check, this.negated, reason, sprites);
+            const check = (s: Sprite) => result(Object.values(s.effects).every(v => v === 0), {...s.effects});
+            return any(check, this.negated, sprites);
         };
     }
 

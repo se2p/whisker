@@ -53,11 +53,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
         const [probability] = this._args;
         const negated = this.negated;
         const prob = ModelUtil.testNumber(probability);
-        return () => result(
-            Randomness.getInstance().nextDouble() < prob,
-            `Failed with probability ${negated ? prob : 1 - prob}`,
-            negated,
-        );
+        return () => result(Randomness.getInstance().nextDouble() < prob, {}, negated);
     }
 
     protected _contradicts(_that: Probability): boolean {

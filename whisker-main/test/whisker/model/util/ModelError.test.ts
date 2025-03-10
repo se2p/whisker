@@ -23,8 +23,8 @@ describe('ModelError', () => {
     test("getEffectFailedOutput()", () => {
         const edge = getEdge();
         const effect = new AttrChange("label", {args: ["Apple", "x", "+"]});
-        const expected = "graphID-label: AttrChange(Apple,x,+) current value: undefined, old value: undefined";
-        const reasons = new Map([[effect, "current value: undefined, old value: undefined"]]);
+        const expected = 'graphID-label: AttrChange(Apple,x,+) {"message":"check failed"}';
+        const reasons = new Map([[effect, {message: "check failed"}]]);
         expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
     });
 
@@ -32,8 +32,8 @@ describe('ModelError', () => {
         const edge = getEdge();
         edge.addCondition(new TimeBetween("label", {negated: true, args: [123]}));
         const effect = new AttrComp("label", {args: ["Apple", "x", ">", "0"]});
-        const expected = "graphID-label: AttrComp(Apple,x,>,0) after 123ms actual value: undefined";
-        const reasons = new Map([[effect, "actual value: undefined"]]);
+        const expected = 'graphID-label: AttrComp(Apple,x,>,0) after 123ms {"message":"check failed"}';
+        const reasons = new Map([[effect, {message: "check failed"}]]);
         expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
     });
 
@@ -41,8 +41,8 @@ describe('ModelError', () => {
         const edge = getEdge();
         edge.addCondition(new TimeElapsed("label", {negated: true, args: [456]}));
         const effect = new AttrChange("label", {args: ["Apple", "x", "+"]});
-        const expected = "graphID-label: AttrChange(Apple,x,+) before 456ms elapsed current value: undefined, old value: undefined";
-        const reasons = new Map([[effect, "current value: undefined, old value: undefined"]]);
+        const expected = 'graphID-label: AttrChange(Apple,x,+) before 456ms elapsed {"message":"check failed"}';
+        const reasons = new Map([[effect, {message: "check failed"}]]);
         expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
     });
 
@@ -51,8 +51,8 @@ describe('ModelError', () => {
         edge.addCondition(new TimeAfterEnd("label", {negated: true, args: [789]}));
         edge.addCondition(new TimeElapsed("label", {negated: true, args: [456]}));
         const effect = new AttrChange("label", {args: ["Banana", "x", "+"]});
-        const expected = "graphID-label: AttrChange(Banana,x,+) before 456ms elapsed after 789ms current value: undefined, old value: undefined";
-        const reasons = new Map([[effect, "current value: undefined, old value: undefined"]]);
+        const expected = 'graphID-label: AttrChange(Banana,x,+) before 456ms elapsed after 789ms {"message":"check failed"}';
+        const reasons = new Map([[effect, {message: "check failed"}]]);
         expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
     });
 

@@ -2,10 +2,7 @@ import Sprite from "../../../vm/sprite";
 
 interface ICheckResult {
     passed: boolean;
-
-    enhance(context: string): CheckResult;
-
-    replace(reason: string): CheckResult;
+    enhance(reason: Record<string, unknown>): CheckResult;
 }
 
 interface PassedCheck extends ICheckResult {
@@ -14,7 +11,7 @@ interface PassedCheck extends ICheckResult {
 
 interface FailedCheck extends ICheckResult {
     passed: false;
-    reason: string;
+    reason: Record<string, unknown>;
 }
 
 class PassedCheckImpl implements PassedCheck {
@@ -22,17 +19,13 @@ class PassedCheckImpl implements PassedCheck {
         return true;
     }
 
-    enhance(_ctx: string): CheckResult {
-        return this;
-    }
-
-    replace(_reason: string): CheckResult {
+    enhance(_reason: Record<string, unknown>): PassedCheck {
         return this;
     }
 }
 
 class FailedCheckImpl implements FailedCheck {
-    constructor(private readonly _reason: string) {
+    constructor(private readonly _reason: Record<string, unknown>) {
 
     }
 
@@ -40,16 +33,12 @@ class FailedCheckImpl implements FailedCheck {
         return false;
     }
 
-    get reason(): string {
+    get reason(): Record<string, unknown> {
         return this._reason;
     }
 
-    enhance(ctx: string): CheckResult {
-        return new FailedCheckImpl(`${ctx}: ${this._reason}`);
-    }
-
-    replace(reason: string): CheckResult {
-        return new FailedCheckImpl(reason);
+    enhance(reason: Record<string, unknown>): FailedCheckImpl {
+        return new FailedCheckImpl({...this._reason, ...reason});
     }
 }
 
@@ -62,22 +51,21 @@ export function pass(): PassedCheck {
     return new PassedCheckImpl();
 }
 
-export function fail(reason: string): FailedCheck {
+export function fail(reason: Record<string, unknown>): FailedCheck {
     return new FailedCheckImpl(reason);
 }
 
-export function result(b: boolean, reason: string, negated = false): CheckResult {
+export function result(b: boolean, reason: Record<string, unknown>, negated = false): CheckResult {
     return (negated !== b) ? pass() : fail(reason);
 }
 
 export function any(
     check: (sprite: Sprite) => CheckResult,
     negated: boolean,
-    reason: string,
     sprites: Sprite[],
 ): CheckResult {
     function _any() {
-        let res: CheckResult = fail("There are no sprites!");
+        let res: CheckResult = fail({message: "There are no sprites!"});
 
         for (const s of sprites) {
             res = check(s);
@@ -100,5 +88,5 @@ export function any(
         return pass();
     }
 
-    return fail(reason);
+    return fail({});
 }

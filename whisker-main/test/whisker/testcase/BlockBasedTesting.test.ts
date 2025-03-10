@@ -35,7 +35,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
         const blockRepresentation: ScratchScriptSnippet = clickSpriteEvent.toScratchBlocks();
 
         const block: ScratchVMBlock = {
-            "id": expect.any(String),
+            "id": expect.any(Object),
             "opcode": "bbt_triggerSpriteClick",
             "inputs": {},
             "fields": {
@@ -85,13 +85,13 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const mainBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_triggerCloneClick",
                 "inputs": {
                     "CLONE": {
                         "name": "CLONE",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String)
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object)
                     }
                 },
                 "fields": {
@@ -109,7 +109,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const inputFieldBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -120,7 +120,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
@@ -150,7 +150,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const block: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_triggerStageClick",
                 "inputs": {},
                 "fields": {},
@@ -189,18 +189,18 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const mainBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_moveSpriteTo",
                 "inputs": {
                     "X": {
                         "name": "X",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String)
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object)
                     },
                     "Y": {
                         "name": "Y",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String)
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object)
                     }
                 },
                 "fields": {
@@ -218,7 +218,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const xBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -229,14 +229,14 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
 
         const yBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -247,7 +247,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
@@ -280,7 +280,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const block: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_pressKeyAndRelease",
                 "inputs": {},
                 "fields": {
@@ -312,13 +312,13 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const mainBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_pressKeyAndHold",
                 "inputs": {
                     "DURATION": {
                         "name": "DURATION",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     }
                 },
                 "fields": {
@@ -336,7 +336,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const inputBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -347,7 +347,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
@@ -375,7 +375,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const block: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_clickCurrentCursorLocation",
                 "inputs": {},
                 "fields": {},
@@ -402,17 +402,17 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const waitBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "control_wait",
                 "inputs": {
                     "DURATION": {
                         "name": "DURATION",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String)
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object)
                     }
                 },
                 "fields": {},
-                "next": expect.any(String),
+                "next": expect.any(Object),
                 "topLevel": false,
                 "parent": null,
                 "shadow": false,
@@ -421,7 +421,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const waitInputBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_positive_number",
                 "inputs": {},
                 "fields": {
@@ -432,7 +432,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
 
@@ -440,13 +440,13 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const clickBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_clickCurrentCursorLocation",
                 "inputs": {},
                 "fields": {},
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -486,18 +486,18 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const mainBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_placeMousePointer",
                 "inputs": {
                     "X": {
                         "name": "X",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     },
                     "Y": {
                         "name": "Y",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     }
                 },
                 "fields": {},
@@ -510,7 +510,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const xBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -521,12 +521,12 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
         const yBlock: ScratchVMBlock = {
-            "id": expect.any(String),
+            "id": expect.any(Object),
             "opcode": "math_number",
             "inputs": {},
             "fields": {
@@ -537,7 +537,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
             },
             "next": null,
             "topLevel": false,
-            "parent": expect.any(String),
+            "parent": expect.any(Object),
             "shadow": true,
             "breakpoint": false
         };
@@ -582,13 +582,13 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
         const mainBlock: ScratchVMBlock =
             {
 
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_simulateMicrophoneInput",
                 "inputs": {
                     "VOLUME": {
                         "name": "VOLUME",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     }
                 },
                 "fields": {},
@@ -602,7 +602,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const inputBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -613,7 +613,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
@@ -642,13 +642,13 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const mainBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_simulateAnswerInput",
                 "inputs": {
                     "ANSWER": {
                         "name": "ANSWER",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     }
                 },
                 "fields": {},
@@ -661,7 +661,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const inputBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "text",
                 "inputs": {},
                 "fields": {
@@ -672,7 +672,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
@@ -700,13 +700,13 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const mainBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_yieldMultipleTimes",
                 "inputs": {
                     "COUNT": {
                         "name": "COUNT",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String)
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object)
                     }
                 },
                 "fields": {},
@@ -719,7 +719,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
 
         const inputBlock: ScratchVMBlock =
             {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -730,7 +730,7 @@ describe("Test the correct conversion of WhiskerTest events to their Block-Based
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };

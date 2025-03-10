@@ -92,7 +92,7 @@ describe("A change", () => {
         it.prop([n3.filter(([c, b, a]) => a - b !== c)])(
             "returns false for incorrect deltas", ([change, before, after]) => {
                 const c = newChange({change});
-                expect(c.apply(after, before)).toStrictEqual(fail(expect.any(String)));
+                expect(c.apply(after, before)).toStrictEqual(fail(expect.any(Object)));
             });
 
         it.prop([fc.oneof(eq, ne)])("has a symmetric apply() method if the delta is 0", ([before, after]) => {
@@ -173,7 +173,7 @@ describe("A change", () => {
 
         it.prop([failing])("is false for incorrect deltas", ([x, y]) => {
             const change = newChange({change: op});
-            expect(change.apply(x, y)).toStrictEqual(fail(expect.any(String)));
+            expect(change.apply(x, y)).toStrictEqual(fail(expect.any(Object)));
         });
 
         if (op === "=" || op === "!=") {

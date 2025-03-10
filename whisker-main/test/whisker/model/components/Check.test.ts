@@ -177,7 +177,7 @@ describe('check and registerComponent', () => {
 
     test('Condition.check() returns false before registerComponent()', () => {
         const condition = new AttrChange(edgeID, {args: ["test", "attr", "-"]});
-        const reason = "The check is not initialized: registerComponents has not been called yet!";
+        const reason = {message: "The check is not initialized: registerComponents has not been called yet!"};
         expect(condition.check(1, 1)).toStrictEqual(fail(reason));
     });
 
@@ -188,8 +188,7 @@ describe('check and registerComponent', () => {
         cuMock.pressedKeys["a"] = false;
         expect(func()).toStrictEqual(pass());
         cuMock.pressedKeys["a"] = true;
-        const reason = 'Expected key "a" not to be pressed';
-        expect(func()).toStrictEqual(fail(reason));
+        expect(func()).toStrictEqual(fail({}));
     });
 
     test('registerComponent() clears effect in error case', () => {
@@ -204,7 +203,7 @@ describe('check and registerComponent', () => {
         check.registerComponents(null, cu, "graphID");
         const func = check.check;
         cuMock.pressedKeys["a"] = false;
-        const reason = `There was an error setting up the check: ${error.message}`;
+        const reason = {message: `There was an error setting up the check: ${error.message}`};
         expect(func()).toEqual(fail(reason));
         expect(fn).toHaveBeenCalledWith(edgeID, "graphID", error);
     });

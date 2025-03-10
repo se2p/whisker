@@ -45,11 +45,7 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [key] = this._args;
         const negated = this.negated;
-        return () => result(
-            cu.isKeyDown(key),
-            `Expected key "${key}"` + (negated ? " not " : " ") + "to be pressed",
-            negated,
-        );
+        return () => result(cu.isKeyDown(key), {}, negated);
     }
 
     protected _contradicts(_that: Key): boolean {

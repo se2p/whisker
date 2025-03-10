@@ -23,7 +23,7 @@ describe('Model edges', () => {
 
     function mockCondition(name: string, value: boolean): Check {
         return {
-            check: jest.fn().mockReturnValue(result(value, "(unknown reason)")),
+            check: jest.fn().mockReturnValue(result(value, {})),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
         } as unknown as Check;

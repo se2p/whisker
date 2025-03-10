@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {Comparison, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
@@ -9,19 +9,8 @@ export class Change implements Quantifiable<Change> {
     }
 
     apply(after: number, before: number): CheckResult {
-        const expected = ({
-            "==": `change by ${this._comparison.operand2}`,
-            "!=": "change",
-            "<": "decrease",
-            "<=": "stay the same or decrease",
-            ">": "increase",
-            ">=": "stay the same or increase",
-        } as Record<ComparisonOp, string>)[this._comparison.operator];
-
         const actual = after - before;
-        const reason = `Expected variable to ${expected}, but got a change of ${actual}: `
-            + `${before} (before) vs. ${after} (after)`;
-        return this._comparison.apply(actual).replace(reason);
+        return this._comparison.apply(actual).enhance({before, after});
     }
 
     contradicts(that: Change): boolean {
@@ -62,8 +51,7 @@ const eq0 = new class Eq0 extends Change {
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
-        const reason = `Expected variable not to change, but got "${before}" (before) vs. "${after}" (after)`;
-        return result(after == before, reason);
+        return result(after == before, {before, after});
     }
 
     override negate(): Change {
@@ -77,8 +65,7 @@ const neq0 = new class Neq0 extends Change {
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
-        const reason = `Expected variable to change, but got "${before}" before and after`;
-        return result(after != before, reason);
+        return result(after != before, {before, after});
     }
 
     override negate(): Change {

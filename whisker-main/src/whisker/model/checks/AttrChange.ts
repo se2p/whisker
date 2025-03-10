@@ -90,9 +90,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
-            const context = `${spriteName}.${attrName}`;
             try {
-                return this._change.apply(sprites.map((s) => this._getAttr(s, attrName))).enhance(context);
+                return this._change.apply(sprites.map((s) => this._getAttr(s, attrName)));
             } catch (e) {
                 throw new Exception(pSpriteName, attrName, e);
             }

@@ -35,7 +35,7 @@ export class CheckUtility extends EventEmitter {
 
     private _effectChecks: EffectCheck[] = [];
     private _failedOutputsEvents: EffectCheck[] = [];
-    private _reasons: Map<Check, string> = new Map();
+    private _reasons: Map<Check, Record<string, unknown>> = new Map();
 
     // how often the errors or fails happened, change this boolean for printing all or only ten occurrences per error
     private _onlyTenOutputs = true;

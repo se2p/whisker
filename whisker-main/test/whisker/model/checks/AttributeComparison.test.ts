@@ -62,7 +62,7 @@ describe('AttributeComparison', () => {
         expect(check(kiwi.sprite)).toStrictEqual(pass());
         kiwi.sayText = "the kiwi has nothing to say";
         kiwi.updateSprite();
-        expect(check(kiwi.sprite)).toStrictEqual(fail(expect.any(String)));
+        expect(check(kiwi.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('Output is registered on CheckUtil for changing coordinates', () => {
@@ -81,7 +81,7 @@ describe('AttributeComparison', () => {
         const c = new AttrComp('label', {args: ["apple", "x", "<=", "42"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("apple", c, graphID, check);
-        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(String)));
+        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
         sprite.variables = [{name: "x", value: 0}];
         sprite.updateSprite();
         expect(check(sprite.sprite)).toStrictEqual(pass());
@@ -108,7 +108,7 @@ describe('AttributeComparison', () => {
         expect(check(sprite.sprite)).toStrictEqual(pass());
         sprite.currentCostumeName = "win";
         sprite.updateSprite();
-        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(String)));
+        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 
     it.each([false, true])('Returned function includes original sprite (negated: %s)', (negated) => {
@@ -121,7 +121,7 @@ describe('AttributeComparison', () => {
         kiwi.clones[0].updateSprite();
         const c = new AttrComp('label', {negated, args: ["kiwi", "x", "<", "3"]});
         c.registerComponents(t, cu, graphID);
-        expect(c.check()).toStrictEqual(negated ? fail(expect.any(String)) : pass());
+        expect(c.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
     it.each([false, true])('Returned function includes clones (negated: %s)', (negated) => {
@@ -136,7 +136,7 @@ describe('AttributeComparison', () => {
         kiwi.clones.forEach(c => c.updateSprite());
         const c = new AttrComp('label', {negated, args: ["kiwi", "x", ">", "15"]});
         c.registerComponents(t, cu, graphID);
-        expect(c.check()).toStrictEqual(negated ? fail(expect.any(String)) : pass());
+        expect(c.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
     test('Can check value of effects', () => {
@@ -146,7 +146,7 @@ describe('AttributeComparison', () => {
         const mock = new TestDriverMock([banana, bowl, apple]);
         const c = new AttrComp('label', {negated: false, args: ["bowl", "fisheye", "==", 25]});
         c.registerComponents(mock.getTestDriver(), getDummyCheckUtility(), graphID);
-        expect(c.check()).toStrictEqual(fail(expect.any(String)));
+        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
         effects["fisheye"] = 25;
         expect(c.check()).toEqual(pass());
     });

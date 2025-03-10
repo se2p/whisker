@@ -67,26 +67,25 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
 
             if (s.sayText === null) {
-                return fail(`Expected sprite "${spriteName}" to say "${expected}" but got no speech`);
+                return fail({actual: null, expected: expected});
             }
 
             const actual = s.sayText.toLocaleLowerCase();
 
             if (!actual.includes(expected)) {
-                return fail(`Expected sprite "${spriteName}" to say "${expected}" but got "${actual}"`);
+                return fail({actual, expected});
             }
 
             return pass();
         };
 
         cu.registerOutput(spriteName, this, graphID, (s) => {
-            return result(sayTextCheck(s).passed, "(reason unknown)", negated);
+            return result(sayTextCheck(s).passed, {}, negated);
         });
 
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const reason = `Expected sprite "${spriteName}" not to say "${expected}"`;
-            return any(sayTextCheck, this.negated, reason, sprites);
+            return any(sayTextCheck, this.negated, sprites);
         };
     }
 

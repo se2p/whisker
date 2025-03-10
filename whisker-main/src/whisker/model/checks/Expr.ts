@@ -48,11 +48,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         const e = ModelUtil.getExpressionForEval(t, this._code);
         const check = () => {
             const log = {};
-            return result(
-                Boolean(ModelUtil.evaluateExpression(t, e.expr, log)),
-                Object.entries(log).map(([key, value]) => `${key}->${value}`).join(", "),
-                this.negated,
-            );
+            return result(Boolean(ModelUtil.evaluateExpression(t, e.expr, log)), log, this.negated);
         };
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);

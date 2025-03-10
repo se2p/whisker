@@ -87,9 +87,8 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         const check = () => {
             const sprite = t.getSprites((sprite: Sprite) => sprite.name == spriteName, false)[0];
             const variable = sprite.getVariable(variableName);
-            const context = `${spriteName}.${variableName}`;
             try {
-                return this._comparison.apply(variable.value).enhance(context);
+                return this._comparison.apply(variable.value);
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);
             }

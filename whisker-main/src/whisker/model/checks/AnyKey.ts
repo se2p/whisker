@@ -36,9 +36,8 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const negated = this.negated;
         return () => {
-            return result(cu.isAnyKeyDown(), negated ? "Some key was pressed" : "No key was pressed", negated);
+            return result(cu.isAnyKeyDown(), {}, this.negated);
         };
     }
 

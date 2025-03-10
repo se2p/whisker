@@ -14,18 +14,18 @@ import {PositionAssertion} from "../../../src/whisker/testgenerator/assertions/P
 describe("Test the correct conversion of WhiskerTest assertions to their block-based representation", () => {
 
         const assertEqualsBlock: ScratchVMBlock = {
-            "id": expect.any(String),
+            "id": expect.any(Object),
             "opcode": "bbt_assertEquals",
             "inputs": {
                 "A": {
                     "name": "A",
-                    "block": expect.any(String),
-                    "shadow": expect.any(String)
+                    "block": expect.any(Object),
+                    "shadow": expect.any(Object)
                 },
                 "B": {
                     "name": "B",
-                    "block": expect.any(String),
-                    "shadow": expect.any(String)
+                    "block": expect.any(Object),
+                    "shadow": expect.any(Object)
                 }
             },
             "fields": {},
@@ -37,7 +37,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
         };
 
         const textBlock1: ScratchVMBlock = {
-            "id": expect.any(String),
+            "id": expect.any(Object),
             "opcode": "text",
             "inputs": {},
             "fields": {
@@ -73,7 +73,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = backdropAssertion.toScratchBlocks();
 
             const textBlock2: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "text",
                 "inputs": {},
                 "fields": {
@@ -84,13 +84,13 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
 
             const backdropBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "looks_backdropnumbername",
                 "inputs": {},
                 "fields": {
@@ -101,7 +101,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -131,7 +131,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = cloneCountAssertion.toScratchBlocks();
 
             const textBlock2: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "text",
                 "inputs": {},
                 "fields": {
@@ -142,13 +142,13 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
 
             const numberOfClonesBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_attributeOf",
                 "inputs": {},
                 "fields": {
@@ -163,7 +163,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -193,7 +193,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = costumeAssertion.toScratchBlocks();
 
             const textBlock2: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "text",
                 "inputs": {},
                 "fields": {
@@ -204,13 +204,13 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
 
             const costumeBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_attributeOf",
                 "inputs": {},
                 "fields": {
@@ -225,7 +225,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -255,7 +255,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = directionAssertion.toScratchBlocks();
 
             const textBlock2: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "text",
                 "inputs": {},
                 "fields": {
@@ -266,13 +266,13 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
 
             const attributeBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_attributeOf",
                 "inputs": {},
                 "fields": {
@@ -287,7 +287,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
 
@@ -318,7 +318,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = listAssertion.toScratchBlocks();
 
             const textBlock2: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "text",
                 "inputs": {},
                 "fields": {
@@ -329,26 +329,26 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
 
             const lengthOfListBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "data_lengthoflist",
                 "inputs": {},
                 "fields": {
                     "LIST": {
                         "name": "LIST",
-                        "id": expect.any(String),
+                        "id": expect.any(Object),
                         "value": "my_list",
                         "variableType": "list"
                     }
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -378,51 +378,51 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = positionAssertion.toScratchBlocks();
 
             const assertConditionX: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_assertCondition",
                 "inputs": {
                     "CONDITION": {
                         "name": "CONDITION",
-                        "block": expect.any(String),
+                        "block": expect.any(Object),
                         "shadow": null
                     }
                 },
                 "fields": {},
-                "next": expect.any(String),
+                "next": expect.any(Object),
                 "topLevel": false,
                 "parent": null,
                 "shadow": false,
                 "breakpoint": false
             };
             const isNumberFuzzyEqualX: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_isNumberFuzzyEqual",
                 "inputs": {
                     "A": {
                         "name": "A",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     },
                     "B": {
                         "name": "B",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     },
                     "TOLERANCE": {
                         "name": "TOLERANCE",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     }
                 },
                 "fields": {},
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
             const shadowX: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -438,7 +438,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 "breakpoint": false
             };
             const valueX: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -449,12 +449,12 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
             const toleranceX: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -465,12 +465,12 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
             const attributeOfX: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_attributeOf",
                 "inputs": {},
                 "fields": {
@@ -485,57 +485,57 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
 
             const assertConditionY: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_assertCondition",
                 "inputs": {
                     "CONDITION": {
                         "name": "CONDITION",
-                        "block": expect.any(String),
+                        "block": expect.any(Object),
                         "shadow": null
                     }
                 },
                 "fields": {},
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
             const isNumberFuzzyEqualY: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_isNumberFuzzyEqual",
                 "inputs": {
                     "A": {
                         "name": "A",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     },
                     "B": {
                         "name": "B",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     },
                     "TOLERANCE": {
                         "name": "TOLERANCE",
-                        "block": expect.any(String),
-                        "shadow": expect.any(String),
+                        "block": expect.any(Object),
+                        "shadow": expect.any(Object),
                     }
                 },
                 "fields": {},
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
             const shadowY: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -551,7 +551,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 "breakpoint": false
             };
             const valueY: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -562,12 +562,12 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
             const toleranceY: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "math_number",
                 "inputs": {},
                 "fields": {
@@ -578,12 +578,12 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": true,
                 "breakpoint": false
             };
             const attributeOfY: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_attributeOf",
                 "inputs": {},
                 "fields": {
@@ -598,7 +598,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -632,12 +632,12 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = touchingAssertion.toScratchBlocks();
 
             const assertConditionBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_assertCondition",
                 "inputs": {
                     "CONDITION": {
                         "name": "CONDITION",
-                        "block": expect.any(String),
+                        "block": expect.any(Object),
                     }
                 },
                 "fields": {},
@@ -649,7 +649,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             };
 
             const isTouchingBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_isTouching",
                 "inputs": {},
                 "fields": {
@@ -664,7 +664,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -691,12 +691,12 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = touchingEdgeAssertion.toScratchBlocks();
 
             const assertConditionFalseBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_assertConditionFalse",
                 "inputs": {
                     "CONDITION": {
                         "name": "CONDITION",
-                        "block": expect.any(String),
+                        "block": expect.any(Object),
                         "shadow": null
                     }
                 },
@@ -709,7 +709,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             };
 
             const isTouchingBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_isTouching",
                 "inputs": {},
                 "fields": {
@@ -724,7 +724,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };
@@ -751,12 +751,12 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             const blockRepresentation: ScratchScriptSnippet = visibilityAssertion.toScratchBlocks();
 
             const assertConditionBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_assertCondition",
                 "inputs": {
                     "CONDITION": {
                         "name": "CONDITION",
-                        "block": expect.any(String),
+                        "block": expect.any(Object),
                         "shadow": null
                     }
                 },
@@ -769,7 +769,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
             };
 
             const isSpriteVisibleBlock: ScratchVMBlock = {
-                "id": expect.any(String),
+                "id": expect.any(Object),
                 "opcode": "bbt_isSpriteVisible",
                 "inputs": {},
                 "fields": {
@@ -780,7 +780,7 @@ describe("Test the correct conversion of WhiskerTest assertions to their block-b
                 },
                 "next": null,
                 "topLevel": false,
-                "parent": expect.any(String),
+                "parent": expect.any(Object),
                 "shadow": false,
                 "breakpoint": false
             };

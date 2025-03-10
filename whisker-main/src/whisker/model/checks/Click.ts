@@ -50,15 +50,15 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
 
         const clickCheck = (s: Sprite) => {
             if (!s.visible) {
-                return fail(`Expected sprite "${spriteName}" to be visible`);
+                return fail({message: `Expected sprite "${spriteName}" to be visible`});
             }
 
             if (!s.isTouchingMouse()) {
-                return fail(`Expected sprite "${spriteName}" to touch the mouse pointer`);
+                return fail({message: `Expected sprite "${spriteName}" to touch the mouse pointer`});
             }
 
             if (!t.isMouseDown()) {
-                return fail(`Expected sprite "${spriteName}" to be clicked`);
+                return fail({message: `Expected sprite "${spriteName}" to be clicked`});
             }
 
             return pass();
@@ -66,7 +66,8 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
 
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            return any(clickCheck, this.negated, `Expected sprite "${spriteName}" not to be clicked`, sprites);
+            return any(clickCheck, this.negated, sprites)
+                .enhance({message: `Expected sprite "${spriteName}" not to be clicked`});
         };
     }
 

@@ -36,7 +36,7 @@ describe('AttributeChange', () => {
         const c = new AttrChange('label', {args: ["apple", "size", "+"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-        expect(c.check()).toStrictEqual(fail(expect.any(String)));
+        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('MoveEvent is registered on CheckUtil', () => {
@@ -51,7 +51,7 @@ describe('AttributeChange', () => {
         const c = new AttrChange('label', {args: ["apple", "x", "+"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-        expect(c.check()).toStrictEqual(fail(expect.any(String)));
+        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('Check is not a constant function', () => {
@@ -64,7 +64,7 @@ describe('AttributeChange', () => {
             old: {name: "currentCostumeName", value: "lose"}
         }];
         tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
-        expect(c.check()).toStrictEqual(fail(expect.any(String)));
+        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('Can check change of effects', () => {
@@ -76,6 +76,6 @@ describe('AttributeChange', () => {
         c.registerComponents(mock.getTestDriver(), dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
         effects["color"] = 20;
-        expect(c.check()).toStrictEqual(fail(expect.any(String)));
+        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });
