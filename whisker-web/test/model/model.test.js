@@ -141,7 +141,7 @@ describe('Model tests on multiple events per step', () => {
         await expect(modelCoverage).toBe("1.00");
     }, timeout);
 
-    test('variable change event listener', async () => {
+    test('any key pressed test', async () => {
         await loadProject('test/model/scratch-programs/AnyKeyPressed.sb3',
             'test/model/model-jsons/AnyKeyPressed.json');
         await (await page.$('#run-all-tests')).click();
