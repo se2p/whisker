@@ -5,6 +5,7 @@ import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import TestDriver from "../../../test/test-driver";
 
 const name = "VarComp" as const;
 
@@ -70,11 +71,11 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
     /**
      * Get a method for checking whether a variable has a given comparison with a given value fulfilled.
      *
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, varName] = this._args;
         const {
             sprite: foundSprite,

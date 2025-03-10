@@ -4,6 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
+import TestDriver from "../../../test/test-driver";
 
 export type TouchingEdgeArgs = [
     /**
@@ -38,11 +39,11 @@ abstract class AbstractTouchingEdge<
 
     /**
      * Get a method to check whether a sprite is touching an edge.
-     * @param t Test driver.
-     * @param cu Listener for checks.
+     * @param t Instance of the test driver for checking if a sprite or its clones is touching an edge.
+     * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName] = this._args;
         const negated = this.negated;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;

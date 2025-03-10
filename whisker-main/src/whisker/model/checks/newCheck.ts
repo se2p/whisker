@@ -19,9 +19,13 @@ import {
     TouchingVerticalEdgeJSON
 } from "./TouchingEdge";
 import {BackgroundChange, BackgroundChangeJSON} from "./BackgroundChange";
+import {Layer, LayerJSON} from "./Layer";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {z} from "zod";
 import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapsed, TimeElapsedJSON} from "./Time";
+import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
+import {PointsTo, PointsToJSON} from "./PointsTo";
+import {AnyKey, AnyKeyJSON} from "./AnyKey";
 
 export type CheckJSON =
     | AttrChangeJSON
@@ -29,6 +33,7 @@ export type CheckJSON =
     | BackgroundChangeJSON
     | ClickJSON
     | KeyJSON
+    | AnyKeyJSON
     | OutputJSON
     | SpriteColorJSON
     | SpriteTouchingJSON
@@ -44,6 +49,9 @@ export type CheckJSON =
     | TouchingEdgeJSON
     | TouchingVerticalEdgeJSON
     | TouchingHorizEdgeJSON
+    | LayerJSON
+    | ClearedEffectJSON
+    | PointsToJSON
     ;
 
 export const CheckJSON = z.discriminatedUnion("name", [
@@ -52,6 +60,7 @@ export const CheckJSON = z.discriminatedUnion("name", [
     BackgroundChangeJSON,
     ClickJSON,
     KeyJSON,
+    AnyKeyJSON,
     OutputJSON,
     SpriteColorJSON,
     SpriteTouchingJSON,
@@ -67,6 +76,9 @@ export const CheckJSON = z.discriminatedUnion("name", [
     TouchingEdgeJSON,
     TouchingVerticalEdgeJSON,
     TouchingHorizEdgeJSON,
+    LayerJSON,
+    ClearedEffectJSON,
+    PointsToJSON,
 ]);
 
 export type Check =
@@ -75,6 +87,7 @@ export type Check =
     | BackgroundChange
     | Click
     | Key
+    | AnyKey
     | Output
     | SpriteColor
     | SpriteTouching
@@ -90,6 +103,9 @@ export type Check =
     | TouchingEdge
     | TouchingVerticalEdge
     | TouchingHorizEdge
+    | Layer
+    | ClearedEffect
+    | PointsTo
     ;
 
 export type CheckName = CheckJSON['name'];
@@ -99,6 +115,7 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "AttrComp",
     "BackgroundChange",
     "Click",
+    "AnyKey",
     "Key",
     "Output",
     "SpriteColor",
@@ -115,6 +132,9 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "TouchingEdge",
     "TouchingVerticalEdge",
     "TouchingHorizEdge",
+    "PointsTo",
+    "Layer",
+    "ClearedEffects",
 ]);
 
 export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
@@ -131,6 +151,8 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             return new Click(edgeLabel, checkJSON);
         case "Key":
             return new Key(edgeLabel, checkJSON);
+        case "AnyKey":
+            return new AnyKey(edgeLabel, checkJSON);
         case "Output":
             return new Output(edgeLabel, checkJSON);
         case "SpriteColor":
@@ -161,6 +183,12 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             return new TouchingVerticalEdge(edgeLabel, checkJSON);
         case "TouchingHorizEdge":
             return new TouchingHorizEdge(edgeLabel, checkJSON);
+        case "Layer":
+            return new Layer(edgeLabel, checkJSON);
+        case "ClearedEffects":
+            return new ClearedEffect(edgeLabel, checkJSON);
+        case "PointsTo":
+            return new PointsTo(edgeLabel, checkJSON);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

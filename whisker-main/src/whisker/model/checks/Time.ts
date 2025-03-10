@@ -1,17 +1,10 @@
 import {z} from "zod";
-import {
-    AbstractCheck,
-    CheckFun,
-    CheckFun0,
-    CheckFun1,
-    CheckFun2,
-    ICheckJSON,
-    SlimCheckJSON
-} from "./AbstractCheck";
+import {AbstractCheck, CheckFun, CheckFun0, CheckFun1, CheckFun2, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
+import TestDriver from "../../../test/test-driver";
 
 export type TimeArgs = [
 
@@ -85,9 +78,11 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
 
     /**
      * Get a method that checks whether enough time has elapsed since the program ended.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the total number of steps executed.
+     * @param cu Listener for the checks.
+     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun2 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun2 {
         const steps = this._convertFromTimeToSteps(t);
         return (_, stepsSinceEnd) => {
             return !this.negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
@@ -118,7 +113,7 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
      * Get a method that checks whether enough time has elapsed since the last edge transition in the current model.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun1 {
+    override _checkArgsWithTestDriver(t: TestDriver, _cu: CheckUtility, _graphID: string): CheckFun1 {
         const steps = this._convertFromTimeToSteps(t);
         return (stepsSinceLastTransition) => {
             return !this.negated == (steps <= stepsSinceLastTransition);
@@ -149,7 +144,7 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
      * Get a method that checks whether enough time has elapsed since the test runner started the test.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, _cu: CheckUtility, _graphID: string): CheckFun0 {
         const steps = this._convertFromTimeToSteps(t);
         return () => {
             return !this.negated == (steps <= t.getTotalStepsExecuted());

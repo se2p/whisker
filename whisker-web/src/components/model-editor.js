@@ -86,6 +86,7 @@ class ModelEditor {
     //  But currently, we still need them as a workaround, because appendInputWithPattern() expects a regex as argument.
     static X_PATTERN = /^.*$/g; // can be either a number or an expr which could be anything
     static Y_PATTERN = /^.*$/g; // can be either a number or an expr which could be anything
+    static LAYER_PATTERN = /(First,Last)$/; // can be either a number or an expr which could be anything
 
     static INVALID_INPUT_CLASS = 'model-invalid-input';
 
@@ -1284,6 +1285,12 @@ class ModelEditor {
         case argType.expr:
             this.appendAreaInput('modelEditor:expr', value, 'expression ...', i);
             break;
+        case argType.layerSelection:
+            this.appendInputWithPattern('modelEditor:layerSelection', value, ModelEditor.LAYER_PATTERN,
+                i, 'max-width:60px;');
+            break;
+        default:
+            logger.err(`There is a pattern missing: ${type}`);
         }
     }
 

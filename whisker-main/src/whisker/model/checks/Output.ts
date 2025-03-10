@@ -3,6 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import TestDriver from "../../../test/test-driver";
 
 const name = "Output" as const;
 
@@ -44,11 +45,11 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
 
     /**
      * Get a method checking whether a sprite has the given output included in their sayText.
-     * @param t Instance of the test driver.
-     * @param cu  Listener for the checks.
+     * @param t Instance of the test driver for retrieving the sayText value of a sprite and its clones
+     * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, output] = this._args;
         const negated = this.negated;
 
@@ -67,7 +68,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             }
 
             const sayText = s.sayText.toLocaleLowerCase();
-            const expected = String(eval(expression)(t)).toLocaleLowerCase();
+            const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
             return sayText.includes(expected);
         };
         cu.registerOutput(spriteName, this, graphID, (s) => !negated == check(s));

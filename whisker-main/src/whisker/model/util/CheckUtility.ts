@@ -199,6 +199,13 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
+     * Check whether any key was pressed at the beginning of the step.
+     */
+    isAnyKeyDown(): boolean {
+        return this._testDriver.isKeyDown("any");
+    }
+
+    /**
      * Register the effects of an edge in this listener to test them later on.
      * @param takenEdge The taken edge of a model.
      * @param model Model of the edge.

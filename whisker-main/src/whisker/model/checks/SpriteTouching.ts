@@ -3,6 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import TestDriver from "../../../test/test-driver";
 
 const name = "SpriteTouching" as const;
 
@@ -45,12 +46,11 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
     /**
      * Get a method checking whether two sprites are touching.
      *
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver to check if two sprites are touching.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
-
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName1, pSpriteName2] = this._args;
         const negated = this.negated;
 

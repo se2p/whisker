@@ -5,41 +5,41 @@ import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 
-const name = "Click" as const;
+const name = "ClearedEffects" as const;
 
-export type ClickArgs = [
+export type ClearedEffectArgs = [
     /**
      * The name of the sprite.
      */
     spriteName: SpriteName,
 ];
 
-const ClickArgs = z.tuple([
+const ClearedEffectArgs = z.tuple([
     SpriteName,
 ]);
 
-export interface ClickJSON extends ICheckJSON {
+export interface ClearedEffectJSON extends ICheckJSON {
     name: typeof name;
-    args: ClickArgs;
+    args: ClearedEffectArgs;
 }
 
-export const ClickJSON = ICheckJSON.extend({
+export const ClearedEffectJSON = ICheckJSON.extend({
     name: z.literal(name),
-    args: ClickArgs,
+    args: ClearedEffectArgs,
 });
 
-export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
-    constructor(edgeLabel: string, json: SlimCheckJSON<ClickJSON>) {
+export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
+    constructor(edgeLabel: string, json: SlimCheckJSON<ClearedEffectJSON>) {
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: ClickJSON): ClickJSON {
-        return ClickJSON.parse(checkJSON) as ClickJSON;
+    protected _validate(checkJSON: ClearedEffectJSON): ClearedEffectJSON {
+        return ClearedEffectJSON.parse(checkJSON) as ClearedEffectJSON;
     }
 
     /**
-     * Get a method for checking whether a sprite was clicked.
-     * @param t Instance of the test driver for retrieving if a sprite or its clones are clicked
+     * Get a method for checking whether a sprite has no effects activated.
+     * @param t Instance of the test driver for retrieving the effect values of a sprite and its clones
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
@@ -48,15 +48,13 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const anyTouchingMouse = sprites.some((s: Sprite) => s.visible && t.isMouseDown() && s.isTouchingMouse());
-            return !this.negated == anyTouchingMouse;
+            const anyHasNoEffect = sprites.some((s: Sprite) => Object.values(s.effects).every(v => v === 0));
+            return !this.negated == anyHasNoEffect;
         };
     }
 
-    protected override _contradicts(that: Click): boolean {
-        const [spriteNameThis] = this._args;
-        const [spriteNameThat] = that._args;
-        return spriteNameThis !== spriteNameThat; // Cannot click on two different sprites at the same time.
+    protected override _contradicts(that: ClearedEffect): boolean {
+        return false;
     }
 
     override get dependsOnSayText(): boolean {

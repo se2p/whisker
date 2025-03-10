@@ -118,11 +118,12 @@ export abstract class ModelUtil {
     /**
      * Returns the value as a number if possible or null otherwise.
      * @param value The value to be converted to a number
+     * @param defaultValue This value is returned when {@linkcode value} is not a number
      * @return The input converted to a number
      */
-    private static returnNumberIfPossible(value: ParamType): number | null {
+    public static returnNumberIfPossible(value: ParamType, defaultValue: number | null = null): number | null {
         if (value == null || value === '' || isNaN(Number(value))) {
-            return null;
+            return defaultValue;
         }
         return Number(value.toString());
     }
@@ -150,6 +151,90 @@ export abstract class ModelUtil {
             "sayText",
             "rotationStyle",
         ].includes(attrName);
+    }
+
+    /**
+     * Checks if the given string is the name of an effect of a sprite
+     * @param effectName The name of the effect
+     * @return true if {@linkcode effectName} is a valid name for an effect
+     * */
+    public static isAnEffect(effectName: string): boolean {
+        return [
+            "color",
+            "fisheye",
+            "whirl",
+            "pixelate",
+            "mosaic",
+            "brightness",
+            "ghost",
+        ].includes(effectName);
+    }
+
+    /**
+     * Calls {@link ModelUtil.getExpectedDirectionForSprite1LookingAtTarget} with the x and y coordinates of s2
+     * @param s1 Sprite looking at another sprite
+     * @param s2 some sprite
+     */
+    public static getExpectedDirectionForSprite1LookingAtSprite2(s1: Sprite, s2: Sprite): number {
+        return ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s1, s2.x, s2.y);
+    }
+
+    /**
+     * Calls {@link ModelUtil.getExpectedDirectionForSprite1LookingAtTarget} with the x and y coordinates of the mouse
+     * @param s1 Sprite looking at another sprite
+     * @param t Test-Driver for retrieving the coordinates of the mouse
+     */
+    public static getExpectedDirectionForSpriteLookingAtMouse(s1: Sprite, t: TestDriver): number {
+        const {x, y} = t.getMousePos();
+        return ModelUtil.getExpectedDirectionForSprite1LookingAtTarget(s1, x, y);
+
+    }
+
+    /**
+     * Calculates the direction of sprite s1 if it points at some target coordinates. The rotation style does not matter,
+     * since s1.direction changes independent on the graphic visible on screen.
+     *
+     * @param s1 Sprite looking at something
+     * @param x x-coordinate of the target
+     * @param y y-coordinate of the target
+     */
+    public static getExpectedDirectionForSprite1LookingAtTarget(s1: Sprite, x: number, y: number): number {
+        const xDif = x - s1.x;
+        const yDif = y - s1.y;
+        if (xDif == 0) {
+            return yDif > 0 ? 0 : 180;
+        }
+        const expectedDegrees = (360 + (Math.atan2(yDif, xDif) * 180.0) / Math.PI) % 360;
+        return (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
+    }
+
+    public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = false): boolean {
+        if (!useMode || sprite.rotationStyle == "all round") {
+            return ModelUtil.checkCyclicValueWithinDelta(sprite.direction, expected, -180, 180, delta);
+        }
+        // mode is used -> for "do not rotate" any value is fine and otherwise the sign must be equal.
+        // If either the expected or the actual direction = 0 then any direction is allowed.
+        return sprite.rotationStyle == "do not rotate" || Math.sign(expected) * Math.sign(sprite.direction) >= 0;
+    }
+
+    /**
+     * Checks if a value is within a delta range of the value it should be for cyclic values.
+     * @param actual The actual value of the variable
+     * @param expected The value the variable should have
+     * @param min The lower bound
+     * @param max The upper bound
+     * @param delta Defines the range of valid values
+     * @return true if the value is within the valid cyclic bound
+     */
+    public static checkCyclicValueWithinDelta(actual: number, expected: number, min: number, max: number, delta: number): boolean {
+        const lowerBound = expected - delta;
+        const upperBound = expected + delta;
+        if (lowerBound <= min) {
+            return actual <= upperBound || actual >= max - (min - lowerBound);
+        } else if (upperBound >= max) {
+            return actual >= lowerBound || actual <= min + (upperBound - max);
+        }
+        return lowerBound <= actual && actual <= upperBound;
     }
 
     /**
