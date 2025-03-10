@@ -23,7 +23,7 @@ export class TestDriverMock {
 
     public getTestDriver(): TestDriver {
         return {
-            getSprites: (filter: ((s: Sprite) => boolean), skipStage = true) => {
+            getSprites: (filter: ((s: Sprite) => boolean) = s => true, skipStage = true) => {
                 return Object.values(this.currentSprites).filter(s => filter(s) && (s != this.stage || !skipStage));
             },
             getSprite: (key: string) => Object.values(this.currentSprites).find(s => s.name == key),
