@@ -177,7 +177,7 @@ describe('check and registerComponent', () => {
 
     test('Condition.check() returns false before registerComponent()', () => {
         const condition = new AttrChange(edgeID, {args: ["test", "attr", "-"]});
-        const reason = "The check is not initialized: registerComponents has not been called yet!"
+        const reason = "The check is not initialized: registerComponents has not been called yet!";
         expect(condition.check(1, 1)).toStrictEqual(fail(reason));
     });
 

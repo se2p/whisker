@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
+import {any, pass, fail} from "./CheckResult";
 
 const name = "PointsTo" as const;
 
@@ -57,9 +58,11 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
                 ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(rotatingSprite, t)
                 : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(rotatingSprite, t.getSprite(this._args[1]));
             const sprites = rotatingSprite.getClones(true);
-            const check = (s: Sprite) => ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
-            const anyHasCorrectDirection = sprites.some(check);
-            return !this.negated == anyHasCorrectDirection;
+            const check = (s: Sprite) => ModelUtil.checkDirectionWithinDelta(s, expectedDirection)
+                ? pass()
+                : fail(`Expected ${rotatingSprite} to have direction ${expectedDirection}, but it had direction ${s.direction}`);
+            const reason = `Expected ${spriteNameRotate} to${this.negated ? " not " : ""}point towards ${this._args} (expected direction: ${expectedDirection})`;
+            return any(check, this.negated, reason, sprites);
         };
     }
 

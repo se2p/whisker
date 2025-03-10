@@ -2,6 +2,7 @@ import {TestDriverMock} from "../mocks/TestDriverMock";
 import {SpriteMock} from "../mocks/SpriteMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {PointsTo} from "../../../../src/whisker/model/checks/PointsTo";
+import {pass,fail} from "../../../../src/whisker/model/checks/CheckResult";
 
 
 describe('PointsToTest', () => {
@@ -24,22 +25,22 @@ describe('PointsToTest', () => {
     it.each([true, false])('Check for 2 sprites works properly (negated: %s)', (negated: boolean) => {
         const check = new PointsTo(edgeLabel, {negated: negated, args: ['bowl', 'banana']});
         check.registerComponents(t, cu, graphID);
-        expect(check.check()).toEqual(!negated);
+        expect(check.check()).toStrictEqual(negated ? fail(expect.any(String)) : pass());
     });
 
     it.each([true, false])('Check for sprites points to mouse works properly (negated: %s)', (negated: boolean) => {
         const check = new PointsTo(edgeLabel, {negated: negated, args: ['banana', '_mouse_']});
         check.registerComponents(t, cu, graphID);
         tdMock.mousePos = {x: 20, y: 0};
-        expect(check.check()).toEqual(!negated);
+        expect(check.check()).toStrictEqual(negated ? fail(expect.any(String)) : pass());
     });
 
     test('Check is not a constant return value', () => {
         const check = new PointsTo(edgeLabel, {negated: false, args: ['banana', '_mouse_']});
         check.registerComponents(t, cu, graphID);
         tdMock.mousePos = {x: 20, y: 0};
-        expect(check.check()).toEqual(true);
+        expect(check.check()).toStrictEqual(pass());
         tdMock.mousePos = {x: -20, y: 100};
-        expect(check.check()).toEqual(false);
+        expect(check.check()).toStrictEqual(fail(expect.any(String)));
     });
 });

@@ -4,6 +4,7 @@ import {TestDriverMock} from "../mocks/TestDriverMock";
 import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {AttrChange} from "../../../../src/whisker/model/checks/AttrChange";
+import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 
 describe('AttributeChange', () => {
@@ -26,44 +27,44 @@ describe('AttributeChange', () => {
     test('VarEvent is registered on CheckUtil', () => {
         const fn = jest.fn();
         const cu = getDummyCheckUtility();
-        let check: (sprite: Sprite) => boolean;
+        let check: (sprite: Sprite) => CheckResult;
         cu.registerOnVisualChange = (spriteName: string, c: Check, graphID: string,
-                                     predicate: (sprite: Sprite) => boolean) => {
+                                     predicate: (sprite: Sprite) => CheckResult) => {
             fn(spriteName, c, graphID, predicate);
             check = predicate;
         };
         const c = new AttrChange('label', {args: ["apple", "size", "+"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-        expect(check(apple.sprite)).toBe(false);
+        expect(c.check()).toStrictEqual(fail(expect.any(String)));
     });
 
     test('MoveEvent is registered on CheckUtil', () => {
         const fn = jest.fn();
         const cu = getDummyCheckUtility();
-        let check: (sprite: Sprite) => boolean;
+        let check: (sprite: Sprite) => CheckResult;
         cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
-                                  predicate: (sprite: Sprite) => boolean) => {
+                                  predicate: (sprite: Sprite) => CheckResult) => {
             fn(spriteName, c, graphID, predicate);
             check = predicate;
         };
         const c = new AttrChange('label', {args: ["apple", "x", "+"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-        expect(check(apple.sprite)).toBe(false);
+        expect(c.check()).toStrictEqual(fail(expect.any(String)));
     });
 
     test('Check is not a constant function', () => {
         const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostume", "="]});
         c.registerComponents(t, dummyCU, graphID);
-        expect(c.check()).toEqual(true);
+        expect(c.check()).toStrictEqual(pass());
         stage.variables = [{
             name: "currentCostumeName",
             value: "lose",
             old: {name: "currentCostumeName", value: "lose"}
         }];
         tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
-        expect(c.check()).toEqual(false);
+        expect(c.check()).toStrictEqual(fail(expect.any(String)));
     });
 
     test('Can check change of effects', () => {
@@ -73,8 +74,8 @@ describe('AttributeChange', () => {
         const mock = new TestDriverMock([banana, bowl, apple, stage]);
         const c = new AttrChange('label', {negated: false, args: ["bowl", "color", 10]});
         c.registerComponents(mock.getTestDriver(), dummyCU, graphID);
-        expect(c.check()).toEqual(true);
+        expect(c.check()).toStrictEqual(pass());
         effects["color"] = 20;
-        expect(c.check()).toEqual(false);
+        expect(c.check()).toStrictEqual(fail(expect.any(String)));
     });
 });
