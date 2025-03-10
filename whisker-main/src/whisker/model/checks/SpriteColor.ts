@@ -5,6 +5,7 @@ import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {pass, fail, any, result} from "./CheckResult";
+import TestDriver from "../../../test/test-driver";
 
 const name = "SpriteColor" as const;
 
@@ -61,11 +62,11 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
     /**
      * Get a method whether a sprite touches a color.
      *
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for checking if a sprite or its clones are touching a color.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, pR, pG, pB] = this._args;
         const negated = this.negated;
 

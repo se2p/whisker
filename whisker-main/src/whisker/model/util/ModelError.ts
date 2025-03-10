@@ -66,13 +66,6 @@ export class ComparisonNotKnownError extends Error {
     }
 }
 
-export class FunctionEvalError extends Error {
-    constructor(e: unknown) {
-        super(`Function cannot be evaluated:
-${getErrorMessage(e)}`);
-    }
-}
-
 export class ExprEvalError extends Error {
     constructor(e: unknown) {
         super(`Expression cannot be evaluated:
@@ -92,12 +85,6 @@ export class EmptyExpressionError extends Error {
     }
 }
 
-export class ExpressionEnterError extends Error {
-    constructor() {
-        super("Sprite/variable expression may not contain new line element.");
-    }
-}
-
 export class RGBRangeError extends Error {
     constructor() {
         super("RGB ranges not correct.");
@@ -107,6 +94,12 @@ export class RGBRangeError extends Error {
 export class ErrorForVariable extends Error {
     constructor(spriteName: ArgType, varName: ArgType, error: unknown) {
         super(`${spriteName}.${varName}: ${getErrorMessage(error)}`);
+    }
+}
+
+export class ErrorForEffect extends Error {
+    constructor(spriteName: ArgType, effectName: ArgType, error: unknown) {
+        super(`${spriteName}.effect["${effectName}"]: ${getErrorMessage(error)}`);
     }
 }
 

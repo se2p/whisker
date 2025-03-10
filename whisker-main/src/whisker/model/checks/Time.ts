@@ -5,6 +5,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
+import TestDriver from "../../../test/test-driver";
 
 export type TimeArgs = [
 
@@ -79,9 +80,11 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
 
     /**
      * Get a method that checks whether enough time has elapsed since the program ended.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the total number of steps executed.
+     * @param cu Listener for the checks.
+     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun2 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun2 {
         return (_, stepsSinceEnd) => {
             const steps = t.getTotalStepsExecuted() - stepsSinceEnd;
             const reason =
@@ -115,7 +118,7 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
      * Get a method that checks whether enough time has elapsed since the last edge transition in the current model.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun1 {
+    override _checkArgsWithTestDriver(t: TestDriver, _cu: CheckUtility, _graphID: string): CheckFun1 {
         return (stepsSinceLastTransition) => {
             const reason =
                 `Expected ${this.negated ? "no more than" : "at least"} ${this._steps} steps ` +
@@ -148,7 +151,7 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
      * Get a method that checks whether enough time has elapsed since the test runner started the test.
      * @param t Instance of the test driver.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, _cu: CheckUtility, _graphID: string): CheckFun0 {
         return () => {
             const steps = t.getTotalStepsExecuted();
             const reason =

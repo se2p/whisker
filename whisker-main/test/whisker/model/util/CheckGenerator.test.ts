@@ -12,8 +12,6 @@ import {SpriteColor} from "../../../../src/whisker/model/checks/SpriteColor";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 import {VarComp} from "../../../../src/whisker/model/checks/VarComp";
 import {VarChange} from "../../../../src/whisker/model/checks/VarChange";
-import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
-import {AttrChange} from "../../../../src/whisker/model/checks/AttrChange";
 import {BackgroundChange} from "../../../../src/whisker/model/checks/BackgroundChange";
 import {Output} from "../../../../src/whisker/model/checks/Output";
 import {NbrOfClones, NbrOfVisibleClones} from "../../../../src/whisker/model/checks/NbrOfClones";
@@ -551,7 +549,6 @@ describe('CheckGenerator', () => {
             })).toThrowError();
         });
     });
-
 
     describe('getProbabilityCheck()', () => {
         const repetitions = 1000;

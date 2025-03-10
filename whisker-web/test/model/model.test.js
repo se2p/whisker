@@ -141,6 +141,16 @@ describe('Model tests on multiple events per step', () => {
         await expect(modelCoverage).toBe("1.00");
     }, timeout);
 
+    test('any key pressed test', async () => {
+        await loadProject('test/model/scratch-programs/AnyKeyPressed.sb3',
+            'test/model/model-jsons/AnyKeyPressed.json');
+        await (await page.$('#run-all-tests')).click();
+        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
+        await expect(errorsInModel).toBe("0");
+        await expect(failsInModel).toBe("0");
+        await expect(modelCoverage).toBe("1.00");
+    }, timeout);
+
     test('visual change event listeners', async () => {
         await loadProject('test/model/scratch-programs/BackgroundChange.sb3',
             'test/model/model-jsons/BackgroundChange.json');

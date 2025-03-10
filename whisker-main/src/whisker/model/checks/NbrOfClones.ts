@@ -5,6 +5,7 @@ import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
 import {Optional} from "../../utils/Optional";
+import TestDriver from "../../../test/test-driver";
 
 export type NbrOfClonesArgs = [
     /**
@@ -56,9 +57,11 @@ abstract class AbstractNbrOfClones<
 
     /**
      * Get a method to check how many clones of a sprite are there.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver to retrieve the number of clones of a sprite.
+     * @param cu Listener for the checks.
+     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, _cu: CheckUtility, _grahpID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName] = this._args;
 
         const sprite = ModelUtil.checkSpriteExistence(t, pSpriteName);

@@ -4,6 +4,7 @@ import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckResult, result} from "./CheckResult";
+import TestDriver from "../../../test/test-driver";
 
 const name = "Expr" as const;
 
@@ -39,11 +40,11 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
 
     /**
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
-     * @param t Instance of the test driver.
-     * @param cu Listener for checks.
+     * @param t Instance of the test driver for evaluating expression.
+     * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const e = ModelUtil.getExpressionForEval(t, this._code);
         const check = () => {
             const log = {};
