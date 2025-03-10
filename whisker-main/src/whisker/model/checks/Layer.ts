@@ -52,7 +52,7 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const expected = this._args[1] === "First"
-                ? Math.max(...t.getSprites(s => true).map((s: Sprite) => ModelUtil.returnNumberIfPossible(s.layerOrder, -1)))
+                ? Math.max(...t.getSprites().map((s: Sprite) => ModelUtil.returnNumberIfPossible(s.layerOrder, -1)))
                 : 1;
             const sprites: Sprite[] = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const anyHasCorrectLayer = sprites.some((s: Sprite) => s.layerOrder == expected);
