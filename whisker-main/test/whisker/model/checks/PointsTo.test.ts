@@ -28,14 +28,14 @@ describe('PointsToTest', () => {
     });
 
     it.each([true, false])('Check for sprites points to mouse works properly (negated: %s)', (negated: boolean) => {
-        const check = new PointsTo(edgeLabel, {negated: negated, args: ['banana', 'mouse-pointer']});
+        const check = new PointsTo(edgeLabel, {negated: negated, args: ['banana', '_mouse_']});
         check.registerComponents(t, cu, graphID);
         tdMock.mousePos = {x: 20, y: 0};
         expect(check.check()).toEqual(!negated);
     });
 
     test('Check is not a constant return value', () => {
-        const check = new PointsTo(edgeLabel, {negated: false, args: ['banana', 'mouse-pointer']});
+        const check = new PointsTo(edgeLabel, {negated: false, args: ['banana', '_mouse_']});
         check.registerComponents(t, cu, graphID);
         tdMock.mousePos = {x: 20, y: 0};
         expect(check.check()).toEqual(true);

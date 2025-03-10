@@ -16,12 +16,12 @@ export type PointsToArgs = [
     /**
      * Key of the object the first sprite should be looking to.
      */
-    otherObject: SpriteName | "mouse-pointer",
+    otherObject: SpriteName | "_mouse_",
 ];
 
 const PointsToArgs = z.tuple([
     SpriteName,
-    SpriteName.or(z.literal("mouse-pointer")),
+    SpriteName.or(z.literal("_mouse_")),
 ]);
 
 export interface PointsToJSON extends ICheckJSON {
@@ -48,12 +48,12 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
      */
     protected _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const spriteNameRotate = ModelUtil.checkSpriteExistence(t, this._args[0]).name;
-        if (this._args[1] != "mouse-pointer") {
+        if (this._args[1] != "_mouse_") {
             ModelUtil.checkSpriteExistence(t, this._args[1]).name;
         }
         return () => {
             const rotatingSprite: Sprite = t.getSprite(spriteNameRotate);
-            const expectedDirection = this._args[1] == "mouse-pointer"
+            const expectedDirection = this._args[1] == "_mouse_"
                 ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(rotatingSprite, t)
                 : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(rotatingSprite, t.getSprite(this._args[1]));
             const sprites = rotatingSprite.getClones(true);
