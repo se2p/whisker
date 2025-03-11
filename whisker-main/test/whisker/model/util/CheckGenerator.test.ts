@@ -250,7 +250,7 @@ describe('CheckGenerator', () => {
             c.registerComponents(t, dummyCU, graphID);
             expect(c.check()).toEqual(pass());
             stage.variables = [{name: "Punkte", value: 10, old: {name: "Punkte", value: 9}}];
-            const reason = {"actual": 1, "after": 10, "before": 9, "expected": 0};
+            const reason = {"after": 10, "before": 9};
             expect(c.check()).toEqual(fail(reason));
         });
     });

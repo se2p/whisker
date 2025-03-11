@@ -3,6 +3,7 @@ import Sprite from "../../../vm/sprite";
 interface ICheckResult {
     passed: boolean;
     enhance(reason: Record<string, unknown>): CheckResult;
+    replace(reason: Record<string, unknown>): CheckResult;
 }
 
 interface PassedCheck extends ICheckResult {
@@ -22,6 +23,10 @@ class PassedCheckImpl implements PassedCheck {
     enhance(_reason: Record<string, unknown>): PassedCheck {
         return this;
     }
+
+    replace(_reason: Record<string, unknown>): PassedCheck {
+        return this;
+    }
 }
 
 class FailedCheckImpl implements FailedCheck {
@@ -37,8 +42,12 @@ class FailedCheckImpl implements FailedCheck {
         return this._reason;
     }
 
-    enhance(reason: Record<string, unknown>): FailedCheckImpl {
-        return new FailedCheckImpl({...this._reason, ...reason});
+    enhance(reason: Record<string, unknown>): FailedCheck {
+        return fail({...this._reason, ...reason});
+    }
+
+    replace(reason: Record<string, unknown>): FailedCheck {
+        return fail(reason);
     }
 }
 

@@ -10,7 +10,7 @@ export class Change implements Quantifiable<Change> {
 
     apply(after: number, before: number): CheckResult {
         const actual = after - before;
-        return this._comparison.apply(actual).enhance({before, after});
+        return this._comparison.apply(actual).replace({before, after});
     }
 
     contradicts(that: Change): boolean {
