@@ -4,7 +4,11 @@ import {ArgType} from "./schema";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
 import {Check} from "../checks/newCheck";
 
-function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reasons: Map<Check, Record<string, unknown>>): string {
+function getReasonAppendix(reason: Record<string, unknown>): string {
+    return reason && Object.keys(reason).length > 0 ? ` ${JSON.stringify(reason)}` : "";
+}
+
+function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reason: Record<string, unknown>): string {
     const conditions = edge.conditions;
     let containsAfterTime: string | null = null;
     let containsElapsed: string | null = null;
@@ -24,16 +28,15 @@ function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reasons: Map<C
     if (containsAfterTime != null) {
         result += ` after ${containsAfterTime}ms`;
     }
-    const reason = reasons.get(effect);
-    return reason ? `${result} ${JSON.stringify(reason)}` : result;
+    return reason ? `${result}${getReasonAppendix(reason)}` : result;
 }
 
-function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number): string {
-    return `${edge.graphID}-${edge.label}: ${condition.toString()} after ${ms}ms`;
+function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number, reason: Record<string, unknown>): string {
+    return `${edge.graphID}-${edge.label}: ${condition.toString()} after ${ms}ms${getReasonAppendix(reason)}`;
 }
 
-function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number): string {
-    return `${edge.graphID}-${edge.label}: ${condition.toString()} at ${ms}ms`;
+function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number, reason: Record<string, unknown>): string {
+    return `${edge.graphID}-${edge.label}: ${condition.toString()} at ${ms}ms${getReasonAppendix(reason)}`;
 }
 
 function getErrorOnEdgeOutput(edgeLabel: string, graphLabel: string, error: string): string {

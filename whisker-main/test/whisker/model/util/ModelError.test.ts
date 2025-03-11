@@ -13,6 +13,8 @@ import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 
 describe('ModelError', () => {
+    const reason = {message: "check failed"};
+
     function getEdge(): ProgramModelEdge {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", -1, -1);
         edge.addCondition(new Expr("label", {args: ["true"]}));
@@ -24,8 +26,7 @@ describe('ModelError', () => {
         const edge = getEdge();
         const effect = new AttrChange("label", {args: ["Apple", "x", "+"]});
         const expected = 'graphID-label: AttrChange(Apple,x,+) {"message":"check failed"}';
-        const reasons = new Map([[effect, {message: "check failed"}]]);
-        expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
+        expect(getEffectFailedOutput(edge, effect, reason)).toEqual(expected);
     });
 
     test("getEffectFailedOutput() with TimeBetween", () => {
@@ -33,8 +34,7 @@ describe('ModelError', () => {
         edge.addCondition(new TimeBetween("label", {negated: true, args: [123]}));
         const effect = new AttrComp("label", {args: ["Apple", "x", ">", "0"]});
         const expected = 'graphID-label: AttrComp(Apple,x,>,0) after 123ms {"message":"check failed"}';
-        const reasons = new Map([[effect, {message: "check failed"}]]);
-        expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
+        expect(getEffectFailedOutput(edge, effect, reason)).toEqual(expected);
     });
 
     test("getEffectFailedOutput() with TimeElapsed", () => {
@@ -42,8 +42,7 @@ describe('ModelError', () => {
         edge.addCondition(new TimeElapsed("label", {negated: true, args: [456]}));
         const effect = new AttrChange("label", {args: ["Apple", "x", "+"]});
         const expected = 'graphID-label: AttrChange(Apple,x,+) before 456ms elapsed {"message":"check failed"}';
-        const reasons = new Map([[effect, {message: "check failed"}]]);
-        expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
+        expect(getEffectFailedOutput(edge, effect, reason)).toEqual(expected);
     });
 
     test("getEffectFailedOutput() with TimeElapsed and TimeAfterEnd", () => {
@@ -52,19 +51,18 @@ describe('ModelError', () => {
         edge.addCondition(new TimeElapsed("label", {negated: true, args: [456]}));
         const effect = new AttrChange("label", {args: ["Banana", "x", "+"]});
         const expected = 'graphID-label: AttrChange(Banana,x,+) before 456ms elapsed after 789ms {"message":"check failed"}';
-        const reasons = new Map([[effect, {message: "check failed"}]]);
-        expect(getEffectFailedOutput(edge, effect, reasons)).toEqual(expected);
+        expect(getEffectFailedOutput(edge, effect, reason)).toEqual(expected);
     });
 
     test("getTimeLimitFailedAfterOutput()", () => {
         const condition = new Expr("label", {args: ["$(Bowl.x)>0"]});
         // the expression was not evaluated so there is no logged last value
-        expect(getTimeLimitFailedAfterOutput(getEdge(), condition, 50)).toEqual("graphID-label: Expr($(Bowl.x)>0) after 50ms");
+        expect(getTimeLimitFailedAfterOutput(getEdge(), condition, 50, reason)).toEqual('graphID-label: Expr($(Bowl.x)>0) after 50ms {"message":"check failed"}');
     });
 
     test("getTimeLimitFailedAtOutput()", () => {
         const condition = new Click("label", {args: ["Bowl"]});
-        expect(getTimeLimitFailedAtOutput(getEdge(), condition, 42)).toEqual("graphID-label: Click(Bowl) at 42ms");
+        expect(getTimeLimitFailedAtOutput(getEdge(), condition, 42,reason)).toEqual('graphID-label: Click(Bowl) at 42ms {"message":"check failed"}');
     });
 
     test("getErrorOnEdgeOutput()", () => {

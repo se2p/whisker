@@ -86,10 +86,11 @@ export abstract class AbstractEdge {
 
             for (const c of this.conditions) {
                 try {
-                    if (!c.check(stepsSinceLastTransition, stepsSinceEnd).passed) {
+                    const res = c.check(stepsSinceLastTransition, stepsSinceEnd);
+                    if (res.passed === false) {
                         this.failedForcedTest = true;
                         failedConditions.push(c);
-                        cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t));
+                        cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t, res.reason));
                     }
                 } catch (e) {
                     cu.addErrorOutput(this.label, this.graphID, e);
@@ -124,11 +125,11 @@ export abstract class AbstractEdge {
         return this._lastTransition;
     }
 
-    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver): string {
+    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Record<string, unknown>): string {
         if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
-            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt);
+            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt, reason);
         } else {
-            return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter);
+            return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter, reason);
         }
     }
 

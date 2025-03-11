@@ -10,7 +10,12 @@ import {Checks} from "./Checks";
 import {Check} from "../checks/newCheck";
 import {CheckResult} from "../checks/CheckResult";
 
-type EffectCheck = { effect: Check, edge: ProgramModelEdge, model: ProgramModel | EndModel };
+type EffectCheck = {
+    effect: Check,
+    reason: Record<string, unknown>,
+    edge: ProgramModelEdge,
+    model: ProgramModel | EndModel
+};
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -35,7 +40,6 @@ export class CheckUtility extends EventEmitter {
 
     private _effectChecks: EffectCheck[] = [];
     private _failedOutputsEvents: EffectCheck[] = [];
-    private _reasons: Map<Check, Record<string, unknown>> = new Map();
 
     // how often the errors or fails happened, change this boolean for printing all or only ten occurrences per error
     private _onlyTenOutputs = true;
@@ -59,7 +63,7 @@ export class CheckUtility extends EventEmitter {
         this._testDriver.vmWrapper.sprites.onSpriteMovedModel((sprite: Sprite) =>
             this._checkForEvent(this._onMovedChecks, sprite));
         this._testDriver.vmWrapper.sprites.onSayOrThinkModel((sprite: Sprite) => {
-            this._failedOutputsEvents = this._check(this._failedOutputsEvents);
+            this._checkFailedOutputEvents();
             this._checkForEvent(this._onSayOrThinkChecks, sprite);
         });
         this._testDriver.vmWrapper.sprites.onSpriteVisualChangeModel((sprite: Sprite) =>
@@ -214,7 +218,7 @@ export class CheckUtility extends EventEmitter {
      */
     registerEffectCheck(takenEdge: ProgramModelEdge, model: ProgramModel | EndModel): void {
         takenEdge.effects.forEach(effect => {
-            this._effectChecks.push({effect: effect, edge: takenEdge, model: model});
+            this._effectChecks.push({effect: effect, reason: undefined, edge: takenEdge, model: model});
         });
     }
 
@@ -241,7 +245,9 @@ export class CheckUtility extends EventEmitter {
                 const effect = this._effectChecks[i].effect;
                 const stepsSinceLastTransition = model.lastTransitionStep - model.secondLastTransitionStep + 1;
                 try {
-                    if (!effect.check(stepsSinceLastTransition, model.programEndStep).passed) {
+                    const res = effect.check(stepsSinceLastTransition, model.programEndStep);
+                    if (res.passed === false) {
+                        this._effectChecks[i].reason = res.reason;
                         newEffects.push(this._effectChecks[i]);
                     }
                 } catch (e) {
@@ -269,9 +275,10 @@ export class CheckUtility extends EventEmitter {
      * Add an edge's effect to the failed output of the test.
      * @param edge Edge that has a failed effect.
      * @param effect Effect that failed.
+     * @param reason Insights on why the effect failed.
      */
-    addFailOutput(edge: AbstractEdge, effect: Check): void {
-        const output = getEffectFailedOutput(edge, effect, this._reasons);
+    addFailOutput(edge: AbstractEdge, effect: Check, reason: Record<string, unknown>): void {
+        const output = getEffectFailedOutput(edge, effect, reason);
         this._failOrError(output, this._failOutputs);
         this._modelResult.addFail(output);
     }
@@ -323,12 +330,12 @@ export class CheckUtility extends EventEmitter {
      */
     makeFailedOutputs(): void {
         for (const e of this._failedOutputsEvents) {
-            this.addFailOutput(e.edge, e.effect);
+            this.addFailOutput(e.edge, e.effect, e.reason);
         }
         this._failedOutputsEvents = [];
         for (const e of this._effectChecks) {
             if (!e.effect.dependsOnSayText) {
-                this.addFailOutput(e.edge, e.effect);
+                this.addFailOutput(e.edge, e.effect, e.reason);
             } else {
                 this._failedOutputsEvents.push(e);
             }
@@ -336,9 +343,12 @@ export class CheckUtility extends EventEmitter {
         this._effectChecks = [];
     }
 
+    private _checkFailedOutputEvents() {
+        this._failedOutputsEvents = this._check(this._failedOutputsEvents);
+    }
+
     private _check(checks: EffectCheck[]): EffectCheck[] {
         const newFailedList = [];
-        this._reasons = new Map();
         for (const c of checks) {
             const effect = c.effect;
             const stepsSinceLastTransition = c.model.lastTransitionStep
@@ -346,8 +356,8 @@ export class CheckUtility extends EventEmitter {
             try {
                 const res = effect.check(stepsSinceLastTransition, c.model.programEndStep);
                 if (res.passed === false) {
+                    c.reason = res.reason;
                     newFailedList.push(c);
-                    this._reasons.set(c.effect, res.reason);
                 }
             } catch (e) {
                 this.addErrorOutput(c.edge.label, c.edge.graphID, e);
