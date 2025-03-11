@@ -270,7 +270,8 @@ export abstract class ModelUtil {
     }
 
     private static getValueForSubExpression(t: TestDriver, spriteName: string, attribute: string,
-                                            custom: boolean, dependencies: Dependencies = undefined): Sprite | Variable | string | string[] {
+                                            custom: boolean, dependencies: Dependencies = undefined,
+                                            log: Record<string, string> = undefined): Sprite | Variable | string | string[] {
         if (!spriteName || spriteName == "") {
             throw new EmptyExpressionError();
         }
@@ -279,6 +280,9 @@ export abstract class ModelUtil {
             throw new SpriteNotFoundError(spriteName);
         }
         if (attribute == undefined) {
+            if (log) {
+                log[`$("${spriteName}")`] = "sprite with that name";
+            }
             return sprite;
         }
         let variable: Variable | string;
@@ -289,6 +293,9 @@ export abstract class ModelUtil {
             }
             if (dependencies) {
                 dependencies.varDependencies.push({spriteName: sprite.name, varName: variable.name});
+            }
+            if (log) {
+                log[`$("${spriteName}", "${attribute}", true)`] = String(variable.value);
             }
             return variable.value;
         } else {
@@ -309,13 +316,16 @@ export abstract class ModelUtil {
             if (dependencies) {
                 dependencies.attrDependencies.push({spriteName: sprite.name, attrName: attribute});
             }
+            if (log) {
+                log[`$("${spriteName}", "${attribute}", false)`] = String(variable);
+            }
             return variable;
         }
     }
 
-    public static evaluateExpression(t: TestDriver, expression: string): unknown {
+    public static evaluateExpression(t: TestDriver, expression: string, log: Record<string, string> = {}): unknown {
         const $ = (spriteName: string, attribute: string, custom: boolean) =>
-            this.getValueForSubExpression(t, spriteName, attribute, custom);
+            this.getValueForSubExpression(t, spriteName, attribute, custom, undefined, log);
         return eval(expression)(t, $);
     }
 

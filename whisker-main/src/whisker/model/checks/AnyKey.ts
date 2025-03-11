@@ -2,6 +2,7 @@ import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractChe
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
+import {result} from "./CheckResult";
 
 const name = "AnyKey" as const;
 
@@ -35,9 +36,8 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const negated = this.negated;
         return () => {
-            return !negated == cu.isAnyKeyDown();
+            return result(cu.isAnyKeyDown(), {}, this.negated);
         };
     }
 

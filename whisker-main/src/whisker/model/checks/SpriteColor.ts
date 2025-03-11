@@ -4,6 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import {pass, fail, any, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 
 const name = "SpriteColor" as const;
@@ -76,17 +77,31 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw new RGBRangeError();
         }
+
+        const color = [r, g, b];
+
         // on movement check sprite color
         cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
-            return !negated == sprite.isTouchingColor([r, g, b]);
+            return result(sprite.isTouchingColor(color), {}, negated);
         });
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         // also test clones of spriteName
         return () => {
+            const touchingColorCheck = (s: Sprite) => {
+                if (!s.visible) {
+                    return fail({message: `Expected sprite "${s}" to be visible`});
+                }
+
+                if (!s.isTouchingColor(color)) {
+                    return fail({message: `Expected sprite "${s}" to touch color ${color}`});
+                }
+
+                return pass();
+            };
+
             const sprites = t.getSprites((s: Sprite) => s.name === spriteName, false);
-            const anyTouchingColor = sprites.some((s: Sprite) => s.visible && s.isTouchingColor([r, g, b]));
-            return !negated == anyTouchingColor;
+            return any(touchingColorCheck, negated, sprites);
         };
     }
 

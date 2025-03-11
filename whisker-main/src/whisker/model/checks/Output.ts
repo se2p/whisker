@@ -3,6 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import {any, pass, fail, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 
 const name = "Output" as const;
@@ -62,20 +63,29 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             expression = ModelUtil.getExpressionForEval(t, `'${output}'`).expr;
         }
 
-        const check: (s: Sprite) => boolean = (s) => {
-            if (!s.sayText) {
-                return false;
+        const sayTextCheck = (s: Sprite) => {
+            const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
+
+            if (s.sayText === null) {
+                return fail({actual: null, expected: expected});
             }
 
-            const sayText = s.sayText.toLocaleLowerCase();
-            const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
-            return sayText.includes(expected);
+            const actual = s.sayText.toLocaleLowerCase();
+
+            if (!actual.includes(expected)) {
+                return fail({actual, expected});
+            }
+
+            return pass();
         };
-        cu.registerOutput(spriteName, this, graphID, (s) => !negated == check(s));
+
+        cu.registerOutput(spriteName, this, graphID, (s) => {
+            return result(sayTextCheck(s).passed, {}, negated);
+        });
+
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const anySayText = sprites.some(check);
-            return !negated == anySayText;
+            return any(sayTextCheck, this.negated, sprites);
         };
     }
 

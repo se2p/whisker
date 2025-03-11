@@ -4,7 +4,11 @@ import {ArgType} from "./schema";
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
 import {Check} from "../checks/newCheck";
 
-function getEffectFailedOutput(edge: AbstractEdge, effect: Check): string {
+function getReasonAppendix(reason: Record<string, unknown>): string {
+    return reason && Object.keys(reason).length > 0 ? ` ${JSON.stringify(reason)}` : "";
+}
+
+function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reason: Record<string, unknown>): string {
     const conditions = edge.conditions;
     let containsAfterTime: string | null = null;
     let containsElapsed: string | null = null;
@@ -17,57 +21,58 @@ function getEffectFailedOutput(edge: AbstractEdge, effect: Check): string {
         }
     }
 
-    let result = edge.graphID + "-" + edge.label + ": " + effect.toString();
+    let result = `${edge.graphID}-${edge.label}: ${effect.toString()}`;
     if (containsElapsed != null) {
-        result += " before " + containsElapsed + "ms elapsed";
+        result += ` before ${containsElapsed}ms elapsed`;
     }
     if (containsAfterTime != null) {
-        result += " after " + containsAfterTime + "ms";
+        result += ` after ${containsAfterTime}ms`;
     }
-    return result;
+    return reason ? `${result}${getReasonAppendix(reason)}` : result;
 }
 
-function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number): string {
-    return edge.graphID + "-" + edge.label + ": " + condition.toString() + " after " + ms + "ms";
+function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number, reason: Record<string, unknown>): string {
+    return `${edge.graphID}-${edge.label}: ${condition.toString()} after ${ms}ms${getReasonAppendix(reason)}`;
 }
 
-function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number): string {
-    return edge.graphID + "-" + edge.label + ": " + condition.toString() + " at " + ms + "ms";
+function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number, reason: Record<string, unknown>): string {
+    return `${edge.graphID}-${edge.label}: ${condition.toString()} at ${ms}ms${getReasonAppendix(reason)}`;
 }
 
 function getErrorOnEdgeOutput(edgeLabel: string, graphLabel: string, error: string): string {
-    return "Error " + graphLabel + "-" + edgeLabel + ": " + error;
+    return `Error ${graphLabel}-${edgeLabel}: ${error}`;
 }
 
 // ----- Variables, sprites, attributes not found and other initialization errors
 
 export class VariableNotFoundError extends Error {
     constructor(variableName: string, spriteName: string) {
-        super("Variable not found: " + spriteName + "." + variableName);
+        super(`Variable not found: ${spriteName}.${variableName}`);
     }
 }
 
 export class AttributeNotFoundError extends Error {
     constructor(spriteName: string, attrName: string) {
-        super("Attribute not found: " + spriteName + "." + attrName);
+        super(`Attribute not found: ${spriteName}.${attrName}`);
     }
 }
 
 export class SpriteNotFoundError extends Error {
     constructor(spriteName: string) {
-        super("Sprite not found: " + spriteName);
+        super(`Sprite not found: ${spriteName}`);
     }
 }
 
 export class ComparisonNotKnownError extends Error {
     constructor(comparison: ArgType) {
-        super("Comparison not known: " + comparison);
+        super(`Comparison not known: ${comparison}`);
     }
 }
 
 export class ExprEvalError extends Error {
     constructor(e: unknown) {
-        super("Expression cannot be evaluated:\n" + getErrorMessage(e));
+        super(`Expression cannot be evaluated:
+${getErrorMessage(e)}`);
     }
 }
 
@@ -91,7 +96,7 @@ export class RGBRangeError extends Error {
 
 export class ErrorForVariable extends Error {
     constructor(spriteName: ArgType, varName: ArgType, error: unknown) {
-        super(spriteName + "." + varName + ": " + getErrorMessage(error));
+        super(`${spriteName}.${varName}: ${getErrorMessage(error)}`);
     }
 }
 
@@ -103,19 +108,19 @@ export class ErrorForEffect extends Error {
 
 export class NotANumericalValueError extends Error {
     constructor(value: ArgType) {
-        super("Is not a numerical value to compare:" + value);
+        super(`Is not a numerical value to compare:${value}`);
     }
 }
 
 export class ErrorForAttribute extends Error {
     constructor(spriteName: ArgType, attrName: ArgType, error: unknown) {
-        super(spriteName + "." + attrName + ": " + getErrorMessage(error));
+        super(`${spriteName}.${attrName}: ${getErrorMessage(error)}`);
     }
 }
 
 class ChangeComparisonNotKnownError extends Error {
     constructor(value: string) {
-        super("Change Comparison not known: " + value);
+        super(`Change Comparison not known: ${value}`);
     }
 }
 

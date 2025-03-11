@@ -5,6 +5,7 @@ import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
 import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 
 describe('AttributeComparison', () => {
@@ -46,11 +47,11 @@ describe('AttributeComparison', () => {
     });
 
     test('Output is registered on CheckUtil for changing output', () => {
-        let check: ((sprite: Sprite) => boolean);
+        let check: ((sprite: Sprite) => CheckResult);
         const fn = jest.fn();
         const cuMock = new CheckUtilityMock();
         cuMock.registerOutput = (spriteName: string, c: Check, graphID: string,
-                                 predicate: (sprite: Sprite) => boolean) => {
+                                 predicate: (sprite: Sprite) => CheckResult) => {
             fn(spriteName, c, graphID, predicate);
             check = predicate;
         };
@@ -58,21 +59,21 @@ describe('AttributeComparison', () => {
         const c = new AttrComp('label', {args: ["kiwi", "sayText", "==", "this is some text"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("kiwi", c, graphID, check);
-        expect(check(kiwi.sprite)).toBe(true);
+        expect(check(kiwi.sprite)).toStrictEqual(pass());
         kiwi.sayText = "the kiwi has nothing to say";
         kiwi.updateSprite();
-        expect(check(kiwi.sprite)).toBe(false);
+        expect(check(kiwi.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('Output is registered on CheckUtil for changing coordinates', () => {
         const sprite = new SpriteMock("apple", [{name: "x", value: 31415}]);
         const tdMock = new TestDriverMock([sprite]);
         const t = tdMock.getTestDriver();
-        let check: ((sprite: Sprite) => boolean);
+        let check: ((sprite: Sprite) => CheckResult);
         const fn = jest.fn();
         const cuMock = new CheckUtilityMock();
         cuMock.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
-                                      predicate: (sprite: Sprite) => boolean) => {
+                                      predicate: (sprite: Sprite) => CheckResult) => {
             check = predicate;
             fn(spriteName, c, graphID, predicate);
         };
@@ -80,10 +81,10 @@ describe('AttributeComparison', () => {
         const c = new AttrComp('label', {args: ["apple", "x", "<=", "42"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("apple", c, graphID, check);
-        expect(check(sprite.sprite)).toBe(false);
+        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
         sprite.variables = [{name: "x", value: 0}];
         sprite.updateSprite();
-        expect(check(sprite.sprite)).toBe(true);
+        expect(check(sprite.sprite)).toStrictEqual(pass());
     });
 
     test('Output is registered on CheckUtil for changing visual', () => {
@@ -93,10 +94,10 @@ describe('AttributeComparison', () => {
         tdMock.stage = sprite.updateSprite();
         const t = tdMock.getTestDriver();
         const fn = jest.fn();
-        let check: ((sprite: Sprite) => boolean);
+        let check: ((sprite: Sprite) => CheckResult);
         const cuMock = new CheckUtilityMock();
         cuMock.registerOnVisualChange = (spriteName: string, c: Check, graphID: string,
-                                         predicate: (sprite: Sprite) => boolean) => {
+                                         predicate: (sprite: Sprite) => CheckResult) => {
             check = predicate;
             fn(spriteName, c, graphID, predicate);
         };
@@ -104,10 +105,10 @@ describe('AttributeComparison', () => {
         const c = new AttrComp('label', {negated: true, args: ["_stage_", "currentCostume", "==", "win"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("_stage_", c, graphID, check);
-        expect(check(sprite.sprite)).toBe(true);
+        expect(check(sprite.sprite)).toStrictEqual(pass());
         sprite.currentCostumeName = "win";
         sprite.updateSprite();
-        expect(check(sprite.sprite)).toBe(false);
+        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 
     it.each([false, true])('Returned function includes original sprite (negated: %s)', (negated) => {
@@ -120,7 +121,7 @@ describe('AttributeComparison', () => {
         kiwi.clones[0].updateSprite();
         const c = new AttrComp('label', {negated, args: ["kiwi", "x", "<", "3"]});
         c.registerComponents(t, cu, graphID);
-        expect(c.check()).toEqual(!negated);
+        expect(c.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
     it.each([false, true])('Returned function includes clones (negated: %s)', (negated) => {
@@ -135,7 +136,7 @@ describe('AttributeComparison', () => {
         kiwi.clones.forEach(c => c.updateSprite());
         const c = new AttrComp('label', {negated, args: ["kiwi", "x", ">", "15"]});
         c.registerComponents(t, cu, graphID);
-        expect(c.check()).toEqual(!negated);
+        expect(c.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
     test('Can check value of effects', () => {
@@ -145,8 +146,8 @@ describe('AttributeComparison', () => {
         const mock = new TestDriverMock([banana, bowl, apple]);
         const c = new AttrComp('label', {negated: false, args: ["bowl", "fisheye", "==", 25]});
         c.registerComponents(mock.getTestDriver(), getDummyCheckUtility(), graphID);
-        expect(c.check()).toEqual(false);
+        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
         effects["fisheye"] = 25;
-        expect(c.check()).toEqual(true);
+        expect(c.check()).toEqual(pass());
     });
 });

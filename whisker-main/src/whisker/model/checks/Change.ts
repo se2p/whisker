@@ -2,13 +2,15 @@ import {z} from "zod";
 import {Comparison, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
+import {CheckResult, result} from "./CheckResult";
 
 export class Change implements Quantifiable<Change> {
     protected constructor(private readonly _comparison: Comparison) {
     }
 
-    apply(after: number, before: number): boolean {
-        return this._comparison.apply(after - before);
+    apply(after: number, before: number): CheckResult {
+        const actual = after - before;
+        return this._comparison.apply(actual).replace({before, after});
     }
 
     contradicts(that: Change): boolean {
@@ -48,8 +50,8 @@ const eq0 = new class Eq0 extends Change {
         super(newComparison({operator: "==", value: 0}));
     }
 
-    override apply(after: string | number, before: string | number): boolean {
-        return after == before;
+    override apply(after: string | number, before: string | number): CheckResult {
+        return result(after == before, {before, after});
     }
 
     override negate(): Change {
@@ -62,8 +64,8 @@ const neq0 = new class Neq0 extends Change {
         super(newComparison({operator: "!=", value: 0}));
     }
 
-    override apply(after: string | number, before: string | number): boolean {
-        return after != before;
+    override apply(after: string | number, before: string | number): CheckResult {
+        return result(after != before, {before, after});
     }
 
     override negate(): Change {

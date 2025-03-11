@@ -4,6 +4,7 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
+import {any, fail, pass, result} from "./CheckResult";
 
 const name = "ClearedEffects" as const;
 
@@ -48,8 +49,8 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const anyHasNoEffect = sprites.some((s: Sprite) => Object.values(s.effects).every(v => v === 0));
-            return !this.negated == anyHasNoEffect;
+            const check = (s: Sprite) => result(Object.values(s.effects).every(v => v === 0), {...s.effects});
+            return any(check, this.negated, sprites);
         };
     }
 

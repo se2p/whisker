@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
+import {any, pass, fail, result} from "./CheckResult";
 
 const name = "Layer" as const;
 
@@ -55,8 +56,8 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
                 ? Math.max(...t.getSprites().map((s: Sprite) => ModelUtil.returnNumberIfPossible(s.layerOrder, -1)))
                 : 1;
             const sprites: Sprite[] = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
-            const anyHasCorrectLayer = sprites.some((s: Sprite) => s.layerOrder == expected);
-            return !this.negated == anyHasCorrectLayer;
+            const check = (s: Sprite) => result(s.layerOrder == expected, {actual: s.layerOrder, expected});
+            return any(check, this.negated, sprites);
         };
     }
 

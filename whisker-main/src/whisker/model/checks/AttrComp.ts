@@ -88,7 +88,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             ModelUtil.checkAttributeExistence(t, spriteName, attrName);
         }
 
-
         const listener = (sprite: Sprite) => {
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
             try {

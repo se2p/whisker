@@ -5,6 +5,7 @@ import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
 import {Optional} from "../../utils/Optional";
+import {CheckResult, fail} from "./CheckResult";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
@@ -44,9 +45,9 @@ export const ICheckJSON = z.object({
  * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
  * @param stepsSinceEnd Number of steps since the after run model tests started.
  */
-export type CheckFun0 = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => boolean;
-export type CheckFun1 = (stepsSinceLastTransition: number, stepsSinceEnd?: number) => boolean;
-export type CheckFun2 = (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
+export type CheckFun0 = (stepsSinceLastTransition?: number, stepsSinceEnd?: number) => CheckResult;
+export type CheckFun1 = (stepsSinceLastTransition: number, stepsSinceEnd?: number) => CheckResult;
+export type CheckFun2 = (stepsSinceLastTransition: number, stepsSinceEnd: number) => CheckResult;
 export type CheckFun =
     | CheckFun0
     | CheckFun1
@@ -71,7 +72,8 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     protected constructor(edgeLabel: string, checkJSON: Optional<J, "negated">) {
         this._edgeLabel = edgeLabel;
         this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
-        this._check = (() => false) as C;
+        const message = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
+        this._check = (() => fail({message})) as C;
     }
 
     get edgeLabel(): string {
@@ -132,7 +134,8 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
             this._check = this._checkArgsWithTestDriver(t, cu, graphID);
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
-            this._check = (() => false) as C;
+            const message = `There was an error setting up the check: ${e instanceof Error ? e.message : e}`;
+            this._check = (() => fail({message})) as C;
         }
     }
 

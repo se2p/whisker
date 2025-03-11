@@ -2,6 +2,7 @@ import {TestDriverMock} from "../mocks/TestDriverMock";
 import {SpriteMock} from "../mocks/SpriteMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {ClearedEffect} from "../../../../src/whisker/model/checks/ClearedEffect";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 
 describe('ClearedEffectsTest', () => {
@@ -16,7 +17,7 @@ describe('ClearedEffectsTest', () => {
         const t = tdMock.getTestDriver();
         const check = new ClearedEffect(edgeLabel, {negated: negated, args: ['banana']});
         check.registerComponents(t, cu, graphID);
-        expect(check.check()).toEqual(!negated);
+        expect(check.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
 
 
@@ -27,8 +28,8 @@ describe('ClearedEffectsTest', () => {
         const t = tdMock.getTestDriver();
         const check = new ClearedEffect(edgeLabel, {negated: false, args: ['banana']});
         check.registerComponents(t, cu, graphID);
-        expect(check.check()).toEqual(true);
+        expect(check.check()).toStrictEqual(pass());
         effects["color"] = 10;
-        expect(check.check()).toEqual(false);
+        expect(check.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });

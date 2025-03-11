@@ -3,6 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {Randomness} from "../../utils/Randomness";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
+import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 
 const name = "Probability" as const;
@@ -52,9 +53,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
         const [probability] = this._args;
         const negated = this.negated;
         const prob = ModelUtil.testNumber(probability);
-        return () => {
-            return !negated == (Randomness.getInstance().nextDouble() < prob);
-        };
+        return () => result(Randomness.getInstance().nextDouble() < prob, {}, negated);
     }
 
     protected _contradicts(_that: Probability): boolean {
