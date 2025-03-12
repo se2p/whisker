@@ -116,7 +116,7 @@ class TestRunner extends EventEmitter {
                         60000, false);
                 } else {
                     csv += await this.iterateOverUserModels(vm, modelTester, props, modelProps,
-                        testResults, projectName, totalAssertions, indices,0);
+                        testResults, projectName, totalAssertions, indices, 0);
                 }
 
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
@@ -154,6 +154,24 @@ class TestRunner extends EventEmitter {
         return [finalResults, csv, generatedMutants];
     }
 
+    /**
+     *
+     * @param {VirtualMachine} vm
+     * @param {Test[]} tests
+     * @param {ModelTester} modelTester
+     * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
+     * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
+     * @param {{duration: number, repetitions: number}} modelProps
+     * @param {{}} resultRecords
+     * @param {(?string)[]} testStatusResults
+     * @param {TestResult[]} testResults
+     * @param {number} startTime
+     * @param {string} projectName
+     * @param {number} totalAssertions
+     * @param {number} defaultTimeoutPerTest
+     * @param {boolean} canBeAborted
+     * @return {Promise<string|null>}
+     */
     async iterateOverTests(vm, tests, modelTester, props, modelProps,
                            resultRecords, testStatusResults, testResults,
                            startTime, projectName, totalAssertions,
@@ -189,11 +207,24 @@ class TestRunner extends EventEmitter {
             duration, resultRecords);
     }
 
+    /**
+     * Executes the UserModels loaded in {@linkcode modelTester}
+     * @param {VirtualMachine} vm
+     * @param {ModelTester} modelTester
+     * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
+     * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
+     * @param {{duration: number, repetitions: number}} modelProps
+     * @param {TestResult[]} testResults
+     * @param {string} projectName
+     * @param {number} totalAssertions
+     * @param {number[]} indices
+     * @param {number} i
+     * @return {Promise<string>}
+     */
     async iterateOverUserModels(vm, modelTester, props, modelProps,
                                 testResults, projectName, totalAssertions,
                                 indices, i = 0) {
-        for (let t = 0; t < indices.length; ++t) {
-            const uM = indices[t];
+        for (const uM of indices) {
             await this.vmWrapper.resetProject(this.saveState);
             const startTime = Date.now();
             const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
