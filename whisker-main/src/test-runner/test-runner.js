@@ -146,16 +146,11 @@ class TestRunner extends EventEmitter {
                 modelProps.duration = 35000;
             }
 
-            const indices = modelTester.userModelCount > 0
-                ? Array.from({length: 10}, (_, i) => i)
-                :[-1];
+            const indices = modelTester.userModelCount > 0 ? [...Array(modelTester.userModelCount).keys()] : [-1];
             for (let i = 0; i < modelProps.repetitions; i++) {
-                // TODO: It would be better here to use the loadSaveState function.
-                //  However there seem to be timing issues with the models.
-                this.util = await this._loadProject(vm, project, props);
                 for (let t = 0; t < indices.length; ++t) {
                     const uM = indices[t];
-                    await this.vmWrapper.resetProject(this.saveState);
+                    this.util = await this._loadProject(vm, project, props);
                     const startTime = Date.now();
                     const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
                     result.modelResult.testNbr = i * modelTester.userModelCount + uM;
@@ -232,12 +227,12 @@ class TestRunner extends EventEmitter {
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
-        else if (test !== undefined && "seed" in test){
+        else if (test !== undefined && "seed" in test) {
             Randomness.setInitialSeeds(test.seed);
             seedDateObject = true;
         }
 
-        // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
+            // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
         // but only set it once to keep consistent if several test runs are executed at once
         else if (Randomness.getInitialRNGSeed() === undefined) {
             Randomness.setInitialSeeds(Date.now());
@@ -250,8 +245,8 @@ class TestRunner extends EventEmitter {
      * Validates whether the test generation seed and the test execution seed are equivalent.
      * @param {Test} test
      */
-    _checkSeed(test){
-        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()){
+    _checkSeed(test) {
+        if (test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()) {
             logger.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
@@ -260,7 +255,7 @@ class TestRunner extends EventEmitter {
      * @param {Array.<(object|Function)>} tests .
      * @returns {Test[]} .
      */
-    static convertTests (tests) {
+    static convertTests(tests) {
         return tests.map(test => new Test(test));
     }
 
@@ -415,10 +410,10 @@ class TestRunner extends EventEmitter {
      * @return {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}}
      * @private
      */
-    _extractModelCSVData(modelResults){
+    _extractModelCSVData(modelResults) {
         let achievedModelCoverage = 0;
         let totalModelCoverage = 0;
-        for(const coverages of Object.values(modelResults.coverage)){
+        for (const coverages of Object.values(modelResults.coverage)) {
             achievedModelCoverage += coverages.covered.length;
             totalModelCoverage += coverages.total;
         }
@@ -445,7 +440,7 @@ class TestRunner extends EventEmitter {
      * @private
      */
     async _executeTest(vm, test, modelTester, props,
-                       modelProps, defaultTimeoutPerTest = 0, userModelIndex=-1) {
+                       modelProps, defaultTimeoutPerTest = 0, userModelIndex = -1) {
         const result = new TestResult(test);
         const testDriver = this.util.getTestDriver(
             {
@@ -616,7 +611,7 @@ class TestRunner extends EventEmitter {
      * @param {string} message .
      * @private
      */
-    _log (test, message) {
+    _log(test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
 
@@ -631,70 +626,70 @@ class TestRunner extends EventEmitter {
     /**
      * @returns {string} .
      */
-    static get RUN_START () {
+    static get RUN_START() {
         return 'runStart';
     }
 
     /**
      * @returns {string} .
      */
-    static get RUN_END () {
+    static get RUN_END() {
         return 'runEnd';
     }
 
     /**
      * @returns {string} .
      */
-    static get RUN_CANCEL () {
+    static get RUN_CANCEL() {
         return 'runCancel';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_START () {
+    static get TEST_START() {
         return 'testStart';
     }
 
     /**
      * @return {string}
      */
-    static get TEST_MODEL () {
+    static get TEST_MODEL() {
         return 'testModel';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_PASS () {
+    static get TEST_PASS() {
         return 'testPass';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_FAIL () {
+    static get TEST_FAIL() {
         return 'testFail';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_ERROR () {
+    static get TEST_ERROR() {
         return 'testError';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_SKIP () {
+    static get TEST_SKIP() {
         return 'testSkip';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_LOG () {
+    static get TEST_LOG() {
         return 'testLog';
     }
 
