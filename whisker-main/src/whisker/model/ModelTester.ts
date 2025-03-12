@@ -21,7 +21,7 @@ export class ModelTester extends EventEmitter {
 
     private _programModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
-    private _runningUserModels: UserModel[] = [];
+    private _runningUserModel: UserModel = undefined;
     private _onTestEndModels: EndModel[] = [];
 
     private _checkUtility: CheckUtility | null;
@@ -134,9 +134,9 @@ export class ModelTester extends EventEmitter {
         this._testDriver = t;
         Container.testDriver = t;
 
-        this._runningUserModels = 0 <= UMIndex && UMIndex < this.userModelCount ? [this._userModels[UMIndex]] : [];
-        logger.debug(`start test with user model with ids: ${this._runningUserModels.map(u => u.id)}`);
-        const allModels = [...this._programModels, ...this._runningUserModels, ...this._onTestEndModels];
+        this._runningUserModel = 0 <= UMIndex && UMIndex < this.userModelCount ? this._userModels[UMIndex] : undefined;
+        logger.debug(`start test with user model with ids: ${this._runningUserModel.id}`);
+        const allModels = [...this._programModels, this._runningUserModel, ...this._onTestEndModels];
         this._result = new ModelResult();
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
         this._checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this._onVMEvent.bind(this));
@@ -207,9 +207,7 @@ export class ModelTester extends EventEmitter {
             model.setTransitionsStartTo(steps);
             model.programEndStep = steps;
         });
-        this._runningUserModels.forEach(model => {
-            model.stepNbrOfProgramEnd = steps;
-        });
+        this._runningUserModel.stepNbrOfProgramEnd = steps;
         this._onTestEndCallback!.enable();
     }
 
@@ -232,20 +230,16 @@ export class ModelTester extends EventEmitter {
     }
 
     private _userInputGen() {
-        if (this._runningUserModels.length == 0) {
+        if (this._runningUserModel == undefined) {
             return;
         }
 
         const userInputFun = () => {
-            let stop = false;
-            this._runningUserModels.forEach(model => {
-                const edge = model.makeOneTransition(this._testDriver!, this._checkUtility!);
-                if (edge instanceof UserModelEdge) {
-                    edge.inputImmediate(this._testDriver!);
-                }
-                stop = stop || model.stopped();
-            });
-            if (stop) {
+            const edge = this._runningUserModel.makeOneTransition(this._testDriver!, this._checkUtility!);
+            if (edge instanceof UserModelEdge) {
+                edge.inputImmediate(this._testDriver!);
+            }
+            if (this._runningUserModel.stopped()) {
                 callback.disable();
             }
         };
