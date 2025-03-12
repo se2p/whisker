@@ -36,6 +36,13 @@ class TestRunner extends EventEmitter {
      */
     async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
+        const indices = modelTester.userModelCount > 0 ? [...Array(modelTester.userModelCount).keys()] : [-1];
+        if (!modelProps.repetitions) {
+            modelProps.repetitions = 1;
+        }
+        if (!modelProps.duration) {
+            modelProps.duration = 35000;
+        }
 
         this.activateTracing(vm, props);
 
@@ -48,11 +55,13 @@ class TestRunner extends EventEmitter {
         // Count number of assertions across all test cases and define a sampleTest used for setting the seed.
         let totalAssertions = 0;
         let sampleTest = undefined;
-        if(tests) {
+        if (tests) {
             sampleTest = tests[0];
             for (const test of tests) {
                 totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
             }
+        } else if (modelTester.userModelCount === 0) {
+            throw new Error("Neither tests nor UserModels where given.");
         }
 
         this._setRNGSeeds(props['seed'], sampleTest, vm);
@@ -102,68 +111,27 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
                 this.emit(TestRunner.RESET_TABLE, tests);
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
-                for (const test of tests) {
-                    await this.vmWrapper.resetProject(this.saveState);
-                    let result;
-                    if ("generationAlgorithm" in test) {
-                        resultRecords.generationAlgorithm = test.generationAlgorithm;
-                    }
-
-                    if (test.skip) {
-                        result = new TestResult(test);
-                        result.status = Test.SKIP;
-                        this.emit(TestRunner.TEST_SKIP, result);
-
-                    } else {
-                        // Set timeout of 600000ms = 1min for every test
-                        result = await this._executeTest(vm, test, modelTester, props, modelProps, 600000);
-                        testStatusResults.push(result.status);
-                        this._propagateTestResults(result, resultRecords);
-                    }
-
-                    testResults.push(result);
+                if (tests) {
+                    csv += await this.iterateOverTests(vm, tests, modelTester, props, modelProps,
+                        resultRecords, testStatusResults, testResults,
+                        startTime, projectMutation, totalAssertions,
+                        60000, false);
+                } else {
+                    csv += await this.iterateOverUserModels(vm, modelTester, props, modelProps,
+                        testResults, projectName, totalAssertions, indices,0);
                 }
 
-                // Record the results
-                const duration = (Date.now() - startTime) / 1000;
-                const coverage = this._extractCoverage();
-                const seed = Randomness.scratchSeed;
-                csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, coverage,
-                    duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
-
                 i++;
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
             // test only by models
 
-            if (!modelProps.repetitions) {
-                modelProps.repetitions = 1;
-            }
-            if (!modelProps.duration) {
-                modelProps.duration = 35000;
-            }
-
-            const indices = modelTester.userModelCount > 0 ? [...Array(modelTester.userModelCount).keys()] : [-1];
             for (let i = 0; i < modelProps.repetitions; i++) {
-                for (let t = 0; t < indices.length; ++t) {
-                    const uM = indices[t];
-                    this.util = await this._loadProject(vm, project, props);
-                    const startTime = Date.now();
-                    const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
-                    result.modelResult.testNbr = i * modelTester.userModelCount + uM;
-                    this.emit(TestRunner.TEST_MODEL, result);
-                    testResults.push(result);
-                    // Record the results
-                    const duration = (Date.now() - startTime) / 1000;
-                    const coverage = this._extractCoverage();
-                    const modelResults = this._extractModelCSVData(result.modelResult);
-                    const seed = Randomness.scratchSeed;
-                    csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
-                        duration, undefined, modelResults);
-                }
+                csv += await this.iterateOverUserModels(vm, modelTester, props, modelProps,
+                    testResults, projectName, totalAssertions, indices, i);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -171,36 +139,14 @@ class TestRunner extends EventEmitter {
             // test case as long as the test case runs or the model stops.
             this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
-            for (const test of tests) {
-                await this.vmWrapper.resetProject(this.saveState);
-                let result;
-                if ("generationAlgorithm" in test) {
-                    resultRecords.generationAlgorithm = test.generationAlgorithm;
-                }
-
-                if (test.skip) {
-                    result = new TestResult(test);
-                    result.status = Test.SKIP;
-                    this.emit(TestRunner.TEST_SKIP, result);
-
-                } else {
-                    result = await this._executeTest(vm, test, modelTester, props, modelProps);
-                    testStatusResults.push(result.status);
-                    this._propagateTestResults(result, resultRecords);
-                }
-
-                testResults.push(result);
-
-                if (this.aborted) {
-                    return null;
-                }
+            const res = await this.iterateOverTests(vm, tests, modelTester, props, modelProps,
+                resultRecords, testStatusResults, testResults,
+                startTime, projectName, totalAssertions,
+                60000, false);
+            if (res == null) {
+                return null;
             }
-            // Record the results
-            const duration = (Date.now() - startTime) / 1000;
-            const seed = Randomness.scratchSeed;
-            const coverage = this._extractCoverage();
-            csv += this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults,
-                coverage, duration, resultRecords);
+            csv += res;
             finalResults[projectName] = testResults;
         }
 
@@ -208,6 +154,63 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_END, finalResults);
         return [finalResults, csv, generatedMutants];
+    }
+
+    async iterateOverTests(vm, tests, modelTester, props, modelProps,
+                           resultRecords, testStatusResults, testResults,
+                           startTime, projectName, totalAssertions,
+                           defaultTimeoutPerTest, canBeAborted) {
+        for (const test of tests) {
+            await this.vmWrapper.resetProject(this.saveState);
+            let result;
+            if ("generationAlgorithm" in test) {
+                resultRecords.generationAlgorithm = test.generationAlgorithm;
+            }
+
+            if (test.skip) {
+                result = new TestResult(test);
+                result.status = Test.SKIP;
+                this.emit(TestRunner.TEST_SKIP, result);
+
+            } else {
+                result = await this._executeTest(vm, test, modelTester, props, modelProps, defaultTimeoutPerTest);
+                testStatusResults.push(result.status);
+                this._propagateTestResults(result, resultRecords);
+            }
+
+            testResults.push(result);
+
+            if (canBeAborted && this.aborted) {
+                return null;
+            }
+        }
+        const duration = (Date.now() - startTime) / 1000;
+        const seed = Randomness.scratchSeed;
+        const coverage = this._extractCoverage();
+        return this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults, coverage,
+            duration, resultRecords);
+    }
+
+    async iterateOverUserModels(vm, modelTester, props, modelProps,
+                                testResults, projectName, totalAssertions,
+                                indices, i = 0) {
+        for (let t = 0; t < indices.length; ++t) {
+            const uM = indices[t];
+            // this.util = await this._loadProject(vm, project, props);
+            await this.vmWrapper.resetProject(this.saveState);
+            const startTime = Date.now();
+            const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
+            result.modelResult.testNbr = i * modelTester.userModelCount + uM;
+            this.emit(TestRunner.TEST_MODEL, result);
+            testResults.push(result);
+            // Record the results
+            const duration = (Date.now() - startTime) / 1000;
+            const coverage = this._extractCoverage();
+            const modelResults = this._extractModelCSVData(result.modelResult);
+            const seed = Randomness.scratchSeed;
+            return this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
+                duration, undefined, modelResults);
+        }
     }
 
     /**
