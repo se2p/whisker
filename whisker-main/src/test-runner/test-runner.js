@@ -194,7 +194,6 @@ class TestRunner extends EventEmitter {
                                 indices, i = 0) {
         for (let t = 0; t < indices.length; ++t) {
             const uM = indices[t];
-            // this.util = await this._loadProject(vm, project, props);
             await this.vmWrapper.resetProject(this.saveState);
             const startTime = Date.now();
             const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
