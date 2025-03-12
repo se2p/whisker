@@ -66,9 +66,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/ColorEvent.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('Sprite touching event listener', async () => {
@@ -76,9 +76,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/SpriteTouchingEvent.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('move event listener (change)', async () => {
@@ -86,9 +86,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/MoveEventChange.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('move event listener (comp)', async () => {
@@ -96,9 +96,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/MoveEventComp.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('move event listener (expr)', async () => {
@@ -106,9 +106,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/MoveEventExpr.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('move event listener (function)', async () => {
@@ -116,9 +116,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/MoveEventFunction.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('output event listener', async () => {
@@ -126,9 +126,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/OutputEvent.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('variable change event listener', async () => {
@@ -136,9 +136,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/VariableEvent.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('visual change event listeners', async () => {
@@ -146,9 +146,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/BackgroundChange.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('visual change event listeners 2', async () => {
@@ -156,9 +156,9 @@ describe('Model tests on multiple events per step', () => {
             'test/model/model-jsons/VisualEvents.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
+        expect(modelCoverage).toBe("1.00");
     }, timeout);
 
     test('fruitcatcher with random model input', async () => {
@@ -170,9 +170,9 @@ describe('Model tests on multiple events per step', () => {
         const startTestButton = await page.$('#run-all-tests');
         await startTestButton.click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
         // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.8.
-        await expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.45);
+        expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.45);
     })
 });
