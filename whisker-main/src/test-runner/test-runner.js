@@ -60,8 +60,6 @@ class TestRunner extends EventEmitter {
             for (const test of tests) {
                 totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
             }
-        } else if (modelTester.userModelCount === 0) {
-            throw new Error("Neither tests nor UserModels where given.");
         }
 
         this._setRNGSeeds(props['seed'], sampleTest, vm);
