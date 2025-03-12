@@ -134,9 +134,15 @@ export class ModelTester extends EventEmitter {
         this._testDriver = t;
         Container.testDriver = t;
 
-        this._runningUserModel = 0 <= UMIndex && UMIndex < this.userModelCount ? this._userModels[UMIndex] : undefined;
-        logger.debug(`start test with user model with ids: ${this._runningUserModel.id}`);
-        const allModels = [...this._programModels, this._runningUserModel, ...this._onTestEndModels];
+        let allModels: (ProgramModel | EndModel | UserModel)[];
+        if (0 <= UMIndex && UMIndex < this.userModelCount) {
+            this._runningUserModel = this._userModels[UMIndex];
+            allModels = [...this._programModels, this._runningUserModel, ...this._onTestEndModels];
+            logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
+        } else {
+            this._runningUserModel = undefined;
+            allModels = [...this._programModels, ...this._onTestEndModels];
+        }
         this._result = new ModelResult();
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
         this._checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this._onVMEvent.bind(this));
@@ -147,7 +153,9 @@ export class ModelTester extends EventEmitter {
             model.reset();
             model.registerComponents(this._checkUtility!, t);
         });
-        this._userInputGen();
+        if (this._runningUserModel != undefined) {
+            this._userInputGen();
+        }
 
         this._modelStepCallback = this._addModelCallback(() => this._onModelStep(), true, "modelStep");
         this._onTestEndCallback = this._addModelCallback(() => this._onTestEnd(), true, "stopModelsCheck");
@@ -230,10 +238,6 @@ export class ModelTester extends EventEmitter {
     }
 
     private _userInputGen() {
-        if (this._runningUserModel == undefined) {
-            return;
-        }
-
         const userInputFun = () => {
             const edge = this._runningUserModel.makeOneTransition(this._testDriver!, this._checkUtility!);
             if (edge instanceof UserModelEdge) {
