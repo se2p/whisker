@@ -8,8 +8,14 @@ import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {Checks} from "./Checks";
 import {Check} from "../checks/newCheck";
+import {CheckResult} from "../checks/CheckResult";
 
-type EffectCheck = { effect: Check, edge: ProgramModelEdge, model: ProgramModel | EndModel };
+type EffectCheck = {
+    effect: Check,
+    reason: Record<string, unknown>,
+    edge: ProgramModelEdge,
+    model: ProgramModel | EndModel
+};
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -93,7 +99,7 @@ export class CheckUtility extends EventEmitter {
      * @param check String defining the event (see CheckUtility.getEventString)
      */
     registerOnMoveEvent(spriteName: string, check: Check, graphID: string,
-                        predicate: (sprite: Sprite) => boolean): void {
+                        predicate: (sprite: Sprite) => CheckResult): void {
         if (!this._registeredOnMove.includes(check)) {
             this._registeredOnMove.push(check);
             this._register(this._onMovedChecks, check, spriteName, graphID, predicate);
@@ -109,7 +115,7 @@ export class CheckUtility extends EventEmitter {
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
     registerOnVisualChange(spriteName: string, check: Check, graphID: string,
-                           predicate: (sprite: Sprite) => boolean): void {
+                           predicate: (sprite: Sprite) => CheckResult): void {
         if (!this._registeredVisualChange.includes(check)) {
             this._registeredVisualChange.push(check);
             this._register(this._onVisualChecks, check, spriteName, graphID, predicate);
@@ -124,7 +130,7 @@ export class CheckUtility extends EventEmitter {
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
     registerOutput(spriteName: string, check: Check, graphID: string,
-                   predicate: (sprite: Sprite) => boolean): void {
+                   predicate: (sprite: Sprite) => CheckResult): void {
         if (!this._registeredOutput.includes(check)) {
             this._registeredOutput.push(check);
             this._register(this._onSayOrThinkChecks, check, spriteName, graphID, predicate);
@@ -132,7 +138,7 @@ export class CheckUtility extends EventEmitter {
     }
 
     private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, check: Check,
-                      spriteName: string, graphID: string, predicate: (sprite: Sprite) => boolean) {
+                      spriteName: string, graphID: string, predicate: (sprite: Sprite) => CheckResult) {
         // no check for this sprite till now
         if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
             predicateChecker[spriteName] = [];
@@ -140,7 +146,7 @@ export class CheckUtility extends EventEmitter {
 
         predicateChecker[spriteName].push((sprite) => {
             try {
-                const predicateResult = predicate(sprite);
+                const predicateResult = predicate(sprite).passed;
                 if (predicateResult) {
                     this._checks.push(check);
                 }
@@ -157,7 +163,7 @@ export class CheckUtility extends EventEmitter {
      * @param check Function checking if the predicate for the event is fulfilled.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerVarEvent(varName: string, check: Check, graphID: string, predicate: () => boolean): void {
+    registerVarEvent(varName: string, check: Check, graphID: string, predicate: () => CheckResult): void {
         if (!this._registeredVarEvents.includes(check)) {
             this._registeredVarEvents.push(check);
 
@@ -167,7 +173,7 @@ export class CheckUtility extends EventEmitter {
             this._variableChecks[varName].push(() => {
                 let predicateResult = false;
                 try {
-                    predicateResult = predicate();
+                    predicateResult = predicate().passed;
                 } catch (e) {
                     this.addErrorOutput(check.edgeLabel, graphID, e);
                 }
@@ -199,13 +205,20 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
+     * Check whether any key was pressed at the beginning of the step.
+     */
+    isAnyKeyDown(): boolean {
+        return this._testDriver.isKeyDown("any");
+    }
+
+    /**
      * Register the effects of an edge in this listener to test them later on.
      * @param takenEdge The taken edge of a model.
      * @param model Model of the edge.
      */
     registerEffectCheck(takenEdge: ProgramModelEdge, model: ProgramModel | EndModel): void {
         takenEdge.effects.forEach(effect => {
-            this._effectChecks.push({effect: effect, edge: takenEdge, model: model});
+            this._effectChecks.push({effect: effect, reason: undefined, edge: takenEdge, model: model});
         });
     }
 
@@ -232,7 +245,9 @@ export class CheckUtility extends EventEmitter {
                 const effect = this._effectChecks[i].effect;
                 const stepsSinceLastTransition = model.lastTransitionStep - model.secondLastTransitionStep + 1;
                 try {
-                    if (!effect.check(stepsSinceLastTransition, model.programEndStep)) {
+                    const res = effect.check(stepsSinceLastTransition, model.programEndStep);
+                    if (res.passed === false) {
+                        this._effectChecks[i].reason = res.reason;
                         newEffects.push(this._effectChecks[i]);
                     }
                 } catch (e) {
@@ -260,9 +275,10 @@ export class CheckUtility extends EventEmitter {
      * Add an edge's effect to the failed output of the test.
      * @param edge Edge that has a failed effect.
      * @param effect Effect that failed.
+     * @param reason Insights on why the effect failed.
      */
-    addFailOutput(edge: AbstractEdge, effect: Check): void {
-        const output = getEffectFailedOutput(edge, effect);
+    addFailOutput(edge: AbstractEdge, effect: Check, reason: Record<string, unknown>): void {
+        const output = getEffectFailedOutput(edge, effect, reason);
         this._failOrError(output, this._failOutputs);
         this._modelResult.addFail(output);
     }
@@ -314,12 +330,12 @@ export class CheckUtility extends EventEmitter {
      */
     makeFailedOutputs(): void {
         for (const e of this._failedOutputsEvents) {
-            this.addFailOutput(e.edge, e.effect);
+            this.addFailOutput(e.edge, e.effect, e.reason);
         }
         this._failedOutputsEvents = [];
         for (const e of this._effectChecks) {
             if (!e.effect.dependsOnSayText) {
-                this.addFailOutput(e.edge, e.effect);
+                this.addFailOutput(e.edge, e.effect, e.reason);
             } else {
                 this._failedOutputsEvents.push(e);
             }
@@ -338,7 +354,9 @@ export class CheckUtility extends EventEmitter {
             const stepsSinceLastTransition = c.model.lastTransitionStep
                 - c.model.secondLastTransitionStep + 1;
             try {
-                if (!effect.check(stepsSinceLastTransition, c.model.programEndStep)) {
+                const res = effect.check(stepsSinceLastTransition, c.model.programEndStep);
+                if (res.passed === false) {
+                    c.reason = res.reason;
                     newFailedList.push(c);
                 }
             } catch (e) {

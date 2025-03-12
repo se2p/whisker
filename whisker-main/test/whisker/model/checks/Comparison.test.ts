@@ -49,25 +49,25 @@ describe.each([
     ])("when %s", (_, expected, arbitrary) => {
         it.prop([arbitrary])(`is ${expected}`, ([x, value]) => {
             const c = newComparison({operator, value});
-            expect(c.apply(x)).toBe(expected);
+            expect(c.apply(x).passed).toBe(expected);
         });
 
         it.prop([arbitrary])(`is ${!expected} if negated`, ([x, value]) => {
             const c = newComparison({operator, value, negated: true});
-            expect(c.apply(x)).toBe(!expected);
+            expect(c.apply(x).passed).toBe(!expected);
         });
     });
 
     it.prop([xy])("is idempotent regarding double negation", ([x, value]) => {
         const c = newComparison({operator, value});
-        const expected = c.apply(x);
-        expect(c.negate().negate().apply(x)).toBe(expected);
+        const expected = c.apply(x).passed;
+        expect(c.negate().negate().apply(x).passed).toBe(expected);
     });
 
     it.prop([xy])("has the same result when negated directly or retroactively", ([x, value]) => {
         const d = newComparison({operator, value, negated: true}); // directly negated
         const c = newComparison({operator, value}).negate(); // retroactively negated
-        expect(c.apply(x)).toBe(d.apply(x));
+        expect(c.apply(x).passed).toBe(d.apply(x).passed);
     });
 
     it.prop([number])("never contradicts itself", (value) => {

@@ -3,6 +3,8 @@ import {CheckUtility} from "../util/CheckUtility";
 import {Dependencies, ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
+import {CheckResult, result} from "./CheckResult";
+import TestDriver from "../../../test/test-driver";
 
 const name = "Expr" as const;
 
@@ -38,13 +40,16 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
 
     /**
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
-     * @param t Instance of the test driver.
-     * @param cu Listener for checks.
+     * @param t Instance of the test driver for evaluating expression.
+     * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const e = ModelUtil.getExpressionForEval(t, this._code);
-        const check = () => !this.negated == ModelUtil.evaluateExpression(t, e.expr);
+        const check = () => {
+            const log = {};
+            return result(Boolean(ModelUtil.evaluateExpression(t, e.expr, log)), log, this.negated);
+        };
         this._setupDependencies(cu, graphID, e, check);
         const dep: Dependencies = ModelUtil.getDependencies(this._code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
@@ -53,7 +58,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         return check;
     }
 
-    private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => boolean) {
+    private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult) {
         d.varDependencies.forEach(dependency => {
             cu.registerVarEvent(dependency.varName, this, graphID, predicate);
         });

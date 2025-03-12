@@ -1,5 +1,6 @@
 import {fc, it} from "@fast-check/jest";
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
+import {fail, pass, result} from "../../../../src/whisker/model/checks/CheckResult";
 
 /**
  * Randomly generated 1-dimensional array of arbitrary length, containing arbitrary elements.
@@ -58,7 +59,7 @@ function newQuantifiable({apply = null, contradicts = null} = {}) {
 /*
  * Generators for random predicates, existential quantifiers, and universal quantifiers.
  */
-const pred = fc.func(fc.boolean());
+const pred = fc.func(fc.boolean().map((b) => b ? pass() : fail({})));
 const exist = fc.tuple(pred, pred).map(([apply, contradicts]) => new Existential(newQuantifiable({apply, contradicts})));
 const univ = fc.tuple(pred, pred).map(([apply, contradicts]) => new Universal(newQuantifiable({apply, contradicts})));
 const quant = fc.oneof(exist, univ);
@@ -93,13 +94,13 @@ describe("Quantification", () => {
         it.prop([quant, arr])("has the same result as the wrapped predicate", (q, a) => {
             const expected = q.wrapped.apply(...a);
             const actual = q.applySingle(...a);
-            expect(actual).toBe(expected);
+            expect(actual).toStrictEqual(expected);
         });
     });
 
     describe("apply()", () => {
         it.prop([quant, arr])("has the same result as the wrapped predicate for singleton arrays", (q, a) => {
-            expect(q.apply([a])).toBe(q.wrapped.apply(...a));
+            expect(q.apply([a])).toStrictEqual(q.wrapped.apply(...a));
         });
 
         it.prop([quant, arr2])("calls the underlying predicate at least once", (q, a) => {
@@ -115,7 +116,7 @@ describe("Quantification", () => {
         });
 
         it.prop([quant, perm2])("has the same result regardless of the order of elements", (q, [a1, a2]) => {
-            expect(q.apply(a1)).toBe(q.apply(a2));
+            expect(q.apply(a1)).toStrictEqual(q.apply(a2));
         });
     });
 });
@@ -123,20 +124,21 @@ describe("Quantification", () => {
 describe("Existential", () => {
     describe("apply()", () => {
         it.prop([exist])("is always false for empty arrays", (e) => {
-            expect(e.apply([])).toBe(false);
+            expect(e.apply([])).toStrictEqual(fail({message: "There are no elements to check!"}));
         });
 
         it.prop([arr2idx])("is true if at least one element satisfies the predicate", ([a, i]) => {
             const w = newQuantifiable();
             // The indexes determine which apply() calls return true.
-            w.apply.mockImplementation(() => i.includes(w.apply.mock.calls.length - 1));
+            w.apply.mockImplementation(() => result(i.includes(w.apply.mock.calls.length - 1), {}));
             const e = new Existential(w);
-            expect(e.apply(a)).toBe(true);
+            expect(e.apply(a)).toStrictEqual(pass());
         });
 
         it.prop([arr2])("is false if no element satisfies the predicate", (a) => {
-            const e = new Existential(newQuantifiable({apply: () => false}));
-            expect(e.apply(a)).toBe(false);
+            const reason = {message: "No element satisfies the predicate"};
+            const e = new Existential(newQuantifiable({apply: () => fail(reason)}));
+            expect(e.apply(a)).toStrictEqual(fail(reason));
         });
     });
 
@@ -154,20 +156,21 @@ describe("Existential", () => {
 describe("Universal", () => {
     describe("apply()", () => {
         it.prop([univ])("is always true for empty arrays", (u) => {
-            expect(u.apply([])).toBe(true);
+            expect(u.apply([])).toStrictEqual(pass());
         });
 
         it.prop([arr2])("is true if all elements satisfy the condition", (a) => {
-            const u = new Universal(newQuantifiable({apply: () => true}));
-            expect(u.apply(a)).toBe(true);
+            const u = new Universal(newQuantifiable({apply: () => pass()}));
+            expect(u.apply(a)).toStrictEqual(pass());
         });
 
         it.prop([arr2idx])("is false if at least one element does not satisfy the condition", ([a, i]) => {
             const w = newQuantifiable();
+            const reason = {message: "The element failed the the check"};
             // The indexes determine which apply() calls return false.
-            w.apply.mockImplementation(() => !i.includes(w.apply.mock.calls.length - 1));
+            w.apply.mockImplementation(() => result(!i.includes(w.apply.mock.calls.length - 1), reason));
             const u = new Universal(w);
-            expect(u.apply(a)).toBe(false);
+            expect(u.apply(a)).toStrictEqual(fail(reason));
         });
     });
 

@@ -6,6 +6,7 @@ import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
 import {Change, ChangingCheck, newChange, NumberOrChangeOp} from "./Change";
+import TestDriver from "../../../test/test-driver";
 
 const name = "VarChange" as const;
 
@@ -57,11 +58,11 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
 
     /**
      * Get a method checking whether a variable value of a sprite changed.
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the current and old values of a sprites and its clones attribute.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, varName] = this._args;
 
         let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);

@@ -1,10 +1,12 @@
 import {AbstractCheck, AttrName, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
-import {ErrorForAttribute} from "../util/ModelError";
+import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {Change, ChangingCheck, newQuantifiedChange, NumberOrChangeOp} from "./Change";
 import {Quantification} from "./Quantification";
+import Sprite from "../../../vm/sprite";
+import TestDriver from "../../../test/test-driver";
 
 const name = "AttrChange" as const;
 
@@ -40,10 +42,12 @@ export const AttrChangeJSON = ICheckJSON.extend({
 
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
+    private readonly _isForEffect: boolean;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
         this._change = newQuantifiedChange(this);
+        this._isForEffect = ModelUtil.isAnEffect(this._args[1]);
     }
 
     get change(): NumberOrChangeOp {
@@ -58,16 +62,18 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
      * Get a method checking whether an attribute of a sprite changed.
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText
      * (only = allowed);
-     * @param t Instance of the test driver.
+     * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
      * @param cu Listener for the checks.
      * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;
-        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+        if (!this._isForEffect) {
+            ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+        }
 
         // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
         // is not a numerical value and e.g. an increase (+) on a string is not desired to be representable. An
@@ -76,18 +82,26 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
             this._registerOnMoveAttrChange(cu, graphID, spriteName);
-        } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
             this._registerOnVisualAttrChange(cu, graphID, spriteName);
         }
 
         return () => {
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
+            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+
             try {
-                return this._change.apply(sprites.map((s) => [s[attrName], s.old[attrName]]));
+                return this._change.apply(sprites.map((s) => this._getAttr(s, attrName)));
             } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
+                throw new Exception(pSpriteName, attrName, e);
             }
         };
+    }
+
+    private _getAttr(s: Sprite, attrName: string) {
+        return this._isForEffect
+            ? [s.effects[attrName], s.old.effects[attrName]]
+            : [s[attrName], s.old[attrName]];
     }
 
     private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
@@ -103,14 +117,16 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
 
     private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
         const [pSpriteName, attrName] = this._args;
+        const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
         cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
             try {
-                return this._change.applySingle(sprite[attrName], sprite.old[attrName]);
+                return this._change.applySingle(...this._getAttr(sprite, attrName));
             } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
+                throw new Exception(pSpriteName, attrName, e);
             }
         });
     }
+
 
     override get dependsOnSayText(): boolean {
         return this._args[1] === "sayText";

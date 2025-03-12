@@ -73,6 +73,7 @@ describe('Model tests on multiple events per step', () => {
         ['variable change event listener', 'VariableEvent', 'VariableEvent', "0", "0", "1.00" ],
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange', "0", "0", "1.00" ],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents', "0", "0", "1.00" ],
+        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', "0", "0", "1.00" ],
     ]
 
     it.each(table)('%s', async (name, projectFileName, modelFileName ,errors, fails, coverage ) => {
