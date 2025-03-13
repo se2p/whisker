@@ -231,7 +231,7 @@ class TestRunner extends EventEmitter {
             this.util = await this._loadProject(vm, project, props);
             const startTime = Date.now();
             const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
-            result.modelResult.testNbr = rep * modelTester.userModelCount + uM;
+            result.modelResult.testNbr = Math.min(0, rep * modelTester.userModelCount + uM);
             this.emit(TestRunner.TEST_MODEL, result);
             testResults.push(result);
             // Record the results
