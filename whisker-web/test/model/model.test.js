@@ -39,7 +39,8 @@ async function readModelErrors() {
             return {
                 errorsInModel: errors,
                 failsInModel: fails,
-                modelCoverage: coverage
+                modelCoverage: coverage,
+                loggedOutput: logArray.filter(s => s !== "").join("\n")
             };
         }
     }
@@ -80,7 +81,7 @@ describe('Model tests on multiple events per step', () => {
         await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
             `test/model/model-jsons/${modelFileName}.json`);
         await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
+        let {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
         expect(errorsInModel).toBe(errors);
         expect(failsInModel).toBe(fails);
         expect(modelCoverage).toBe(coverage);
@@ -94,7 +95,10 @@ describe('Model tests on multiple events per step', () => {
 
         const startTestButton = await page.$('#run-all-tests');
         await startTestButton.click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
+        let {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
+        if (parseInt(errorsInModel, 10) + parseInt(failsInModel, 10) > 0) {
+            console.log(loggedOutput);
+        }
         expect(errorsInModel).toBe("0");
         expect(failsInModel).toBe("0");
         // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.8.
