@@ -115,7 +115,7 @@ class TestRunner extends EventEmitter {
                         startTime, projectMutation, totalAssertions,
                         60000, false);
                 } else {
-                    csv += await this.iterateOverUserModels(vm, modelTester, props, modelProps,
+                    csv += await this.executeUserModelsSequentially(vm, modelTester, props, modelProps,
                         testResults, projectName, totalAssertions, indices, 0);
                 }
 
@@ -128,7 +128,7 @@ class TestRunner extends EventEmitter {
             // test only by models
 
             for (let i = 0; i < modelProps.repetitions; i++) {
-                csv += await this.iterateOverUserModels(vm, modelTester, props, modelProps,
+                csv += await this.executeUserModelsSequentially(vm, modelTester, props, modelProps,
                     testResults, projectName, totalAssertions, indices, i);
             }
             finalResults[projectName] = testResults;
@@ -221,7 +221,7 @@ class TestRunner extends EventEmitter {
      * @param {number} i
      * @return {Promise<string>}
      */
-    async iterateOverUserModels(vm, modelTester, props, modelProps,
+    async executeUserModelsSequentially(vm, modelTester, props, modelProps,
                                 testResults, projectName, totalAssertions,
                                 indices, i = 0) {
         for (const uM of indices) {
