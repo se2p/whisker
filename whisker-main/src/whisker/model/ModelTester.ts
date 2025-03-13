@@ -16,6 +16,8 @@ import {loadModels} from "./util/loadModels";
 import {ModelJSON} from "./util/schema";
 import {Checks} from "./util/Checks";
 import {Check} from "./checks/newCheck";
+import TestResult from "../../test-runner/test-result";
+import Test from "../../test-runner/test";
 
 export class ModelTester extends EventEmitter {
 
@@ -55,6 +57,31 @@ export class ModelTester extends EventEmitter {
         this._modelStepCallback = null;
         this._onTestEndCallback = null;
         this._haltAllCallback = null;
+    }
+
+    async executeModelsWithoutTest(testDriver: TestDriver, duration: number, result: TestResult,
+                                   userModelIndex: number): Promise<void> {
+        if (!this.someModelLoaded()) {
+            return;
+        }
+        this.prepareModel(testDriver, userModelIndex);
+        // Start the test run with either a maximal duration or until the model stops
+        try {
+            await testDriver.runUntil(() => {
+                return !this.running();
+            }, duration);
+
+            // TODO: Refactor coverage computation for model executions to be similar to test executions.
+            result.modelResult = this.stopAndGetModelResult();
+            result.status = result.modelResult.errors.length > 0
+                ? Test.ERROR
+                : result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
+        } catch (e) {
+            // probably run aborted
+            logger.error(e);
+            result.modelResult = this.stopAndGetModelResult();
+            result.status = Test.ERROR;
+        }
     }
 
     /**
@@ -320,7 +347,7 @@ export class ModelTester extends EventEmitter {
     /**
      * Get the result of the test run as a ModelResult.
      */
-    stopAndGetModelResult(testDriver: TestDriver): ModelResult {
+    stopAndGetModelResult(): ModelResult {
         this._isRunning = false;
         this._checkUtility!.stop();
         this._modelStepCallback!.disable();
@@ -329,12 +356,12 @@ export class ModelTester extends EventEmitter {
         const models = [...this._programModels, ...this._onTestEndModels];
         models.forEach(model => {
             if (model.stopped()) {
-                // logger.debug("Model '" + model.id + "' stopped.");
+                // logger.debug(`Model '${model.id}' stopped.`);
                 this._result!.log.push("Model '" + model.id + "' stopped.");
                 this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
             }
         });
-        const sprites = testDriver.getSprites(() => true, false);
+        const sprites = this._testDriver!.getSprites(() => true, false);
         const log = [];
         log.push("--- State of variables:");
 
@@ -394,5 +421,29 @@ export class ModelTester extends EventEmitter {
         logger.error("EFFECTS CONTRADICTING", output);
         this._result!.log.push("EFFECTS CONTRADICTING" + output);
         this.emit(ModelTester.MODEL_WARNING, output);
+    }
+
+    /**
+     * Prepares the modelTester for testing if it has any models loaded.
+     * @param modelTester ModelTester with at least one model loaded.
+     * @param testDriver TestDriver for evaluating checks.
+     * @param userModelIndex Index of the UserModel to use for this run.
+     */
+    public static prepare(modelTester: ModelTester | null, testDriver: TestDriver, userModelIndex: number): void {
+        if (modelTester && modelTester.someModelLoaded()) {
+            modelTester.prepareModel(testDriver, userModelIndex);
+        }
+    }
+
+    /**
+     * Stops the ModelTester sets the {@linkcode result.modelResult} attribute if a ModelTester with some loaded model
+     * is given.
+     * @param modelTester ModelTester or null if no models are required.
+     * @param result Result to be updated with the model results.
+     */
+    public static stopModelsAndUpdateResult(modelTester: ModelTester | null, result: TestResult): void {
+        if (modelTester && modelTester.someModelLoaded()) {
+            result.modelResult = modelTester.stopAndGetModelResult();
+        }
     }
 }

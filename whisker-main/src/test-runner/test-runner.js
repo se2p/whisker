@@ -497,11 +497,9 @@ class TestRunner extends EventEmitter {
         this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
-        if (modelTester && modelTester.someModelLoaded()) {
-            modelTester.prepareModel(testDriver, userModelIndex);
-        }
 
         if (test) {
+            ModelTester.prepare(modelTester, testDriver);
             try {
                 // Use the default timeout (given as function parameter), unless the test specifies its own timeout.
                 const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeoutPerTest;
@@ -535,33 +533,11 @@ class TestRunner extends EventEmitter {
                     result.status = Test.ERROR;
                 }
             }
-
-            if (modelTester && modelTester.someModelLoaded()) {
-                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
-            }
-
+            ModelTester.stopModelsAndUpdateResult(modelTester, result);
             await this._determineCoverages(test, props);
 
         } else if (modelTester && modelTester.someModelLoaded()) {
-            // Start the test run with either a maximal duration or until the model stops
-            try {
-                await testDriver.runUntil(() => {
-                    return !modelTester.running();
-                }, modelProps.duration);
-
-                // TODO: Refactor coverage computation for model executions to be similar to test executions.
-                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
-                if (result.modelResult.errors.length > 0) {
-                    result.status = Test.ERROR;
-                } else {
-                    result.status = result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
-                }
-            } catch (e) {
-                // probably run aborted
-                logger.error(e);
-                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
-                result.status = Test.ERROR;
-            }
+            await modelTester.executeModelsWithoutTest(testDriver, modelProps.duration, result, userModelIndex);
         }
 
         // If desired, save execution trace after executing each block.
