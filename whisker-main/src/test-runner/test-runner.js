@@ -110,12 +110,12 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.RESET_TABLE, tests);
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
                 if (tests) {
-                    csv += await this.iterateOverTests(vm, tests, modelTester, props, modelProps,
+                    csv += await this._executeTests(vm, tests, modelTester, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectMutation, totalAssertions,
                         60000, false);
                 } else {
-                    csv += await this.executeUserModelsSequentially(vm, modelTester, mutant, props, modelProps,
+                    csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
                         testResults, projectMutation, totalAssertions, indices, 0);
                 }
 
@@ -129,7 +129,7 @@ class TestRunner extends EventEmitter {
 
             this.util = await this._loadProject(vm, project, props);
             for (let i = 0; i < modelProps.repetitions; i++) {
-                csv += await this.executeUserModelsSequentially(vm, modelTester, project, props, modelProps,
+                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps,
                     testResults, projectName, totalAssertions, indices, i);
             }
             finalResults[projectName] = testResults;
@@ -138,7 +138,7 @@ class TestRunner extends EventEmitter {
             // test case as long as the test case runs or the model stops.
             this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
-            const res = await this.iterateOverTests(vm, tests, modelTester, props, modelProps,
+            const res = await this._executeTests(vm, tests, modelTester, props, modelProps,
                 resultRecords, testStatusResults, testResults,
                 startTime, projectName, totalAssertions,
                 60000, false);
@@ -173,10 +173,10 @@ class TestRunner extends EventEmitter {
      * @param {boolean} canBeAborted
      * @return {Promise<string|null>}
      */
-    async iterateOverTests(vm, tests, modelTester, props, modelProps,
-                           resultRecords, testStatusResults, testResults,
-                           startTime, projectName, totalAssertions,
-                           defaultTimeoutPerTest, canBeAborted) {
+    async _executeTests(vm, tests, modelTester, props, modelProps,
+                        resultRecords, testStatusResults, testResults,
+                        startTime, projectName, totalAssertions,
+                        defaultTimeoutPerTest, canBeAborted) {
         for (const test of tests) {
             await this.vmWrapper.resetProject(this.saveState);
             let result;
@@ -223,9 +223,9 @@ class TestRunner extends EventEmitter {
      * @param {number} rep
      * @return {Promise<string>}
      */
-    async executeUserModelsSequentially(vm, modelTester, project, props, modelProps,
-                                testResults, projectName, totalAssertions,
-                                indices, rep) {
+    async _executeUserModels(vm, modelTester, project, props, modelProps,
+                             testResults, projectName, totalAssertions,
+                             indices, rep) {
         let csv = "";
         for (const uM of indices) {
             this.util = await this._loadProject(vm, project, props);
