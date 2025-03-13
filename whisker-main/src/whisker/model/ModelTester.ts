@@ -125,18 +125,18 @@ export class ModelTester extends EventEmitter {
     /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      * @param t Instance of the test driver for this test run.
-     * @param UMIndex Index of the UserModel to use for generating input.
+     * @param umIndex Index of the UserModel to use for generating input.
      *                       If the index is not valid all UserModels are used.
      */
-    prepareModel(t: TestDriver, UMIndex = -1): void {
+    prepareModel(t: TestDriver, umIndex = -1): void {
         // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
         Container.testDriver = t;
 
         let allModels: (ProgramModel | EndModel | UserModel)[];
-        if (0 <= UMIndex && UMIndex < this.userModelCount) {
-            this._runningUserModel = this._userModels[UMIndex];
+        if (0 <= umIndex && umIndex < this.userModelCount) {
+            this._runningUserModel = this._userModels[umIndex];
             allModels = [...this._programModels, this._runningUserModel, ...this._onTestEndModels];
             logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
         } else {
