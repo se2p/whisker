@@ -11,6 +11,7 @@ const CoverageGenerator = require("../coverage/coverage");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
 const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
 const logger = require("../util/logger");
+const {ModelTester} = require("../whisker/model/ModelTester");
 
 class TestRunner extends EventEmitter {
 
@@ -475,7 +476,7 @@ class TestRunner extends EventEmitter {
      * @private
      */
     async _executeTest(vm, test, modelTester, props,
-                       modelProps, defaultTimeoutPerTest = 0, userModelIndex = -1) {
+                       modelProps, defaultTimeoutPerTest = 0, userModelIndex = ModelTester.NO_USER_MODEL) {
         const result = new TestResult(test);
         const testDriver = this.util.getTestDriver(
             {

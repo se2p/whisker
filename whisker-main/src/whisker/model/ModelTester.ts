@@ -28,6 +28,7 @@ export class ModelTester extends EventEmitter {
     private _result: ModelResult | null;
     private _testDriver: TestDriver | null;
 
+    public static readonly NO_USER_MODEL = -1;
     static readonly MODEL_LOAD_ERROR = "ModelLoadError";
     static readonly MODEL_LOG = "ModelLog";
     static readonly MODEL_WARNING = "ModelWarning";
@@ -128,7 +129,7 @@ export class ModelTester extends EventEmitter {
      * @param umIndex Index of the UserModel to use for generating input.
      *                       If the index is not valid all UserModels are used.
      */
-    prepareModel(t: TestDriver, umIndex = -1): void {
+    prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
         // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
@@ -140,6 +141,9 @@ export class ModelTester extends EventEmitter {
             allModels = [...this._programModels, this._runningUserModel, ...this._onTestEndModels];
             logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
         } else {
+            if (umIndex !== ModelTester.NO_USER_MODEL) {
+                throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
+            }
             this._runningUserModel = null;
             allModels = [...this._programModels, ...this._onTestEndModels];
         }
