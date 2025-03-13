@@ -21,7 +21,7 @@ export class ModelTester extends EventEmitter {
 
     private _programModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
-    private _runningUserModel: UserModel = undefined;
+    private _runningUserModel: UserModel = null;
     private _onTestEndModels: EndModel[] = [];
 
     private _checkUtility: CheckUtility | null;
@@ -140,7 +140,7 @@ export class ModelTester extends EventEmitter {
             allModels = [...this._programModels, this._runningUserModel, ...this._onTestEndModels];
             logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
         } else {
-            this._runningUserModel = undefined;
+            this._runningUserModel = null;
             allModels = [...this._programModels, ...this._onTestEndModels];
         }
         this._result = new ModelResult();
@@ -153,7 +153,7 @@ export class ModelTester extends EventEmitter {
             model.reset();
             model.registerComponents(this._checkUtility!, t);
         });
-        if (this._runningUserModel != undefined) {
+        if (this._runningUserModel != null) {
             this._userInputGen();
         }
 
