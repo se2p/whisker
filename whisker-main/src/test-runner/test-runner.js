@@ -141,7 +141,7 @@ class TestRunner extends EventEmitter {
             const res = await this._executeTests(vm, tests, modelTester, props, modelProps,
                 resultRecords, testStatusResults, testResults,
                 startTime, projectName, totalAssertions,
-                60000, false);
+                60000, true);
             if (res == null) {
                 return null;
             }
