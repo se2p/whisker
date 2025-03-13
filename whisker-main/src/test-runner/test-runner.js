@@ -113,7 +113,7 @@ class TestRunner extends EventEmitter {
                     csv += await this._executeTests(vm, tests, modelTester, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectMutation, totalAssertions,
-                        60000, false);
+                        600000, false);
                 } else {
                     csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
                         testResults, projectMutation, totalAssertions, indices, 0);
