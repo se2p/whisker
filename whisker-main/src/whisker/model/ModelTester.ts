@@ -18,6 +18,7 @@ import {Checks} from "./util/Checks";
 import {Check} from "./checks/newCheck";
 import TestResult from "../../test-runner/test-result";
 import Test from "../../test-runner/test";
+import {Model} from "./components/AbstractModel";
 
 export class ModelTester extends EventEmitter {
 
@@ -162,18 +163,18 @@ export class ModelTester extends EventEmitter {
         this._testDriver = t;
         Container.testDriver = t;
 
-        let allModels: (ProgramModel | EndModel | UserModel)[];
+        const allModels: Model[] = [...this._programModels, ...this._onTestEndModels];
+
         if (0 <= umIndex && umIndex < this.userModelCount) {
             this._runningUserModel = this._userModels[umIndex];
-            allModels = [...this._programModels, this._runningUserModel, ...this._onTestEndModels];
+            allModels.push(this._runningUserModel);
             logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
-        } else {
-            if (umIndex !== ModelTester.NO_USER_MODEL) {
-                throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
-            }
+        } else if (umIndex === ModelTester.NO_USER_MODEL) {
             this._runningUserModel = null;
-            allModels = [...this._programModels, ...this._onTestEndModels];
+        } else {
+            throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
         }
+
         this._result = new ModelResult();
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
         this._checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this._onVMEvent.bind(this));
