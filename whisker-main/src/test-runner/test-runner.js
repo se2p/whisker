@@ -37,7 +37,6 @@ class TestRunner extends EventEmitter {
      */
     async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
-        const indices = modelTester.userModelCount > 0 ? [...Array(modelTester.userModelCount).keys()] : [-1];
         if (!modelProps.repetitions) {
             modelProps.repetitions = 1;
         }
@@ -117,7 +116,7 @@ class TestRunner extends EventEmitter {
                         600000, false);
                 } else {
                     csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
-                        testResults, projectMutation, totalAssertions, indices, 0);
+                        testResults, projectMutation, totalAssertions, 0);
                 }
 
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
@@ -131,7 +130,7 @@ class TestRunner extends EventEmitter {
             this.util = await this._loadProject(vm, project, props);
             for (let i = 0; i < modelProps.repetitions; i++) {
                 csv += await this._executeUserModels(vm, modelTester, project, props, modelProps,
-                    testResults, projectName, totalAssertions, indices, i);
+                    testResults, projectName, totalAssertions, i);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -220,14 +219,13 @@ class TestRunner extends EventEmitter {
      * @param {TestResult[]} testResults
      * @param {string} projectName
      * @param {number} totalAssertions
-     * @param {number[]} indices
      * @param {number} rep
      * @return {Promise<string>}
      */
     async _executeUserModels(vm, modelTester, project, props, modelProps,
-                             testResults, projectName, totalAssertions,
-                             indices, rep) {
+                             testResults, projectName, totalAssertions, rep) {
         let csv = "";
+        const indices = modelTester.userModelCount > 0 ? [...Array(modelTester.userModelCount).keys()] : [-1];
         for (const uM of indices) {
             this.util = await this._loadProject(vm, project, props);
             const startTime = Date.now();
