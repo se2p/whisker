@@ -115,8 +115,8 @@ class TestRunner extends EventEmitter {
                         startTime, projectMutation, totalAssertions,
                         60000, false);
                 } else {
-                    csv += await this.executeUserModelsSequentially(vm, modelTester, props, modelProps,
-                        testResults, projectName, totalAssertions, indices, 0);
+                    csv += await this.executeUserModelsSequentially(vm, modelTester, mutant, props, modelProps,
+                        testResults, projectMutation, totalAssertions, indices, 0);
                 }
 
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
@@ -127,8 +127,9 @@ class TestRunner extends EventEmitter {
             this._initialiseFitnessTargets(vm);
             // test only by models
 
+            this.util = await this._loadProject(vm, project, props);
             for (let i = 0; i < modelProps.repetitions; i++) {
-                csv += await this.executeUserModelsSequentially(vm, modelTester, props, modelProps,
+                csv += await this.executeUserModelsSequentially(vm, modelTester, project, props, modelProps,
                     testResults, projectName, totalAssertions, indices, i);
             }
             finalResults[projectName] = testResults;
@@ -211,6 +212,7 @@ class TestRunner extends EventEmitter {
      * Executes the UserModels loaded in {@linkcode modelTester}
      * @param {VirtualMachine} vm
      * @param {ModelTester} modelTester
+     * @param {ScratchMutant | string} project
      * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
      * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
      * @param {{duration: number, repetitions: number}} modelProps
@@ -221,11 +223,12 @@ class TestRunner extends EventEmitter {
      * @param {number} i
      * @return {Promise<string>}
      */
-    async executeUserModelsSequentially(vm, modelTester, props, modelProps,
+    async executeUserModelsSequentially(vm, modelTester, project, props, modelProps,
                                 testResults, projectName, totalAssertions,
                                 indices, i = 0) {
+        let csv = "";
         for (const uM of indices) {
-            await this.vmWrapper.resetProject(this.saveState);
+            this.util = await this._loadProject(vm, project, props);
             const startTime = Date.now();
             const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
             result.modelResult.testNbr = i * modelTester.userModelCount + uM;
@@ -236,9 +239,10 @@ class TestRunner extends EventEmitter {
             const coverage = this._extractCoverage();
             const modelResults = this._extractModelCSVData(result.modelResult);
             const seed = Randomness.scratchSeed;
-            return this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
+            csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
                 duration, undefined, modelResults);
         }
+        return csv;
     }
 
     /**
