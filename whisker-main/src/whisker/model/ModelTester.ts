@@ -16,17 +16,22 @@ import {loadModels} from "./util/loadModels";
 import {ModelJSON} from "./util/schema";
 import {Checks} from "./util/Checks";
 import {Check} from "./checks/newCheck";
+import TestResult from "../../test-runner/test-result";
+import Test from "../../test-runner/test";
+import {Model} from "./components/AbstractModel";
 
 export class ModelTester extends EventEmitter {
 
     private _programModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
+    private _runningUserModel: UserModel = null;
     private _onTestEndModels: EndModel[] = [];
 
     private _checkUtility: CheckUtility | null;
     private _result: ModelResult | null;
     private _testDriver: TestDriver | null;
 
+    public static readonly NO_USER_MODEL = -1;
     static readonly MODEL_LOAD_ERROR = "ModelLoadError";
     static readonly MODEL_LOG = "ModelLog";
     static readonly MODEL_WARNING = "ModelWarning";
@@ -53,6 +58,31 @@ export class ModelTester extends EventEmitter {
         this._modelStepCallback = null;
         this._onTestEndCallback = null;
         this._haltAllCallback = null;
+    }
+
+    async executeModelsWithoutTest(testDriver: TestDriver, duration: number, result: TestResult,
+                                   userModelIndex: number): Promise<void> {
+        if (!this.someModelLoaded()) {
+            return;
+        }
+        this.prepareModel(testDriver, userModelIndex);
+        // Start the test run with either a maximal duration or until the model stops
+        try {
+            await testDriver.runUntil(() => {
+                return !this.running();
+            }, duration);
+
+            // TODO: Refactor coverage computation for model executions to be similar to test executions.
+            result.modelResult = this.stopAndGetModelResult();
+            result.status = result.modelResult.errors.length > 0
+                ? Test.ERROR
+                : result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
+        } catch (e) {
+            // probably run aborted
+            logger.error(e);
+            result.modelResult = this.stopAndGetModelResult();
+            result.status = Test.ERROR;
+        }
     }
 
     /**
@@ -96,6 +126,10 @@ export class ModelTester extends EventEmitter {
         return this._userModels.length > 0;
     }
 
+    get userModelCount(): number {
+        return this._userModels.length;
+    }
+
     running(): boolean {
         if (!this._isRunning) {
             return false;
@@ -120,14 +154,27 @@ export class ModelTester extends EventEmitter {
     /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      * @param t Instance of the test driver for this test run.
+     * @param umIndex Index of the UserModel to use for generating input.
+     *                       If the index is not valid all UserModels are used.
      */
-    prepareModel(t: TestDriver): void {
+    prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
         // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
         Container.testDriver = t;
 
-        const allModels = [...this._programModels, ...this._userModels, ...this._onTestEndModels];
+        const allModels: Model[] = [...this._programModels, ...this._onTestEndModels];
+
+        if (0 <= umIndex && umIndex < this.userModelCount) {
+            this._runningUserModel = this._userModels[umIndex];
+            allModels.push(this._runningUserModel);
+            logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
+        } else if (umIndex === ModelTester.NO_USER_MODEL) {
+            this._runningUserModel = null;
+        } else {
+            throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
+        }
+
         this._result = new ModelResult();
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
         this._checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this._onVMEvent.bind(this));
@@ -138,7 +185,9 @@ export class ModelTester extends EventEmitter {
             model.reset();
             model.registerComponents(this._checkUtility!, t);
         });
-        this._userInputGen();
+        if (this._runningUserModel != null) {
+            this._userInputGen();
+        }
 
         this._modelStepCallback = this._addModelCallback(() => this._onModelStep(), true, "modelStep");
         this._onTestEndCallback = this._addModelCallback(() => this._onTestEnd(), true, "stopModelsCheck");
@@ -198,9 +247,7 @@ export class ModelTester extends EventEmitter {
             model.setTransitionsStartTo(steps);
             model.programEndStep = steps;
         });
-        this._userModels.forEach(model => {
-            model.stepNbrOfProgramEnd = steps;
-        });
+        this._runningUserModel.stepNbrOfProgramEnd = steps;
         this._onTestEndCallback!.enable();
     }
 
@@ -223,28 +270,16 @@ export class ModelTester extends EventEmitter {
     }
 
     private _userInputGen() {
-        if (!this.userModelsLoaded()) {
-            return;
-        }
-
         const userInputFun = () => {
-            const notStoppedUserModels: UserModel[] = [];
-            this._userModels.forEach(model => {
-                const edge = model.makeOneTransition(this._testDriver!, this._checkUtility!);
-                if (edge instanceof UserModelEdge) {
-                    edge.inputImmediate(this._testDriver!);
-                }
-                if (!model.stopped()) {
-                    notStoppedUserModels.push(model);
-                }
-            });
-            if (notStoppedUserModels.length == 0) {
-                // logger.debug("Input generation per user models stopped.");
+            const edge = this._runningUserModel.makeOneTransition(this._testDriver!, this._checkUtility!);
+            if (edge instanceof UserModelEdge) {
+                edge.inputImmediate(this._testDriver!);
+            }
+            if (this._runningUserModel.stopped()) {
                 callback.disable();
             }
         };
         const callback = this._addModelCallback(userInputFun, false, "inputOfUserModel");
-        return callback;
     }
 
     private _addModelCallback(fun: () => void, afterStep = false, name: string) {
@@ -313,7 +348,7 @@ export class ModelTester extends EventEmitter {
     /**
      * Get the result of the test run as a ModelResult.
      */
-    stopAndGetModelResult(testDriver: TestDriver): ModelResult {
+    stopAndGetModelResult(): ModelResult {
         this._isRunning = false;
         this._checkUtility!.stop();
         this._modelStepCallback!.disable();
@@ -322,12 +357,12 @@ export class ModelTester extends EventEmitter {
         const models = [...this._programModels, ...this._onTestEndModels];
         models.forEach(model => {
             if (model.stopped()) {
-                // logger.debug("Model '" + model.id + "' stopped.");
+                // logger.debug(`Model '${model.id}' stopped.`);
                 this._result!.log.push("Model '" + model.id + "' stopped.");
                 this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
             }
         });
-        const sprites = testDriver.getSprites(() => true, false);
+        const sprites = this._testDriver!.getSprites(() => true, false);
         const log = [];
         log.push("--- State of variables:");
 
@@ -387,5 +422,29 @@ export class ModelTester extends EventEmitter {
         logger.error("EFFECTS CONTRADICTING", output);
         this._result!.log.push("EFFECTS CONTRADICTING" + output);
         this.emit(ModelTester.MODEL_WARNING, output);
+    }
+
+    /**
+     * Prepares the modelTester for testing if it has any models loaded.
+     * @param modelTester ModelTester with at least one model loaded.
+     * @param testDriver TestDriver for evaluating checks.
+     * @param userModelIndex Index of the UserModel to use for this run.
+     */
+    public static prepare(modelTester: ModelTester | null, testDriver: TestDriver, userModelIndex: number): void {
+        if (modelTester && modelTester.someModelLoaded()) {
+            modelTester.prepareModel(testDriver, userModelIndex);
+        }
+    }
+
+    /**
+     * Stops the ModelTester sets the {@linkcode result.modelResult} attribute if a ModelTester with some loaded model
+     * is given.
+     * @param modelTester ModelTester or null if no models are required.
+     * @param result Result to be updated with the model results.
+     */
+    public static stopModelsAndUpdateResult(modelTester: ModelTester | null, result: TestResult): void {
+        if (modelTester && modelTester.someModelLoaded()) {
+            result.modelResult = modelTester.stopAndGetModelResult();
+        }
     }
 }

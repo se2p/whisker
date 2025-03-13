@@ -39,7 +39,8 @@ async function readModelErrors() {
             return {
                 errorsInModel: errors,
                 failsInModel: fails,
-                modelCoverage: coverage
+                modelCoverage: coverage,
+                loggedOutput: logArray.filter(s => s !== "").join("\n")
             };
         }
     }
@@ -61,128 +62,46 @@ beforeEach(async () => {
 
 // Tests for events during a step with a listener in check utility
 describe('Model tests on multiple events per step', () => {
-    test('color event listener', async () => {
-        await loadProject('test/model/scratch-programs/ColorEvent.sb3',
-            'test/model/model-jsons/ColorEvent.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
 
-    test('Sprite touching event listener', async () => {
-        await loadProject('test/model/scratch-programs/SpriteTouchingEvent.sb3',
-            'test/model/model-jsons/SpriteTouchingEvent.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
+    const table = [
+        ['color event listener', 'ColorEvent', 'ColorEvent', "0", "0", "1.00" ],
+        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', "0", "0", "1.00" ],
+        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', "0", "0", "1.00" ],
+        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', "0", "0", "1.00" ],
+        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', "0", "0", "1.00" ],
+        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', "0", "0", "1.00" ],
+        ['output event listener', 'OutputEvent', 'OutputEvent', "0", "0", "1.00" ],
+        ['variable change event listener', 'VariableEvent', 'VariableEvent', "0", "0", "1.00" ],
+        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', "0", "0", "1.00" ],
+        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', "0", "0", "1.00" ],
+        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', "0", "0", "1.00" ],
+    ]
 
-    test('move event listener (change)', async () => {
-        await loadProject('test/model/scratch-programs/MoveEvent.sb3',
-            'test/model/model-jsons/MoveEventChange.json');
+    it.each(table)('%s', async (name, projectFileName, modelFileName ,errors, fails, coverage ) => {
+        await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
+            `test/model/model-jsons/${modelFileName}.json`);
         await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('move event listener (comp)', async () => {
-        await loadProject('test/model/scratch-programs/MoveEvent.sb3',
-            'test/model/model-jsons/MoveEventComp.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('move event listener (expr)', async () => {
-        await loadProject('test/model/scratch-programs/MoveEvent.sb3',
-            'test/model/model-jsons/MoveEventExpr.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('move event listener (function)', async () => {
-        await loadProject('test/model/scratch-programs/MoveEvent.sb3',
-            'test/model/model-jsons/MoveEventFunction.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('output event listener', async () => {
-        await loadProject('test/model/scratch-programs/OutputEvent.sb3',
-            'test/model/model-jsons/OutputEvent.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('variable change event listener', async () => {
-        await loadProject('test/model/scratch-programs/VariableEvent.sb3',
-            'test/model/model-jsons/VariableEvent.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('any key pressed test', async () => {
-        await loadProject('test/model/scratch-programs/AnyKeyPressed.sb3',
-            'test/model/model-jsons/AnyKeyPressed.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('visual change event listeners', async () => {
-        await loadProject('test/model/scratch-programs/BackgroundChange.sb3',
-            'test/model/model-jsons/BackgroundChange.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
-    }, timeout);
-
-    test('visual change event listeners 2', async () => {
-        await loadProject('test/model/scratch-programs/VisualEvents.sb3',
-            'test/model/model-jsons/VisualEvents.json');
-        await (await page.$('#run-all-tests')).click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBe("1.00");
+        const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
+        expect(errorsInModel).toBe(errors);
+        expect(failsInModel).toBe(fails);
+        expect(modelCoverage).toBe(coverage);
     }, timeout);
 
     test('fruitcatcher with random model input', async () => {
         await loadProject('test/model/scratch-programs/fruitcatcher.sb3',
             'test/model/model-jsons/fruitcatcher-random-fruit.json');
         await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 20);
-        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 3);
+        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 1);
 
         const startTestButton = await page.$('#run-all-tests');
         await startTestButton.click();
-        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
-        await expect(errorsInModel).toBe("0");
-        await expect(failsInModel).toBe("0");
+        const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
+        if (parseInt(errorsInModel, 10) + parseInt(failsInModel, 10) > 0) {
+            console.log(loggedOutput);
+        }
+        expect(errorsInModel).toBe("0");
+        expect(failsInModel).toBe("0");
         // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.8.
-        await expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.45);
+        expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.8);
     })
 });

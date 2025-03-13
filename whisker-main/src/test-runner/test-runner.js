@@ -11,6 +11,7 @@ const CoverageGenerator = require("../coverage/coverage");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
 const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
 const logger = require("../util/logger");
+const {ModelTester} = require("../whisker/model/ModelTester");
 
 class TestRunner extends EventEmitter {
 
@@ -36,6 +37,12 @@ class TestRunner extends EventEmitter {
      */
     async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
+        if (!modelProps.repetitions) {
+            modelProps.repetitions = 1;
+        }
+        if (!modelProps.duration) {
+            modelProps.duration = 35000;
+        }
 
         this.activateTracing(vm, props);
 
@@ -48,7 +55,7 @@ class TestRunner extends EventEmitter {
         // Count number of assertions across all test cases and define a sampleTest used for setting the seed.
         let totalAssertions = 0;
         let sampleTest = undefined;
-        if(tests) {
+        if (tests) {
             sampleTest = tests[0];
             for (const test of tests) {
                 totalAssertions += test.test.toString().split('\n').filter(t => t.includes('t.assert.')).length;
@@ -102,67 +109,28 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
                 this.emit(TestRunner.RESET_TABLE, tests);
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
-                for (const test of tests) {
-                    await this.vmWrapper.resetProject(this.saveState);
-                    let result;
-                    if ("generationAlgorithm" in test) {
-                        resultRecords.generationAlgorithm = test.generationAlgorithm;
-                    }
-
-                    if (test.skip) {
-                        result = new TestResult(test);
-                        result.status = Test.SKIP;
-                        this.emit(TestRunner.TEST_SKIP, result);
-
-                    } else {
-                        // Set timeout of 600000ms = 1min for every test
-                        result = await this._executeTest(vm, test, modelTester, props, modelProps, 600000);
-                        testStatusResults.push(result.status);
-                        this._propagateTestResults(result, resultRecords);
-                    }
-
-                    testResults.push(result);
+                if (tests) {
+                    csv += await this._executeTests(vm, tests, modelTester, props, modelProps,
+                        resultRecords, testStatusResults, testResults,
+                        startTime, projectMutation, totalAssertions,
+                        600000, false);
+                } else {
+                    csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
+                        testResults, projectMutation, totalAssertions, 0);
                 }
 
-                // Record the results
-                const duration = (Date.now() - startTime) / 1000;
-                const coverage = this._extractCoverage();
-                const seed = Randomness.scratchSeed;
-                csv += this._generateCSVRow(projectMutation, seed, totalAssertions, testStatusResults, coverage,
-                    duration, resultRecords);
                 finalResults[projectMutation] = JSON.parse(JSON.stringify(testResults));
                 testResults.length = 0;
-
                 i++;
             }
         } else if (modelTester && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
             // test only by models
 
-            if (!modelProps.repetitions) {
-                modelProps.repetitions = 1;
-            }
-            if (!modelProps.duration) {
-                modelProps.duration = 35000;
-            }
-
+            this.util = await this._loadProject(vm, project, props);
             for (let i = 0; i < modelProps.repetitions; i++) {
-                // TODO: It would be better here to use the loadSaveState function.
-                //  However there seem to be timing issues with the models.
-                this.util = await this._loadProject(vm, project, props);
-                const startTime = Date.now();
-                let result = await this._executeTest(vm, undefined, modelTester, props, modelProps);
-                result.modelResult.testNbr = i;
-                this.emit(TestRunner.TEST_MODEL, result);
-                testResults.push(result);
-
-                // Record the results
-                const duration = (Date.now() - startTime) / 1000;
-                const coverage = this._extractCoverage();
-                const modelResults = this._extractModelCSVData(result.modelResult);
-                const seed = Randomness.scratchSeed;
-                csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
-                    duration, undefined, modelResults);
+                csv += await this._executeUserModels(vm, modelTester, project, props, modelProps,
+                    testResults, projectName, totalAssertions, i);
             }
             finalResults[projectName] = testResults;
         } else {
@@ -170,36 +138,14 @@ class TestRunner extends EventEmitter {
             // test case as long as the test case runs or the model stops.
             this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
-            for (const test of tests) {
-                await this.vmWrapper.resetProject(this.saveState);
-                let result;
-                if ("generationAlgorithm" in test) {
-                    resultRecords.generationAlgorithm = test.generationAlgorithm;
-                }
-
-                if (test.skip) {
-                    result = new TestResult(test);
-                    result.status = Test.SKIP;
-                    this.emit(TestRunner.TEST_SKIP, result);
-
-                } else {
-                    result = await this._executeTest(vm, test, modelTester, props, modelProps);
-                    testStatusResults.push(result.status);
-                    this._propagateTestResults(result, resultRecords);
-                }
-
-                testResults.push(result);
-
-                if (this.aborted) {
-                    return null;
-                }
+            const res = await this._executeTests(vm, tests, modelTester, props, modelProps,
+                resultRecords, testStatusResults, testResults,
+                startTime, projectName, totalAssertions,
+                0, true);
+            if (res == null) {
+                return null;
             }
-            // Record the results
-            const duration = (Date.now() - startTime) / 1000;
-            const seed = Randomness.scratchSeed;
-            const coverage = this._extractCoverage();
-            csv += this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults,
-                coverage, duration, resultRecords);
+            csv += res;
             finalResults[projectName] = testResults;
         }
 
@@ -207,6 +153,95 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_END, finalResults);
         return [finalResults, csv, generatedMutants];
+    }
+
+    /**
+     *
+     * @param {VirtualMachine} vm
+     * @param {Test[]} tests
+     * @param {ModelTester} modelTester
+     * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
+     * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
+     * @param {{duration: number, repetitions: number}} modelProps
+     * @param {{}} resultRecords
+     * @param {(?string)[]} testStatusResults
+     * @param {TestResult[]} testResults
+     * @param {number} startTime
+     * @param {string} projectName
+     * @param {number} totalAssertions
+     * @param {number} defaultTimeoutPerTest
+     * @param {boolean} canBeAborted
+     * @return {Promise<string|null>}
+     */
+    async _executeTests(vm, tests, modelTester, props, modelProps,
+                        resultRecords, testStatusResults, testResults,
+                        startTime, projectName, totalAssertions,
+                        defaultTimeoutPerTest, canBeAborted) {
+        for (const test of tests) {
+            await this.vmWrapper.resetProject(this.saveState);
+            let result;
+            if ("generationAlgorithm" in test) {
+                resultRecords.generationAlgorithm = test.generationAlgorithm;
+            }
+
+            if (test.skip) {
+                result = new TestResult(test);
+                result.status = Test.SKIP;
+                this.emit(TestRunner.TEST_SKIP, result);
+
+            } else {
+                result = await this._executeTest(vm, test, modelTester, props, modelProps, defaultTimeoutPerTest);
+                testStatusResults.push(result.status);
+                this._propagateTestResults(result, resultRecords);
+            }
+
+            testResults.push(result);
+
+            if (canBeAborted && this.aborted) {
+                return null;
+            }
+        }
+        const duration = (Date.now() - startTime) / 1000;
+        const seed = Randomness.scratchSeed;
+        const coverage = this._extractCoverage();
+        return this._generateCSVRow(projectName, seed, totalAssertions, testStatusResults, coverage,
+            duration, resultRecords);
+    }
+
+    /**
+     * Executes the UserModels loaded in {@linkcode modelTester}
+     * @param {VirtualMachine} vm
+     * @param {ModelTester} modelTester
+     * @param {ScratchMutant | string} project
+     * @param {{accelerationFactor, seed, projectName, mutators, mutationBudget, maxMutants, mutantDownload,
+     * log, traceBlockCoverage, traceBranchCoverage, traceAttributes, traceDebug}} props .
+     * @param {{duration: number, repetitions: number}} modelProps
+     * @param {TestResult[]} testResults
+     * @param {string} projectName
+     * @param {number} totalAssertions
+     * @param {number} rep
+     * @return {Promise<string>}
+     */
+    async _executeUserModels(vm, modelTester, project, props, modelProps,
+                             testResults, projectName, totalAssertions, rep) {
+        let csv = "";
+        const indices = modelTester.userModelCount > 0 ? [...Array(modelTester.userModelCount).keys()] : [-1];
+        for (const uM of indices) {
+            this.util = await this._loadProject(vm, project, props);
+            const startTime = Date.now();
+            const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
+            result.modelResult.testNbr = Math.min(0, rep * modelTester.userModelCount + uM);
+            this.emit(TestRunner.TEST_MODEL, result);
+            testResults.push(result);
+            // Record the results
+            const duration = (Date.now() - startTime) / 1000;
+            const coverage = this._extractCoverage();
+            const modelResults = this._extractModelCSVData(result.modelResult);
+            const seed = Randomness.scratchSeed;
+            csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
+                duration, undefined, modelResults);
+        }
+        return csv;
     }
 
     /**
@@ -226,12 +261,12 @@ class TestRunner extends EventEmitter {
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
-        else if (test !== undefined && "seed" in test){
+        else if (test !== undefined && "seed" in test) {
             Randomness.setInitialSeeds(test.seed);
             seedDateObject = true;
         }
 
-        // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
+            // If no seed is specified via the CLI or saved in the test use Date.now() as RNG-Seed
         // but only set it once to keep consistent if several test runs are executed at once
         else if (Randomness.getInitialRNGSeed() === undefined) {
             Randomness.setInitialSeeds(Date.now());
@@ -244,8 +279,8 @@ class TestRunner extends EventEmitter {
      * Validates whether the test generation seed and the test execution seed are equivalent.
      * @param {Test} test
      */
-    _checkSeed(test){
-        if(test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()){
+    _checkSeed(test) {
+        if (test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()) {
             logger.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
@@ -254,7 +289,7 @@ class TestRunner extends EventEmitter {
      * @param {Array.<(object|Function)>} tests .
      * @returns {Test[]} .
      */
-    static convertTests (tests) {
+    static convertTests(tests) {
         return tests.map(test => new Test(test));
     }
 
@@ -409,10 +444,10 @@ class TestRunner extends EventEmitter {
      * @return {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}}
      * @private
      */
-    _extractModelCSVData(modelResults){
+    _extractModelCSVData(modelResults) {
         let achievedModelCoverage = 0;
         let totalModelCoverage = 0;
-        for(const coverages of Object.values(modelResults.coverage)){
+        for (const coverages of Object.values(modelResults.coverage)) {
             achievedModelCoverage += coverages.covered.length;
             totalModelCoverage += coverages.total;
         }
@@ -433,12 +468,13 @@ class TestRunner extends EventEmitter {
      * @param {{extend: object}} props .
      * @param {number} defaultTimeoutPerTest .
      *
-     * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
+     * @param {duration:number,repetitions:number} modelProps
+     * @param userModelIndex index of the used UserModel
      * @returns {Promise<TestResult>} .
      * @private
      */
     async _executeTest(vm, test, modelTester, props,
-                       modelProps, defaultTimeoutPerTest = 0) {
+                       modelProps, defaultTimeoutPerTest = 0, userModelIndex = ModelTester.NO_USER_MODEL) {
         const result = new TestResult(test);
         const testDriver = this.util.getTestDriver(
             {
@@ -461,11 +497,9 @@ class TestRunner extends EventEmitter {
         this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
-        if (modelTester && modelTester.someModelLoaded()) {
-            modelTester.prepareModel(testDriver, modelProps.caseSensitive);
-        }
 
         if (test) {
+            ModelTester.prepare(modelTester, testDriver);
             try {
                 // Use the default timeout (given as function parameter), unless the test specifies its own timeout.
                 const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeoutPerTest;
@@ -499,33 +533,11 @@ class TestRunner extends EventEmitter {
                     result.status = Test.ERROR;
                 }
             }
-
-            if (modelTester && modelTester.someModelLoaded()) {
-                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
-            }
-
+            ModelTester.stopModelsAndUpdateResult(modelTester, result);
             await this._determineCoverages(test, props);
 
         } else if (modelTester && modelTester.someModelLoaded()) {
-            // Start the test run with either a maximal duration or until the model stops
-            try {
-                await testDriver.runUntil(() => {
-                    return !modelTester.running();
-                }, modelProps.duration);
-
-                // TODO: Refactor coverage computation for model executions to be similar to test executions.
-                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
-                if (result.modelResult.errors.length > 0) {
-                    result.status = Test.ERROR;
-                } else {
-                    result.status = result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
-                }
-            } catch (e) {
-                // probably run aborted
-                logger.error(e);
-                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
-                result.status = Test.ERROR;
-            }
+            await modelTester.executeModelsWithoutTest(testDriver, modelProps.duration, result, userModelIndex);
         }
 
         // If desired, save execution trace after executing each block.
@@ -609,7 +621,7 @@ class TestRunner extends EventEmitter {
      * @param {string} message .
      * @private
      */
-    _log (test, message) {
+    _log(test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
 
@@ -624,70 +636,70 @@ class TestRunner extends EventEmitter {
     /**
      * @returns {string} .
      */
-    static get RUN_START () {
+    static get RUN_START() {
         return 'runStart';
     }
 
     /**
      * @returns {string} .
      */
-    static get RUN_END () {
+    static get RUN_END() {
         return 'runEnd';
     }
 
     /**
      * @returns {string} .
      */
-    static get RUN_CANCEL () {
+    static get RUN_CANCEL() {
         return 'runCancel';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_START () {
+    static get TEST_START() {
         return 'testStart';
     }
 
     /**
      * @return {string}
      */
-    static get TEST_MODEL () {
+    static get TEST_MODEL() {
         return 'testModel';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_PASS () {
+    static get TEST_PASS() {
         return 'testPass';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_FAIL () {
+    static get TEST_FAIL() {
         return 'testFail';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_ERROR () {
+    static get TEST_ERROR() {
         return 'testError';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_SKIP () {
+    static get TEST_SKIP() {
         return 'testSkip';
     }
 
     /**
      * @returns {string} .
      */
-    static get TEST_LOG () {
+    static get TEST_LOG() {
         return 'testLog';
     }
 

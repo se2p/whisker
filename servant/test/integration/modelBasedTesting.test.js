@@ -16,40 +16,40 @@ describe('Servant: Model-Based Testing', () => {
         ]);
 
         const expectedCoverage =
-            "Coverage:\n" +
-            " # coverage:\n" +
-            "#   combined: 0.80 (43/54)\n" +
-            "#   individual:\n" +
-            "#     Stage: 1.00 (6/6)\n" +
-            "#     Bowl: 0.80 (8/10)\n" +
-            "#     Apple: 0.87 (13/15)\n" +
-            "#     Bananas: 0.70 (16/23)";
+`Coverage:
+ # coverage:
+#   combined: 0.85 (46/54)
+#   individual:
+#     Stage: 1.00 (6/6)
+#     Bowl: 0.80 (8/10)
+#     Apple: 0.93 (14/15)
+#     Bananas: 0.78 (18/23)`
 
         const expectedModelCoverage =
-            "Model coverage:\n" +
-            " # modelCoverage:\n" +
-            "#   combined: 0.71 (58/82)\n" +
-            "#   individual:\n" +
-            "#     bowl: 0.67 (4/6)\n" +
-            "#     apple: 0.75 (3/4)\n" +
-            "#     appleStop: 0.60 (3/5)\n" +
-            "#     bananasR: 0.50 (3/6)\n" +
-            "#     bananasB: 0.67 (4/6)\n" +
-            "#     init: 1.00 (2/2)\n" +
-            "#     timer: 0.50 (1/2)\n" +
-            "#     timer2: 1.00 (3/3)\n" +
-            "#     points: 0.82 (9/11)\n" +
-            "#     spawnApple: 1.00 (3/3)\n" +
-            "#     spawnBanan: 1.00 (1/1)\n" +
-            "#     bananFalling: 1.00 (2/2)\n" +
-            "#     threeApples: 0.75 (3/4)\n" +
-            "#     threeBananas: 0.75 (3/4)\n" +
-            "#     appleState: 1.00 (2/2)\n" +
-            "#     bananState: 1.00 (3/3)\n" +
-            "#     bananas2: 0.57 (4/7)\n" +
-            "#     bananOnRed: 0.43 (3/7)\n" +
-            "#     bowlMove: 1.00 (2/2)\n" +
-            "#     end: 0.00 (0/2)";
+`Model coverage:
+ # modelCoverage:
+#   combined: 0.80 (66/82)
+#   individual:
+#     bowl: 0.67 (4/6)
+#     apple: 1.00 (4/4)
+#     appleStop: 0.80 (4/5)
+#     bananasR: 0.83 (5/6)
+#     bananasB: 0.83 (5/6)
+#     init: 1.00 (2/2)
+#     timer: 0.50 (1/2)
+#     timer2: 1.00 (3/3)
+#     points: 0.91 (10/11)
+#     spawnApple: 1.00 (3/3)
+#     spawnBanan: 1.00 (1/1)
+#     bananFalling: 1.00 (2/2)
+#     threeApples: 0.75 (3/4)
+#     threeBananas: 0.75 (3/4)
+#     appleState: 1.00 (2/2)
+#     bananState: 1.00 (3/3)
+#     bananas2: 0.71 (5/7)
+#     bananOnRed: 0.57 (4/7)
+#     bowlMove: 1.00 (2/2)
+#     end: 0.00 (0/2)`;
 
 
         expect(result.error).toBeNull();
