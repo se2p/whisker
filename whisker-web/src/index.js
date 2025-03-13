@@ -313,7 +313,6 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         duration = duration * 1000;
     }
     const repetitions = Number(document.querySelector('#model-repetitions').value);
-    const caseSensitive = $('#model-case-sensitive').is(':checked');
 
     const props = {
         accelerationFactor: $('#acceleration-value').text(),
@@ -342,7 +341,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         CoverageGenerator.prepareVM(vm);
 
         [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
-            Whisker.modelTester, props, {duration, repetitions, caseSensitive});
+            Whisker.modelTester, props, {duration, repetitions});
         coverage = CoverageGenerator.getCoverage();
         Whisker.outputLog.println(csvResults);
 

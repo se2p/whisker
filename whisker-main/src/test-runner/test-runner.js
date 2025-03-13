@@ -470,7 +470,7 @@ class TestRunner extends EventEmitter {
      * @param {{extend: object}} props .
      * @param {number} defaultTimeoutPerTest .
      *
-     * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
+     * @param {duration:number,repetitions:number} modelProps
      * @param userModelIndex index of the used UserModel
      * @returns {Promise<TestResult>} .
      * @private
