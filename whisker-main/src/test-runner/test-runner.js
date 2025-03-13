@@ -220,18 +220,18 @@ class TestRunner extends EventEmitter {
      * @param {string} projectName
      * @param {number} totalAssertions
      * @param {number[]} indices
-     * @param {number} i
+     * @param {number} rep
      * @return {Promise<string>}
      */
     async executeUserModelsSequentially(vm, modelTester, project, props, modelProps,
                                 testResults, projectName, totalAssertions,
-                                indices, i = 0) {
+                                indices, rep) {
         let csv = "";
         for (const uM of indices) {
             this.util = await this._loadProject(vm, project, props);
             const startTime = Date.now();
             const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
-            result.modelResult.testNbr = i * modelTester.userModelCount + uM;
+            result.modelResult.testNbr = rep * modelTester.userModelCount + uM;
             this.emit(TestRunner.TEST_MODEL, result);
             testResults.push(result);
             // Record the results
