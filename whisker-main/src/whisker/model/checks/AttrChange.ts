@@ -12,25 +12,29 @@ import {CheckResult, fail, pass} from "./CheckResult";
 
 const name = "AttrChange" as const;
 
-export type AttrChangeArgs = [
-    /**
-     * The name of the sprite whose attribute is evaluated
-     */
-    spriteName: SpriteName,
+export const StringAttributeNames = ["currentCostume" , "costume" , "currentCostumeName" , "sayText" , "rotationStyle"] as const;
+export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
+export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
+export const EqOrNeqOPs = ["=", "!="] as const;
+export type StringAttribute = typeof StringAttributeNames[number];
+export type NumberAttribute = typeof NumberAttributeNames[number];
+export type BooleanAttribute = "visible"
+export type Effect = typeof EffectNames[number];
+export type EqOrNeqOp = typeof EqOrNeqOPs[number];
+export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute | "pos" | "effects";
+export type AttrChangeArgs =
+    [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeqOp]
+    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
+    | [spriteName: SpriteName, attrName: "pos", change: EqOrNeqOp]
+    | [spriteName: SpriteName, attrName: "visible", change: EqOrNeqOp]
+    | [spriteName: SpriteName, attrName: "effects", change: EqOrNeqOp];
 
-    /**
-     * Name of the attribute.
-     */
-    attrName: string,
 
-    change: NumberOrChangeOp,
-];
-
-const AttrChangeArgs = z.tuple([
-    SpriteName,
-    AttrName,
-    NumberOrChangeOp,
+const AttrChangeArgs = z.union([
+    z.tuple([SpriteName, AttrName, NumberOrChangeOp,]),
+    z.tuple([])
 ]);
+
 
 export interface AttrChangeJSON extends ICheckJSON {
     name: typeof name;
@@ -45,7 +49,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
-    private readonly _attributeName: string;
+    private readonly _attributeName: AttrNames;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
@@ -148,7 +152,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             || this.change == "=" && pCurrent == pOld
             || this.change == "+=" && currentNumber >= oldNumber
             || this.change == "+" && currentNumber > oldNumber
-            || change && currentNumber - oldNumber == change;
+            || change != null && currentNumber - oldNumber == change;
         return this.negated != result ? pass() : fail(reason);
     }
 

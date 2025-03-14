@@ -29,7 +29,7 @@ describe('constructor', () => {
     });
 
     test('Invalid comparison throws error', () => {
-        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "var", "comp" as ComparisonOp, "value"]}))
+        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "y", "comp" as ComparisonOp, "value"]}))
             .toThrow();
     });
 
@@ -144,16 +144,16 @@ describe('string representations', () => {
 
     describe('toString()', () => {
         const constructorArguments: [CheckName, boolean, ArgType[], string][] = [
-            ["AttrChange", false, ["test", "attr", "-"], "AttrChange(test,attr,-)"],
-            ["AttrComp", true, ["sprite", "attr", ">", "0"], "!AttrComp(sprite,attr,>,0)"],
+            ["AttrChange", false, ["test", "x", "-"], "AttrChange(test,x,-)"],
+            ["AttrComp", true, ["sprite", "x", ">", "0"], "!AttrComp(sprite,x,>,0)"],
             ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
             ["Click", true, ["sprite"], "!Click(sprite)"],
             ["Key", true, ["test"], "!Key(test)"],
             ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
             ["SpriteColor", true, ["sprite", "0", "0", "0"], "!SpriteColor(sprite,0,0,0)"],
             ["SpriteTouching", true, ["sprite1", "sprite2"], "!SpriteTouching(sprite1,sprite2)"],
-            ["VarComp", true, ["sprite", "var", ">", "0"], "!VarComp(sprite,var,>,0)"],
-            ["VarChange", true, ["test", "var", "+"], "!VarChange(test,var,+)"],
+            ["VarComp", true, ["sprite", "y", ">", "0"], "!VarComp(sprite,y,>,0)"],
+            ["VarChange", true, ["test", "y", "+"], "!VarChange(test,y,+)"],
             ["Expr", true, ["test"], "!Expr(test)"],
             ["Probability", true, ["0"], "!Probability(0)"],
             ["TimeElapsed", true, ["1000"], "!TimeElapsed(1000)"],
@@ -176,7 +176,7 @@ describe('check and registerComponent', () => {
     const cu = cuMock.getCheckUtility();
 
     test('Condition.check() returns false before registerComponent()', () => {
-        const condition = new AttrChange(edgeID, {args: ["test", "attr", "-"]});
+        const condition = new AttrChange(edgeID, {args: ["test", "x", "-"]});
         const reason = {message: "The check is not initialized: registerComponents has not been called yet!"};
         expect(condition.check(1, 1)).toStrictEqual(fail(reason));
     });
@@ -262,13 +262,13 @@ describe('Contradictions', () => {
     const optionsSecond = ["+", "+=", "=", "-=", "-"];
 
     function getEffectComparisonChangeCombinations(first: CheckName, second: CheckName): [Check, Check, boolean][] {
-        return getEffectsCombinationsFor("sprite", "var", first, optionsFirst, second, optionsSecond);
+        return getEffectsCombinationsFor("sprite", "y", first, optionsFirst, second, optionsSecond);
     }
 
 
     test("effect.contradicts() throws for null argument", () => {
         expect(() => {
-            const effect = newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]});
+            const effect = newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "x", ">", "0"]});
             effect.contradicts(null);
         }).toThrow();
     });
@@ -287,11 +287,11 @@ describe('Contradictions', () => {
 
         const effects: Check[] = [
             newCheck(edgeID, {name: "Output", negated: true, args: ["sprite", "hi"]}),
-            newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "var", "+"]}),
-            newCheck(edgeID, {name: "AttrChange", negated: true, args: ["test", "attr", "-"]}),
+            newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "y", "+"]}),
+            newCheck(edgeID, {name: "AttrChange", negated: true, args: ["test", "x", "-"]}),
             newCheck(edgeID, {name: "BackgroundChange", negated: true, args: ["test"]}),
-            newCheck(edgeID, {name: "VarComp", negated: true, args: ["sprite", "var", ">", "0"]}),
-            newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "attr", ">", "0"]}),
+            newCheck(edgeID, {name: "VarComp", negated: true, args: ["sprite", "y", ">", "0"]}),
+            newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "x", ">", "0"]}),
             newCheck(edgeID, {name: "Key", negated: true, args: ["right arrow"]}),
             newCheck(edgeID, {name: "Click", negated: true, args: ["sprite"]}),
             newCheck(edgeID, {name: "SpriteColor", negated: true, args: ["sprite", 255, 0, 0]}),
@@ -325,11 +325,11 @@ describe('Contradictions', () => {
 
     describe("contradiction: variable change and comparison", () => {
         test('not the same sprite', () => {
-            const varChange = newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "var", "+"]});
+            const varChange = newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "y", "+"]});
             const varComp = newCheck(edgeID, {
                 name: "VarComp",
                 negated: true,
-                args: ["sprite", "var", ">", "0"]
+                args: ["sprite", "y", ">", "0"]
             });
             assertSymmetricContradiction(varChange, varComp, false);
         });
@@ -338,7 +338,7 @@ describe('Contradictions', () => {
             const varChange = newCheck(edgeID, {
                 name: "VarChange",
                 negated: true,
-                args: ["sprite", "var", "+"]
+                args: ["sprite", "y", "+"]
             });
             const varComp = newCheck(edgeID, {
                 name: "VarComp",
@@ -360,12 +360,12 @@ describe('Contradictions', () => {
             const attrChange = newCheck(edgeID, {
                 name: "AttrChange",
                 negated: true,
-                args: ["test", "var", "+"]
+                args: ["test", "y", "+"]
             });
             const attrComp = newCheck(edgeID, {
                 name: "AttrComp",
                 negated: true,
-                args: ["sprite", "var", ">", "0"]
+                args: ["sprite", "y", ">", "0"]
             });
             assertSymmetricContradiction(attrChange, attrComp, false);
         });
@@ -374,7 +374,7 @@ describe('Contradictions', () => {
             const attrChange = newCheck(edgeID, {
                 name: "AttrChange",
                 negated: true,
-                args: ["sprite", "var", "+"]
+                args: ["sprite", "y", "+"]
             });
             const attrComp = newCheck(edgeID, {
                 name: "AttrComp",
@@ -448,63 +448,63 @@ describe('Contradictions', () => {
 
     describe('contradictions: variable comparison', () => {
         const table: TableEntry[] = [
-            ["VarComp", true, ["sprite", "var", ">", "0"], "VarComp", true, ["sprite", "var", ">", "1"], false],
-            ["VarComp", true, ["sprite", "var", ">", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
-            ["VarComp", true, ["sprite", "var", ">=", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
-            ["VarComp", true, ["sprite2", "var", ">=", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
-            ["VarComp", true, ["sprite", "var2", ">=", "0"], "VarComp", true, ["sprite", "var", ">=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">", "0"], "VarComp", true, ["sprite", "y", ">", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">=", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
+            ["VarComp", true, ["sprite2", "y", ">=", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
+            ["VarComp", true, ["sprite", "var2", ">=", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
 
-            ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", true, ["sprite", "var", "<", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", true, ["sprite", "var", "<=", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<=", "0"], "VarComp", true, ["sprite", "var", "<=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "<", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "<=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "0"], "VarComp", true, ["sprite", "y", "<=", "1"], false],
 
-            ["VarComp", false, ["sprite", "var", "=", "0"], "VarComp", false, ["sprite", "var", "=", "1"], true],
-            ["VarComp", false, ["sprite", "var", "=", "0"], "VarComp", true, ["sprite", "var", "=", "0"], true],
+            ["VarComp", false, ["sprite", "y", "=", "0"], "VarComp", false, ["sprite", "y", "=", "1"], true],
+            ["VarComp", false, ["sprite", "y", "=", "0"], "VarComp", true, ["sprite", "y", "=", "0"], true],
 
-            ["VarComp", true, ["sprite", "var", "=", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
-            ["VarComp", true, ["sprite", "var", "=", "0"], "VarComp", true, ["sprite", "var", "=", "0"], false],
+            ["VarComp", true, ["sprite", "y", "=", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "=", "0"], "VarComp", true, ["sprite", "y", "=", "0"], false],
 
-            ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<", "0"], "VarComp", false, ["sprite", "var", "=", "-1"], true],
-            ["VarComp", true, ["sprite", "var", "<", "2"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", false, ["sprite", "y", "=", "-1"], true],
+            ["VarComp", true, ["sprite", "y", "<", "2"], "VarComp", true, ["sprite", "y", "=", "1"], false],
 
-            ["VarComp", true, ["sprite", "var", "<=", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<=", "2"], "VarComp", true, ["sprite", "var", "=", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<=", "2"], "VarComp", false, ["sprite", "var", "=", "-1"], true],
-            ["VarComp", true, ["sprite", "var", "<=", "1"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "2"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "2"], "VarComp", false, ["sprite", "y", "=", "-1"], true],
+            ["VarComp", true, ["sprite", "y", "<=", "1"], "VarComp", true, ["sprite", "y", "=", "1"], false],
 
-            ["VarComp", true, ["sprite", "var", ">", "1"], "VarComp", true, ["sprite", "var", "=", "1"], false],
-            ["VarComp", true, ["sprite", "var", ">", "1"], "VarComp", false, ["sprite", "var", "=", "2"], true],
-            ["VarComp", true, ["sprite", "var", ">", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">", "1"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">", "1"], "VarComp", false, ["sprite", "y", "=", "2"], true],
+            ["VarComp", true, ["sprite", "y", ">", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
 
-            ["VarComp", true, ["sprite", "var", ">=", "2"], "VarComp", true, ["sprite", "var", "=", "1"], false],
-            ["VarComp", true, ["sprite", "var", ">=", "2"], "VarComp", false, ["sprite", "var", "=", "3"], true],
-            ["VarComp", true, ["sprite", "var", ">=", "0"], "VarComp", true, ["sprite", "var", "=", "1"], false],
-            ["VarComp", true, ["sprite", "var", ">=", "1"], "VarComp", true, ["sprite", "var", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">=", "2"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">=", "2"], "VarComp", false, ["sprite", "y", "=", "3"], true],
+            ["VarComp", true, ["sprite", "y", ">=", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">=", "1"], "VarComp", true, ["sprite", "y", "=", "1"], false],
 
-            ["VarComp", false, ["sprite", "var", "<", "3"], "VarComp", false, ["sprite", "var", ">", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<", "1"], "VarComp", true, ["sprite", "var", ">", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<=", "1"], "VarComp", true, ["sprite", "var", ">=", "1"], true],
-            ["VarComp", false, ["sprite", "var", "<", "1"], "VarComp", false, ["sprite", "var", ">", "1"], true],
-            ["VarComp", true, ["sprite", "var", "<", "-1"], "VarComp", true, ["sprite", "var", ">", "1"], false],
+            ["VarComp", false, ["sprite", "y", "<", "3"], "VarComp", false, ["sprite", "y", ">", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "1"], "VarComp", true, ["sprite", "y", ">", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "1"], "VarComp", true, ["sprite", "y", ">=", "1"], true],
+            ["VarComp", false, ["sprite", "y", "<", "1"], "VarComp", false, ["sprite", "y", ">", "1"], true],
+            ["VarComp", true, ["sprite", "y", "<", "-1"], "VarComp", true, ["sprite", "y", ">", "1"], false],
 
-            ["VarComp", true, ["sprite", "var", "<", "3"], "VarComp", true, ["sprite", "var", ">=", "1"], true],
-            ["VarComp", false, ["sprite", "var", "<", "3"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
-            ["VarComp", true, ["sprite", "var", "<", "1"], "VarComp", true, ["sprite", "var", ">=", "1"], true],
-            ["VarComp", false, ["sprite", "var", "<", "-1"], "VarComp", false, ["sprite", "var", ">=", "1"], true],
+            ["VarComp", true, ["sprite", "y", "<", "3"], "VarComp", true, ["sprite", "y", ">=", "1"], true],
+            ["VarComp", false, ["sprite", "y", "<", "3"], "VarComp", false, ["sprite", "y", ">=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "1"], "VarComp", true, ["sprite", "y", ">=", "1"], true],
+            ["VarComp", false, ["sprite", "y", "<", "-1"], "VarComp", false, ["sprite", "y", ">=", "1"], true],
 
-            ["VarComp", true, ["sprite", "var", "<=", "3"], "VarComp", true, ["sprite", "var", ">", "1"], true],
-            ["VarComp", false, ["sprite", "var", "<=", "1"], "VarComp", false, ["sprite", "var", ">", "1"], true],
-            ["VarComp", false, ["sprite", "var", "<=", "-1"], "VarComp", false, ["sprite", "var", ">", "1"], true],
+            ["VarComp", true, ["sprite", "y", "<=", "3"], "VarComp", true, ["sprite", "y", ">", "1"], true],
+            ["VarComp", false, ["sprite", "y", "<=", "1"], "VarComp", false, ["sprite", "y", ">", "1"], true],
+            ["VarComp", false, ["sprite", "y", "<=", "-1"], "VarComp", false, ["sprite", "y", ">", "1"], true],
 
-            ["VarComp", false, ["sprite", "var", "<=", "3"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
-            ["VarComp", false, ["sprite", "var", "<=", "1"], "VarComp", false, ["sprite", "var", ">=", "1"], false],
-            ["VarComp", false, ["sprite", "var", "<=", "-1"], "VarComp", false, ["sprite", "var", ">=", "1"], true],
+            ["VarComp", false, ["sprite", "y", "<=", "3"], "VarComp", false, ["sprite", "y", ">=", "1"], false],
+            ["VarComp", false, ["sprite", "y", "<=", "1"], "VarComp", false, ["sprite", "y", ">=", "1"], false],
+            ["VarComp", false, ["sprite", "y", "<=", "-1"], "VarComp", false, ["sprite", "y", ">=", "1"], true],
 
-            ["VarComp", false, ["sprite", "var", "=", "3"], "VarComp", false, ["sprite", "var", "!=", "3"], true],
-            ["VarComp", false, ["sprite", "var", "=", "3"], "VarComp", true, ["sprite", "var", "!=", "3"], false],
-            ["VarComp", true, ["sprite", "var", "=", "1"], "VarComp", false, ["sprite", "var", "!=", "1"], false],
-            ["VarComp", true, ["sprite", "var", "=", "1"], "VarComp", true, ["sprite", "var", "!=", "1"], true],
+            ["VarComp", false, ["sprite", "y", "=", "3"], "VarComp", false, ["sprite", "y", "!=", "3"], true],
+            ["VarComp", false, ["sprite", "y", "=", "3"], "VarComp", true, ["sprite", "y", "!=", "3"], false],
+            ["VarComp", true, ["sprite", "y", "=", "1"], "VarComp", false, ["sprite", "y", "!=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "=", "1"], "VarComp", true, ["sprite", "y", "!=", "1"], true],
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
     });
@@ -627,30 +627,30 @@ describe('Contradictions', () => {
 
     describe("contradiction negation attr/var comparison", () => {
         const table: TableEntry[] = [
-            ["AttrComp", true, ["sprite", "var", ">=", "0"], "AttrComp", true, ["sprite", "var", ">=", "0"], false],
-            ["AttrComp", true, ["sprite", "var", ">=", "0"], "AttrComp", false, ["sprite", "var", "<", "0"], false],
-            ["AttrComp", true, ["sprite", "var", ">=", "0"], "AttrComp", true, ["sprite", "var", "<", "0"], true],
+            ["AttrComp", true, ["sprite", "y", ">=", "0"], "AttrComp", true, ["sprite", "y", ">=", "0"], false],
+            ["AttrComp", true, ["sprite", "y", ">=", "0"], "AttrComp", false, ["sprite", "y", "<", "0"], false],
+            ["AttrComp", true, ["sprite", "y", ">=", "0"], "AttrComp", true, ["sprite", "y", "<", "0"], true],
 
-            ["AttrComp", false, ["sprite", "var", ">=", "0"], "AttrComp", true, ["sprite", "var", "<", "0"], false],
-            ["AttrComp", false, ["sprite", "var", ">=", "0"], "AttrComp", false, ["sprite", "var", "<", "0"], false],
+            ["AttrComp", false, ["sprite", "y", ">=", "0"], "AttrComp", true, ["sprite", "y", "<", "0"], false],
+            ["AttrComp", false, ["sprite", "y", ">=", "0"], "AttrComp", false, ["sprite", "y", "<", "0"], false],
 
-            ["AttrComp", false, ["sprite", "var", ">", "0"], "AttrComp", true, ["sprite", "var", ">=", "0"], true],
-            ["AttrComp", false, ["sprite", "var", ">", "0"], "AttrComp", false, ["sprite", "var", ">=", "0"], false],
+            ["AttrComp", false, ["sprite", "y", ">", "0"], "AttrComp", true, ["sprite", "y", ">=", "0"], true],
+            ["AttrComp", false, ["sprite", "y", ">", "0"], "AttrComp", false, ["sprite", "y", ">=", "0"], false],
 
-            ["AttrComp", false, ["sprite", "var", "<", "0"], "AttrComp", true, ["sprite", "var", "<=", "0"], true],
-            ["AttrComp", false, ["sprite", "var", "<", "0"], "AttrComp", false, ["sprite", "var", "<=", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "<", "0"], "AttrComp", true, ["sprite", "y", "<=", "0"], true],
+            ["AttrComp", false, ["sprite", "y", "<", "0"], "AttrComp", false, ["sprite", "y", "<=", "0"], false],
 
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", "<=", "0"], true],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", "<=", "0"], false],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", ">=", "0"], true],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", ">=", "0"], false],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", "<", "0"], false],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", "<", "0"], false],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", ">", "0"], false],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", ">", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", "<=", "0"], true],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<=", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", ">=", "0"], true],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", ">=", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", "<", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", ">", "0"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", ">", "0"], false],
 
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", true, ["sprite", "var", "<=", "2"], true],
-            ["AttrComp", false, ["sprite", "var", "=", "0"], "AttrComp", false, ["sprite", "var", "<=", "2"], false],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", "<=", "2"], true],
+            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<=", "2"], false],
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
     });
@@ -659,11 +659,11 @@ describe('Contradictions', () => {
         const attrComp = newCheck(edgeID, {
             name: "AttrComp",
             negated: false,
-            args: ["sprite", "var", "==", "0"]
+            args: ["sprite", "y", "==", "0"]
         });
 
-        const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "var", "<=", "2"]});
-        const attrComp3 = new AttrComp(edgeID, {args: ["sprite", "var", "<=", "2"]});
+        const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "y", "<=", "2"]});
+        const attrComp3 = new AttrComp(edgeID, {args: ["sprite", "y", "<=", "2"]});
 
         expect(attrComp.testForContradictingWithEvents(new Checks([attrComp2]))).toBe(true);
         expect(attrComp.testForContradictingWithEvents(new Checks([attrComp3]))).toBe(false);
