@@ -100,11 +100,11 @@ export abstract class Chromosome {
 
     /**
      * Computes and returns the fitness of this chromosome using the supplied fitness function.
-     * @param fitnessFunction the fitness function with which to compute the fitness of the
-     *                        chromosome
+     * @param fitnessFunction the fitness function with which to compute the fitness of the chromosome.
+     * @param fitnessKey the key of the fitness function in the covered statements map (mainly used in Neuroevolution).
      * @returns the fitness of this chromosome
      */
-    async getFitness(fitnessFunction: FitnessFunction<this>): Promise<number> {
+    async getFitness(fitnessFunction: FitnessFunction<this>, fitnessKey?: number): Promise<number> {
         if (this._fitnessCache.has(fitnessFunction)) {
             return this._fitnessCache.get(fitnessFunction);
         } else {

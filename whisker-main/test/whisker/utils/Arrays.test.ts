@@ -102,6 +102,29 @@ describe("Arrays", () => {
         expect(array[1]).toBe(3);
     });
 
+    test("Remove all elements from source array", () => {
+        const source = [1, 2, 3, 4, 5, 6];
+        const remove = [2, 4, 6];
+        expect(Arrays.removeAll(source, remove)).toEqual([1, 3, 5]);
+    });
+
+    test("Remove all elements from source array with empty remove array", () => {
+        const source = [1, 2, 3, 4, 5, 6];
+        const remove = [];
+        expect(Arrays.removeAll(source, remove)).toEqual([1, 2, 3, 4, 5, 6]);
+    });
+
+    test("Remove all elements from source array with identical remove array", () => {
+        const source = [1, 2, 3, 4, 5, 6];
+        expect(Arrays.removeAll(source, source)).toEqual([]);
+    });
+
+    test("Remove all elements from source array with duplicates in source array", () => {
+        const source = [1, 2, 2, 3];
+        const remove = [2];
+        expect(Arrays.removeAll(source, remove)).toEqual([1, 3]);
+    });
+
     test("Get distinct array", () => {
         const array = [1, 2, 3, 3];
         const distinct = Arrays.distinct(array);
@@ -122,12 +145,12 @@ describe("Arrays", () => {
         expect(changed.includes(false)).toBeFalsy();
     });
 
-    test("Chunk array", () =>{
-        const array = [1,2,3,4,5,6,7];
+    test("Chunk array", () => {
+        const array = [1, 2, 3, 4, 5, 6, 7];
         const chunkArray = Arrays.chunk(array, 3);
         expect(chunkArray.length).toBe(3);
-        expect(chunkArray[0]).toStrictEqual([1,2,3]);
-        expect(chunkArray[1]).toStrictEqual([4,5,6]);
+        expect(chunkArray[0]).toStrictEqual([1, 2, 3]);
+        expect(chunkArray[1]).toStrictEqual([4, 5, 6]);
         expect(chunkArray[2]).toStrictEqual([7]);
     });
 
@@ -147,9 +170,9 @@ describe("Arrays", () => {
     });
 
     test("Distinct objects by custom defined comparator", () => {
-        const comparator = (a:ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        const comparator = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         const array = [new ClickStageEvent(), new MouseDownEvent(false), new MouseDownEvent(false),
-            new MouseMoveEvent(2,1), new MouseMoveEvent(2, 1), new MouseMoveEvent(10, 10)];
+            new MouseMoveEvent(2, 1), new MouseMoveEvent(2, 1), new MouseMoveEvent(10, 10)];
         const distinct = Arrays.distinctByComparator(array, comparator);
         expect(distinct.length).toBe(3);
         expect(distinct[0].stringIdentifier()).toBe(array[0].stringIdentifier());
@@ -168,7 +191,7 @@ describe("Arrays", () => {
     });
 
 
-    test("Create random Array in range", () =>{
+    test("Create random Array in range", () => {
         const minValue = 10;
         const maxValue = 30;
         const length = 100;

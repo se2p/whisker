@@ -90,4 +90,10 @@ export interface FitnessFunction<C extends Chromosome> {
      * @param chromosome to check the fitness function with
      */
     isCovered(chromosome: Chromosome): Promise<boolean>;
+
+    /**
+     * Defines whether the fitness function is maximizing or minimizing.
+     * @returns true if the fitness function is maximizing, false if it is minimizing.
+     */
+    isMaximizing(): boolean;
 }

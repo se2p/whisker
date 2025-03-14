@@ -1,13 +1,13 @@
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeatParameter} from "../HyperParameter/NeatParameter";
 
 export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
 
     /**
      * The defined search parameters.
      */
-    private readonly _hyperParameter: NeuroevolutionTestGenerationParameter;
+    private readonly _hyperParameter: NeatParameter;
 
     /**
      * The NetworkGenerator used for generating a starting population.
@@ -22,7 +22,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     /**
      * Saves all networks of the current population.
      */
-    protected _networks: C[] = [];
+    private _networks: C[] = [];
 
     /**
      * The average fitness of the current generation. Used for reporting purposes.
@@ -35,7 +35,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     private _bestFitness = 0;
 
     /**
-     * Number of iterations since the highest network fitness has improved.
+     * The number of iterations since the highest network fitness has improved.
      */
     private _highestFitnessLastChanged = 0;
 
@@ -54,7 +54,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
      * @param generator the ChromosomeGenerator used for creating the initial population.
      * @param hyperParameter the defined search parameters
      */
-    protected constructor(generator: ChromosomeGenerator<C>, hyperParameter: NeuroevolutionTestGenerationParameter) {
+    protected constructor(generator: ChromosomeGenerator<C>, hyperParameter: NeatParameter) {
         this._hyperParameter = hyperParameter;
         this._populationSize = hyperParameter.populationSize;
         this._generator = generator;
@@ -84,6 +84,10 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
 
     get networks(): C[] {
         return this._networks;
+    }
+
+    set networks(value: C[]) {
+        this._networks = value;
     }
 
     get bestFitness(): number {
@@ -130,7 +134,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         this._averageFitness = value;
     }
 
-    get hyperParameter(): NeuroevolutionTestGenerationParameter {
+    get hyperParameter(): NeatParameter {
         return this._hyperParameter;
     }
 

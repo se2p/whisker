@@ -6,8 +6,8 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {FitnessFunction} from "../../search/FitnessFunction";
-import logger from "../../../util/logger";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
+import logger from "../../../util/logger";
 
 
 export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -33,7 +33,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         await executor.execute(network);
         network.resetOpenStatement();
         const fitness = await network.targetFitness.getFitness(network);
-        await this.updateUncoveredMap(network);
+        await this.updateUncoveredObjectives(network);
         await executor.resetState();
 
         if (fitness > 0) {
@@ -45,8 +45,8 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
 
-        StatisticsCollector.getInstance().computeStatementCoverage(this.stableCount);
-        StatisticsCollector.getInstance().computeBranchCoverage(this.stableCount);
+        StatisticsCollector.getInstance().computeStatementCoverage();
+        StatisticsCollector.getInstance().computeBranchCoverage();
         return network.fitness;
     }
 
@@ -56,7 +56,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
      * @param timeout the timeout for one playthrough.
      * @param eventSelection the eventSelection method (activation | random).
      */
-    private async checkStableCoverage(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<void> {
+    protected async checkStableCoverage(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<void> {
         // Save some values to recover them later
         const originalSeed = Randomness.scratchSeed;
         const {playTime, score, trace, finalState, coverage} = this.copyNetworkAttributes(network);
@@ -69,8 +69,8 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
             Randomness.setScratchSeed(seed, true);
             const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
             eventSelection === 'random' ? await executor.executeSavedTrace(network) : await executor.execute(network);
-            await this.updateUncoveredMap(network);
-            if (await network.targetFitness.isCovered(network)) {
+            await this.updateUncoveredObjectives(network);
+            if (network.targetFitness && await network.targetFitness.isCovered(network)) {
                 network.fitness++;
             }
             await executor.resetState();
@@ -80,11 +80,14 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         Randomness.setScratchSeed(originalSeed, true);
         this.restoreNetworkAttributes(network, playTime, score, trace, finalState, coverage);
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
-        logger.debug(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`);
+
+        if (network.targetFitness) {
+            logger.debug(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`);
+        }
     }
 
     /**
-     * Makes a copy of relevant network attributes to restore them afterward.
+     * Makes a copy of relevant network attributes to restore them after the robustness check.
      * @param network hosting the relevant network attributes to be copied.
      */
     private copyNetworkAttributes(network: NetworkChromosome) {
@@ -116,24 +119,33 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
     }
 
     /**
-     * Updates the map of uncovered targets by the number of times the given network covered a respective target.
+     * Updates the map of uncovered objectives by tracking how often a given network covered a coverage objective.
      * @param network the network chromosome that has finished its playthrough.
+     * @returns true if the network covered one coverage objective at least once, false otherwise.
      */
-    private async updateUncoveredMap(network: NetworkChromosome): Promise<void> {
+    protected async updateUncoveredObjectives(network: NetworkChromosome): Promise<boolean> {
+        let covered = false;
+
         // Increase the score by 1 if we covered the given statement in the executed scenario as well.
         for (const [fitnessKey, coverCount] of network.openStatementTargets.entries()) {
             const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
             if (await statement.isCovered(network)) {
+                covered = true;
                 network.openStatementTargets.set(fitnessKey, coverCount + 1);
             }
         }
 
         // Update statistics on the number of covered statements and branches
-        await StatisticsCollector.getInstance().updateStatementCoverage(network, this.stableCount);
-        await StatisticsCollector.getInstance().updateBranchCoverage(network, this.stableCount);
+        await StatisticsCollector.getInstance().updateStatementCoverage(network);
+        await StatisticsCollector.getInstance().updateBranchCoverage(network);
+        return covered;
     }
 
     get stableCount(): number {
         return this._stableCount;
+    }
+
+    get earlyStop(): boolean {
+        return this._earlyStop;
     }
 }

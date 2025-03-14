@@ -14,8 +14,8 @@ import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStag
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {
-    NeuroevolutionTestGenerationParameter
-} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+    NeatParameter
+} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatParameter";
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
@@ -33,7 +33,7 @@ describe('Test NeatChromosome', () => {
     let genInputs: InputFeatures;
     let generator: NeatChromosomeGenerator;
     let chromosome: NeatChromosome;
-    let properties: NeuroevolutionTestGenerationParameter;
+    let properties: NeatParameter;
     const activationFunction = ActivationFunction.SIGMOID;
 
     // Helper function for generating a sample chromosome.
@@ -101,7 +101,7 @@ describe('Test NeatChromosome', () => {
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
         chromosome = generator.get();
-        properties = new NeuroevolutionTestGenerationParameter();
+        properties = new NeatParameter();
         properties.populationSize = 10;
         NeatPopulation.innovations = [];
     });

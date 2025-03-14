@@ -18,7 +18,7 @@ import {InputConnectionMethod, NetworkLayer} from "../Networks/NetworkChromosome
 export class NetworkLoader {
 
     /**
-     * The saved network suite that should be loaded in a json format.
+     * The saved network suite that should be loaded in a JSON format.
      */
     private readonly _networkSuite: Record<string, (number | string | Record<string, (number | string)>)>
 
@@ -33,8 +33,8 @@ export class NetworkLoader {
     private readonly _scratchStatements: StatementFitnessFunction[];
 
     /**
-     * Constructs a new network loader that loads networks from a saved json file.
-     * @param networkSuite the json record of saved networks.
+     * Constructs a new network loader that loads networks from a saved JSON file.
+     * @param networkSuite the JSON record of saved networks.
      * @param scratchEvents the extracted Scratch events of a project.
      * @param scratchStatements the extracted statements of a Scratch project.
      */
@@ -46,7 +46,7 @@ export class NetworkLoader {
     }
 
     /**
-     * Loads networks from a saved json record.
+     * Loads networks from a saved JSON record.
      * @returns NeatChromosome[] the list of loaded and instantiated networks.
      */
     public loadNetworks(): NeatChromosome[] {

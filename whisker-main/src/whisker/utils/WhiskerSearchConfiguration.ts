@@ -54,20 +54,27 @@ import {
 } from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {
-    NeuroevolutionTestGenerationParameter
-} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeatParameter} from "../whiskerNet/HyperParameter/NeatParameter";
 import {
     BasicNeuroevolutionParameter,
     NeuroevolutionEventSelection
 } from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
-import {ReliableCoverageFitness} from "../whiskerNet/NetworkFitness/ReliableCoverageFitness";
 import {EventSequenceNovelty} from "../whiskerNet/NetworkFitness/Novelty/EventSequenceNovelty";
 import {ActivationFunction} from "../whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatChromosomeGenerator} from "../whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {NeatestParameter} from "../whiskerNet/HyperParameter/NeatestParameter";
 import {CosineStateNovelty} from "../whiskerNet/NetworkFitness/Novelty/CosineStateNovelty";
 import {NetworkFitnessFunctionType} from "../whiskerNet/NetworkFitness/NetworkFitnessFunctionType";
+import {
+    DiversityMetric,
+    ManyObjectiveNeatestParameter
+} from "../whiskerNet/HyperParameter/ManyObjectiveNeatestParameter";
+import {UniformNeatCrossover} from "../whiskerNet/Operators/UniformNeatCrossover";
+import {MioNeatestParameter} from "../whiskerNet/HyperParameter/MioNeatestParameter";
+import {NewsdNeatestParameter} from "../whiskerNet/HyperParameter/NewsdNeatestParameter";
+import {NoveltyFitness} from "../whiskerNet/NetworkFitness/Novelty/NoveltyFitness";
+import {ReliableCoverageFitness} from "../whiskerNet/NetworkFitness/ReliableCoverageFitness";
+import {ManyObjectiveReliableCoverageFitness} from "../whiskerNet/NetworkFitness/ManyObjectiveReliableCoverageFitness";
 
 
 class ConfigException implements Error {
@@ -79,7 +86,7 @@ class ConfigException implements Error {
 export class WhiskerSearchConfiguration {
 
     private readonly _config: Record<string, any>;
-    private readonly _properties: (SearchAlgorithmProperties<any> | NeuroevolutionTestGenerationParameter | BasicNeuroevolutionParameter);
+    private readonly _properties: (SearchAlgorithmProperties<any> | NeatParameter | BasicNeuroevolutionParameter);
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
@@ -88,7 +95,11 @@ export class WhiskerSearchConfiguration {
             this._properties = this.setDynamicSuiteParameter();
             Container.isNeuroevolution = true;
         } else if (this.getAlgorithm() === 'neat' ||
-            this.getAlgorithm() === 'neatest') {
+            this.getAlgorithm() === 'neatest' ||
+            this.getAlgorithm() === 'mosaNeatest' ||
+            this.getAlgorithm() === 'mioNeatest' ||
+            this.getAlgorithm() === 'newsdNeatest'
+        ) {
             this._properties = this.setNeuroevolutionProperties();
             Container.isNeuroevolution = true;
         } else {
@@ -173,17 +184,32 @@ export class WhiskerSearchConfiguration {
         return this._properties as SearchAlgorithmProperties<any>;
     }
 
-    public setNeuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
-        let properties: NeuroevolutionTestGenerationParameter | NeatestParameter;
-        if (this.getAlgorithm() === 'neat') {
-            properties = new NeuroevolutionTestGenerationParameter();
-        } else {
-            properties = new NeatestParameter();
+    public setNeuroevolutionProperties(): NeatParameter {
+        let properties: NeatParameter;
+
+        switch (this.getAlgorithm()) {
+            case "neat":
+                properties = new NeatParameter();
+                break;
+            case "mosaNeatest":
+                properties = new ManyObjectiveNeatestParameter();
+                break;
+            case "mioNeatest":
+                properties = new MioNeatestParameter();
+                break;
+            case "newsdNeatest":
+                properties = new NewsdNeatestParameter();
+                break;
+            default:
+                properties = new NeatestParameter();
         }
+
+        properties.networkFitness = this.getNetworkFitnessFunction(this.getNetworkFitnessFunctionType());
+
         const populationSize = this._config['populationSize'] as number;
         const parentsPerSpecies = this._config['parentsPerSpecies'] as number;
         const numberOfSpecies = this._config['numberOfSpecies'] as number;
-        const penalizingAge = this._config['penalizingAge'] as number;
+        const penalizingAge = this._config['penalizingAge'] ?? Infinity;
         const ageSignificance = this._config['ageSignificance'] as number;
         const inputRate = this._config['inputRate'] as number;
         const activationFunction = this.getActivationFunction();
@@ -210,14 +236,12 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
-        const coverageStableCount = this._config['networkFitness']['stableCount'] !== undefined ?
-            this._config['networkFitness']['stableCount'] : 0;
-        const switchTargetCount = this._config['switchTargetCount'] !== undefined ?
-            this._config['switchTargetCount'] : 20;
-        const timeout = this._config['networkFitness']['timeout'];
-        const activationTraceRepetitions = this._config['aTRepetitions'] !== undefined ?
-            this._config['aTRepetitions'] : 0;
+        const switchTargetCount = this._config['switchTargetCount'] ?? 20;
+        const activationTraceRepetitions = this._config['aTRepetitions'] ?? 0;
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
+        const timeout = this._config['networkFitness']['timeout'];
+
+        const coverageStableCount = this.getCoverageStableCount();
 
         properties.populationSize = populationSize;
         properties.numberOfSpecies = numberOfSpecies;
@@ -253,27 +277,22 @@ export class WhiskerSearchConfiguration {
         properties.timeout = timeout;
         properties.activationTraceRepetitions = activationTraceRepetitions;
         properties.printPopulationRecord = doPrintPopulationRecord;
+        properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
 
-        if (properties instanceof NeatestParameter) {
+        if (properties instanceof (NeatestParameter || ManyObjectiveNeatestParameter)) {
             properties.coverageStableCount = coverageStableCount;
             properties.switchTargetCount = switchTargetCount;
-            // If no population key is present just set the strategy to random.
-            if (this._config['population'] === undefined) {
-                properties.populationGeneration = 'random';
-                properties.randomFraction = 1;
+
+            if (this._config['population'] === undefined || this._config['population']['strategy'] === undefined) {
+                throw new ConfigException('Population generation strategy is missing');
             }
-            // At this point we have a population key present. Thus, set the generation strategy and
-            // the random fraction appropriately.
-            else {
-                const populationGeneration = this._config['population']['strategy'] ?
-                    this._config['population']['strategy'] : 'random';
-                properties.populationGeneration = populationGeneration;
-                if (populationGeneration !== 'random') {
-                    properties.randomFraction = this._config['population']['randomFraction'] ?
-                        this._config['population']['randomFraction'] : 0.1;
-                } else {
-                    properties.randomFraction = 1;
-                }
+
+            properties.populationGeneration = this._config['population']['strategy'];
+            if (properties.populationGeneration === 'random') {
+                properties.randomFraction = 1;
+            } else {
+                properties.randomFraction = this._config['population']['randomFraction'] ?
+                    this._config['population']['randomFraction'] : 0.1;
             }
 
             // Check whether we will apply gradient descent.
@@ -290,13 +309,42 @@ export class WhiskerSearchConfiguration {
             }
         }
 
-        properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
-        properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']);
+        if (properties instanceof ManyObjectiveNeatestParameter && this.getAlgorithm() != 'newsdNeatest') {
+            properties.diversityMetric = this._getDiversityMetric();
+        }
+
+        if (properties instanceof MioNeatestParameter) {
+            this.setNeuroevolutionMioParameter(properties);
+        }
+
+        if (properties instanceof NewsdNeatestParameter) {
+            this.setNewsdParameter(properties);
+        }
+
         return properties;
     }
 
-    get neuroevolutionProperties(): NeuroevolutionTestGenerationParameter {
-        return this._properties as NeuroevolutionTestGenerationParameter;
+    private setNewsdParameter(properties: NewsdNeatestParameter) {
+        properties.noviceMaxAge = this._config['noviceMaxAge'] as number;
+        properties.mutationOperator = this._getMutationOperator() as NeatMutation;
+    }
+
+    private setNeuroevolutionMioParameter(properties: MioNeatestParameter) {
+        properties.mutationOperator = this._getMutationOperator() as NeatMutation;
+        properties.maxArchiveSize = this._config['maxArchiveSize'] as number;
+        properties.randomSelectionProbability = this._config['randomSelectionProbability'] as number;
+
+        properties.maxMutationCount = this._config['mutation']['maxMutationCount'] as number;
+        properties.structMutationProb = this._config['mutation']['structMutationProbability'] as number;
+
+        properties.focusedPhaseStart = this._config['focusedPhase']['focusedPhaseStart'] as number;
+        properties.maxArchiveSizeFocusedPhase = this._config['focusedPhase']['maxArchiveSizeFocusedPhase'] as number;
+        properties.maxMutationCountFocusedPhase = this._config['focusedPhase']['maxMutationCountFocusedPhase'] as number;
+        properties.randomSelectionProbabilityFocusedPhase = this._config['focusedPhase']['randomSelectionProbabilityFocusedPhase'] as number;
+    }
+
+    get neuroevolutionProperties(): NeatParameter {
+        return this._properties as NeatParameter;
     }
 
     private setDynamicSuiteParameter(): BasicNeuroevolutionParameter {
@@ -374,7 +422,7 @@ export class WhiskerSearchConfiguration {
                     this.searchAlgorithmProperties['chromosomeLength'],
                     this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
-            case'neatMutation':
+            case 'neatMutation':
                 return new NeatMutation(this._config['mutation'], this.neuroevolutionProperties);
             case 'integerList':
                 return new IntegerListMutation(this._config['integerRange']['min'], this._config['integerRange']['max']);
@@ -394,6 +442,8 @@ export class WhiskerSearchConfiguration {
                 return new SinglePointRelativeCrossover(this.searchAlgorithmProperties['reservedCodons']);
             case 'neatCrossover':
                 return new NeatCrossover(this._config['crossover']);
+            case 'uniformNeatCrossover':
+                return new UniformNeatCrossover(this._config['crossover']);
             case 'singlePoint':
                 return new SinglePointCrossover();
             default:
@@ -562,7 +612,9 @@ export class WhiskerSearchConfiguration {
             case 'survive':
                 return NetworkFitnessFunctionType.SURVIVE;
             case 'reliableStatement':
-                return NetworkFitnessFunctionType.RELIABLE_STATEMENT;
+                return NetworkFitnessFunctionType.COVERAGE;
+            case 'manyObjectiveReliableStatement':
+                return NetworkFitnessFunctionType.MANY_OBJECTIVE_COVERAGE;
             case 'cosineNovelty':
                 return NetworkFitnessFunctionType.NOVELTY_COSINE;
             case 'eventNovelty':
@@ -572,39 +624,53 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NetworkChromosome> {
-        const networkFitnessDef = fitnessFunction['type'];
-        switch (networkFitnessDef) {
-            case 'score':
+    public getNetworkFitnessFunction(type: NetworkFitnessFunctionType): NetworkFitnessFunction<NetworkChromosome> {
+        const fitnessFunction = this._config['networkFitness'];
+        const stableCount = this.getCoverageStableCount();
+        switch (type) {
+            case NetworkFitnessFunctionType.SCORE:
                 return new ScoreFitness();
-            case 'survive':
+            case NetworkFitnessFunctionType.SURVIVE:
                 return new SurviveFitness();
-            case 'reliableStatement': {
-                const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
+            case NetworkFitnessFunctionType.COVERAGE: {
                 const earlyStop = fitnessFunction['earlyStop'] !== undefined ? fitnessFunction['earlyStop'] : false;
                 return new ReliableCoverageFitness(stableCount, earlyStop);
             }
-            case 'cosineNovelty': {
-                const [stableCount, neighbours, archiveProb, noveltyWeight] = this.extractNoveltyParameter(fitnessFunction);
+            case NetworkFitnessFunctionType.MANY_OBJECTIVE_COVERAGE: {
+                const noveltyFunction = this.getManyObjectiveNoveltyFunction();
+                return new ManyObjectiveReliableCoverageFitness(stableCount, noveltyFunction);
+            }
+            case NetworkFitnessFunctionType.NOVELTY_COSINE: {
+                const [neighbours, archiveProb, noveltyWeight] = this.extractNoveltyParameter(fitnessFunction);
                 return new CosineStateNovelty(stableCount, neighbours, archiveProb, noveltyWeight);
             }
-            case 'eventNovelty': {
-                const [stableCount, neighbours, archiveProb, noveltyWeight] = this.extractNoveltyParameter(fitnessFunction);
+            case NetworkFitnessFunctionType.NOVELTY_EVENTS: {
+                const [neighbours, archiveProb, noveltyWeight] = this.extractNoveltyParameter(fitnessFunction);
                 return new EventSequenceNovelty(stableCount, neighbours, archiveProb, noveltyWeight);
             }
             default:
-                throw new ConfigException(`Unknown network fitness function ${networkFitnessDef}`);
+                throw new ConfigException(`Unknown network fitness function ${fitnessFunction['type']}`);
         }
     }
 
-    private extractNoveltyParameter(fitnessConfig: Record<string, number | undefined>): [number, number, number, number] {
-        const stableCount = fitnessConfig['stableCount'] !== undefined ? fitnessConfig['stableCount'] : 1;
-        const neighbours = fitnessConfig['neighbours'] !== undefined ? fitnessConfig['neighbours'] : 1;
-        const archiveProb = fitnessConfig['archiveProb'] !== undefined ? fitnessConfig['archiveProb'] : 1;
-        const noveltyWeight = fitnessConfig['noveltyWeight'] !== undefined ? fitnessConfig['noveltyWeight'] : 1;
-        return [stableCount, neighbours, archiveProb, noveltyWeight];
+    public getManyObjectiveNoveltyFunction(): NoveltyFitness<any> {
+        const diversityMetric = this._config['diversityMetric'];
+        switch (diversityMetric) {
+            case 'cosineNovelty':
+                return this.getNetworkFitnessFunction(NetworkFitnessFunctionType.NOVELTY_COSINE) as CosineStateNovelty;
+            case 'eventNovelty':
+                return this.getNetworkFitnessFunction(NetworkFitnessFunctionType.NOVELTY_EVENTS) as EventSequenceNovelty;
+            default:
+                return null;
+        }
     }
 
+    private extractNoveltyParameter(fitnessConfig: Record<string, number | undefined>): [number, number, number] {
+        const neighbours = fitnessConfig['neighbours'] ?? 15;
+        const archiveProb = fitnessConfig['archiveProb'] ?? 1;
+        const noveltyWeight = fitnessConfig['noveltyWeight'] ?? 0;
+        return [neighbours, archiveProb, noveltyWeight];
+    }
 
     public getFitnessFunctionTargets(): string[] {
         const fitnessFunctionDef = this._config['fitnessFunction'];
@@ -651,6 +717,20 @@ export class WhiskerSearchConfiguration {
                 return ActivationFunction.NONE;
         }
         throw new ConfigException("Unknown Activation Function " + this._config['chromosome']['activationFunction']);
+    }
+
+    private _getDiversityMetric(): DiversityMetric {
+        switch (this._config['diversityMetric']) {
+            case 'compatibilityDistance':
+                return DiversityMetric.COMPAT_DISTANCE;
+            case 'speciesSize':
+                return DiversityMetric.SPECIES_SIZE;
+            case 'cosineNovelty':
+            case 'eventNovelty':
+                return DiversityMetric.NOVELTY;
+            default:
+                throw new ConfigException(`Unknown diversity metric ${this._config['diversityMetric']}`);
+        }
     }
 
     public getInputConnectionMethod(): InputConnectionMethod {

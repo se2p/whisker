@@ -165,6 +165,10 @@ export class StatisticsCollector {
         this._branches = value;
     }
 
+    get branches(): Map<BranchCoverageFitnessFunction, number> {
+        return this._branches;
+    }
+
     /**
      * Increments the number of iterations by one
      */
@@ -501,7 +505,8 @@ export class StatisticsCollector {
         return adjusted;
     }
 
-    public async updateStatementCoverage(chromosome: Chromosome, stableCount = 1): Promise<void> {
+    public async updateStatementCoverage(chromosome: Chromosome): Promise<void> {
+        const stableCount = Container.config.getCoverageStableCount();
         for (const [st, coverCount] of this._statements.entries()) {
             const statement = st as unknown as FitnessFunction<Chromosome>;
             if (this._statements.get(st) >= stableCount) {
@@ -513,7 +518,8 @@ export class StatisticsCollector {
         }
     }
 
-    public async updateBranchCoverage(chromosome: Chromosome, stableCount = 1): Promise<void> {
+    public async updateBranchCoverage(chromosome: Chromosome): Promise<void> {
+        const stableCount = Container.config.getCoverageStableCount();
         for (const [dec, coverCount] of this._branches.entries()) {
             const branch = dec as unknown as FitnessFunction<Chromosome>;
             if (this._branches.get(dec) >= stableCount) {
@@ -525,8 +531,9 @@ export class StatisticsCollector {
         }
     }
 
-    public computeStatementCoverage(stableCount = 1): void {
+    public computeStatementCoverage(): void {
         let covered = 0;
+        const stableCount = Container.config.getCoverageStableCount();
         for (const [st, coverCount] of this._statements.entries()) {
             if (coverCount < stableCount) {
                 this._statements.set(st, 0);
@@ -537,8 +544,9 @@ export class StatisticsCollector {
         this.updateHighestStatementCoverage(covered / this._statements.size);
     }
 
-    public computeBranchCoverage(stableCount = 1): void {
+    public computeBranchCoverage(): void {
         let covered = 0;
+        const stableCount = Container.config.getCoverageStableCount();
         for (const [dec, coverCount] of this._branches.entries()) {
             if (coverCount < stableCount) {
                 this._branches.set(dec, 0);
@@ -549,7 +557,7 @@ export class StatisticsCollector {
         this.updateHighestBranchCoverage(covered / this._branches.size);
     }
 
-    private _getCoveredStatements(): Set<StatementFitnessFunction> {
+    public getCoveredStatements(): Set<StatementFitnessFunction> {
         const stableCount = Container.config.getCoverageStableCount();
         return new Set(
             [...this._statements.entries()]
@@ -559,7 +567,7 @@ export class StatisticsCollector {
     }
 
     private _isWinningStateCovered(): string {
-        const coveredStatements = this._getCoveredStatements();
+        const coveredStatements = this.getCoveredStatements();
         const winningState = this.getWinningStateForProject(this._projectName);
         if (! winningState) {
             return "NA";

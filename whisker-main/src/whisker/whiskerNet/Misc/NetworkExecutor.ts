@@ -18,7 +18,8 @@ import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NetworkFitnessFunctionType} from "../NetworkFitness/NetworkFitnessFunctionType";
 import logger = require("../../../util/logger.js");
-import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
+import {CosineStateNovelty} from "../NetworkFitness/Novelty/CosineStateNovelty";
+import {TestChromosome} from "../../testcase/TestChromosome";
 
 export class NetworkExecutor {
 
@@ -116,7 +117,7 @@ export class NetworkExecutor {
             let eventIndex = this.selectNextEvent(network, isGreenFlag);
             let nextEvent = this.availableEvents[eventIndex];
 
-            // If something goes wrong, e.g. we have a defect network due to all active input nodes being
+            // If something goes wrong, e.g., we have a defect network due to all active input nodes being
             // disconnected to every output node, insert a Wait.
             if (nextEvent === undefined) {
                 eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
@@ -137,19 +138,16 @@ export class NetworkExecutor {
             stepCount++;
 
             // Check if we have reached our selected target and stop if it's not the green flag.
-            // Keep executing when the green flag was covered to cover all easy targets at once
-            // and avoid repeated executions for trivial targets.
-            // Keep executing if we are optimising for branch coverage to avoid having a branch only partly covered.
-            if (this._stopEarly && coverageObjective !== undefined && coverageObjective.getCDGDepth() > 1 &&
-                !(coverageObjective instanceof BranchCoverageFitnessFunction)) {
-                const currentCoverage = this._vm.getTraces().blockCoverage;
-                if (currentCoverage.has(coverageObjective.getTargetNode().id)) {
+            // Keep executing when the green flag was covered to cover all easy targets at once.
+            if (this._stopEarly && !isGreenFlag) {
+                network.trace = new ExecutionTrace(this._vm.getTraces().branchDistances, events);
+                if (await coverageObjective.isCovered(network as unknown as TestChromosome)) {
                     break;
                 }
             }
         }
 
-        // Set score and play time.
+        // Set score and playtime.
         network.score = ScoreFitness.gatherPoints(this._vm);
         network.playTime = Date.now() - startTime;
 
@@ -159,7 +157,8 @@ export class NetworkExecutor {
         network.coverage = coverageTrace.blockCoverage;
 
         // Saves the final state of the network if we want to compute a state-based novelty score.
-        if (Container.config.getNetworkFitnessFunctionType() === NetworkFitnessFunctionType.NOVELTY_COSINE) {
+        if (Container.config.getNetworkFitnessFunctionType() === NetworkFitnessFunctionType.NOVELTY_COSINE ||
+            Container.config.getManyObjectiveNoveltyFunction() instanceof CosineStateNovelty) {
             network.finalState = InputExtraction.extractFeatures(this._vm);
         }
 
@@ -172,7 +171,7 @@ export class NetworkExecutor {
     }
 
     /**
-     * Event listener which checks if the project is still running, i.e. no GameOver state was reached.
+     * Event listener which checks if the project is still running, i.e., no GameOver state was reached.
      */
     private projectStopped() {
         return this._projectRunning = false;
@@ -219,7 +218,7 @@ export class NetworkExecutor {
             }
         }
 
-        // Set score and play time.
+        // Set score and playtime.
         network.score = ScoreFitness.gatherPoints(this._vm);
         network.playTime = Date.now() - startTime;
 
@@ -262,7 +261,7 @@ export class NetworkExecutor {
                 return this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
             } else {
                 // It can happen that all output nodes of corresponding available events do not have an active path
-                // starting from the input nodes, i.e. they did not get activated.
+                // starting from the input nodes, i.e., they did not get activated.
                 // In that case, we just wait.
                 return this.availableEvents.findIndex(event => event instanceof WaitEvent);
             }

@@ -67,14 +67,14 @@
             },
             {
                 "type": "fixedTime",
-                "duration": 82800000
+                "duration": 7200000
             }
         ]
     },
     "durations": {
         "waitStepUpperBound": 100,
-        "clickDuration": 30,
-        "pressDuration": 30
+        "clickDuration": 10,
+        "pressDuration": 10
     },
     "assertions": false,
     "minimizeAssertions": false

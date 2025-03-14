@@ -7,15 +7,15 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
 import logger from '../../../util/logger';
+import {NeatParameter} from "../HyperParameter/NeatParameter";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
     /**
      * The search parameters.
      */
-    protected _neuroevolutionProperties: NeuroevolutionTestGenerationParameter;
+    protected _neuroevolutionProperties: NeatParameter;
 
     /**
      * The fitnessFunction used to evaluate the networks of Neuroevolution Algorithm.
@@ -123,6 +123,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     protected reportOfCurrentIteration(population: NeatPopulation): void {
         logger.debug(`Iteration:  ${this._iterations}`);
         logger.debug(`Population Size: ${this.getPopulation().networks.length}`);
+        logger.debug(`Current compatibility threshold: ${this.getPopulation().compatibilityThreshold}`);
         logger.debug(`Best Network Fitness:  ${population.bestFitness}`);
         logger.debug(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
         logger.debug(`Average Network Fitness: ${population.averageFitness}`);
@@ -150,7 +151,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
-        this._neuroevolutionProperties = properties as unknown as NeuroevolutionTestGenerationParameter;
+        this._neuroevolutionProperties = properties as unknown as NeatParameter;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }

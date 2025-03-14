@@ -10,7 +10,7 @@ import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {Randomness} from "../utils/Randomness";
 import {NetworkExecutor} from "../whiskerNet/Misc/NetworkExecutor";
 import {Container} from "../utils/Container";
-import {NeuroevolutionTestGenerationParameter} from "../whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeatParameter} from "../whiskerNet/HyperParameter/NeatParameter";
 import {AssertionGenerator} from "./AssertionGenerator";
 import logger from "../../util/logger";
 
@@ -72,7 +72,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      * @param hyperParameter user-defined parameters.
      * @param testChromosomes the chromosomes whose activationTrace should be recorded.
      */
-    private async recordActivationTrace(hyperParameter: NeuroevolutionTestGenerationParameter, testChromosomes: NeatChromosome[]): Promise<void> {
+    private async recordActivationTrace(hyperParameter: NeatParameter, testChromosomes: NeatChromosome[]): Promise<void> {
         // Save the number of fitness evaluations to recover them later.
         const trueEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
 

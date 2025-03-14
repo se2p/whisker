@@ -580,14 +580,15 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons.length;
     }
 
-    override async getFitness(fitnessFunction: FitnessFunction<this>): Promise<number> {
-        if (this._fitnessCache.has(fitnessFunction)) {
-            return this._fitnessCache.get(fitnessFunction);
-        } else {
-            const fitness = await fitnessFunction.getFitness(this);
-            this._fitnessCache.set(fitnessFunction, fitness);
-            return fitness;
+    override async getFitness(fitnessFunction: FitnessFunction<this>, fitnessKey: number): Promise<number> {
+        // The coverage objective was covered at least once.
+        if (this.openStatementTargets.get(fitnessKey) > 0) {
+            return this.openStatementTargets.get(fitnessKey);
         }
+
+        // If the coverage objective has not been covered, compute the distance to the target.
+        // Cast to maximising fitness function if necessary.
+        return fitnessFunction.isMaximizing() ? await fitnessFunction.getFitness(this) : 1 - await fitnessFunction.getFitness(this);
     }
 
     /**

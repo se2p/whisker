@@ -24,7 +24,7 @@ import {Randomness} from "../utils/Randomness";
 
 export class JavaScriptConverter {
 
-    private getTestBody(test: WhiskerTest) {
+    private getTestBody(test: WhiskerTest): string {
         let text = "";
         let position = 0;
 

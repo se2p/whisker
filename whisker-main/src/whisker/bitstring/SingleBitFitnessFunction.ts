@@ -83,4 +83,8 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
     async isCovered(chromosome: BitstringChromosome): Promise<boolean> {
         return this.isOptimal(await this.getFitness(chromosome));
     }
+
+    public isMaximizing(): boolean {
+        return true;
+    }
 }

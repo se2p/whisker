@@ -4,7 +4,7 @@ import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {BasicNeuroevolutionParameter} from "./BasicNeuroevolutionParameter";
 
 
-export class NeuroevolutionTestGenerationParameter extends BasicNeuroevolutionParameter {
+export class NeatParameter extends BasicNeuroevolutionParameter {
 
     // ----------------- Population Management -------------------
 

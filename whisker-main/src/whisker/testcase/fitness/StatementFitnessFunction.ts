@@ -33,6 +33,7 @@ import {
 } from 'scratch-analysis';
 import {BranchDistanceTrace} from "scratch-vm/@types/scratch-vm/tracing/branchCoverageTracer";
 import logger from '../../../util/logger';
+import {BranchCoverageFitnessFunction} from "./BranchCoverageFitnessFunction";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -544,10 +545,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param uncoveredStatements uncovered subset of allStatements.
      * @returns uncovered immediate children of already covered statements.
      */
-    public static getNearestTargets(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Set<StatementFitnessFunction> {
+    public static getNearestStatements(
+        allStatements: Set<StatementFitnessFunction>,
+        uncoveredStatements: Set<StatementFitnessFunction>): Set<StatementFitnessFunction> {
         const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
         const cdg = Container.cdg;
-        const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
+        const uncoveredKeys = [...uncoveredStatements].map(node => node.getTargetNode().id);
         for (const statement of uncoveredStatements) {
             const parents = StatementFitnessFunction.getCDGParent(statement._targetNode);
             if (!parents) {
@@ -555,7 +558,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             for (const parent of parents) {
                 const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
-                if (!uncoveredStatements.includes(parentStatement) || parentStatement._targetNode.id === statement._targetNode.id) {
+                if (!uncoveredStatements.has(parentStatement) ||
+                    parentStatement._targetNode.id === statement._targetNode.id) {
                     nearestUncoveredStatements.add(statement);
                 }
             }
@@ -564,12 +568,45 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
     /**
+     * Extracts branches whose control nodes have already been covered or are direct parents of the flag clicked node.
+     * @param uncoveredBranches set of uncovered branches from which we will determine the closest to be covered.
+     * @param coveredStatements set of covered statements determining which control nodes have been covered.
+     * @returns The set of branching targets that are the closest to be covered.
+     * If we were unable to find preferred branches, the set of uncovered branches is returned.
+     */
+    public static getNearestBranches(
+        uncoveredBranches: Set<BranchCoverageFitnessFunction>,
+        coveredStatements: Set<StatementFitnessFunction>): Set<BranchCoverageFitnessFunction> {
+        const nearestBranches = new Set<BranchCoverageFitnessFunction>();
+        const coveredStatementIds = [...coveredStatements].map(node => node.getNodeId());
+        for (const branch of uncoveredBranches) {
+
+            // Extract branches whose control nodes have been covered.
+            if (coveredStatementIds.some(node => branch.getNodeId().includes(node))) {
+                nearestBranches.add(branch);
+            }
+
+            // Extract branches that are direct children of the flag clicked node.
+            if (this.getCDGParent(branch.controlNode).some(parent => parent.id == "flagclicked")) {
+                nearestBranches.add(branch);
+            }
+        }
+
+        // If we were not able to find suitable branches, return the entire set of uncovered branches.
+        if (nearestBranches.size === 0) {
+            return uncoveredBranches;
+        }
+
+        return nearestBranches;
+    }
+
+    /**
      * Maps a node in the CDG to the corresponding Scratch Statement.
      * @param node the CDG node.
      * @param allStatements all Scratch statements.
      * @returns Scratch Statement matching to the given CDG node.
      */
-    public static mapNodeToStatement(node: GraphNode, allStatements: StatementFitnessFunction[]): StatementFitnessFunction {
+    public static mapNodeToStatement(node: GraphNode, allStatements: Iterable<StatementFitnessFunction>): StatementFitnessFunction {
         for (const statement of allStatements) {
             if (statement.getTargetNode().id === node.id) {
                 return statement;
@@ -684,5 +721,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     public getNodeId(): string {
         return `${this._targetNode.id}`;
+    }
+
+    public isMaximizing(): boolean {
+        return false;
     }
 }

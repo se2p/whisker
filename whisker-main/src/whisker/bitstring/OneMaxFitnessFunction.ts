@@ -77,4 +77,8 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
     async isCovered(chromosome: BitstringChromosome): Promise<boolean> {
         return this.isOptimal(await this.getFitness(chromosome));
     }
+
+    public isMaximizing(): boolean {
+        return true;
+    }
 }

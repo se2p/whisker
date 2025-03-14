@@ -1,38 +1,42 @@
 {
     "testGenerator": "neuroevolution",
-    "algorithm": "neatest",
+    "algorithm": "mioNeatest",
     "eventSelection": "activation",
-    "populationSize": 50,
-    "numberOfSpecies": 2,
+    "numberOfSpecies": 15,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 3,
+    "penalizingAge": 15,
     "ageSignificance": 1.0,
-    "switchTargetCount": 2,
+    "switchTargetCount": 50,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
+    "maxArchiveSize": 15,
+    "randomSelectionProbability": 0.9,
+    "diversityMetric": "cosineNovelty",
     "chromosome": {
         "type": "neatChromosome",
-        "activationFunction": "TANH",
+        "activationFunction": "RELU",
         "inputConnectionMethod": "fully"
     },
     "crossover": {
-        "operator": "neatCrossover",
+        "operator": "uniformNeatCrossover",
         "crossoverWithoutMutation": 0.25,
         "interspeciesRate": 0.001,
         "weightAverageRate": 0.4
     },
     "mutation": {
         "operator": "neatMutation",
+        "maxMutationCount": 0,
+        "structMutationProbability": 0.5,
         "mutationWithoutCrossover": 0.25,
-        "mutationAddConnection": 0.05,
+        "mutationAddConnection": 0.2,
         "recurrentConnection": 0.1,
-        "addConnectionTries": 50,
+        "addConnectionTries": 10,
         "populationChampionNumberOffspring": 3,
         "populationChampionNumberClones": 1,
         "populationChampionConnectionMutation": 0.3,
-        "mutationAddNode": 0.03,
-        "mutateWeights": 0.5,
-        "perturbationPower": 5,
+        "mutationAddNode": 0.2,
+        "mutateWeights": 0.8,
+        "perturbationPower": 1,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
@@ -48,8 +52,8 @@
         "targets": []
     },
     "networkFitness": {
-        "type": "reliableStatement",
-        "timeout": 1000,
+        "type": "manyObjectiveReliableStatement",
+        "timeout": 10000,
         "stableCount": 3
     },
     "population": {
@@ -73,5 +77,12 @@
         "clickDuration": 3,
         "pressDuration": 10,
         "soundDuration": 10
+    },
+
+    "focusedPhase": {
+        "focusedPhaseStart": 1.0,
+        "maxArchiveSizeFocusedPhase": 5,
+        "maxMutationCountFocusedPhase": 3,
+        "randomSelectionProbabilityFocusedPhase": 0.5
     }
 }

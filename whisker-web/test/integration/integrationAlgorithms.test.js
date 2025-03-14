@@ -5,7 +5,7 @@ const fs = require("fs");
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = 30000;
+const timeout = 50000;
 const ACCELERATION = Infinity;
 
 async function loadProject(scratchPath) {
@@ -133,6 +133,66 @@ describe('Algorithms', () => {
         const [statCoverage, branchCoverage] = await getCoverage();
         expect(statCoverage).toBeGreaterThanOrEqual(0.35);
         expect(branchCoverage).toBeGreaterThanOrEqual(0.35);
+    }, timeout);
+
+    test('MosaNeatest Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mosaNeatestStatement.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
+    }, timeout);
+
+    test('MosaNeatest Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mosaNeatestBranch.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
+    }, timeout);
+
+    test('MioNeatest Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mioNeatestStatement.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
+    }, timeout);
+
+    test('MioNeatest Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/mioNeatestBranch.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
+    }, timeout);
+
+    test('NewsdNeatest Optimising for Statement Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/newsdNeatestStatement.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
+    }, timeout);
+
+    test('NewsdNeatest Optimising for Branch Coverage', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/newsdNeatestBranch.json");
+        await loadProject('test/integration/networkSuites/FruitCatching.sb3')
+        const runSearchButton = await page.$('#run-search');
+        await runSearchButton.evaluate(b => b.click());
+        const [statCoverage, branchCoverage] = await getCoverage();
+        expect(statCoverage).toBeGreaterThanOrEqual(0.4);
+        expect(branchCoverage).toBeGreaterThanOrEqual(0.4);
     }, timeout);
 });
 

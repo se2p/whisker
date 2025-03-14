@@ -112,7 +112,7 @@ export class Search {
             } else if (stoppingCondition instanceof OneOfStoppingCondition) {
                 for (const d of stoppingCondition.conditions) {
                     if (d instanceof FixedTimeStoppingCondition) {
-                            upperBound = d.maxTime;
+                        upperBound = d.maxTime;
                     }
                 }
             }
@@ -188,13 +188,12 @@ seed ${configSeed} defined within the config files.`);
             Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {
             Randomness.setInitialSeeds(configSeed);
-        }
-        else{
+        } else {
             Randomness.setInitialSeeds(Date.now());
         }
 
         // Check presence of groundTruth for Neatest + backpropagation.
-        if(groundTruth){
+        if (groundTruth) {
             Container.backpropagationData = JSON.parse(groundTruth);
         }
 

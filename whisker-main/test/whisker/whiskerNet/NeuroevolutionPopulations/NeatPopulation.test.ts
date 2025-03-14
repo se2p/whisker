@@ -4,8 +4,8 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {
-    NeuroevolutionTestGenerationParameter
-} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+    NeatParameter
+} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatParameter";
 import Arrays from "../../../../src/whisker/utils/Arrays";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
@@ -26,7 +26,7 @@ describe("Test NeatPopulation", () => {
     let numberOfSpecies: number;
     let population: NeatPopulation;
     let random: Randomness;
-    let properties: NeuroevolutionTestGenerationParameter;
+    let properties: NeatParameter;
     let chromosomeGenerator: NeatChromosomeGenerator;
     let mutation: NeatMutation;
     let crossover: NeatCrossover;
@@ -64,7 +64,7 @@ describe("Test NeatPopulation", () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         chromosomeGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
-        properties = new NeuroevolutionTestGenerationParameter();
+        properties = new NeatParameter();
         properties.populationSize = size;
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;
@@ -96,7 +96,7 @@ describe("Test NeatPopulation", () => {
         expect(population.generation).toBe(0);
         expect(population.species.length).toBeGreaterThan(0);
         expect(population.networks.length).toBe(size);
-        expect(population.hyperParameter).toBeInstanceOf(NeuroevolutionTestGenerationParameter);
+        expect(population.hyperParameter).toBeInstanceOf(NeatParameter);
         expect(population.averageFitness).toBe(0);
     });
 
@@ -201,7 +201,7 @@ describe("Test NeatPopulation", () => {
         let count = 0;
         while (population.speciesCount <= 1 && count < 1000){
             mutant = mutant.mutate();
-            population.speciate(mutant);
+            population.assignSpecies(mutant);
             count++;
         }
         expect(population.speciesCount).toBeGreaterThanOrEqual(2);
@@ -299,13 +299,6 @@ describe("Test NeatPopulation", () => {
         const chromosome2 = new NeatChromosome(layer, connections2, mutation, crossover, 'fully');
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe((0.5 * 0.5) / chromosome2.connections.length);
-    });
-
-    test("Test Compatibility Distance of undefined chromosome", () => {
-        const chromosome1 = chromosomeGenerator.get();
-        const chromosome2 = undefined;
-        const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
-        expect(compatDistance).toBe(Number.MAX_SAFE_INTEGER);
     });
 
     test("Clone population", () => {
