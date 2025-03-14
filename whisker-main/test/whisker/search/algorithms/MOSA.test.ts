@@ -151,7 +151,7 @@ describe('MOSA', () => {
     test("Not supported setter", () => {
         const searchAlgorithm: MOSA<BitstringChromosome> = new MOSA();
         expect(function () {
-            searchAlgorithm.setFitnessFunction(null);
+            searchAlgorithm.setFitnessFunction();
         }).toThrow();
     });
 });

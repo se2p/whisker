@@ -6,7 +6,7 @@ import {ReliableCoverageFitness} from "../ReliableCoverageFitness";
 export abstract class NoveltyFitness<T> extends ReliableCoverageFitness {
 
     /**
-     * Contains all behavior observed so far.
+     * Contains all behaviors observed so far.
      */
     protected behaviorArchive: T[] = [];
 
@@ -53,7 +53,7 @@ export abstract class NoveltyFitness<T> extends ReliableCoverageFitness {
      * @param network the network whose solution will be evaluated in terms of novelty.
      * @returns novelty score of the given network's behaviour.
      */
-    private computeNovelty(network: NetworkChromosome): number {
+    public computeNovelty(network: NetworkChromosome): number {
         if (this.behaviorArchive.length === 0) {
             return 0.5;
         }
@@ -86,7 +86,7 @@ export abstract class NoveltyFitness<T> extends ReliableCoverageFitness {
      *
      * @param network the network whose behaviour might be added to the archive
      */
-    protected addToBehaviourArchive(network: NetworkChromosome): void {
+    public addToBehaviourArchive(network: NetworkChromosome): void {
         if (this.behaviorArchive.length === 0 || Randomness.getInstance().nextDouble() < this.addToArchiveProb) {
             this.behaviorArchive.push(this.extractBehaviour(network));
         }

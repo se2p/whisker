@@ -19,7 +19,7 @@
  */
 
 /**
- * A enum that shows all available types of search algorithms that can be used.
+ * An enum that shows all available types of search algorithms that can be used.
  */
 export type SearchAlgorithmType =
     | 'random'
@@ -29,4 +29,7 @@ export type SearchAlgorithmType =
     | 'simpleGA'
     | 'neat'
     | 'neatest'
+    | 'mosaNeatest'
+    | 'mioNeatest'
+    | 'newsdNeatest'
     ;

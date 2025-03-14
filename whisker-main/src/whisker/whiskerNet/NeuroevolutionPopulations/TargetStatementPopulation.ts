@@ -5,12 +5,12 @@ import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {Container} from "../../utils/Container";
 import {Randomness} from "../../utils/Randomness";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
-import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeatParameter} from "../HyperParameter/NeatParameter";
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class TargetStatementPopulation extends NeatPopulation {
 
-    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeuroevolutionTestGenerationParameter,
+    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatParameter,
                 private readonly _allStatements: number[],
                 private readonly _targetStatementFitness: StatementFitnessFunction,
                 private readonly _startingNetworks: NeatChromosome[],
@@ -79,7 +79,7 @@ export class TargetStatementPopulation extends NeatPopulation {
         for (const network of this.networks) {
             network.initialiseOpenStatements(this._allStatements);
             network.targetFitness = this._targetStatementFitness;
-            this.speciate(network);
+            this.assignSpecies(network);
         }
     }
 

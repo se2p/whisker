@@ -1,7 +1,7 @@
 import {Randomness} from "../../utils/Randomness";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
-import {NeuroevolutionTestGenerationParameter} from "../HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeatParameter} from "../HyperParameter/NeatParameter";
 import Arrays from "../../utils/Arrays";
 import logger from "../../../util/logger";
 
@@ -10,7 +10,7 @@ export class Species<C extends NeatChromosome> {
     /**
      * The hyperParameters defined by the user.
      */
-    private readonly _hyperParameter: NeuroevolutionTestGenerationParameter;
+    private readonly _hyperParameter: NeatParameter;
 
     /**
      * Unique identifier for the species.
@@ -78,7 +78,7 @@ export class Species<C extends NeatChromosome> {
      * @param uID the id of the species
      * @param hyperParameter the search parameters
      */
-    constructor(uID: number, hyperParameter: NeuroevolutionTestGenerationParameter) {
+    constructor(uID: number, hyperParameter: NeatParameter) {
         this._uID = uID;
         this._hyperParameter = hyperParameter;
     }
@@ -368,6 +368,7 @@ export class Species<C extends NeatChromosome> {
         clone.allTimeBestFitness = this.allTimeBestFitness;
         clone.expectedOffspring = this.expectedOffspring;
         clone.ageOfLastImprovement = this.ageOfLastImprovement;
+        clone.representative = this.representative;
         clone.champion = this.networks[0].clone() as C;
         for (const network of this.networks) {
             clone.networks.push(network.clone() as C);
@@ -393,6 +394,13 @@ export class Species<C extends NeatChromosome> {
             species[`M ${i}`] = this.networks[i].toJSON();
         }
         return species;
+    }
+
+    /**
+     * Return the current species size.
+     */
+    public getSpeciesSize(): number {
+        return this.networks.length;
     }
 
     get uID(): number {
@@ -475,7 +483,7 @@ export class Species<C extends NeatChromosome> {
         this._champion = value;
     }
 
-    get hyperParameter(): NeuroevolutionTestGenerationParameter {
+    get hyperParameter(): NeatParameter {
         return this._hyperParameter;
     }
 }

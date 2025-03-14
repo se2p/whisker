@@ -11,7 +11,7 @@ export class BranchCoverageFitnessFunctionFactory extends StatementFitnessFuncti
 
         if (vm === undefined || vm === null) {
             return fitnessFunctions;
-        } 
+        }
 
         Container.cfg = generateCFG(vm);
         Container.cdg = generateCDG(Container.cfg);
@@ -23,7 +23,7 @@ export class BranchCoverageFitnessFunctionFactory extends StatementFitnessFuncti
             if (!ControlFilter.branchCoverage(node.block)) {
                 continue;
             }
-            
+
             fitnessFunctions.push(new BranchCoverageFitnessFunction(node, true));
 
             // Forever blocks cannot be passed and thus have no false branch.

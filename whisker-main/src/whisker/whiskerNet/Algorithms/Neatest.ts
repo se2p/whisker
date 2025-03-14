@@ -13,6 +13,7 @@ import {Container} from "../../utils/Container";
 import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {UserEventNode} from "scratch-analysis";
 import logger from "../../../util/logger";
+import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
 export class Neatest extends NEAT {
 
@@ -24,17 +25,17 @@ export class Neatest extends NEAT {
     /**
      * The population of networks for the current generation.
      */
-    private _population: NeatPopulation
+    protected _population: NeatPopulation
 
     /**
      * Holds the key of the currently targeted statement.
      */
-    private _targetKey: number;
+    protected _targetKey: number;
 
     /**
      * Maps statement keys to the corresponding StatementFitnessFunction.
      */
-    private _fitnessFunctionMap: Map<number, StatementFitnessFunction>;
+    protected _fitnessFunctionMap: Map<number, StatementFitnessFunction>;
 
     /**
      * Since iterations in Neatest may stop in the middle of a generation due to covering a targeted
@@ -82,7 +83,7 @@ export class Neatest extends NEAT {
 
                 // Switch the target if we stop improving for a set number of times and have statements to which we
                 // can switch to left
-                const uncoveredStatementIds = this.getUncoveredStatements().map(statement => statement.getNodeId());
+                const uncoveredStatementIds = [...this.getUncoveredTargets()].map(statement => statement.getNodeId());
                 const uncoveredUntouchedTargets = uncoveredStatementIds.filter(targetId => !this._switchedTargets.has(targetId));
                 if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount &&
                     uncoveredUntouchedTargets.length > 0) {
@@ -92,25 +93,13 @@ export class Neatest extends NEAT {
                     break;
                 }
 
-                this.reportOfCurrentIteration();
-                this._population.evolve();
-
-                // Extract the remaining openStatements and set them for the evolved population of networks.
-                const openStatements: number[] = [];
-                for (const key of this._fitnessFunctions.keys()) {
-                    if (!this._archive.has(key)) {
-                        openStatements.push(key);
-                    }
-                }
-                for (const network of this._population.networks) {
-                    network.targetFitness = currentTarget;
-                    network.initialiseOpenStatements(openStatements);
-                }
-
+                this.evolvePopulation(currentTarget);
                 this._targetIterations++;
                 this._iterations++;
             }
         }
+
+        StatisticsCollector.getInstance().iterationCount = this._iterations;
         this.updateBestIndividualAndStatistics();
         return this._archive;
     }
@@ -118,7 +107,7 @@ export class Neatest extends NEAT {
     /**
      * Initialises required variables.
      */
-    private initialise(): void {
+    protected initialise(): void {
         this._startTime = Date.now();
         this._iterations = 0;
         this._fitnessFunctionMap = new Map(this._fitnessFunctions) as unknown as Map<number, StatementFitnessFunction>;
@@ -133,23 +122,21 @@ export class Neatest extends NEAT {
      * children of already reached statements in the control dependence graph.
      * @returns the next target statement's fitness function.
      */
-    private setNextGoal(): StatementFitnessFunction {
-        const uncoveredStatements = this.getUncoveredStatements();
-        const allStatements = [...this._fitnessFunctionMap.values()];
-        let potentialTargets = StatementFitnessFunction.getNearestTargets(allStatements, uncoveredStatements);
+    protected setNextGoal(): StatementFitnessFunction {
+        let nearestTargets = this.getNearestTargets();
 
         // Prioritise greenFlag events
-        let nextTarget = [...potentialTargets.values()]
+        let nextTarget = [...nearestTargets.values()]
             .find(target => target.getTargetNode().block.opcode === 'event_whenflagclicked');
 
         // If there are no greenFlagEvents left to cover, prioritise targets we have already reached in the past and
         // were not selected as target yet.
         if (nextTarget === undefined) {
-            const uncoveredUntouchedTargets = new Set([...potentialTargets].filter(target => !this._switchedTargets.has(target.getNodeId())));
-            potentialTargets = uncoveredUntouchedTargets.size > 0 ? uncoveredUntouchedTargets : potentialTargets;
+            const uncoveredUntouchedTargets = new Set([...nearestTargets].filter(target => !this._switchedTargets.has(target.getNodeId())));
+            nearestTargets = uncoveredUntouchedTargets.size > 0 ? uncoveredUntouchedTargets : nearestTargets;
             let mostPromisingTargets = [];
             let mostPromisingValue = 0;
-            for (const potTarget of potentialTargets) {
+            for (const potTarget of nearestTargets) {
 
                 // When switching targets without having covered the previous target, we want to make sure not to
                 // select the same target again.
@@ -173,24 +160,42 @@ export class Neatest extends NEAT {
 
         // If no target looks promising, we pick the next target randomly.
         if (nextTarget === undefined) {
-            nextTarget = Randomness.getInstance().pick(Array.from(potentialTargets));
+            nextTarget = Randomness.getInstance().pick(Array.from(nearestTargets));
         }
+
         this._targetKey = this.mapStatementToKey(nextTarget);
         Container.neatestTargetId = this._getIdOfCurrentStatement();
         return nextTarget;
     }
 
     /**
-     * Extracts all yet uncovered statements.
-     * @returns array of yet uncovered statements.
+     * Fetch the nearest targets based on which statements have already been covered within the CDG.
+     * If we optimise for statement coverage, we filter for statements whose CDG parents have been covered.
+     * If we optimise for branch coverage, we filter for branches whose control nodes have already been covered.
+     * @returns the nearest coverage targets based on which targets have already been covered.
      */
-    private getUncoveredStatements(): StatementFitnessFunction[] {
-        const uncoveredStatements: StatementFitnessFunction[] = [];
+    protected getNearestTargets(): Set<StatementFitnessFunction | BranchCoverageFitnessFunction> {
+        const uncoveredTargets = this.getUncoveredTargets();
+        const allTargets = new Set([...this._fitnessFunctionMap.values()]);
+        if ([...uncoveredTargets].some(target => target instanceof BranchCoverageFitnessFunction)) {
+            const coveredStatements = StatisticsCollector.getInstance().getCoveredStatements();
+            return StatementFitnessFunction.getNearestBranches(uncoveredTargets as Set<BranchCoverageFitnessFunction>, coveredStatements);
+        } else {
+            return StatementFitnessFunction.getNearestStatements(allTargets, uncoveredTargets);
+        }
+    }
+
+    /**
+     * Extracts all yet uncovered coverage objectives.
+     * @returns array of yet uncovered objectives.
+     */
+    protected getUncoveredTargets(): Set<StatementFitnessFunction> | Set<BranchCoverageFitnessFunction> {
+        const uncoveredStatements = new Set<StatementFitnessFunction | BranchCoverageFitnessFunction>();
 
         // Collect yet uncovered statements.
         for (const [key, statement] of this._fitnessFunctionMap.entries()) {
             if (!this._archive.has(key)) {
-                uncoveredStatements.push(statement);
+                uncoveredStatements.add(statement);
             }
         }
         return uncoveredStatements;
@@ -201,7 +206,7 @@ export class Neatest extends NEAT {
      * @param statement the statement whose key should be extracted.
      * @returns the key of the given statement.
      */
-    private mapStatementToKey(statement: StatementFitnessFunction): number {
+    protected mapStatementToKey(statement: StatementFitnessFunction): number {
         for (const [key, st] of this._fitnessFunctionMap.entries()) {
             if (st.getNodeId() === statement.getNodeId()) {
                 return key;
@@ -237,7 +242,6 @@ export class Neatest extends NEAT {
 
             // Update the map of the most promising fitness targets
             this.updateMostPromisingMap(network);
-            network.openStatementTargets = null;
 
             // Stop if we covered the targeted statement or depleted the search budget.
             if (this._archive.has(this._targetKey) || await this._stoppingCondition.isFinished(this)) {
@@ -274,6 +278,7 @@ export class Neatest extends NEAT {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 await this.minimiseArchive(network);
                 this._archive.set(fitnessFunctionKey, network);
+                this.updateBestIndividualAndStatistics();
                 for (const n of this._population.networks) {
                     if (n.openStatementTargets != null) {
                         n.openStatementTargets.delete(fitnessFunctionKey);
@@ -296,10 +301,10 @@ export class Neatest extends NEAT {
      * e.g., if there are a lot of statements to cover.
      * @param addedNetwork
      */
-    private async minimiseArchive(addedNetwork: NeatChromosome): Promise<void> {
+    protected async minimiseArchive(addedNetwork: NeatChromosome): Promise<void> {
         const sizeBefore = this.getCurrentSolution().length;
         for (const fitnessKey of this._archive.keys()) {
-            if (this.coveredObjective(fitnessKey, addedNetwork)) {
+            if (this._coveredObjective(fitnessKey, addedNetwork)) {
                 this._archive.set(fitnessKey, addedNetwork);
             }
         }
@@ -315,7 +320,7 @@ export class Neatest extends NEAT {
      * @param network the chromosome that might cover the given objective.
      * @returns boolean true if the objective was covered.
      */
-    private coveredObjective(fitnessFunctionKey: number, network: NeatChromosome): boolean {
+    private _coveredObjective(fitnessFunctionKey: number, network: NeatChromosome): boolean {
         const coverageStableCount = network.openStatementTargets.get(fitnessFunctionKey);
         return coverageStableCount >= this._neuroevolutionProperties.coverageStableCount;
     }
@@ -326,8 +331,29 @@ export class Neatest extends NEAT {
      * @param network the chromosome that might cover the given objective.
      * @returns boolean true if the objective was covered for the first time.
      */
-    private coveredNewObjective(fitnessFunctionKey: number, network: NeatChromosome): boolean {
-        return !this._archive.has(fitnessFunctionKey) && this.coveredObjective(fitnessFunctionKey, network);
+    protected coveredNewObjective(fitnessFunctionKey: number, network: NeatChromosome): boolean {
+        return !this._archive.has(fitnessFunctionKey) && this._coveredObjective(fitnessFunctionKey, network);
+    }
+
+    /**
+     * Evolves the population and updates the open statements and target fitness for the evolved networks.
+     * @param currentTarget The current target.
+     */
+    protected evolvePopulation(currentTarget: StatementFitnessFunction): void {
+        this.reportOfCurrentIteration();
+        this._population.evolve();
+
+        // Extract the remaining openStatements and set them for the evolved population of networks.
+        const openStatements: number[] = [];
+        for (const key of this._fitnessFunctions.keys()) {
+            if (!this._archive.has(key)) {
+                openStatements.push(key);
+            }
+        }
+        for (const network of this._population.networks) {
+            network.targetFitness = currentTarget;
+            network.initialiseOpenStatements(openStatements);
+        }
     }
 
     /**
@@ -339,6 +365,7 @@ export class Neatest extends NEAT {
         logger.debug(`Covered Targets: ${this._archive.size}/${this._fitnessFunctions.size}`);
         logger.debug(`Covered Statements: ${StatisticsCollector.getInstance().statementCoverage * 100}%`);
         logger.debug(`Covered Branches: ${StatisticsCollector.getInstance().branchCoverage * 100}%`);
+        logger.debug(`Current compatibility threshold: ${this._population.compatibilityThreshold}`);
         logger.debug(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
         logger.debug(`Best Network Fitness:  ${this._population.bestFitness}`);
         logger.debug(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
@@ -387,7 +414,7 @@ export class Neatest extends NEAT {
     }
 
     /**
-     * Fetches the required starting networks based ont he supplied {@link PopulationGeneration} strategy.
+     * Fetches the required starting networks based on the supplied {@link PopulationGeneration} strategy.
      * @returns starting networks for the next population.
      */
     private _getStartingNetworks(): NeatChromosome[] {

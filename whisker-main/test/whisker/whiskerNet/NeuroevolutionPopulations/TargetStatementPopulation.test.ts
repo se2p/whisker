@@ -3,8 +3,8 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {
-    NeuroevolutionTestGenerationParameter
-} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+    NeatParameter
+} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatParameter";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
@@ -17,7 +17,7 @@ import logger from "../../../../src/util/logger";
 
 describe("Test TargetStatementPopulation", () => {
 
-    let properties: NeuroevolutionTestGenerationParameter;
+    let properties: NeatParameter;
     let chromosomeGenerator: NeatChromosomeGenerator;
     let size: number;
 
@@ -56,7 +56,7 @@ describe("Test TargetStatementPopulation", () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         chromosomeGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
-        properties = new NeuroevolutionTestGenerationParameter();
+        properties = new NeatParameter();
         properties.populationSize = size;
     });
 

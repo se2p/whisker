@@ -1,7 +1,7 @@
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
-import {NeuroevolutionTestGenerationParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeuroevolutionTestGenerationParameter";
+import {NeatParameter} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatParameter";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
@@ -23,7 +23,7 @@ describe('Test Neatest', () => {
 
     let searchAlgorithm: SearchAlgorithm<Chromosome>;
     let generator: NeatChromosomeGenerator;
-    let properties: NeuroevolutionTestGenerationParameter;
+    let properties: NeatParameter;
 
     const crossoverConfig = {
         "operator": "neatCrossover",
@@ -63,7 +63,7 @@ describe('Test Neatest', () => {
         const iterations = 20;
         const populationSize = 150;
         const random = Randomness.getInstance();
-        properties = new NeuroevolutionTestGenerationParameter();
+        properties = new NeatParameter();
         properties.populationSize = populationSize;
 
         properties.networkFitness = new class implements NetworkFitnessFunction<NetworkChromosome> {

@@ -154,6 +154,18 @@ export default class Arrays {
     }
 
     /**
+     * In place removal of all elements in the source array that are given in the remove array.
+     * This also includes all duplicates within the remove array.
+     *
+     * @param source The source array from which we will remove elements.
+     * @param remove The array hosting elements that will be removed from the source array.
+     * @returns The source array with removed elements.
+     */
+    static removeAll<T>(source: Array<T>, remove: Array<T>): Array<T> {
+        return source.filter((el: T) => !remove.includes(el));
+    }
+
+    /**
      * Inserts the specified element at the specified position.
      *
      * @param array to which an element should be added.
@@ -177,8 +189,8 @@ export default class Arrays {
      */
     static shuffle<T>(array: T[]): void {
         let currentIndex = array.length;
-        let temporaryValue;
-        let randomIndex;
+        let temporaryValue: T;
+        let randomIndex: number;
         while (0 !== currentIndex) {
             randomIndex = Randomness.getInstance().nextInt(0, currentIndex);
             currentIndex -= 1;

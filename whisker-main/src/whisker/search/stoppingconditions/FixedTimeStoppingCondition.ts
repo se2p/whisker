@@ -20,7 +20,6 @@
 
 import {StoppingCondition} from "../StoppingCondition";
 import {Chromosome} from "../Chromosome";
-import {Container} from "../../utils/Container";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class FixedTimeStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {

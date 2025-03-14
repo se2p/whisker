@@ -35,7 +35,12 @@ export enum NetworkFitnessFunctionType {
     /**
      * Value for 'reliableStatement' network fitness.
      */
-    RELIABLE_STATEMENT,
+    COVERAGE,
+
+    /**
+     * Value for 'manyObjectiveReliableStatement' network fitness.
+     */
+    MANY_OBJECTIVE_COVERAGE,
 
     /**
      * Value for 'cosineNovelty' network fitness.
@@ -49,7 +54,7 @@ export enum NetworkFitnessFunctionType {
 
     /**
      * Default value if no network fitness type is set.
-     * This is a valid scenario, e.g. when executing already generated dynamic test cases.
+     * This is a valid scenario, e.g., when executing already generated dynamic test cases.
      */
     NONE
 }

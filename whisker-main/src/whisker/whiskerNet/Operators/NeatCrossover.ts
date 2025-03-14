@@ -9,12 +9,12 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
     /**
      * Random number generator.
      */
-    private readonly random = Randomness.getInstance();
+    protected readonly random = Randomness.getInstance();
 
     /**
      * Probability of averaging the weight of two matching genes during crossover.
      */
-    private readonly crossoverWeightAverageRate: number;
+    protected readonly crossoverWeightAverageRate: number;
 
     /**
      * Constructs a new NeatCrossover object.
@@ -61,7 +61,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
      * @param avgWeights determines whether we inherit matching genes randomly or by averaging the weight of both parent
      * connections.
      */
-    private multipointCrossover(parent1: NeatChromosome, parent2: NeatChromosome, avgWeights: boolean) {
+    protected multipointCrossover(parent1: NeatChromosome, parent2: NeatChromosome, avgWeights: boolean): NeatChromosome {
 
         // Check which parent has the higher non-adjusted fitness value
         // The worst performing parent should not add additional connections
@@ -92,7 +92,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
         }
 
         // Iterate over all connections from the fittest parent and inherit all disjoint and excess genes.
-        // When faced with matching genes inherit connections randomly from any of the two parents.
+        // When faced with matching genes, inherit connections randomly from any of the two parents.
         for (const connection of child.connections) {
 
             // Matching genes
@@ -103,7 +103,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
                 if (avgWeights) {
                     connection.weight = (connection.weight + lessFitWeight) / 2;
                 } else {
-                    // Pick weight of one parent randomly.
+                    // Pick the weight of one parent randomly.
                     // Note that at this point the connection has already inherited the weight of the fitter parent.
                     if (this.random.randomBoolean()) {
                         connection.weight = lessFitWeight;

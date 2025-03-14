@@ -47,9 +47,12 @@ import {Neatest} from "../whiskerNet/Algorithms/Neatest";
 import {BranchCoverageFitnessFunctionFactory} from "../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {MosaNeatest} from "../whiskerNet/Algorithms/MosaNeatest";
+import {MioNeatest} from "../whiskerNet/Algorithms/MioNeatest";
+import {NewsdNeatest} from "../whiskerNet/Algorithms/NewsdNeatest";
 
 /**
- * A builder to set necessary properties of a search algorithm and build this.
+ * A builder to set the necessary properties of a search algorithm and build this.
  *
  * @param <C> the type of the chromosomes handled by the search algorithm.
  * @author Sophia Geserer
@@ -74,7 +77,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * The map for the heuristic function of chromosomes.
      */
-    private _heuristicFunctions: Map<number, (number) => number>;
+    private _heuristicFunctions: Map<number, (arg: number) => number>;
 
     /**
      * The properties for the search algorithm.
@@ -92,13 +95,13 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _localSearchOperators: LocalSearch<C>[] = [];
 
     /**
-     * The type of the algorithm that will be build.
+     * The type of the algorithm that will be built.
      */
     private readonly _algorithm: SearchAlgorithmType;
 
     /**
      * Constructs a builder that holds all necessary properties for a search algorithm.
-     * @param algorithm the type of the algorithm that will be build
+     * @param algorithm the type of the algorithm that will be built
      */
     constructor(algorithm: SearchAlgorithmType) {
         this._algorithm = algorithm;
@@ -163,7 +166,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      */
     initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: string[]): this {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
-        this._heuristicFunctions = new Map<number, (number) => number>();
+        this._heuristicFunctions = new Map<number, (arg: number) => number>();
 
         switch (fitnessFunctionType) {
             case FitnessFunctionType.ONE_MAX:
@@ -213,7 +216,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     }
 
     /**
-     * Builds a new search algorithm with the corresponding properties (e.g. fitness function).
+     * Builds a new search algorithm with the corresponding properties (e.g., fitness function).
      * @returns the search algorithm with all corresponding information set in the builder
      */
     buildSearchAlgorithm(): SearchAlgorithm<C> {
@@ -236,6 +239,15 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 break;
             case "neatest":
                 searchAlgorithm = this._buildNeatest();
+                break;
+            case "mosaNeatest":
+                searchAlgorithm = this._buildMosaNeatest();
+                break;
+            case "mioNeatest":
+                searchAlgorithm = this._buildMioNeatest();
+                break;
+            case "newsdNeatest":
+                searchAlgorithm = this._buildNewsdNeatest();
                 break;
             case "random":
             default:
@@ -330,6 +342,33 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      */
     private _buildNeatest() {
         const searchAlgorithm: SearchAlgorithm<C> = new Neatest() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the 'MosaNeatest' Neuroevolution search algorithm with all necessary properties.
+     */
+    private _buildMosaNeatest() {
+        const searchAlgorithm: SearchAlgorithm<C> = new MosaNeatest() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the 'MioNeatest' Neuroevolution search algorithm with all necessary properties.
+     */
+    private _buildMioNeatest() {
+        const searchAlgorithm: SearchAlgorithm<C> = new MioNeatest() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the 'NewsdNeatest' Neuroevolution search algorithm with all necessary properties.
+     */
+    private _buildNewsdNeatest() {
+        const searchAlgorithm: SearchAlgorithm<C> = new NewsdNeatest() as unknown as SearchAlgorithm<C>;
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         return searchAlgorithm;
     }
