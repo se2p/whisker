@@ -343,7 +343,7 @@ describe('Contradictions', () => {
             const varComp = newCheck(edgeID, {
                 name: "VarComp",
                 negated: true,
-                args: ["sprite", "var2", ">", "0"]
+                args: ["sprite", "color", ">", "0"]
             });
             assertSymmetricContradiction(varChange, varComp, false);
         });
@@ -379,7 +379,7 @@ describe('Contradictions', () => {
             const attrComp = newCheck(edgeID, {
                 name: "AttrComp",
                 negated: true,
-                args: ["sprite", "var2", ">", "0"]
+                args: ["sprite", "color", ">", "0"]
             });
             assertSymmetricContradiction(attrChange, attrComp, false);
         });
@@ -452,7 +452,7 @@ describe('Contradictions', () => {
             ["VarComp", true, ["sprite", "y", ">", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
             ["VarComp", true, ["sprite", "y", ">=", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
             ["VarComp", true, ["sprite2", "y", ">=", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
-            ["VarComp", true, ["sprite", "var2", ">=", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
+            ["VarComp", true, ["sprite", "color", ">=", "0"], "VarComp", true, ["sprite", "y", ">=", "1"], false],
 
             ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "<", "1"], false],
             ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "<=", "1"], false],

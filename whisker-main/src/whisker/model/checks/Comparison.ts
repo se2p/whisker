@@ -2,6 +2,7 @@ import {z} from "zod";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
+import {ModelUtil} from "../util/ModelUtil";
 
 export type Comparison =
     | Eq
@@ -12,17 +13,19 @@ export type Comparison =
     | Geq
     ;
 
+export type AttributeType = string | boolean | number | { x: number, y: number } | number[];
+
 abstract class AbstractComparison implements Quantifiable<Comparison> {
-    protected constructor(private readonly _operand2: string | number) {
+    protected constructor(private readonly _operand2: AttributeType) {
     }
 
-    get operand2(): string | number {
+    get operand2(): AttributeType {
         return this._operand2;
     }
 
     abstract get operator(): ComparisonOp;
 
-    abstract apply(operand1: string | number): CheckResult;
+    abstract apply(operand1: AttributeType): CheckResult;
 
     contradicts(that: Comparison): boolean {
         if (this.operator === "==") {
@@ -54,7 +57,7 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
 }
 
 class Eq extends AbstractComparison {
-    constructor(operand2: string | number) {
+    constructor(operand2: AttributeType) {
         super(operand2);
     }
 
@@ -62,11 +65,7 @@ class Eq extends AbstractComparison {
         return "==";
     }
 
-    override apply(operand1: string | number | boolean): CheckResult {
-        if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
-            operand1 = String(operand1);
-        }
-
+    override apply(operand1: AttributeType): CheckResult {
         return result(operand1 == this.operand2, {actual: operand1, expected: this.operand2});
     }
 
@@ -76,7 +75,7 @@ class Eq extends AbstractComparison {
 }
 
 class Neq extends AbstractComparison {
-    constructor(operand2: string | number) {
+    constructor(operand2: AttributeType) {
         super(operand2);
     }
 
@@ -84,11 +83,7 @@ class Neq extends AbstractComparison {
         return "!=";
     }
 
-    override apply(operand1: string | number | boolean): CheckResult {
-        if (typeof operand1 === "boolean") { // FIXME: Workaround for issue #375
-            operand1 = String(operand1);
-        }
-
+    override apply(operand1: AttributeType): CheckResult {
         return result(operand1 != this.operand2, {actual: operand1});
     }
 
@@ -98,7 +93,7 @@ class Neq extends AbstractComparison {
 }
 
 class Leq extends AbstractComparison {
-    constructor(operand2: string | number) {
+    constructor(operand2: AttributeType) {
         super(operand2);
     }
 
@@ -106,7 +101,7 @@ class Leq extends AbstractComparison {
         return "<=";
     }
 
-    override apply(operand1: string | number): CheckResult {
+    override apply(operand1: AttributeType): CheckResult {
         return result(operand1 <= this.operand2, {actual: operand1, expected: this.operand2});
     }
 
@@ -116,7 +111,7 @@ class Leq extends AbstractComparison {
 }
 
 class Lt extends AbstractComparison {
-    constructor(operand2: string | number) {
+    constructor(operand2: AttributeType) {
         super(operand2);
     }
 
@@ -124,7 +119,7 @@ class Lt extends AbstractComparison {
         return "<";
     }
 
-    override apply(operand1: string | number): CheckResult {
+    override apply(operand1: AttributeType): CheckResult {
         return result(operand1 < this.operand2, {actual: operand1, expected: this.operand2});
     }
 
@@ -134,7 +129,7 @@ class Lt extends AbstractComparison {
 }
 
 class Gt extends AbstractComparison {
-    constructor(operand2: string | number) {
+    constructor(operand2: AttributeType) {
         super(operand2);
     }
 
@@ -142,7 +137,7 @@ class Gt extends AbstractComparison {
         return ">";
     }
 
-    override apply(operand1: string | number): CheckResult {
+    override apply(operand1: AttributeType): CheckResult {
         return result(operand1 > this.operand2, {actual: operand1, expected: this.operand2});
     }
 
@@ -152,7 +147,7 @@ class Gt extends AbstractComparison {
 }
 
 class Geq extends AbstractComparison {
-    constructor(operand2: string | number) {
+    constructor(operand2: AttributeType) {
         super(operand2);
     }
 
@@ -160,7 +155,7 @@ class Geq extends AbstractComparison {
         return ">=";
     }
 
-    override apply(operand1: string | number): CheckResult {
+    override apply(operand1: AttributeType): CheckResult {
         return result(operand1 >= this.operand2, {actual: operand1, expected: this.operand2});
     }
 
@@ -169,7 +164,7 @@ class Geq extends AbstractComparison {
     }
 }
 
-type ComparisonCtor = new (operand2: string | number) => Comparison;
+type ComparisonCtor = new (operand2: AttributeType) => Comparison;
 
 const Comparison: Record<ComparisonOp, ComparisonCtor> = Object.freeze({
     "==": Eq,
@@ -196,7 +191,7 @@ export const ComparisonOp = z.preprocess(
 
 export interface ComparingCheck {
     operator: ComparisonOp;
-    value: string | number;
+    value: AttributeType;
     negated: boolean;
 }
 

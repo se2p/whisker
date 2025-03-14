@@ -107,7 +107,7 @@ export abstract class ModelUtil {
     /**
      * Test whether a value is a number.
      */
-    static testNumber(value: ParamType): number {
+    static testNumber(value: ArgType): number {
         const result = this.returnNumberIfPossible(value);
         if (result == null) {
             throw new NotANumericalValueError(String(value));
@@ -121,7 +121,7 @@ export abstract class ModelUtil {
      * @param defaultValue This value is returned when {@linkcode value} is not a number
      * @return The input converted to a number
      */
-    public static returnNumberIfPossible(value: ParamType, defaultValue: number | null = null): number | null {
+    public static returnNumberIfPossible(value: ArgType, defaultValue: number | null = null): number | null {
         if (value == null || value === '' || isNaN(Number(value))) {
             return defaultValue;
         }
