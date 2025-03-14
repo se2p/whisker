@@ -7,6 +7,8 @@ import {Change, ChangingCheck, newQuantifiedChange, NumberOrChangeOp} from "./Ch
 import {Quantification} from "./Quantification";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {CheckResult, fail, pass} from "./CheckResult";
 
 const name = "AttrChange" as const;
 
@@ -43,11 +45,13 @@ export const AttrChangeJSON = ICheckJSON.extend({
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
+    private readonly _attributeName: string;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
         this._change = newQuantifiedChange(this);
-        this._isForEffect = ModelUtil.isAnEffect(this._args[1]);
+        this._attributeName = this._args[1];
+        this._isForEffect = ModelUtil.isAnEffect(this._attributeName);
     }
 
     get change(): NumberOrChangeOp {
@@ -67,12 +71,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, attrName] = this._args;
-
-        const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
+        const sprite = ModelUtil.getStageOrSprite(t, this._args[0]);
         const spriteName = sprite.name;
         if (!this._isForEffect) {
-            ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+            ModelUtil.checkAttributeExistence(t, spriteName, this._attributeName);
         }
 
         // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
@@ -80,53 +82,43 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         // AttributeChange predicate with sayText fails in the execution with e.g.
         // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
         // Therefore, no instrumentation is done here for the sayText attribute.
-        if (attrName == "x" || attrName == "y") {
-            this._registerOnMoveAttrChange(cu, graphID, spriteName);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-            this._registerOnVisualAttrChange(cu, graphID, spriteName);
+        const check = (s: Sprite) => {
+            try {
+                return this.checkChangeConsideringBounds(s);
+            } catch (e) {
+                throw new ErrorForAttribute(spriteName, this._attributeName, e);
+            }
+        };
+        if (this._attributeName == "x" || this._attributeName == "y") {
+            cu.registerOnMoveEvent(spriteName, this, graphID, check);
+        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(this._attributeName)) {
+            cu.registerOnVisualChange(spriteName, this, graphID, check);
         }
 
         return () => {
-            const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
+            const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
-                return this._change.apply(sprites.map((s) => this._getAttr(s, attrName)));
+                const reason = {};
+                sprites.forEach((sprite, index) => {
+                    const res = this.checkChangeConsideringBounds(sprite);
+                    if (res.passed === false) {
+                        reason[`sprite${index}`] = res.reason;
+                    }
+                });
+                return Object.keys(reason).length == 0 ? pass() : fail(reason);
             } catch (e) {
-                throw new Exception(pSpriteName, attrName, e);
+                throw new Exception(spriteName, this._attributeName, e);
             }
         };
     }
 
-    private _getAttr(s: Sprite, attrName: string) {
+    private _getAttr(s: Sprite) {
         return this._isForEffect
-            ? [s.effects[attrName], s.old.effects[attrName]]
-            : [s[attrName], s.old[attrName]];
+            ? [s.effects[this._attributeName], s.old.effects[this._attributeName]]
+            : [s[this._attributeName], s.old[this._attributeName]];
     }
-
-    private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName] = this._args;
-        cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
-            try {
-                return this._change.applySingle(sprite[attrName], sprite.old[attrName]);
-            } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
-            }
-        });
-    }
-
-    private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName] = this._args;
-        const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
-        cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
-            try {
-                return this._change.applySingle(...this._getAttr(sprite, attrName));
-            } catch (e) {
-                throw new Exception(pSpriteName, attrName, e);
-            }
-        });
-    }
-
 
     override get dependsOnSayText(): boolean {
         return this._args[1] === "sayText";
@@ -142,4 +134,113 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
 
         return this._change.contradicts(that._change);
     }
+
+    private applyConsideringNegation(pCurrent: number | string, pOld: number | string) {
+        const currentNumber = ModelUtil.returnNumberIfPossible(pCurrent, null);
+        const oldNumber = ModelUtil.returnNumberIfPossible(pOld, null);
+        const change = ModelUtil.returnNumberIfPossible(this.change, null);
+        const reason = currentNumber && oldNumber
+            ? {current: pCurrent, old: pOld, actualChange: currentNumber - oldNumber}
+            : {current: pCurrent, old: pOld};
+        const result = this.change == "!=" && pCurrent != pOld
+            || this.change == "-" && currentNumber < oldNumber
+            || this.change == "-=" && currentNumber <= oldNumber
+            || this.change == "=" && pCurrent == pOld
+            || this.change == "+=" && currentNumber >= oldNumber
+            || this.change == "+" && currentNumber > oldNumber
+            || change && currentNumber - oldNumber == change;
+        return this.negated != result ? pass() : fail(reason);
+    }
+
+    private checkChangeConsideringBounds(s: Sprite): CheckResult {
+        const [current, old] = this._getAttr(s);
+        switch (this._attributeName) {
+            case "x":
+                return this.checkBoundedChange(current, old, this.change, -240, 240);
+            case "y":
+                return this.checkBoundedChange(current, old, this.change, -180, 180);
+            case "layerOrder":
+                return this.checkBoundedChange(current, old, this.change, 1, Number.MAX_VALUE);
+            case "direction":
+                return this.checkCyclicChange(current, old, this.change, -180, 180);
+            case "visible":
+            case "effects":
+            case "currentCostume":
+            case "costume":
+            case "currentCostumeName":
+            case "sayText":
+            case "rotationStyle":
+                return this.applyConsideringNegation(current, old);
+            case "size": // TODO this should probably be changed
+                return this.applyConsideringNegation(current, old);
+            case "pos":
+            case "volume":
+                throw new NotYetImplementedException(); // TODO: I don't now the details of this one
+            case "color":
+                return this.applyConsideringNegation(current, old);
+            // TODO: the following would be correct according to the scratch wiki
+            //  but the change is not divided by 2 and also the color is not even bounded by 1900
+            // return this.checkCyclicChange(current, old, typeof (this.change) == "number" ? this.change / 2 : this.change, 0, 100);
+            case "fisheye":
+                return this.checkBoundedChange(current, old, this.change, -100, 1073741723);
+            case "brightness":
+                return this.checkBoundedChange(current, old, this.change, -100, 100);
+            case "ghost":
+                return this.checkBoundedChange(current, old, this.change, 0, 100);
+            case "pixelate":
+                //if set to -5 the actual value apparently is 5
+                return this.checkBoundedChange(current, old, this.change, 0, Number.MAX_VALUE);
+            case "mosaic":
+                //if set to -5 the actual value apparently is 5
+                return this.checkBoundedChange(current, old, this.change, 0, 5105);
+            case "whirl":
+                // return this.checkBoundedChange(current, old, change, ?, 1.94967423051954E+40);
+                throw new NotYetImplementedException();
+            default:
+                throw new Error(this._attributeName + " is not supported");
+        }
+    }
+
+    private checkCyclicChange(current: number, old: number, changeOp: NumberOrChangeOp, min: number, max: number): CheckResult {
+        const change = ModelUtil.returnNumberIfPossible(changeOp, null);
+        if (change == null) {
+            // Overflow can happen here but if this is considered any value is possible if op is not "="
+            return this.applyConsideringNegation(current, old);
+        }
+        let expected = old + change;
+        if (expected > max) {
+            expected = min + expected - max;
+        } else if (expected < min) {
+            expected = max + expected - min;
+        }
+        const reason = {current: current, old: old, expected, theoreticalChange: old + change, min: min, max: max};
+        return this.negated != (current === expected) ? pass() : fail(reason);
+    }
+
+    private checkBoundedChange(current: number, old: number, changeOp: NumberOrChangeOp, min: number, max: number): CheckResult {
+        const reason: Record<string, unknown> = {"current": current, "old": old, "change": current - old};
+        if (changeOp === "+") {
+            return this.negated != (current > old || current >= max) ? pass() : fail(reason);
+        }
+        if (changeOp === "-") {
+            return this.negated != (current < old || current <= min) ? pass() : fail(reason);
+        }
+        const change = ModelUtil.returnNumberIfPossible(changeOp, null);
+        if (change != null) {
+            const result = change > 0
+                ? current >= Math.min(max, old + change)
+                : current <= Math.max(min, old + change)
+            ;
+            return this.negated != result ? pass() : fail({
+                ...reason,
+                expectedForCurrent: Math.min(Math.max(min, old + change), max),
+                unBoundedExpectedValue: old + change,
+                min: min,
+                max: max
+            });
+        }
+        return this.applyConsideringNegation(current, old);
+
+    }
+
 }
