@@ -270,10 +270,10 @@ export class ModelTester extends EventEmitter {
     }
 
     private _userInputGen() {
-        const userInputFun = () => {
+        const userInputFun = async () => {
             const edge = this._runningUserModel.makeOneTransition(this._testDriver!, this._checkUtility!);
             if (edge instanceof UserModelEdge) {
-                edge.inputImmediate(this._testDriver!);
+                await edge.inputImmediate(this._testDriver!);
             }
             if (this._runningUserModel.stopped()) {
                 callback.disable();
@@ -282,7 +282,7 @@ export class ModelTester extends EventEmitter {
         const callback = this._addModelCallback(userInputFun, false, "inputOfUserModel");
     }
 
-    private _addModelCallback(fun: () => void, afterStep = false, name: string) {
+    private _addModelCallback(fun: () => void | Promise<void>, afterStep = false, name: string) {
         return this._testDriver!.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
 
