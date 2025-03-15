@@ -129,7 +129,7 @@
                         "args": [
                             "Sprite1",
                             "sayText",
-                            "=",
+                            "==",
                             "Hello!"
                         ],
                         "negated": false
@@ -151,7 +151,7 @@
                         "args": [
                             "Sprite1",
                             "sayText",
-                            "=",
+                            "==",
                             "Hello!"
                         ],
                         "negated": true
@@ -173,7 +173,7 @@
                         "args": [
                             "Sprite1",
                             "sayText",
-                            "=",
+                            "==",
                             "Hello!"
                         ],
                         "negated": false

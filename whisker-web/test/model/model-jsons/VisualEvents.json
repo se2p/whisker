@@ -103,8 +103,8 @@
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
-                            "costume",
-                            "=",
+                            "currentCostumeName",
+                            "==",
                             "costume2"
                         ],
                         "negated": false
@@ -147,7 +147,7 @@
                         "args": [
                             "Sprite1",
                             "visible",
-                            "=",
+                            "==",
                             false
                         ],
                         "negated": false
@@ -169,7 +169,7 @@
                         "args": [
                             "Sprite1",
                             "visible",
-                            "=",
+                            "==",
                             true
                         ],
                         "negated": false
@@ -191,7 +191,7 @@
                         "args": [
                             "Sprite1",
                             "rotationStyle",
-                            "=",
+                            "==",
                             "all around"
                         ],
                         "negated": false
@@ -213,7 +213,7 @@
                         "args": [
                             "Sprite1",
                             "direction",
-                            "=",
+                            "==",
                             -90
                         ],
                         "negated": false
@@ -235,7 +235,7 @@
                         "args": [
                             "Sprite1",
                             "rotationStyle",
-                            "=",
+                            "==",
                             "left-right"
                         ],
                         "negated": false

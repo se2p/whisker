@@ -258,7 +258,7 @@ describe('CheckGenerator', () => {
     test('getBackgroundChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
         const expected = "win";
-        const stage = new SpriteMock("_stage_", [{name: "currentCostume", value: expected}]);
+        const stage = new SpriteMock("_stage_", [{name: "currentCostumeName", value: expected}]);
         const tdMock = new TestDriverMock([stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
@@ -266,7 +266,7 @@ describe('CheckGenerator', () => {
         c.registerComponents(t, dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
         const actual = "lose";
-        stage.variables = [{name: "currentCostume", value: actual}];
+        stage.variables = [{name: "currentCostumeName", value: actual}];
         tdMock.currentSprites = SpriteMock.toSpriteArray([stage]);
         tdMock.stage = stage.sprite;
         const reason = {"actual": "lose", "expected": "win"};

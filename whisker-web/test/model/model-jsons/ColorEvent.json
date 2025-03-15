@@ -31,9 +31,9 @@
                         "name": "SpriteColor",
                         "args": [
                             "Sprite1",
-                            "255",
-                            "0",
-                            "0"
+                            255,
+                            0,
+                            0
                         ],
                         "negated": false
                     },
@@ -43,7 +43,7 @@
                         "args": [
                             "Sprite1",
                             "visible",
-                            "=",
+                            "==",
                             true
                         ],
                         "negated": false

@@ -12,7 +12,7 @@ import {CheckResult, fail, pass} from "./CheckResult";
 
 const name = "AttrChange" as const;
 
-export const StringAttributeNames = ["currentCostume", "sayText", "rotationStyle"] as const;
+export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
 export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
 export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
 export const EqOrNeqOPs = ["=", "!="] as const;
@@ -95,7 +95,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         };
         if (this._attributeName == "x" || this._attributeName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, check);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostume", "rotationStyle"].includes(this._attributeName)) {
+        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(this._attributeName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, check);
         }
 
@@ -170,7 +170,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
                 return this.checkCyclicChange(current, old, this.change, -180, 180);
             case "visible":
             case "effects":
-            case "currentCostume":
+            case "currentCostumeName":
             case "sayText":
             case "rotationStyle":
                 return this.applyConsideringNegation(current, old);

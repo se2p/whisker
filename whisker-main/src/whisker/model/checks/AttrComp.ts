@@ -55,6 +55,8 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
         this._attrName = this._args[1];
+        this._comparison = newQuantifiedComparison(this);
+        this._isForEffect = ModelUtil.isAnEffect(this._attrName);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         // if (NumberAttributeNames.includes(this._attrName) || EffectNames.includes(this._attrName)) {
@@ -67,8 +69,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         //     this._args[3] = this._args[3].substring(1, this._args[3].length).split(",").map(ModelUtil.testNumber);
         // }
         // this._comparison = newQuantifiedComparison({operator: this.operator, value: this.value, negated: this.negated});
-        this._comparison = newQuantifiedComparison(this);
-        this._isForEffect = ModelUtil.isAnEffect(this._attrName);
     }
 
     get operator(): ComparisonOp {
@@ -91,46 +91,46 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const [pSpriteName, attrName] = this._args;
+        const pSpriteName = this._args[0];
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;
         if (!this._isForEffect) {
-            ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+            ModelUtil.checkAttributeExistence(t, spriteName, this._attrName);
         }
 
         const listener = (sprite: Sprite) => {
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
             try {
-                return this._comparison.applySingle(this._getAttr(sprite, attrName));
+                return this._comparison.applySingle(this._getAttr(sprite));
             } catch (e) {
-                throw new Exception(pSpriteName, attrName, e);
+                throw new Exception(pSpriteName, this._attrName, e);
             }
         };
 
         // on movement listener
-        if (attrName == "x" || attrName == "y") {
+        if (this._attrName == "x" || this._attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostume", "rotationStyle"].includes(attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
-        } else if (attrName == "sayText") {
+        } else if (this._attrName == "sayText") {
             cu.registerOutput(spriteName, this, graphID, listener);
         }
 
         return () => {
-            const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
+            const sprites:Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
-                return this._comparison.apply(sprites.map((s) => this._getAttr(s, attrName)));
+                return this._comparison.apply(sprites.map(s=> this._getAttr(s)));
             } catch (e) {
-                throw new Exception(pSpriteName, attrName, e);
+                throw new Exception(pSpriteName, this._attrName, e);
             }
         };
     }
 
-    private _getAttr(s: Sprite, attrName: string) {
-        return this._isForEffect ? s.effects[attrName] : s[attrName];
+    private _getAttr(s: Sprite) {
+        return this._isForEffect ? s.effects[this._attrName] : s[this._attrName];
     }
 
     override get dependsOnSayText(): boolean {

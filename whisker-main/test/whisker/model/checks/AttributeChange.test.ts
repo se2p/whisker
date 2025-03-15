@@ -11,11 +11,11 @@ describe('AttributeChange', () => {
     const graphID = "graphID";
     const dummyCU = getDummyCheckUtility();
     const stage = new SpriteMock("_stage_", [{
-        name: "currentCostume",
+        name: "currentCostumeName",
         value: "win",
-        old: {name: "currentCostume", value: "lose"}
+        old: {name: "currentCostumeName", value: "lose"}
     }]);
-    const oldStage = new SpriteMock("_stage_", [{name: "currentCostume", value: "lose"}]);
+    const oldStage = new SpriteMock("_stage_", [{name: "currentCostumeName", value: "lose"}]);
     const apple = new SpriteMock("apple", [{name: "x", value: 2}, {name: "size", value: 10}]);
     apple.old = new SpriteMock("apple", [{name: "x", value: 42}, {name: "size", value: 20}]);
     const banana = new SpriteMock("banana");
@@ -55,13 +55,13 @@ describe('AttributeChange', () => {
     });
 
     test('Check is not a constant function', () => {
-        const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostume", "="]});
+        const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostumeName", "="]});
         c.registerComponents(t, dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
         stage.variables = [{
-            name: "currentCostume",
+            name: "currentCostumeName",
             value: "lose",
-            old: {name: "currentCostume", value: "lose"}
+            old: {name: "currentCostumeName", value: "lose"}
         }];
         tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
         expect(c.check()).toStrictEqual(fail(expect.any(Object)));

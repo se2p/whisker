@@ -41,7 +41,7 @@
                         "args": [
                             "Sprite1",
                             "visible",
-                            "=",
+                            "==",
                             true
                         ],
                         "negated": false

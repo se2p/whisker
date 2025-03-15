@@ -173,7 +173,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -350,7 +350,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -490,7 +490,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -627,7 +627,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -765,7 +765,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Sieg"
                         ]
@@ -945,7 +945,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1017,7 +1017,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1089,7 +1089,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1190,7 +1190,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1262,7 +1262,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1334,7 +1334,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1435,7 +1435,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1507,7 +1507,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1579,7 +1579,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1680,7 +1680,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1752,7 +1752,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]
@@ -1824,7 +1824,7 @@
                         "negated": false,
                         "args": [
                             "_stage_",
-                            "currentCostume",
+                            "currentCostumeName",
                             "==",
                             "Weltall"
                         ]

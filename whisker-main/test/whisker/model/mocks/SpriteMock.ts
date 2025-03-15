@@ -6,7 +6,7 @@ export class SpriteMock {
     public touchingColor: boolean;
     public touchingSprite: boolean;
     public variables: any[];
-    public currentCostume: string;
+    public currentCostumeName: string;
     public _clones: SpriteMock[];
     public old: SpriteMock;
     public sayText: string;
@@ -43,13 +43,13 @@ export class SpriteMock {
             direction: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("direction"),
             size: this.variables == null ? 0 : this.getValueOfVariableOrUndefined("size"),
             sayText: this.sayText || this.variables == null ? this.sayText : this.getValueOfVariableOrUndefined("sayText"),
-            currentCostume: this.currentCostume || this.variables == null ? this.currentCostume : this.getValueOfVariableOrUndefined("currentCostume"),
+            currentCostumeName: this.currentCostumeName || this.variables == null ? this.currentCostumeName : this.getValueOfVariableOrUndefined("currentCostumeName"),
             isOriginal: this._original,
             visible: this._visible,
             old: this.old == null ? null : this.old._sprite,
             sprite: this._sprite,
             _target: {sprite: this._sprite, isOriginal: this._original},
-            isStage: this.name == "_stage",
+            isStage: this.name == "_stage_",
             isTouchingMouse: () => this.touchingMouse,
             isTouchingColor: () => this.touchingColor,
             isTouchingSprite: () => this.touchingSprite,
