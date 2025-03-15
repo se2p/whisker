@@ -29,7 +29,7 @@ describe('constructor', () => {
     });
 
     test('Invalid comparison throws error', () => {
-        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "y", "comp" as ComparisonOp, "value"]}))
+        expect(() => new AttrComp("label", {negated: true, args: ["sprite", "y", "comp" as ComparisonOp, 3]}))
             .toThrow();
     });
 
@@ -268,7 +268,7 @@ describe('Contradictions', () => {
 
     test("effect.contradicts() throws for null argument", () => {
         expect(() => {
-            const effect = newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "x", ">", "0"]});
+            const effect = newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "x", ">", 0]});
             effect.contradicts(null);
         }).toThrow();
     });
@@ -291,7 +291,7 @@ describe('Contradictions', () => {
             newCheck(edgeID, {name: "AttrChange", negated: true, args: ["test", "x", "-"]}),
             newCheck(edgeID, {name: "BackgroundChange", negated: true, args: ["test"]}),
             newCheck(edgeID, {name: "VarComp", negated: true, args: ["sprite", "y", ">", "0"]}),
-            newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "x", ">", "0"]}),
+            newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "x", ">", 0]}),
             newCheck(edgeID, {name: "Key", negated: true, args: ["right arrow"]}),
             newCheck(edgeID, {name: "Click", negated: true, args: ["sprite"]}),
             newCheck(edgeID, {name: "SpriteColor", negated: true, args: ["sprite", 255, 0, 0]}),
@@ -365,7 +365,7 @@ describe('Contradictions', () => {
             const attrComp = newCheck(edgeID, {
                 name: "AttrComp",
                 negated: true,
-                args: ["sprite", "y", ">", "0"]
+                args: ["sprite", "y", ">", 0]
             });
             assertSymmetricContradiction(attrChange, attrComp, false);
         });
@@ -379,7 +379,7 @@ describe('Contradictions', () => {
             const attrComp = newCheck(edgeID, {
                 name: "AttrComp",
                 negated: true,
-                args: ["sprite", "color", ">", "0"]
+                args: ["sprite", "color", ">", 0]
             });
             assertSymmetricContradiction(attrChange, attrComp, false);
         });
@@ -659,11 +659,11 @@ describe('Contradictions', () => {
         const attrComp = newCheck(edgeID, {
             name: "AttrComp",
             negated: false,
-            args: ["sprite", "y", "==", "0"]
+            args: ["sprite", "y", "==", 0]
         });
 
-        const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "y", "<=", "2"]});
-        const attrComp3 = new AttrComp(edgeID, {args: ["sprite", "y", "<=", "2"]});
+        const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "y", "<=", 2]});
+        const attrComp3 = new AttrComp(edgeID, {args: ["sprite", "y", "<=", 2]});
 
         expect(attrComp.testForContradictingWithEvents(new Checks([attrComp2]))).toBe(true);
         expect(attrComp.testForContradictingWithEvents(new Checks([attrComp3]))).toBe(false);

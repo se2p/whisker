@@ -23,7 +23,7 @@ describe('AttributeComparison', () => {
     kiwi.updateSprite();
 
     it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: ComparisonOp) => {
-        expect(() => new AttrComp('label', {args: ["kiwi", "size", cmp, "3"]})).toThrowError();
+        expect(() => new AttrComp('label', {args: ["kiwi", "size", cmp, 3]})).toThrowError();
     });
 
     test('OnMoveEvent is registered on CheckUtil', () => {
@@ -31,7 +31,7 @@ describe('AttributeComparison', () => {
         const cuMock = new CheckUtilityMock();
         cuMock.registerOnMoveEvent = fn;
         const cu = cuMock.getCheckUtility();
-        const c = new AttrComp('label', {args: ["kiwi", "x", "==", "7"]});
+        const c = new AttrComp('label', {args: ["kiwi", "x", "==", 7]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("kiwi", c, graphID, expect.anything());
     });
@@ -41,7 +41,7 @@ describe('AttributeComparison', () => {
         const cuMock = new CheckUtilityMock();
         cuMock.registerOnVisualChange = fn;
         const cu = cuMock.getCheckUtility();
-        const c = new AttrComp('label', {args: ["kiwi", "size", "<", "42"]});
+        const c = new AttrComp('label', {args: ["kiwi", "size", "<", 42]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("kiwi", c, graphID, expect.anything());
     });
@@ -78,7 +78,7 @@ describe('AttributeComparison', () => {
             fn(spriteName, c, graphID, predicate);
         };
         const cu = cuMock.getCheckUtility();
-        const c = new AttrComp('label', {args: ["apple", "x", "<=", "42"]});
+        const c = new AttrComp('label', {args: ["apple", "x", "<=", 42]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("apple", c, graphID, check);
         expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
@@ -119,7 +119,7 @@ describe('AttributeComparison', () => {
         kiwi.clones = [new SpriteMock("kiwi")];
         kiwi.clones[0].variables = [{name: "x", value: 4}];
         kiwi.clones[0].updateSprite();
-        const c = new AttrComp('label', {negated, args: ["kiwi", "x", "<", "3"]});
+        const c = new AttrComp('label', {negated, args: ["kiwi", "x", "<", 3]});
         c.registerComponents(t, cu, graphID);
         expect(c.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });
@@ -134,7 +134,7 @@ describe('AttributeComparison', () => {
         kiwi.clones[1].variables = [{name: "x", value: 8}];
         kiwi.clones[2].variables = [{name: "x", value: 16}];
         kiwi.clones.forEach(c => c.updateSprite());
-        const c = new AttrComp('label', {negated, args: ["kiwi", "x", ">", "15"]});
+        const c = new AttrComp('label', {negated, args: ["kiwi", "x", ">", 15]});
         c.registerComponents(t, cu, graphID);
         expect(c.check()).toStrictEqual(negated ? fail(expect.any(Object)) : pass());
     });

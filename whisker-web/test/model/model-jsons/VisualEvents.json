@@ -148,7 +148,7 @@
                             "Sprite1",
                             "visible",
                             "=",
-                            "false"
+                            false
                         ],
                         "negated": false
                     }
@@ -170,7 +170,7 @@
                             "Sprite1",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     }
@@ -214,7 +214,7 @@
                             "Sprite1",
                             "direction",
                             "=",
-                            "-90"
+                            -90
                         ],
                         "negated": false
                     }

@@ -355,7 +355,7 @@
                             ],
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -508,7 +508,7 @@
                             ],
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -651,7 +651,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -693,7 +693,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -787,7 +787,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -854,7 +854,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -920,7 +920,7 @@
                             "Bowl",
                             "x",
                             "=",
-                            "0"
+                            0
                         ],
                         "negated": false
                     },
@@ -931,7 +931,7 @@
                             "Bowl",
                             "y",
                             "=",
-                            "-145"
+                            -145
                         ],
                         "negated": false
                     },
@@ -942,7 +942,7 @@
                             "Apple",
                             "size",
                             "=",
-                            "50"
+                            50
                         ],
                         "negated": false
                     },
@@ -953,7 +953,7 @@
                             "Bananas",
                             "size",
                             "=",
-                            "50"
+                            50
                         ],
                         "negated": false
                     }
@@ -1365,7 +1365,7 @@
                             ],
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     },
@@ -1467,7 +1467,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     },
@@ -1502,7 +1502,7 @@
                             ],
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     },
@@ -1513,7 +1513,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     }
@@ -1601,7 +1601,7 @@
                             ],
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     },
@@ -1615,7 +1615,7 @@
                             ],
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -1640,7 +1640,7 @@
                             ],
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     },
@@ -1725,7 +1725,7 @@
                             "Bananas",
                             "y",
                             "=",
-                            "170"
+                            170
                         ],
                         "negated": false
                     }
@@ -1771,7 +1771,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     },
@@ -1782,7 +1782,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -1804,7 +1804,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     },
@@ -2108,7 +2108,7 @@
                             ],
                             "y",
                             "=",
-                            "170"
+                            170
                         ],
                         "negated": false
                     }
@@ -2156,7 +2156,7 @@
                             ],
                             "y",
                             "<",
-                            "170"
+                            170
                         ],
                         "negated": false
                     }
@@ -2234,7 +2234,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "false"
+                            false
                         ],
                         "negated": false
                     }
@@ -2256,7 +2256,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     }
@@ -2378,7 +2378,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -2461,7 +2461,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -2493,7 +2493,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     },
@@ -2512,7 +2512,7 @@
                             "Bananas",
                             "y",
                             "<",
-                            "170"
+                            170
                         ],
                         "negated": false
                     }
@@ -2629,7 +2629,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     }
@@ -2673,7 +2673,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "false"
+                            false
                         ],
                         "negated": false
                     }
@@ -2704,7 +2704,7 @@
                             "Bananas",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     }
@@ -2735,7 +2735,7 @@
                             "Bananas",
                             "y",
                             ">",
-                            "100"
+                            100
                         ],
                         "negated": false
                     },

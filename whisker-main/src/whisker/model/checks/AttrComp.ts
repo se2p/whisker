@@ -1,4 +1,4 @@
-import {AbstractCheck, AttrName, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
@@ -8,12 +8,13 @@ import {AttributeType, ComparingCheck, Comparison, ComparisonOp, newQuantifiedCo
 import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
 import {
+    AttrNames,
     BooleanAttribute,
     Effect,
     EffectNames,
     NumberAttribute,
     NumberAttributeNames,
-    StringAttribute
+    StringAttribute, StringAttributeNames
 } from "./AttrChange";
 
 const name = "AttrComp" as const;
@@ -23,12 +24,18 @@ type PosType = {
 }
 export type AttrCompArgs =
     [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
-    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number | string]
-    | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: ComparisonOp, attrValue: boolean | string]
-    | [spriteName: SpriteName, attrName: "pos", comparisonOp: ComparisonOp, attrValue: PosType | string]
-    | [spriteName: SpriteName, attrName: "effects", comparisonOp: ComparisonOp, attrValue: number[] | string];
+    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number ]
+    | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean ]
+    | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: PosType]
+    | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]];
 
-const AttrCompArgs = z.tuple([SpriteName, AttrName, ComparisonOp, z.string().or(z.number()),
+const AttrCompArgs = z.union([
+    z.tuple([SpriteName, z.literal("visible"), z.union([z.literal("=="), z.literal("!=")]), z.string().or(z.boolean())]),
+    z.tuple([SpriteName, z.literal("pos"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
+    z.tuple([SpriteName, z.literal("effects"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
+    z.tuple([SpriteName, z.enum(NumberAttributeNames), ComparisonOp, z.string().or(z.number())]),
+    z.tuple([SpriteName, z.enum(EffectNames), ComparisonOp, z.string().or(z.number())]),
+    z.tuple([SpriteName, z.enum(StringAttributeNames), ComparisonOp, z.string()]),
 ]);
 
 export interface AttrCompJSON extends ICheckJSON {
@@ -44,22 +51,24 @@ export const AttrCompJSON = ICheckJSON.extend({
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Quantification<Comparison>;
     private readonly _isForEffect: boolean;
-
+    private readonly _attrName: AttrNames;
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
+        this._attrName = this._args[1];
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        if (NumberAttributeNames.includes(this._args[1]) || EffectNames.includes(this._args[1])) {
-            this._args[3] = ModelUtil.testNumber(Number(this._args[3]));
-        } else if (this._args[1] === "visible") {
-            this._args[3] = Boolean(this._args[3]);
-        } else if (this._args[1] === "pos" && typeof this._args[3] == "string") {
-            this._args[3] = {x: 0, y: 0}; // TODO change to proper parsing
-        } else if (this._args[1] === "effects" && typeof this._args[3] == "string") {
-            this._args[3] = this._args[3].substring(1, this._args[3].length).split(",").map(ModelUtil.testNumber);
-        }
+        // if (NumberAttributeNames.includes(this._attrName) || EffectNames.includes(this._attrName)) {
+        //     this._args[3] = ModelUtil.testNumber(Number(this._args[3]));
+        // } else if (this._attrName === "visible") {
+        //     this._args[3] = Boolean(this._args[3]);
+        // } else if (this._attrName === "pos" && typeof this._args[3] == "string") {
+        //     this._args[3] = {x: 0, y: 0}; // TODO change to proper parsing
+        // } else if (this._attrName === "effects" && typeof this._args[3] == "string") {
+        //     this._args[3] = this._args[3].substring(1, this._args[3].length).split(",").map(ModelUtil.testNumber);
+        // }
+        // this._comparison = newQuantifiedComparison({operator: this.operator, value: this.value, negated: this.negated});
         this._comparison = newQuantifiedComparison(this);
-        this._isForEffect = ModelUtil.isAnEffect(this._args[1]);
+        this._isForEffect = ModelUtil.isAnEffect(this._attrName);
     }
 
     get operator(): ComparisonOp {
@@ -125,7 +134,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
     }
 
     override get dependsOnSayText(): boolean {
-        return this._args[1] === "sayText";
+        return this._attrName === "sayText";
     }
 
     protected override _contradicts(that: AttrComp): boolean {

@@ -42,7 +42,7 @@
                             "Sprite1",
                             "visible",
                             "=",
-                            "true"
+                            true
                         ],
                         "negated": false
                     }
