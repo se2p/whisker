@@ -49,6 +49,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
+    private readonly _attributeIsNumber: boolean;
     private readonly _attributeName: AttrNames;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
@@ -56,6 +57,9 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         this._change = newQuantifiedChange(this);
         this._attributeName = this._args[1];
         this._isForEffect = ModelUtil.isAnEffect(this._attributeName);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this._attributeIsNumber = this._isForEffect || NumberAttributeNames.includes(this._attributeName);
     }
 
     get change(): NumberOrChangeOp {
@@ -88,7 +92,9 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         // Therefore, no instrumentation is done here for the sayText attribute.
         const check = (s: Sprite) => {
             try {
-                return this.checkChangeConsideringBounds(s);
+                return this._attributeIsNumber
+                    ? this.checkChangeConsideringBounds(s)
+                    : this._change.applySingle(this._getAttr(s));
             } catch (e) {
                 throw new ErrorForAttribute(spriteName, this._attributeName, e);
             }
@@ -104,15 +110,21 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
-                const reason:Record<string, Record<string, unknown>> = {};
-                sprites.forEach((sprite, index) => {
-                    const res = this.checkChangeConsideringBounds(sprite);
+                if(!this._attributeIsNumber){
+                    return this._change.apply(sprites.map(s => this._getAttr(s)));
+                }
+                const reason: Record<string, Record<string, unknown>> = {};
+                for (let i = 0; i < sprites.length; i++){
+                    const s = sprites[i];
+                    const res = this.checkChangeConsideringBounds(s);
                     if (res.passed === false) {
-                        reason[`${spriteName}${index}`] = res.reason;
+                        reason[`${spriteName}${i}`] = res.reason;
+                    } else if (!this.negated) {
+                        return pass(); // there exists a pass() so pass()
                     }
-                });
+                }
                 const count = Object.keys(reason).length;
-                return count == 0 ? pass() : (count == 1 ? fail(Object.values(reason)[0]): fail(reason));
+                return count == 0 ? pass() : (count == 1 ? fail(Object.values(reason)[0]) : fail(reason));
             } catch (e) {
                 throw new Exception(spriteName, this._attributeName, e);
             }
@@ -140,23 +152,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.contradicts(that._change);
     }
 
-    private applyConsideringNegation(pCurrent: number | string, pOld: number | string) {
-        const currentNumber = ModelUtil.returnNumberIfPossible(pCurrent, null);
-        const oldNumber = ModelUtil.returnNumberIfPossible(pOld, null);
-        const change = ModelUtil.returnNumberIfPossible(this.change, null);
-        const reason = currentNumber && oldNumber
-            ? {current: pCurrent, old: pOld, actualChange: currentNumber - oldNumber}
-            : {current: pCurrent, old: pOld};
-        const result = this.change == "!=" && pCurrent != pOld
-            || this.change == "-" && currentNumber < oldNumber
-            || this.change == "-=" && currentNumber <= oldNumber
-            || this.change == "=" && pCurrent == pOld
-            || this.change == "+=" && currentNumber >= oldNumber
-            || this.change == "+" && currentNumber > oldNumber
-            || change != null && currentNumber - oldNumber == change;
-        return this.negated != result ? pass() : fail(reason);
-    }
-
     private checkChangeConsideringBounds(s: Sprite): CheckResult {
         const [current, old] = this._getAttr(s);
         switch (this._attributeName) {
@@ -168,19 +163,12 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
                 return this.checkBoundedChange(current, old, this.change, 1, Number.MAX_VALUE);
             case "direction":
                 return this.checkCyclicChange(current, old, this.change, -180, 180);
-            case "visible":
-            case "effects":
-            case "currentCostumeName":
-            case "sayText":
-            case "rotationStyle":
-                return this.applyConsideringNegation(current, old);
             case "size": // TODO this should probably be changed
-                return this.applyConsideringNegation(current, old);
-            case "pos":
+                return this._change.applySingle(current, old);
             case "volume":
                 throw new NotYetImplementedException(); // TODO: I don't now the details of this one
             case "color":
-                return this.applyConsideringNegation(current, old);
+                return this._change.applySingle(current, old);
             // TODO: the following would be correct according to the scratch wiki
             //  but the change is not divided by 2 and also the color is not even bounded by 1900
             // return this.checkCyclicChange(current, old, typeof (this.change) == "number" ? this.change / 2 : this.change, 0, 100);
@@ -190,25 +178,23 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
                 return this.checkBoundedChange(current, old, this.change, -100, 100);
             case "ghost":
                 return this.checkBoundedChange(current, old, this.change, 0, 100);
-            case "pixelate":
-                //if set to -5 the actual value apparently is 5
+            case "pixelate": //if set to -5 the actual value apparently is 5
                 return this.checkBoundedChange(current, old, this.change, 0, Number.MAX_VALUE);
-            case "mosaic":
-                //if set to -5 the actual value apparently is 5
+            case "mosaic": //if set to -5 the actual value apparently is 5
                 return this.checkBoundedChange(current, old, this.change, 0, 5105);
-            case "whirl":
+            case "whirl": //TODO
                 // return this.checkBoundedChange(current, old, change, ?, 1.94967423051954E+40);
-                throw new NotYetImplementedException();
+                return this._change.applySingle(current, old);
             default:
-                throw new Error(this._attributeName + " is not supported");
+                throw new Error(this._attributeName + " should have been dealt with.");
         }
     }
 
     private checkCyclicChange(current: number, old: number, changeOp: NumberOrChangeOp, min: number, max: number): CheckResult {
         const change = ModelUtil.returnNumberIfPossible(changeOp, null);
         if (change == null) {
-            // Overflow can happen here but if this is considered any value is possible if op is not "="
-            return this.applyConsideringNegation(current, old);
+            // Overflow can happen here but if this is considered any value is possible if op is not "=" or "!="
+            return this._change.applySingle(current, old);
         }
         let expected = old + change;
         if (expected > max) {
@@ -242,8 +228,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
                 max: max
             });
         }
-        return this.applyConsideringNegation(current, old);
-
+        return this._change.applySingle(current, old);
     }
 
 }
