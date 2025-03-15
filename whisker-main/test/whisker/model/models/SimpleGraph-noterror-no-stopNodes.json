@@ -77,7 +77,7 @@
                         "args": [
                             "Stern",
                             "visible",
-                            "=",
+                            "==",
                             "false"
                         ],
                         "negated": false

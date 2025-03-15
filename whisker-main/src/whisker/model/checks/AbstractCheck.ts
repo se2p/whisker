@@ -24,7 +24,7 @@ export const SpriteName = z.union([
 export const VariableName = SpriteName;
 
 export const AttrName = z.preprocess(
-    (attrName) => attrName === "costume" || attrName === "currentCostume" ? "currentCostumeName" : attrName,
+    (attrName) => attrName === "costume" || attrName === "currentCostumeName" ? "currentCostume" : attrName,
     z.string()
 );
 

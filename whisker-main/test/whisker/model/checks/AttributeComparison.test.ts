@@ -89,7 +89,7 @@ describe('AttributeComparison', () => {
 
     test('Output is registered on CheckUtil for changing visual', () => {
         const sprite = new SpriteMock("_stage_");
-        sprite.currentCostumeName = "defaultStage";
+        sprite.currentCostume = "defaultStage";
         const tdMock = new TestDriverMock([sprite]);
         tdMock.stage = sprite.updateSprite();
         const t = tdMock.getTestDriver();
@@ -106,7 +106,7 @@ describe('AttributeComparison', () => {
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("_stage_", c, graphID, check);
         expect(check(sprite.sprite)).toStrictEqual(pass());
-        sprite.currentCostumeName = "win";
+        sprite.currentCostume = "win";
         sprite.updateSprite();
         expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
     });

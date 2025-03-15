@@ -111,7 +111,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // on movement listener
         if (attrName == "x" || attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostume", "rotationStyle"].includes(attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
         } else if (attrName == "sayText") {
             cu.registerOutput(spriteName, this, graphID, listener);

@@ -58,7 +58,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         // without movement
         return () => {
             try {
-                return this._comparison.apply(t.getStage()["currentCostumeName"]);
+                return this._comparison.apply(t.getStage()["currentCostume"]);
             } catch (e) {
                 // should not even happen...
                 throw new ErrorForAttribute("_stage_", "costume", e);
