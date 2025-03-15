@@ -12,7 +12,7 @@ import {CheckResult, fail, pass} from "./CheckResult";
 
 const name = "AttrChange" as const;
 
-export const StringAttributeNames = ["currentCostume" , "costume" , "currentCostumeName" , "sayText" , "rotationStyle"] as const;
+export const StringAttributeNames = ["currentCostume", "costume", "currentCostumeName", "sayText", "rotationStyle"] as const;
 export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
 export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
 export const EqOrNeqOPs = ["=", "!="] as const;
@@ -104,14 +104,15 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
-                const reason = {};
+                const reason:Record<string, Record<string, unknown>> = {};
                 sprites.forEach((sprite, index) => {
                     const res = this.checkChangeConsideringBounds(sprite);
                     if (res.passed === false) {
-                        reason[`sprite${index}`] = res.reason;
+                        reason[`${spriteName}${index}`] = res.reason;
                     }
                 });
-                return Object.keys(reason).length == 0 ? pass() : fail(reason);
+                const count = Object.keys(reason).length;
+                return count == 0 ? pass() : (count == 1 ? fail(Object.values(reason)[0]): fail(reason));
             } catch (e) {
                 throw new Exception(spriteName, this._attributeName, e);
             }
