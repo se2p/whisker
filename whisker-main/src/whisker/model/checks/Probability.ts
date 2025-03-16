@@ -66,7 +66,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
     }
 
     public static convertArgs(args: ArgType[]): boolean[] {
-        return [ModelUtil.parseAndUpdate(args, 0)];
+        return [ModelUtil.parseIntAndUpdate(args, 0)];
 
     }
 }

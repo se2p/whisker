@@ -60,7 +60,7 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
     }
 
     public static convertArgs(args: ArgType[]): boolean[] {
-        return [ModelUtil.parseAndUpdate(args, 0)];
+        return [ModelUtil.parseIntAndUpdate(args, 0)];
     }
 }
 

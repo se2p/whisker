@@ -238,10 +238,13 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
     }
 
     public static convertArgs(args: ArgType[]): boolean[] {
+        const changeValid = ModelUtil.isOperatorEqOrNeq(args, 2)
+            || ModelUtil.isEffectOrNumberAttribute(args[1]) && (
+                ModelUtil.parseIntAndUpdate(args, 2) || isValidChangeOperator(args[2]));
         return [
             couldBeSpriteName(args[0]),
             ModelUtil.isAnAttributeOrEffect(args[1]),
-            ModelUtil.parseAndUpdate(args, 2) || isValidChangeOperator(args[2]),
+            changeValid
         ];
     }
 }

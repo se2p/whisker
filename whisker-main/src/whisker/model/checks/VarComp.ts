@@ -127,7 +127,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
             couldBeSpriteName(args[0]),
             ModelUtil.isAnAttributeOrEffect(args[1]),
             isValidComparisonOp(args[2]),
-            ModelUtil.parseAndUpdate(args, 3) || typeof args[3] == "string"
+            ModelUtil.parseIntAndUpdate(args, 3) || typeof args[3] == "string"
             // TODO this should probably be improved to avoid something like "20" > "100" which would evaluate to false
         ];
     }

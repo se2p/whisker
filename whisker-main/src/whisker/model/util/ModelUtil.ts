@@ -11,6 +11,7 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
+import logger from "../../../util/logger";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -43,7 +44,7 @@ export abstract class ModelUtil {
         if (pSpriteName == "_stage_") {
             return testDriver.getStage();
         }
-        return this.checkSpriteExistence(testDriver, pSpriteName);
+        return ModelUtil.checkSpriteExistence(testDriver, pSpriteName);
     }
 
     /**
@@ -108,7 +109,7 @@ export abstract class ModelUtil {
      */
     static checkAttributeExistence(testDriver: TestDriver, spriteName: string, pAttrName: ArgType): void {
         const attrName = String(pAttrName);
-        if (!this._isAnAttribute(attrName)) {
+        if (!ModelUtil._isAnAttribute(attrName)) {
             throw new AttributeNotFoundError(spriteName, attrName);
         }
     }
@@ -117,7 +118,7 @@ export abstract class ModelUtil {
      * Test whether a value is a number.
      */
     static testNumber(value: ArgType): number {
-        const result = this.returnNumberIfPossible(value);
+        const result = ModelUtil.returnNumberIfPossible(value);
         if (result == null) {
             throw new NotANumericalValueError(String(value));
         }
@@ -138,8 +139,8 @@ export abstract class ModelUtil {
     }
 
     private static _isAnAttribute(attrName: string): boolean {
-        return this.isAnAttribute(attrName) ||
-            (attrName.startsWith('old.') && this.isAnAttribute(attrName.substring(4)));
+        return ModelUtil.isAnAttribute(attrName) ||
+            (attrName.startsWith('old.') && ModelUtil.isAnAttribute(attrName.substring(4)));
     }
 
     public static isAnAttribute(attrName: string): boolean {
@@ -168,7 +169,7 @@ export abstract class ModelUtil {
     public static isEffectOrNumberAttribute(name: ArgType): boolean {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return this.isAnEffect(name) || (NumberAttributeNames as string[]).includes(name);
+        return ModelUtil.isAnEffect(name) || (NumberAttributeNames as string[]).includes(name);
     }
 
     /**
@@ -266,7 +267,7 @@ export abstract class ModelUtil {
         const toEval = String(pToEval);
         const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
         const $ = (s: string, a: string, c: boolean) =>
-            this.getValueForSubExpression(t, s, a, c, dependencies);
+            ModelUtil.getValueForSubExpression(t, s, a, c, dependencies);
         try {
             // fill dependencies and check if the expression works
             eval(`($) => ${toEval}`)($);
@@ -319,13 +320,13 @@ export abstract class ModelUtil {
         } else {
             variable = sprite[attribute];
             if (!variable) {
-                if (this._isAnAttribute(attribute)) {
+                if (ModelUtil._isAnAttribute(attribute)) {
                     // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
                     variable = t.getSprite(spriteName)[attribute];
                 } else {
                     try {
                         // maybe custom flag was not specified by accident -> try custom variables
-                        return this.getValueForSubExpression(t, spriteName, attribute, true, dependencies);
+                        return ModelUtil.getValueForSubExpression(t, spriteName, attribute, true, dependencies);
                     } catch (e) {
                         throw new AttributeNotFoundError(spriteName, attribute);
                     }
@@ -343,7 +344,7 @@ export abstract class ModelUtil {
 
     public static evaluateExpression(t: TestDriver, expression: string, log: Record<string, string> = {}): unknown {
         const $ = (spriteName: string, attribute: string, custom: boolean) =>
-            this.getValueForSubExpression(t, spriteName, attribute, custom, undefined, log);
+            ModelUtil.getValueForSubExpression(t, spriteName, attribute, custom, undefined, log);
         return eval(expression)(t, $);
     }
 
@@ -474,7 +475,7 @@ export abstract class ModelUtil {
     }
 
     static getNumberFunction(text: ArgType, t: TestDriver): () => number {
-        const asNumber = this.returnNumberIfPossible(text);
+        const asNumber = ModelUtil.returnNumberIfPossible(text);
         if (asNumber == null) {
             const func = ModelUtil.getExpressionForEval(t, text).expr;
             return () => ModelUtil.testNumber(Number(ModelUtil.evaluateExpression(t, func)));
@@ -483,12 +484,57 @@ export abstract class ModelUtil {
         }
     }
 
-    static parseAndUpdate(args: ArgType[], index: number): boolean {
+    static parseIntAndUpdate(args: ArgType[], index: number): boolean {
         const converted = ModelUtil.returnNumberIfPossible(args[index], null);
         if (converted != null) {
             args[index] = converted;
             return true;
         }
         return false;
+    }
+
+    static parseBooleanAndUpdate(args: ArgType[], index: number): boolean {
+        if (args[index] === "true") {
+            args[index] = true;
+        } else if (args[index] === "false") {
+            args[index] = false;
+        }
+        return typeof args[index] == "boolean";
+    }
+
+    static parsePosAndUpdate(args: ArgType[], index: number): boolean {
+        const parsed = JSON.parse(String(args[index]));
+        if (parsed && parsed.x && parsed.y) {
+            const x = ModelUtil.returnNumberIfPossible(parsed.x, null);
+            const y = ModelUtil.returnNumberIfPossible(parsed.y, null);
+            if (x && y) {
+                args[index] = {x: x, y: y};
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static parseEffectsArrayAndUpdate(args: ArgType[], index: number): boolean {
+        try {
+            const str = String(args[index]);
+            const [start, end] = str.startsWith("[") && str.endsWith("]") ? [1, str.length - 1] : [0, str.length];
+            const parsed = str.substring(start,end).split(",").map(ModelUtil.testNumber);
+            if (parsed.length == EffectNames.length) {
+                args[index] = parsed;
+                return true;
+            }
+        } catch (e) {
+            logger.debug(e);
+        }
+        return false;
+    }
+
+    static isOperatorEqOrNeq(args: ArgType[], index:number): boolean {
+        if(args[index] === "=") {
+            args[index] = "==";
+            return true;
+        }
+        return args[index] === "==" ||args[index] === "!=";
     }
 }

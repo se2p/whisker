@@ -119,7 +119,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return [
             couldBeSpriteName(args[0]),
             typeof args[1] == "string",
-            ModelUtil.parseAndUpdate(args, 2) || isValidChangeOperator(args[2]),
+            ModelUtil.parseIntAndUpdate(args, 2) || isValidChangeOperator(args[2]),
         ];
     }
 }

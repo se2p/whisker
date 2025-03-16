@@ -252,18 +252,19 @@ class ModelEditor {
 
     /** For the currently selected edge by the network save the check in the check div. */
     saveCheck () {
-        const type = $(ModelEditor.CHECK_CHOOSER).val();
+        const name = $(ModelEditor.CHECK_CHOOSER).val();
+        const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         let args = [];
-        if (type === 'Expr'){
+        if (name === 'Expr'){
             args = $(`#${ModelEditor.INPUT_ID}${0}`).val()
                 .trim()
                 .split('\n');
         } else {
-            const argNumber = checkLabelCodes[type] ?? inputLabelCodes[type];
+            const argNumber = checkLabelCodes[name] ?? inputLabelCodes[name];
             for (let i = 0; i < argNumber.length; i++) {
                 args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
             }
-            const argsValid = convertArgs(args);
+            const argsValid = convertArgs({name: name, negated: negated, args: args});
             let valid = true;
             for (let i = 0; i < argNumber.length; i++) {
                 if (!argsValid[i]) {
@@ -282,9 +283,6 @@ class ModelEditor {
         // get the list that check gets added to
         const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
         const chosenCheckList = this.chosenList === 'condition' ? edge.conditions : edge.effects;
-
-        const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
-        const name = $(ModelEditor.CHECK_CHOOSER).val();
         if (this.checkIndex === -1) {
             chosenCheckList.push({args, negated, name});
         } else {
@@ -297,32 +295,6 @@ class ModelEditor {
         return true;
     }
 
-    checkValidCheckArgument (type, value) {
-        switch (type) {
-        case argType.change:
-            return value.match(ModelEditor.CHANGE_PATTERN);
-        case argType.probValue:
-            return value.match(ModelEditor.PROB_PATTERN);
-        case argType.time:
-            return value.match(ModelEditor.TIME_PATTERN);
-        case argType.r:
-        case argType.g:
-        case argType.b:
-            return value.match(ModelEditor.RGB_PATTERN);
-        case argType.coordX:
-        case argType.coordY:
-        case argType.spriteName:
-        case argType.varName:
-        case argType.attrName:
-        case argType.costumeName:
-        case argType.value:
-            return value.trim().length > 0;
-        case argType.expr:
-            return true; // expressions are used for output checks which can have value "" (sprite.sayText)
-        default:
-            return true;
-        }
-    }
 
     getEdgeById (edgeID) {
         return this.currentModel.edges.find(e => e.id === edgeID);
@@ -1351,7 +1323,8 @@ class ModelEditor {
             .append(
                 $('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(
                     $('<select/>', {name: `selectChange${idNbr}`, id: id})
-                        .append($('<option/>', {value: '='}).text('=='))
+                        .append($('<option/>', {value: '=='}).text('=='))
+                        .append($('<option/>', {value: '!='}).text('!='))
                         .append($('<option/>', {value: '>'}).text('>'))
                         .append($('<option/>', {value: '<'}).text('<'))
                         .append($('<option/>', {value: '>='}).text('>='))

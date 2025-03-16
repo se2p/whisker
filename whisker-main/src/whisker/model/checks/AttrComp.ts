@@ -58,18 +58,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         this._attrName = this._args[1];
         this._comparison = newQuantifiedComparison(this);
         this._isForEffect = ModelUtil.isAnEffect(this._attrName);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // if (NumberAttributeNames.includes(this._attrName) || EffectNames.includes(this._attrName)) {
-        //     this._args[3] = ModelUtil.testNumber(Number(this._args[3]));
-        // } else if (this._attrName === "visible") {
-        //     this._args[3] = Boolean(this._args[3]);
-        // } else if (this._attrName === "pos" && typeof this._args[3] == "string") {
-        //     this._args[3] = {x: 0, y: 0}; // TODO change to proper parsing
-        // } else if (this._attrName === "effects" && typeof this._args[3] == "string") {
-        //     this._args[3] = this._args[3].substring(1, this._args[3].length).split(",").map(ModelUtil.testNumber);
-        // }
-        // this._comparison = newQuantifiedComparison({operator: this.operator, value: this.value, negated: this.negated});
     }
 
     get operator(): ComparisonOp {
@@ -150,16 +138,24 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
     }
 
     public static convertArgs(args: ArgType[]): boolean[] {
-        const converted = ModelUtil.returnNumberIfPossible(args[3], null);
-        const valid = converted != null && ModelUtil.isEffectOrNumberAttribute(args[1]);
-        if (valid) {
-            args[3] = converted;
+        let valid: boolean;
+        const shouldBeNumber = ModelUtil.isEffectOrNumberAttribute(args[1]);
+        if (shouldBeNumber) {
+            valid = ModelUtil.parseIntAndUpdate(args, 3);
+        } else if (args[1] == "visible") {
+            valid = ModelUtil.parseBooleanAndUpdate(args, 3);
+        } else if (args[1] === "pos") {
+            valid = ModelUtil.parsePosAndUpdate(args, 3);
+        } else if (args[1] === "effects") {
+            valid = ModelUtil.parseEffectsArrayAndUpdate(args, 3);
+        } else {
+            valid = typeof args[3] == "string";
         }
         return [
             couldBeSpriteName(args[0]),
             ModelUtil.isAnAttributeOrEffect(args[1]),
-            isValidComparisonOp(args[2]),
-            valid || typeof args[3] == "string",
+            ModelUtil.isOperatorEqOrNeq(args, 2) || shouldBeNumber && isValidComparisonOp(args[2]),
+            valid,
         ];
     }
 }

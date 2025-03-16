@@ -97,7 +97,7 @@ abstract class AbstractNbrOfClones<
         return [
             couldBeSpriteName(args[0]),
             isValidComparisonOp(args[1]),
-            ModelUtil.parseAndUpdate(args, 2)
+            ModelUtil.parseIntAndUpdate(args, 2)
         ];
     }
 }

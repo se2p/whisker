@@ -117,9 +117,9 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
     public static convertArgs(args: ArgType[]): boolean[] {
         return [
             couldBeSpriteName(args[0]),
-            ModelUtil.parseAndUpdate(args, 1),
-            ModelUtil.parseAndUpdate(args, 2),
-            ModelUtil.parseAndUpdate(args, 3)
+            ModelUtil.parseIntAndUpdate(args, 1),
+            ModelUtil.parseIntAndUpdate(args, 2),
+            ModelUtil.parseIntAndUpdate(args, 3)
         ];
     }
 }
