@@ -193,3 +193,60 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             throw new NonExhaustiveCaseDistinction(name);
     }
 }
+
+export function convertArgs(checkJSON: CheckJSON): boolean[] {
+    const name = checkJSON.name;
+
+    switch (name) {
+        case "AttrChange":
+            return AttrChange.convertArgs(checkJSON.args);
+        case "AttrComp":
+            return AttrComp.convertArgs(checkJSON.args);
+        case "BackgroundChange":
+            return BackgroundChange.convertArgs(checkJSON.args);
+        case "Click":
+            return Click.convertArgs(checkJSON.args);
+        case "Key":
+            return Key.convertArgs(checkJSON.args);
+        case "AnyKey":
+            return AnyKey.convertArgs(checkJSON.args);
+        case "Output":
+            return Output.convertArgs(checkJSON.args);
+        case "SpriteColor":
+            return SpriteColor.convertArgs(checkJSON.args);
+        case "SpriteTouching":
+            return SpriteTouching.convertArgs(checkJSON.args);
+        case "VarChange":
+            return VarChange.convertArgs(checkJSON.args);
+        case "VarComp":
+            return VarComp.convertArgs(checkJSON.args);
+        case "Expr":
+            return Expr.convertArgs(checkJSON.args);
+        case "Probability":
+            return Probability.convertArgs(checkJSON.args);
+        case "TimeElapsed":
+            return TimeElapsed.convertArgs(checkJSON.args);
+        case "TimeBetween":
+            return TimeBetween.convertArgs(checkJSON.args);
+        case "TimeAfterEnd":
+            return TimeAfterEnd.convertArgs(checkJSON.args);
+        case "NbrOfClones":
+            return NbrOfClones.convertArgs(checkJSON.args);
+        case "NbrOfVisibleClones":
+            return NbrOfVisibleClones.convertArgs(checkJSON.args);
+        case "TouchingEdge":
+            return TouchingEdge.convertArgs(checkJSON.args);
+        case "TouchingVerticalEdge":
+            return TouchingVerticalEdge.convertArgs(checkJSON.args);
+        case "TouchingHorizEdge":
+            return TouchingHorizEdge.convertArgs(checkJSON.args);
+        case "Layer":
+            return Layer.convertArgs(checkJSON.args);
+        case "ClearedEffects":
+            return ClearedEffect.convertArgs(checkJSON.args);
+        case "PointsTo":
+            return PointsTo.convertArgs(checkJSON.args);
+        default:
+            throw new NonExhaustiveCaseDistinction(name);
+    }
+}

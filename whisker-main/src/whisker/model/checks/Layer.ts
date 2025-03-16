@@ -1,10 +1,11 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, pass, fail, result} from "./CheckResult";
+import {ArgType} from "../util/schema";
 
 const name = "Layer" as const;
 
@@ -72,5 +73,12 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
 
     get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]):boolean[] {
+        return [
+            couldBeSpriteName(args[0]),
+            args[1] === "First" || args[1] === "Last"
+        ];
     }
 }

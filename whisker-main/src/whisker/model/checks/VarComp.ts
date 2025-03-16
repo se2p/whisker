@@ -1,11 +1,20 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName, VariableName} from "./AbstractCheck";
+import {
+    AbstractCheck,
+    CheckFun0,
+    couldBeSpriteName,
+    ICheckJSON,
+    SlimCheckJSON,
+    SpriteName,
+    VariableName
+} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
 
 const name = "VarComp" as const;
 
@@ -111,5 +120,15 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): boolean[] {
+        return [
+            couldBeSpriteName(args[0]),
+            ModelUtil.isAnAttributeOrEffect(args[1]),
+            isValidComparisonOp(args[2]),
+            ModelUtil.parseAndUpdate(args, 3) || typeof args[3] == "string"
+            // TODO this should probably be improved to avoid something like "20" > "100" which would evaluate to false
+        ];
     }
 }

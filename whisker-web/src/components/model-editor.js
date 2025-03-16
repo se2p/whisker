@@ -1,6 +1,7 @@
 /* eslint-disable valid-jsdoc */
 
 const {ModelTester} = require('whisker-main');
+const {convertArgs} = require('../../../whisker-main/src/whisker/model/checks/newCheck');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
@@ -259,17 +260,15 @@ class ModelEditor {
                 .split('\n');
         } else {
             const argNumber = checkLabelCodes[type] ?? inputLabelCodes[type];
-
+            for (let i = 0; i < argNumber.length; i++) {
+                args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
+            }
+            const argsValid = convertArgs(args);
             let valid = true;
             for (let i = 0; i < argNumber.length; i++) {
-                const element = $(`#${ModelEditor.INPUT_ID}${i}`);
-                args[i] = element.val();
-                valid = this.checkValidCheckArgument(argNumber[i], args[i]);
-                if (argNumber[i] === argType.probValue) {
-                    args[i] = args[i] / 100;
-                }
-                if (!valid) {
-                    element.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                if (!argsValid[i]) {
+                    $(`#${ModelEditor.INPUT_ID}${i}`).addClass(ModelEditor.INVALID_INPUT_CLASS);
+                    valid = false;
                 }
             }
 
@@ -282,12 +281,7 @@ class ModelEditor {
 
         // get the list that check gets added to
         const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
-        let chosenCheckList;
-        if (this.chosenList === 'condition') {
-            chosenCheckList = edge.conditions;
-        } else {
-            chosenCheckList = edge.effects;
-        }
+        const chosenCheckList = this.chosenList === 'condition' ? edge.conditions : edge.effects;
 
         const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         const name = $(ModelEditor.CHECK_CHOOSER).val();
@@ -317,8 +311,8 @@ class ModelEditor {
             return value.match(ModelEditor.RGB_PATTERN);
         case argType.coordX:
         case argType.coordY:
-        case argType.spriteNameRegex:
-        case argType.varNameRegex:
+        case argType.spriteName:
+        case argType.varName:
         case argType.attrName:
         case argType.costumeName:
         case argType.value:
@@ -1222,13 +1216,13 @@ class ModelEditor {
 
     appendInputBasedOnType (type, value, i) {
         switch (type) {
-        case argType.spriteNameRegex:
+        case argType.spriteName:
             this.appendInputWithPattern('modelEditor:spriteName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, '(Regex)');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, 'SpriteName');
             break;
-        case argType.varNameRegex:
+        case argType.varName:
             this.appendInputWithPattern('modelEditor:varName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, '(Regex)');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, 'SpriteName)');
             break;
         case argType.attrName:
             this.appendInputWithPattern('modelEditor:attrName', value,

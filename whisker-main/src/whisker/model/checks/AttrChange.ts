@@ -1,20 +1,26 @@
-import {AbstractCheck, AttrName, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
-import {ModelUtil} from "../util/ModelUtil";
+import {
+    AbstractCheck,
+    AttrName,
+    CheckFun0,
+    couldBeSpriteName,
+    ICheckJSON,
+    SlimCheckJSON,
+    SpriteName
+} from "./AbstractCheck";
+import {EffectNames, ModelUtil, NumberAttributeNames, StringAttributeNames} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {Change, ChangingCheck, newQuantifiedChange, NumberOrChangeOp} from "./Change";
+import {Change, ChangingCheck, isValidChangeOperator, newQuantifiedChange, NumberOrChangeOp} from "./Change";
 import {Quantification} from "./Quantification";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {CheckResult, fail, pass} from "./CheckResult";
+import {ArgType} from "../util/schema";
 
 const name = "AttrChange" as const;
 
-export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
-export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
-export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
 export const EqOrNeqOPs = ["=", "!="] as const;
 export type StringAttribute = typeof StringAttributeNames[number];
 export type NumberAttribute = typeof NumberAttributeNames[number];
@@ -110,11 +116,11 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
-                if(!this._attributeIsNumber){
+                if (!this._attributeIsNumber) {
                     return this._change.apply(sprites.map(s => this._getAttr(s)));
                 }
                 const reason: Record<string, Record<string, unknown>> = {};
-                for (let i = 0; i < sprites.length; i++){
+                for (let i = 0; i < sprites.length; i++) {
                     const s = sprites[i];
                     const res = this.checkChangeConsideringBounds(s);
                     if (res.passed === false) {
@@ -231,4 +237,11 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.applySingle(current, old);
     }
 
+    public static convertArgs(args: ArgType[]): boolean[] {
+        return [
+            couldBeSpriteName(args[0]),
+            ModelUtil.isAnAttributeOrEffect(args[1]),
+            ModelUtil.parseAndUpdate(args, 2) || isValidChangeOperator(args[2]),
+        ];
+    }
 }

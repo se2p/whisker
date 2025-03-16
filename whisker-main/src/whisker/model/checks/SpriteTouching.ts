@@ -1,10 +1,11 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {any, pass, fail, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
 
 const name = "SpriteTouching" as const;
 
@@ -90,5 +91,12 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]):boolean[] {
+        return [
+            couldBeSpriteName(args[0]),
+            couldBeSpriteName(args[1])
+        ];
     }
 }

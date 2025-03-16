@@ -14,6 +14,10 @@ export type SpriteName =
     | [string, ...string[]]
     ;
 
+export function couldBeSpriteName(name:ArgType){
+    return typeof name == "string" || Array.isArray(name) && Object.values(name).every(s => typeof s == "string");
+}
+
 export type VariableName = SpriteName;
 
 export const SpriteName = z.union([

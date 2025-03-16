@@ -21,7 +21,16 @@ export interface Expression extends Dependencies {
     expr: string
 }
 
-export type ParamType = string | number | boolean | string[];
+export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
+export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
+export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
+export const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible", "pos", "effects"] as const;
+export const AttributeAndEffectNames = [...AttributeNames, ...EffectNames] as const;
+export const Keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+] as const;
 
 export abstract class ModelUtil {
 
@@ -129,28 +138,15 @@ export abstract class ModelUtil {
     }
 
     private static _isAnAttribute(attrName: string): boolean {
-        return this._testAttributeName(attrName) ||
-            (attrName.startsWith('old.') && this._testAttributeName(attrName.substring(4)));
+        return this.isAnAttribute(attrName) ||
+            (attrName.startsWith('old.') && this.isAnAttribute(attrName.substring(4)));
     }
 
-    private static _testAttributeName(attrName: string): boolean {
+    public static isAnAttribute(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
-        return [
-            "effects",
-            "x",
-            "y",
-            "pos",
-            "direction",
-            "visible",
-            "size",
-            "currentCostume",
-            "costume",
-            "currentCostumeName",
-            "volume",
-            "layerOrder",
-            "sayText",
-            "rotationStyle",
-        ].includes(attrName);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return AttributeNames.includes(attrName);
     }
 
     /**
@@ -159,15 +155,37 @@ export abstract class ModelUtil {
      * @return true if {@linkcode effectName} is a valid name for an effect
      * */
     public static isAnEffect(effectName: string): boolean {
-        return [
-            "color",
-            "fisheye",
-            "whirl",
-            "pixelate",
-            "mosaic",
-            "brightness",
-            "ghost",
-        ].includes(effectName);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return (EffectNames as string[]).includes(effectName);
+    }
+
+    /**
+     * Checks if the given string is the name of an effect of a sprite or an attribute that is a number
+     * @param name The name of the effect or attribute
+     * @return true if {@linkcode name} is a valid name for an effect or an attribute that is a number
+     * */
+    public static isEffectOrNumberAttribute(name: ArgType): boolean {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return this.isAnEffect(name) || (NumberAttributeNames as string[]).includes(name);
+    }
+
+    /**
+     * Checks if the given string is the name of an effect or attribute of a sprite
+     * @param name The name of the effect or attribute
+     * @return true if {@linkcode name} is a valid name for an effect
+     * */
+    public static isAnAttributeOrEffect(name: ArgType): boolean {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return (AttributeAndEffectNames as string[]).includes(name);
+    }
+
+    public static isKey(name: ArgType): boolean {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return Keys.includes(name);
     }
 
     /**
@@ -463,5 +481,14 @@ export abstract class ModelUtil {
         } else {
             return () => asNumber;
         }
+    }
+
+    static parseAndUpdate(args: ArgType[], index: number): boolean {
+        const converted = ModelUtil.returnNumberIfPossible(args[index], null);
+        if (converted != null) {
+            args[index] = converted;
+            return true;
+        }
+        return false;
     }
 }

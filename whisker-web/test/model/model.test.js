@@ -17,6 +17,13 @@ async function loadProject(scratchPath, modelPath) {
 }
 
 async function readModelErrors() {
+    const errorWhenUploadingModelStart = `MODEL: [
+      {
+        "code": "invalid_type",
+        "expected": "number",
+        "received": "string",
+        "path": [`;
+
 
     const coverageOutput = await page.$('#output-run .output-content');
     while (true) {
@@ -43,8 +50,8 @@ async function readModelErrors() {
                 modelCoverage: parseFloat(coverage),
                 loggedOutput: logArray.filter(s => s !== "").join("\n")
             };
-        } else if (log.includes('"ZodError"')) {
-            throw new Error(`Could not parse the model: ${log}`);
+        } else if (log.includes('"ZodError"') || log.indexOf(errorWhenUploadingModelStart)!==-1) {
+            throw new Error(`Could not parse the model. Message:\n${log}`);
         }
     }
 }

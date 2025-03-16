@@ -1,7 +1,9 @@
 // for building model-editor checks, should equal CheckName.ts in model and InputEffectName in InputEffect.ts
 
+import {Keys} from 'whisker-main/src/whisker/model/util/ModelUtil';
+
 const argType = {
-    spriteNameRegex: 'spriteName',
+    spriteName: 'spriteName',
     attrName: 'attrName',
     change: 'change',
     comp: 'comp',
@@ -11,7 +13,7 @@ const argType = {
     r: 'r',
     g: 'g',
     b: 'b',
-    varNameRegex: 'varNameRegex',
+    varName: 'varName',
     expr: 'expr',
     probValue: 'probValue',
     time: 'time',
@@ -23,7 +25,7 @@ const argType = {
 
 const inputLabelCodes = {
     // sprite name
-    InputClickSprite: [argType.spriteNameRegex],
+    InputClickSprite: [argType.spriteName],
     // nothing
     InputClickStage: [],
     // key name (input for one step)
@@ -38,25 +40,25 @@ const inputLabelCodes = {
 
 const checkLabelCodes = {
     // 3 args:  sprite name, attr name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
-    AttrChange: [argType.spriteNameRegex, argType.attrName, argType.change],
+    AttrChange: [argType.spriteName, argType.attrName, argType.change],
     // 4 args: sprite name, attribute name, comparison (=,>,<...), value to compare to
-    AttrComp: [argType.spriteNameRegex, argType.attrName, argType.comp, argType.value],
+    AttrComp: [argType.spriteName, argType.attrName, argType.comp, argType.value],
     // 1 arg: new background name
     BackgroundChange: [argType.costumeName],
     // 1 args: sprite name
-    Click: [argType.spriteNameRegex],
+    Click: [argType.spriteName],
     // 1 args: key name
     Key: [argType.keyName],
     // 2 sprite name, string output
-    Output: [argType.spriteNameRegex, argType.expr],
+    Output: [argType.spriteName, argType.expr],
     // 4  args: sprite name, red, green, blue values
-    SpriteColor: [argType.spriteNameRegex, argType.r, argType.g, argType.b],
+    SpriteColor: [argType.spriteName, argType.r, argType.g, argType.b],
     // 2  args: two sprite names
-    SpriteTouching: [argType.spriteNameRegex, argType.spriteNameRegex],
+    SpriteTouching: [argType.spriteName, argType.spriteName],
     // 3 sprite name, var name, ( + | - | = | += | -= |+<number> | <number> |-<number>)
-    VarChange: [argType.spriteNameRegex, argType.varNameRegex, argType.change],
+    VarChange: [argType.spriteName, argType.varName, argType.change],
     // 4 args: sprite name, variable name, comparison (=,>,<...), value to compare to
-    VarComp: [argType.spriteNameRegex, argType.varNameRegex, argType.comp, argType.value],
+    VarComp: [argType.spriteName, argType.varName, argType.comp, argType.value],
     // 1  evaluate an expression, args: expression
     Expr: [argType.expr],
     // 1 for randomness, percentage
@@ -68,28 +70,26 @@ const checkLabelCodes = {
     // 1 // time from program end (for after end models)
     TimeAfterEnd: [argType.time],
     // 3 // sprite name, comparison, number
-    NbrOfClones: [argType.spriteNameRegex, argType.comp, argType.value],
+    NbrOfClones: [argType.spriteName, argType.comp, argType.value],
     // 3 // sprite name, comparison, number
-    NbrOfVisibleClones: [argType.spriteNameRegex, argType.comp, argType.value],
+    NbrOfVisibleClones: [argType.spriteName, argType.comp, argType.value],
     // 1 // sprite name regex
-    TouchingEdge: [argType.spriteNameRegex],
+    TouchingEdge: [argType.spriteName],
     // 1 // sprite name regex
-    TouchingVerticalEdge: [argType.spriteNameRegex],
+    TouchingVerticalEdge: [argType.spriteName],
     // 1 // sprite name regex
-    TouchingHorizEdge: [argType.spriteNameRegex],
+    TouchingHorizEdge: [argType.spriteName],
     // 2 // sprite name regex, selected layer
-    Layer: [argType.spriteNameRegex, argType.layerSelection],
+    Layer: [argType.spriteName, argType.layerSelection],
     // 2 // sprite name regex, target (sprite or mouse pointer)
-    PointsTo: [argType.spriteNameRegex, argType.spriteNameRegex],
+    PointsTo: [argType.spriteName, argType.spriteName],
     // 1 // sprite name regex
-    ClearedEffects: [argType.spriteNameRegex],
+    ClearedEffects: [argType.spriteName],
     // 0
     AnyKey: []
 };
 
-const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter', 'a', 'b', 'c', 'd', 'e', 'f',
-    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2',
-    '3', '4', '5', '6', '7', '8', '9'];
+const keys = Keys;
 
 const placeholders = {
     spriteNameRegex: '',

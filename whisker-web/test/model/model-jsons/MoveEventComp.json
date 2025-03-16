@@ -34,7 +34,7 @@
                         "id": "0",
                         "name": "TimeElapsed",
                         "args": [
-                            "5000"
+                            5000
                         ],
                         "negated": false
                     }

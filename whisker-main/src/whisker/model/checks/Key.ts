@@ -3,6 +3,8 @@ import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {ModelUtil} from "../util/ModelUtil";
 
 const name = "Key" as const;
 
@@ -54,5 +56,9 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): boolean[] {
+        return [ModelUtil.isKey(args[0])];
     }
 }

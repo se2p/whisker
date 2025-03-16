@@ -3,6 +3,7 @@ import {Existential, Quantifiable, Quantification, Universal} from "./Quantifica
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ModelUtil} from "../util/ModelUtil";
+import {ArgType} from "../util/schema";
 
 export type Comparison =
     | Eq
@@ -178,6 +179,12 @@ const Comparison: Record<ComparisonOp, ComparisonCtor> = Object.freeze({
 export function newComparison({operator, value, negated = false}: Optional<ComparingCheck, 'negated'>): Comparison {
     const comparison = new Comparison[operator](value);
     return negated ? comparison.negate() : comparison;
+}
+
+export function isValidComparisonOp(op:ArgType):boolean{
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return comparisonOps.includes(op);
 }
 
 export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);

@@ -1,4 +1,9 @@
-import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
+import {
+    Dependencies,
+    ModelUtil,
+    NumberAttributeNames,
+    StringAttributeNames
+} from "../../../../src/whisker/model/util/ModelUtil";
 import {
     EmptyExpressionError,
     ExpressionSyntaxError,
@@ -10,7 +15,6 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
-import {NumberAttributeNames, StringAttributeNames} from "../../../../src/whisker/model/checks/AttrChange";
 
 describe('ModelUtil tests', function () {
     describe("testNumber()", () => {

@@ -5,6 +5,7 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckResult, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
 
 const name = "Expr" as const;
 
@@ -82,5 +83,9 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         // Expressions are very powerful. While it's possible for two expressions to be contradicting, it's also very
         // difficult to check it here. Thus, we assume that expressions have been crafted not to contradict each other.
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): boolean[] {
+        return [typeof args[0] == "string" && args[0].length > 0];
     }
 }

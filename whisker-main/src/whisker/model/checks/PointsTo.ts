@@ -1,10 +1,11 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
+import {ArgType} from "../util/schema";
 
 const name = "PointsTo" as const;
 
@@ -76,5 +77,12 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
 
     get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): boolean[] {
+        return [
+            couldBeSpriteName(args[0]),
+            couldBeSpriteName(args[1])
+        ];
     }
 }

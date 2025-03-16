@@ -3,6 +3,8 @@ import {Comparison, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
+import {ArgType} from "../util/schema";
+import {ModelUtil} from "../util/ModelUtil";
 
 export class Change implements Quantifiable<Change> {
     protected constructor(private readonly _comparison: Comparison) {
@@ -74,6 +76,12 @@ const neq0 = new class Neq0 extends Change {
 };
 
 export const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
+
+export function isValidChangeOperator(change: ArgType): boolean {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return changeOps.includes(change);
+}
 
 export type ChangeOp = typeof changeOps[number];
 

@@ -1,10 +1,11 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, pass, fail, result} from "./CheckResult";
+import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
 
 const name = "Output" as const;
 
@@ -102,5 +103,12 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         }
 
         return outputThis !== outputThat; // The same sprite cannot output two different things at the same time.
+    }
+
+    public static convertArgs(args: ArgType[]): boolean[] {
+        return [
+            couldBeSpriteName(args[0]),
+            typeof args[1] == "string",
+        ];
     }
 }

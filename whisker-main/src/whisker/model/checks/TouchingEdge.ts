@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -6,6 +6,7 @@ import {z} from "zod";
 import {Optional} from "../../utils/Optional";
 import {any, CheckResult, pass, fail, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
 
 export type TouchingEdgeArgs = [
     /**
@@ -68,6 +69,10 @@ abstract class AbstractTouchingEdge<
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]):boolean[] {
+        return [couldBeSpriteName(args[0])];
     }
 }
 

@@ -150,17 +150,17 @@ describe('string representations', () => {
             ["Click", true, ["sprite"], "!Click(sprite)"],
             ["Key", true, ["test"], "!Key(test)"],
             ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
-            ["SpriteColor", true, ["sprite", "0", "0", "0"], "!SpriteColor(sprite,0,0,0)"],
+            ["SpriteColor", true, ["sprite", 0, 0, 0], "!SpriteColor(sprite,0,0,0)"],
             ["SpriteTouching", true, ["sprite1", "sprite2"], "!SpriteTouching(sprite1,sprite2)"],
             ["VarComp", true, ["sprite", "y", ">", "0"], "!VarComp(sprite,y,>,0)"],
             ["VarChange", true, ["test", "y", "+"], "!VarChange(test,y,+)"],
             ["Expr", true, ["test"], "!Expr(test)"],
-            ["Probability", true, ["0"], "!Probability(0)"],
-            ["TimeElapsed", true, ["1000"], "!TimeElapsed(1000)"],
-            ["TimeBetween", true, ["1000"], "!TimeBetween(1000)"],
-            ["TimeAfterEnd", true, ["1000"], "!TimeAfterEnd(1000)"],
-            ["NbrOfClones", true, ["sprite", "=", "1"], "!NbrOfClones(sprite,==,1)"],
-            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "!NbrOfVisibleClones(sprite,==,1)"],
+            ["Probability", true, [0], "!Probability(0)"],
+            ["TimeElapsed", true, [1000], "!TimeElapsed(1000)"],
+            ["TimeBetween", true, [1000], "!TimeBetween(1000)"],
+            ["TimeAfterEnd", true, [1000], "!TimeAfterEnd(1000)"],
+            ["NbrOfClones", true, ["sprite", "=", 1], "!NbrOfClones(sprite,==,1)"],
+            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "!NbrOfVisibleClones(sprite,==,1)"],
             ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"]
         ];
 
@@ -527,9 +527,9 @@ describe('Contradictions', () => {
             negated: true,
             args: ["sprite1", 0, 0, 0]
         });
-        assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite2", "0", "0", "0"], false);
+        assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite2", 0, 0, 0], false);
         // it can touch multiple colors at the same time
-        assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite1", "0", "0", "1"], false);
+        assertSymmetricContradiction2(effect1, "SpriteColor", true, ["sprite1", 0, 0, 1], false);
     });
 
     test("contradiction: sprite touching", () => {
@@ -547,34 +547,34 @@ describe('Contradictions', () => {
     // actually an effect with probability result is quite dumb to have....
     test("contradiction: probability", () => {
         const effect1 = newCheck(edgeID, {name: "Probability", negated: true, args: [1]});
-        assertSymmetricContradiction2(effect1, "Probability", true, ["0"], false);
-        assertSymmetricContradiction2(effect1, "Probability", true, ["1"], false);
+        assertSymmetricContradiction2(effect1, "Probability", true, [0], false);
+        assertSymmetricContradiction2(effect1, "Probability", true, [1], false);
     });
 
     describe("contradiction: time", () => {
         const table: TableEntry[] = [
-            ["TimeElapsed", true, ["1000"], "TimeElapsed", true, ["2000"], false],
-            ["TimeElapsed", true, ["1000"], "TimeElapsed", true, ["1000"], false],
-            ["TimeBetween", true, ["1000"], "TimeBetween", true, ["2000"], false],
-            ["TimeBetween", true, ["1000"], "TimeBetween", true, ["1000"], false],
-            ["TimeAfterEnd", true, ["1000"], "TimeAfterEnd", true, ["2000"], false],
-            ["TimeAfterEnd", true, ["1000"], "TimeAfterEnd", true, ["1000"], false],
+            ["TimeElapsed", true, [1000], "TimeElapsed", true, [2000], false],
+            ["TimeElapsed", true, [1000], "TimeElapsed", true, [1000], false],
+            ["TimeBetween", true, [1000], "TimeBetween", true, [2000], false],
+            ["TimeBetween", true, [1000], "TimeBetween", true, [1000], false],
+            ["TimeAfterEnd", true, [1000], "TimeAfterEnd", true, [2000], false],
+            ["TimeAfterEnd", true, [1000], "TimeAfterEnd", true, [1000], false],
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
     });
 
     describe("contradiction: clones", () => {
         const table: TableEntry[] = [
-            ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", true, ["sprite2", "=", "2"], false],
-            ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", true, ["sprite", "=", "1"], false],
-            ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", true, ["sprite", "=", "2"], false],
-            ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", false, ["sprite", "=", "2"], false],
+            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", true, ["sprite2", "=", 2], false],
+            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", true, ["sprite", "=", 1], false],
+            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", true, ["sprite", "=", 2], false],
+            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", false, ["sprite", "=", 2], false],
 
-            ["NbrOfClones", true, ["sprite", "=", "1"], "NbrOfClones", false, ["sprite", "=", "1"], true],
+            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", false, ["sprite", "=", 1], true],
 
-            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "NbrOfVisibleClones", true, ["sprite2", "=", "2"], false],
-            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "NbrOfVisibleClones", true, ["sprite", "=", "1"], false],
-            ["NbrOfVisibleClones", true, ["sprite", "=", "1"], "NbrOfVisibleClones", true, ["sprite", "=", "2"], false],
+            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "NbrOfVisibleClones", true, ["sprite2", "=", 2], false],
+            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "NbrOfVisibleClones", true, ["sprite", "=", 1], false],
+            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "NbrOfVisibleClones", true, ["sprite", "=", 2], false],
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
 

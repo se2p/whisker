@@ -4,6 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
 import {ErrorForAttribute} from "../util/ModelError";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
 
 const name = "BackgroundChange" as const;
 
@@ -72,5 +73,9 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): boolean[] {
+        return [typeof args[0] == "string"];
     }
 }
