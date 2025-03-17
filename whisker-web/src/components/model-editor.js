@@ -8,7 +8,7 @@ const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
 const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
-const {AttributeNames, AttributeAndEffectNames} = require("whisker-main/src/whisker/model/util/ModelUtil");
+const {AttributeAndEffectNames} = require("whisker-main/src/whisker/model/util/ModelUtil");
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -80,7 +80,7 @@ class ModelEditor {
 
     // checking arguments
     static NOT_EMPTY_PATTERN = /^\S+$/g;
-    static CHANGE_PATTERN = /^(-=|\+=|=|[+-]|([+-]?)([0-9]+\.)?[0-9]+)$/g;
+    static CHANGE_PATTERN = /^(-=|\+=|==|[+-]|!=|([+-]?)([0-9]+\.)?[0-9]+)$/g;
     static TIME_PATTERN = /^([0-9]+)$/g;
     static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
     static RGB_PATTERN = /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/g;
