@@ -6,6 +6,7 @@ import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, pass, fail, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "Layer" as const;
 
@@ -75,10 +76,10 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]):boolean[] {
+    public static convertArgs(args: ArgType[]):InputErrorCodes[] {
         return [
             couldBeSpriteName(args[0]),
-            args[1] === "First" || args[1] === "Last"
+            args[1] === "First" || args[1] === "Last" ? "" : "NeitherFirstNorLast"
         ];
     }
 }

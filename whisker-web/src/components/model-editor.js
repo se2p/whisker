@@ -8,6 +8,7 @@ const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
 const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
+const {AttributeNames, AttributeAndEffectNames} = require("whisker-main/src/whisker/model/util/ModelUtil");
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -267,10 +268,15 @@ class ModelEditor {
             const argsValid = convertArgs({name: name, negated: negated, args: args});
             let valid = true;
             for (let i = 0; i < argNumber.length; i++) {
-                if (!argsValid[i]) {
-                    $(`#${ModelEditor.INPUT_ID}${i}`).addClass(ModelEditor.INVALID_INPUT_CLASS);
+                if (argsValid[i] && argsValid[i].length > 0) {
+                    const element = $(`#${ModelEditor.INPUT_ID}${i}`);
+                    element.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                    element.attr('title', i18n.t(`modelEditor:${argsValid[i]}`));
                     valid = false;
                 }
+            }
+            if (name === 'Probability') {
+                args[0] = Number(args[0]) / 100;
             }
 
             // if any arg is empty string or invalid stop and mark it
@@ -1190,15 +1196,14 @@ class ModelEditor {
         switch (type) {
         case argType.spriteName:
             this.appendInputWithPattern('modelEditor:spriteName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, 'SpriteName');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, i18n.t('modelEditor:spriteName'));
             break;
         case argType.varName:
             this.appendInputWithPattern('modelEditor:varName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, 'SpriteName)');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, i18n.t('modelEditor:spriteName'));
             break;
         case argType.attrName:
-            this.appendInputWithPattern('modelEditor:attrName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i);
+            this.appendAttributeNames(value, i);
             break;
         case argType.costumeName:
             this.appendInputWithPattern('modelEditor:costumeName', value,
@@ -1344,6 +1349,24 @@ class ModelEditor {
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:key'})
                 .text(i18n.t('modelEditor:key')))
+        )
+            .append($('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(select)));
+        select.val(value);
+    }
+
+    appendAttributeNames (value, idNbr) {
+        const id = ModelEditor.INPUT_ID + idNbr;
+        const select = $('<select/>', {name: `selectAttrName${idNbr}`, id: id});
+        for (let i = 0; i < AttributeAndEffectNames.length; i++) {
+            // const attribute = `modelEditor:${AttributeAndEffectNames[i]}`;
+            // TODO should attributes be translated? probably not
+            // select.append($('<option/>', {'value': AttributeAndEffectNames[i],
+            // 'data-i18n': attribute}).text(i18n.t(attribute)));
+            select.append($('<option/>', {value: AttributeAndEffectNames[i]}).text(AttributeAndEffectNames[i]));
+        }
+        $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
+            $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:attrName'})
+                .text(i18n.t('modelEditor:attrName')))
         )
             .append($('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(select)));
         select.val(value);

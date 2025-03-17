@@ -18,6 +18,7 @@ import TestDriver from "../../../test/test-driver";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {CheckResult, fail, pass} from "./CheckResult";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "AttrChange" as const;
 
@@ -237,14 +238,16 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.applySingle(current, old);
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
-        const changeValid = ModelUtil.isOperatorEqOrNeq(args, 2)
-            || ModelUtil.isEffectOrNumberAttribute(args[1]) && (
-                ModelUtil.parseIntAndUpdate(args, 2) || isValidChangeOperator(args[2]));
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        const message: InputErrorCodes = ModelUtil.isOperatorEqOrNeq(args, 2)
+            ? ""
+            : ModelUtil.isEffectOrNumberAttribute(args[1])
+                ? ModelUtil.parseIntAndUpdate(args, 2) || isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange"
+                : "invalidChangeForAttribute";
         return [
             couldBeSpriteName(args[0]),
-            ModelUtil.isAnAttributeOrEffect(args[1]),
-            changeValid
+            ModelUtil.isAnAttributeOrEffectMessage(args[1]),
+            message
         ];
     }
 }

@@ -7,6 +7,7 @@ import {z} from "zod";
 import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "SpriteColor" as const;
 
@@ -114,12 +115,12 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [
             couldBeSpriteName(args[0]),
-            ModelUtil.parseIntAndUpdate(args, 1),
-            ModelUtil.parseIntAndUpdate(args, 2),
-            ModelUtil.parseIntAndUpdate(args, 3)
+            ModelUtil.parseRGBAndUpdate(args, 1),
+            ModelUtil.parseRGBAndUpdate(args, 2),
+            ModelUtil.parseRGBAndUpdate(args, 3)
         ];
     }
 }

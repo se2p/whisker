@@ -194,7 +194,12 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
     }
 }
 
-export function convertArgs(checkJSON: CheckJSON): boolean[] {
+export type InputErrorCodes = "" | "NeitherNumberNorChange" | "NoNumber" | "NeitherTrueNorFalse" | "wrongPosFormat"
+| "Not7Numbers" | "NoStringProvided" | "invalidSpriteName" | "invalidAttributeOrEffect" | "invalidChangeForAttribute"
+    | "CannotParseArray" | "InvalidComparisonForAttribute" | "invalidComparison" | "InvalidKey" | "OutOfRgbRange"
+    | "invalidVarName" | "NeitherNumberNorString" | "NoNonEmptyExprText" | "NeitherFirstNorLast";
+
+export function convertArgs(checkJSON: CheckJSON): InputErrorCodes[] {
     const name = checkJSON.name;
 
     switch (name) {

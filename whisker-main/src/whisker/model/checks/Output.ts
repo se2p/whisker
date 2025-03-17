@@ -6,6 +6,7 @@ import {z} from "zod";
 import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "Output" as const;
 
@@ -105,10 +106,10 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         return outputThis !== outputThat; // The same sprite cannot output two different things at the same time.
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [
             couldBeSpriteName(args[0]),
-            typeof args[1] == "string",
+            ModelUtil.argIsString(args, 1),
         ];
     }
 }

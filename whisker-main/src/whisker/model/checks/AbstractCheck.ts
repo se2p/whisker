@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON} from "./newCheck";
+import {CheckJSON, InputErrorCodes} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
@@ -14,8 +14,8 @@ export type SpriteName =
     | [string, ...string[]]
     ;
 
-export function couldBeSpriteName(name:ArgType){
-    return typeof name == "string" || Array.isArray(name) && Object.values(name).every(s => typeof s == "string");
+export function couldBeSpriteName(name: ArgType): InputErrorCodes {
+    return typeof name == "string" || Array.isArray(name) && Object.values(name).every(s => typeof s == "string") ? "" : "invalidSpriteName";
 }
 
 export type VariableName = SpriteName;

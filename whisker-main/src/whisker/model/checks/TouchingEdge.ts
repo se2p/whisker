@@ -7,6 +7,7 @@ import {Optional} from "../../utils/Optional";
 import {any, CheckResult, pass, fail, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 export type TouchingEdgeArgs = [
     /**
@@ -71,7 +72,7 @@ abstract class AbstractTouchingEdge<
         return false;
     }
 
-    public static convertArgs(args: ArgType[]):boolean[] {
+    public static convertArgs(args: ArgType[]):InputErrorCodes[] {
         return [couldBeSpriteName(args[0])];
     }
 }

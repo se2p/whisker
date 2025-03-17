@@ -6,6 +6,7 @@ import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "PointsTo" as const;
 
@@ -79,7 +80,7 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [
             couldBeSpriteName(args[0]),
             couldBeSpriteName(args[1])

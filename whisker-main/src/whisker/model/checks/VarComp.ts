@@ -15,6 +15,7 @@ import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "VarComp" as const;
 
@@ -122,12 +123,12 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [
             couldBeSpriteName(args[0]),
-            ModelUtil.isAnAttributeOrEffect(args[1]),
-            isValidComparisonOp(args[2]),
-            ModelUtil.parseIntAndUpdate(args, 3) || typeof args[3] == "string"
+            typeof args[1] == "string" ? "" : "invalidVarName",
+            isValidComparisonOp(args[2]) ? "" : "invalidComparison",
+            ModelUtil.parseIntAndUpdate(args, 3) || typeof args[3] == "string" ? "" : "NeitherNumberNorString"
             // TODO this should probably be improved to avoid something like "20" > "100" which would evaluate to false
         ];
     }

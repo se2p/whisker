@@ -16,6 +16,7 @@ import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
 import {AttrNames, BooleanAttribute, Effect, NumberAttribute, StringAttribute} from "./AttrChange";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "AttrComp" as const;
 type PosType = {
@@ -137,8 +138,8 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return this._comparison.contradicts(that._comparison);
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
-        let valid: boolean;
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        let valid: InputErrorCodes;
         const shouldBeNumber = ModelUtil.isEffectOrNumberAttribute(args[1]);
         if (shouldBeNumber) {
             valid = ModelUtil.parseIntAndUpdate(args, 3);
@@ -149,12 +150,16 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         } else if (args[1] === "effects") {
             valid = ModelUtil.parseEffectsArrayAndUpdate(args, 3);
         } else {
-            valid = typeof args[3] == "string";
+            valid = typeof args[3] == "string" ? "" : "NoStringProvided";
         }
         return [
             couldBeSpriteName(args[0]),
-            ModelUtil.isAnAttributeOrEffect(args[1]),
-            ModelUtil.isOperatorEqOrNeq(args, 2) || shouldBeNumber && isValidComparisonOp(args[2]),
+            ModelUtil.isAnAttributeOrEffectMessage(args[1]),
+            ModelUtil.isOperatorEqOrNeq(args, 2)
+                ? ""
+                : shouldBeNumber
+                    ? "InvalidComparisonForAttribute"
+                    : isValidComparisonOp(args[2]) ? "" : "invalidComparison",
             valid,
         ];
     }

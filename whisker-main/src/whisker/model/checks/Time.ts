@@ -7,6 +7,7 @@ import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 export type TimeArgs = [
 
@@ -59,7 +60,7 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [ModelUtil.parseIntAndUpdate(args, 0)];
     }
 }

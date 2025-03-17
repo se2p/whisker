@@ -6,6 +6,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "ClearedEffects" as const;
 
@@ -63,7 +64,7 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): boolean[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [couldBeSpriteName(args[0])];
     }
 }

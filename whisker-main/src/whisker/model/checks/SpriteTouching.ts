@@ -6,6 +6,7 @@ import {z} from "zod";
 import {any, pass, fail, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "SpriteTouching" as const;
 
@@ -93,7 +94,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         return false;
     }
 
-    public static convertArgs(args: ArgType[]):boolean[] {
+    public static convertArgs(args: ArgType[]):InputErrorCodes[] {
         return [
             couldBeSpriteName(args[0]),
             couldBeSpriteName(args[1])
