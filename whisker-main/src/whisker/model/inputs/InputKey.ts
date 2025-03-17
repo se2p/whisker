@@ -1,6 +1,9 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
 import {z} from "zod";
+import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "../checks/newCheck";
+import {ModelUtil} from "../util/ModelUtil";
 
 const name = "InputKey" as const;
 
@@ -35,5 +38,9 @@ export class InputKey extends AbstractUserInput<InputKeyJSON> {
 
     override async inputImmediate(t: TestDriver): Promise<void> {
         return t.inputImmediate({device: "keyboard", key: this._key, isDown: true, steps: 1});
+    }
+
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        return [ModelUtil.isKey(args[0]) ? "" : "InvalidKey"];
     }
 }

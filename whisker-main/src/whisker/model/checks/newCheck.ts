@@ -213,7 +213,8 @@ export type InputErrorCodes =
     | "invalidVarName"
     | "NeitherNumberNorString"
     | "NoNonEmptyExprText"
-    | "NeitherFirstNorLast";
+    | "NeitherFirstNorLast"
+    | "NeitherNumberNorExpr";
 
 export function convertArgs(checkJSON: CheckJSON): InputErrorCodes[] {
     const name = checkJSON.name;

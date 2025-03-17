@@ -1,9 +1,11 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
-import {SpriteName} from "../checks/AbstractCheck";
+import {couldBeSpriteName, SpriteName} from "../checks/AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {z} from "zod";
+import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "../checks/newCheck";
 
 const name = "InputClickSprite" as const;
 
@@ -35,5 +37,11 @@ export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
         const sprite = ModelUtil.checkSpriteExistence(t, this._spriteName);
         const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
         return clickSpriteEvent.apply();
+    }
+
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        return [
+            couldBeSpriteName(args[0])
+        ];
     }
 }

@@ -144,5 +144,6 @@
     "invalidVarName": "Ungültiger Name für eine Variable",
     "NeitherNumberNorString": "Eingabe ist weder ein Text noch eine Zahl",
     "NoNonEmptyExprText": "Ein Ausdruck sollte mindestens ein Zeichen enthalten",
-    "NeitherFirstNorLast": "Gültig sind First und Last"
+    "NeitherFirstNorLast": "Gültig sind First und Last",
+    "NeitherNumberNorExpr": "Eingabe muss eine Zahl oder ein JavaScript Ausdruck sein"
 }

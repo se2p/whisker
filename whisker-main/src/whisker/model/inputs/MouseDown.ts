@@ -2,6 +2,9 @@ import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
 import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {z} from "zod";
+import {ArgType} from "../util/schema";
+import {InputErrorCodes} from "../checks/newCheck";
+import {ModelUtil} from "../util/ModelUtil";
 
 const name = "InputMouseDown" as const;
 
@@ -37,5 +40,9 @@ export class MouseDown extends AbstractUserInput<MouseDownJSON> {
     override async inputImmediate(_t: TestDriver): Promise<void> {
         const mouseDownEvent = new MouseDownEvent(this._down);
         return mouseDownEvent.apply();
+    }
+
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        return [ModelUtil.parseBooleanAndUpdate(args, 0)];
     }
 }

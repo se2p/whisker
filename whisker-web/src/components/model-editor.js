@@ -2,13 +2,14 @@
 
 const {ModelTester} = require('whisker-main');
 const {convertArgs} = require('../../../whisker-main/src/whisker/model/checks/newCheck');
+const {convertInputArgs} = require('../../../whisker-main/src/whisker/model/inputs/newUserInput');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
 const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
-const {AttributeAndEffectNames} = require("whisker-main/src/whisker/model/util/ModelUtil");
+const {AttributeAndEffectNames} = require('whisker-main/src/whisker/model/util/ModelUtil');
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -265,7 +266,12 @@ class ModelEditor {
             for (let i = 0; i < argNumber.length; i++) {
                 args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
             }
-            const argsValid = convertArgs({name: name, negated: negated, args: args});
+            let argsValid;
+            try {
+                argsValid = convertArgs({name: name, negated: negated, args: args});
+            } catch (e){
+                argsValid = convertInputArgs({name: name, args: args});
+            }
             let valid = true;
             for (let i = 0; i < argNumber.length; i++) {
                 if (argsValid[i] && argsValid[i].length > 0) {
