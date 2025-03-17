@@ -6,7 +6,7 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 import {AssertionTargetState} from "./AssertionObserver";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class ListAssertion extends WhiskerAssertion {
 
@@ -51,7 +51,7 @@ export class ListAssertion extends WhiskerAssertion {
         const [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB]
             = generateEqualityAssertion(lengthOfListBlockId, this._variableValue.length.toString());
 
-        const lengthOfListBlock: ScratchVMBlock =
+        const lengthOfListBlock: SubVMBlock =
             {
                 "id": lengthOfListBlockId,
                 "opcode": "data_lengthoflist",

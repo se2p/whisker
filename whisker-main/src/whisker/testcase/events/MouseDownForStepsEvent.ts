@@ -23,7 +23,7 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
@@ -48,7 +48,7 @@ export class MouseDownForStepsEvent extends ScratchEvent {
     public toScratchBlocks(): ScratchScriptSnippet {
         const clickBlockId = uid();
 
-        const clickBlock: ScratchVMBlock =
+        const clickBlock: SubVMBlock =
             {
                 "id": clickBlockId,
                 "opcode": "bbt_clickCurrentCursorLocation",
@@ -70,7 +70,7 @@ export class MouseDownForStepsEvent extends ScratchEvent {
 
         clickBlock.parent = waitBlockId;
 
-        const waitBlock: ScratchVMBlock =
+        const waitBlock: SubVMBlock =
             {
                 "id": waitBlockId,
                 "opcode": "control_wait",
@@ -89,7 +89,7 @@ export class MouseDownForStepsEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const durationBlock: ScratchVMBlock =
+        const durationBlock: SubVMBlock =
             {
                 "id": durationBlockId,
                 "opcode": "math_positive_number",

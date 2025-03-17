@@ -4,7 +4,7 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 import {AssertionTargetState} from "./AssertionObserver";
 import uid from "scratch-vm/src/util/uid";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class VisibilityAssertion extends WhiskerAssertion {
 
@@ -37,7 +37,7 @@ export class VisibilityAssertion extends WhiskerAssertion {
         const assertConditionBlockId = uid();
         const conditionBlockId = uid();
 
-        const assertBlock: ScratchVMBlock =
+        const assertBlock: SubVMBlock =
             {
                 "id": assertConditionBlockId,
                 "opcode": this._visibility ? "bbt_assertCondition" : "bbt_assertConditionFalse",
@@ -56,7 +56,7 @@ export class VisibilityAssertion extends WhiskerAssertion {
                 "breakpoint": false
             };
 
-        const conditionBlock =
+        const conditionBlock: SubVMBlock =
             {
                 "id": conditionBlockId,
                 "opcode": "bbt_isSpriteVisible",

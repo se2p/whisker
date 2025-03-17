@@ -24,7 +24,7 @@ import {WaitEvent} from "./WaitEvent";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
@@ -68,7 +68,7 @@ export class KeyPressEvent extends ScratchEvent {
     private _toScratchBlockPressAndRelease(): ScratchScriptSnippet {
         const mainBlockId = uid();
 
-        const mainBlock: ScratchVMBlock =
+        const mainBlock: SubVMBlock =
             {
                 "id": mainBlockId,
                 "opcode": "bbt_pressKeyAndRelease",
@@ -93,7 +93,7 @@ export class KeyPressEvent extends ScratchEvent {
         const mainBlockId = uid();
         const durationBlockId = uid();
 
-        const mainBlock =
+        const mainBlock: SubVMBlock =
             {
                 "id": mainBlockId,
                 "opcode": "bbt_pressKeyAndHold",
@@ -117,7 +117,7 @@ export class KeyPressEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const durationBlock =
+        const durationBlock: SubVMBlock =
             {
                 "id": durationBlockId,
                 "opcode": "math_number",

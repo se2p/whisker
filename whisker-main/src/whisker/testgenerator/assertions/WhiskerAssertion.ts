@@ -3,7 +3,7 @@ import Arrays from "../../utils/Arrays";
 import {AssertionTargetState} from "./AssertionObserver";
 import uid from "scratch-vm/src/util/uid";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export abstract class WhiskerAssertion {
 
@@ -90,13 +90,13 @@ export function js(strings: TemplateStringsArray, ...keys: unknown[]): string {
  * to represent such equality assertions.
  */
 export function generateEqualityAssertion(leftBlockId: string, rightValue: string):
-    [ScratchVMBlock, ScratchVMBlock, ScratchVMBlock] {
+    [SubVMBlock, SubVMBlock, SubVMBlock] {
 
     const assertEqualsBlockId = uid();
     const assertEqualsBlockAId = uid();
     const assertEqualsBlockBId = uid();
 
-    const assertEqualsBlock: ScratchVMBlock =
+    const assertEqualsBlock: SubVMBlock =
         {
             "id": assertEqualsBlockId,
             "opcode": "bbt_assertEquals",
@@ -120,7 +120,7 @@ export function generateEqualityAssertion(leftBlockId: string, rightValue: strin
             "breakpoint": false
         };
 
-    const assertEqualsBlockA: ScratchVMBlock =
+    const assertEqualsBlockA: SubVMBlock =
         {
             "id": assertEqualsBlockAId,
             "opcode": "text",
@@ -138,7 +138,7 @@ export function generateEqualityAssertion(leftBlockId: string, rightValue: strin
             "breakpoint": false
         };
 
-    const assertEqualsBlockB: ScratchVMBlock =
+    const assertEqualsBlockB: SubVMBlock =
         {
             "id": assertEqualsBlockBId,
             "opcode": "text",

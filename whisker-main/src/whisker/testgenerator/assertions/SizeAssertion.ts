@@ -4,7 +4,7 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 import {AssertionTargetState} from "./AssertionObserver";
 import uid from "scratch-vm/src/util/uid";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class SizeAssertion extends WhiskerAssertion {
 
@@ -38,7 +38,7 @@ export class SizeAssertion extends WhiskerAssertion {
         const [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB]
             = generateEqualityAssertion(attributeBlockId, this._size.toString());
 
-        const attributeBlock: ScratchVMBlock =
+        const attributeBlock: SubVMBlock =
             {
                 "id": attributeBlockId,
                 "opcode": "bbt_attributeOf",

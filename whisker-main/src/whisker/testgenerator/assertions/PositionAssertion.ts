@@ -4,7 +4,7 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 import {AssertionTargetState} from "./AssertionObserver";
 import uid from "scratch-vm/src/util/uid";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class PositionAssertion extends WhiskerAssertion {
 
@@ -61,7 +61,7 @@ export class PositionAssertion extends WhiskerAssertion {
         const numberPositionBlockId = uid();
         const numberToleranceBlockId = uid();
 
-        const assertConditionBlock: ScratchVMBlock =
+        const assertConditionBlock: SubVMBlock =
             {
                 "id": assertConditionBlockId,
                 "opcode": "bbt_assertCondition",
@@ -80,7 +80,7 @@ export class PositionAssertion extends WhiskerAssertion {
                 "breakpoint": false
             };
 
-        const xyPositionBlock: ScratchVMBlock = {
+        const xyPositionBlock: SubVMBlock = {
             "id": xyPositionBlockId,
             "opcode": "bbt_attributeOf",
             "inputs": {},
@@ -101,7 +101,7 @@ export class PositionAssertion extends WhiskerAssertion {
             "breakpoint": false
         };
 
-        const numberFuzzyEqualBlock: ScratchVMBlock =
+        const numberFuzzyEqualBlock: SubVMBlock =
             {
                 "id": numberFuzzyEqualBlockId,
                 "opcode": "bbt_isNumberFuzzyEqual",
@@ -130,7 +130,7 @@ export class PositionAssertion extends WhiskerAssertion {
                 "breakpoint": false
             };
 
-        const numberShadowBlock: ScratchVMBlock =
+        const numberShadowBlock: SubVMBlock =
             {
                 "id": numberShadowBlockId,
                 "opcode": "math_number",
@@ -148,7 +148,7 @@ export class PositionAssertion extends WhiskerAssertion {
                 "breakpoint": false
             };
 
-        const numberPositionBlock: ScratchVMBlock =
+        const numberPositionBlock: SubVMBlock =
             {
                 "id": numberPositionBlockId,
                 "opcode": "math_number",
@@ -166,7 +166,7 @@ export class PositionAssertion extends WhiskerAssertion {
                 "breakpoint": false
             };
 
-        const numberToleranceBlock: ScratchVMBlock =
+        const numberToleranceBlock: SubVMBlock =
             {
                 "id": numberToleranceBlockId,
                 "opcode": "math_number",

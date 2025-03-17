@@ -4,6 +4,7 @@ import {DynamicNetworkSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithm
 import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/StateActionRecorder';
 import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
 import {FileSaver} from './web-libs';
+import uid from 'scratch-vm/src/util/uid';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -53,6 +54,15 @@ window.$ = $;
 const DEFAULT_ACCELERATION_FACTOR = 1;
 const accSlider = $('#acceleration-factor').slider();
 
+const useBBTToggle = $('#use-bbt-tests');
+const useBBTAddCommentToggleRow = $('#use-bbt-tests-add-comment-row');
+const useBBTAddCommentToggle = $('#use-bbt-tests-add-comment');
+
+/**
+ * Comment text limit, imposed by scratch-blocks (core/scratch_block_comment.js)
+ * @type {number}
+ */
+const BLOCKLY_COMMENT_TEXT_LIMIT = 8000;
 
 const LANGUAGE_OPTION = 'lng';
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
@@ -258,6 +268,30 @@ const downloadMutants = async function (mutants) {
     }
 };
 
+const injectBBTsAndDownloadProject = async function (projectName, blockBasedTests) {
+    const stageTarget = Whisker.scratch.vm.runtime.getTargetForStage();
+
+    blockBasedTests.forEach(bbt => {
+        const hatBlock = bbt.blocks[0];
+
+        bbt.blocks.forEach(block => {
+            stageTarget.blocks.createBlock(block);
+        });
+
+        if (bbt.comment !== null && bbt.comment.length > 0 && bbt.comment.length < BLOCKLY_COMMENT_TEXT_LIMIT) {
+            stageTarget.createComment(uid(), hatBlock.id, bbt.comment,
+                hatBlock.x + 500, hatBlock.y, 250, 300, false);
+        }
+    });
+
+    const updatedProject = await Whisker.scratch.vm.saveProjectSb3();
+
+    const element = document.createElement('a');
+    element.setAttribute('href', window.URL.createObjectURL(updatedProject));
+    element.setAttribute('download', projectName.replace(/\.sb3$/, '_bbt.sb3'));
+    element.click();
+};
+
 const runSearch = async function () {
     _disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
@@ -275,17 +309,25 @@ const runSearch = async function () {
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
+    const generateBBTs = useBBTToggle.is(':checked');
+    const generateBBTsAddComment = useBBTAddCommentToggle.is(':checked');
     const groundTruth = document.querySelector('#container').groundTruth;
     const winningStates = document.querySelector('#container').winningStates;
+    const searchResult = await Whisker.search.run(
+        Whisker.scratch.vm, Whisker.scratch.project, projectName, config, configName,
+        accelerationFactor, seed, generateBBTs, groundTruth, winningStates, generateBBTsAddComment);
 
-    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
-        projectName, config, configName, accelerationFactor, seed, groundTruth, winningStates);
     // Prints uncovered blocks summary and csv summary separated by a newline
-    Whisker.outputLog.print(`${testListWithSummary}\n`);
-    Whisker.outputLog.print(csv);
+    Whisker.outputLog.print(`${searchResult.summary}\n`);
+    Whisker.outputLog.print(searchResult.csvOutput);
     accSlider.slider('enable');
+
+    if (generateBBTs) {
+        await injectBBTsAndDownloadProject(projectName, searchResult.blockBasedTests);
+    }
+
     _enableVMRelatedButtons();
-    return tests;
+    return searchResult.javaScriptText;
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings) {
@@ -990,6 +1032,9 @@ const initEvents = function () {
             $('#output-log').hide();
         }
     });
+    useBBTToggle.on('change', () => {
+        useBBTAddCommentToggleRow.toggle(useBBTToggle.is(':checked'));
+    });
     $('#run-search')
         .click('click', () => {
             if (!Whisker.projectFileSelect || Whisker.projectFileSelect.length() === 0) {
@@ -1010,6 +1055,7 @@ const initEvents = function () {
         })
         .show();
     $('#search-running').hide();
+    useBBTAddCommentToggleRow.hide();
     _addFileListeners();
 };
 

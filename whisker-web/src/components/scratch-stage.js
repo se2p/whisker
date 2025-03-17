@@ -260,6 +260,7 @@ class Scratch extends EventEmitter {
         } else if (e.key === 'Enter') {
             const textInput = this.keyPresses.join('');
             this.vm.runtime.emit('ANSWER', textInput);
+            this.vm.runtime.emit('ANSWERED_PROGRAMMATICALLY');
             this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'text', text: textInput});
             this.keyPresses = [];
             this.canvas.removeEventListener('keydown', this._registerKeyPress);

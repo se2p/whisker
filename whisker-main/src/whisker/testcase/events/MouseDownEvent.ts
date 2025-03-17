@@ -21,7 +21,7 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class MouseDownEvent extends ScratchEvent {
@@ -44,7 +44,7 @@ export class MouseDownEvent extends ScratchEvent {
     public toScratchBlocks(): ScratchScriptSnippet {
         const mainBlockId = uid();
 
-        const mainBlock: ScratchVMBlock =
+        const mainBlock: SubVMBlock =
             {
                 "id": mainBlockId,
                 "opcode": "bbt_clickCurrentCursorLocation",
