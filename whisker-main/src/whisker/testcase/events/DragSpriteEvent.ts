@@ -24,7 +24,7 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class DragSpriteEvent extends ScratchEvent {
@@ -55,7 +55,7 @@ export class DragSpriteEvent extends ScratchEvent {
         const xBlockId = uid();
         const yBlockId = uid();
 
-        const mainBlock: ScratchVMBlock =
+        const mainBlock: SubVMBlock =
             {
                 "id": mainBlockId,
                 "opcode": "bbt_moveSpriteTo",
@@ -84,7 +84,7 @@ export class DragSpriteEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const xBlock: ScratchVMBlock =
+        const xBlock: SubVMBlock =
             {
                 "id": xBlockId,
                 "opcode": "math_number",
@@ -102,7 +102,7 @@ export class DragSpriteEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const yBlock: ScratchVMBlock =
+        const yBlock: SubVMBlock =
             {
                 "id": yBlockId,
                 "opcode": "math_number",

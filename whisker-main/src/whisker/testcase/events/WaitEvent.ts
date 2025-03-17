@@ -23,7 +23,7 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class WaitEvent extends ScratchEvent {
@@ -44,7 +44,7 @@ export class WaitEvent extends ScratchEvent {
         const yieldMultipleBlockId = uid();
         const yieldCountBlockId = uid();
 
-        const yieldMultipleBlock: ScratchVMBlock =
+        const yieldMultipleBlock: SubVMBlock =
             {
                 "id": yieldMultipleBlockId,
                 "opcode": "bbt_yieldMultipleTimes",
@@ -63,7 +63,7 @@ export class WaitEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const yieldCountBlock: ScratchVMBlock =
+        const yieldCountBlock: SubVMBlock =
             {
                 "id": yieldCountBlockId,
                 "opcode": "math_number",

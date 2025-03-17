@@ -4,7 +4,7 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 import {AssertionTargetState} from "./AssertionObserver";
 import uid from "scratch-vm/src/util/uid";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class BackdropAssertion extends WhiskerAssertion {
 
@@ -37,7 +37,7 @@ export class BackdropAssertion extends WhiskerAssertion {
         const [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB]
             = generateEqualityAssertion(backdropBlockId, (this._backdrop + 1).toString());
 
-        const backdropBlock: ScratchVMBlock =
+        const backdropBlock: SubVMBlock =
             {
                 "id": backdropBlockId,
                 "opcode": "looks_backdropnumbername",

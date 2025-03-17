@@ -21,7 +21,7 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class SoundEvent extends ScratchEvent {
@@ -49,7 +49,7 @@ export class SoundEvent extends ScratchEvent {
         const setVolumeBlockId = uid();
         const volumeInputBlockId = uid();
 
-        const setVolumeBlock: ScratchVMBlock =
+        const setVolumeBlock: SubVMBlock =
             {
                 "id": setVolumeBlockId,
                 "opcode": "bbt_simulateMicrophoneInput",
@@ -68,7 +68,7 @@ export class SoundEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const volumeInputBlock: ScratchVMBlock =
+        const volumeInputBlock: SubVMBlock =
             {
                 "id": volumeInputBlockId,
                 "opcode": "math_number",

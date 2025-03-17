@@ -29,6 +29,7 @@ import {Container} from "./utils/Container";
 import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
+import {toBlockBasedTests} from "./testcase/BlockBasedTestingConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {EventAndParameters, ExecutionTrace} from "./testcase/ExecutionTrace";
 import {WaitEvent} from "./testcase/events/WaitEvent";
@@ -42,6 +43,7 @@ import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
 import {SearchAlgorithmBuilder} from "./search/SearchAlgorithmBuilder";
 import logger from "../util/logger";
+import {SearchResult} from "../types/SearchResult";
 
 export class Search {
 
@@ -63,7 +65,7 @@ export class Search {
         return converter.getSuiteText(tests);
     }
 
-    private handleEmptyProject(): Array<string> {
+    private handleEmptyProject(): string {
         logger.warn("Cannot find any suitable events for this project, not starting search.");
         const stats = StatisticsCollector.getInstance();
         SearchAlgorithmBuilder.initializeCoverageMappings();
@@ -91,8 +93,8 @@ export class Search {
         dummyTest.trace = new ExecutionTrace(null, events);
 
         tests.push(new WhiskerTest(dummyTest));
-        const javaScriptText = this.testsToString(tests);
-        return [javaScriptText, 'empty project'];
+
+        return this.testsToString(tests);
     }
 
     private outputCSV(config: WhiskerSearchConfiguration): string {
@@ -154,8 +156,10 @@ export class Search {
      * Main entry point -- called from whisker-web
      */
     public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
-                     configName: string, accelerationFactor: number, seedString: string, groundTruth?: string,
-                     winningStates?:string): Promise<Array<string>> {
+                     configName: string, accelerationFactor: number, seedString: string, generateBBTs: boolean,
+                     groundTruth?: string, winningStates?: string, generateBBTsAddComment?: boolean):
+        Promise<SearchResult> {
+
         logger.info("Starting Search based algorithm");
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
@@ -169,7 +173,12 @@ export class Search {
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
-            return this.handleEmptyProject();
+            return {
+                javaScriptText: this.handleEmptyProject(),
+                summary: 'empty project',
+                csvOutput: '',
+                blockBasedTests: []
+            };
         }
         config.setReservedCodons(vm);
         logger.info(this.vm);
@@ -208,6 +217,17 @@ seed ${configSeed} defined within the config files.`);
         const tests = testListWithSummary.testList;
         const javaScriptText = this.testsToString(tests);
         const csvOutput = this.outputCSV(config);
-        return [javaScriptText, testListWithSummary.summary, csvOutput];
+
+        let blockBasedTests = [];
+        if (generateBBTs) {
+            blockBasedTests = toBlockBasedTests(tests, generateBBTsAddComment);
+        }
+
+        return {
+            javaScriptText: javaScriptText,
+            summary: testListWithSummary.summary,
+            csvOutput: csvOutput,
+            blockBasedTests: blockBasedTests
+        };
     }
 }

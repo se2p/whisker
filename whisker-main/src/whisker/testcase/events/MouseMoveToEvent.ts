@@ -22,7 +22,7 @@ import {ScratchEvent} from "./ScratchEvent";
 import {ScratchPosition} from "../../scratch/ScratchPosition";
 import {ScratchInterface} from "../../scratch/ScratchInterface";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 import {Container} from "../../utils/Container";
 
@@ -57,7 +57,7 @@ export class MouseMoveToEvent extends ScratchEvent {
 
         const stageBounds = Container.vmWrapper.getStageSize();
 
-        const mainBlock: ScratchVMBlock =
+        const mainBlock: SubVMBlock =
             {
                 "id": mainBlockId,
                 "opcode": "bbt_placeMousePointer",
@@ -81,7 +81,7 @@ export class MouseMoveToEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const xInputBlock: ScratchVMBlock =
+        const xInputBlock: SubVMBlock =
             {
                 "id": xInputBlockId,
                 "opcode": "math_number",
@@ -99,7 +99,7 @@ export class MouseMoveToEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const yInputBlock: ScratchVMBlock =
+        const yInputBlock: SubVMBlock =
             {
                 "id": yInputBlockId,
                 "opcode": "math_number",
