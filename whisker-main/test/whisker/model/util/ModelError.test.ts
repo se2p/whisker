@@ -62,7 +62,7 @@ describe('ModelError', () => {
 
     test("getTimeLimitFailedAtOutput()", () => {
         const condition = new Click("label", {args: ["Bowl"]});
-        expect(getTimeLimitFailedAtOutput(getEdge(), condition, 42,reason)).toEqual('graphID-label: Click(Bowl) at 42ms {"message":"check failed"}');
+        expect(getTimeLimitFailedAtOutput(getEdge(), condition, 42, reason)).toEqual('graphID-label: Click(Bowl) at 42ms {"message":"check failed"}');
     });
 
     test("getErrorOnEdgeOutput()", () => {

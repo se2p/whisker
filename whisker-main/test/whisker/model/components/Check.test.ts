@@ -34,7 +34,7 @@ describe('constructor', () => {
     });
 
     describe('Constructor throws for empty args', () => {
-        const constructorArguments: [CheckName, boolean, ArgType[]][] = CHECK_NAMES.filter(c=>c!="AnyKey").map(c => [c, true, []]);
+        const constructorArguments: [CheckName, boolean, ArgType[]][] = CHECK_NAMES.filter(c => c != "AnyKey").map(c => [c, true, []]);
         it.each(constructorArguments)('throws for CheckName: %s', checkConstructorThrows);
     });
 

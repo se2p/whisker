@@ -51,7 +51,7 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]):InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [];
     }
 }

@@ -2,7 +2,6 @@ import {z} from "zod";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
-import {ModelUtil} from "../util/ModelUtil";
 import {ArgType} from "../util/schema";
 
 export type Comparison =
@@ -181,7 +180,7 @@ export function newComparison({operator, value, negated = false}: Optional<Compa
     return negated ? comparison.negate() : comparison;
 }
 
-export function isValidComparisonOp(op:ArgType):boolean{
+export function isValidComparisonOp(op: ArgType): boolean {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return comparisonOps.includes(op);

@@ -497,7 +497,7 @@ export abstract class ModelUtil {
     static parseRGBAndUpdate(args: ArgType[], index: number): InputErrorCodes {
         const converted = ModelUtil.returnNumberIfPossible(args[index], null);
         if (converted != null) {
-            if(0 <= converted && converted <= 255){
+            if (0 <= converted && converted <= 255) {
                 args[index] = converted;
                 return "";
             }

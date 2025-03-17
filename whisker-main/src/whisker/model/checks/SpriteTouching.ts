@@ -3,7 +3,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, pass, fail, result} from "./CheckResult";
+import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
@@ -70,8 +70,9 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         return () => {
             const touchingCheck = (s: Sprite) => {
                 if (!s.visible) {
-                    return fail({message: `Expected sprite "${s}" to be visible`
-                });
+                    return fail({
+                        message: `Expected sprite "${s}" to be visible`
+                    });
                 }
 
                 if (!s.isTouchingSprite(spriteName2)) {
@@ -94,7 +95,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         return false;
     }
 
-    public static convertArgs(args: ArgType[]):InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [
             couldBeSpriteName(args[0]),
             couldBeSpriteName(args[1])

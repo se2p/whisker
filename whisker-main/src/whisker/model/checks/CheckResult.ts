@@ -2,7 +2,9 @@ import Sprite from "../../../vm/sprite";
 
 interface ICheckResult {
     passed: boolean;
+
     enhance(reason: Record<string, unknown>): CheckResult;
+
     replace(reason: Record<string, unknown>): CheckResult;
 }
 
