@@ -206,8 +206,8 @@ class ModelEditor {
         this.models.push({
             id: id,
             usage: 'program',
-            startNodeId: '0',
-            nodes: [{id: '0', label: 'start'}],
+            startNodeId: 'start',
+            nodes: [{id: 'start', label: 'start'}],
             stopNodeIds: [],
             stopAllNodeIds: [],
             edges: []
