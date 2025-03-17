@@ -117,9 +117,15 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
     }
 
     public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        const message: InputErrorCodes = ModelUtil.isOperatorEqOrNeq(args, 2)
-            ? ""
-            : ModelUtil.parseIntAndUpdate(args, 2) || isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange";
+        let message: InputErrorCodes;
+        if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
+            message = "";
+        } else {
+            message = ModelUtil.parseIntAndUpdate(args, 2);
+            if (message != "") {
+                message = isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange";
+            }
+        }
         return [
             couldBeSpriteName(args[0]),
             typeof args[1] == "string" ? "" : "invalidVarName",

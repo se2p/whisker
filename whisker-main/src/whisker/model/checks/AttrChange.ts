@@ -239,11 +239,17 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
     }
 
     public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        const message: InputErrorCodes = ModelUtil.isOperatorEqOrNeq(args, 2)
-            ? ""
-            : ModelUtil.isEffectOrNumberAttribute(args[1])
-                ? ModelUtil.parseIntAndUpdate(args, 2) || isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange"
-                : "invalidChangeForAttribute";
+        let message: InputErrorCodes;
+        if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
+            message = "";
+        } else if (ModelUtil.isEffectOrNumberAttribute(args[1])) {
+            message = ModelUtil.parseIntAndUpdate(args, 2);
+            if (message != "") {
+                message = isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange";
+            }
+        } else {
+            message = "invalidChangeForAttribute";
+        }
         return [
             couldBeSpriteName(args[0]),
             ModelUtil.isAnAttributeOrEffectMessage(args[1]),
