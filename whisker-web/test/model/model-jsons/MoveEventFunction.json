@@ -35,7 +35,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "TimeElapsed",
                         "args": [
                             5000
@@ -54,7 +53,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Expr",
                         "args": [
                             "t.getSprite('Sprite1').y == -10"
@@ -73,7 +71,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Expr",
                         "args": [
                             "t.getSprite('Sprite1').y == 0"
@@ -92,7 +89,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Expr",
                         "args": [
                             "t.getSprite('Sprite1').y < 0"

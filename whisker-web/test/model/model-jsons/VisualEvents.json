@@ -59,7 +59,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Output",
                         "args": [
                             "Sprite1",
@@ -79,7 +78,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Output",
                         "args": [
                             "Sprite1",
@@ -99,7 +97,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
@@ -121,7 +118,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrChange",
                         "args": [
                             "Sprite1",
@@ -142,7 +138,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
@@ -164,7 +159,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
@@ -186,7 +180,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
@@ -208,7 +201,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
@@ -230,7 +222,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
