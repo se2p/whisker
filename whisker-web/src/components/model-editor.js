@@ -284,11 +284,11 @@ class ModelEditor {
         const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
         const chosenCheckList = this.chosenList === 'condition' ? edge.conditions : edge.effects;
         if (this.checkIndex === -1) {
-            chosenCheckList.push({args, negated, name});
+            chosenCheckList.push({name: name, negated: negated, args: args});
         } else {
-            chosenCheckList[this.checkIndex].args = args;
-            chosenCheckList[this.checkIndex].negated = negated;
             chosenCheckList[this.checkIndex].name = name;
+            chosenCheckList[this.checkIndex].negated = negated;
+            chosenCheckList[this.checkIndex].args = args;
         }
         this.checkIndex = -1;
         this.chosenList = null;
