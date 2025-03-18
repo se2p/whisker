@@ -57,12 +57,21 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
         return () => {
             const sprites = t.getSprite(spriteNameRotate).getClones(true);
             const check = (s: Sprite) => {
-                const expectedDirection = this._args[1] == "_mouse_"
-                    ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(s, t)
-                    : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, t.getSprite(this._args[1]));
-                return result(
-                    ModelUtil.checkDirectionWithinDelta(s, expectedDirection),
-                    {actual: s.direction, expected: expectedDirection});
+                let expectedDirection: number, hasCorrectDirection: boolean;
+                if (this._args[1] == "_mouse_") {
+                    expectedDirection = ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(s, t);
+                    hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
+                } else {
+                    const target = t.getSprite(this._args[1]);
+                    expectedDirection = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, target);
+                    hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
+                    if (!hasCorrectDirection) {
+                        // maybe the sprite just moved so it did point to the sprite
+                        const dirOld = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, target.old);
+                        hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, dirOld);
+                    }
+                }
+                return result(hasCorrectDirection, {actual: s.direction, expected: expectedDirection});
             };
             return any(check, this.negated, sprites);
         };
