@@ -55,15 +55,15 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
             ModelUtil.checkSpriteExistence(t, this._args[1]).name;
         }
         return () => {
-            const rotatingSprite: Sprite = t.getSprite(spriteNameRotate);
-            const expectedDirection = this._args[1] == "_mouse_"
-                ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(rotatingSprite, t)
-                : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(rotatingSprite, t.getSprite(this._args[1]));
-            const sprites = rotatingSprite.getClones(true);
-            const check = (s: Sprite) => result(
-                ModelUtil.checkDirectionWithinDelta(s, expectedDirection),
-                {actual: s.direction, expected: expectedDirection}
-            );
+            const sprites = t.getSprite(spriteNameRotate).getClones(true);
+            const check = (s: Sprite) => {
+                const expectedDirection = this._args[1] == "_mouse_"
+                    ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(s, t)
+                    : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, t.getSprite(this._args[1]));
+                return result(
+                    ModelUtil.checkDirectionWithinDelta(s, expectedDirection),
+                    {actual: s.direction, expected: expectedDirection});
+            };
             return any(check, this.negated, sprites);
         };
     }
