@@ -258,7 +258,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         searchAlgorithm.setProperties(this._properties);
         searchAlgorithm.setChromosomeGenerator(this._chromosomeGenerator);
 
-        // Add the set of StatementFitnessFunctions or in case of a single optimisation goal a single
+        // Add the set of StatementFitnessFunctions or in case of a single optimisation objective a single
         // StatementFitnessFunction to the Container for further use.
         if (this.fitnessFunctions.size > 0) {
             const fitnessFunctions = [...this.fitnessFunctions.values()];

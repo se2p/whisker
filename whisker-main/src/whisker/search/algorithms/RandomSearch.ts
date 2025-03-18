@@ -79,7 +79,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             }
             this.updateStatistics();
             this._iterations++;
-            logger.debug(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
+            logger.debug(`Iteration ${this._iterations}: covered objectives:  ${this._archive.size}/${this._fitnessFunctions.size}`);
         }
         return this._archive;
     }

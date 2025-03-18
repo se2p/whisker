@@ -61,10 +61,10 @@ export class Neatest extends NEAT {
      */
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialise();
-        const totalGoals = this._fitnessFunctions.size;
-        while (this._archive.size != totalGoals && !(await this._stoppingCondition.isFinished(this))) {
-            const currentTarget = this.setNextGoal();
-            logger.debug(`Next goal ${this._archive.size}/${totalGoals}:${currentTarget}`);
+        const totalNumObjectives = this._fitnessFunctions.size;
+        while (this._archive.size != totalNumObjectives && !(await this._stoppingCondition.isFinished(this))) {
+            const currentTarget = this.setNextObjective();
+            logger.debug(`Next objective ${this._archive.size}/${totalNumObjectives}:${currentTarget}`);
             this._population = this.getPopulation();
             this._population.generatePopulation();
             this._targetIterations = 0;
@@ -122,7 +122,7 @@ export class Neatest extends NEAT {
      * children of already reached objectives in the control dependence graph.
      * @returns the next target objective's fitness function.
      */
-    protected setNextGoal(): StatementFitnessFunction {
+    protected setNextObjective(): StatementFitnessFunction {
         let nearestTargets = this.getNearestTargets();
 
         // Prioritise greenFlag events

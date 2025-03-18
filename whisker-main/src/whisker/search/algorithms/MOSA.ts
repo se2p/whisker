@@ -135,7 +135,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this.updateStatistics();
         }
         while (!(await this._stoppingCondition.isFinished(this))) {
-            logger.debug(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
+            logger.debug(`Iteration ${this._iterations}: covered objectives:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = await this._generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
             this._nonOptimisedObjectives = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));

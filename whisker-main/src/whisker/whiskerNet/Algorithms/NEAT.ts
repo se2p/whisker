@@ -137,7 +137,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             }
         }
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        logger.debug(`Covered goals: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
+        logger.debug(`Covered objectives: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
         if (this._neuroevolutionProperties.printPopulationRecord) {
             const currentPopulationRecord = {};
             currentPopulationRecord[`Generation ${this._iterations}`] = population;

@@ -251,8 +251,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this.isFocusedPhaseReached()) {
                 await this.updateParameters();
             }
-            logger.debug(`Iteration ${this._iterations}, covered goals total: ${this._archiveCovered.size}/${this._fitnessFunctions.size}, \
-open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
+            logger.debug(`Iteration ${this._iterations}, covered objectives total: ${this._archiveCovered.size}/${this._fitnessFunctions.size}, \
+open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`);
         }
         return this._archiveCovered;
     }
@@ -345,7 +345,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
                         this._archiveUncovered.delete(fitnessFunctionKey);
                     }
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
-                    logger.debug(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
+                    logger.debug(`Found test for objective: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
                     if (this._archiveCovered.size == this._fitnessFunctions.size) {
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
