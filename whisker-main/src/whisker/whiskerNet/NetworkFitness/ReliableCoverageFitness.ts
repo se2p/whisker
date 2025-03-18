@@ -32,7 +32,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
         await executor.execute(network);
         network.resetCoverageMap();
-        const fitness = await network.targetFitness.getFitness(network);
+        const fitness = await network.targetObjective.getFitness(network);
         await this.updateUncoveredObjectives(network);
         await executor.resetState();
 
@@ -69,7 +69,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
             const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
             eventSelection === 'random' ? await executor.executeSavedTrace(network) : await executor.execute(network);
             await this.updateUncoveredObjectives(network);
-            if (network.targetFitness && await network.targetFitness.isCovered(network)) {
+            if (network.targetObjective && await network.targetObjective.isCovered(network)) {
                 network.fitness++;
             }
             await executor.resetState();
@@ -80,8 +80,8 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         this.restoreNetworkAttributes(network, playTime, score, trace, finalState, coverage);
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
 
-        if (network.targetFitness) {
-            logger.debug(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`);
+        if (network.targetObjective) {
+            logger.debug(`Achieved fitness for ${network.targetObjective}: ${network.fitness}`);
         }
     }
 

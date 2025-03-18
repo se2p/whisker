@@ -80,7 +80,7 @@ export class NeatestPopulation extends NeatPopulation {
         // generated network.
         for (const network of this.networks) {
             network.initialiseCoverageObjectives(this._allObjectives);
-            network.targetFitness = this._targetedObjective;
+            network.targetObjective = this._targetedObjective;
             this.assignSpecies(network);
         }
     }

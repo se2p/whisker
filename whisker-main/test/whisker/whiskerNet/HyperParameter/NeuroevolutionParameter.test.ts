@@ -37,7 +37,7 @@ describe("Test NeatProperties", () => {
         properties.populationChampionNumberOffspring = 3;
         properties.populationChampionNumberClones = 1;
         properties.activationTraceRepetitions = 100;
-        properties.switchTargetCount = 5;
+        properties.switchObjectiveCount = 5;
         properties.coverageStableCount = 10;
         properties.printPopulationRecord = false;
 
@@ -72,7 +72,7 @@ describe("Test NeatProperties", () => {
         expect(properties.populationChampionNumberOffspring).toBe(3);
         expect(properties.populationChampionNumberClones).toBe(1);
         expect(properties.activationTraceRepetitions).toBe(100);
-        expect(properties.switchTargetCount).toBe(5);
+        expect(properties.switchObjectiveCount).toBe(5);
         expect(properties.coverageStableCount).toBe(10);
         expect(properties.printPopulationRecord).toBeFalsy();
     });

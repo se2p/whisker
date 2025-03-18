@@ -35,15 +35,15 @@ export abstract class Chromosome {
     //  into something like SingleObjectiveChromosome. For now its placed here to reduce the amount of casts...
     /**
      * The position in the codon list after which no additional fitness improvement regarding the specified
-     * targetFitness has been seen.
+     * target objective has been seen.
      */
     private _lastImprovedFitnessCodon: number;
 
     /**
-     * The fitnessFunction this chromosome is optimising for. Only applicable for single-objective focused algorithms
-     * like MIO.
+     * The fitnessFunction this chromosome is optimising for.
+     * Only applicable for single-objective-focused algorithms like MIO.
      */
-    private _targetFitness: FitnessFunction<Chromosome>;
+    private _targetObjective: FitnessFunction<Chromosome>;
 
     /**
      * Caches fitnessValues to avoid calculating the same fitness multiple times.
@@ -63,12 +63,12 @@ export abstract class Chromosome {
         this._lastImprovedFitnessCodon = value;
     }
 
-    get targetFitness(): FitnessFunction<Chromosome> {
-        return this._targetFitness;
+    get targetObjective(): FitnessFunction<Chromosome> {
+        return this._targetObjective;
     }
 
-    set targetFitness(value: FitnessFunction<Chromosome>) {
-        this._targetFitness = value;
+    set targetObjective(value: FitnessFunction<Chromosome>) {
+        this._targetObjective = value;
     }
 
     /**

@@ -85,7 +85,7 @@ export class Neatest extends NEAT {
                 // can switch to left
                 const uncoveredObjectiveIds = [...this.getUncoveredTargets()].map(objective => objective.getNodeId());
                 const uncoveredUntouchedTargets = uncoveredObjectiveIds.filter(targetId => !this._switchedTargets.has(targetId));
-                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchTargetCount &&
+                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchObjectiveCount &&
                     uncoveredUntouchedTargets.length > 0) {
                     const currentTargetId = this._getIdOfCurrentObjective();
                     this._switchedTargets.add(currentTargetId);
@@ -338,7 +338,7 @@ export class Neatest extends NEAT {
         const uncoveredObjectives = [...this.getUncoveredTargets()]
             .map(objective => this.mapObjectiveToKey(objective));
         for (const network of this._population.networks) {
-            network.targetFitness = currentTarget;
+            network.targetObjective = currentTarget;
             network.initialiseCoverageObjectives(uncoveredObjectives);
         }
     }

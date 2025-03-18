@@ -23,7 +23,7 @@ describe("Test NetworkLoader", () => {
         expect(firstNetwork.uID).toBe(0);
         expect(firstNetwork.activationFunction).toBe(ActivationFunction["TANH"]);
         expect(firstNetwork.inputConnectionMethod).toBe("fully");
-        expect(firstNetwork.targetFitness).toBe(undefined); // We have no CDG -> no actual statements
+        expect(firstNetwork.targetObjective).toBe(undefined); // We have no CDG -> no actual statements
         expect(firstNetwork.getAllNodes().length).toBe(8);
         expect(firstNetwork.connections.length).toBe(8);
         expect(firstNetwork.layers.get(0).length).toBe(4);

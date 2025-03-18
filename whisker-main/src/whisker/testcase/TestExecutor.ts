@@ -102,11 +102,11 @@ export class TestExecutor {
 
             // Check if we came closer to cover a specific block.
             // This only makes sense when using a SingleObjective focused Algorithm like MIO.
-            if (testChromosome.targetFitness) {
+            if (testChromosome.targetObjective) {
                 // Enforce the recalculation of the fitness value by deleting the cached value.
-                testChromosome.deleteCacheEntry(testChromosome.targetFitness);
-                const currentFitness = await testChromosome.getFitness(testChromosome.targetFitness);
-                if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
+                testChromosome.deleteCacheEntry(testChromosome.targetObjective);
+                const currentFitness = await testChromosome.getFitness(testChromosome.targetObjective);
+                if (testChromosome.targetObjective.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
                     testChromosome.lastImprovedFitnessCodon = numCodon;
                 }

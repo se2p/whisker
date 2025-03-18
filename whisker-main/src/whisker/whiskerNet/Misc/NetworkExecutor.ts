@@ -83,7 +83,7 @@ export class NetworkExecutor {
         let stepCount = 0;
 
         // Play the game until we reach a GameOver state or the timeout.
-        const coverageObjective = network.targetFitness as StatementFitnessFunction;
+        const coverageObjective = network.targetObjective as StatementFitnessFunction;
         const isGreenFlag = this._stopEarly &&
             coverageObjective !== undefined &&
             coverageObjective.getTargetNode().block.opcode === 'event_whenflagclicked';
@@ -189,7 +189,7 @@ export class NetworkExecutor {
         await this._vmWrapper.start();
 
         const eventTrace = network.trace.events;
-        const targetObjective = network.targetFitness as StatementFitnessFunction;
+        const targetObjective = network.targetObjective as StatementFitnessFunction;
         this._vm.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {

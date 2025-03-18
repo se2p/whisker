@@ -224,11 +224,11 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 } else {
                     chromosome = this._archiveCovered.get(fitnessFunctionKey);
                 }
-                chromosome.targetFitness = fitnessFunction;
+                chromosome.targetObjective = fitnessFunction;
                 let currentHeuristic = await this.getHeuristicValue(chromosome, fitnessFunctionKey);
                 while (mutationCounter < this._maxMutationCount && !this._archiveCovered.has(fitnessFunctionKey)) {
                     const mutant = chromosome.mutate();
-                    mutant.targetFitness = fitnessFunction;
+                    mutant.targetObjective = fitnessFunction;
                     await mutant.evaluate(true);
                     await this.updateArchive(mutant);
                     const mutantHeuristic = await this.getHeuristicValue(mutant, fitnessFunctionKey);
@@ -377,7 +377,7 @@ open independent objectives: ${this._uncoveredIndependentFitnessFunctions.size}`
                     archiveTuples = [];
                 }
                 const newTuple = {chromosome, heuristicValue};
-                newTuple.chromosome.targetFitness = this._fitnessFunctions.get(fitnessFunctionKey);
+                newTuple.chromosome.targetObjective = this._fitnessFunctions.get(fitnessFunctionKey);
                 // Do not add duplicates in any population!
                 if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
                     continue;

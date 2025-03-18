@@ -30,19 +30,19 @@ export class NetworkLoader {
     /**
      * The list of statements in a given scratch project.
      */
-    private readonly _scratchStatements: StatementFitnessFunction[];
+    private readonly _targetObjectives: StatementFitnessFunction[];
 
     /**
      * Constructs a new network loader that loads networks from a saved JSON file.
      * @param networkSuite the JSON record of saved networks.
      * @param scratchEvents the extracted Scratch events of a project.
-     * @param scratchStatements the extracted statements of a Scratch project.
+     * @param objectives the extracted coverage objectives of a Scratch project.
      */
     constructor(networkSuite: Record<string, (number | string | Record<string, (number | string)>)>,
-                scratchEvents: ScratchEvent[], scratchStatements: StatementFitnessFunction[] = []) {
+                scratchEvents: ScratchEvent[], objectives: StatementFitnessFunction[] = []) {
         this._networkSuite = networkSuite;
         this._scratchEvents = scratchEvents;
-        this._scratchStatements = scratchStatements;
+        this._targetObjectives = objectives;
     }
 
     /**
@@ -113,12 +113,13 @@ export class NetworkLoader {
             const network = new NeatChromosome(layers, allConnections, mutation, crossover, connectionMethod,
                 ActivationFunction[activationFunction]);
 
-            // If the generated networks are based on the StatementFitness function, we load their fitness targets.
+            // If the generated networks are based on the StatementFitness function,
+            // we load the coverage objectives targeted during test generation.
             if (savedNetwork['tf']) {
                 const targetId = savedNetwork['tf'];
-                for (const statement of this._scratchStatements) {
+                for (const statement of this._targetObjectives) {
                     if (statement.getNodeId() === targetId) {
-                        network.targetFitness = statement;
+                        network.targetObjective = statement;
                     }
                 }
             }

@@ -188,7 +188,7 @@ describe('Test NeatChromosome', () => {
         expect(clone.trace).toEqual(chromosome.trace);
         expect(clone.fitness).toEqual(chromosome.fitness);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
-        expect(clone.targetFitness).toEqual(chromosome.targetFitness);
+        expect(clone.targetObjective).toEqual(chromosome.targetObjective);
         expect(clone.coverageObjectives).toEqual(chromosome.coverageObjectives);
         expect(clone.isSpeciesChampion).toEqual(chromosome.isSpeciesChampion);
         expect(clone.isPopulationChampion).toEqual(chromosome.isPopulationChampion);

@@ -100,11 +100,11 @@ export class DynamicNetworkSuite {
      * Loads the dynamic test cases by initialising the saved networks.
      */
     protected loadTestCases(): NeatChromosome[] {
-        const fitnessTargets = [...this.statementMap.values()]
+        const objectives = [...this.statementMap.values()]
             .concat(...this.branchMap.values()) as unknown as StatementFitnessFunction[];
         const eventExtractor = new NeuroevolutionScratchEventExtractor(this.vm);
         const networkLoader = new NetworkLoader(this._testSuiteJSON['Networks'],
-            eventExtractor.extractStaticEvents(this.vm), fitnessTargets);
+            eventExtractor.extractStaticEvents(this.vm), objectives);
         return networkLoader.loadNetworks();
     }
 
@@ -223,7 +223,7 @@ export class DynamicNetworkSuite {
         this.setScratchSeed();
         await this.initialiseCommonVariables();
         this.initialiseExecutionParameter();
-        this.initialiseFitnessTargets(this.vm);
+        this.initialiseCoverageMaps(this.vm);
         this.testCases = this.loadTestCases();
         if (this.properties.minimiseSuite && this.testCases.length > 1) {
             await this.minimiseSuite();
@@ -287,21 +287,21 @@ export class DynamicNetworkSuite {
     /**
      * Initialises the coverage maps.
      */
-    private initialiseFitnessTargets(vm: VirtualMachine): void {
+    private initialiseCoverageMaps(vm: VirtualMachine): void {
         // Initialise Statements
         const statementFactory = new StatementFitnessFunctionFactory();
-        const statementTargets = statementFactory.extractFitnessFunctions(vm, []);
+        const statementObjectives = statementFactory.extractFitnessFunctions(vm, []);
         this.statementMap = new Map<number, FitnessFunction<Chromosome>>();
-        for (let i = 0; i < statementTargets.length; i++) {
-            this.statementMap.set(i, statementTargets[i] as unknown as FitnessFunction<NeatChromosome>);
+        for (let i = 0; i < statementObjectives.length; i++) {
+            this.statementMap.set(i, statementObjectives[i] as unknown as FitnessFunction<NeatChromosome>);
         }
 
         // Initialise Branches
         const branchFactory = new BranchCoverageFitnessFunctionFactory();
-        const branchTargets = branchFactory.extractFitnessFunctions(vm, []);
+        const branchObjectives = branchFactory.extractFitnessFunctions(vm, []);
         this.branchMap = new Map<number, FitnessFunction<Chromosome>>();
-        for (let i = 0; i < branchTargets.length; i++) {
-            this.branchMap.set(i, branchTargets[i] as unknown as FitnessFunction<NeatChromosome>);
+        for (let i = 0; i < branchObjectives.length; i++) {
+            this.branchMap.set(i, branchObjectives[i] as unknown as FitnessFunction<NeatChromosome>);
         }
     }
 
@@ -454,7 +454,7 @@ export class DynamicNetworkSuite {
         const util = new WhiskerUtil(this.vm, mutant);
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
-        this.initialiseFitnessTargets(vmWrapper.vm);
+        this.initialiseCoverageMaps(vmWrapper.vm);
         this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', false);
     }
 
