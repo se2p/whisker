@@ -327,7 +327,7 @@ export abstract class ModelUtil {
                 } else {
                     try {
                         // maybe custom flag was not specified by accident -> try custom variables
-                        return ModelUtil.getValueForSubExpression(t, spriteName, attribute, true, dependencies);
+                        return ModelUtil.getValueForSubExpression(t, spriteName, attribute, true, dependencies, log);
                     } catch (e) {
                         throw new AttributeNotFoundError(spriteName, attribute);
                     }
