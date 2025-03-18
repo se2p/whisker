@@ -102,11 +102,11 @@ export class TestExecutor {
 
             // Check if we came closer to cover a specific block.
             // This only makes sense when using a SingleObjective focused Algorithm like MIO.
-            if (testChromosome.targetFitness) {
+            if (testChromosome.targetObjective) {
                 // Enforce the recalculation of the fitness value by deleting the cached value.
-                testChromosome.deleteCacheEntry(testChromosome.targetFitness);
-                const currentFitness = await testChromosome.getFitness(testChromosome.targetFitness);
-                if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
+                testChromosome.deleteCacheEntry(testChromosome.targetObjective);
+                const currentFitness = await testChromosome.getFitness(testChromosome.targetObjective);
+                if (testChromosome.targetObjective.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
                     testChromosome.lastImprovedFitnessCodon = numCodon;
                 }
@@ -122,7 +122,7 @@ export class TestExecutor {
 
 
                 // Check if the latest execution of the given event has improved overall fitness.
-                if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
+                if (TestExecutor.hasFitnessOfUncoveredObjectivesImproved(fitnessValues, newFitnessValues)) {
                     testChromosome.lastImprovedCodon = numCodon;
                     testChromosome.lastImprovedTrace = new ExecutionTrace(this._vm.getTraces().branchDistances, [...events]);
                 }
@@ -386,7 +386,7 @@ export class TestExecutor {
         // Flush fitnessCache to enforce a recalculation of the fitness values.
         chromosome.flushFitnessCache();
         const fitnessValues: number[] = [];
-        for (const fitnessFunction of Container.statementFitnessFunctions) {
+        for (const fitnessFunction of Container.coverageObjectives) {
             // Only look at fitnessValues originating from uncovered blocks.
             const fitness = await chromosome.getFitness(fitnessFunction);
             if (!await fitnessFunction.isOptimal(fitness)) {
@@ -402,7 +402,7 @@ export class TestExecutor {
      * @param oldFitnessValues the old fitness values used as a reference point
      * @param newFitnessValues new fitness values which might show some improvements.
      */
-    public static hasFitnessOfUncoveredStatementsImproved(oldFitnessValues: number[], newFitnessValues: number[]): boolean {
+    public static hasFitnessOfUncoveredObjectivesImproved(oldFitnessValues: number[], newFitnessValues: number[]): boolean {
         return newFitnessValues.length < oldFitnessValues.length ||
             newFitnessValues.some((value, index) => value < oldFitnessValues[index]);
     }

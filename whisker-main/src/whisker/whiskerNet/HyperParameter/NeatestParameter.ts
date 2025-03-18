@@ -6,7 +6,7 @@ export class NeatestParameter extends NeatParameter {
      * Number of generations without improvement after which the explorative NEAT algorithm changes his currently
      * selected target statement.
      */
-    private _switchTargetCount = 5;
+    private _switchObjectiveCount = 5;
 
     /**
      * Number of robustness checks after which a statement is treated as covered within the explorative NEAT algorithm.
@@ -38,12 +38,12 @@ export class NeatestParameter extends NeatParameter {
         batchSize: 1,
     };
 
-    get switchTargetCount(): number {
-        return this._switchTargetCount;
+    get switchObjectiveCount(): number {
+        return this._switchObjectiveCount;
     }
 
-    set switchTargetCount(value: number) {
-        this._switchTargetCount = value;
+    set switchObjectiveCount(value: number) {
+        this._switchObjectiveCount = value;
     }
 
     get coverageStableCount(): number {

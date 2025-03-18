@@ -5,7 +5,6 @@
     "numberOfSpecies": 2,
     "parentsPerSpecies": 0.20,
     "ageSignificance": 1.0,
-    "switchTargetCount": 50,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
     "maxArchiveSize": 20,

@@ -35,15 +35,15 @@ export abstract class Chromosome {
     //  into something like SingleObjectiveChromosome. For now its placed here to reduce the amount of casts...
     /**
      * The position in the codon list after which no additional fitness improvement regarding the specified
-     * targetFitness has been seen.
+     * target objective has been seen.
      */
     private _lastImprovedFitnessCodon: number;
 
     /**
-     * The fitnessFunction this chromosome is optimising for. Only applicable for single-objective focused algorithms
-     * like MIO.
+     * The fitnessFunction this chromosome is optimising for.
+     * Only applicable for single-objective-focused algorithms like MIO.
      */
-    private _targetFitness: FitnessFunction<Chromosome>;
+    private _targetObjective: FitnessFunction<Chromosome>;
 
     /**
      * Caches fitnessValues to avoid calculating the same fitness multiple times.
@@ -51,9 +51,9 @@ export abstract class Chromosome {
     protected _fitnessCache = new Map<FitnessFunction<Chromosome>, number>();
 
     /**
-     * Saves the number of statements that were covered by this chromosome.
+     * Saves the number of objectives that were covered by this chromosome.
      */
-    private _coveredStatements: number;
+    private _coveredObjectives: number;
 
     get lastImprovedFitnessCodon(): number {
         return this._lastImprovedFitnessCodon;
@@ -63,12 +63,12 @@ export abstract class Chromosome {
         this._lastImprovedFitnessCodon = value;
     }
 
-    get targetFitness(): FitnessFunction<Chromosome> {
-        return this._targetFitness;
+    get targetObjective(): FitnessFunction<Chromosome> {
+        return this._targetObjective;
     }
 
-    set targetFitness(value: FitnessFunction<Chromosome>) {
-        this._targetFitness = value;
+    set targetObjective(value: FitnessFunction<Chromosome>) {
+        this._targetObjective = value;
     }
 
     /**
@@ -101,7 +101,7 @@ export abstract class Chromosome {
     /**
      * Computes and returns the fitness of this chromosome using the supplied fitness function.
      * @param fitnessFunction the fitness function with which to compute the fitness of the chromosome.
-     * @param fitnessKey the key of the fitness function in the covered statements map (mainly used in Neuroevolution).
+     * @param fitnessKey the key of the fitness function in the covered objectives map (mainly used in Neuroevolution).
      * @returns the fitness of this chromosome
      */
     async getFitness(fitnessFunction: FitnessFunction<this>, fitnessKey?: number): Promise<number> {
@@ -160,7 +160,7 @@ export abstract class Chromosome {
                 coverageCount++;
             }
         }
-        this._coveredStatements = coverageCount;
+        this._coveredObjectives = coverageCount;
         return coverageCount;
     }
 
@@ -180,7 +180,7 @@ export abstract class Chromosome {
      */
     abstract clone(): Chromosome;
 
-    get coveredStatements(): number {
-        return this._coveredStatements;
+    get coveredObjectives(): number {
+        return this._coveredObjectives;
     }
 }

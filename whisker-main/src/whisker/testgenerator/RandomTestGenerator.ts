@@ -91,7 +91,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
-        this._fitnessFunctions = this.extractCoverageGoals();
+        this._fitnessFunctions = this.extractCoverageObjectives();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
         const stoppingCondition = this._config.searchAlgorithmProperties.stoppingCondition;
@@ -100,7 +100,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
 
         while (!(await stoppingCondition.isFinished(this))) {
-            logger.info(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
+            logger.info(`Iteration ${this._iterations}, covered objectives: ${this._archive.size}/${this._fitnessFunctions.size}`);
             const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
             const randomEventChromosome = new TestChromosome([], undefined, undefined);
             await randomTestExecutor.executeRandomEvents(randomEventChromosome, numberOfEvents);
@@ -128,7 +128,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
                 }
                 this._archive.set(fitnessFunctionKey, chromosome);
                 this._tests = Arrays.distinct(this._archive.values());
-                logger.info(`Found test for goal: ${fitnessFunction}`);
+                logger.info(`Found test for objective: ${fitnessFunction}`);
             }
         }
     }

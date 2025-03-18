@@ -81,9 +81,9 @@ export abstract class NetworkChromosome extends Chromosome {
     private _testUncertainty = new Map<number, number>();
 
     /**
-     * Maps each uncovered target statement to the number of times it has been covered using different seeds.
+     * Maps each uncovered objective to the number of times it has been covered using different seeds.
      */
-    private _openStatementTargets: Map<number, number>;
+    private _coverageObjectives: Map<number, number>;
 
     /**
      * The fitness value of the network.
@@ -483,23 +483,22 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Initialises the open target statements, setting each coverage count to zero; Used for Explorative-NEAT's
-     * robustness check.
-     * @param fitnessKeys all block statements of the given Scratch program.
+     * Initialises the coverage objectives map, setting every coverage count to zero.
+     * @param fitnessKeys all objective keys of the given Scratch program.
      */
-    public initialiseOpenStatements(fitnessKeys: number[]): void {
-        this.openStatementTargets = new Map<number, number>();
+    public initialiseCoverageObjectives(fitnessKeys: number[]): void {
+        this.coverageObjectives = new Map<number, number>();
         for (const t of fitnessKeys) {
-            this.openStatementTargets.set(t, 0);
+            this.coverageObjectives.set(t, 0);
         }
     }
 
     /**
-     * Resets the openStatementTargets map by setting all values to zero.
+     * Resets the coverage objective map by setting all values to zero.
      */
-    public resetOpenStatement(): void {
-        for (const key of this.openStatementTargets.keys()) {
-            this.openStatementTargets.set(key, 0);
+    public resetCoverageMap(): void {
+        for (const key of this.coverageObjectives.keys()) {
+            this.coverageObjectives.set(key, 0);
         }
     }
 
@@ -582,8 +581,8 @@ export abstract class NetworkChromosome extends Chromosome {
 
     override async getFitness(fitnessFunction: FitnessFunction<this>, fitnessKey: number): Promise<number> {
         // The coverage objective was covered at least once.
-        if (this.openStatementTargets.get(fitnessKey) > 0) {
-            return this.openStatementTargets.get(fitnessKey);
+        if (this.coverageObjectives.get(fitnessKey) > 0) {
+            return this.coverageObjectives.get(fitnessKey);
         }
 
         // If the coverage objective has not been covered, compute the distance to the target.
@@ -845,12 +844,12 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._codons;
     }
 
-    get openStatementTargets(): Map<number, number> {
-        return this._openStatementTargets;
+    get coverageObjectives(): Map<number, number> {
+        return this._coverageObjectives;
     }
 
-    set openStatementTargets(value: Map<number, number>) {
-        this._openStatementTargets = value;
+    set coverageObjectives(value: Map<number, number>) {
+        this._coverageObjectives = value;
     }
 }
 

@@ -153,7 +153,7 @@ describe('Test NeatChromosome', () => {
         chromosome.surpriseCount = 3;
         chromosome.referenceUncertainty = refUncertainty;
         chromosome.testUncertainty = new Map<number, number>();
-        chromosome.openStatementTargets = new Map<number, number>();
+        chromosome.coverageObjectives = new Map<number, number>();
 
         expect(chromosome.uID).toBe(1234);
         expect(chromosome.fitness).toEqual(4);
@@ -175,7 +175,7 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.surpriseCount).toEqual(3);
         expect(chromosome.referenceUncertainty.size).toEqual(1);
         expect(chromosome.testUncertainty.size).toEqual(0);
-        expect(chromosome.openStatementTargets).not.toBeUndefined();
+        expect(chromosome.coverageObjectives).not.toBeUndefined();
     });
 
     test("Deep clone", () => {
@@ -188,8 +188,8 @@ describe('Test NeatChromosome', () => {
         expect(clone.trace).toEqual(chromosome.trace);
         expect(clone.fitness).toEqual(chromosome.fitness);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
-        expect(clone.targetFitness).toEqual(chromosome.targetFitness);
-        expect(clone.openStatementTargets).toEqual(chromosome.openStatementTargets);
+        expect(clone.targetObjective).toEqual(chromosome.targetObjective);
+        expect(clone.coverageObjectives).toEqual(chromosome.coverageObjectives);
         expect(clone.isSpeciesChampion).toEqual(chromosome.isSpeciesChampion);
         expect(clone.isPopulationChampion).toEqual(chromosome.isPopulationChampion);
         expect(clone.isParent).toEqual(chromosome.isParent);

@@ -236,7 +236,7 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
-        const switchTargetCount = this._config['switchTargetCount'] ?? 20;
+        const switchObjectiveCount = this._config['switchObjectiveCount'] ?? 20;
         const activationTraceRepetitions = this._config['aTRepetitions'] ?? 0;
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
         const timeout = this._config['networkFitness']['timeout'];
@@ -281,7 +281,7 @@ export class WhiskerSearchConfiguration {
 
         if (properties instanceof (NeatestParameter || ManyObjectiveNeatestParameter)) {
             properties.coverageStableCount = coverageStableCount;
-            properties.switchTargetCount = switchTargetCount;
+            properties.switchObjectiveCount = switchObjectiveCount;
 
             if (this._config['population'] === undefined || this._config['population']['strategy'] === undefined) {
                 throw new ConfigException('Population generation strategy is missing');

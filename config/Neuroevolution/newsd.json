@@ -6,7 +6,7 @@
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "ageSignificance": 1.0,
-    "switchTargetCount": 10,
+    "switchObjectiveCount": 10,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
     "noviceMaxAge": 3,
