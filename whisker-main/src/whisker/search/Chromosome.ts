@@ -51,9 +51,9 @@ export abstract class Chromosome {
     protected _fitnessCache = new Map<FitnessFunction<Chromosome>, number>();
 
     /**
-     * Saves the number of statements that were covered by this chromosome.
+     * Saves the number of objectives that were covered by this chromosome.
      */
-    private _coveredStatements: number;
+    private _coveredObjectives: number;
 
     get lastImprovedFitnessCodon(): number {
         return this._lastImprovedFitnessCodon;
@@ -101,7 +101,7 @@ export abstract class Chromosome {
     /**
      * Computes and returns the fitness of this chromosome using the supplied fitness function.
      * @param fitnessFunction the fitness function with which to compute the fitness of the chromosome.
-     * @param fitnessKey the key of the fitness function in the covered statements map (mainly used in Neuroevolution).
+     * @param fitnessKey the key of the fitness function in the covered objectives map (mainly used in Neuroevolution).
      * @returns the fitness of this chromosome
      */
     async getFitness(fitnessFunction: FitnessFunction<this>, fitnessKey?: number): Promise<number> {
@@ -160,7 +160,7 @@ export abstract class Chromosome {
                 coverageCount++;
             }
         }
-        this._coveredStatements = coverageCount;
+        this._coveredObjectives = coverageCount;
         return coverageCount;
     }
 
@@ -180,7 +180,7 @@ export abstract class Chromosome {
      */
     abstract clone(): Chromosome;
 
-    get coveredStatements(): number {
-        return this._coveredStatements;
+    get coveredObjectives(): number {
+        return this._coveredObjectives;
     }
 }

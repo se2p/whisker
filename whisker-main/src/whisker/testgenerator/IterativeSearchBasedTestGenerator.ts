@@ -65,7 +65,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             const nextFitnessTarget = this._fitnessFunctions.get(fitnessFunction);
             searchAlgorithm.setFitnessFunction(nextFitnessTarget);
             if(nextFitnessTarget instanceof StatementFitnessFunction) {
-                Container.statementFitnessFunctions = [nextFitnessTarget];
+                Container.coverageObjectives = [nextFitnessTarget];
             }
             searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
             // TODO: Assuming there is at least one solution?

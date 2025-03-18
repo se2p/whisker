@@ -118,7 +118,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
         for (const targetKey of this._currentTargets) {
             const objective = this._fitnessFunctions.get(targetKey);
             const bestChromosome = this._population.networks
-                .reduce((max, curr) => curr.openStatementTargets.get(targetKey) > max.openStatementTargets.get(targetKey) ? curr : max);
+                .reduce((max, curr) => curr.coverageObjectives.get(targetKey) > max.coverageObjectives.get(targetKey) ? curr : max);
             logger.debug(`Best fitness for ${objective}: ${await bestChromosome.getFitness(objective, targetKey)}`);
             this._eliteSet.add(bestChromosome);
         }
@@ -151,8 +151,8 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
             const randomTarget = this._random.pick(this._currentTargets);
             const chrom1 = this._random.pick(remainingChromosomes);
             const chrom2 = this._random.pick(remainingChromosomes);
-            const fitness1 = chrom1.openStatementTargets.get(randomTarget);
-            const fitness2 = chrom2.openStatementTargets.get(randomTarget);
+            const fitness1 = chrom1.coverageObjectives.get(randomTarget);
+            const fitness2 = chrom2.coverageObjectives.get(randomTarget);
             const chosen = fitness1 > fitness2 ? chrom1 : chrom2;
             this._selectedSet.add(chosen);
             Arrays.remove(remainingChromosomes, chosen);
@@ -312,7 +312,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
      * @param target the target considered to sort the networks.
      */
     private _sortByFitness(networks: NeatChromosome[], target: number): NeatChromosome[] {
-        networks.sort((c1: NeatChromosome, c2: NeatChromosome) => c2.openStatementTargets.get(target) - c1.openStatementTargets.get(target));
+        networks.sort((c1: NeatChromosome, c2: NeatChromosome) => c2.coverageObjectives.get(target) - c1.coverageObjectives.get(target));
         return networks;
     }
 

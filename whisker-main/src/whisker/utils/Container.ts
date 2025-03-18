@@ -18,7 +18,7 @@ export class Container {
     static isNeuroevolution: boolean
     static cfg: ControlFlowGraph;
     static cdg: ControlDependenceGraph;
-    static statementFitnessFunctions: StatementFitnessFunction[];
+    static coverageObjectives: StatementFitnessFunction[];
     static backpropagationData: Record<string, unknown>;
     static backpropagationInstance: GradientDescent;
     static neatestTargetId: string

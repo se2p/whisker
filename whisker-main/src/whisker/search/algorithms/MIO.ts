@@ -47,23 +47,23 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     protected override _properties: MIOProperties<C>;
 
     /**
-     * Function determining how good a chromosome performs with respect to a target statement.
+     * Function determining how good a chromosome performs with respect to a target objective.
      */
     private _heuristicFunctions: Map<number, (number) => number>;
 
     /**
-     * Maps all covered statements to the Chromosomes covering them.
+     * Maps all covered objectives to the Chromosomes covering them.
      */
     private _archiveCovered: Map<number, C>;
 
     /**
-     * Maps uncovered Statements to the chromosomes closest to covering them with respect to the given fitnessFunction.
+     * Maps uncovered objectives to the chromosomes closest to covering them with respect to the given fitnessFunction.
      */
     private _archiveUncovered: Map<number, Heuristic<C>[]>;
 
     /**
-     * Contains all uncovered independent FitnessFunctions. These include the last statements inside branches and the
-     * last statements of hat related statements.
+     * Contains all uncovered independent FitnessFunctions. These include the last objectives inside branches and the
+     * last objectives of hat related objectives.
      */
     private _uncoveredIndependentFitnessFunctions: Map<number, FitnessFunction<C>>
 
@@ -207,7 +207,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 const chromosome = this._chromosomeGenerator.get();
                 await chromosome.evaluate(true);
                 await this.updateArchive(chromosome);
-                // By chance apply LocalSearch to the randomly generated chromosome.
+                // By chance, apply LocalSearch to the randomly generated chromosome.
                 await this.applyLocalSearch(chromosome);
                 this._iterations++;
                 StatisticsCollector.getInstance().incrementIterationCount();
@@ -232,7 +232,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     await mutant.evaluate(true);
                     await this.updateArchive(mutant);
                     const mutantHeuristic = await this.getHeuristicValue(mutant, fitnessFunctionKey);
-                    // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome
+                    // If the mutant improved, keep mutating on the mutant instead of on the initial chosen chromosome
                     if (currentHeuristic <= mutantHeuristic) {
                         chromosome = mutant;
                         currentHeuristic = mutantHeuristic;
@@ -326,8 +326,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
     }
 
     /**
-     * Updates the archive containing all covered Statements so far. This archive consists of all block statements
-     * contained in the given Scratch-Project.
+     * Updates the archive containing all covered objectives so far.
      * @param chromosome The candidate chromosome for the archive
      */
     private async updateCoveredArchive(chromosome: C): Promise<void> {
@@ -351,7 +350,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     }
-                    // If the covered statement is an independent one, delete it from the independent fitness
+                    // If the covered statement is independent, delete it from the independent fitness
                     // function map.
                     if (this._uncoveredIndependentFitnessFunctions.has(fitnessFunctionKey)) {
                         this._uncoveredIndependentFitnessFunctions.delete(fitnessFunctionKey);
@@ -362,15 +361,14 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
     }
 
     /**
-     * Updates the archive containing all unCovered Statements. To reduce the amount of duplicate archive populations,
-     * this archive consists of all independent block statements defined by the independentFitnessFunctions attribute.
+     * Updates the archive containing all uncovered objectives.
      * @param chromosome The candidate chromosome for the archive
      */
     private async updateUncoveredArchive(chromosome: C): Promise<void> {
         for (const fitnessFunctionKey of this._uncoveredIndependentFitnessFunctions.keys()) {
             const heuristicValue = await this.getHeuristicValue(chromosome, fitnessFunctionKey);
             // Check for heuristicValue > 0 to make sure we only add chromosomes that are somewhere near of covering
-            // the given statement. Note, that a fitnessValue of Infinity leads to a heuristicValue of 0.
+            // the given objective. Note that a fitnessValue of Infinity leads to a heuristicValue of 0.
             if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
                 let archiveTuples: Heuristic<C>[] = [];
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {

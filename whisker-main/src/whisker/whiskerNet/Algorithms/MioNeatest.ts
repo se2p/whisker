@@ -230,7 +230,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
             for (const fitnessFunctionKey of this._archiveUncovered.keys()) {
                 const archiveChromosomes = this._archiveUncovered.get(fitnessFunctionKey);
                 if (archiveChromosomes.length > this._maxArchiveSize) {
-                    archiveChromosomes.sort((a, b) => a.openStatementTargets.get(fitnessFunctionKey) - b.openStatementTargets.get(fitnessFunctionKey));
+                    archiveChromosomes.sort((a, b) => a.coverageObjectives.get(fitnessFunctionKey) - b.coverageObjectives.get(fitnessFunctionKey));
                     archiveChromosomes.splice(0, (archiveChromosomes.length - this._maxArchiveSize - 1));
                 }
             }
@@ -332,7 +332,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
             } else {
                 // Not covered, and the population is full → replace if better than worst.
 
-                currentArchiveChromosomes.sort((a, b) => a.openStatementTargets.get(selectedTarget) - b.openStatementTargets.get(selectedTarget));
+                currentArchiveChromosomes.sort((a, b) => a.coverageObjectives.get(selectedTarget) - b.coverageObjectives.get(selectedTarget));
                 const worstIndividual = currentArchiveChromosomes[0];
                 const compareChromosomes = await this.compareChromosomes(
                     candidate, worstIndividual, this._fitnessFunctions.get(selectedTarget));

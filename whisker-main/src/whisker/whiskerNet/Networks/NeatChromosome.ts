@@ -83,7 +83,7 @@ export class NeatChromosome extends NetworkChromosome {
         clone.fitness = this.fitness;
         clone.sharedFitness = this.sharedFitness;
         clone.targetFitness = this.targetFitness;
-        clone.openStatementTargets = this.openStatementTargets;
+        clone.coverageObjectives = this.coverageObjectives;
         clone.isSpeciesChampion = this.isSpeciesChampion;
         clone.isPopulationChampion = this.isPopulationChampion;
         clone.isParent = this.isParent;

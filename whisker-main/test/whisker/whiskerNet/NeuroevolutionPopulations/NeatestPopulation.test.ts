@@ -10,12 +10,12 @@ import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMut
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {
-    TargetStatementPopulation
-} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/TargetStatementPopulation";
+    NeatestPopulation
+} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatestPopulation";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 import logger from "../../../../src/util/logger";
 
-describe("Test TargetStatementPopulation", () => {
+describe("Test NeatestPopulation", () => {
 
     let properties: NeatParameter;
     let chromosomeGenerator: NeatChromosomeGenerator;
@@ -61,7 +61,7 @@ describe("Test TargetStatementPopulation", () => {
     });
 
     test("Generate population without starting networks", () => {
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+        const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, [], 0);
         population.generatePopulation();
         expect(population.networks.length).toBe(size);
@@ -72,7 +72,7 @@ describe("Test TargetStatementPopulation", () => {
         for (let i = 0; i < 5; i++) {
             networks.push(chromosomeGenerator.get());
         }
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+        const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 0.1);
         const innovations = NeatPopulation.innovations.length;
         population.generatePopulation();
@@ -85,7 +85,7 @@ describe("Test TargetStatementPopulation", () => {
         for (let i = 0; i < 5; i++) {
             networks.push(chromosomeGenerator.get());
         }
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+        const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 1);
         const innovations = NeatPopulation.innovations.length;
         population.generatePopulation();

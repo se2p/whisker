@@ -263,10 +263,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         if (this.fitnessFunctions.size > 0) {
             const fitnessFunctions = [...this.fitnessFunctions.values()];
             if (fitnessFunctions.every(fitnessFunction => fitnessFunction instanceof StatementFitnessFunction)) {
-                Container.statementFitnessFunctions = fitnessFunctions as unknown as StatementFitnessFunction[];
+                Container.coverageObjectives = fitnessFunctions as unknown as StatementFitnessFunction[];
             }
         } else if (this._fitnessFunction && this._fitnessFunction instanceof StatementFitnessFunction) {
-            Container.statementFitnessFunctions = [this._fitnessFunction as StatementFitnessFunction];
+            Container.coverageObjectives = [this._fitnessFunction as StatementFitnessFunction];
         }
 
         return searchAlgorithm;

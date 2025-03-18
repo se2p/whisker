@@ -22,16 +22,16 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
     }
 
     /**
-     * Fetches the targeted statement of a network and calculates its fitness.
+     * Fetches the targeted objective of a network and calculates its fitness.
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the networks select events.
-     * @returns Promise<number> the fitness of the given network based on reliable statement coverage.
+     * @returns Promise<number> the fitness of the given network based on reliable coverage.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
         await executor.execute(network);
-        network.resetOpenStatement();
+        network.resetCoverageMap();
         const fitness = await network.targetFitness.getFitness(network);
         await this.updateUncoveredObjectives(network);
         await executor.resetState();
@@ -39,8 +39,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         if (fitness > 0) {
             network.fitness = 1 - fitness;
         } else {
-            // If we cover the statement, we want to ensure using different seeds that we would cover this statement
-            // in other circumstances as well.
+            // Check for stable coverage if we covered the objective once.
             network.fitness = 1;
             await this.checkStableCoverage(network, timeout, eventSelection);
         }
@@ -51,7 +50,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
     }
 
     /**
-     * Keep executing the network with different seeds and check for each seed which Scratch statements are covered.
+     * Keep executing the network with different seeds and check for each seed which objectives are covered.
      * @param network the network that will be executed.
      * @param timeout the timeout for one playthrough.
      * @param eventSelection the eventSelection method (activation | random).
@@ -125,13 +124,11 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
      */
     protected async updateUncoveredObjectives(network: NetworkChromosome): Promise<boolean> {
         let covered = false;
-
-        // Increase the score by 1 if we covered the given statement in the executed scenario as well.
-        for (const [fitnessKey, coverCount] of network.openStatementTargets.entries()) {
-            const statement = Container.statementFitnessFunctions[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
-            if (await statement.isCovered(network)) {
+        for (const [fitnessKey, coverCount] of network.coverageObjectives.entries()) {
+            const objective = Container.coverageObjectives[fitnessKey] as unknown as FitnessFunction<NetworkChromosome>;
+            if (await objective.isCovered(network)) {
                 covered = true;
-                network.openStatementTargets.set(fitnessKey, coverCount + 1);
+                network.coverageObjectives.set(fitnessKey, coverCount + 1);
             }
         }
 

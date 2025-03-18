@@ -283,7 +283,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
             // Check if the latest event has improved the fitness, if yes update properties and keep extending the
             // codons.
-            if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
+            if (TestExecutor.hasFitnessOfUncoveredObjectivesImproved(fitnessValues, newFitnessValues)) {
                 if (TestExecutor.doRequireLastImprovedCodon(chromosome)) {
                     lastImprovedCodon = codons.length;
                     lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.getTraces().branchDistances, [...events]);

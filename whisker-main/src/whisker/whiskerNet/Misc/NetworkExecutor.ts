@@ -189,7 +189,7 @@ export class NetworkExecutor {
         await this._vmWrapper.start();
 
         const eventTrace = network.trace.events;
-        const statementTarget = network.targetFitness as StatementFitnessFunction;
+        const targetObjective = network.targetFitness as StatementFitnessFunction;
         this._vm.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {
@@ -210,9 +210,9 @@ export class NetworkExecutor {
             this.recordActivationTrace(network, i, spriteFeatures);
 
             // Check if we have reached our selected target and stop if this is the case.
-            if (this._stopEarly && statementTarget !== undefined) {
+            if (this._stopEarly && targetObjective !== undefined) {
                 const currentCoverage: Set<string> = this._vm.getTraces().blockCoverage;
-                if (currentCoverage.has(statementTarget.getTargetNode().id)) {
+                if (currentCoverage.has(targetObjective.getTargetNode().id)) {
                     break;
                 }
             }
@@ -243,7 +243,7 @@ export class NetworkExecutor {
      * @returns the index of the chosen event parameter based on the set of events extracted from the Scratch state.
      */
     private selectNextEvent(network: NetworkChromosome, isGreenFlag: boolean): number {
-        // 1) GreenFlag is current target Statement
+        // 1) GreenFlag is the current target objective
         if (isGreenFlag) {
             return this.availableEvents.findIndex(event => event instanceof WaitEvent);
         }
@@ -273,8 +273,7 @@ export class NetworkExecutor {
      * @param network determines the next action to take.
      * @param nextEvent the event that should be executed next.
      * @param events saves a trace of executed events.
-     * @param greenFlag determines whether the next event is based on the greenFlag event as a targetStatement.
-     * If so, we do not want to add any parameters and just wait for 1 Step.
+     * @param greenFlag whether the current target objective corresponds to the green flag event.
      */
     private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[],
                                    greenFlag = false): Promise<EventAndParameters> {

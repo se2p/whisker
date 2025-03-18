@@ -285,7 +285,7 @@ export class DynamicNetworkSuite {
     }
 
     /**
-     * Initialises the statement map.
+     * Initialises the coverage maps.
      */
     private initialiseFitnessTargets(vm: VirtualMachine): void {
         // Initialise Statements
@@ -314,7 +314,7 @@ export class DynamicNetworkSuite {
             await this.executeTestCase(test, false);
             await test.determineCoveredObjectives([...this.branchMap.values()]);
         }
-        this.testCases.sort((a, b) => b.coveredStatements - a.coveredStatements);
+        this.testCases.sort((a, b) => b.coveredObjectives - a.coveredObjectives);
         let coverage = 0;
         const shortenedTestCases = [];
         for (const test of this.testCases) {
