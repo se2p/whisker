@@ -243,7 +243,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
      * @param network The network to evaluate.
      */
     private async _evaluateChromosome(network: NeatChromosome): Promise<void> {
-        this.initOpenStatements([network]);
+        this.initCoverageObjectivesMap([network]);
         await this._networkFitnessFunction.calculateFitness(network, this._neuroevolutionProperties.timeout,
             this._neuroevolutionProperties.eventSelection);
         await this._archiveUpdate(network);
@@ -308,10 +308,13 @@ export class MioNeatest extends ManyObjectiveNeatest {
         const chromosomes = [...this._archiveUncovered.values()].flat(1);
         this.replaceGlobalPopulation(Arrays.distinctByComparator(chromosomes, (v1, v2) => v1.uID === v2.uID));
 
+        let coveredNewObjective = false;
         for (const selectedTarget of this._currentTargets) {
+            const fitnessFunction = this._fitnessFunctions.get(selectedTarget);
             if (this.coveredNewObjective(selectedTarget, candidate)) {
-                // Target covered -> add
-                logger.debug(`Covered Statement ${selectedTarget}: ${this._fitnessFunctions.get(selectedTarget)}`);
+                logger.debug(`Covered Statement ${selectedTarget}: ${fitnessFunction}`);
+                coveredNewObjective = true;
+                StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(selectedTarget, candidate);
                 this._archiveUncovered.delete(selectedTarget);
                 this._samplingCounter.delete(selectedTarget);
@@ -334,8 +337,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
 
                 currentArchiveChromosomes.sort((a, b) => a.coverageObjectives.get(selectedTarget) - b.coverageObjectives.get(selectedTarget));
                 const worstIndividual = currentArchiveChromosomes[0];
-                const compareChromosomes = await this.compareChromosomes(
-                    candidate, worstIndividual, this._fitnessFunctions.get(selectedTarget));
+                const compareChromosomes = await this.compareChromosomes(candidate, worstIndividual, fitnessFunction);
 
                 // Check if the candidate performs at least as good as the worst individual of the current archive.
                 if (compareChromosomes >= 0) {
@@ -355,6 +357,10 @@ export class MioNeatest extends ManyObjectiveNeatest {
             if (currentArchiveChromosomes.length > 0) {
                 this._archiveUncovered.set(selectedTarget, currentArchiveChromosomes);
             }
+        }
+
+        if (coveredNewObjective) {
+            await this.minimizeArchive(candidate);
         }
 
         this.updateCurrentTargets();
