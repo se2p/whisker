@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {unknown, z} from "zod";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
@@ -181,9 +181,7 @@ export function newComparison({operator, value, negated = false}: Optional<Compa
 }
 
 export function isValidComparisonOp(op: ArgType): boolean {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return comparisonOps.includes(op);
+    return (comparisonOps as readonly ArgType[]).includes(op);
 }
 
 export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);

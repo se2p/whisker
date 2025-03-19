@@ -192,9 +192,7 @@ export abstract class ModelUtil {
 
     public static isAnAttribute(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return attributeNames.includes(attrName);
+        return (attributeNames as readonly string[]).includes(attrName);
     }
 
     /**
@@ -202,10 +200,8 @@ export abstract class ModelUtil {
      * @param effectName The name of the effect
      * @return true if {@linkcode effectName} is a valid name for an effect
      * */
-    public static isAnEffect(effectName: string): boolean {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return (effectNames as string[]).includes(effectName);
+    public static isAnEffect(effectName: ArgType): boolean {
+        return (effectNames as readonly ArgType[]).includes(effectName);
     }
 
     /**
@@ -214,9 +210,7 @@ export abstract class ModelUtil {
      * @return true if {@linkcode name} is a valid name for an effect or an attribute that is a number
      * */
     public static isEffectOrNumberAttribute(name: ArgType): boolean {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return ModelUtil.isAnEffect(name) || (numberAttributeNames as string[]).includes(name);
+        return ModelUtil.isAnEffect(name) || (numberAttributeNames as readonly ArgType[]).includes(name);
     }
 
     /**
@@ -225,15 +219,11 @@ export abstract class ModelUtil {
      * @return true if {@linkcode name} is a valid name for an effect
      * */
     public static isAnAttributeOrEffectMessage(name: ArgType): InputErrorCodes {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return (attributeAndEffectNames as string[]).includes(name) ? "" : "invalidAttributeOrEffect";
+        return (attributeAndEffectNames as readonly ArgType[]).includes(name) ? "" : "invalidAttributeOrEffect";
     }
 
     public static isKey(name: ArgType): boolean {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return keys.includes(name);
+        return (keys as readonly ArgType[]).includes(name);
     }
 
     /**

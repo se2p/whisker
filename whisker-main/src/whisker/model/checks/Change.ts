@@ -77,9 +77,7 @@ const neq0 = new class Neq0 extends Change {
 export const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
 
 export function isValidChangeOperator(change: ArgType): boolean {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return changeOps.includes(change);
+    return (changeOps as readonly ArgType[]).includes(change);
 }
 
 export type ChangeOp = typeof changeOps[number];
