@@ -27,17 +27,20 @@ import {BooleanAttribute} from "./AttrChange";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
 
-const name = "AttrComp" as const;
-type PosType = {
-    x: number,
-    y: number
+interface Position {
+    x: number;
+    y: number;
 }
+
+const name = "AttrComp" as const;
+
 export type AttrCompArgs =
-    [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
+    | [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
     | [spriteName: SpriteName, attrName: NumberAttribute | EffectName, comparisonOp: ComparisonOp, attrValue: number]
     | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean]
-    | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: PosType]
-    | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]];
+    | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: Position]
+    | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]]
+    ;
 
 const AttrCompArgs = z.union([
     z.tuple([SpriteName, z.literal("visible"), z.union([z.literal("=="), z.literal("!=")]), z.string().or(z.boolean())]),
