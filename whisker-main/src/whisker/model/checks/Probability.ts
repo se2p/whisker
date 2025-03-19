@@ -6,7 +6,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {InputErrorCode} from "./newCheck";
 
 const name = "Probability" as const;
 
@@ -66,7 +66,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCode[] {
         return [ModelUtil.parseIntAndUpdate(args, 0)];
 
     }

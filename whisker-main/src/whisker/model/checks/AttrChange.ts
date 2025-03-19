@@ -25,7 +25,7 @@ import TestDriver from "../../../test/test-driver";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {CheckResult, fail, pass} from "./CheckResult";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {InputErrorCode} from "./newCheck";
 
 const name = "AttrChange" as const;
 
@@ -237,8 +237,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.applySingle(current, old);
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        let message: InputErrorCodes;
+    public static convertArgs(args: ArgType[]): InputErrorCode[] {
+        let message: InputErrorCode;
         if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
             message = "";
         } else if (ModelUtil.isEffectOrNumberAttribute(args[1])) {

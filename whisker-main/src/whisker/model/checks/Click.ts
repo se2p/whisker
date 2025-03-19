@@ -6,7 +6,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {InputErrorCode} from "./newCheck";
 
 const name = "Click" as const;
 
@@ -83,7 +83,7 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCode[] {
         return [couldBeSpriteName(args[0])];
     }
 }

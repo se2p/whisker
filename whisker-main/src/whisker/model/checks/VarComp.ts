@@ -15,7 +15,7 @@ import {z} from "zod";
 import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {InputErrorCode} from "./newCheck";
 
 const name = "VarComp" as const;
 
@@ -123,7 +123,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCode[] {
         return [
             couldBeSpriteName(args[0]),
             typeof args[1] == "string" ? "" : "invalidVarName",

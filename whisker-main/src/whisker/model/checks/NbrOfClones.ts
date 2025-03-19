@@ -7,7 +7,7 @@ import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newCompar
 import {Optional} from "../../utils/Optional";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {InputErrorCode} from "./newCheck";
 
 export type NbrOfClonesArgs = [
     /**
@@ -94,7 +94,7 @@ abstract class AbstractNbrOfClones<
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCode[] {
         return [
             couldBeSpriteName(args[0]),
             isValidComparisonOp(args[1]) ? "" : "invalidComparison",

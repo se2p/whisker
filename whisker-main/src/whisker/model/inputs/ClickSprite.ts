@@ -5,7 +5,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "../checks/newCheck";
+import {InputErrorCode} from "../checks/newCheck";
 
 const name = "InputClickSprite" as const;
 
@@ -39,7 +39,7 @@ export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
         return clickSpriteEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCode[] {
         return [
             couldBeSpriteName(args[0])
         ];

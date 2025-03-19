@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON, InputErrorCodes} from "./newCheck";
+import {CheckJSON, InputErrorCode} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
@@ -14,7 +14,7 @@ export type SpriteName =
     | [string, ...string[]]
     ;
 
-export function couldBeSpriteName(name: ArgType): InputErrorCodes {
+export function couldBeSpriteName(name: ArgType): InputErrorCode {
     if (typeof name === "string") {
         return "";
     }

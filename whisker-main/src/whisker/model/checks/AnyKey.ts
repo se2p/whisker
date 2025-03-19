@@ -4,7 +4,7 @@ import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
 import {result} from "./CheckResult";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {InputErrorCode} from "./newCheck";
 
 const name = "AnyKey" as const;
 
@@ -51,7 +51,7 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+    public static convertArgs(args: ArgType[]): InputErrorCode[] {
         return [];
     }
 }

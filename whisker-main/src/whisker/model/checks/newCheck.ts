@@ -194,8 +194,8 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
     }
 }
 
-export type InputErrorCodes =
-    ""
+export type InputErrorCode =
+    | ""
     | "NeitherNumberNorChange"
     | "NoNumber"
     | "NeitherTrueNorFalse"
@@ -214,9 +214,10 @@ export type InputErrorCodes =
     | "NeitherNumberNorString"
     | "NoNonEmptyExprText"
     | "NeitherFirstNorLast"
-    | "NeitherNumberNorExpr";
+    | "NeitherNumberNorExpr"
+    ;
 
-export function convertArgs(checkJSON: CheckJSON): InputErrorCodes[] {
+export function convertArgs(checkJSON: CheckJSON): InputErrorCode[] {
     const name = checkJSON.name;
 
     switch (name) {

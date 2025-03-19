@@ -12,7 +12,7 @@ import {
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import logger from "../../../util/logger";
-import {InputErrorCodes} from "../checks/newCheck";
+import {InputErrorCode} from "../checks/newCheck";
 import {BooleanAttribute} from "../checks/AttrChange";
 
 export interface Dependencies {
@@ -218,7 +218,7 @@ export abstract class ModelUtil {
      * @param name The name of the effect or attribute
      * @return true if {@linkcode name} is a valid name for an effect
      * */
-    public static isAnAttributeOrEffectMessage(name: ArgType): InputErrorCodes {
+    public static isAnAttributeOrEffectMessage(name: ArgType): InputErrorCode {
         return (attributeAndEffectNames as readonly ArgType[]).includes(name) ? "" : "invalidAttributeOrEffect";
     }
 
@@ -521,7 +521,7 @@ export abstract class ModelUtil {
         }
     }
 
-    static parseIntAndUpdate(args: ArgType[], index: number): InputErrorCodes {
+    static parseIntAndUpdate(args: ArgType[], index: number): InputErrorCode {
         const converted = ModelUtil.returnNumberIfPossible(args[index], null);
         if (converted != null) {
             args[index] = converted;
@@ -530,7 +530,7 @@ export abstract class ModelUtil {
         return "NoNumber";
     }
 
-    static parseRGBAndUpdate(args: ArgType[], index: number): InputErrorCodes {
+    static parseRGBAndUpdate(args: ArgType[], index: number): InputErrorCode {
         const converted = ModelUtil.returnNumberIfPossible(args[index], null);
         if (converted != null) {
             if (0 <= converted && converted <= 255) {
@@ -542,7 +542,7 @@ export abstract class ModelUtil {
         return "NoNumber";
     }
 
-    static parseBooleanAndUpdate(args: ArgType[], index: number): InputErrorCodes {
+    static parseBooleanAndUpdate(args: ArgType[], index: number): InputErrorCode {
         if (args[index] === "true") {
             args[index] = true;
         } else if (args[index] === "false") {
@@ -551,7 +551,7 @@ export abstract class ModelUtil {
         return typeof args[index] == "boolean" ? "" : "NeitherTrueNorFalse";
     }
 
-    static parsePosAndUpdate(args: ArgType[], index: number): InputErrorCodes {
+    static parsePosAndUpdate(args: ArgType[], index: number): InputErrorCode {
         const parsed = JSON.parse(String(args[index]));
         if (parsed && parsed.x && parsed.y) {
             const x = ModelUtil.returnNumberIfPossible(parsed.x, null);
@@ -564,7 +564,7 @@ export abstract class ModelUtil {
         return "wrongPosFormat";
     }
 
-    static parseEffectsArrayAndUpdate(args: ArgType[], index: number): InputErrorCodes {
+    static parseEffectsArrayAndUpdate(args: ArgType[], index: number): InputErrorCode {
         try {
             const str = String(args[index]);
             const [start, end] = str.startsWith("[") && str.endsWith("]") ? [1, str.length - 1] : [0, str.length];
@@ -580,7 +580,7 @@ export abstract class ModelUtil {
         return "CannotParseArray";
     }
 
-    static argIsString(args: ArgType[], index: number): InputErrorCodes {
+    static argIsString(args: ArgType[], index: number): InputErrorCode {
         return typeof args[index] == "string" ? "" : "NoStringProvided";
     }
 
