@@ -1,6 +1,6 @@
 import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {EffectNames, ModelUtil, NumberAttributeNames, StringAttributeNames} from "../util/ModelUtil";
+import {effectNames, ModelUtil, numberAttributeNames, stringAttributeNames} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -34,9 +34,9 @@ const AttrCompArgs = z.union([
     z.tuple([SpriteName, z.literal("visible"), z.union([z.literal("=="), z.literal("!=")]), z.string().or(z.boolean())]),
     z.tuple([SpriteName, z.literal("pos"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
     z.tuple([SpriteName, z.literal("effects"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
-    z.tuple([SpriteName, z.enum(NumberAttributeNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(EffectNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(StringAttributeNames), ComparisonOp, z.string()]),
+    z.tuple([SpriteName, z.enum(numberAttributeNames), ComparisonOp, z.string().or(z.number())]),
+    z.tuple([SpriteName, z.enum(effectNames), ComparisonOp, z.string().or(z.number())]),
+    z.tuple([SpriteName, z.enum(stringAttributeNames), ComparisonOp, z.string()]),
 ]);
 
 export interface AttrCompJSON extends ICheckJSON {

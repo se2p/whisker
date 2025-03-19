@@ -23,16 +23,46 @@ export interface Expression extends Dependencies {
     expr: string
 }
 
-export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
-export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
-export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
-export const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible", "pos", "effects"] as const;
-export const AttributeAndEffectNames = [...AttributeNames, ...EffectNames] as const;
-export const Keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
+export const stringAttributeNames = Object.freeze([
+    "currentCostumeName",
+    "sayText",
+    "rotationStyle",
+] as const);
+
+export const numberAttributeNames = Object.freeze([
+    "x",
+    "y",
+    "size",
+    "direction",
+    "layerOrder",
+    "volume",
+] as const);
+
+export const effectNames = Object.freeze([
+    "color",
+    "fisheye",
+    "whirl",
+    "pixelate",
+    "mosaic",
+    "brightness",
+    "ghost",
+] as const);
+
+export const attributeNames = Object.freeze([
+    ...stringAttributeNames,
+    ...numberAttributeNames,
+    "visible",
+    "pos",
+    "effects"
+] as const);
+
+export const attributeAndEffectNames = Object.freeze([...attributeNames, ...effectNames] as const);
+
+export const keys = Object.freeze(['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-] as const;
+] as const);
 
 export abstract class ModelUtil {
 
@@ -148,7 +178,7 @@ export abstract class ModelUtil {
         // currentCostume and costume both get the name of the current costume.
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return AttributeNames.includes(attrName);
+        return attributeNames.includes(attrName);
     }
 
     /**
@@ -159,7 +189,7 @@ export abstract class ModelUtil {
     public static isAnEffect(effectName: string): boolean {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return (EffectNames as string[]).includes(effectName);
+        return (effectNames as string[]).includes(effectName);
     }
 
     /**
@@ -170,7 +200,7 @@ export abstract class ModelUtil {
     public static isEffectOrNumberAttribute(name: ArgType): boolean {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return ModelUtil.isAnEffect(name) || (NumberAttributeNames as string[]).includes(name);
+        return ModelUtil.isAnEffect(name) || (numberAttributeNames as string[]).includes(name);
     }
 
     /**
@@ -181,13 +211,13 @@ export abstract class ModelUtil {
     public static isAnAttributeOrEffectMessage(name: ArgType): InputErrorCodes {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return (AttributeAndEffectNames as string[]).includes(name) ? "" : "invalidAttributeOrEffect";
+        return (attributeAndEffectNames as string[]).includes(name) ? "" : "invalidAttributeOrEffect";
     }
 
     public static isKey(name: ArgType): boolean {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        return Keys.includes(name);
+        return keys.includes(name);
     }
 
     /**
@@ -533,7 +563,7 @@ export abstract class ModelUtil {
             const str = String(args[index]);
             const [start, end] = str.startsWith("[") && str.endsWith("]") ? [1, str.length - 1] : [0, str.length];
             const parsed = str.substring(start, end).split(",").map(ModelUtil.testNumber);
-            if (parsed.length == EffectNames.length) {
+            if (parsed.length == effectNames.length) {
                 args[index] = parsed;
                 return "";
             }

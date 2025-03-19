@@ -1,8 +1,8 @@
 import {
     Dependencies,
     ModelUtil,
-    NumberAttributeNames,
-    StringAttributeNames
+    numberAttributeNames,
+    stringAttributeNames
 } from "../../../../src/whisker/model/util/ModelUtil";
 import {
     EmptyExpressionError,
@@ -185,7 +185,7 @@ describe('ModelUtil tests', function () {
     });
 
     describe('checkAttributeExistence()', () => {
-        const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "pos", "visible", "effects"];
+        const AttributeNames = [...stringAttributeNames, ...numberAttributeNames, "pos", "visible", "effects"];
         it.each(AttributeNames)('checkAttributeForExistence("%s")', (name) => {
             expect(() => ModelUtil.checkAttributeExistence(null, "sprite", name)).not.toThrow();
         });

@@ -1,6 +1,6 @@
 // for building model-editor checks, should equal CheckName.ts in model and InputEffectName in InputEffect.ts
 
-import {Keys} from 'whisker-main/src/whisker/model/util/ModelUtil';
+import {keys} from 'whisker-main/src/whisker/model/util/ModelUtil';
 
 const argType = {
     spriteName: 'spriteName',
@@ -88,8 +88,6 @@ const checkLabelCodes = {
     // 0
     AnyKey: []
 };
-
-const keys = Keys;
 
 const placeholders = {
     spriteNameRegex: '',

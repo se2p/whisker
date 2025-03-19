@@ -7,7 +7,7 @@ import {
     SlimCheckJSON,
     SpriteName
 } from "./AbstractCheck";
-import {EffectNames, ModelUtil, NumberAttributeNames, StringAttributeNames} from "../util/ModelUtil";
+import {effectNames, ModelUtil, numberAttributeNames, stringAttributeNames} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
@@ -22,11 +22,11 @@ import {InputErrorCodes} from "./newCheck";
 
 const name = "AttrChange" as const;
 
-export const EqOrNeqOPs = ["=", "!="] as const;
-export type StringAttribute = typeof StringAttributeNames[number];
-export type NumberAttribute = typeof NumberAttributeNames[number];
+const EqOrNeqOPs = ["=", "!="] as const;
+export type StringAttribute = typeof stringAttributeNames[number];
+export type NumberAttribute = typeof numberAttributeNames[number];
 export type BooleanAttribute = "visible"
-export type Effect = typeof EffectNames[number];
+export type Effect = typeof effectNames[number];
 export type EqOrNeqOp = typeof EqOrNeqOPs[number];
 export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute | "pos" | "effects";
 export type AttrChangeArgs =
@@ -64,9 +64,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         this._change = newQuantifiedChange(this);
         this._attributeName = this._args[1];
         this._isForEffect = ModelUtil.isAnEffect(this._attributeName);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        this._attributeIsNumber = this._isForEffect || NumberAttributeNames.includes(this._attributeName);
+        this._attributeIsNumber = this._isForEffect || (numberAttributeNames as readonly string[]).includes(this._attributeName);
     }
 
     get change(): NumberOrChangeOp {
