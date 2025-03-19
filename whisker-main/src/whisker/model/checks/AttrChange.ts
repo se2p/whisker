@@ -7,7 +7,14 @@ import {
     SlimCheckJSON,
     SpriteName
 } from "./AbstractCheck";
-import {effectNames, ModelUtil, numberAttributeNames, stringAttributeNames} from "../util/ModelUtil";
+import {
+    AttrNames,
+    EffectName,
+    ModelUtil,
+    NumberAttribute,
+    numberAttributeNames,
+    StringAttribute
+} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
@@ -22,26 +29,20 @@ import {InputErrorCodes} from "./newCheck";
 
 const name = "AttrChange" as const;
 
-const EqOrNeqOPs = ["=", "!="] as const;
-export type StringAttribute = typeof stringAttributeNames[number];
-export type NumberAttribute = typeof numberAttributeNames[number];
-export type BooleanAttribute = "visible"
-export type Effect = typeof effectNames[number];
-export type EqOrNeqOp = typeof EqOrNeqOPs[number];
-export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute | "pos" | "effects";
-export type AttrChangeArgs =
-    [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeqOp]
-    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
-    | [spriteName: SpriteName, attrName: "pos", change: EqOrNeqOp]
-    | [spriteName: SpriteName, attrName: "visible", change: EqOrNeqOp]
-    | [spriteName: SpriteName, attrName: "effects", change: EqOrNeqOp];
+const eqOrNeqOPs = ["=", "!="] as const;
+type EqOrNeqOp = typeof eqOrNeqOPs[number];
 
+export type BooleanAttribute = "visible";
+
+export type AttrChangeArgs =
+    | [spriteName: SpriteName, attrName: StringAttribute | "pos" | "visible" | "effects", change: EqOrNeqOp]
+    | [spriteName: SpriteName, attrName: NumberAttribute | EffectName, change: NumberOrChangeOp]
+    ;
 
 const AttrChangeArgs = z.union([
     z.tuple([SpriteName, AttrName, NumberOrChangeOp,]),
     z.tuple([])
 ]);
-
 
 export interface AttrChangeJSON extends ICheckJSON {
     name: typeof name;

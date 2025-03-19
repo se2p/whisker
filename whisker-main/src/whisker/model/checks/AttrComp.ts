@@ -1,6 +1,15 @@
 import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {effectNames, ModelUtil, numberAttributeNames, stringAttributeNames} from "../util/ModelUtil";
+import {
+    AttrNames,
+    EffectName,
+    effectNames,
+    ModelUtil,
+    NumberAttribute,
+    numberAttributeNames,
+    StringAttribute,
+    stringAttributeNames
+} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -14,7 +23,7 @@ import {
 } from "./Comparison";
 import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
-import {AttrNames, BooleanAttribute, Effect, NumberAttribute, StringAttribute} from "./AttrChange";
+import {BooleanAttribute} from "./AttrChange";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
 
@@ -25,7 +34,7 @@ type PosType = {
 }
 export type AttrCompArgs =
     [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
-    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number]
+    | [spriteName: SpriteName, attrName: NumberAttribute | EffectName, comparisonOp: ComparisonOp, attrValue: number]
     | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean]
     | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: PosType]
     | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]];

@@ -13,6 +13,7 @@ import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import logger from "../../../util/logger";
 import {InputErrorCodes} from "../checks/newCheck";
+import {BooleanAttribute} from "../checks/AttrChange";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -29,6 +30,8 @@ export const stringAttributeNames = Object.freeze([
     "rotationStyle",
 ] as const);
 
+export type StringAttribute = typeof stringAttributeNames[number];
+
 export const numberAttributeNames = Object.freeze([
     "x",
     "y",
@@ -37,6 +40,8 @@ export const numberAttributeNames = Object.freeze([
     "layerOrder",
     "volume",
 ] as const);
+
+export type NumberAttribute = typeof numberAttributeNames[number];
 
 export const effectNames = Object.freeze([
     "color",
@@ -48,6 +53,8 @@ export const effectNames = Object.freeze([
     "ghost",
 ] as const);
 
+export type EffectName = typeof effectNames[number];
+
 export const attributeNames = Object.freeze([
     ...stringAttributeNames,
     ...numberAttributeNames,
@@ -55,6 +62,15 @@ export const attributeNames = Object.freeze([
     "pos",
     "effects"
 ] as const);
+
+export type AttrNames =
+    | StringAttribute
+    | NumberAttribute
+    | EffectName
+    | BooleanAttribute
+    | "pos"
+    | "effects"
+    ;
 
 export const attributeAndEffectNames = Object.freeze([...attributeNames, ...effectNames] as const);
 
