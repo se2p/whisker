@@ -136,7 +136,7 @@ function comparingCheck(negated: boolean): fc.Arbitrary<ComparingCheck> {
     });
 }
 
-describe("newQuantifiedChange", () => {
+describe("newQuantifiedComparison", () => {
     it.prop([comparingCheck(false)])("returns an Existential when not negated", (c) => {
         const q = newQuantifiedComparison(c);
         expect(q).toBeInstanceOf(Existential);
