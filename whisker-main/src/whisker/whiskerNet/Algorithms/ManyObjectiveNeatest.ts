@@ -66,15 +66,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     protected initPopulation(): void {
         this._population = new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
         this._population.generatePopulation();
-        this.initOpenStatements(this._population.networks);
-    }
-
-    /**
-     * Initializes or updates the open target statements for the supplied population.
-     */
-    protected initOpenStatements(networks: NeatChromosome[]): void {
-        const openStatements = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));
-        networks.forEach(network => network.initialiseCoverageObjectives(openStatements));
+        this.initCoverageObjectivesMap(this._population.networks);
     }
 
     /**
@@ -189,7 +181,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
      */
     protected override async evaluatePopulation(networks: NeatChromosome[]): Promise<void> {
         logger.debug(`Evaluate ${this._neuroevolutionProperties.populationSize} networks on ${this._currentTargets.length} targets...`);
-        this.initOpenStatements(networks);
+        this.initCoverageObjectivesMap(networks);
 
         const timeout = this._neuroevolutionProperties.timeout;
         const eventSelection = this._neuroevolutionProperties.eventSelection;

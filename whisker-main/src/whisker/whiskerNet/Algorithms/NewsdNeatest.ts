@@ -204,7 +204,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
             }
         }
 
-        this.initOpenStatements(offspringPopulation);
+        this.initCoverageObjectivesMap(offspringPopulation);
         await this.evaluatePopulation(offspringPopulation);
         this._protectedSetProcedure([...this._population.networks, ...offspringPopulation]);
         return offspringPopulation;

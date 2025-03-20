@@ -116,7 +116,7 @@ export class MosaNeatest extends ManyObjectiveNeatest {
             }
         }
 
-        this.initOpenStatements(offspringPopulation);
+        this.initCoverageObjectivesMap(offspringPopulation);
         return offspringPopulation;
     }
 

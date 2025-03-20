@@ -118,6 +118,14 @@ export class Neatest extends NEAT {
     }
 
     /**
+     * Initializes or updates the coverage objective map.
+     * @param networks the networks for which the open statements should be initialised.
+     */
+    protected initCoverageObjectivesMap(networks: NeatChromosome[]): void {
+        networks.forEach(network => network.initialiseCoverageObjectives([...this._fitnessFunctionMap.keys()]));
+    }
+
+    /**
      * Sets the next fitness objective by prioritising the most promising objectives, i.e., objectives that are direct
      * children of already reached objectives in the control dependence graph.
      * @returns the next target objective's fitness function.
@@ -190,8 +198,8 @@ export class Neatest extends NEAT {
      * @returns array of yet uncovered objectives.
      */
     protected getUncoveredTargets(): Set<StatementFitnessFunction> | Set<BranchCoverageFitnessFunction> {
-        return new Set([...this._fitnessFunctionMap.values()].
-        filter(objective => !this._archive.has(this.mapObjectiveToKey(objective))));
+        return new Set([...this._fitnessFunctionMap.values()]
+            .filter(objective => !this._archive.has(this.mapObjectiveToKey(objective))));
     }
 
     /**
@@ -262,25 +270,25 @@ export class Neatest extends NEAT {
      * @param network The candidate network to update the archive with.
      */
     protected override async updateArchive(network: NeatChromosome): Promise<void> {
+        let coveredNewObjective = false;
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
 
             // If we covered an objective, update the archive, statistics and the map of open objectives.
             if (this.coveredNewObjective(fitnessFunctionKey, network)) {
                 logger.debug(`Covered Objective ${fitnessFunctionKey}:${fitnessFunction}`);
+                coveredNewObjective = true;
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                await this.minimiseArchive(network);
                 this._archive.set(fitnessFunctionKey, network);
                 this.updateBestIndividualAndStatistics();
-                for (const n of this._population.networks) {
-                    if (n.coverageObjectives != null) {
-                        n.coverageObjectives.delete(fitnessFunctionKey);
-                    }
-                }
                 if (this._promisingTargets.has(fitnessFunctionKey)) {
                     this._promisingTargets.delete(fitnessFunctionKey);
                 }
             }
+        }
+
+        if (coveredNewObjective) {
+            await this.minimizeArchive(network);
         }
     }
 
@@ -294,7 +302,7 @@ export class Neatest extends NEAT {
      * e.g., if there are a lot of objectives to cover.
      * @param addedNetwork
      */
-    protected async minimiseArchive(addedNetwork: NeatChromosome): Promise<void> {
+    protected async minimizeArchive(addedNetwork: NeatChromosome): Promise<void> {
         const sizeBefore = this.getCurrentSolution().length;
         for (const fitnessKey of this._archive.keys()) {
             if (this._coveredObjective(fitnessKey, addedNetwork)) {
@@ -335,12 +343,8 @@ export class Neatest extends NEAT {
     protected evolvePopulation(currentTarget: StatementFitnessFunction): void {
         this.reportOfCurrentIteration();
         this._population.evolve();
-        const uncoveredObjectives = [...this.getUncoveredTargets()]
-            .map(objective => this.mapObjectiveToKey(objective));
-        for (const network of this._population.networks) {
-            network.targetObjective = currentTarget;
-            network.initialiseCoverageObjectives(uncoveredObjectives);
-        }
+        this.initCoverageObjectivesMap(this._population.networks);
+        this._population.networks.forEach(network => network.targetObjective = currentTarget);
     }
 
     /**
