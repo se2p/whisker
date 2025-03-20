@@ -84,6 +84,29 @@ describe.each([
 });
 
 describe.each([
+    ["<", "y as lower bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, x])],
+    [">", "y as upper bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, y])],
+    ["!=", "y as lower bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, x])],
+    ["!=", "y as upper bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, y])],
+])('The bounded "x %s y" comparison with %s', (operator: ComparisonOp, _, bounds) => {
+    it.prop([bounds])("is true if x == y", ([min, max, value]) => {
+        expect(newComparison({operator, value}, {min, max}).apply(value).passed).toBe(true);
+    });
+
+    const inBounds = bounds.chain(([min, max]) => fc.tuple(
+        fc.constant(min),
+        fc.constant(max),
+        fc.double({min, max}).filter((v) => v !== min && v !== max)
+    ));
+
+    it.prop([inBounds])("has the same result as the unbounded comparison otherwise", ([min, max, value]) => {
+        const actual = newComparison({operator, value}, {min, max}).apply(value);
+        const expected = newComparison({operator, value}).apply(value);
+        expect(actual).toStrictEqual(expected);
+    });
+});
+
+describe.each([
     ["==", "==", xy.filter(([y, b]) => y != b), true, "if y != b"],
     ["==", "!=", xy.filter(([y, b]) => y != b), false, "if y != b"],
     ["==", "!=", number.map((y) => [y, y]), true, "if y == b"],
