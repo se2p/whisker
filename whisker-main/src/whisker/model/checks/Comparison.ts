@@ -4,26 +4,26 @@ import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 
-export type Comparison =
-    | Eq
-    | Neq
-    | Lt
-    | Leq
-    | Gt
-    | Geq
+export type Comparison<T extends Interval = Interval> =
+    | Eq<T>
+    | Neq<T>
+    | Lt<T>
+    | Leq<T>
+    | Gt<T>
+    | Geq<T>
     ;
 
 export type AttributeType = string | boolean | number | { x: number, y: number } | number[];
 
-export interface Bounds {
+export interface Interval {
     min: number;
     max: number;
 }
 
-abstract class AbstractComparison implements Quantifiable<Comparison> {
+abstract class AbstractComparison<T extends Interval> implements Quantifiable<Comparison<T>> {
     protected constructor(
         private readonly _operand2: AttributeType,
-        private readonly _bounds: Bounds | null,
+        private readonly _interval: T | null,
     ) {
     }
 
@@ -31,15 +31,15 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
         return this._operand2;
     }
 
-    get bounds(): Bounds | null {
-        return this._bounds;
+    get interval(): T | null {
+        return this._interval;
     }
 
     abstract get operator(): ComparisonOp;
 
     abstract apply(operand1: AttributeType): CheckResult;
 
-    contradicts(that: Comparison): boolean {
+    contradicts(that: Comparison<T>): boolean {
         if (this.operator === "==") {
             return !that.apply(this.operand2).passed;
         }
@@ -61,16 +61,16 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
         return !this.apply(that.operand2).passed || !that.apply(this.operand2).passed;
     }
 
-    abstract negate(): Comparison;
+    abstract negate(): Comparison<T>;
 
     toString(): string {
         return `x ${this.operator} ${this.operand2}`;
     }
 }
 
-class Eq extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
-        super(operand2, bounds);
+class Eq<T extends Interval> extends AbstractComparison<T> {
+    constructor(operand2: AttributeType, interval: T | null = null) {
+        super(operand2, interval);
     }
 
     override get operator(): ComparisonOp {
@@ -81,17 +81,17 @@ class Eq extends AbstractComparison {
         return result(operand1 == this.operand2, {actual: operand1, expected: this.operand2});
     }
 
-    override negate(): Comparison {
-        return new Neq(this.operand2, this.bounds);
+    override negate(): Comparison<T> {
+        return new Neq<T>(this.operand2, this.interval);
     }
 }
 
-class Neq extends AbstractComparison {
-    private readonly _boundsToCheck: AttributeType[];
+class Neq<T extends Interval> extends AbstractComparison<T> {
+    private readonly _boundaries: AttributeType[];
 
-    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
-        super(operand2, bounds);
-        this._boundsToCheck = Object.values({...bounds});
+    constructor(operand2: AttributeType, interval: T | null = null) {
+        super(operand2, interval);
+        this._boundaries = Object.values({...interval});
     }
 
     override get operator(): ComparisonOp {
@@ -100,19 +100,19 @@ class Neq extends AbstractComparison {
 
     override apply(operand1: AttributeType): CheckResult {
         return result(
-            operand1 != this.operand2 || this._boundsToCheck.includes(operand1),
+            operand1 != this.operand2 || this._boundaries.includes(operand1),
             {actual: operand1}
         );
     }
 
-    override negate(): Comparison {
-        return new Eq(this.operand2, this.bounds);
+    override negate(): Comparison<T> {
+        return new Eq(this.operand2, this.interval);
     }
 }
 
-class Leq extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
-        super(operand2, bounds);
+class Leq<T extends Interval> extends AbstractComparison<T> {
+    constructor(operand2: AttributeType, interval: T | null = null) {
+        super(operand2, interval);
     }
 
     override get operator(): ComparisonOp {
@@ -123,17 +123,17 @@ class Leq extends AbstractComparison {
         return result(operand1 <= this.operand2, {actual: operand1, expected: this.operand2});
     }
 
-    override negate(): Comparison {
-        return new Gt(this.operand2, this.bounds);
+    override negate(): Comparison<T> {
+        return new Gt(this.operand2, this.interval);
     }
 }
 
-class Lt extends AbstractComparison {
-    private readonly _boundsToCheck: AttributeType[];
+class Lt<T extends Interval> extends AbstractComparison<T> {
+    private readonly _boundaries: AttributeType[];
 
-    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
-        super(operand2, bounds);
-        this._boundsToCheck = bounds === null ? [] : [bounds.min];
+    constructor(operand2: AttributeType, interval: T | null = null) {
+        super(operand2, interval);
+        this._boundaries = interval === null ? [] : [interval.min];
     }
 
     override get operator(): ComparisonOp {
@@ -142,22 +142,22 @@ class Lt extends AbstractComparison {
 
     override apply(operand1: AttributeType): CheckResult {
         return result(
-            operand1 < this.operand2 || this._boundsToCheck.includes(operand1),
+            operand1 < this.operand2 || this._boundaries.includes(operand1),
             {actual: operand1, expected: this.operand2}
         );
     }
 
-    override negate(): Comparison {
+    override negate(): Comparison<T> {
         return new Geq(this.operand2);
     }
 }
 
-class Gt extends AbstractComparison {
-    private readonly _boundsToCheck: AttributeType[];
+class Gt<T extends Interval> extends AbstractComparison<T> {
+    private readonly _boundaries: AttributeType[];
 
-    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
-        super(operand2, bounds);
-        this._boundsToCheck = bounds === null ? [] : [bounds.max];
+    constructor(operand2: AttributeType, interval: T | null = null) {
+        super(operand2, interval);
+        this._boundaries = interval === null ? [] : [interval.max];
     }
 
     override get operator(): ComparisonOp {
@@ -166,19 +166,19 @@ class Gt extends AbstractComparison {
 
     override apply(operand1: AttributeType): CheckResult {
         return result(
-            operand1 > this.operand2 || this._boundsToCheck.includes(operand1),
+            operand1 > this.operand2 || this._boundaries.includes(operand1),
             {actual: operand1, expected: this.operand2}
         );
     }
 
-    override negate(): Comparison {
-        return new Leq(this.operand2, this.bounds);
+    override negate(): Comparison<T> {
+        return new Leq(this.operand2, this.interval);
     }
 }
 
-class Geq extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
-        super(operand2, bounds);
+class Geq<T extends Interval> extends AbstractComparison<T> {
+    constructor(operand2: AttributeType, interval: T | null = null) {
+        super(operand2, interval);
     }
 
     override get operator(): ComparisonOp {
@@ -189,14 +189,14 @@ class Geq extends AbstractComparison {
         return result(operand1 >= this.operand2, {actual: operand1, expected: this.operand2});
     }
 
-    override negate(): Comparison {
-        return new Lt(this.operand2, this.bounds);
+    override negate(): Comparison<T> {
+        return new Lt(this.operand2, this.interval);
     }
 }
 
-type ComparisonCtor = new (operand2: AttributeType, bounds: Bounds) => Comparison;
+type ComparisonCtor<T extends Interval> = new (operand2: AttributeType, interval: Interval) => Comparison<T>;
 
-const Comparison: Record<ComparisonOp, ComparisonCtor> = Object.freeze({
+const Comparison: Record<ComparisonOp, ComparisonCtor<Interval>> = Object.freeze({
     "==": Eq,
     "!=": Neq,
     "<": Lt,
@@ -205,11 +205,11 @@ const Comparison: Record<ComparisonOp, ComparisonCtor> = Object.freeze({
     ">=": Geq,
 });
 
-export function newComparison(
+export function newComparison<T extends Interval>(
     {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
-    bounds: Bounds | null = null,
-): Comparison {
-    const comparison = new Comparison[operator](value, bounds);
+    interval: T | null = null,
+): Comparison<T> {
+    const comparison = new Comparison[operator](value, interval) as Comparison<T>;
     return negated ? comparison.negate() : comparison;
 }
 
@@ -232,11 +232,11 @@ export interface ComparingCheck {
     negated: boolean;
 }
 
-export function newQuantifiedComparison(
+export function newQuantifiedComparison<T extends Interval>(
     {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
-    bounds: Bounds | null = null,
-): Quantification<Comparison> {
-    const comparison = newComparison({operator, value}, bounds);
+    interval: T | null = null,
+): Quantification<Comparison<T>> {
+    const comparison = newComparison({operator, value}, interval);
 
     return negated
         ? new Universal(comparison.negate())

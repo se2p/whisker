@@ -1,54 +1,39 @@
 import {z} from "zod";
-import {Bounds, Comparison, newComparison} from "./Comparison";
+import {Comparison, Interval, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 
+function mod(x: number, y: number): number {
+    return ((x % y) + y) % y;
+}
+
+export interface Bounds extends Interval {
+    kind: "clamped" | "cyclic";
+}
+
+interface ClampedBounds extends Bounds {
+    kind: "clamped";
+}
+
+interface CyclicBounds extends Bounds {
+    kind: "cyclic";
+}
+
 export class Change implements Quantifiable<Change> {
-    private readonly _comparison: Comparison;
-    private readonly _nearBounds: Comparison | null;
+    protected readonly _comparison: Comparison<Bounds>;
 
-    protected constructor(comparison: Comparison) {
+    constructor(comparison: Comparison<Bounds>) {
         this._comparison = comparison;
-        this._nearBounds = null;
-
-        if (comparison.operator !== "==" || comparison.bounds === null) {
-            return;
-        }
-
-        const change = comparison.operand2;
-
-        if (typeof change !== "number" || change === 0) {
-            return;
-        }
-
-        const operator = change > 0 ? ">=" : "<=";
-        this._nearBounds = newComparison({operator, value: change});
     }
 
-    private _compareNearBounds(after: number): boolean {
-        if (this._nearBounds === null) {
-            return false;
-        }
-
-        const {min, max} = this._comparison.bounds;
-
-        if (this._nearBounds.operand2 > 0 && after === max) {
-            return true;
-        }
-
-        if (this._nearBounds.operand2 < 0 && after === min) {
-            return true;
-        }
-
-        return false;
+    protected _apply(after: number, before: number): CheckResult {
+        return this._comparison.apply(after - before);
     }
 
     apply(after: number, before: number): CheckResult {
-        const actual = after - before;
-        const comparison = this._compareNearBounds(after) ? this._nearBounds : this._comparison;
-        return comparison.apply(actual).replace({before, after});
+        return this._apply(after, before).replace({before, after});
     }
 
     contradicts(that: Change): boolean {
@@ -68,8 +53,16 @@ export class Change implements Quantifiable<Change> {
                 return new Neq0(bounds);
         }
 
+        type ChangeCtor = new (comparison: Comparison) => Change;
+
+        const Chg: ChangeCtor = {
+            unbound: Change,
+            cyclic: CyclicChange,
+            clamped: ClampedChange,
+        }[bounds === null ? "unbound" : bounds.kind];
+
         if (typeof numberOrChangeOp === "number") {
-            return new Change(newComparison({operator: "==", value: numberOrChangeOp}, bounds));
+            return new Chg(newComparison({operator: "==", value: numberOrChangeOp}, bounds));
         }
 
         const operator = ({
@@ -79,7 +72,42 @@ export class Change implements Quantifiable<Change> {
             "-=": "<="
         } as const)[numberOrChangeOp];
 
-        return new Change(newComparison({operator, value: 0}, bounds));
+        return new Chg(newComparison({operator, value: 0}, bounds));
+    }
+}
+
+class CyclicChange extends Change {
+    constructor(comparison: Comparison<CyclicBounds>) {
+        super(comparison);
+    }
+
+    private _mapInterval(x: number): number {
+        const {min, max} = this._comparison.interval;
+        return mod(x - min, max - min) + min;
+    }
+
+    override _apply(after: number, before: number): CheckResult {
+        const actualChange = this._mapInterval(after - before);
+        return this._comparison.apply(actualChange);
+    }
+}
+
+class ClampedChange extends Change {
+    private readonly _atBounds: Comparison;
+
+    constructor(comparison: Comparison<ClampedBounds>) {
+        super(comparison);
+
+        const expectedChange = this._comparison.operand2;
+        const operator = expectedChange > 0 ? "<=" : ">=";
+        this._atBounds = newComparison({operator, value: expectedChange});
+    }
+
+    override _apply(after: number, before: number): CheckResult {
+        const bounds = Object.values(this._comparison.interval);
+        return bounds.includes(after)
+            ? this._atBounds.apply(after - before)
+            : super._apply(after, before);
     }
 }
 
