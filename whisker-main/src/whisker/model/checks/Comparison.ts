@@ -16,19 +16,14 @@ export type Comparison =
 export type AttributeType = string | boolean | number | { x: number, y: number } | number[];
 
 export interface Bounds {
-    min: number | null;
-    max: number | null;
+    min: number;
+    max: number;
 }
-
-export const UNBOUNDED: Bounds = Object.freeze({
-    min: null,
-    max: null,
-});
 
 abstract class AbstractComparison implements Quantifiable<Comparison> {
     protected constructor(
         private readonly _operand2: AttributeType,
-        private readonly _bounds: Bounds,
+        private readonly _bounds: Bounds | null,
     ) {
     }
 
@@ -36,18 +31,13 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
         return this._operand2;
     }
 
-    get bounds(): Bounds {
+    get bounds(): Bounds | null {
         return this._bounds;
     }
 
     abstract get operator(): ComparisonOp;
 
     abstract apply(operand1: AttributeType): CheckResult;
-
-    isUnbounded(): boolean {
-        const {min, max} = this._bounds;
-        return min === UNBOUNDED.min && max === UNBOUNDED.max;
-    }
 
     contradicts(that: Comparison): boolean {
         if (this.operator === "==") {
@@ -79,7 +69,7 @@ abstract class AbstractComparison implements Quantifiable<Comparison> {
 }
 
 class Eq extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds = UNBOUNDED) {
+    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
         super(operand2, bounds);
     }
 
@@ -97,8 +87,11 @@ class Eq extends AbstractComparison {
 }
 
 class Neq extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds = UNBOUNDED) {
+    private readonly _boundsToCheck: AttributeType[];
+
+    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
         super(operand2, bounds);
+        this._boundsToCheck = Object.values({...bounds});
     }
 
     override get operator(): ComparisonOp {
@@ -107,7 +100,7 @@ class Neq extends AbstractComparison {
 
     override apply(operand1: AttributeType): CheckResult {
         return result(
-            operand1 != this.operand2 || Object.values(this.bounds).includes(operand1),
+            operand1 != this.operand2 || this._boundsToCheck.includes(operand1),
             {actual: operand1}
         );
     }
@@ -118,7 +111,7 @@ class Neq extends AbstractComparison {
 }
 
 class Leq extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds = UNBOUNDED) {
+    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
         super(operand2, bounds);
     }
 
@@ -136,8 +129,11 @@ class Leq extends AbstractComparison {
 }
 
 class Lt extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds = UNBOUNDED) {
+    private readonly _boundsToCheck: AttributeType[];
+
+    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
         super(operand2, bounds);
+        this._boundsToCheck = bounds === null ? [] : [bounds.min];
     }
 
     override get operator(): ComparisonOp {
@@ -146,7 +142,7 @@ class Lt extends AbstractComparison {
 
     override apply(operand1: AttributeType): CheckResult {
         return result(
-            operand1 < this.operand2 || operand1 === this.bounds.min,
+            operand1 < this.operand2 || this._boundsToCheck.includes(operand1),
             {actual: operand1, expected: this.operand2}
         );
     }
@@ -157,8 +153,11 @@ class Lt extends AbstractComparison {
 }
 
 class Gt extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds = UNBOUNDED) {
+    private readonly _boundsToCheck: AttributeType[];
+
+    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
         super(operand2, bounds);
+        this._boundsToCheck = bounds === null ? [] : [bounds.max];
     }
 
     override get operator(): ComparisonOp {
@@ -167,7 +166,7 @@ class Gt extends AbstractComparison {
 
     override apply(operand1: AttributeType): CheckResult {
         return result(
-            operand1 > this.operand2 || operand1 === this.bounds.max,
+            operand1 > this.operand2 || this._boundsToCheck.includes(operand1),
             {actual: operand1, expected: this.operand2}
         );
     }
@@ -178,7 +177,7 @@ class Gt extends AbstractComparison {
 }
 
 class Geq extends AbstractComparison {
-    constructor(operand2: AttributeType, bounds: Bounds = UNBOUNDED) {
+    constructor(operand2: AttributeType, bounds: Bounds | null = null) {
         super(operand2, bounds);
     }
 
@@ -208,7 +207,7 @@ const Comparison: Record<ComparisonOp, ComparisonCtor> = Object.freeze({
 
 export function newComparison(
     {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
-    bounds: Bounds = UNBOUNDED,
+    bounds: Bounds | null = null,
 ): Comparison {
     const comparison = new Comparison[operator](value, bounds);
     return negated ? comparison.negate() : comparison;
@@ -235,7 +234,7 @@ export interface ComparingCheck {
 
 export function newQuantifiedComparison(
     {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
-    bounds: Bounds = UNBOUNDED,
+    bounds: Bounds | null = null,
 ): Quantification<Comparison> {
     const comparison = newComparison({operator, value}, bounds);
 

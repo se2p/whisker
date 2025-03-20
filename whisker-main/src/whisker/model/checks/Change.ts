@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {Bounds, Comparison, newComparison, UNBOUNDED} from "./Comparison";
+import {Bounds, Comparison, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
@@ -13,7 +13,7 @@ export class Change implements Quantifiable<Change> {
         this._comparison = comparison;
         this._nearBounds = null;
 
-        if (comparison.operator !== "==" || comparison.isUnbounded()) {
+        if (comparison.operator !== "==" || comparison.bounds === null) {
             return;
         }
 
@@ -59,7 +59,7 @@ export class Change implements Quantifiable<Change> {
         return new Change(this._comparison.negate());
     }
 
-    static from(numberOrChangeOp: NumberOrChangeOp, bounds: Bounds = UNBOUNDED): Change {
+    static from(numberOrChangeOp: NumberOrChangeOp, bounds: Bounds | null = null): Change {
         // Special handling to support string operands as the subtraction trick would not work.
         switch (numberOrChangeOp) {
             case "=":
@@ -154,7 +154,7 @@ export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 
 export function newChange(
     {change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">,
-    bounds: Bounds = UNBOUNDED,
+    bounds: Bounds | null = null,
 ): Change {
     const change = Change.from(numberOrChangeOp, bounds);
     return negated ? change.negate() : change;
@@ -167,7 +167,7 @@ export interface ChangingCheck {
 
 export function newQuantifiedChange(
     {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>,
-    bounds: Bounds = UNBOUNDED,
+    bounds: Bounds | null = null,
 ): Quantification<Change> {
     const change = newChange({change: numOp, negated: false}, bounds);
 
