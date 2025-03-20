@@ -1,17 +1,54 @@
 import {z} from "zod";
-import {Comparison, newComparison} from "./Comparison";
+import {Bounds, Comparison, newComparison, UNBOUNDED} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 
 export class Change implements Quantifiable<Change> {
-    protected constructor(private readonly _comparison: Comparison) {
+    private readonly _comparison: Comparison;
+    private readonly _nearBounds: Comparison | null;
+
+    protected constructor(comparison: Comparison) {
+        this._comparison = comparison;
+        this._nearBounds = null;
+
+        if (comparison.operator !== "==" || comparison.isUnbounded()) {
+            return;
+        }
+
+        const change = comparison.operand2;
+
+        if (typeof change !== "number" || change === 0) {
+            return;
+        }
+
+        const operator = change > 0 ? ">=" : "<=";
+        this._nearBounds = newComparison({operator, value: change});
+    }
+
+    private _compareNearBounds(after: number): boolean {
+        if (this._nearBounds === null) {
+            return false;
+        }
+
+        const {min, max} = this._comparison.bounds;
+
+        if (this._nearBounds.operand2 > 0 && after === max) {
+            return true;
+        }
+
+        if (this._nearBounds.operand2 < 0 && after === min) {
+            return true;
+        }
+
+        return false;
     }
 
     apply(after: number, before: number): CheckResult {
         const actual = after - before;
-        return this._comparison.apply(actual).replace({before, after});
+        const comparison = this._compareNearBounds(after) ? this._nearBounds : this._comparison;
+        return comparison.apply(actual).replace({before, after});
     }
 
     contradicts(that: Change): boolean {
@@ -22,17 +59,17 @@ export class Change implements Quantifiable<Change> {
         return new Change(this._comparison.negate());
     }
 
-    static from(numberOrChangeOp: NumberOrChangeOp): Change {
+    static from(numberOrChangeOp: NumberOrChangeOp, bounds: Bounds = UNBOUNDED): Change {
         // Special handling to support string operands as the subtraction trick would not work.
         switch (numberOrChangeOp) {
             case "=":
-                return eq0;
+                return new Eq0(bounds);
             case "!=":
-                return neq0;
+                return new Neq0(bounds);
         }
 
         if (typeof numberOrChangeOp === "number") {
-            return new Change(newComparison({operator: "==", value: numberOrChangeOp}));
+            return new Change(newComparison({operator: "==", value: numberOrChangeOp}, bounds));
         }
 
         const operator = ({
@@ -42,13 +79,13 @@ export class Change implements Quantifiable<Change> {
             "-=": "<="
         } as const)[numberOrChangeOp];
 
-        return new Change(newComparison({operator, value: 0}));
+        return new Change(newComparison({operator, value: 0}, bounds));
     }
 }
 
-const eq0 = new class Eq0 extends Change {
-    constructor() {
-        super(newComparison({operator: "==", value: 0}));
+class Eq0 extends Change {
+    constructor(private readonly _bounds: Bounds) {
+        super(newComparison({operator: "==", value: 0}, _bounds));
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
@@ -56,13 +93,13 @@ const eq0 = new class Eq0 extends Change {
     }
 
     override negate(): Change {
-        return neq0;
+        return new Neq0(this._bounds);
     }
-};
+}
 
-const neq0 = new class Neq0 extends Change {
-    constructor() {
-        super(newComparison({operator: "!=", value: 0}));
+class Neq0 extends Change {
+    constructor(private readonly _bounds: Bounds) {
+        super(newComparison({operator: "!=", value: 0}, _bounds));
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
@@ -70,9 +107,9 @@ const neq0 = new class Neq0 extends Change {
     }
 
     override negate(): Change {
-        return eq0;
+        return new Eq0(this._bounds);
     }
-};
+}
 
 export const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
 
@@ -115,8 +152,11 @@ export type NumberOrChangeOp =
 
 export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 
-export function newChange({change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">): Change {
-    const change = Change.from(numberOrChangeOp);
+export function newChange(
+    {change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">,
+    bounds: Bounds = UNBOUNDED,
+): Change {
+    const change = Change.from(numberOrChangeOp, bounds);
     return negated ? change.negate() : change;
 }
 
@@ -126,9 +166,10 @@ export interface ChangingCheck {
 }
 
 export function newQuantifiedChange(
-    {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>
+    {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>,
+    bounds: Bounds = UNBOUNDED,
 ): Quantification<Change> {
-    const change = newChange({change: numOp, negated: false});
+    const change = newChange({change: numOp, negated: false}, bounds);
 
     return negated
         ? new Universal(change.negate())
