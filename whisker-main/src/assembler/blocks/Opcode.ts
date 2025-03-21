@@ -1,24 +1,53 @@
 export type Opcode =
-    // by category
+// by category
+    | MonitorBlockOpcode
+    | CustomBlockOpcode
     | ControlBlockOpcode
-    | DataBlockOpcode
     | EventBlockOpcode
     | LooksBlockOpcode
-    | MotionBlockOpcode
-    | CustomBlockOpcode
-    | SensingBlockOpcode
-    | OperatorBlockOpcode
-    | PenBlockOpcode
     | SoundBlockOpcode
-    | MonitorBlockOpcode
+    | SensingBlockOpcode
+    | MotionBlockOpcode
+    | OperatorBlockOpcode
+    | DataBlockOpcode
+    | PenBlockOpcode
 
     // by shape
-    | HatBlockOpcode
-    | CapBlockOpcode
-    | CBlockOpcode
     | ReporterBlockOpcode
+    | HatBlockOpcode
+    | CBlockOpcode
+    | CapBlockOpcode
     | StackBlockOpcode
+
+    // other
+    | DropDownMenuOpcode
     ;
+
+export const monitorBlockOpcodes = [
+    "data_variable",
+    "motion_xposition",
+    "motion_yposition",
+    "motion_direction",
+    "looks_costumenumbername",
+    "looks_backdropnumbername",
+    "looks_size",
+    "sensing_answer",
+    "sensing_loudness",
+    "sensing_timer",
+    "sensing_current",
+    "sensing_username",
+    "data_listcontents",
+] as const;
+
+export type MonitorBlockOpcode = typeof monitorBlockOpcodes[number];
+
+export const customBlockOpcodes = [
+    "procedures_definition",
+    "procedures_call",
+    "procedures_prototype",
+] as const;
+
+export type CustomBlockOpcode = typeof customBlockOpcodes[number];
 
 export const controlBlockOpcodes = [
     "control_wait",
@@ -37,26 +66,6 @@ export const controlBlockOpcodes = [
 
 export type ControlBlockOpcode = typeof controlBlockOpcodes[number];
 
-export const dataBlockOpcodes = [
-    "data_setvariableto",
-    "data_changevariableby",
-    "data_showvariable",
-    "data_hidevariable",
-    "data_addtolist",
-    "data_deleteoflist",
-    "data_deletealloflist",
-    "data_insertatlist",
-    "data_replaceitemoflist",
-    "data_itemoflist",
-    "data_itemnumoflist",
-    "data_lengthoflist",
-    "data_listcontainsitem",
-    "data_showlist",
-    "data_hidelist",
-] as const;
-
-export type DataBlockOpcode = typeof dataBlockOpcodes[number];
-
 export const eventBlockOpcodes = [
     "event_whenflagclicked",
     "event_whenkeypressed",
@@ -70,6 +79,76 @@ export const eventBlockOpcodes = [
 ] as const;
 
 export type EventBlockOpcode = typeof eventBlockOpcodes[number];
+
+export const looksBlockOpcodes = [
+    "looks_size",
+    "looks_sayforsecs",
+    "looks_thinkforsecs",
+    "looks_say",
+    "looks_think",
+    "looks_switchcostumeto",
+    "looks_costume",
+    "looks_nextcostume",
+    "looks_switchbackdropto",
+    "looks_switchbackdroptoandwait",
+    "looks_backdrops",
+    "looks_nextbackdrop",
+    "looks_changesizeby",
+    "looks_setsizeto",
+    "looks_changeeffectby",
+    "looks_seteffectto",
+    "looks_cleargraphiceffects",
+    "looks_show",
+    "looks_hide",
+    "looks_gotofrontback",
+    "looks_goforwardbackwardlayers",
+    "looks_costumenumbername",
+    "looks_backdropnumbername",
+] as const;
+
+export type LooksBlockOpcode = typeof looksBlockOpcodes[number];
+
+export const soundBlockOpcodes = [
+    "sound_playuntildone",
+    "sound_sounds_menu",
+    "sound_play",
+    "sound_stopallsounds",
+    "sound_changeeffectby",
+    "sound_seteffectto",
+    "sound_cleareffects",
+    "sound_changevolumeby",
+    "sound_setvolumeto",
+    "sound_volume",
+] as const;
+
+export type SoundBlockOpcode = typeof soundBlockOpcodes[number];
+
+export const sensingBlockOpcodes = [
+    "sensing_touchingobject",
+    "sensing_touchingobjectmenu",
+    "sensing_touchingcolor",
+    "sensing_coloristouchingcolor",
+    "sensing_distancetomenu",
+    "sensing_distanceto",
+    "sensing_askandwait",
+    "sensing_answer",
+    "sensing_keyoptions",
+    "sensing_keypressed",
+    "sensing_mousedown",
+    "sensing_mousex",
+    "sensing_mousey",
+    "sensing_setdragmode",
+    "sensing_loudness",
+    "sensing_timer",
+    "sensing_resettimer",
+    "sensing_of",
+    "sensing_of_object_menu",
+    "sensing_current",
+    "sensing_dayssince2000",
+    "sensing_username",
+] as const;
+
+export type SensingBlockOpcode = typeof sensingBlockOpcodes[number];
 
 export const motionBlockOpcodes = [
     "motion_movesteps",
@@ -97,6 +176,49 @@ export const motionBlockOpcodes = [
 
 export type MotionBlockOpcode = typeof motionBlockOpcodes[number];
 
+export const operatorBlockOpcodes = [
+    "operator_add",
+    "operator_subtract",
+    "operator_multiply",
+    "operator_divide",
+    "operator_mod",
+    "operator_random",
+    "operator_gt",
+    "operator_lt",
+    "operator_equals",
+    "operator_and",
+    "operator_or",
+    "operator_not",
+    "operator_join",
+    "operator_letter_of",
+    "operator_contains",
+    "operator_length",
+    "operator_round",
+    "operator_mathop",
+] as const;
+
+export type OperatorBlockOpcode = typeof operatorBlockOpcodes[number];
+
+export const dataBlockOpcodes = [
+    "data_setvariableto",
+    "data_changevariableby",
+    "data_showvariable",
+    "data_hidevariable",
+    "data_addtolist",
+    "data_deleteoflist",
+    "data_deletealloflist",
+    "data_insertatlist",
+    "data_replaceitemoflist",
+    "data_itemoflist",
+    "data_itemnumoflist",
+    "data_lengthoflist",
+    "data_listcontainsitem",
+    "data_showlist",
+    "data_hidelist",
+] as const;
+
+export type DataBlockOpcode = typeof dataBlockOpcodes[number];
+
 export const hatBlockOpcodes = [
     "event_whenflagclicked",
     "event_whenkeypressed",
@@ -111,23 +233,9 @@ export const hatBlockOpcodes = [
 
 export type HatBlockOpcode = typeof hatBlockOpcodes[number];
 
-export const capBlockOpcodes = [
-    "control_stop", // only if the option "other scripts in sprite" is not selected!
-    "control_delete_this_clone",
-    "control_forever",
-] as const;
-
-export type CapBlockOpcode = typeof capBlockOpcodes[number];
-
-export const cBlockOpcodes = [
-    "control_forever",
-    "control_if",
-    "control_if_else",
-    "control_repeat",
-    "control_repeat_until",
-] as const;
-
-export type CBlockOpcode = typeof cBlockOpcodes[number];
+export function isHatBlockOpcode(opcode: Opcode): opcode is HatBlockOpcode {
+    return hatBlockOpcodes.includes(opcode as HatBlockOpcode);
+}
 
 export const numberReporterBlockOpcodes = [
     "motion_xposition",
@@ -202,6 +310,28 @@ export const reporterBlockOpcodes = [
 ] as const;
 
 export type ReporterBlockOpcode = typeof reporterBlockOpcodes[number];
+
+export const cBlockOpcodes = [
+    "control_forever",
+    "control_if",
+    "control_if_else",
+    "control_repeat",
+    "control_repeat_until",
+] as const;
+
+export type CBlockOpcode = typeof cBlockOpcodes[number];
+
+export function isCBlockOpcode(opcode: Opcode): opcode is CBlockOpcode {
+    return cBlockOpcodes.includes(opcode as CBlockOpcode);
+}
+
+export const capBlockOpcodes = [
+    "control_stop", // only if the option "other scripts in sprite" is not selected!
+    "control_delete_this_clone",
+    "control_forever",
+] as const;
+
+export type CapBlockOpcode = typeof capBlockOpcodes[number];
 
 export const stackBlockOpcodes = [
     // Motion blocks
@@ -296,140 +426,6 @@ export const stackBlockOpcodes = [
 
 export type StackBlockOpcode = typeof stackBlockOpcodes[number];
 
-export const looksBlockOpcodes = [
-    "looks_size",
-    "looks_sayforsecs",
-    "looks_thinkforsecs",
-    "looks_say",
-    "looks_think",
-    "looks_switchcostumeto",
-    "looks_costume",
-    "looks_nextcostume",
-    "looks_switchbackdropto",
-    "looks_switchbackdroptoandwait",
-    "looks_backdrops",
-    "looks_nextbackdrop",
-    "looks_changesizeby",
-    "looks_setsizeto",
-    "looks_changeeffectby",
-    "looks_seteffectto",
-    "looks_cleargraphiceffects",
-    "looks_show",
-    "looks_hide",
-    "looks_gotofrontback",
-    "looks_goforwardbackwardlayers",
-    "looks_costumenumbername",
-    "looks_backdropnumbername",
-] as const;
-
-export type LooksBlockOpcode = typeof looksBlockOpcodes[number];
-
-export const customBlockOpcodes = [
-    "procedures_definition",
-    "procedures_call",
-    "procedures_prototype",
-] as const;
-
-export type CustomBlockOpcode = typeof customBlockOpcodes[number];
-
-export const sensingBlockOpcodes = [
-    "sensing_touchingobject",
-    "sensing_touchingobjectmenu",
-    "sensing_touchingcolor",
-    "sensing_coloristouchingcolor",
-    "sensing_distancetomenu",
-    "sensing_distanceto",
-    "sensing_askandwait",
-    "sensing_answer",
-    "sensing_keyoptions",
-    "sensing_keypressed",
-    "sensing_mousedown",
-    "sensing_mousex",
-    "sensing_mousey",
-    "sensing_setdragmode",
-    "sensing_loudness",
-    "sensing_timer",
-    "sensing_resettimer",
-    "sensing_of",
-    "sensing_of_object_menu",
-    "sensing_current",
-    "sensing_dayssince2000",
-    "sensing_username",
-] as const;
-
-export type SensingBlockOpcode = typeof sensingBlockOpcodes[number];
-
-export const operatorBlockOpcodes = [
-    "operator_add",
-    "operator_subtract",
-    "operator_multiply",
-    "operator_divide",
-    "operator_mod",
-    "operator_random",
-    "operator_gt",
-    "operator_lt",
-    "operator_equals",
-    "operator_and",
-    "operator_or",
-    "operator_not",
-    "operator_join",
-    "operator_letter_of",
-    "operator_contains",
-    "operator_length",
-    "operator_round",
-    "operator_mathop",
-] as const;
-
-export type OperatorBlockOpcode = typeof operatorBlockOpcodes[number];
-
-export const penBlockOpcodes = [
-    "pen_clear",
-    "pen_stamp",
-    "pen_penDown",
-    "pen_penUp",
-    "pen_setPenColorToColor",
-    "pen_changePenColorParamBy",
-    "pen_menu_colorParam",
-    "pen_setPenColorParamTo",
-    "pen_changePenSizeBy",
-    "pen_setPenSizeTo",
-] as const;
-
-export type PenBlockOpcode = typeof penBlockOpcodes[number];
-
-export const soundBlockOpcodes = [
-    "sound_playuntildone",
-    "sound_sounds_menu",
-    "sound_play",
-    "sound_stopallsounds",
-    "sound_changeeffectby",
-    "sound_seteffectto",
-    "sound_cleareffects",
-    "sound_changevolumeby",
-    "sound_setvolumeto",
-    "sound_volume",
-] as const;
-
-export type SoundBlockOpcode = typeof soundBlockOpcodes[number];
-
-export const monitorBlockOpcodes = [
-    "data_variable",
-    "motion_xposition",
-    "motion_yposition",
-    "motion_direction",
-    "looks_costumenumbername",
-    "looks_backdropnumbername",
-    "looks_size",
-    "sensing_answer",
-    "sensing_loudness",
-    "sensing_timer",
-    "sensing_current",
-    "sensing_username",
-    "data_listcontents",
-] as const;
-
-export type MonitorBlockOpcode = typeof monitorBlockOpcodes[number];
-
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
  * https://en.scratch-wiki.info/wiki/Dropdown_Menu#Accept_Block_Inputs
@@ -457,6 +453,10 @@ export const shadowBlockOpcodes = [
 ] as const;
 
 export type ShadowBlockOpcode = typeof shadowBlockOpcodes[number];
+
+export function isShadowBlockOpcode(opcode: Opcode): opcode is ShadowBlockOpcode {
+    return shadowBlockOpcodes.includes(opcode as ShadowBlockOpcode);
+}
 
 export const blockWithFieldOpcodes = [
     "motion_setrotationstyle",
@@ -503,3 +503,18 @@ export const blockWithShadowInputOpcodes = [
 ] as const;
 
 export type BlockWithShadowInputOpcode = typeof blockWithShadowInputOpcodes[number];
+
+export const penBlockOpcodes = [
+    "pen_clear",
+    "pen_stamp",
+    "pen_penDown",
+    "pen_penUp",
+    "pen_setPenColorToColor",
+    "pen_changePenColorParamBy",
+    "pen_menu_colorParam",
+    "pen_setPenColorParamTo",
+    "pen_changePenSizeBy",
+    "pen_setPenSizeTo",
+] as const;
+
+export type PenBlockOpcode = typeof penBlockOpcodes[number];
