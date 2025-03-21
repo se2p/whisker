@@ -1,5 +1,37 @@
 export type Opcode = string;
 
+/**
+ * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
+ * https://en.scratch-wiki.info/wiki/Dropdown_Menu#Accept_Block_Inputs
+ */
+export const dropDownMenuOpcodes = [
+    "looks_backdrops",
+    "looks_costume",
+    "control_create_clone_of_menu",
+    "sensing_touchingobjectmenu",
+    "sensing_distancetomenu",
+    "sensing_keyoptions",
+    "sensing_of_object_menu",
+    "motion_goto_menu",
+    "motion_glideto_menu",
+    "motion_pointtowards_menu",
+    "sound_sounds_menu",
+    "pen_menu_colorParam",
+] as const;
+
+export type DropDownMenuOpcode = typeof dropDownMenuOpcodes[number];
+
+export const shadowBlockOpcodes = [
+    ...dropDownMenuOpcodes,
+    "procedures_prototype"
+] as const;
+
+export type ShadowBlockOpcode = typeof shadowBlockOpcodes[number];
+
+export function isShadowBlockOpcode(opcode: Opcode): opcode is ShadowBlockOpcode {
+    return shadowBlockOpcodes.includes(opcode as ShadowBlockOpcode);
+}
+
 export const blockWithFieldOpcodes = [
     "motion_setrotationstyle",
     "looks_changeeffectby",
