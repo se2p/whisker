@@ -2,6 +2,10 @@ export type Opcode =
     // by category
     | ControlBlockOpcode
     | DataBlockOpcode
+    | EventBlockOpcode
+
+    // by shape
+    | HatBlockOpcode
     ;
 
 export const controlBlockOpcodes = [
@@ -40,6 +44,34 @@ export const dataBlockOpcodes = [
 ] as const;
 
 export type DataBlockOpcode = typeof dataBlockOpcodes[number];
+
+export const eventBlockOpcodes = [
+    "event_whenflagclicked",
+    "event_whenkeypressed",
+    "event_whenthisspriteclicked",
+    "event_whenstageclicked",
+    "event_whengreaterthan",
+    "event_whenbackdropswitchesto",
+    "event_whenbroadcastreceived",
+    "event_broadcast",
+    "event_broadcastandwait",
+] as const;
+
+export type EventBlockOpcode = typeof eventBlockOpcodes[number];
+
+export const hatBlockOpcodes = [
+    "event_whenflagclicked",
+    "event_whenkeypressed",
+    "event_whenthisspriteclicked",
+    "event_whenstageclicked",
+    "event_whenbackdropswitchesto",
+    "event_whengreaterthan",
+    "event_whenbroadcastreceived",
+    "control_start_as_clone",
+    "procedures_definition",
+] as const;
+
+export type HatBlockOpcode = typeof hatBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
