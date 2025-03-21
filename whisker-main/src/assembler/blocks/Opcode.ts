@@ -16,6 +16,7 @@ export type Opcode =
     | CapBlockOpcode
     | CBlockOpcode
     | ReporterBlockOpcode
+    | StackBlockOpcode
     ;
 
 export const controlBlockOpcodes = [
@@ -200,6 +201,99 @@ export const reporterBlockOpcodes = [
 ] as const;
 
 export type ReporterBlockOpcode = typeof reporterBlockOpcodes[number];
+
+export const stackBlockOpcodes = [
+    // Motion blocks
+    "motion_movesteps",
+    "motion_turnright",
+    "motion_turnleft",
+    "motion_goto",
+    "motion_gotoxy",
+    "motion_glideto",
+    "motion_glidesecstoxy",
+    "motion_pointindirection",
+    "motion_pointtowards",
+    "motion_changexby",
+    "motion_setx",
+    "motion_changeyby",
+    "motion_sety",
+    "motion_ifonedgebounce",
+    "motion_setrotationstyle",
+
+    // Looks blocks
+    "looks_sayforsecs",
+    "looks_say",
+    "looks_thinkforsecs",
+    "looks_think",
+    "looks_switchcostumeto",
+    "looks_switchbackdropto",
+    "looks_switchbackdroptoandwait",
+    "looks_nextcostume",
+    "looks_nextbackdrop",
+    "looks_changesizeby",
+    "looks_setsizeto",
+    "looks_changeeffectby",
+    "looks_seteffectto",
+    "looks_cleargraphiceffects",
+    "looks_show",
+    "looks_hide",
+    "looks_gotofrontback",
+    "looks_goforwardbackwardlayers",
+
+    // Sound blocks
+    "sound_playuntildone",
+    "sound_play",
+    "sound_stopallsounds",
+    "sound_changeeffectby",
+    "sound_seteffectto",
+    "sound_cleareffects",
+    "sound_changevolumeby",
+    "sound_setvolumeto",
+
+    // Event blocks
+    "event_broadcast",
+    "event_broadcastandwait",
+
+    // Control blocks
+    "control_wait",
+    "control_wait_until",
+    "control_create_clone_of",
+    "control_stop", // only if the option "other scripts in sprite" is selected!
+
+    // Sensing blocks
+    "sensing_askandwait",
+    "sensing_setdragmode",
+    "sensing_resettimer",
+
+    // Variable blocks
+    "data_setvariableto",
+    "data_changevariableby",
+    "data_showvariable",
+    "data_hidevariable",
+    "data_addtolist",
+    "data_deleteoflist",
+    "data_deletealloflist",
+    "data_insertatlist",
+    "data_replaceitemoflist",
+    "data_showlist",
+    "data_hidelist",
+
+    // Custom block
+    "procedures_call",
+
+    // Pen blocks
+    "pen_clear",
+    "pen_stamp",
+    "pen_penDown",
+    "pen_penUp",
+    "pen_setPenColorToColor",
+    "pen_changePenColorParamBy",
+    "pen_setPenColorParamTo",
+    "pen_changePenSizeBy",
+    "pen_setPenSizeTo",
+] as const;
+
+export type StackBlockOpcode = typeof stackBlockOpcodes[number];
 
 export const looksBlockOpcodes = [
     "looks_size",
