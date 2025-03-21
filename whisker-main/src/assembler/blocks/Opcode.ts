@@ -24,3 +24,24 @@ export const blockWithFieldOpcodes = [
 
 // https://en.scratch-wiki.info/wiki/Dropdown_Menu#Do_Not_Accept_Block_Inputs
 export type BlockWithFieldOpcode = typeof blockWithFieldOpcodes[number];
+
+// https://en.scratch-wiki.info/wiki/Dropdown_Menu#Accept_Block_Inputs
+export const blockWithShadowInputOpcodes = [
+    "motion_goto",
+    "motion_glideto",
+    "motion_pointtowards",
+    "looks_switchcostumeto",
+    "looks_switchbackdropto",
+    "looks_switchbackdroptoandwait",
+    "sound_playuntildone",
+    "sound_play",
+    "control_create_clone_of",
+    "sensing_touchingobject",
+    "sensing_distanceto",
+    "sensing_keypressed",
+    "sensing_of",
+    "pen_changePenColorParamBy",
+    "pen_setPenColorParamTo",
+] as const;
+
+export type BlockWithShadowInputOpcode = typeof blockWithShadowInputOpcodes[number];
