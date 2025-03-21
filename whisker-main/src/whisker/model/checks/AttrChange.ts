@@ -12,7 +12,6 @@ import {
     EffectName,
     ModelUtil,
     NumberAttribute,
-    numberAttributeNames,
     StringAttribute
 } from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
@@ -53,13 +52,10 @@ const bounds: Record<AttrNames, Bounds | null> = Object.freeze({
     effects: null,
 });
 
-const eqOrNeqOPs = ["=", "!="] as const;
-type EqOrNeqOp = typeof eqOrNeqOPs[number];
-
 export type BooleanAttribute = "visible";
 
 export type AttrChangeArgs =
-    | [spriteName: SpriteName, attrName: StringAttribute | "pos" | "visible" | "effects", change: EqOrNeqOp]
+    | [spriteName: SpriteName, attrName: StringAttribute | "pos" | "visible" | "effects", change: "=" | "!="]
     | [spriteName: SpriteName, attrName: NumberAttribute | EffectName, change: NumberOrChangeOp]
     ;
 
@@ -81,7 +77,6 @@ export const AttrChangeJSON = ICheckJSON.extend({
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
-    private readonly _attributeIsNumber: boolean;
     private readonly _attributeName: AttrNames;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
@@ -89,7 +84,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         this._attributeName = this._args[1];
         this._change = newQuantifiedChange(this, bounds[this._attributeName]);
         this._isForEffect = ModelUtil.isAnEffect(this._attributeName);
-        this._attributeIsNumber = this._isForEffect || (numberAttributeNames as readonly string[]).includes(this._attributeName);
     }
 
     get change(): NumberOrChangeOp {
