@@ -1,6 +1,7 @@
 export type Opcode =
     // by category
     | ControlBlockOpcode
+    | DataBlockOpcode
     ;
 
 export const controlBlockOpcodes = [
@@ -19,6 +20,26 @@ export const controlBlockOpcodes = [
 ] as const;
 
 export type ControlBlockOpcode = typeof controlBlockOpcodes[number];
+
+export const dataBlockOpcodes = [
+    "data_setvariableto",
+    "data_changevariableby",
+    "data_showvariable",
+    "data_hidevariable",
+    "data_addtolist",
+    "data_deleteoflist",
+    "data_deletealloflist",
+    "data_insertatlist",
+    "data_replaceitemoflist",
+    "data_itemoflist",
+    "data_itemnumoflist",
+    "data_lengthoflist",
+    "data_listcontainsitem",
+    "data_showlist",
+    "data_hidelist",
+] as const;
+
+export type DataBlockOpcode = typeof dataBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
