@@ -1,3 +1,6 @@
+import {BroadCastInput} from "./Inputs";
+import {Entry} from "../utils/Objects";
+import {Broadcasts, Lists, Variables} from "../project/Target";
 
 /**
  * Fields are text boxes, drop-down menus, etc. These are used directly in blocks where there is an input into which
@@ -17,6 +20,29 @@ export type Field1 = [value: string] | [value: string, elementID: null];
 
 // Only used for custom variables, custom lists, and broadcasts.
 export type Field2 = [value: string, elementID: string];
+
+export function isField1(field: Field): field is Field1 {
+    return (
+        field.length === 1 && typeof field[0] === "string" ||
+        field.length === 2 && typeof field[0] === "string" && field[1] === null
+    );
+}
+
+export function variableToField([variableID, [variableName]]: Entry<Variables>): Field2 {
+    return [variableName, variableID];
+}
+
+export function listToField([listID, [listName]]: Entry<Lists>): Field2 {
+    return [listName, listID];
+}
+
+export function broadcastToField([broadcastID, broadcastName]: Entry<Broadcasts>): Field2 {
+    return [broadcastName, broadcastID];
+}
+
+export function broadcastInputToField([, broadcastName, broadcastID]: BroadCastInput): Field2 {
+    return [broadcastName, broadcastID];
+}
 
 // Rectangular drop-down menus
 const noShadowFieldKeys = [
