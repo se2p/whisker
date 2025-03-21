@@ -59,3 +59,7 @@ export interface Block {
      */
     comment?: CommentID;
 }
+
+export function isBlockID(x: unknown): x is BlockID {
+    return typeof x === "string";
+}
