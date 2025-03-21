@@ -192,7 +192,7 @@ export class Randomness {
      *
      * @param array from which to pick an item
      */
-    public pick<T>(array: T[]): T {
+    public pick<T>(array: readonly T[]): T {
         return array[this.nextInt(0, array.length)];
     }
 
