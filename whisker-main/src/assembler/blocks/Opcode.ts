@@ -4,6 +4,7 @@ export type Opcode =
     | DataBlockOpcode
     | EventBlockOpcode
     | LooksBlockOpcode
+    | MotionBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -59,6 +60,32 @@ export const eventBlockOpcodes = [
 ] as const;
 
 export type EventBlockOpcode = typeof eventBlockOpcodes[number];
+
+export const motionBlockOpcodes = [
+    "motion_movesteps",
+    "motion_turnright",
+    "motion_turnleft",
+    "motion_goto",
+    "motion_goto_menu",
+    "motion_gotoxy",
+    "motion_glideto",
+    "motion_glideto_menu",
+    "motion_glidesecstoxy",
+    "motion_pointindirection",
+    "motion_changexby",
+    "motion_changeyby",
+    "motion_pointtowards",
+    "motion_pointtowards_menu",
+    "motion_setx",
+    "motion_sety",
+    "motion_ifonedgebounce",
+    "motion_setrotationstyle",
+    "motion_xposition",
+    "motion_yposition",
+    "motion_direction",
+] as const;
+
+export type MotionBlockOpcode = typeof motionBlockOpcodes[number];
 
 export const hatBlockOpcodes = [
     "event_whenflagclicked",
