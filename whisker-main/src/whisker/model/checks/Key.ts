@@ -5,7 +5,7 @@ import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {ModelUtil} from "../util/ModelUtil";
-import {InputErrorCode} from "./newCheck";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "Key" as const;
 
@@ -59,7 +59,7 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCode[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [ModelUtil.isKey(args[0]) ? "" : "InvalidKey"];
     }
 }

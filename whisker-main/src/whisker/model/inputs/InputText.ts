@@ -3,7 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
-import {InputErrorCode} from "../checks/newCheck";
+import {InputErrorCodes} from "../checks/newCheck";
 import {ModelUtil} from "../util/ModelUtil";
 
 const name = "InputText" as const;
@@ -37,7 +37,7 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
         return textEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCode[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [ModelUtil.argIsString(args,0)];
     }
 }

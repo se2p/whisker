@@ -25,7 +25,7 @@ import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
 import {BooleanAttribute} from "./AttrChange";
 import {ArgType} from "../util/schema";
-import {InputErrorCode} from "./newCheck";
+import {InputErrorCodes} from "./newCheck";
 
 interface Position {
     x: number;
@@ -150,8 +150,8 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return this._comparison.contradicts(that._comparison);
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCode[] {
-        let valid: InputErrorCode;
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        let valid: InputErrorCodes;
         const shouldBeNumber = ModelUtil.isEffectOrNumberAttribute(args[1]);
         if (shouldBeNumber) {
             valid = ModelUtil.parseIntAndUpdate(args, 3);

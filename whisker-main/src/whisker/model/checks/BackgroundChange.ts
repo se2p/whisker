@@ -5,7 +5,7 @@ import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Compari
 import {ErrorForAttribute} from "../util/ModelError";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCode} from "./newCheck";
+import {InputErrorCodes} from "./newCheck";
 import {ModelUtil} from "../util/ModelUtil";
 
 const name = "BackgroundChange" as const;
@@ -77,7 +77,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCode[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [ModelUtil.argIsString(args, 0)];
     }
 }

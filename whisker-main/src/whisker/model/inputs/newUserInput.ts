@@ -6,7 +6,7 @@ import {MouseDown, MouseDownJSON} from "./MouseDown";
 import {MouseMove, MouseMoveJSON} from "./MouseMove";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {z} from "zod";
-import {InputErrorCode} from "../checks/newCheck";
+import {InputErrorCodes} from "../checks/newCheck";
 
 export type UserInput =
     | ClickSprite
@@ -55,7 +55,7 @@ export function newUserInput(inputJSON: UserInputJSON): UserInput {
     }
 }
 
-export function convertInputArgs(inputJSON: UserInputJSON): InputErrorCode[] {
+export function convertInputArgs(inputJSON: UserInputJSON): InputErrorCodes[] {
     const name = inputJSON.name;
     switch (name) {
         case "InputClickSprite":

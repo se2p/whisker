@@ -6,7 +6,7 @@ import {z} from "zod";
 import {CheckResult, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCode} from "./newCheck";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "Expr" as const;
 
@@ -86,7 +86,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCode[] {
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
         return [typeof args[0] == "string" && args[0].length > 0 ? "" : "NoNonEmptyExprText"];
     }
 }

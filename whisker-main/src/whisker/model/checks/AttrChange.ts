@@ -22,7 +22,7 @@ import {Quantification} from "./Quantification";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCode} from "./newCheck";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "AttrChange" as const;
 
@@ -178,8 +178,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.contradicts(that._change);
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCode[] {
-        let message: InputErrorCode;
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        let message: InputErrorCodes;
         if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
             message = "";
         } else if (ModelUtil.isEffectOrNumberAttribute(args[1])) {

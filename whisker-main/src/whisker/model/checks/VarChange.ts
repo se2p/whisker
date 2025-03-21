@@ -16,7 +16,7 @@ import {z} from "zod";
 import {Change, ChangingCheck, isValidChangeOperator, newChange, NumberOrChangeOp} from "./Change";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCode} from "./newCheck";
+import {InputErrorCodes} from "./newCheck";
 
 const name = "VarChange" as const;
 
@@ -116,8 +116,8 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCode[] {
-        let message: InputErrorCode;
+    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
+        let message: InputErrorCodes;
         if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
             message = "";
         } else {
