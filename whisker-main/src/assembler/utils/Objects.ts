@@ -6,6 +6,20 @@ export type Entry<T> = {
 }[keyof T];
 
 /**
+ * Creates a deep copy of the given object. Note: the copy is only lossless if the object is plain JSON data.
+ *
+ * @param object the object to copy
+ * @param replacer an optional replacer function passed to JSON.stringify
+ */
+export function deepCopy<T>(object: T, replacer = null): T {
+    return JSON.parse(JSON.stringify(object, replacer)) as T;
+}
+
+export function empty<T>(): Record<string, T> {
+    return Object.create(null);
+}
+
+/**
  * Like `Object.freeze` but also freezes nested objects in `o` recursively.
  *
  * @param o the object to deep-freeze
