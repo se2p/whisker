@@ -7,6 +7,7 @@ export type Opcode =
     | MotionBlockOpcode
     | CustomBlockOpcode
     | SensingBlockOpcode
+    | OperatorBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -165,6 +166,29 @@ export const sensingBlockOpcodes = [
 ] as const;
 
 export type SensingBlockOpcode = typeof sensingBlockOpcodes[number];
+
+export const operatorBlockOpcodes = [
+    "operator_add",
+    "operator_subtract",
+    "operator_multiply",
+    "operator_divide",
+    "operator_mod",
+    "operator_random",
+    "operator_gt",
+    "operator_lt",
+    "operator_equals",
+    "operator_and",
+    "operator_or",
+    "operator_not",
+    "operator_join",
+    "operator_letter_of",
+    "operator_contains",
+    "operator_length",
+    "operator_round",
+    "operator_mathop",
+] as const;
+
+export type OperatorBlockOpcode = typeof operatorBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
