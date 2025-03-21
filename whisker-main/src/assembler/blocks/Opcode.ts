@@ -8,6 +8,7 @@ export type Opcode =
     | CustomBlockOpcode
     | SensingBlockOpcode
     | OperatorBlockOpcode
+    | PenBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -189,6 +190,21 @@ export const operatorBlockOpcodes = [
 ] as const;
 
 export type OperatorBlockOpcode = typeof operatorBlockOpcodes[number];
+
+export const penBlockOpcodes = [
+    "pen_clear",
+    "pen_stamp",
+    "pen_penDown",
+    "pen_penUp",
+    "pen_setPenColorToColor",
+    "pen_changePenColorParamBy",
+    "pen_menu_colorParam",
+    "pen_setPenColorParamTo",
+    "pen_changePenSizeBy",
+    "pen_setPenSizeTo",
+] as const;
+
+export type PenBlockOpcode = typeof penBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
