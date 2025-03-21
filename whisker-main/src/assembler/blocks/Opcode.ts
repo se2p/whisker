@@ -5,6 +5,7 @@ export type Opcode =
     | EventBlockOpcode
     | LooksBlockOpcode
     | MotionBlockOpcode
+    | CustomBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -128,6 +129,14 @@ export const looksBlockOpcodes = [
 ] as const;
 
 export type LooksBlockOpcode = typeof looksBlockOpcodes[number];
+
+export const customBlockOpcodes = [
+    "procedures_definition",
+    "procedures_call",
+    "procedures_prototype",
+] as const;
+
+export type CustomBlockOpcode = typeof customBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
