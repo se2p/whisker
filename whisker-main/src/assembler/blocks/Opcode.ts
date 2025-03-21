@@ -3,6 +3,7 @@ export type Opcode =
     | ControlBlockOpcode
     | DataBlockOpcode
     | EventBlockOpcode
+    | LooksBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -72,6 +73,34 @@ export const hatBlockOpcodes = [
 ] as const;
 
 export type HatBlockOpcode = typeof hatBlockOpcodes[number];
+
+export const looksBlockOpcodes = [
+    "looks_size",
+    "looks_sayforsecs",
+    "looks_thinkforsecs",
+    "looks_say",
+    "looks_think",
+    "looks_switchcostumeto",
+    "looks_costume",
+    "looks_nextcostume",
+    "looks_switchbackdropto",
+    "looks_switchbackdroptoandwait",
+    "looks_backdrops",
+    "looks_nextbackdrop",
+    "looks_changesizeby",
+    "looks_setsizeto",
+    "looks_changeeffectby",
+    "looks_seteffectto",
+    "looks_cleargraphiceffects",
+    "looks_show",
+    "looks_hide",
+    "looks_gotofrontback",
+    "looks_goforwardbackwardlayers",
+    "looks_costumenumbername",
+    "looks_backdropnumbername",
+] as const;
+
+export type LooksBlockOpcode = typeof looksBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
