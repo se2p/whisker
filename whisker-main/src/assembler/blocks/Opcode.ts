@@ -1,4 +1,24 @@
-export type Opcode = string;
+export type Opcode =
+    // by category
+    | ControlBlockOpcode
+    ;
+
+export const controlBlockOpcodes = [
+    "control_wait",
+    "control_repeat",
+    "control_forever",
+    "control_if",
+    "control_if_else",
+    "control_wait_until",
+    "control_repeat_until",
+    "control_stop",
+    "control_create_clone_of",
+    "control_create_clone_of_menu",
+    "control_delete_this_clone",
+    "control_start_as_clone",
+] as const;
+
+export type ControlBlockOpcode = typeof controlBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
@@ -27,10 +47,6 @@ export const shadowBlockOpcodes = [
 ] as const;
 
 export type ShadowBlockOpcode = typeof shadowBlockOpcodes[number];
-
-export function isShadowBlockOpcode(opcode: Opcode): opcode is ShadowBlockOpcode {
-    return shadowBlockOpcodes.includes(opcode as ShadowBlockOpcode);
-}
 
 export const blockWithFieldOpcodes = [
     "motion_setrotationstyle",
