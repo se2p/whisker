@@ -9,3 +9,45 @@
 export type Fields = {
 
 }
+
+// Rectangular drop-down menus
+const noShadowFieldKeys = [
+    "STYLE",
+    "EFFECT",
+    "FRONT_BACK",
+    "FORWARD_BACKWARD",
+    "NUMBER_NAME",
+    "WHENGREATERTHANMENU",
+    "BROADCAST_OPTION",
+    "STOP_OPTION",
+    "DRAG_MODE",
+    "PROPERTY",
+    "CURRENTMENU",
+    "OPERATOR",
+    "VARIABLE",
+    "LIST",
+] as const;
+
+// Oval-shaped drop-down menus
+const shadowFieldKeys = [
+    "TO",
+    "TOWARDS",
+    "COSTUME",
+    "SOUND_MENU",
+    "CLONE_OPTION",
+    "TOUCHINGOBJECTMENU",
+    "DISTANCETOMENU",
+    "OBJECT",
+    "VALUE", // for the argument definitions in the signature of custom blocks
+    "colorParam",
+] as const;
+
+export const fieldKeys = [
+    ...noShadowFieldKeys,
+    ...shadowFieldKeys,
+    // These keys can occur in both a rectangular or oval-shaped drop-down menu:
+    "KEY_OPTION",
+    "BACKDROP",
+] as const;
+
+export type FieldKey = typeof fieldKeys[number];
