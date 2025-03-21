@@ -6,6 +6,7 @@ export type Opcode =
     | LooksBlockOpcode
     | MotionBlockOpcode
     | CustomBlockOpcode
+    | SensingBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -137,6 +138,33 @@ export const customBlockOpcodes = [
 ] as const;
 
 export type CustomBlockOpcode = typeof customBlockOpcodes[number];
+
+export const sensingBlockOpcodes = [
+    "sensing_touchingobject",
+    "sensing_touchingobjectmenu",
+    "sensing_touchingcolor",
+    "sensing_coloristouchingcolor",
+    "sensing_distancetomenu",
+    "sensing_distanceto",
+    "sensing_askandwait",
+    "sensing_answer",
+    "sensing_keyoptions",
+    "sensing_keypressed",
+    "sensing_mousedown",
+    "sensing_mousex",
+    "sensing_mousey",
+    "sensing_setdragmode",
+    "sensing_loudness",
+    "sensing_timer",
+    "sensing_resettimer",
+    "sensing_of",
+    "sensing_of_object_menu",
+    "sensing_current",
+    "sensing_dayssince2000",
+    "sensing_username",
+] as const;
+
+export type SensingBlockOpcode = typeof sensingBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
