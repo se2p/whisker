@@ -14,6 +14,7 @@ export type Opcode =
     // by shape
     | HatBlockOpcode
     | CapBlockOpcode
+    | CBlockOpcode
     ;
 
 export const controlBlockOpcodes = [
@@ -114,6 +115,16 @@ export const capBlockOpcodes = [
 ] as const;
 
 export type CapBlockOpcode = typeof capBlockOpcodes[number];
+
+export const cBlockOpcodes = [
+    "control_forever",
+    "control_if",
+    "control_if_else",
+    "control_repeat",
+    "control_repeat_until",
+] as const;
+
+export type CBlockOpcode = typeof cBlockOpcodes[number];
 
 export const looksBlockOpcodes = [
     "looks_size",
