@@ -139,7 +139,7 @@ export function isObscuredDropDownMenu(block: Block): boolean {
      *
      * https://en.scratch-wiki.info/wiki/Scratch_File_Format#Blocks
      */
-    return (dropDownMenuOpcodes as Readonly<Array<Opcode>>).includes(block.opcode) &&
+    return (dropDownMenuOpcodes as readonly Opcode[]).includes(block.opcode) &&
         block.shadow && isTopLevelBlock(block);
 }
 

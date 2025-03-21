@@ -509,5 +509,5 @@ export function operatorMathOp(operator: OperatorChoice["OPERATOR"][0] = "abs", 
  * @param block the block to check
  */
 export function isOperatorBlock(block: Block): block is SensingBlock {
-    return (operatorBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (operatorBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

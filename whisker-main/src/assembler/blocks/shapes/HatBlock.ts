@@ -19,5 +19,5 @@ export interface HatBlock extends TopLevelBlock {
  * @param o the block to check
  */
 export function isHatBlock(o: ScratchBlock): o is HatBlock {
-    return isBlock(o) && (hatBlockOpcodes as Readonly<Array<Opcode>>).includes(o.opcode);
+    return isBlock(o) && (hatBlockOpcodes as readonly Opcode[]).includes(o.opcode);
 }

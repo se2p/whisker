@@ -24,5 +24,5 @@ export type CBlock =
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function isCBlock(o: {}): o is CBlock {
-    return isBlock(o) && (cBlockOpcodes as Readonly<Array<Opcode>>).includes(o.opcode);
+    return isBlock(o) && (cBlockOpcodes as readonly Opcode[]).includes(o.opcode);
 }

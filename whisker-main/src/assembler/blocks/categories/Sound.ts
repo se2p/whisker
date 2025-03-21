@@ -313,5 +313,5 @@ export function soundVolume(): BlockMeta {
  * @param block the block to check
  */
 export function isSoundBlock(block: Block): block is SoundBlock {
-    return (soundBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (soundBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

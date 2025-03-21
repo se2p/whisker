@@ -536,7 +536,7 @@ export function isExprKey(inputKey: InputKey): inputKey is ExprKey {
 
 export type ExprKey = Exclude<InputKey, Adjacency | "BROADCAST_INPUT">;
 
-export const exprKeys = Object.freeze(inputKeys.filter((key) => isExprKey(key))) as Readonly<Array<ExprKey>>;
+export const exprKeys = Object.freeze(inputKeys.filter((key) => isExprKey(key))) as readonly ExprKey[];
 
 export function inputRefersToShadowBlock(opcode: Opcode, key: InputKey): boolean {
     if (!getInputKeys(opcode).includes(key)) {
@@ -554,7 +554,7 @@ export function inputRefersToShadowBlock(opcode: Opcode, key: InputKey): boolean
         "DISTANCETOMENU",
         "KEY_OPTION",
         "OBJECT",
-    ] as Readonly<Array<InputKey>>;
+    ] as readonly InputKey[];
 
     if (shadowInputKeys.includes(key)) {
         return true;

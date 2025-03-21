@@ -23,7 +23,7 @@ export function isCapBlock(block: ScratchBlock): block is CapBlock {
     }
 
     if (block.opcode !== "control_stop") {
-        return (capBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+        return (capBlockOpcodes as readonly Opcode[]).includes(block.opcode);
     }
 
     // Stop blocks can change their shape depending on the selected stop option.

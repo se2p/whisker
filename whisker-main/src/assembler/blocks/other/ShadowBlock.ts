@@ -31,7 +31,7 @@ export interface ObscuredShadowBlock extends Block, TopLevelBlock {
 
 export function isShadowBlock(b: ScratchBlock): b is ShadowBlock {
     return isBlock(b)
-        && (shadowBlockOpcodes as Readonly<Array<Opcode>>).includes(b.opcode)
+        && (shadowBlockOpcodes as readonly Opcode[]).includes(b.opcode)
         && b.next === null
         && b.shadow === true;
 }

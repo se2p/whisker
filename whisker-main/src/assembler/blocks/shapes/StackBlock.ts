@@ -24,7 +24,7 @@ export function isStackBlock(block: ScratchBlock): block is StackBlock {
     }
 
     if (block.opcode !== "control_stop") {
-        return (stackBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+        return (stackBlockOpcodes as readonly Opcode[]).includes(block.opcode);
     }
 
     // Stop blocks can change their shape depending on the selected stop option.

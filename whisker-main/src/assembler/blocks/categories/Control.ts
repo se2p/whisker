@@ -346,5 +346,5 @@ export function controlStartAsClone(): BlockMeta {
  * @param block the block to check
  */
 export function isControlBlock(block: Block): block is ControlBlock {
-    return (controlBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (controlBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

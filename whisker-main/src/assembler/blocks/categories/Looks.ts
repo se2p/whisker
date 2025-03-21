@@ -691,5 +691,5 @@ export function looksBackdropNumberName(numberName: NumberOrName["NUMBER_NAME"][
  * @param block the block to check
  */
 export function isLooksBlock(block: Block): block is LooksBlock {
-    return (looksBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (looksBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

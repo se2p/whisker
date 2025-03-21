@@ -616,5 +616,5 @@ export function motionDirection(): BlockMeta {
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function isMotionBlock(o: {}): o is MotionBlock {
-    return isBlock(o) && (motionBlockOpcodes as Readonly<Array<Opcode>>).includes(o.opcode);
+    return isBlock(o) && (motionBlockOpcodes as readonly Opcode[]).includes(o.opcode);
 }

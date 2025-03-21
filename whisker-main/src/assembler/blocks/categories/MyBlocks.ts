@@ -155,5 +155,5 @@ export interface Mutation {
  * @param block the block to check
  */
 export function isCustomBlock(block: Block): block is CustomBlock {
-    return (customBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (customBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

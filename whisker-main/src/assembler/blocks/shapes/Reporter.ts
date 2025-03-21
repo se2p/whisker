@@ -94,7 +94,7 @@ export function isStringNumberReporterBlock(block: ScratchBlock): block is Strin
         return true;
     }
 
-    return (numberStringReporterBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (numberStringReporterBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }
 
 /**
@@ -104,7 +104,7 @@ export function isStringNumberReporterBlock(block: ScratchBlock): block is Strin
  * @param block the block to check
  */
 export function isBooleanReporterBlock(block: ScratchBlock): block is BooleanReporterBlock {
-    return isBlock(block) && (booleanReporterBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return isBlock(block) && (booleanReporterBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }
 
 export function isReporterBlock(block: ScratchBlock): block is RegularReporterBlock {
@@ -112,5 +112,5 @@ export function isReporterBlock(block: ScratchBlock): block is RegularReporterBl
         return true;
     }
 
-    return (reporterBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (reporterBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

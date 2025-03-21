@@ -656,5 +656,5 @@ export function sensingUsername(): BlockMeta {
  * @param block the block to check
  */
 export function isSensingBlock(block: Block): block is SensingBlock {
-    return (sensingBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (sensingBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

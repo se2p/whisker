@@ -315,5 +315,5 @@ export function eventBroadcastAndWait(message: string = defaultMessage): BlockMe
  * @param block the block to check
  */
 export function isEventBlock(block: Block): block is EventBlock {
-    return (eventBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (eventBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }

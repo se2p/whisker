@@ -518,7 +518,7 @@ export type List = [
  * @param block the block to check
  */
 export function isDataBlock(block: Block): block is DataBlock {
-    return (dataBlockOpcodes as Readonly<Array<Opcode>>).includes(block.opcode);
+    return (dataBlockOpcodes as readonly Opcode[]).includes(block.opcode);
 }
 
 export function isCloudVariable(variable: Variable): variable is CloudVariable {
