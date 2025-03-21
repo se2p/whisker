@@ -1,3 +1,5 @@
+export type Inputs = {};
+
 export type ConnectedVariableBlock = [
     shadowType: 12,
     variableName: string,
