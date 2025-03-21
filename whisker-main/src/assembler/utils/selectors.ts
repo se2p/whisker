@@ -25,12 +25,12 @@ export function hasUniqueName<B, V, L>({isStage, name}: Target<B, V, L>, uniqueN
     return isStage ? uniqueName === STAGE_NAME : uniqueName === name;
 }
 
-export const adjacencyKeys = [
+export const adjacencyKeys = Object.freeze([
     "parent",
     "next",
     "SUBSTACK",
     "SUBSTACK2",
-] as const;
+] as const);
 
 export type Adjacency = typeof adjacencyKeys[number];
 

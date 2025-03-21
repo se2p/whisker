@@ -450,7 +450,7 @@ export function operatorRound(num: number | "" = ""): BlockMeta {
     });
 }
 
-export const operators = [
+export const operators = Object.freeze([
     "abs",
     "floor",
     "ceiling",
@@ -465,7 +465,7 @@ export const operators = [
     "log",
     "e ^",
     "10 ^",
-] as const;
+] as const);
 
 type OperatorChoice = Record<"OPERATOR", [
     operator: typeof operators[number],

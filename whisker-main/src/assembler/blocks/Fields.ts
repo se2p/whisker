@@ -45,7 +45,7 @@ export function broadcastInputToField([, broadcastName, broadcastID]: BroadCastI
 }
 
 // Rectangular drop-down menus
-const noShadowFieldKeys = [
+const noShadowFieldKeys = Object.freeze([
     "STYLE",
     "EFFECT",
     "FRONT_BACK",
@@ -60,10 +60,10 @@ const noShadowFieldKeys = [
     "OPERATOR",
     "VARIABLE",
     "LIST",
-] as const;
+] as const);
 
 // Oval-shaped drop-down menus
-const shadowFieldKeys = [
+const shadowFieldKeys = Object.freeze([
     "TO",
     "TOWARDS",
     "COSTUME",
@@ -74,14 +74,14 @@ const shadowFieldKeys = [
     "OBJECT",
     "VALUE", // for the argument definitions in the signature of custom blocks
     "colorParam",
-] as const;
+] as const);
 
-export const fieldKeys = [
+export const fieldKeys = Object.freeze([
     ...noShadowFieldKeys,
     ...shadowFieldKeys,
     // These keys can occur in both a rectangular or oval-shaped drop-down menu:
     "KEY_OPTION",
     "BACKDROP",
-] as const;
+] as const);
 
 export type FieldKey = typeof fieldKeys[number];

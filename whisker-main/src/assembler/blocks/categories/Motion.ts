@@ -508,7 +508,7 @@ export function motionIfOnEdgeBounce(): BlockMeta {
     });
 }
 
-export const rotationStyles = ["left-right", "don't rotate", "all around"] as const;
+export const rotationStyles = Object.freeze(["left-right", "don't rotate", "all around"] as const);
 
 type RotationStyle = Record<"STYLE", [
     rotationStyle: typeof rotationStyles[number],

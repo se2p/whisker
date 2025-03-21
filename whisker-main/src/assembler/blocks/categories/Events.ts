@@ -50,12 +50,12 @@ export type Key = typeof keys[number];
 /**
  * The keys (on your keyboard) Scratch provides handlers/listeners for.
  */
-export const keys = [
+export const keys = Object.freeze([
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
     "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "space", "up arrow", "down arrow", "right arrow", "left arrow", "any"
-] as const;
+] as const);
 
 type KeyOption = [key: Key, blockID: null];
 

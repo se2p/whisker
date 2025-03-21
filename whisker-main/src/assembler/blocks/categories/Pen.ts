@@ -183,12 +183,12 @@ export function changePenColorParamBy(colorParam: ColorParamChoice["colorParam"]
     });
 }
 
-export const colorParamOptions = [
+export const colorParamOptions = Object.freeze([
     "color",
     "saturation",
     "brightness",
     "transparency",
-] as const;
+] as const);
 
 type ColorParamOption = typeof colorParamOptions[number];
 

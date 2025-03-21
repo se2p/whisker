@@ -471,7 +471,7 @@ type SpriteOrStage = Record<"OBJECT", ShadowInput>;
 
 type Property = StageProperty | SpriteProperty;
 
-export const spriteProperties = [
+export const spriteProperties = Object.freeze([
     "x position",
     "y position",
     "direction",
@@ -479,18 +479,18 @@ export const spriteProperties = [
     "costume name",
     "size",
     "volume",
-] as const;
+] as const);
 
 type SpriteProperty = Record<"PROPERTY", [
     variableName: typeof spriteProperties[number] | string,
     blockID: null
 ]>;
 
-export const stageProperties = [
+export const stageProperties = Object.freeze([
     "backdrop #",
     "backdrop name",
     "volume",
-] as const;
+] as const);
 
 type StageProperty = Record<"PROPERTY", [
     variableName: typeof stageProperties[number] | string,
@@ -563,7 +563,7 @@ export interface SensingOfObjectMenu extends SensingBlock, ShadowBlock, BlockWit
     shadow: true;
 }
 
-export const sensingCurrentOptions = [
+export const sensingCurrentOptions = Object.freeze([
     "YEAR",
     "MONTH",
     "DATE",
@@ -571,7 +571,7 @@ export const sensingCurrentOptions = [
     "HOUR",
     "MINUTE",
     "SECOND",
-] as const;
+] as const);
 
 type WhatToSense = Record<"CURRENTMENU", [
     whatToSense: typeof sensingCurrentOptions[number],

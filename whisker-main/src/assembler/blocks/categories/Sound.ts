@@ -148,7 +148,7 @@ export function soundStopAllSounds(): BlockMeta {
 
 type Value = Record<"VALUE", ShadowInput>;
 
-export const soundEffects = ["PITCH", "PAN"] as const;
+export const soundEffects = Object.freeze(["PITCH", "PAN"] as const);
 
 type EffectName = Record<"EFFECT", [
     effectName: typeof soundEffects[number], objectID: null

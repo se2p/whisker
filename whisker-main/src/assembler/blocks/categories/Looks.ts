@@ -413,7 +413,15 @@ export function looksSetSizeTo(size = 100): BlockMeta {
 
 type Change = Record<"CHANGE", ShadowInput>;
 
-export const looksEffects = ["COLOR", "FISHEYE", "WHIRL", "PIXELATE", "MOSAIC", "BRIGHTNESS", "GHOST"] as const;
+export const looksEffects = Object.freeze([
+    "COLOR",
+    "FISHEYE",
+    "WHIRL",
+    "PIXELATE",
+    "MOSAIC",
+    "BRIGHTNESS",
+    "GHOST",
+] as const);
 
 type Effect = Record<"EFFECT", [
     effect: typeof looksEffects[number],

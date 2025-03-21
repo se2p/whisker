@@ -1,5 +1,5 @@
 export type Opcode =
-// by category
+    // by category
     | MonitorBlockOpcode
     | CustomBlockOpcode
     | ControlBlockOpcode
@@ -23,7 +23,7 @@ export type Opcode =
     | DropDownMenuOpcode
     ;
 
-export const monitorBlockOpcodes = [
+export const monitorBlockOpcodes = Object.freeze([
     "data_variable",
     "motion_xposition",
     "motion_yposition",
@@ -37,19 +37,19 @@ export const monitorBlockOpcodes = [
     "sensing_current",
     "sensing_username",
     "data_listcontents",
-] as const;
+] as const);
 
 export type MonitorBlockOpcode = typeof monitorBlockOpcodes[number];
 
-export const customBlockOpcodes = [
+export const customBlockOpcodes = Object.freeze([
     "procedures_definition",
     "procedures_call",
     "procedures_prototype",
-] as const;
+] as const);
 
 export type CustomBlockOpcode = typeof customBlockOpcodes[number];
 
-export const controlBlockOpcodes = [
+export const controlBlockOpcodes = Object.freeze([
     "control_wait",
     "control_repeat",
     "control_forever",
@@ -62,11 +62,11 @@ export const controlBlockOpcodes = [
     "control_create_clone_of_menu",
     "control_delete_this_clone",
     "control_start_as_clone",
-] as const;
+] as const);
 
 export type ControlBlockOpcode = typeof controlBlockOpcodes[number];
 
-export const eventBlockOpcodes = [
+export const eventBlockOpcodes = Object.freeze([
     "event_whenflagclicked",
     "event_whenkeypressed",
     "event_whenthisspriteclicked",
@@ -76,11 +76,11 @@ export const eventBlockOpcodes = [
     "event_whenbroadcastreceived",
     "event_broadcast",
     "event_broadcastandwait",
-] as const;
+] as const);
 
 export type EventBlockOpcode = typeof eventBlockOpcodes[number];
 
-export const looksBlockOpcodes = [
+export const looksBlockOpcodes = Object.freeze([
     "looks_size",
     "looks_sayforsecs",
     "looks_thinkforsecs",
@@ -104,11 +104,11 @@ export const looksBlockOpcodes = [
     "looks_goforwardbackwardlayers",
     "looks_costumenumbername",
     "looks_backdropnumbername",
-] as const;
+] as const);
 
 export type LooksBlockOpcode = typeof looksBlockOpcodes[number];
 
-export const soundBlockOpcodes = [
+export const soundBlockOpcodes = Object.freeze([
     "sound_playuntildone",
     "sound_sounds_menu",
     "sound_play",
@@ -119,11 +119,11 @@ export const soundBlockOpcodes = [
     "sound_changevolumeby",
     "sound_setvolumeto",
     "sound_volume",
-] as const;
+] as const);
 
 export type SoundBlockOpcode = typeof soundBlockOpcodes[number];
 
-export const sensingBlockOpcodes = [
+export const sensingBlockOpcodes = Object.freeze([
     "sensing_touchingobject",
     "sensing_touchingobjectmenu",
     "sensing_touchingcolor",
@@ -146,11 +146,11 @@ export const sensingBlockOpcodes = [
     "sensing_current",
     "sensing_dayssince2000",
     "sensing_username",
-] as const;
+] as const);
 
 export type SensingBlockOpcode = typeof sensingBlockOpcodes[number];
 
-export const motionBlockOpcodes = [
+export const motionBlockOpcodes = Object.freeze([
     "motion_movesteps",
     "motion_turnright",
     "motion_turnleft",
@@ -172,11 +172,11 @@ export const motionBlockOpcodes = [
     "motion_xposition",
     "motion_yposition",
     "motion_direction",
-] as const;
+] as const);
 
 export type MotionBlockOpcode = typeof motionBlockOpcodes[number];
 
-export const operatorBlockOpcodes = [
+export const operatorBlockOpcodes = Object.freeze([
     "operator_add",
     "operator_subtract",
     "operator_multiply",
@@ -195,11 +195,11 @@ export const operatorBlockOpcodes = [
     "operator_length",
     "operator_round",
     "operator_mathop",
-] as const;
+] as const);
 
 export type OperatorBlockOpcode = typeof operatorBlockOpcodes[number];
 
-export const dataBlockOpcodes = [
+export const dataBlockOpcodes = Object.freeze([
     "data_setvariableto",
     "data_changevariableby",
     "data_showvariable",
@@ -215,11 +215,11 @@ export const dataBlockOpcodes = [
     "data_listcontainsitem",
     "data_showlist",
     "data_hidelist",
-] as const;
+] as const);
 
 export type DataBlockOpcode = typeof dataBlockOpcodes[number];
 
-export const hatBlockOpcodes = [
+export const hatBlockOpcodes = Object.freeze([
     "event_whenflagclicked",
     "event_whenkeypressed",
     "event_whenthisspriteclicked",
@@ -229,7 +229,7 @@ export const hatBlockOpcodes = [
     "event_whenbroadcastreceived",
     "control_start_as_clone",
     "procedures_definition",
-] as const;
+] as const);
 
 export type HatBlockOpcode = typeof hatBlockOpcodes[number];
 
@@ -237,7 +237,7 @@ export function isHatBlockOpcode(opcode: Opcode): opcode is HatBlockOpcode {
     return hatBlockOpcodes.includes(opcode as HatBlockOpcode);
 }
 
-export const numberReporterBlockOpcodes = [
+export const numberReporterBlockOpcodes = Object.freeze([
     "motion_xposition",
     "motion_yposition",
     "motion_direction",
@@ -264,20 +264,20 @@ export const numberReporterBlockOpcodes = [
     "operator_mathop",
     "data_itemnumoflist",
     "data_lengthoflist",
-] as const;
+] as const);
 
 export type NumberReporterBlockOpcode = typeof numberReporterBlockOpcodes[number];
 
-export const stringReporterBlockOpcodes = [
+export const stringReporterBlockOpcodes = Object.freeze([
     "sensing_answer",
     "sensing_username",
     "operator_join",
     "operator_letter_of",
-] as const;
+] as const);
 
 export type StringReporterBlockOpcode = typeof stringReporterBlockOpcodes[number];
 
-export const booleanReporterBlockOpcodes = [
+export const booleanReporterBlockOpcodes = Object.freeze([
     "sensing_touchingobject",
     "sensing_touchingcolor",
     "sensing_coloristouchingcolor",
@@ -292,32 +292,32 @@ export const booleanReporterBlockOpcodes = [
     "operator_contains",
     "data_listcontainsitem",
     "argument_reporter_boolean",
-] as const;
+] as const);
 
 export type BooleanReporterBlockOpcode = typeof booleanReporterBlockOpcodes[number];
 
-export const numberStringReporterBlockOpcodes = [
+export const numberStringReporterBlockOpcodes = Object.freeze([
     "argument_reporter_string_number",
     ...numberReporterBlockOpcodes,
     ...stringReporterBlockOpcodes,
-] as const;
+] as const);
 
 export type NumberStringReporterBlockOpcode = typeof numberStringReporterBlockOpcodes[number];
 
-export const reporterBlockOpcodes = [
+export const reporterBlockOpcodes = Object.freeze([
     ...numberStringReporterBlockOpcodes,
     ...booleanReporterBlockOpcodes
-] as const;
+] as const);
 
 export type ReporterBlockOpcode = typeof reporterBlockOpcodes[number];
 
-export const cBlockOpcodes = [
+export const cBlockOpcodes = Object.freeze([
     "control_forever",
     "control_if",
     "control_if_else",
     "control_repeat",
     "control_repeat_until",
-] as const;
+] as const);
 
 export type CBlockOpcode = typeof cBlockOpcodes[number];
 
@@ -325,15 +325,15 @@ export function isCBlockOpcode(opcode: Opcode): opcode is CBlockOpcode {
     return cBlockOpcodes.includes(opcode as CBlockOpcode);
 }
 
-export const capBlockOpcodes = [
+export const capBlockOpcodes = Object.freeze([
     "control_stop", // only if the option "other scripts in sprite" is not selected!
     "control_delete_this_clone",
     "control_forever",
-] as const;
+] as const);
 
 export type CapBlockOpcode = typeof capBlockOpcodes[number];
 
-export const stackBlockOpcodes = [
+export const stackBlockOpcodes = Object.freeze([
     // Motion blocks
     "motion_movesteps",
     "motion_turnright",
@@ -422,7 +422,7 @@ export const stackBlockOpcodes = [
     "pen_setPenColorParamTo",
     "pen_changePenSizeBy",
     "pen_setPenSizeTo",
-] as const;
+] as const);
 
 export type StackBlockOpcode = typeof stackBlockOpcodes[number];
 
@@ -430,7 +430,7 @@ export type StackBlockOpcode = typeof stackBlockOpcodes[number];
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
  * https://en.scratch-wiki.info/wiki/Dropdown_Menu#Accept_Block_Inputs
  */
-export const dropDownMenuOpcodes = [
+export const dropDownMenuOpcodes = Object.freeze([
     "looks_backdrops",
     "looks_costume",
     "control_create_clone_of_menu",
@@ -443,14 +443,14 @@ export const dropDownMenuOpcodes = [
     "motion_pointtowards_menu",
     "sound_sounds_menu",
     "pen_menu_colorParam",
-] as const;
+] as const);
 
 export type DropDownMenuOpcode = typeof dropDownMenuOpcodes[number];
 
-export const shadowBlockOpcodes = [
+export const shadowBlockOpcodes = Object.freeze([
     ...dropDownMenuOpcodes,
     "procedures_prototype"
-] as const;
+] as const);
 
 export type ShadowBlockOpcode = typeof shadowBlockOpcodes[number];
 
@@ -458,7 +458,7 @@ export function isShadowBlockOpcode(opcode: Opcode): opcode is ShadowBlockOpcode
     return shadowBlockOpcodes.includes(opcode as ShadowBlockOpcode);
 }
 
-export const blockWithFieldOpcodes = [
+export const blockWithFieldOpcodes = Object.freeze([
     "motion_setrotationstyle",
     "looks_changeeffectby",
     "looks_seteffectto",
@@ -478,13 +478,13 @@ export const blockWithFieldOpcodes = [
     "sensing_of_object_menu",
     "sensing_current",
     "operator_mathop",
-] as const;
+] as const);
 
 // https://en.scratch-wiki.info/wiki/Dropdown_Menu#Do_Not_Accept_Block_Inputs
 export type BlockWithFieldOpcode = typeof blockWithFieldOpcodes[number];
 
 // https://en.scratch-wiki.info/wiki/Dropdown_Menu#Accept_Block_Inputs
-export const blockWithShadowInputOpcodes = [
+export const blockWithShadowInputOpcodes = Object.freeze([
     "motion_goto",
     "motion_glideto",
     "motion_pointtowards",
@@ -500,11 +500,11 @@ export const blockWithShadowInputOpcodes = [
     "sensing_of",
     "pen_changePenColorParamBy",
     "pen_setPenColorParamTo",
-] as const;
+] as const);
 
 export type BlockWithShadowInputOpcode = typeof blockWithShadowInputOpcodes[number];
 
-export const penBlockOpcodes = [
+export const penBlockOpcodes = Object.freeze([
     "pen_clear",
     "pen_stamp",
     "pen_penDown",
@@ -515,6 +515,6 @@ export const penBlockOpcodes = [
     "pen_setPenColorParamTo",
     "pen_changePenSizeBy",
     "pen_setPenSizeTo",
-] as const;
+] as const);
 
 export type PenBlockOpcode = typeof penBlockOpcodes[number];
