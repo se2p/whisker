@@ -1,6 +1,7 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {getBlockMap} from 'scratch-analysis/src/control-flow-graph';
-import {ScratchProgram} from "../ScratchInterface";
+import {Project} from "../../../assembler/project/Project";
+import {Block, BlockID} from "../../../assembler/blocks/Block";
 
 
 export abstract class ScratchMutation {
@@ -8,7 +9,7 @@ export abstract class ScratchMutation {
     /**
      * Maps blockIds to the corresponding blocks of a Scratch program.
      */
-    protected readonly blockMap: Map<string, unknown>;
+    protected readonly blockMap: Map<BlockID, Block>;
 
     /**
      * JSON representation of the original project.
@@ -30,7 +31,7 @@ export abstract class ScratchMutation {
      * @param mutationBlockId the id of the block that will be mutated.
      * @param mutantProgram the mutant program in which the mutationBlock resides.
      */
-    public abstract applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean
+    public abstract applyMutation(mutationBlockId: string, mutantProgram: Project): boolean
 
     /**
      * String representation of a given mutator.
@@ -43,8 +44,8 @@ export abstract class ScratchMutation {
      * @param mutationID The identifier specifying which Scratch mutant to generate.
      * @returns The generated mutant or null if something goes wrong during the mutant generation process.
      */
-    public generateMutant(mutationID: string): ScratchProgram | null {
-        const mutantProgram: ScratchProgram = JSON.parse(this.originalProjectJSON);
+    public generateMutant(mutationID: string): Project | null {
+        const mutantProgram: Project = JSON.parse(this.originalProjectJSON);
         if (this.applyMutation(mutationID, mutantProgram)) {
             return mutantProgram;
         }
@@ -55,8 +56,8 @@ export abstract class ScratchMutation {
      * Generates mutants based on the specified mutation operator.
      * @returns Array of generated mutants.
      */
-    public generateMutants(): ScratchProgram[] {
-        const mutants: ScratchProgram[] = [];
+    public generateMutants(): Project[] {
+        const mutants: Project[] = [];
         const mutationCandidates = this.getMutationCandidates();
         for (const mutationBlockId of mutationCandidates) {
             const mutant = this.generateMutant(mutationBlockId);

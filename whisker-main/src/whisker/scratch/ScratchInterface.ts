@@ -129,15 +129,3 @@ export class ScratchInterface {
         return Math.hypot(bounds.top - bounds.bottom, bounds.right - bounds.left);
     }
 }
-
-/**
- * A ScratchProgram is an object that holds all the necessary data required to initialise a Scratch VM which can then
- * be executed.
- */
-export interface ScratchProgram {
-    name?: string,
-    extensions: [],
-    meta: Record<string, unknown>,
-    monitors: [],
-    targets: RenderedTarget[]
-}

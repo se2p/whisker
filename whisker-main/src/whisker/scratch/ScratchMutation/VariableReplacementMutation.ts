@@ -1,8 +1,10 @@
 import {ScratchMutation} from "./ScratchMutation";
-import {ScratchProgram} from "../ScratchInterface";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Randomness} from "../../utils/Randomness";
 import {getBlockFromId} from "scratch-analysis";
+import {Project} from "../../../assembler/project/Project";
+import {Block, BlockID} from "../../../assembler/blocks/Block";
+import {isVariableInput} from "../../../assembler/blocks/Inputs";
 
 export class VariableReplacementMutation extends ScratchMutation {
 
@@ -23,8 +25,8 @@ export class VariableReplacementMutation extends ScratchMutation {
      * @param mutantProgram the mutant program in which the variable will be replaced.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
-        const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
+    public applyMutation(mutationBlockId: BlockID, mutantProgram: Project): boolean {
+        const mutationBlock: Block = getBlockFromId(mutantProgram.targets, mutationBlockId);
 
         // We may have the chance to replace multiple variables within one parent block. We therefore, count how
         // often a given parent has been mutated and always replace the next up to this point untouched variable.
@@ -39,10 +41,10 @@ export class VariableReplacementMutation extends ScratchMutation {
         let placeHolderToMutate;
         for (const input of Object.values(mutationBlock['inputs'])) {
             // 12 is a marker for variables
-            if (input[1][0] === 12 && processCount === 0) {
+            if (isVariableInput(input[1]) && processCount === 0) {
                 placeHolderToMutate = input;
                 break;
-            } else if (input[1][0] === 12 && processCount > 0) {
+            } else if (isVariableInput(input[1]) && processCount > 0) {
                 processCount--;
             }
         }

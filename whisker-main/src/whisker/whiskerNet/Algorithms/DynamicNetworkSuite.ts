@@ -10,7 +10,6 @@ import {BasicNeuroevolutionParameter} from "../HyperParameter/BasicNeuroevolutio
 import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
-import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
@@ -20,6 +19,7 @@ import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import logger from "../../../util/logger";
+import {Project} from "../../../assembler/project/Project";
 
 
 export class DynamicNetworkSuite {
@@ -141,10 +141,10 @@ export class DynamicNetworkSuite {
     /**
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
-    protected async mutationAnalysis(): Promise<ScratchProgram[]> {
+    protected async mutationAnalysis(): Promise<Project[]> {
         const mutantFactory = new MutationFactory(this.vm, this.properties.mutators as string[]);
         const maxMutants = this.properties.maxMutants as number || Number.MAX_SAFE_INTEGER;
-        const mutantPrograms: ScratchProgram[] = [];
+        const mutantPrograms: Project[] = [];
         let i = 0;
         while (i < maxMutants && mutantFactory.candidates.size > 0) {
             // Generate mutant
@@ -217,7 +217,7 @@ export class DynamicNetworkSuite {
      * cases on the original project or the created mutants.
      * @returns Results of network suite execution in csv format.
      */
-    protected async execute(): Promise<[string, ScratchProgram[]]> {
+    protected async execute(): Promise<[string, Project[]]> {
 
         // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
@@ -450,7 +450,7 @@ export class DynamicNetworkSuite {
      * Loads a given Scratch mutant by initialising the VmWrapper and the NetworkExecutor with the mutant.
      * @param mutant a mutant of a Scratch project.
      */
-    protected async loadMutant(mutant: ScratchProgram): Promise<void> {
+    protected async loadMutant(mutant: Project): Promise<void> {
         const util = new WhiskerUtil(this.vm, mutant);
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
