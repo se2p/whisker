@@ -13,6 +13,7 @@ export type Opcode =
 
     // by shape
     | HatBlockOpcode
+    | CapBlockOpcode
     ;
 
 export const controlBlockOpcodes = [
@@ -105,6 +106,14 @@ export const hatBlockOpcodes = [
 ] as const;
 
 export type HatBlockOpcode = typeof hatBlockOpcodes[number];
+
+export const capBlockOpcodes = [
+    "control_stop", // only if the option "other scripts in sprite" is not selected!
+    "control_delete_this_clone",
+    "control_forever",
+] as const;
+
+export type CapBlockOpcode = typeof capBlockOpcodes[number];
 
 export const looksBlockOpcodes = [
     "looks_size",
