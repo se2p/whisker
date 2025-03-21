@@ -331,7 +331,7 @@ export interface OperatorJoin extends OperatorBlock {
     fields: None;
 }
 
-export function operatorJoin(string1: string = "apple", string2: string = "banana"): BlockMeta {
+export function operatorJoin(string1 = "apple", string2 = "banana"): BlockMeta {
     const block: OperatorJoin = {
         "opcode": "operator_join",
         "next": null,
@@ -356,7 +356,7 @@ export interface OperatorLetterOf extends OperatorBlock {
     fields: None;
 }
 
-export function operatorLetterOf(letter: number = 1, string: string = "apple"): BlockMeta {
+export function operatorLetterOf(letter = 1, string = "apple"): BlockMeta {
     const block: OperatorLetterOf = {
         "opcode": "operator_letter_of",
         "next": null,
@@ -381,7 +381,7 @@ export interface OperatorLength extends OperatorBlock {
     fields: None;
 }
 
-export function operatorLength(string: string = "apple"): BlockMeta {
+export function operatorLength(string = "apple"): BlockMeta {
     const block: OperatorLength = {
         "opcode": "operator_length",
         "next": null,
@@ -405,7 +405,7 @@ export interface OperatorContains extends OperatorBlock {
     fields: None;
 }
 
-export function operatorContains(string1: string = "apple", string2: string = "banana"): BlockMeta {
+export function operatorContains(string1 = "apple", string2 = "banana"): BlockMeta {
     const block: OperatorContains = {
         "opcode": "operator_contains",
         "next": null,
