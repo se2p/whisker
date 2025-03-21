@@ -43,7 +43,7 @@ export class VariableLengthMutation extends AbstractVariableLengthMutation<Integ
      * @param chromosome The original chromosome, that mutates.
      * @return A mutated deep copy of the given chromosome.
      */
-    apply(chromosome: IntegerListChromosome): IntegerListChromosome {
+    override async apply(chromosome: IntegerListChromosome): Promise<IntegerListChromosome> {
         return super.applyUpTo(chromosome, chromosome.getLength());
     }
 }

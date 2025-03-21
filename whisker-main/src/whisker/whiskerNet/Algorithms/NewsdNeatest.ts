@@ -190,7 +190,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
                     this._mutationOperator.adjustWeights(child, parent);
                 } else {
                     // Evolve topology.
-                    child = parent.mutate();
+                    child = await parent.mutate();
                 }
             }
 

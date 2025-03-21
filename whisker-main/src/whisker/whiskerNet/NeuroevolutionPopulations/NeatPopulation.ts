@@ -76,7 +76,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     /**
      * Generates an initial population of networks.
      */
-    public generatePopulation(): void {
+    public override async generatePopulation(): Promise<void> {
         while (this.networks.length < this.populationSize) {
             const network = this.generator.get();
             this.networks.push(network);
@@ -87,7 +87,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     /**
      * Generates a new generation of networks by evolving the current population.
      */
-    public evolve(): void {
+    public override async evolve(): Promise<void> {
 
         // Remove chromosomes that are not allowed to reproduce.
         const doomedChromosomes = [];
@@ -102,7 +102,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // Now, let the reproduction start.
         const offspring: NeatChromosome[] = [];
         for (const specie of this.species) {
-            offspring.push(...specie.evolve(this, this.species));
+            offspring.push(...await specie.evolve(this, this.species));
         }
 
         // Assign representatives to each species and assign each offspring to its closest matching species.

@@ -106,7 +106,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
      * @param chromosome The original chromosome, that mutates.
      * @return A mutated deep copy of the given chromosome.
      */
-    apply(chromosome: TestChromosome): TestChromosome {
+    override async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._initializeMutationProbabilities(chromosome);
         return super.applyUpTo(chromosome, chromosome.getLength());
     }

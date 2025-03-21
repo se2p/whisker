@@ -24,26 +24,26 @@ import {SinglePointCrossover} from "../../../src/whisker/search/operators/Single
 
 describe('BitflipMutation', () => {
 
-    test('False to true', () => {
+    test('False to true', async () => {
         const originalBits = [false];
         const chromosome = new BitstringChromosome(originalBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const mutation = new BitflipMutation();
-        const offspring = mutation.apply(chromosome);
+        const offspring = await mutation.apply(chromosome);
         const mutatedBits = offspring.getGenes();
 
         expect(mutatedBits.length).toBe(originalBits.length);
         expect(mutatedBits[0]).toBe(true);
     });
 
-    test('True to false', () => {
+    test('True to false', async () => {
         const originalBits = [true];
         const chromosome = new BitstringChromosome(originalBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const mutation = new BitflipMutation();
-        const offspring = mutation.apply(chromosome);
+        const offspring = await mutation.apply(chromosome);
         const mutatedBits = offspring.getGenes();
 
         expect(mutatedBits.length).toBe(originalBits.length);

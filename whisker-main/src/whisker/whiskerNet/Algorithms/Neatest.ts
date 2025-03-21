@@ -66,7 +66,7 @@ export class Neatest extends NEAT {
             const currentTarget = this.setNextObjective();
             logger.debug(`Next objective ${this._archive.size}/${totalNumObjectives}:${currentTarget}`);
             this._population = this.getPopulation();
-            this._population.generatePopulation();
+            await this._population.generatePopulation();
             this._targetIterations = 0;
             while (!(await this._stoppingCondition.isFinished(this))) {
                 await this.evaluateNetworks();
