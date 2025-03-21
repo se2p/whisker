@@ -38,6 +38,11 @@ export interface Project<B = Block, V = TopLevelVariableBlock, L = TopLevelListB
      * The Scratch version used. The Scratch VM can add this property dynamically when loading and verifying a project.
      */
     projectVersion?: 2 | 3;
+
+    /**
+     * Property specific to mutation testing of Scratch projects.
+     */
+    name?: string;
 }
 
 /**
