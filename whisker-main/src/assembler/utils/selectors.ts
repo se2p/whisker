@@ -3,3 +3,12 @@
  * No sprite is allowed to have the name "_stage_".
  */
 export const STAGE_NAME = "_stage_" as const;
+
+export const adjacencyKeys = [
+    "parent",
+    "next",
+    "SUBSTACK",
+    "SUBSTACK2",
+] as const;
+
+export type Adjacency = typeof adjacencyKeys[number];

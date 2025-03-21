@@ -1,5 +1,11 @@
 import {BlockID, isBlockID} from "./Block";
+import {Opcode} from "./Opcode";
 import uid from "scratch-vm/src/util/uid";
+import {blockMeta} from "./BlockFactory";
+import {BlockMeta} from "../utils/meta";
+import {Adjacency} from "../utils/selectors";
+import {NoSuchKeyError} from "../utils/errors";
+import {getInputKeys} from "../utils/blocks";
 
 export type Inputs = {
     [inputID in InputKey]?: Input;
@@ -413,6 +419,13 @@ export function variableInput(variable: string | VariableInput): UnobscuredShado
     return unobscuredInput([primitiveInputTypes.variable, variableName, variableID]);
 }
 
+export function variable(name: string): BlockMeta {
+    const block: TopLevelVariableBlock = [primitiveInputTypes.variable, name, uid(), 0, 0];
+    return blockMeta({
+        [uid()]: block
+    });
+}
+
 export type ListInput = ConnectedListBlock | TopLevelListBlock;
 
 export function isListInput(i: PrimitiveInput | BlockID): i is ListInput {
@@ -516,3 +529,37 @@ export const inputKeys = Object.freeze([
     "OBJECT",
     "COLOR_PARAM",
 ] as const);
+
+export function isExprKey(inputKey: InputKey): inputKey is ExprKey {
+    return inputKey !== "SUBSTACK" && inputKey !== "SUBSTACK2" && inputKey !== "BROADCAST_INPUT";
+}
+
+export type ExprKey = Exclude<InputKey, Adjacency | "BROADCAST_INPUT">;
+
+export const exprKeys = Object.freeze(inputKeys.filter((key) => isExprKey(key))) as Readonly<Array<ExprKey>>;
+
+export function inputRefersToShadowBlock(opcode: Opcode, key: InputKey): boolean {
+    if (!getInputKeys(opcode).includes(key)) {
+        throw new NoSuchKeyError(`Block "${opcode}" does not take input "${key}"`);
+    }
+
+    // These keys always refer to shadow inputs:
+    const shadowInputKeys = [
+        "TOWARDS",
+        "COSTUME",
+        "BACKDROP",
+        "SOUND_MENU",
+        "CLONE_OPTION",
+        "TOUCHINGOBJECTMENU",
+        "DISTANCETOMENU",
+        "KEY_OPTION",
+        "OBJECT",
+    ] as Readonly<Array<InputKey>>;
+
+    if (shadowInputKeys.includes(key)) {
+        return true;
+    }
+
+    // The "TO" key can refer to a shadow block, or a primitive input, but it depends on the opcode:
+    return key === "TO" && opcode !== "operator_random";
+}
