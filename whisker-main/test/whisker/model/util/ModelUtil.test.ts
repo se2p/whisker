@@ -10,6 +10,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
+import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 describe('ModelUtil tests', function () {
     describe("testNumber()", () => {
@@ -266,11 +267,11 @@ describe('ModelUtil tests', function () {
         test('Produces correct result with () independent of $-expressions', () => {
             const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
             const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
-            const stage = new SpriteMock("_stage_", [{name: "direction", value: 140}, {name: "score", value: 10}]);
+            const stage = new SpriteMock(STAGE_NAME, [{name: "direction", value: 140}, {name: "score", value: 10}]);
             const tdMock = new TestDriverMock([boat, gate, stage]);
             tdMock.stage = stage.sprite;
             const t = tdMock.getTestDriver();
-            const expr = '$("Boat", "x").toString()+(-1*Math.sqrt($("Boat", "speed", true))).toString() == "42-10" && 3*($("Gate", "size")+2) < (2*($("_stage_", "score", true)-1)+10)/1.5';
+            const expr = `$("Boat", "x").toString()+(-1*Math.sqrt($("Boat", "speed", true))).toString() == "42-10" && 3*($("Gate", "size")+2) < (2*($("${STAGE_NAME}", "score", true)-1)+10)/1.5`;
             const result = ModelUtil.getExpressionForEval(t, expr);
             expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
         });
@@ -279,7 +280,7 @@ describe('ModelUtil tests', function () {
     describe('checkVariableExistence()', () => {
         const bowl = new SpriteMock("Bowl", [{name: "y", value: 17}]);
         const kiwi = new SpriteMock("Kiwi", [{name: "x", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("_stage_", [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
+        const stage = new SpriteMock(STAGE_NAME, [{name: "Points", value: 10}, {name: "Lives", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
@@ -322,7 +323,7 @@ describe('ModelUtil tests', function () {
     describe('checkSpriteExistence()', () => {
         const bowl = new SpriteMock("Bowl", [{name: "x", value: 17}]);
         const kiwi = new SpriteMock("Kiwi", [{name: "y", value: 7}, {name: "name", value: "Kiwi"}]);
-        const stage = new SpriteMock("_stage_", [{name: "Punkte", value: 10}]);
+        const stage = new SpriteMock(STAGE_NAME, [{name: "Punkte", value: 10}]);
         const tdMock = new TestDriverMock([bowl, kiwi, stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();

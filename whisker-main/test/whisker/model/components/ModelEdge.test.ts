@@ -13,6 +13,7 @@ import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {UserInput} from "../../../../src/whisker/model/inputs/newUserInput";
 import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
 import {result} from "../../../../src/whisker/model/checks/CheckResult";
+import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 describe('Model edges', () => {
     const id = "id";
@@ -264,7 +265,7 @@ describe('Model edges', () => {
             cuMock.constIsKeyDown = true;
             const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock();
-            const stage = new SpriteMock("_stage_");
+            const stage = new SpriteMock(STAGE_NAME);
             stage.currentCostumeName = "stage";
             stage.updateSprite();
             tdMock.stage = stage.sprite;

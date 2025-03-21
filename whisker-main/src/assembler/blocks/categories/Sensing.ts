@@ -10,6 +10,7 @@ import {blockMeta} from "../BlockFactory";
 import {EmptyObject} from "../../utils/Objects";
 import {BlockMeta} from "../../utils/meta";
 import {TargetName} from "../../project/Target";
+import {STAGE_NAME} from "../../utils/selectors";
 
 type None = EmptyObject;
 
@@ -504,8 +505,8 @@ export interface SensingOf extends SensingBlock, BlockWithShadowInput, BlockWith
 }
 
 export function sensingOf(
-    property: (typeof object extends "_stage_" ? StageProperty : SpriteProperty)["PROPERTY"][0] = "backdrop #",
-    object: SensedObject["OBJECT"][0] = "_stage_"
+    property: (typeof object extends typeof STAGE_NAME ? StageProperty : SpriteProperty)["PROPERTY"][0] = "backdrop #",
+    object: SensedObject["OBJECT"][0] = STAGE_NAME
 ): BlockMeta {
     const blockID = uid();
     const menuID = uid();

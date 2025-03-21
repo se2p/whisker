@@ -24,6 +24,7 @@ import {Check} from "../../../../src/whisker/model/checks/newCheck";
 
 import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 describe('CheckGenerator', () => {
 
@@ -184,7 +185,7 @@ describe('CheckGenerator', () => {
     });
 
     describe('getVariableComparisonCheck', () => {
-        const stage = new SpriteMock("_stage_");
+        const stage = new SpriteMock(STAGE_NAME);
         const kiwi = new SpriteMock("kiwi");
         const apple = new SpriteMock("apple");
         const banana = new SpriteMock("banana");
@@ -211,7 +212,7 @@ describe('CheckGenerator', () => {
 
         test('Check works for stage', () => {
             const expected = "10";
-            const c = new VarComp('label', {args: ["_stage_", "x", "==", expected]});
+            const c = new VarComp('label', {args: [STAGE_NAME, "x", "==", expected]});
             c.registerComponents(t, dummyCU, graphID);
             const res = c.check;
             expect(res()).toStrictEqual(pass());
@@ -224,8 +225,8 @@ describe('CheckGenerator', () => {
 
     describe('getVariableChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
-        const stage = new SpriteMock("_stage_");
-        const oldStage = new SpriteMock("_stage_");
+        const stage = new SpriteMock(STAGE_NAME);
+        const oldStage = new SpriteMock(STAGE_NAME);
         const apple = new SpriteMock("apple");
         const banana = new SpriteMock("banana");
         stage.variables = [{name: "Punkte", value: 9, old: {name: "Punkte", value: 10}}];
@@ -246,7 +247,7 @@ describe('CheckGenerator', () => {
         });
 
         test('Check works for stage', () => {
-            const c = new VarChange('label', {args: ["_stage_", "Punkte", "-"]});
+            const c = new VarChange('label', {args: [STAGE_NAME, "Punkte", "-"]});
             c.registerComponents(t, dummyCU, graphID);
             expect(c.check()).toEqual(pass());
             stage.variables = [{name: "Punkte", value: 10, old: {name: "Punkte", value: 9}}];
@@ -258,7 +259,7 @@ describe('CheckGenerator', () => {
     test('getBackgroundChangeCheck', () => {
         const dummyCU = getDummyCheckUtility();
         const expected = "win";
-        const stage = new SpriteMock("_stage_", [{name: "currentCostumeName", value: expected}]);
+        const stage = new SpriteMock(STAGE_NAME, [{name: "currentCostumeName", value: expected}]);
         const tdMock = new TestDriverMock([stage]);
         tdMock.stage = stage.sprite;
         const t = tdMock.getTestDriver();
@@ -409,7 +410,7 @@ describe('CheckGenerator', () => {
     describe('getExpressionCheck()', () => {
         const boat = new SpriteMock("Boat", [{name: "x", value: 42}, {name: "speed", value: 100}]);
         const gate = new SpriteMock("Gate", [{name: "size", value: 3}]);
-        const stage = new SpriteMock("_stage_", [{name: "direction", value: 140}, {name: "score", value: 10}]);
+        const stage = new SpriteMock(STAGE_NAME, [{name: "direction", value: 140}, {name: "score", value: 10}]);
         const tdMock = new TestDriverMock([boat, gate, stage]);
         const cu = getDummyCheckUtility();
         tdMock.stage = stage.sprite;
