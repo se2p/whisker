@@ -10,6 +10,7 @@ export type Opcode =
     | OperatorBlockOpcode
     | PenBlockOpcode
     | SoundBlockOpcode
+    | MonitorBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -411,6 +412,23 @@ export const soundBlockOpcodes = [
 
 export type SoundBlockOpcode = typeof soundBlockOpcodes[number];
 
+export const monitorBlockOpcodes = [
+    "data_variable",
+    "motion_xposition",
+    "motion_yposition",
+    "motion_direction",
+    "looks_costumenumbername",
+    "looks_backdropnumbername",
+    "looks_size",
+    "sensing_answer",
+    "sensing_loudness",
+    "sensing_timer",
+    "sensing_current",
+    "sensing_username",
+    "data_listcontents",
+] as const;
+
+export type MonitorBlockOpcode = typeof monitorBlockOpcodes[number];
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
