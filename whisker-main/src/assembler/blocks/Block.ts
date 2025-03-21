@@ -1,9 +1,19 @@
 import {Opcode} from "./Opcode";
-import {Inputs} from "./Inputs";
+import {Inputs, TopLevelListBlock, TopLevelVariableBlock} from "./Inputs";
 import {Fields} from "./Fields";
 
 export type BlockID = string;
 export type CommentID = string;
+
+export type VarList = TopLevelVariableBlock | TopLevelListBlock;
+
+/**
+ * A Scratch block is usually represented as a {@link Block} object. However, there is one exception: variables/lists
+ * that are unconnected and top-level are represented as an array. This split mirrors the {@link Input} hierarchy.
+ */
+export type ScratchBlock = Block | VarList;
+// An alternative, but equivalent definition:
+// export type ScratchBlock = StackableBlock | ReporterBlock | VarList;
 
 /**
  * Blocks are puzzle-piece shapes that are used to create code in the Scratch editor. The blocks connect to each other
@@ -58,6 +68,52 @@ export interface Block {
      * The ID of the comment attached to this block, if any, or undefined.
      */
     comment?: CommentID;
+}
+
+/**
+ * The first block of a script is called a toplevel block. As such, its parent is always null. While any block can be
+ * a toplevel block, they are most commonly hat blocks. Otherwise, the entire script is effectively dead code (called
+ * a script fragment, https://en.scratch-wiki.info/wiki/Script#Script_Fragments). As a notable exception, oval-shaped
+ * drop down menus (https://en.scratch-wiki.info/wiki/Dropdown_Menu#Accept_Block_Inputs) that have been obscured by
+ * dropping a reporter block on top of them, are also considered toplevel blocks, despite not being the first block in
+ * a script.
+ */
+export interface TopLevelBlock extends Block {
+
+    /**
+     * Always null.
+     */
+    parent: null;
+
+    /**
+     * Always true.
+     */
+    topLevel: true;
+
+    /**
+     * The x-coordinate of the block in the code area.
+     */
+    x: number;
+
+    /**
+     * The y-coordinate of the block in the code area.
+     */
+    y: number;
+}
+
+export function isTopLevelBlock(block: Block): block is TopLevelBlock {
+    return block.topLevel && block.parent === null && block['x'] !== undefined && block['y'] !== undefined;
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function isBlock(o: {}): o is Block {
+    return (
+        "opcode" in o && typeof o["opcode"] === "string" &&
+        "topLevel" in o && typeof o["topLevel"] === "boolean" &&
+        "shadow" in o && typeof o["shadow"] === "boolean" &&
+        "fields" in o && typeof o["fields"] === "object" &&
+        "inputs" in o && typeof o["inputs"] === "object"
+    );
 }
 
 export function isBlockID(x: unknown): x is BlockID {
