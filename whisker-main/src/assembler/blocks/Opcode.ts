@@ -9,6 +9,7 @@ export type Opcode =
     | SensingBlockOpcode
     | OperatorBlockOpcode
     | PenBlockOpcode
+    | SoundBlockOpcode
 
     // by shape
     | HatBlockOpcode
@@ -205,6 +206,22 @@ export const penBlockOpcodes = [
 ] as const;
 
 export type PenBlockOpcode = typeof penBlockOpcodes[number];
+
+export const soundBlockOpcodes = [
+    "sound_playuntildone",
+    "sound_sounds_menu",
+    "sound_play",
+    "sound_stopallsounds",
+    "sound_changeeffectby",
+    "sound_seteffectto",
+    "sound_cleareffects",
+    "sound_changevolumeby",
+    "sound_setvolumeto",
+    "sound_volume",
+] as const;
+
+export type SoundBlockOpcode = typeof soundBlockOpcodes[number];
+
 
 /**
  * Shadow blocks that ARE (not have!) an oval-shaped drop-down menu.
