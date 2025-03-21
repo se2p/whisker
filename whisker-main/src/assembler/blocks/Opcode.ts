@@ -15,6 +15,7 @@ export type Opcode =
     | HatBlockOpcode
     | CapBlockOpcode
     | CBlockOpcode
+    | ReporterBlockOpcode
     ;
 
 export const controlBlockOpcodes = [
@@ -125,6 +126,80 @@ export const cBlockOpcodes = [
 ] as const;
 
 export type CBlockOpcode = typeof cBlockOpcodes[number];
+
+export const numberReporterBlockOpcodes = [
+    "motion_xposition",
+    "motion_yposition",
+    "motion_direction",
+    "looks_costumenumbername",
+    "looks_backdropnumbername",
+    "looks_size",
+    "sound_volume",
+    "sensing_mousex",
+    "sensing_mousey",
+    "sensing_loudness",
+    "sensing_timer",
+    "sensing_of",
+    "sensing_current",
+    "sensing_dayssince2000",
+    "sensing_distanceto",
+    "operator_add",
+    "operator_subtract",
+    "operator_multiply",
+    "operator_divide",
+    "operator_random",
+    "operator_length",
+    "operator_mod",
+    "operator_round",
+    "operator_mathop",
+    "data_itemnumoflist",
+    "data_lengthoflist",
+] as const;
+
+export type NumberReporterBlockOpcode = typeof numberReporterBlockOpcodes[number];
+
+export const stringReporterBlockOpcodes = [
+    "sensing_answer",
+    "sensing_username",
+    "operator_join",
+    "operator_letter_of",
+] as const;
+
+export type StringReporterBlockOpcode = typeof stringReporterBlockOpcodes[number];
+
+export const booleanReporterBlockOpcodes = [
+    "sensing_touchingobject",
+    "sensing_touchingcolor",
+    "sensing_coloristouchingcolor",
+    "sensing_keypressed",
+    "sensing_mousedown",
+    "operator_gt",
+    "operator_lt",
+    "operator_equals",
+    "operator_and",
+    "operator_not",
+    "operator_or",
+    "operator_contains",
+    "data_listcontainsitem",
+    "argument_reporter_boolean",
+] as const;
+
+export type BooleanReporterBlockOpcode = typeof booleanReporterBlockOpcodes[number];
+
+export const numberStringReporterBlockOpcodes = [
+    "argument_reporter_string_number",
+    ...numberReporterBlockOpcodes,
+    ...stringReporterBlockOpcodes,
+] as const;
+
+export type NumberStringReporterBlockOpcode = typeof numberStringReporterBlockOpcodes[number];
+
+export const reporterBlockOpcodes = [
+    ...numberStringReporterBlockOpcodes,
+    ...booleanReporterBlockOpcodes
+] as const;
+
+export type ReporterBlockOpcode = typeof reporterBlockOpcodes[number];
 
 export const looksBlockOpcodes = [
     "looks_size",
