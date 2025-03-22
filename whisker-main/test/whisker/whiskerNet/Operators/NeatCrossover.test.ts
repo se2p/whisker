@@ -94,13 +94,13 @@ describe("Test NeatCrossover", () => {
     });
 
 
-    test("CrossoverTest with first parent being fitter than second parent", () => {
+    test("CrossoverTest with first parent being fitter than second parent", async () => {
         const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 1;
         const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 0;
-        const child1 = crossoverOp.apply(parent1, parent2)[0];
-        const child2 = crossoverOp.applyFromPair([parent1, parent2])[0];
+        const child1 = (await crossoverOp.apply(parent1, parent2))[0];
+        const child2 = (await crossoverOp.applyFromPair([parent1, parent2]))[0];
         expect(child1.connections.length).toBe(6);
         expect(child1.connections.length).toEqual(child2.connections.length);
         expect(child1.layers.size).toEqual(parent1.layers.size);
@@ -109,13 +109,13 @@ describe("Test NeatCrossover", () => {
         expect(child1.layers.get(0.5).length).toEqual(parent1.layers.get(0.5).length);
     });
 
-    test("CrossoverTest with second parent being fitter than first parent", () => {
+    test("CrossoverTest with second parent being fitter than first parent", async () => {
         const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 0;
         const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 1;
-        const child1 = crossoverOp.apply(parent1, parent2)[0];
-        const child2 = crossoverOp.applyFromPair([parent1, parent2])[0];
+        const child1 = (await crossoverOp.apply(parent1, parent2))[0];
+        const child2 = (await crossoverOp.applyFromPair([parent1, parent2]))[0];
         expect(child1.connections.length).toBe(7);
         expect(child2.connections.length).toEqual(child1.connections.length);
         expect(child2.connections.length).toEqual(child2.connections.length);
@@ -125,12 +125,12 @@ describe("Test NeatCrossover", () => {
         expect(child2.layers.get(0.5).length).toEqual(parent2.layers.get(0.5).length);
     });
 
-    test("CrossoverTest with both parents being equivalently fit", () => {
+    test("CrossoverTest with both parents being equivalently fit", async () => {
         const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, undefined);
         parent1.fitness = 1;
         const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, undefined);
         parent2.fitness = 1;
-        const child1 = crossoverOp.apply(parent1, parent2)[0];
+        const child1 = (await crossoverOp.apply(parent1, parent2))[0];
         expect(child1.connections.length).toBeGreaterThanOrEqual(5);
         expect(child1.connections.length).toBeLessThanOrEqual(6);
 
@@ -141,7 +141,7 @@ describe("Test NeatCrossover", () => {
         expect(child1.layers.get(0.5).length).toEqual(parent1.layers.get(0.5).length);
     });
 
-    test("CrossoverTest with excess genes and average weight", () => {
+    test("CrossoverTest with excess genes and average weight", async () => {
         const crossoverConfig = {
             "operator": "neatCrossover",
             "interspeciesRate": 0.001,
@@ -178,7 +178,7 @@ describe("Test NeatCrossover", () => {
         parent2.fitness = 0;
 
 
-        const child = crossoverOp.apply(parent1, parent2)[0];
+        const child = (await crossoverOp.apply(parent1, parent2))[0];
 
 
         expect(child.connections.length).toBe(1);

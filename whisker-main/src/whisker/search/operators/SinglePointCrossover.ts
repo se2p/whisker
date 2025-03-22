@@ -51,7 +51,7 @@ export class SinglePointCrossover<C extends ListChromosome<any>> extends Crossov
         return [parent1.cloneWith(offspring1Genes), parent2.cloneWith(offspring2Genes)];
     }
 
-    apply (parent1: C, parent2: C): Pair<C> {
+    override async apply (parent1: C, parent2: C): Promise<Pair<C>> {
         Preconditions.checkArgument(parent1.getLength() === parent2.getLength());
         const xoverPosition = Randomness.getInstance().nextInt(0, parent1.getLength());
         return this.applyAtPosition(parent1, parent2, xoverPosition);

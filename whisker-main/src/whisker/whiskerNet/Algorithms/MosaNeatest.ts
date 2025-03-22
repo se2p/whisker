@@ -91,7 +91,7 @@ export class MosaNeatest extends ManyObjectiveNeatest {
 
             // Apply crossover with a given probability.
             if (this._random.nextDouble() < this._crossoverProbability) {
-                [child1, child2] = parent1.crossover(parent2);
+                [child1, child2] = await parent1.crossover(parent2);
 
                 // If NeatCrossover is chosen as crossover operator, child2 is undefined.
                 // To compensate, we mutate the parent.

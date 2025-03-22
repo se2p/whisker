@@ -36,7 +36,7 @@ export abstract class Crossover<C extends Chromosome> {
      * @param parent2 the second parent
      * @returns the offspring formed by applying crossover to the given parents
      */
-    abstract apply(parent1: C, parent2: C): Pair<C>;
+    abstract apply(parent1: C, parent2: C): Promise<Pair<C>>;
 
     /**
      * Applies crossover to the given pair of parent chromosomes
@@ -44,7 +44,7 @@ export abstract class Crossover<C extends Chromosome> {
      * @param parents the pair of parent chromosomes
      * @returns the offspring formed by applying crossover to the given parents
      */
-    applyFromPair([parent1, parent2]: Pair<C>): Pair<C> {
+    async applyFromPair([parent1, parent2]: Pair<C>): Promise<Pair<C>> {
         return this.apply(parent1, parent2);
     }
 }

@@ -178,7 +178,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
             // Apply crossover with a given probability.
             if (this._random.nextDouble() <= this._weightCrossoverProb) {
                 const matingParent = this._random.pick(parentPopulation.filter(chrom => chrom.uID !== parent.uID));
-                child = parent.crossover(matingParent)[0];
+                child = (await parent.crossover(matingParent))[0];
                 crossoverApplied = true;
             }
 

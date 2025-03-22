@@ -94,7 +94,7 @@ export abstract class Chromosome {
      * @param other the chromosome to pair with
      * @returns the offspring
      */
-    crossover(other: this): Pair<this> {
+    async crossover(other: this): Promise<Pair<this>> {
         return this.getCrossoverOperator().apply(this, other);
     }
 

@@ -320,7 +320,7 @@ export class Species<C extends NeatChromosome> {
         }
 
         // Apply crossover.
-        let child = parent1.crossover(parent2)[0];
+        let child = (await parent1.crossover(parent2))[0];
 
         // We may get a defect network. Restart the breeding process for this child.
         if (!child) {
