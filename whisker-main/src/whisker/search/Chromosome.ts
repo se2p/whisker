@@ -85,7 +85,7 @@ export abstract class Chromosome {
      * Mutates this chromosome and returns the resulting chromosome.
      * @returns the mutated chromosome
      */
-    mutate(): this {
+    async mutate(): Promise<this> {
         return this.getMutationOperator().apply(this);
     }
 

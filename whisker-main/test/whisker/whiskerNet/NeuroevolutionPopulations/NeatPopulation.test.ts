@@ -31,7 +31,7 @@ describe("Test NeatPopulation", () => {
     let mutation: NeatMutation;
     let crossover: NeatCrossover;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         logger.suggest.deny(/.*/, "debug");
         size = 10;
         numberOfSpecies = 5;
@@ -77,7 +77,7 @@ describe("Test NeatPopulation", () => {
         properties.interspeciesMating = 0.1;
         properties.numberOfSpecies = 5;
         population = new NeatPopulation(chromosomeGenerator, properties);
-        population.generatePopulation();
+        await population.generatePopulation();
         random = Randomness.getInstance();
         mutation = new NeatMutation(mutationConfig);
         crossover = new NeatCrossover(crossoverConfig);
@@ -118,13 +118,13 @@ describe("Test NeatPopulation", () => {
         expect(population.populationChampion).toBe(champ);
     });
 
-    test("Test evolution", () => {
+    test("Test evolution", async () => {
         const oldGeneration = population.networks;
         for (let i = 0; i < 5; i++) {
             for (const c of population.networks)
                 c.fitness = random.nextInt(1, 50);
             population.updatePopulationStatistics();
-            population.evolve();
+            await population.evolve();
         }
         const newGeneration = population.networks;
 
@@ -135,23 +135,23 @@ describe("Test NeatPopulation", () => {
         expect(population.networks.length).toBe(size);
     });
 
-    test("Test evolution stagnant population with only one species", () => {
+    test("Test evolution stagnant population with only one species", async () => {
         population.bestFitness = 60;
         population.highestFitnessLastChanged = 100;
         const firstSpecie = population.species[0];
         Arrays.clear(population.species);
         population.species.push(firstSpecie);
         population.updatePopulationStatistics();
-        population.evolve();
+        await population.evolve();
         expect(population.species.length).toBeGreaterThan(0);
     });
 
-    test("Test evolution stagnant population with more than two species", () => {
+    test("Test evolution stagnant population with more than two species", async () => {
         while (population.species.length < 3) {
             for (const c of population.networks)
                 c.fitness = random.nextInt(1, 50);
             population.updatePopulationStatistics();
-            population.evolve();
+            await population.evolve();
         }
         for (const network of population.networks) {
             network.fitness = 1;
@@ -159,48 +159,48 @@ describe("Test NeatPopulation", () => {
         population.bestFitness = 60;
         population.highestFitnessLastChanged = 100;
         population.updatePopulationStatistics();
-        population.evolve();
+        await population.evolve();
         expect(population.species.length).toBeGreaterThan(0);
     });
 
-    test("Test that the initial hyperparameter value remains untouched", () => {
+    test("Test that the initial hyperparameter value remains untouched", async () => {
         population.generation = 3;
         population.hyperParameter.compatibilityDistanceThreshold = 0.1;
         for (let i = 0; i < 10; i++) {
             population.updatePopulationStatistics();
-            population.evolve();
+            await population.evolve();
         }
         expect(population.hyperParameter.compatibilityDistanceThreshold).toBe(0.1);
     });
 
-    test("Test Speciation when a new Population gets created", () => {
-        population.generatePopulation();
+    test("Test Speciation when a new Population gets created", async () => {
+        await population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);
     });
 
-    test("Test Speciation when a new Population gets created and a low speciation Threshold", () => {
+    test("Test Speciation when a new Population gets created and a low speciation Threshold", async () => {
         properties.compatibilityDistanceThreshold = 0.01;
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeLessThanOrEqual(properties.populationSize);
     });
 
-    test("Test Speciation when a new Population gets created and a high speciation Threshold", () => {
+    test("Test Speciation when a new Population gets created and a high speciation Threshold", async () => {
         properties.compatibilityDistanceThreshold = 1000;
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeLessThanOrEqual(properties.populationSize);
     });
 
-    test("Test Speciation with a chromosome mutated several times", () => {
+    test("Test Speciation with a chromosome mutated several times", async () => {
         const chromosome = chromosomeGenerator.get();
-        let mutant = chromosome.mutate();
+        let mutant = await chromosome.mutate();
         let count = 0;
         while (population.speciesCount <= 1 && count < 1000){
-            mutant = mutant.mutate();
+            mutant = await mutant.mutate();
             population.assignSpecies(mutant);
             count++;
         }
@@ -314,9 +314,9 @@ describe("Test NeatPopulation", () => {
         expect(clone.species.length).toBe(population.species.length);
     });
 
-    test("toJSON", () => {
+    test("toJSON", async () => {
         population.updatePopulationStatistics();
-        population.evolve();
+        await population.evolve();
         const json = population.toJSON();
         expect(json['aF']).toBe(Number(population.averageFitness.toFixed(4)));
         expect(json['bF']).toBe(Number(population.bestFitness.toFixed(4)));

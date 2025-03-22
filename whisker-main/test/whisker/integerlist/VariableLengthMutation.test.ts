@@ -11,32 +11,32 @@ describe("VariableLengthMutation Test", () => {
     const crossover = new SinglePointRelativeCrossover<IntegerListChromosome>(3);
     const mutation = new VariableLengthMutation(min, max, 20, 3, 5);
 
-    test("Test apply mutation", () => {
+    test("Test apply mutation", async () => {
         const codons = Array.from({length: 10}, () => Math.floor(random.nextInt(min, max)));
         const chromosome = new IntegerListChromosome(codons, mutation, crossover);
-        let mutant = mutation.apply(chromosome);
+        let mutant = await mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant);
+            mutant = await mutation.apply(mutant);
         }
         expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
     });
 
-    test("Test apply mutation with minimal chromosome size of 3 (specified virtual space)", () => {
+    test("Test apply mutation with minimal chromosome size of 3 (specified virtual space)", async () => {
         const codons = Array.from({length: 3}, () => Math.floor(random.nextInt(min, max)));
         const chromosome = new IntegerListChromosome(codons, mutation, crossover);
-        let mutant = mutation.apply(chromosome);
+        let mutant = await mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant);
+            mutant = await mutation.apply(mutant);
         }
         expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
     });
 
-    test("Test apply mutation maximum chromosome size", () => {
+    test("Test apply mutation maximum chromosome size", async () => {
         const codons = Array.from({length: 20}, () => Math.floor(random.nextInt(min, max)));
         const chromosome = new IntegerListChromosome(codons, mutation, crossover);
-        let mutant = mutation.apply(chromosome);
+        let mutant = await mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant);
+            mutant = await mutation.apply(mutant);
         }
         expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
     });

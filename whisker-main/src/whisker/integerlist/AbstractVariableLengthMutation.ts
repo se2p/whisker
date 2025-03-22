@@ -58,7 +58,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      */
     abstract getMutationProbability(idx: number, numberOfCodons: number): number;
 
-    abstract apply(chromosome: T): T;
+    abstract apply(chromosome: T): Promise<T>;
 
     /**
      * Returns a mutated deep copy of the given chromosome.

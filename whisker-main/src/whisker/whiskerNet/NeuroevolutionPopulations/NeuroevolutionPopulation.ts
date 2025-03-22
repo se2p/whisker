@@ -63,12 +63,12 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     /**
      * Generates an initial population of networks.
      */
-    public abstract generatePopulation(): void
+    public abstract generatePopulation(): Promise<void>
 
     /**
      * Generates a new generation of networks by evolving the current population.
      */
-    public abstract evolve(): void
+    public abstract evolve(): Promise<void>
 
     /**
      * Deep Clone of a concrete NeuroevolutionPopulation.

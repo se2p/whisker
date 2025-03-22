@@ -26,7 +26,7 @@ export class NeatestPopulation extends NeatPopulation {
      * In case we have not yet covered anything,
      * we just generate the desired number of networks using the defined NetworkGenerator.
      */
-    public override generatePopulation(): void {
+    public override async generatePopulation(): Promise<void> {
         // If we don't have any starting networks, i.e., it's the first ever selected fitness target generate
         // the desired number of networks using the defined generator.
         if (this._startingNetworks.length === 0) {
@@ -70,7 +70,7 @@ export class NeatestPopulation extends NeatPopulation {
             let i = 0;
             while (this.networks.length < this.hyperParameter.populationSize) {
                 const parent = this._startingNetworks[i % this._startingNetworks.length];
-                const mutant = parent.mutate();
+                const mutant = await parent.mutate();
                 this.networks.push(mutant);
                 i++;
             }

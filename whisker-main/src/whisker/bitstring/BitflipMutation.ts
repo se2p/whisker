@@ -25,7 +25,7 @@ import {Randomness} from '../utils/Randomness';
 
 export class BitflipMutation implements Mutation<BitstringChromosome> {
 
-    apply (chromosome: BitstringChromosome): BitstringChromosome {
+    async apply (chromosome: BitstringChromosome): Promise<BitstringChromosome> {
         const oldBits = chromosome.getGenes(); // TODO: Immutable list?
         const newBits: boolean[] = [];
         const mutationProbability = 1.0 / oldBits.length;

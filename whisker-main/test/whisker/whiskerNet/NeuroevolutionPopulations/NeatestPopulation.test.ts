@@ -60,14 +60,14 @@ describe("Test NeatestPopulation", () => {
         properties.populationSize = size;
     });
 
-    test("Generate population without starting networks", () => {
+    test("Generate population without starting networks", async () => {
         const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, [], 0);
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.networks.length).toBe(size);
     });
 
-    test("Generate population with starting networks and low random fraction", () => {
+    test("Generate population with starting networks and low random fraction", async () => {
         const networks = [];
         for (let i = 0; i < 5; i++) {
             networks.push(chromosomeGenerator.get());
@@ -75,12 +75,12 @@ describe("Test NeatestPopulation", () => {
         const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 0.1);
         const innovations = NeatPopulation.innovations.length;
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.networks.length).toBe(size);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(innovations);
     });
 
-    test("Generate population with starting networks and maximum random fraction", () => {
+    test("Generate population with starting networks and maximum random fraction", async () => {
         const networks = [];
         for (let i = 0; i < 5; i++) {
             networks.push(chromosomeGenerator.get());
@@ -88,7 +88,7 @@ describe("Test NeatestPopulation", () => {
         const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 1);
         const innovations = NeatPopulation.innovations.length;
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.networks.length).toBe(size);
         expect(NeatPopulation.innovations.length).toBe(innovations);
     });
