@@ -220,7 +220,7 @@ export class Species<C extends NeatChromosome> {
      * @param populationSpecies all currently existent species.
      * @returns NeatChromosome[] produced children.
      */
-    public evolve(population: NeatPopulation, populationSpecies: Species<C>[]): C[] {
+    public async evolve(population: NeatPopulation, populationSpecies: Species<C>[]): Promise<C[]> {
         if (this.expectedOffspring > 0 && this.networks.length == 0) {
             return [];
         }
@@ -242,7 +242,7 @@ export class Species<C extends NeatChromosome> {
                     champCloned++;
                     this.champion.numberOffspringPopulationChamp--;
                 } else {
-                    child = this.breedPopulationChampion();
+                    child = await this.breedPopulationChampion();
                 }
             }
 
@@ -253,12 +253,12 @@ export class Species<C extends NeatChromosome> {
             } else if (this._randomness.nextDouble() <= this._hyperParameter.mutationWithoutCrossover || this.networks.length == 1) {
                 // With a user-defined probability or if the species holds only one network, we apply mutation without
                 // the crossover operation.
-                child = this.breedMutationOnly();
+                child = await this.breedMutationOnly();
             }
 
             // Otherwise, we apply crossover.
             else {
-                child = this.breedCrossover(population, populationSpecies);
+                child = await this.breedCrossover(population, populationSpecies);
             }
 
             // Check if we produced a defect network and breed another child if we did so.
@@ -275,8 +275,8 @@ export class Species<C extends NeatChromosome> {
      * Special treatment for population Champions, which are either simply cloned or slightly mutated.
      * @returns NeatChromosome the produced child.
      */
-    private breedPopulationChampion(): C {
-        const mutant = this.champion.mutate();
+    private async breedPopulationChampion(): Promise<C> {
+        const mutant = await this.champion.mutate();
         this.champion.numberOffspringPopulationChamp--;
         return mutant;
     }
@@ -285,7 +285,7 @@ export class Species<C extends NeatChromosome> {
      * Breed a new network by applying the mutation operator.
      * @returns NeatChromosome the mutated child.
      */
-    private breedMutationOnly(): C {
+    private async breedMutationOnly(): Promise<C> {
         const parent = this._randomness.pick(this.networks);
         return parent.mutate();
     }
@@ -296,7 +296,7 @@ export class Species<C extends NeatChromosome> {
      * @param populationSpecies all currently existent species.
      * @returns NeatChromosome representing the produced child.
      */
-    private breedCrossover(population: NeatPopulation, populationSpecies: Species<C>[]): C {
+    private async breedCrossover(population: NeatPopulation, populationSpecies: Species<C>[]): Promise<C> {
         // Pick first parent
         const parent1 = this._randomness.pick(this.networks);
         let parent2: C;
@@ -320,7 +320,7 @@ export class Species<C extends NeatChromosome> {
         }
 
         // Apply crossover.
-        let child = parent1.crossover(parent2)[0];
+        let child = (await parent1.crossover(parent2))[0];
 
         // We may get a defect network. Restart the breeding process for this child.
         if (!child) {
@@ -332,7 +332,7 @@ export class Species<C extends NeatChromosome> {
         // i.e., they have the same structure and weights.
         const distance = population.compatibilityDistance(parent1, parent2);
         if (this._randomness.nextDouble() < 1 - this._hyperParameter.crossoverWithoutMutation || distance === 0) {
-            child = child.mutate();
+            child = await child.mutate();
         }
         return child;
     }

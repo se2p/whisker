@@ -76,7 +76,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         }
 
         while (!(await this._stoppingCondition.isFinished(this))) {
-            const candidateChromosome = bestIndividual.mutate();
+            const candidateChromosome = await bestIndividual.mutate();
             await candidateChromosome.evaluate(true);
             await this.updateArchive(candidateChromosome);
             const candidateFitness = await candidateChromosome.getFitness(this._fitnessFunction);

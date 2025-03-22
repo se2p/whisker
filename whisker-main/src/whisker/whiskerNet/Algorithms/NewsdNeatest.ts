@@ -69,7 +69,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
 
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialize();
-        this.initPopulation();
+        await this.initPopulation();
         this.updateCurrentTargets();
 
         // Score Assignment Procedure
@@ -178,7 +178,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
             // Apply crossover with a given probability.
             if (this._random.nextDouble() <= this._weightCrossoverProb) {
                 const matingParent = this._random.pick(parentPopulation.filter(chrom => chrom.uID !== parent.uID));
-                child = parent.crossover(matingParent)[0];
+                child = (await parent.crossover(matingParent))[0];
                 crossoverApplied = true;
             }
 
@@ -190,7 +190,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
                     this._mutationOperator.adjustWeights(child, parent);
                 } else {
                     // Evolve topology.
-                    child = parent.mutate();
+                    child = await parent.mutate();
                 }
             }
 

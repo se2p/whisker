@@ -63,20 +63,20 @@ describe("Test NeatMutation", () => {
         neatChromosome2 = networkGenerator.get();
     });
 
-    test("Test apply mutation operator on a populationChampion", () => {
+    test("Test apply mutation operator on a populationChampion", async () => {
         neatChromosome1.isPopulationChampion = true;
-        let mutant = neatChromosome1.mutate();
+        let mutant = await neatChromosome1.mutate();
         for (let i = 0; i < 100; i++) {
-            mutant = mutant.mutate();
+            mutant = await mutant.mutate();
         }
         expect(mutant.connections.length).not.toBe(neatChromosome1.connections.length);
         expect(mutant.connections[0].weight).not.toBe(neatChromosome1.connections[0].weight);
     });
 
-    test("Test apply mutation operator on a non-populationChampion", () => {
-        let mutant = neatChromosome1.mutate();
+    test("Test apply mutation operator on a non-populationChampion", async () => {
+        let mutant = await neatChromosome1.mutate();
         for (let i = 0; i < 100; i++) {
-            mutant = mutant.mutate();
+            mutant = await mutant.mutate();
         }
         const mutatedEnableStates = [];
         for (const connection of neatChromosome1.connections) {

@@ -103,7 +103,7 @@ describe('Test NEAT', () => {
         });
     });
 
-    test.skip("XOR Sanity Test", () => { // Skipped for now due to issue #389
+    test.skip("XOR Sanity Test", async () => { // Skipped for now due to issue #389
         const inputMap = new Map<string, Map<string, number>>();
         inputMap.set("Test", new Map<string, number>());
         const mutation = new NeatMutation(mutationConfig);
@@ -116,7 +116,7 @@ describe('Test NEAT', () => {
 
         const generator = new NeatChromosomeGenerator(inputMap, events, "fully", ActivationFunction.SIGMOID, mutation, crossover);
         const population = new NeatPopulation(generator, properties);
-        population.generatePopulation();
+        await population.generatePopulation();
 
         let found = false;
         let speciesString = "Current fitness Target: XOR\n";
@@ -157,7 +157,7 @@ describe('Test NEAT', () => {
             }
             speciesString = speciesString.concat("\n");
 
-            population.evolve();
+            await population.evolve();
         }
         // logger.debug(speciesString);
         expect(population.populationChampion.fitness).toBeGreaterThan(15.7);

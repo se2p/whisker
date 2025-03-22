@@ -66,7 +66,7 @@ export class Neatest extends NEAT {
             const currentTarget = this.setNextObjective();
             logger.debug(`Next objective ${this._archive.size}/${totalNumObjectives}:${currentTarget}`);
             this._population = this.getPopulation();
-            this._population.generatePopulation();
+            await this._population.generatePopulation();
             this._targetIterations = 0;
             while (!(await this._stoppingCondition.isFinished(this))) {
                 await this.evaluateNetworks();
@@ -93,7 +93,7 @@ export class Neatest extends NEAT {
                     break;
                 }
 
-                this.evolvePopulation(currentTarget);
+                await this.evolvePopulation(currentTarget);
                 this._targetIterations++;
                 this._iterations++;
             }
@@ -340,9 +340,9 @@ export class Neatest extends NEAT {
      * Evolves the population and updates the open objectives.
      * @param currentTarget The current target.
      */
-    protected evolvePopulation(currentTarget: StatementFitnessFunction): void {
+    protected async evolvePopulation(currentTarget: StatementFitnessFunction): Promise<void> {
         this.reportOfCurrentIteration();
-        this._population.evolve();
+        await this._population.evolve();
         this.initCoverageObjectivesMap(this._population.networks);
         this._population.networks.forEach(network => network.targetObjective = currentTarget);
     }

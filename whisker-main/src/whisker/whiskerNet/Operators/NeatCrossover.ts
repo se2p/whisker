@@ -30,7 +30,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
      * @param parent1 the first crossover parent.
      * @param parent2 the second crossover parent.
      */
-    apply(parent1: NeatChromosome, parent2: NeatChromosome): Pair<NeatChromosome> {
+    override async apply(parent1: NeatChromosome, parent2: NeatChromosome): Promise<Pair<NeatChromosome>> {
         const parent1Clone = parent1.clone() as NeatChromosome;
         const parent2Clone = parent2.clone() as NeatChromosome;
 
@@ -48,7 +48,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
      * Applies the crossover operator.
      * @param parents the parents that should be mated with each other.
      */
-    override applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {
+    override async applyFromPair(parents: Pair<NeatChromosome>): Promise<Pair<NeatChromosome>> {
         return this.apply(parents[0], parents[1]);
     }
 

@@ -197,13 +197,13 @@ describe("Species Test", () => {
         expect(speciesSizeRemoved).toBe(speciesSizeBefore);
     });
 
-    test("Test breed new networks in Species", () => {
+    test("Test breed new networks in Species", async () => {
         properties.compatibilityDistanceThreshold = 20;
         properties.weightCoefficient = 0.1;
         properties.disjointCoefficient = 0.1;
         properties.excessCoefficient = 0.1;
         const population = new NeatPopulation(generator, properties);
-        population.generatePopulation();
+        await population.generatePopulation();
         const speciesList: Species<NeatChromosome>[] = [];
         const popSpecie = population.species[0];
 
@@ -227,26 +227,26 @@ describe("Species Test", () => {
         const sizeBeforeBreed = popSpecie.networks.length;
 
         for (let i = 0; i < 5; i++) {
-            popSpecie.evolve(population, speciesList);
+            await popSpecie.evolve(population, speciesList);
         }
 
         // We did not eliminate the marked Chromosomes, therefore 2 times the size of the old population
         expect(popSpecie.networks.length).toBeLessThanOrEqual(2 * sizeBeforeBreed);
     });
 
-    test("Test breed new networks with an empty species", () => {
+    test("Test breed new networks with an empty species", async () => {
         properties.compatibilityDistanceThreshold = 20;
         properties.weightCoefficient = 0.1;
         properties.disjointCoefficient = 0.1;
         properties.excessCoefficient = 0.1;
         const population = new NeatPopulation(generator, properties);
-        population.generatePopulation();
+        await population.generatePopulation();
         const speciesList: Species<NeatChromosome>[] = [];
         const popSpecie = population.species[0];
         Arrays.clear(popSpecie.networks);
         popSpecie.expectedOffspring = 10;
 
-        popSpecie.evolve(population, speciesList);
+        await popSpecie.evolve(population, speciesList);
 
         // We did not eliminate the marked Chromosome, therefore 2 times the size of the old population.
         expect(popSpecie.networks.length).toBe(0);

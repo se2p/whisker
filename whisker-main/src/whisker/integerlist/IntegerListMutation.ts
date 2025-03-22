@@ -34,7 +34,7 @@ export class IntegerListMutation implements Mutation<IntegerListChromosome> {
         this._max = max;
     }
 
-    apply (chromosome: IntegerListChromosome): IntegerListChromosome {
+    async apply (chromosome: IntegerListChromosome): Promise<IntegerListChromosome> {
         const oldCodons = chromosome.getGenes(); // TODO: Immutable list?
         const newCodons: number[] = [];
         const mutationProbability = 1.0 / oldCodons.length;

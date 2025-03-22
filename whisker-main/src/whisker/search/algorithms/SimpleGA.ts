@@ -194,13 +194,13 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             let child1 = parent1;
             let child2 = parent2;
             if (Randomness.getInstance().nextDouble() < this._properties.crossoverProbability) {
-                [child1, child2] = parent1.crossover(parent2);
+                [child1, child2] = await parent1.crossover(parent2);
             }
             if (Randomness.getInstance().nextDouble() < this._properties.mutationProbability) {
-                child1 = child1.mutate();
+                child1 = await child1.mutate();
             }
             if (Randomness.getInstance().nextDouble() < this._properties.mutationProbability) {
-                child2 = child2.mutate();
+                child2 = await child2.mutate();
             }
             offspringPopulation.push(child1);
             if (offspringPopulation.length < parentPopulation.length) {

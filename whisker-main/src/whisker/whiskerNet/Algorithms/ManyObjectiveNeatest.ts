@@ -63,9 +63,9 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     /**
      * Initializes the population with newly generated networks.
      */
-    protected initPopulation(): void {
+    protected async initPopulation(): Promise<void> {
         this._population = new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
-        this._population.generatePopulation();
+        await this._population.generatePopulation();
         this.initCoverageObjectivesMap(this._population.networks);
     }
 

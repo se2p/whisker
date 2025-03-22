@@ -85,7 +85,7 @@ export abstract class Chromosome {
      * Mutates this chromosome and returns the resulting chromosome.
      * @returns the mutated chromosome
      */
-    mutate(): this {
+    async mutate(): Promise<this> {
         return this.getMutationOperator().apply(this);
     }
 
@@ -94,7 +94,7 @@ export abstract class Chromosome {
      * @param other the chromosome to pair with
      * @returns the offspring
      */
-    crossover(other: this): Pair<this> {
+    async crossover(other: this): Promise<Pair<this>> {
         return this.getCrossoverOperator().apply(this, other);
     }
 
