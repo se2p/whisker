@@ -90,9 +90,20 @@ class CyclicChange extends Change {
         super(comparison);
     }
 
+    /**
+     * Maps the given number `x` to the interval. Returns `x` unchanged if it is already inside the interval. Otherwise,
+     * adds or subtracts the interval length to `x` repeatedly until we get a number inside the interval. This number is
+     * then returned.
+     *
+     * @param x The number to map to the interval
+     * @private
+     */
     private _mapInterval(x: number): number {
         const {min, max} = this._comparison.interval;
-        return mod(x - min, max - min) + min;
+        return mod(
+            x - min, // Shift interval such that it starts at 0, which allows mod to be used
+            max - min // Length of the interval
+        ) + min; // Shift interval back to original position
     }
 
     override _apply(after: number, before: number): CheckResult {
