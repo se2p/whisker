@@ -29,7 +29,7 @@ export class MosaNeatest extends ManyObjectiveNeatest {
      */
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialize();
-        this.initPopulation();
+        await this.initPopulation();
         this.updateCurrentTargets();
         await this.evaluatePopulation(this._population.networks);
 

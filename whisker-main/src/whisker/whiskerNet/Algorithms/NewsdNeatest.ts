@@ -69,7 +69,7 @@ export class NewsdNeatest extends ManyObjectiveNeatest {
 
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialize();
-        this.initPopulation();
+        await this.initPopulation();
         this.updateCurrentTargets();
 
         // Score Assignment Procedure
