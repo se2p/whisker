@@ -573,6 +573,81 @@ const assert = new class {
 
         this._notifyAssertionPassed();
     }
+
+    all(...assertions) {
+        const errors = [];
+
+        for (const assertion of assertions) {
+            try {
+                assertion();
+            } catch (e) {
+                if (e instanceof AssertionError) {
+                    errors.push(e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (errors.length > 0) {
+            throw new AssertionError({
+                operator: 'all',
+                expected: [],
+                actual: errors,
+                message: errors.map((e) => e.message).join('. '),
+            });
+        }
+    }
+
+    any(...assertions) {
+        const errors = [];
+
+        for (const assertion of assertions) {
+            try {
+                assertion();
+            } catch (e) {
+                if (e instanceof AssertionError) {
+                    errors.push(e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (errors.length === assertions.length) {
+            throw new AssertionError({
+                operator: 'any',
+                expected: [],
+                actual: errors,
+                message: errors.map((e) => e.message).join('. '),
+            });
+        }
+    }
+
+    each(iterable, assertion) {
+        const errors = [];
+
+        for (const elem of iterable) {
+            try {
+                assertion(elem);
+            } catch (e) {
+                if (e instanceof AssertionError) {
+                    errors.push(e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (errors.length > 0) {
+            throw new AssertionError({
+                operator: 'each',
+                expected: [],
+                actual: errors,
+                message: errors.map((e) => e.message).join('. ')
+            });
+        }
+    }
 }();
 
 // -----------------------------------------------------------------------------
@@ -1047,6 +1122,81 @@ const assume = new class {
         }
 
         this._notifyAssumptionPassed();
+    }
+
+    all(...assertions) {
+        const errors = [];
+
+        for (const assertion of assertions) {
+            try {
+                assertion();
+            } catch (e) {
+                if (e instanceof AssumptionError) {
+                    errors.push(e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (errors.length > 0) {
+            throw new AssumptionError({
+                operator: 'all',
+                expected: [],
+                actual: errors,
+                message: errors.map((e) => e.message).join('. '),
+            });
+        }
+    }
+
+    each(iterable, assertion) {
+        const errors = [];
+
+        for (const elem of iterable) {
+            try {
+                assertion(elem);
+            } catch (e) {
+                if (e instanceof AssumptionError) {
+                    errors.push(e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (errors.length > 0) {
+            throw new AssumptionError({
+                operator: 'each',
+                expected: [],
+                actual: errors,
+                message: errors.map((e) => e.message).join('. ')
+            });
+        }
+    }
+
+    any(...assertions) {
+        const errors = [];
+
+        for (const assertion of assertions) {
+            try {
+                assertion();
+            } catch (e) {
+                if (e instanceof AssumptionError) {
+                    errors.push(e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (errors.length === assertions.length) {
+            throw new AssumptionError({
+                operator: 'any',
+                expected: [],
+                actual: errors,
+                message: errors.map((e) => e.message).join('. '),
+            });
+        }
     }
 }();
 
