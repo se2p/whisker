@@ -255,6 +255,19 @@ const diffSign = fc.oneof(posNeg, negPos);
 const coprime = (a: fc.Arbitrary<[number, number]>) => a.filter(([x, y]) => x % y !== 0);
 
 describe("mod(x, y)", () => {
+    test.each([
+        [3, 5, 3],
+        [0, 5, 0],
+        [5, 5, 0],
+        [-1, 5, 4],
+        [-2, 5, 3],
+        [-3, 5, 2],
+        [-4, 5, 1],
+        [6, 5, 1],
+    ])("mod(%s, %s) === %s", (x, y, m) => {
+        expect(mod(x, y)).toStrictEqual(m);
+    });
+
     it.prop([sameSign])("equals x % y, if x and y have the same sign", ([x, y]) => {
         expect(mod(x, y)).toStrictEqual(x % y);
     });
@@ -272,6 +285,19 @@ const bounds = fc.tuple(num, pos).map(([min, x]) => [min, min + x]);
 const inside = bounds.chain(([min, max]) => fc.tuple(fc.integer({min, max}), fc.constant(min), fc.constant(max)));
 
 describe("mapInterval(x, {min, max})", () => {
+    test.each([
+        [0, -3, 3, 0],
+        [-3, -3, 3, -3],
+        [-4, -3, 3, 3],
+        [3, -3, 3, 3],
+        [4, -3, 3, -3],
+        [5, -3, 3, -2],
+        [6, -3, 3, -1],
+        [7, -3, 3, 0],
+    ])("mapInterval(%s, {min: %s, max: %s}) === %s", (x, min, max, y) => {
+        expect(mapInterval(x, {min, max})).toStrictEqual(y);
+    });
+
     it.prop([inside])("returns x if it is already inside the interval", ([x, min, max]) => {
         expect(mapInterval(x, {min, max})).toStrictEqual(x);
     });
