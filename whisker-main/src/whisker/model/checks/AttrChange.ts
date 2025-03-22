@@ -35,7 +35,7 @@ const bounds: Record<AttrNames, Bounds | null> = Object.freeze({
     // TODO: Unsure about some of those...
     size: {min: 1, max: Number.MAX_VALUE, kind: "clamped"},
     volume: {min: 0, max: 100, kind: "clamped"},
-    color: null,
+    color: {min: 0, max: 200, kind: "cyclic"},
     fisheye: {min: -100, max: 1073741723, kind: "clamped"},
     brightness: {min: -100, max: 100, kind: "clamped"},
     ghost: {min: 0, max: 100, kind: "clamped"},
