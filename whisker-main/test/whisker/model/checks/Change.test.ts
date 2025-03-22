@@ -2,7 +2,7 @@ import {fc, it} from "@fast-check/jest";
 import {
     ChangeOp,
     changeOps,
-    ChangingCheck,
+    ChangingCheck, mapInterval,
     mod,
     newChange,
     newQuantifiedChange,
@@ -265,5 +265,26 @@ describe("mod(x, y)", () => {
 
     it.prop([coprime(numNum)])("has the same sign as y, if x and y are coprime", ([x, y]) => {
         expect(Math.sign(mod(x, y))).toStrictEqual(Math.sign(y));
+    });
+});
+
+const bounds = fc.tuple(num, pos).map(([min, x]) => [min, min + x]);
+const inside = bounds.chain(([min, max]) => fc.tuple(fc.integer({min, max}), fc.constant(min), fc.constant(max)));
+
+describe("mapInterval(x, {min, max})", () => {
+    it.prop([inside])("returns x if it is already inside the interval", ([x, min, max]) => {
+        expect(mapInterval(x, {min, max})).toStrictEqual(x);
+    });
+
+    it.prop([num, bounds])("maps x to a number inside the interval", (x, [min, max]) => {
+        const y = mapInterval(x, {min, max});
+        expect(y).toBeGreaterThanOrEqual(min);
+        expect(y).toBeLessThanOrEqual(max);
+    });
+
+    it.prop([num, bounds])("maps x to y by repeatedly adding or subtracting the interval length", (x, [min, max]) => {
+        const y = mapInterval(x, {min, max});
+        const len = max - min + 1;
+        expect(Math.abs(y - x) % len).toStrictEqual(0);
     });
 });
