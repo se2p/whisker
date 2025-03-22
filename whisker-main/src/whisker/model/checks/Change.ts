@@ -88,7 +88,7 @@ export class Change implements Quantifiable<Change> {
 export function mapInterval(x: number, {min, max}: Interval): number {
     return mod(
         x - min, // Shift interval such that it starts at 0, which allows mod to be used
-        max - min // Length of the interval
+        max - min + 1 // Length of the interval
     ) + min; // Shift interval back to original position
 }
 
