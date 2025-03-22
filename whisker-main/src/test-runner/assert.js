@@ -1,4 +1,5 @@
 const {AssertionError} = require('assert');
+const CoverageGenerator = require("../coverage/coverage");
 
 class AssumptionError extends AssertionError {
     constructor(props) {
@@ -22,7 +23,41 @@ function getMessage(message) {
     return '';
 }
 
+let lastCoveredBlocks = new Set();
+
+function getCoveredBlocks() {
+    const coveredBlocks = CoverageGenerator.getCoveredBlockIdsPerAssertion();
+
+    if (coveredBlocks.size === 0) {
+        // No new blocks covered since the previous assertion ran -> probably, the VM hasn't taken any new steps yet,
+        // e.g., due to assertions in consecutive lines in the test -> return coverage of previous assertion
+        return new Set(lastCoveredBlocks);
+    }
+
+    lastCoveredBlocks = new Set(coveredBlocks);
+    CoverageGenerator.clearCoveragePerAssertion();
+    return coveredBlocks;
+}
+
 const assert = new class {
+
+    constructor() {
+        this.line = -1;
+        this.onExecutedAssertion = null;
+        this.onPassedAssertion = null;
+    }
+
+    _notifyAssertionExecuted() {
+        if (typeof this.onExecutedAssertion === "function") {
+            this.onExecutedAssertion(this.line, getCoveredBlocks(), CoverageGenerator.getCoveredBlockIdsPerTest());
+        }
+    }
+
+    _notifyAssertionPassed() {
+        if (typeof this.onPassedAssertion === "function") {
+            this.onPassedAssertion(this.line);
+        }
+    }
 
     /**
      * Asserts that the given condition is truthy. Type coercion applies and may lead to surprising results.
@@ -31,6 +66,8 @@ const assert = new class {
      * @deprecated Please use `assert.isTrue` or `assert.isNotEmpty` instead
      */
     ok(condition, ...message) {
+        this._notifyAssertionExecuted();
+
         if (!condition) {
             throw new AssertionError({
                 message: getMessage(message),
@@ -39,6 +76,8 @@ const assert = new class {
                 operator: 'ok'
             });
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -47,6 +86,8 @@ const assert = new class {
      * @param message
      */
     isTrue(condition, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: false,
@@ -64,6 +105,8 @@ const assert = new class {
         if (!condition) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -73,6 +116,8 @@ const assert = new class {
      * @deprecated Please use `assert.isFalse` or `assert.isEmpty`  instead
      */
     not(condition, ...message) {
+        this._notifyAssertionExecuted();
+
         if (condition) {
             throw new AssertionError({
                 message: getMessage(message),
@@ -81,6 +126,8 @@ const assert = new class {
                 operator: 'not'
             });
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -89,6 +136,8 @@ const assert = new class {
      * @param message
      */
     isFalse(condition, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: true,
@@ -106,12 +155,16 @@ const assert = new class {
         if (condition) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
      * @param {...*} message .
      */
     fail(...message) {
+        this._notifyAssertionExecuted();
+
         throw new AssertionError({
             message: getMessage(message),
             actual: null,
@@ -125,7 +178,10 @@ const assert = new class {
      * @param {*} expected .
      * @param {...*} message .
      */
-    equal(actual, expected, ...message) {/* eslint-disable-next-line eqeqeq */
+    equal(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
+        /* eslint-disable-next-line eqeqeq */
         if (!(actual == expected)) {
             throw new AssertionError({
                 message: getMessage(message),
@@ -134,6 +190,8 @@ const assert = new class {
                 operator: '=='
             });
         }
+
+        this._notifyAssertionPassed();
     }
 
 
@@ -142,7 +200,10 @@ const assert = new class {
      * @param {*} expected .
      * @param {...*} message .
      */
-    unequal(actual, expected, ...message) {/* eslint-disable-next-line eqeqeq */
+    unequal(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
+        /* eslint-disable-next-line eqeqeq */
         if ((actual == expected)) {
             throw new AssertionError({
                 message: getMessage(message),
@@ -151,6 +212,8 @@ const assert = new class {
                 operator: '!='
             });
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -159,6 +222,8 @@ const assert = new class {
      * @param {...*} message .
      */
     equalDictionaries(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
         if (!(JSON.stringify(actual) === JSON.stringify(expected))) {
             throw new AssertionError({
                 message: getMessage(message),
@@ -167,6 +232,8 @@ const assert = new class {
                 operator: '=='
             });
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -176,6 +243,8 @@ const assert = new class {
      * @param {...*} message .
      */
     strictEqual(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
         if (!(actual === expected)) {
             throw new AssertionError({
                 message: getMessage(message),
@@ -184,6 +253,8 @@ const assert = new class {
                 operator: '==='
             });
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -192,6 +263,8 @@ const assert = new class {
      * @param {...*} message .
      */
     strictUnequal(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+        /* eslint-disable-next-line eqeqeq */
         if ((actual === expected)) {
             throw new AssertionError({
                 message: getMessage(message),
@@ -200,6 +273,8 @@ const assert = new class {
                 operator: '!=='
             });
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -208,6 +283,8 @@ const assert = new class {
      * @param {...*} message .
      */
     greater(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -236,6 +313,8 @@ const assert = new class {
         if (!(actualNumber > expectedNumber)) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -244,6 +323,8 @@ const assert = new class {
      * @param {...*} message .
      */
     greaterOrEqual(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -272,6 +353,8 @@ const assert = new class {
         if (!(actualNumber >= expectedNumber)) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -280,6 +363,8 @@ const assert = new class {
      * @param {...*} message .
      */
     less(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -308,6 +393,8 @@ const assert = new class {
         if (!(actualNumber < expectedNumber)) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -316,6 +403,8 @@ const assert = new class {
      * @param {...*} message .
      */
     lessOrEqual(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -344,6 +433,8 @@ const assert = new class {
         if (!(actualNumber <= expectedNumber)) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -353,6 +444,8 @@ const assert = new class {
      * @param {...*} message .
      */
     withinRange(actual, expected, delta = 0, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -393,6 +486,8 @@ const assert = new class {
         if (!(actualNumber >= lowerBound && actualNumber <= upperBound)) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     /**
@@ -401,6 +496,8 @@ const assert = new class {
      * @param {...*} message .
      */
     matches(actual, expected, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -425,9 +522,13 @@ const assert = new class {
         if (!(actual.match(expected))) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     isEmpty(arrayOrString, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: arrayOrString.length,
@@ -445,9 +546,13 @@ const assert = new class {
         if (arrayOrString.length !== 0) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
 
     isNotEmpty(arrayOrString, ...message) {
+        this._notifyAssertionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: false,
@@ -465,18 +570,41 @@ const assert = new class {
         if (arrayOrString.length === 0) {
             throw new AssertionError(options);
         }
+
+        this._notifyAssertionPassed();
     }
-};
+}();
 
 // -----------------------------------------------------------------------------
 
 const assume = new class {
+
+    constructor() {
+        this.line = -1;
+        this.onExecutedAssumption = null;
+        this.onPassedAssumption = null;
+    }
+
+    _notifyAssumptionExecuted() {
+        if (typeof this.onExecutedAssumption === "function") {
+            this.onExecutedAssumption(this.line, getCoveredBlocks(), CoverageGenerator.getCoveredBlockIdsPerTest());
+        }
+    }
+
+    _notifyAssumptionPassed() {
+        if (typeof this.onPassedAssumption === "function") {
+            this.onPassedAssumption(this.line);
+        }
+    }
+
     /**
      * @param {boolean} condition .
      * @param {...*} message .
      * @deprecated Please use `assume.isTrue` or `assume.isNotEmpty` instead
      */
     ok(condition, ...message) {
+        this._notifyAssumptionExecuted();
+
         if (!condition) {
             throw new AssumptionError({
                 message: getMessage(message),
@@ -485,9 +613,13 @@ const assume = new class {
                 operator: 'ok'
             });
         }
+
+        this._notifyAssumptionPassed();
     }
 
     isTrue(condition, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: false,
@@ -505,6 +637,8 @@ const assume = new class {
         if (!condition) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -513,6 +647,8 @@ const assume = new class {
      * @deprecated Please use `assume.isFalse` or `assume.isEmpty` instead
      */
     not(condition, ...message) {
+        this._notifyAssumptionExecuted();
+
         if (condition) {
             throw new AssumptionError({
                 message: getMessage(message),
@@ -521,9 +657,13 @@ const assume = new class {
                 operator: 'not'
             });
         }
+
+        this._notifyAssumptionPassed();
     }
 
     isFalse(condition, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: true,
@@ -541,12 +681,16 @@ const assume = new class {
         if (condition) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
      * @param {...*} message .
      */
     fail(...message) {
+        this._notifyAssumptionExecuted();
+
         throw new AssumptionError({
             message: getMessage(message),
             actual: null,
@@ -560,7 +704,10 @@ const assume = new class {
      * @param {*} expected .
      * @param {...*} message .
      */
-    equal(actual, expected, ...message) {/* eslint-disable-next-line eqeqeq */
+    equal(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
+        /* eslint-disable-next-line eqeqeq */
         if (!(actual == expected)) {
             throw new AssumptionError({
                 message: getMessage(message),
@@ -569,6 +716,8 @@ const assume = new class {
                 operator: '=='
             });
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -576,7 +725,10 @@ const assume = new class {
      * @param {*} expected .
      * @param {...*} message .
      */
-    unequal(actual, expected, ...message) {/* eslint-disable-next-line eqeqeq */
+    unequal(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
+        /* eslint-disable-next-line eqeqeq */
         if ((actual == expected)) {
             throw new AssumptionError({
                 message: getMessage(message),
@@ -585,6 +737,8 @@ const assume = new class {
                 operator: '!='
             });
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -593,6 +747,8 @@ const assume = new class {
      * @param {...*} message .
      */
     strictEqual(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
         if (!(actual === expected)) {
             throw new AssumptionError({
                 message: getMessage(message),
@@ -601,6 +757,8 @@ const assume = new class {
                 operator: '==='
             });
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -608,7 +766,10 @@ const assume = new class {
      * @param {*} expected .
      * @param {...*} message .
      */
-    strictUnequal(actual, expected, ...message) {/* eslint-disable-next-line eqeqeq */
+    strictUnequal(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
+        /* eslint-disable-next-line eqeqeq */
         if ((actual === expected)) {
             throw new AssumptionError({
                 message: getMessage(message),
@@ -617,6 +778,8 @@ const assume = new class {
                 operator: '!=='
             });
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -625,6 +788,8 @@ const assume = new class {
      * @param {...*} message .
      */
     greater(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -653,6 +818,8 @@ const assume = new class {
         if (!(actualNumber > expectedNumber)) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -661,6 +828,8 @@ const assume = new class {
      * @param {...*} message .
      */
     greaterOrEqual(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -689,6 +858,8 @@ const assume = new class {
         if (!(actualNumber >= expectedNumber)) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -697,6 +868,8 @@ const assume = new class {
      * @param {...*} message .
      */
     less(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -725,6 +898,8 @@ const assume = new class {
         if (!(actualNumber < expectedNumber)) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -733,6 +908,8 @@ const assume = new class {
      * @param {...*} message .
      */
     lessOrEqual(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -761,6 +938,8 @@ const assume = new class {
         if (!(actualNumber <= expectedNumber)) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -770,6 +949,8 @@ const assume = new class {
      * @param {...*} message .
      */
     withinRange(actual, expected, delta = 0, ...message) {
+        this._notifyAssumptionExecuted();
+
         const lowerBound = expected - delta;
         const upperBound = expected + delta;
         if (!(actual >= lowerBound && actual <= upperBound)) {
@@ -780,6 +961,8 @@ const assume = new class {
                 operator: `withinRange`
             });
         }
+
+        this._notifyAssumptionPassed();
     }
 
     /**
@@ -788,6 +971,8 @@ const assume = new class {
      * @param {...*} message .
      */
     matches(actual, expected, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: actual,
@@ -812,9 +997,13 @@ const assume = new class {
         if (!(actual.match(expected))) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     isEmpty(arrayOrString, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: arrayOrString.length,
@@ -832,9 +1021,13 @@ const assume = new class {
         if (arrayOrString.length !== 0) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
 
     isNotEmpty(arrayOrString, ...message) {
+        this._notifyAssumptionExecuted();
+
         const options = {
             message: getMessage(message),
             actual: false,
@@ -852,8 +1045,10 @@ const assume = new class {
         if (arrayOrString.length === 0) {
             throw new AssumptionError(options);
         }
+
+        this._notifyAssumptionPassed();
     }
-};
+}();
 
 module.exports = {
     AssertionError,
