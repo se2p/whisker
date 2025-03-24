@@ -70,7 +70,7 @@ describe("Test NeatestPopulation", () => {
     test("Generate population with starting networks and low random fraction", async () => {
         const networks = [];
         for (let i = 0; i < 5; i++) {
-            networks.push(chromosomeGenerator.get());
+            networks.push(await chromosomeGenerator.get());
         }
         const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 0.1);
@@ -83,7 +83,7 @@ describe("Test NeatestPopulation", () => {
     test("Generate population with starting networks and maximum random fraction", async () => {
         const networks = [];
         for (let i = 0; i < 5; i++) {
-            networks.push(chromosomeGenerator.get());
+            networks.push(await chromosomeGenerator.get());
         }
         const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 1);

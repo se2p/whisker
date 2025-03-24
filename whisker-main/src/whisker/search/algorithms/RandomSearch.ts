@@ -63,7 +63,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().startTime = Date.now();
 
         while (!(await this._stoppingCondition.isFinished(this))) {
-            const candidateChromosome = this._chromosomeGenerator.get();
+            const candidateChromosome = await this._chromosomeGenerator.get();
             await candidateChromosome.evaluate(true);
             await this.updateArchive(candidateChromosome);
 

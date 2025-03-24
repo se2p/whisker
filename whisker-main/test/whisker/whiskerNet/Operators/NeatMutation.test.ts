@@ -27,7 +27,7 @@ describe("Test NeatMutation", () => {
     let mutationConfig: Record<string, (string | number)>;
     let networkGenerator: NeatChromosomeGenerator;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         const crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,
@@ -59,8 +59,8 @@ describe("Test NeatMutation", () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         networkGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
-        neatChromosome1 = networkGenerator.get();
-        neatChromosome2 = networkGenerator.get();
+        neatChromosome1 = await networkGenerator.get();
+        neatChromosome2 = await networkGenerator.get();
     });
 
     test("Test apply mutation operator on a populationChampion", async () => {

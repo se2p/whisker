@@ -41,7 +41,7 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
         this._crossoverOp = crossoverOp;
     }
 
-    get(): BitstringChromosome {
+    async get(): Promise<BitstringChromosome> {
         const bits: boolean[] = [];
         for(let i = 0; i < this._length; i++) {
             bits.push(Randomness.getInstance().nextDouble() > 0.5);

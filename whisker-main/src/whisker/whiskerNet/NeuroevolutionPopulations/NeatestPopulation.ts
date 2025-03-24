@@ -31,7 +31,7 @@ export class NeatestPopulation extends NeatPopulation {
         // the desired number of networks using the defined generator.
         if (this._startingNetworks.length === 0) {
             while (this.networks.length < this.populationSize) {
-                const network = this.generator.get();
+                const network = await this.generator.get();
                 this.networks.push(network);
 
                 // Do not apply gradient descent for the first statement since it will always be the green flag,
@@ -58,7 +58,7 @@ export class NeatestPopulation extends NeatPopulation {
                 if (this.networks.length >= this.hyperParameter.populationSize) {
                     break;
                 }
-                const network = this.generator.get();
+                const network = await this.generator.get();
 
                 this.applyGradientDescent(network);
 
