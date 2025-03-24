@@ -512,6 +512,58 @@ const abortRunAllTests = function () {
     _enableVMRelatedButtons();
 };
 
+const abortTestRun = function () {
+    Whisker.scratch.stop();
+    Whisker.outputRun.clear();
+    Whisker.outputLog.clear();
+};
+
+window.Whisker.runTestsForRepair = async function () {
+    abortTestRun();
+
+    const vm = Whisker.scratch.vm;
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer(0);
+
+    // Seems to be necessary to load the project here as well (even though it is also loaded by the test runner later).
+    // But if we don't load it here, the VMWrapper fails to set or restore the save state because stuff is undefined.
+    await vm.loadProject(project);
+
+    // Performance optimizations: Avoid overhead caused by tracing used by test generation etc.
+    const tracerSettings = {
+        traceBlockCoverage: false,
+        traceBranchCoverage: false,
+        traceAttributes: false,
+        traceDebug: false
+    };
+
+    const [traces, timings] = await _runTestsWithCoverage(vm, project, Whisker.tests, tracerSettings, true);
+
+    for (const trace of traces) {
+        // Rename the property key "coveredBlocks" to "covered".
+        trace.covered = trace.coveredBlocks;
+        delete trace.coveredBlocks;
+
+        // Add coverage level information.
+        trace.level = 'block';
+    }
+
+    const resetProject = timings.reduce((s, timing) => timing.resetProject + s, 0);
+    const runTests = timings.reduce((s, timing) => timing.runTest + s, 0);
+
+    // The coverage achieved by the entire test suite.
+    const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
+
+    return {
+        traces,
+        coverage: covered / total,
+        timings: {
+            resetProject,
+            runTests
+        }
+    };
+};
+
+
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
 
