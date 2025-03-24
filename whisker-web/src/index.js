@@ -130,21 +130,22 @@ const loadTestsFromString = async function (string) {
     // Manually generated test suite or test suite generated through search algorithms.
     let tests;
     try {
+        /*
+         * Evil hack: Every Whisker test is a CommonJS module. As such, it contains a "module.exports"
+         * declaration at the end. In the browser, CommonJS modules usually cannot be used as the global
+         * "module" object does not exist there. For our purposes, we work around this by creating an empty
+         * dummy object called "module", letting the test set the "module.exports" property, and return that as
+         * result of evaluating the test.
+         */
         /* eslint-disable-next-line no-eval */
-        tests = eval(`
-            (function () {
-                /*
-                 * Evil hack: Every Whisker test is a CommonJS module. As such, it contains a "module.exports"
-                 * declaration at the end. In the browser, CommonJS modules usually cannot be used as the global
-                 * "module" object does not exist there. For our purposes, we work around this by creating an empty
-                 * dummy object called "module", letting the test set the "module.exports" property, and return that as
-                 * result of evaluating the test.
-                 */
-                const module = Object.create(null);
-                ${string};
-                return module.exports;
-            })();
-        `);
+        // IMPORTANT!!!
+        // DO NOT CHANGE THE FORMATTING OF THE NEXT LINE OR CODE WILL BREAK!                                    (lol)
+        // For some parts of Whisker (e.g., program repair) it is important not to change the stack traces of Whisker
+        // tests, which would be the case if, e.g., line breaks were added in the code below to put every statement
+        // on one line.
+        // @formatter:off
+        tests = eval(`(function () { const module = Object.create(null); ${string}; return module.exports; })();`);
+        // @formatter:on
     } catch (err) {
         logger.error(err);
         const message = `${err.name}: ${err.message}`;
