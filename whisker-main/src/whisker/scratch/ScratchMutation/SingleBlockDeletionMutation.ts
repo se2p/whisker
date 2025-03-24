@@ -107,7 +107,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         mutationBlock['parent'] = null;
         mutationBlock['next'] = null;
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `SBD:${mutationBlock['opcode']}-${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `SBD:${mutationBlock['opcode']}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 

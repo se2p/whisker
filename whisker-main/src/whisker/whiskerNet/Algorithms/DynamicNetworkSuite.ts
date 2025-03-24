@@ -160,7 +160,7 @@ export class DynamicNetworkSuite {
             }
 
             // Execute test suite on mutant
-            const projectMutation = `${this.projectName}-${mutant.name}`;
+            const projectMutation = `${this.projectName}-${mutant.mutantName}`;
             logger.debug(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
             this.statementArchive.clear();

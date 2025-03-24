@@ -21,7 +21,7 @@ export class NegateConditionalMutation extends ScratchMutation {
      */
     public applyMutation(mutationBlockId: BlockID, mutantProgram: Project): boolean {
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `NCM:${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `NCM:${mutantId}`.replace(/,/g, '');
 
         const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId, mutationBlock['parent']);
@@ -45,7 +45,7 @@ export class NegateConditionalMutation extends ScratchMutation {
             } else if (parent['inputs']['OPERAND2'][1] === mutationBlockId) {
                 parent['inputs']['OPERAND2'][1] = not_block['id'];
             } else {
-                logger.warn(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
+                logger.warn(`Unknown parent block ${parent['id']} for ${mutantProgram.mutantName}`);
                 return false;
             }
         }

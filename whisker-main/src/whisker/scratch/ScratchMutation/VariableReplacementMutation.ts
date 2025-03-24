@@ -78,7 +78,7 @@ export class VariableReplacementMutation extends ScratchMutation {
         placeHolderToMutate[1][2] = replaceVariableID;
 
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `VRM:${originalVarName}-${replaceVariableName}-${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `VRM:${originalVarName}-${replaceVariableName}-${mutantId}`.replace(/,/g, '');
         this.processedBlocks.push(mutationBlockId);
         return true;
     }

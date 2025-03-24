@@ -42,7 +42,7 @@ export interface Project<B = Block, V = TopLevelVariableBlock, L = TopLevelListB
     /**
      * Property specific to mutation testing of Scratch projects.
      */
-    name?: string;
+    mutantName?: string;
 }
 
 /**

@@ -30,7 +30,7 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
         }
         mutationBlock['opcode'] = mutantOpcode;
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `AOR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `AOR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 

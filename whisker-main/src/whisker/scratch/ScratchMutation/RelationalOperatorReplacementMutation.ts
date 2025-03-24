@@ -29,7 +29,7 @@ export class RelationalOperatorReplacementMutation extends ScratchMutation {
         }
         mutationBlock['opcode'] = mutantOpcode;
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `ROR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `ROR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 

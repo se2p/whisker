@@ -25,7 +25,7 @@ export class ScriptDeletionMutation extends ScratchMutation {
             nextBlock['parent'] = null;
             mutationBlock['next'] = null;
             const mutantId = this.getMutantId(mutationBlockId);
-            mutantProgram.name = `SDM:${mutantId}`.replace(/,/g, '');
+            mutantProgram.mutantName = `SDM:${mutantId}`.replace(/,/g, '');
             return true;
         } else {
             return false;

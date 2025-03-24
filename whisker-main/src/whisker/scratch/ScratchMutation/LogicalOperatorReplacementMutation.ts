@@ -22,7 +22,7 @@ export class LogicalOperatorReplacementMutation extends ScratchMutation {
         const mutantOpcode = originalOpcode === 'operator_and' ? 'operator_or' : 'operator_and';
         mutationBlock['opcode'] = mutantOpcode;
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `LOR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `LOR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 

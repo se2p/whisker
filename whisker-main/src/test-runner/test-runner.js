@@ -101,7 +101,7 @@ class TestRunner extends EventEmitter {
                         generatedMutants.push(mutant);
                     }
                 }
-                const projectMutation = `${projectName}-${mutant.name}`;
+                const projectMutation = `${projectName}-${mutant.mutantName}`;
                 logger.info(`Analysing mutant ${i}: ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
                 this.saveState = this.vmWrapper._recordInitialState();
