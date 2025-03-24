@@ -25,7 +25,7 @@ export interface Asset {
     /**
      * The filename of the asset (= MD5 hash of the asset file + extension).
      */
-    md5EXT: `${Asset["assetID"]}.${Asset["dataFormat"]}`;
+    md5ext: `${Asset["assetID"]}.${Asset["dataFormat"]}`;
 }
 
 export interface Costume extends Asset {
