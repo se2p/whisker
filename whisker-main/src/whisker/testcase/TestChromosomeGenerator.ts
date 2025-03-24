@@ -56,7 +56,7 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
      * Creates and returns a random chromosome.
      * @returns a random chromosome
      */
-    get(): TestChromosome {
+    async get(): Promise<TestChromosome> {
         const codons: number[] = [];
         const length = this.getLength();
         for(let i = 0; i < length; i++) {

@@ -80,7 +80,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (await this._stoppingCondition.isFinished(this)) {
                 break;
             }
-            population.push(this._chromosomeGenerator.get());
+            population.push(await this._chromosomeGenerator.get());
         }
         return population;
     }

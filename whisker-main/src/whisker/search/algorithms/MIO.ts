@@ -204,7 +204,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             // we sample a new chromosome randomly.
             if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0) || this._maxMutationCount === 0
                 || this._random.nextDouble() < this._randomSelectionProbability) {
-                const chromosome = this._chromosomeGenerator.get();
+                const chromosome = await this._chromosomeGenerator.get();
                 await chromosome.evaluate(true);
                 await this.updateArchive(chromosome);
                 // By chance, apply LocalSearch to the randomly generated chromosome.

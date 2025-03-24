@@ -196,7 +196,7 @@ describe("Test NeatPopulation", () => {
     });
 
     test("Test Speciation with a chromosome mutated several times", async () => {
-        const chromosome = chromosomeGenerator.get();
+        const chromosome = await chromosomeGenerator.get();
         let mutant = await chromosome.mutate();
         let count = 0;
         while (population.speciesCount <= 1 && count < 1000){
@@ -208,8 +208,8 @@ describe("Test NeatPopulation", () => {
 
     });
 
-    test("Test Compatibility Distance of clones", () => {
-        const chromosome1 = chromosomeGenerator.get();
+    test("Test Compatibility Distance of clones", async () => {
+        const chromosome1 = await chromosomeGenerator.get();
         const chromosome2 = chromosome1.cloneStructure(false);
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(0);
@@ -266,8 +266,8 @@ describe("Test NeatPopulation", () => {
         expect(compatDistance).toBe(1);
     });
 
-    test("Test Compatibility Distance of Chromosomes with excess connections", () => {
-        const chromosome1 = chromosomeGenerator.get();
+    test("Test Compatibility Distance of Chromosomes with excess connections", async () => {
+        const chromosome1 = await chromosomeGenerator.get();
         const chromosome2 = chromosome1.cloneStructure(true);
 
         const node1 = chromosome1.inputNodes.get("Sprite1").get("X-Position");

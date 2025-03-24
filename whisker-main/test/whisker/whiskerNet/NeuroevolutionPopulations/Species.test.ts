@@ -23,7 +23,7 @@ describe("Species Test", () => {
     let champion: NeatChromosome;
     let properties: NeatParameter;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         logger.suggest.deny(/.*/, "debug");
         const crossoverConfig = {
             "operator": "neatCrossover",
@@ -65,7 +65,7 @@ describe("Species Test", () => {
         properties.populationChampionNumberClones = 3;
         species = new Species(0, properties);
         while (population.length < populationSize) {
-            population.push(generator.get() as NeatChromosome);
+            population.push(await generator.get() as NeatChromosome);
         }
         species.networks.push(...population);
         random = Randomness.getInstance();
@@ -185,9 +185,9 @@ describe("Species Test", () => {
         expect(leftOver).toBeGreaterThan(0.98);
     });
 
-    test("Test remove and add Chromosome", () => {
+    test("Test remove and add Chromosome", async () => {
         const speciesSizeBefore = species.networks.length;
-        const testChromosome = generator.get() as NeatChromosome;
+        const testChromosome = await generator.get() as NeatChromosome;
         species.networks.push(testChromosome);
         const speciesSizeAdded = species.networks.length;
         species.removeNetwork(testChromosome);

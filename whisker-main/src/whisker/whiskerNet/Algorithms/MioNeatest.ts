@@ -255,7 +255,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
      * @return A newly generated network.
      */
     private async _generateChromosome(): Promise<NeatChromosome> {
-        const generatedChromosome = this._chromosomeGenerator.get();
+        const generatedChromosome = await this._chromosomeGenerator.get();
         await this._evaluateChromosome(generatedChromosome);
         this._currentTarget = this._random.pick(this._currentTargets);
         return generatedChromosome;

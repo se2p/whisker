@@ -78,7 +78,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      */
     public override async generatePopulation(): Promise<void> {
         while (this.networks.length < this.populationSize) {
-            const network = this.generator.get();
+            const network = await this.generator.get();
             this.networks.push(network);
             this.assignSpecies(network);
         }
