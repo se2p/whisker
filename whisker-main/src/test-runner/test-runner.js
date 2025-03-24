@@ -2,16 +2,89 @@ const EventEmitter = require('events');
 const Test = require('./test');
 const TestResult = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
-const {assert, assume} = require('./assert');
+const {
+    assert,
+    assume,
+    AssertionError,
+    AssumptionError,
+} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const CoverageGenerator = require("../coverage/coverage");
+const {getLineNumber} = require("../util/get-line-number");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
-const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
 const logger = require("../util/logger");
 const {ModelTester} = require("../whisker/model/ModelTester");
+
+/**
+ * Returns the given error object as JSON serializable object, e.g., for communication between whisker-web and the
+ * servant.
+ * @param error The error to serialize
+ * @return The serialized error as JSON object
+ */
+function serializeError(error) {
+    if (error === null) { // If all assertions passed, there is no error.
+        return null;
+    }
+
+    const e = {
+        type: error.constructor.name,
+        stack: error.stack,
+        message: error.message,
+        line: getLineNumber(error.stack),
+    };
+
+    // Sometimes, there can be unexpected errors during test execution, e.g., issue #395.
+    if (!(error instanceof AssertionError) && !(error instanceof AssumptionError)) {
+        return e;
+    }
+
+    let actual = error.actual;
+
+    // The operators `all` and `any` collect the AssertionErrors of their nested assertions in an array, and store
+    // it as the actual value. These errors must be serialized, too. However, other operators, such as `ok`, might
+    // also have an actual value of type Array. Therefore, we have to check if the array elements are Errors before
+    // we serialize them recursively.
+    if (Array.isArray(actual)) {
+        actual = actual.map((e) => e instanceof Error ? serializeError(e) : e);
+    }
+
+    return {
+        ...e,
+        operator: error.operator,
+        actual: actual,
+        expected: error.expected,
+    };
+}
+
+function postProcessResults(test, result) {
+    // We are interested in the name of the JavaScript test function itself, not the human-readable name of the
+    // test, which is test.name and could be ambiguous.
+    const name = test.test.name;
+    const exportedName = test.name;
+    const description = test.description;
+    const {status, error} = result;
+
+    // Turn the Error object into a plain JSON object to avoid serialization problems. For example, the stack
+    // property on the Error class is sometimes implemented as a getter function, which is not serializable.
+    const serializableError = serializeError(error);
+
+    const coveredBlocks = Array.from(CoverageGenerator.getCoveredBlockIdsPerTest());
+    const assertions = Object.values(result.assertions);
+    const assumptions = Object.values(result.assumptions);
+    assertions.forEach((assertion) => {
+        assertion.covered = Array.from(assertion.covered);
+        assertion.coveredCumulative = Array.from(assertion.coveredCumulative);
+    });
+    assumptions.forEach((assumption) => {
+        assumption.covered = Array.from(assumption.covered);
+        assumption.coveredCumulative = Array.from(assumption.coveredCumulative);
+    });
+
+    return {name, exportedName, description, status, error: serializableError, coveredBlocks, assertions, assumptions};
+}
 
 class TestRunner extends EventEmitter {
 
@@ -75,6 +148,10 @@ class TestRunner extends EventEmitter {
         const finalResults = {};
         let csv = this._generateCSVHeader(tests, modelProps);
 
+        // repair-specific variables
+        const coveragePerTest = [];
+        const timingsPerTest = [];
+
         this.emit(TestRunner.RUN_START, tests);
 
         const generatedMutants = [];
@@ -113,7 +190,7 @@ class TestRunner extends EventEmitter {
                     csv += await this._executeTests(vm, tests, modelTester, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectMutation, totalAssertions,
-                        600000, false);
+                        600000, false, coveragePerTest, timingsPerTest);
                 } else {
                     csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
                         testResults, projectMutation, totalAssertions, 0);
@@ -141,7 +218,7 @@ class TestRunner extends EventEmitter {
             const res = await this._executeTests(vm, tests, modelTester, props, modelProps,
                 resultRecords, testStatusResults, testResults,
                 startTime, projectName, totalAssertions,
-                0, true);
+                0, true, coveragePerTest, timingsPerTest);
             if (res == null) {
                 return null;
             }
@@ -152,7 +229,7 @@ class TestRunner extends EventEmitter {
         csv += "\n";    // We add another newline here to make it easier finding the csv output within the logs
 
         this.emit(TestRunner.RUN_END, finalResults);
-        return [finalResults, csv, generatedMutants];
+        return [finalResults, csv, generatedMutants, coveragePerTest, timingsPerTest];
     }
 
     /**
@@ -171,14 +248,19 @@ class TestRunner extends EventEmitter {
      * @param {number} totalAssertions
      * @param {number} defaultTimeoutPerTest
      * @param {boolean} canBeAborted
+     * @param coveragePerTest
+     * @param timingsPerTest
      * @return {Promise<string|null>}
      */
     async _executeTests(vm, tests, modelTester, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectName, totalAssertions,
-                        defaultTimeoutPerTest, canBeAborted) {
+                        defaultTimeoutPerTest, canBeAborted, coveragePerTest, timingsPerTest) {
         for (const test of tests) {
+            let timeResetProject = Date.now();
             await this.vmWrapper.resetProject(this.saveState);
+            timeResetProject = Date.now() - timeResetProject;
+
             let result;
             if ("generationAlgorithm" in test) {
                 resultRecords.generationAlgorithm = test.generationAlgorithm;
@@ -190,12 +272,24 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
+                let timeRunTest = Date.now();
                 result = await this._executeTest(vm, test, modelTester, props, modelProps, defaultTimeoutPerTest);
+                timeRunTest = Date.now() - timeRunTest;
+
                 testStatusResults.push(result.status);
+                timingsPerTest.push({
+                    resetProject: timeResetProject,
+                    runTest: timeRunTest,
+                });
+
                 this._propagateTestResults(result, resultRecords);
             }
 
             testResults.push(result);
+
+            if (!test.skip) {
+                coveragePerTest.push(postProcessResults(test, result));
+            }
 
             if (canBeAborted && this.aborted) {
                 return null;
@@ -491,15 +585,71 @@ class TestRunner extends EventEmitter {
             },
         );
 
+        const assertions = {};
+        const assumptions = {};
+
+        CoverageGenerator.clearCoveragePerTest();
+        CoverageGenerator.clearCoveragePerAssertion();
 
         this.emit(TestRunner.TEST_START, test);
         await this.vmWrapper.start();
         this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
-
         if (test) {
+            const onExecutedAssertion = (line, covered, coveredCumulative) => {
+                if (line in assertions) {
+                    assertions[line].status = "fail";
+                    for (const c of covered) {
+                        assertions[line].covered.add(c);
+                        assertions[line].coveredCumulative.add(c);
+                    }
+                } else {
+                    assertions[line] = {
+                        line,
+                        covered,
+                        coveredCumulative,
+                        status: "fail",
+                        passCount: 0,
+                    };
+                }
+            };
+
+            const onExecutedAssumption = (line, covered, coveredCumulative) => {
+                if (line in assumptions) {
+                    assumptions[line].status = "fail";
+                    for (const c of covered) {
+                        assumptions[line].covered.add(c);
+                        assumptions[line].coveredCumulative.add(c);
+                    }
+                } else {
+                    assumptions[line] = {
+                        line,
+                        covered,
+                        coveredCumulative,
+                        status: "fail",
+                        passCount: 0,
+                    };
+                }
+            };
+
+            const onPassedAssertion = (line) => {
+                assertions[line].status = "pass";
+                assertions[line].passCount += 1;
+            };
+
+            const onPassedAssumption = (line) => {
+                assumptions[line].status = "pass";
+                assumptions[line].passCount += 1;
+            };
+
+            assert.onExecutedAssertion = onExecutedAssertion;
+            assume.onExecutedAssumption = onExecutedAssumption;
+            assert.onPassedAssertion = onPassedAssertion;
+            assume.onPassedAssumption = onPassedAssumption;
+
             ModelTester.prepare(modelTester, testDriver);
+
             try {
                 // Use the default timeout (given as function parameter), unless the test specifies its own timeout.
                 const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeoutPerTest;
@@ -532,6 +682,11 @@ class TestRunner extends EventEmitter {
                 } else {
                     result.status = Test.ERROR;
                 }
+            } finally {
+                assert.onExecutedAssertion = null;
+                assume.onExecutedAssumption = null;
+                assert.onPassedAssertion = null;
+                assume.onPassedAssumption = null;
             }
             ModelTester.stopModelsAndUpdateResult(modelTester, result);
             await this._determineCoverages(test, props);
@@ -539,6 +694,9 @@ class TestRunner extends EventEmitter {
         } else if (modelTester && modelTester.someModelLoaded()) {
             await modelTester.executeModelsWithoutTest(testDriver, modelProps.duration, result, userModelIndex);
         }
+
+        result.assertions = assertions;
+        result.assumptions = assumptions;
 
         // If desired, save execution trace after executing each block.
         if (props['traceAttributes']) {
@@ -624,7 +782,6 @@ class TestRunner extends EventEmitter {
     _log(test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
-
 
     abort() {
         this.aborted = true;
