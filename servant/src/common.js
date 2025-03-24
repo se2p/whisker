@@ -18,10 +18,10 @@ const {scratchPath} = require("./cli").opts;
  * @param {boolean} toggleExtendedView
  * @returns {Promise<void>}
  */
-async function switchToProjectTab(page,toggleExtendedView) {
+async function switchToProjectTab(page, toggleExtendedView) {
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
-    if(toggleExtendedView){
+    if (toggleExtendedView) {
         const toggleExtendedView = await page.$('#extendedView');
         await toggleExtendedView.evaluate(t => t.click());
     }
@@ -83,10 +83,45 @@ function getProjectsInScratchPath() {
 }
 
 
+/**
+ * "Instruments" the Whisker test suite by recording the current line number before each assertion and assumption.
+ *
+ * For example: An assertion statement in line 42 such as
+ * ```javascript
+ * t.assert.ok(…);
+ * ```
+ * is replaced with
+ * ```javascript
+ * t.assert.line = 42; t.assert.ok(…);
+ * ```
+ *
+ * @param {string} code The test code to instrument
+ * @return {string} The instrumented code
+ */
+function recordLineNumbersOfAssertions(code) {
+    logger.info("Performing line number instrumentation...");
+
+    const lines = [...code.split(/\r?\n/).entries()];
+
+    for (const [lineNumber, line] of lines) {
+        for (const a of ["t.assert", "t.assume"]) {
+            if (line.includes(a)) {
+                const indentation = line.slice(0, line.search(/\S/));
+                lines[lineNumber][1] = `${indentation}${a}.line = ${lineNumber + 1}; ${line.trim()}`;
+            }
+        }
+    }
+
+    const instrumented = lines.map(([_lineNumber, line]) => line).join("\n");
+    logger.info("Done!");
+    return instrumented;
+}
+
 module.exports = {
     switchToProjectTab,
     switchToUploadTab,
     toggleExtendedView,
     getProjectsInScratchPath,
-    printTestResultsFromCoverageGenerator
+    printTestResultsFromCoverageGenerator,
+    recordLineNumbersOfAssertions,
 };
