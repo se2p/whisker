@@ -42,8 +42,31 @@ function getCoveredBlocks() {
 const assert = new class {
 
     constructor() {
+
+        /**
+         * The line number of the last executed assertion in the Whisker test suite, or `-1` if nothing has been
+         * executed yet.
+         *
+         * Note for Whisker developers: This feature assumes you are running Whisker test suites that have been
+         * instrumented to record line coverage. To this, every line in your test suite that contains `t.assert` should
+         * be prefixed with `t.assert.line = xxx` where `xxx` is the current line number in your test suite.
+         *
+         * @type {number}
+         */
         this.line = -1;
+
+        /**
+         * A callback to execute immediately before an assertion is executed. Use `null` to disable.
+         *
+         * @type {OnExecutedAssertionCallback | null}
+         */
         this.onExecutedAssertion = null;
+
+        /**
+         * A callback to execute immediately after an assertion passed.
+         *
+         * @type {OnPassedAssertionCallback | null}
+         */
         this.onPassedAssertion = null;
     }
 
@@ -574,6 +597,25 @@ const assert = new class {
         this._notifyAssertionPassed();
     }
 
+    /**
+     * Asserts that all supplied assertions pass. Fails if at least one supplied assertion fails. In this case, throws
+     * an `AssertionError` that wraps the `AssertionError`s of the failed supplied assertions.
+     *
+     * Using `all` may be preferable over other assertions with complex boolean conditions, as it can allow for more
+     * detailed feedback about the failure.
+     *
+     * @example Assertion with complex boolean conditions
+     * t.assert.ok(true && 1 === 1 && !false);
+     *
+     * @example Equivalent `all` assertion
+     * t.assert.all(
+     *     () => t.assert.ok(true),
+     *     () => t.assert.equals(1, 1),
+     *     () => t.assert.not(false),
+     * );
+     *
+     * @param assertions The assertions of which all must pass
+     */
     all(...assertions) {
         const errors = [];
 
@@ -599,6 +641,25 @@ const assert = new class {
         }
     }
 
+    /**
+     * Asserts that at least one supplied assertions passes. Fails if no assertions pass. In this case, throws an
+     * `AssertionError` that wraps the `AssertionError`s of the failed supplied assertions.
+     *
+     * Using `any` may be preferable over other assertions with complex boolean conditions, as it can allow for more
+     * detailed feedback about the failure.
+     *
+     * @example Assertion with complex boolean conditions
+     * t.assert.ok(true || 1 === 1 || !false);
+     *
+     * @example Equivalent `all` assertion
+     * t.assert.any(
+     *     () => t.assert.ok(true),
+     *     () => t.assert.equals(1, 1),
+     *     () => t.assert.not(false),
+     * );
+     *
+     * @param assertions The assertions of which at least one must pass
+     */
     any(...assertions) {
         const errors = [];
 
@@ -624,6 +685,27 @@ const assert = new class {
         }
     }
 
+    /**
+     * Asserts that every element in the given iterable passes the supplied assertion. Fails if at least one element
+     * fails the supplied assertion. In this case, throws an `AssertionError` that wraps the `AssertionError`s of all
+     * elements that failed the supplied assertion.
+     *
+     * Using `each` may be preferable over other assertions with complex boolean conditions or loops, as it can allow
+     * for more detailed feedback about the failure.
+     *
+     * @example Using a `for`-loop to check an assertion for each element
+     * for (const sprite of t.getSprites()) {
+     *     t.assert.equals(sprite.x, 42);
+     * }
+     *
+     * @example Equivalent `each` assertion
+     * t.assert.each(t.getSprites(), (sprite) =>
+     *     t.assert.equals(sprite.x, 42)
+     * );
+     *
+     * @param iterable The elements to check
+     * @param assertion The assertion that must hold for every element
+     */
     each(iterable, assertion) {
         const errors = [];
 
@@ -655,8 +737,31 @@ const assert = new class {
 const assume = new class {
 
     constructor() {
+
+        /**
+         * The line number of the last executed assumption in the Whisker test suite, or `-1` if nothing has been
+         * executed yet.
+         *
+         * Note for Whisker developers: This feature assumes you are running Whisker test suites that have been
+         * instrumented to record line coverage. To this, every line in your test suite that contains `t.assume` should
+         * be prefixed with `t.assume.line = xxx` where `xxx` is the current line number in your test suite.
+         *
+         * @type {number}
+         */
         this.line = -1;
+
+        /**
+         * A callback to execute immediately before an assumption is executed. Use `null` to disable.
+         *
+         * @type {OnExecutedAssumptionCallback | null}
+         */
         this.onExecutedAssumption = null;
+
+        /**
+         * A callback to execute immediately after an assumption passed.
+         *
+         * @type {OnPassedAssumptionCallback | null}
+         */
         this.onPassedAssumption = null;
     }
 
@@ -1124,12 +1229,31 @@ const assume = new class {
         this._notifyAssumptionPassed();
     }
 
-    all(...assertions) {
+    /**
+     * Assumes that all supplied assumptions pass. Fails if at least one supplied assumption fails. In this case, throws
+     * an `AssumptionError` that wraps the `AssumptionError`s of the failed supplied assumptions.
+     *
+     * Using `all` may be preferable to other assumptions with complex boolean conditions, as it can allow for more
+     * detailed feedback about the failure.
+     *
+     * @example Assumption with complex boolean conditions
+     * t.assume.ok(true && 1 === 1 && !false);
+     *
+     * @example Equivalent `all` assumption
+     * t.assume.all(
+     *     () => t.assume.ok(true),
+     *     () => t.assume.equals(1, 1),
+     *     () => t.assume.not(false),
+     * );
+     *
+     * @param assumptions The assumptions of which all must pass
+     */
+    all(...assumptions) {
         const errors = [];
 
-        for (const assertion of assertions) {
+        for (const assumption of assumptions) {
             try {
-                assertion();
+                assumption();
             } catch (e) {
                 if (e instanceof AssumptionError) {
                     errors.push(e);
@@ -1149,12 +1273,77 @@ const assume = new class {
         }
     }
 
-    each(iterable, assertion) {
+    /**
+     * Assumes that at least one supplied assumption passes. Fails if no assumptions pass. In this case, throws an
+     * `AssumptionError` that wraps the `AssumptionError`s of the failed supplied assumptions.
+     *
+     * Using `any` may be preferable over other assumptions with complex boolean conditions, as it can allow for more
+     * detailed feedback about the failure.
+     *
+     * @example Assumption with complex boolean conditions
+     * t.assume.ok(true || 1 === 1 || !false);
+     *
+     * @example Equivalent `all` assumption
+     * t.assume.any(
+     *     () => t.assume.ok(true),
+     *     () => t.assume.equals(1, 1),
+     *     () => t.assume.not(false),
+     * );
+     *
+     * @param assumptions The assumptions of which at least one must pass
+     */
+    any(...assumptions) {
+        const errors = [];
+
+        for (const assumption of assumptions) {
+            try {
+                assumption();
+            } catch (e) {
+                if (e instanceof AssumptionError) {
+                    errors.push(e);
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        if (errors.length === assumptions.length) {
+            throw new AssumptionError({
+                operator: 'any',
+                expected: [],
+                actual: errors,
+                message: errors.map((e) => e.message).join('. '),
+            });
+        }
+    }
+
+    /**
+     * Assumes that every element in the given iterable passes the supplied assumption. Fails if at least one element
+     * fails the supplied assumption. In this case, throws an `AssumptionError` that wraps the `AssumptionError`s of all
+     * elements that failed the supplied assumption.
+     *
+     * Using `each` may be preferable over other assumptions with complex boolean conditions or loops, as it can allow
+     * for more detailed feedback about the failure.
+     *
+     * @example Using a `for`-loop to check an assumption for each element
+     * for (const sprite of t.getSprites()) {
+     *     t.assume.equals(sprite.x, 42);
+     * }
+     *
+     * @example Equivalent `each` assumption
+     * t.assume.each(t.getSprites(), (sprite) =>
+     *     t.assume.equals(sprite.x, 42)
+     * );
+     *
+     * @param iterable The elements to check
+     * @param assumption The assumption that must hold for every element
+     */
+    each(iterable, assumption) {
         const errors = [];
 
         for (const elem of iterable) {
             try {
-                assertion(elem);
+                assumption(elem);
             } catch (e) {
                 if (e instanceof AssumptionError) {
                     errors.push(e);
@@ -1173,31 +1362,6 @@ const assume = new class {
             });
         }
     }
-
-    any(...assertions) {
-        const errors = [];
-
-        for (const assertion of assertions) {
-            try {
-                assertion();
-            } catch (e) {
-                if (e instanceof AssumptionError) {
-                    errors.push(e);
-                } else {
-                    throw e;
-                }
-            }
-        }
-
-        if (errors.length === assertions.length) {
-            throw new AssumptionError({
-                operator: 'any',
-                expected: [],
-                actual: errors,
-                message: errors.map((e) => e.message).join('. '),
-            });
-        }
-    }
 }();
 
 module.exports = {
@@ -1206,3 +1370,35 @@ module.exports = {
     AssumptionError,
     assume,
 };
+
+/**
+ * A callback to execute immediately before an assertion is executed.
+ *
+ * @callback OnExecutedAssertionCallback
+ * @param {number} line Line number of the assertion about to be executed
+ * @param {Set<string>} coveredBlockIdsPerAssertion IDs of the blocks covered since the last assertion was executed
+ * @param {Set<string>} CoveredBlockIdsPerTest IDs of the blocks covered since the beginning of the current test
+ */
+
+/**
+ * A callback to execute immediately after an assertion passed.
+ *
+ * @callback OnPassedAssertionCallback
+ * @param {number} line Line number of the assertion that just passed.
+ */
+
+/**
+ * A callback to execute immediately before an assumption is executed.
+ *
+ * @callback OnExecutedAssumptionCallback
+ * @param {number} line Line number of the assumption about to be executed
+ * @param {Set<string>} coveredBlockIdsPerAssumption IDs of the blocks covered since the last assumption was executed
+ * @param {Set<string>} CoveredBlockIdsPerTest IDs of the blocks covered since the beginning of the current test
+ */
+
+/**
+ * A callback to execute immediately after an assumption passed.
+ *
+ * @callback OnPassedAssumptionCallback
+ * @param {number} line Line number of the assumption that just passed.
+ */
