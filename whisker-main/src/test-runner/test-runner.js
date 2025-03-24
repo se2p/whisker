@@ -5,59 +5,17 @@ const WhiskerUtil = require('../test/whisker-util');
 const {
     assert,
     assume,
-    AssertionError,
-    AssumptionError,
 } = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const CoverageGenerator = require("../coverage/coverage");
-const {getLineNumber} = require("../util/get-line-number");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
 const logger = require("../util/logger");
 const {ModelTester} = require("../whisker/model/ModelTester");
-
-/**
- * Returns the given error object as JSON serializable object, e.g., for communication between whisker-web and the
- * servant.
- * @param error The error to serialize
- * @return The serialized error as JSON object
- */
-function serializeError(error) {
-    if (error === null) { // If all assertions passed, there is no error.
-        return null;
-    }
-
-    const e = {
-        type: error.constructor.name,
-        stack: error.stack,
-        message: error.message,
-        line: getLineNumber(error.stack),
-    };
-
-    // Sometimes, there can be unexpected errors during test execution, e.g., issue #395.
-    if (!(error instanceof AssertionError) && !(error instanceof AssumptionError)) {
-        return e;
-    }
-
-    let actual = error.actual;
-
-    // The operators `all` and `any` collect the AssertionErrors of their nested assertions in an array, and store
-    // it as the actual value. These errors must be serialized, too. However, other operators, such as `ok`, might
-    // also have an actual value of type Array. Therefore, we have to check if the array elements are Errors before
-    // we serialize them recursively.
-    if (Array.isArray(actual)) {
-        actual = actual.map((e) => e instanceof Error ? serializeError(e) : e);
-    }
-
-    return {
-        ...e,
-        operator: error.operator,
-        actual: actual,
-        expected: error.expected,
-    };
-}
+const {onExecuted, onPassed} = require("../coverage/assertion-level-tracing");
+const {serializeError} = require("../util/serialize-error");
 
 function postProcessResults(test, result) {
     // We are interested in the name of the JavaScript test function itself, not the human-readable name of the
@@ -84,6 +42,13 @@ function postProcessResults(test, result) {
     });
 
     return {name, exportedName, description, status, error: serializableError, coveredBlocks, assertions, assumptions};
+}
+
+function enableAssertionLevelBlockTracing(assertions, assumptions) {
+    assert.onExecutedAssertion = onExecuted.bind(null, assertions);
+    assume.onExecutedAssumption = onExecuted.bind(null, assumptions);
+    assert.onPassedAssertion = onPassed.bind(null, assertions);
+    assume.onPassedAssumption = onPassed.bind(null, assumptions);
 }
 
 class TestRunner extends EventEmitter {
@@ -597,56 +562,7 @@ class TestRunner extends EventEmitter {
         this._checkSeed(test);
 
         if (test) {
-            const onExecutedAssertion = (line, covered, coveredCumulative) => {
-                if (line in assertions) {
-                    assertions[line].status = "fail";
-                    for (const c of covered) {
-                        assertions[line].covered.add(c);
-                        assertions[line].coveredCumulative.add(c);
-                    }
-                } else {
-                    assertions[line] = {
-                        line,
-                        covered,
-                        coveredCumulative,
-                        status: "fail",
-                        passCount: 0,
-                    };
-                }
-            };
-
-            const onExecutedAssumption = (line, covered, coveredCumulative) => {
-                if (line in assumptions) {
-                    assumptions[line].status = "fail";
-                    for (const c of covered) {
-                        assumptions[line].covered.add(c);
-                        assumptions[line].coveredCumulative.add(c);
-                    }
-                } else {
-                    assumptions[line] = {
-                        line,
-                        covered,
-                        coveredCumulative,
-                        status: "fail",
-                        passCount: 0,
-                    };
-                }
-            };
-
-            const onPassedAssertion = (line) => {
-                assertions[line].status = "pass";
-                assertions[line].passCount += 1;
-            };
-
-            const onPassedAssumption = (line) => {
-                assumptions[line].status = "pass";
-                assumptions[line].passCount += 1;
-            };
-
-            assert.onExecutedAssertion = onExecutedAssertion;
-            assume.onExecutedAssumption = onExecutedAssumption;
-            assert.onPassedAssertion = onPassedAssertion;
-            assume.onPassedAssumption = onPassedAssumption;
+            enableAssertionLevelBlockTracing(assertions, assumptions);
 
             ModelTester.prepare(modelTester, testDriver);
 
