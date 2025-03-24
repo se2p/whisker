@@ -148,7 +148,6 @@ import {
 import {isShadowBlockOpcode, Opcode} from "./Opcode";
 import {Blocks} from "../project/Target";
 import {BlockMeta, emptyBlockMeta} from "../utils/meta";
-import {IllegalArgumentException} from "../../whisker/core/exceptions/IllegalArgumentException";
 import {NonExhaustiveCaseDistinction} from "../../whisker/core/exceptions/NonExhaustiveCaseDistinction";
 
 export function blockMeta(blocks: Blocks): BlockMeta {
