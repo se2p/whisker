@@ -346,6 +346,8 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     let summary;
     let csvResults;
     let coverage;
+    let coveragePerTest;
+    let timingsPerTest;
     let coverageModels = {};
 
     const setMutators = document.querySelector('#container').mutators;
@@ -383,7 +385,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
 
         CoverageGenerator.prepareVM(vm);
 
-        [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
+        [summary, csvResults, mutantPrograms, coveragePerTest, timingsPerTest] = await Whisker.testRunner.runTests(vm, project, tests,
             Whisker.modelTester, props, {duration, repetitions});
         coverage = CoverageGenerator.getCoverage();
         Whisker.outputLog.println(csvResults);
@@ -418,6 +420,9 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
             const serializableModelCoverage = {modelCoverage};
             window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
         }
+    } catch (e) {
+        logger.error('Error while running tests:', e instanceof Error ? e.stack : e);
+        throw e;
     } finally {
         _showRunIcon();
         enableVMRelatedButtons();
@@ -426,7 +431,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     }
 
     if (summary === null) {
-        return;
+        return [coveragePerTest, timingsPerTest];
     }
 
     const formattedSummary = TAP13Formatter.formatSummary(summary);
@@ -448,6 +453,8 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         coverageString,
         modelCoverageString
     ].join('\n'));
+
+    return [coveragePerTest, timingsPerTest];
 };
 
 const runTest = async function (test) {
