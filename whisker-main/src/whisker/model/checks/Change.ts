@@ -5,19 +5,6 @@ import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 
-/**
- * Implements the modulo operator. This is similar to JavaScript's remainder operator (`x % y`). In fact, if `x` and
- * `y` have the same sign, the two operators are equivalent. Otherwise, the result of `x % y` has the same sign as
- * the dividend (`x`), while `mod(x, y)` has the same sign as the divisor (`y`).
- *
- * @param x dividend
- * @param y divisor
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder
- */
-export function mod(x: number, y: number): number {
-    return ((x % y) + y) % y;
-}
-
 export interface Bounds extends Interval {
     kind: "clamped" | "cyclic";
 }
@@ -83,6 +70,19 @@ export class Change implements Quantifiable<Change> {
 
         return new Chg(newComparison({operator, value: 0}, bounds));
     }
+}
+
+/**
+ * Implements the modulo operator. This is similar to JavaScript's remainder operator (`x % y`). In fact, if `x` and
+ * `y` have the same sign, the two operators are equivalent. Otherwise, the result of `x % y` has the same sign as
+ * the dividend (`x`), while `mod(x, y)` has the same sign as the divisor (`y`).
+ *
+ * @param x dividend
+ * @param y divisor
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder
+ */
+export function mod(x: number, y: number): number {
+    return ((x % y) + y) % y;
 }
 
 export function mapInterval(x: number, {min, max}: Interval): number {
