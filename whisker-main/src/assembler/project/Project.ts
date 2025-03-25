@@ -91,8 +91,16 @@ export interface Meta {
      */
     agent: string;
 
+    /**
+     * Non-standard property not present in regular Scratch projects. Added by Whisker. Used by automatic repair, e.g.,
+     * to identify syntactic code clones.
+     */
     hashCode?: number;
 
+    /**
+     * Non-standard property not present in regular Scratch projects. Added by Whisker. Used by automatic repair, e.g.,
+     * to document the changes mutation and crossover operators applied to a project.
+     */
     changeLogs?: Array<ChangeLog>;
 }
 
