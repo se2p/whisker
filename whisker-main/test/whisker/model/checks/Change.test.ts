@@ -174,7 +174,7 @@ describe("A change", () => {
             expect(change.apply(x, y)).toStrictEqual(fail(expect.any(Object)));
         });
 
-        if (op === "=" || op === "!=") {
+        if (op === "==" || op === "!=") {
             it.prop([fc.oneof(eq, ne)])("has a symmetric apply() method", ([x, y]) => {
                 const change = newChange({change: op});
                 expect(change.apply(x, y).passed).toStrictEqual(change.apply(y, x).passed);

@@ -196,7 +196,7 @@ describe('CheckGenerator', () => {
         tdMock.stage = stage.sprite;
 
         it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: ComparisonOp) => {
-            expect(() => new VarComp('label', {args: ["apple", "x", cmp, "3"]})).toThrowError();
+            expect(() => new VarComp('label', {args: ["apple", "x", cmp, 3]})).toThrowError();
         });
 
         test('VarEvent is registered on CheckUtil', () => {

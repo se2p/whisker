@@ -55,7 +55,7 @@ describe('AttributeChange', () => {
     });
 
     test('Check is not a constant function', () => {
-        const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostumeName", "="]});
+        const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostumeName", "=="]});
         c.registerComponents(t, dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
         stage.variables = [{

@@ -290,7 +290,7 @@ describe('Contradictions', () => {
             newCheck(edgeID, {name: "VarChange", negated: true, args: ["test", "y", "+"]}),
             newCheck(edgeID, {name: "AttrChange", negated: true, args: ["test", "x", "-"]}),
             newCheck(edgeID, {name: "BackgroundChange", negated: true, args: ["test"]}),
-            newCheck(edgeID, {name: "VarComp", negated: true, args: ["sprite", "y", ">", "0"]}),
+            newCheck(edgeID, {name: "VarComp", negated: true, args: ["sprite", "y", ">", 0]}),
             newCheck(edgeID, {name: "AttrComp", negated: true, args: ["sprite", "x", ">", 0]}),
             newCheck(edgeID, {name: "Key", negated: true, args: ["right arrow"]}),
             newCheck(edgeID, {name: "Click", negated: true, args: ["sprite"]}),
@@ -329,7 +329,7 @@ describe('Contradictions', () => {
             const varComp = newCheck(edgeID, {
                 name: "VarComp",
                 negated: true,
-                args: ["sprite", "y", ">", "0"]
+                args: ["sprite", "y", ">", 0]
             });
             assertSymmetricContradiction(varChange, varComp, false);
         });
@@ -343,7 +343,7 @@ describe('Contradictions', () => {
             const varComp = newCheck(edgeID, {
                 name: "VarComp",
                 negated: true,
-                args: ["sprite", "color", ">", "0"]
+                args: ["sprite", "color", ">", 0]
             });
             assertSymmetricContradiction(varChange, varComp, false);
         });
