@@ -33,7 +33,7 @@ export type SpriteColorArgs = [
     blue: number,
 ];
 
-const RGBNumber = z.number().min(0).max(255);
+const RGBNumber = z.coerce.number().min(0).max(255);
 
 const SpriteColorArgs = z.tuple([
     SpriteName,

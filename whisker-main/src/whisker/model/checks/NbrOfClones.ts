@@ -1,4 +1,12 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {
+    AbstractCheck,
+    CheckFun0,
+    couldBeSpriteName,
+    ICheckJSON,
+    NonNegativeNumber,
+    SlimCheckJSON,
+    SpriteName
+} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -29,7 +37,7 @@ export type NbrOfClonesArgs = [
 const NbrOfClonesArgs = z.tuple([
     SpriteName,
     ComparisonOp,
-    z.number().nonnegative(),
+    NonNegativeNumber,
 ]);
 
 type TNbrOfClonesJSON =

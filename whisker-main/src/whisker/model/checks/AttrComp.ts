@@ -1,4 +1,12 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {
+    AbstractCheck, BooleanLike,
+    CheckFun0,
+    couldBeSpriteName, EqOrNeq,
+    ICheckJSON,
+    NumberLike,
+    SlimCheckJSON,
+    SpriteName
+} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {EffectNames, ModelUtil, NumberAttributeNames, StringAttributeNames} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
@@ -29,10 +37,10 @@ export type AttrCompArgs =
     | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean]
 
 const AttrCompArgs = z.union([
-    z.tuple([SpriteName, z.literal("visible"), z.union([z.literal("=="), z.literal("!=")]), z.string().or(z.boolean())]),
-    z.tuple([SpriteName, z.enum(NumberAttributeNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(EffectNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(StringAttributeNames), ComparisonOp, z.string()]),
+    z.tuple([SpriteName, z.enum(NumberAttributeNames), ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, z.enum(EffectNames), ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, z.enum(StringAttributeNames), EqOrNeq, z.string()]),
+    z.tuple([SpriteName, z.literal("visible"), EqOrNeq, BooleanLike]),
 ]);
 
 export interface AttrCompJSON extends ICheckJSON {

@@ -19,7 +19,7 @@ export type ProbabilityArgs = [
 ];
 
 const ProbabilityArgs = z.tuple([
-    z.number().min(0).max(1),
+    z.coerce.number().min(0).max(1),
 ]);
 
 export interface ProbabilityJSON extends ICheckJSON {

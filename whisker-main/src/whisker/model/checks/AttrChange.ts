@@ -1,8 +1,7 @@
 import {
     AbstractCheck,
-    AttrName,
     CheckFun0,
-    couldBeSpriteName,
+    couldBeSpriteName, EqOrNeq,
     ICheckJSON,
     SlimCheckJSON,
     SpriteName
@@ -22,7 +21,7 @@ import {InputErrorCodes} from "./newCheck";
 
 const name = "AttrChange" as const;
 
-export const EqOrNeqOPs = ["=", "!="] as const;
+export const EqOrNeqOPs = ["==", "!="] as const;
 export type StringAttribute = typeof StringAttributeNames[number];
 export type NumberAttribute = typeof NumberAttributeNames[number];
 export type BooleanAttribute = "visible"
@@ -36,8 +35,10 @@ export type AttrChangeArgs =
 
 
 const AttrChangeArgs = z.union([
-    z.tuple([SpriteName, AttrName, NumberOrChangeOp,]),
-    z.tuple([])
+    z.tuple([SpriteName, z.enum(NumberAttributeNames), NumberOrChangeOp]),
+    z.tuple([SpriteName, z.enum(EffectNames), NumberOrChangeOp]),
+    z.tuple([SpriteName, z.enum(StringAttributeNames), EqOrNeq]),
+    z.tuple([SpriteName, z.literal("visible"), EqOrNeq]),
 ]);
 
 

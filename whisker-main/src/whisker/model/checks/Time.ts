@@ -1,5 +1,14 @@
 import {z} from "zod";
-import {AbstractCheck, CheckFun, CheckFun0, CheckFun1, CheckFun2, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {
+    AbstractCheck,
+    CheckFun,
+    CheckFun0,
+    CheckFun1,
+    CheckFun2,
+    ICheckJSON,
+    NonNegativeNumber,
+    SlimCheckJSON
+} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import VMWrapper from "../../../vm/vm-wrapper";
@@ -18,7 +27,7 @@ export type TimeArgs = [
 ];
 
 const TimeArgs = z.tuple([
-    z.number().nonnegative(),
+    NonNegativeNumber,
 ]);
 
 interface ITimeJSON extends ICheckJSON {

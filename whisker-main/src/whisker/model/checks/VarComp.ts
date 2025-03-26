@@ -2,7 +2,9 @@ import {
     AbstractCheck,
     CheckFun0,
     couldBeSpriteName,
+    EqOrNeq,
     ICheckJSON,
+    NumberLike,
     SlimCheckJSON,
     SpriteName,
     VariableName
@@ -16,36 +18,17 @@ import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newCompar
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {EqOrNeqOp} from "./AttrChange";
 
 const name = "VarComp" as const;
 
-export type VarCompArgs = [
-    /**
-     * The name of the sprite whose variable is being evaluated
-     */
-    spriteName: SpriteName,
+export type VarCompArgs =
+    [spriteName: SpriteName, varName: VariableName, comparisonOp: EqOrNeqOp, varValue: string | number]
+    | [spriteName: SpriteName, varName: VariableName, comparisonOp: ComparisonOp, varValue: number];
 
-    /**
-     * The name of the variable.
-     */
-    varName: VariableName,
-
-    /**
-     * Mode of comparison, e.g. =, <, >, <=, >=
-     */
-    comparisonOp: ComparisonOp,
-
-    /**
-     * Value to compare to the variable's current value.
-     */
-    varValue: string | number,
-];
-
-const VarCompArgs = z.tuple([
-    SpriteName,
-    VariableName,
-    ComparisonOp,
-    z.string().or(z.number()),
+const VarCompArgs = z.union([
+    z.tuple([SpriteName, VariableName, EqOrNeq, z.string().or(z.number())]),
+    z.tuple([SpriteName, VariableName, ComparisonOp, NumberLike]),
 ]);
 
 export interface VarCompJSON extends ICheckJSON {

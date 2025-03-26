@@ -53,6 +53,16 @@ export const BooleanLike = z.preprocess((value) => {
     ])
 ).refine(b => typeof b === "boolean");
 
+export const EqOrNeq = z.preprocess(
+    (value) => value === "=" ? "==" : value,
+    z.union([
+        z.literal("=="),
+        z.literal("!=")
+    ])
+);
+
+export const NonNegativeNumber = z.coerce.number().nonnegative();
+
 export interface ICheckJSON {
     name: string;
     negated: boolean;
