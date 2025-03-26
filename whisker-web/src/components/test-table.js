@@ -68,7 +68,7 @@ class TestTable {
 
         this.table.on('click', '.run-test', event => {
 
-            if (window.Whisker.scratch.vm.runtime.bbtTestRunning) {
+            if (window.Whisker.scratch.vm.runtime.testRunning) {
                 logger.error('Cannot start a test while another is already running!');
                 return;
             }

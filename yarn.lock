@@ -8648,7 +8648,7 @@ scratch-translate-extension-languages@0.0.20191118205314:
 
 "scratch-vm@git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-vm.git#develop":
   version "1.5.76"
-  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-vm.git#c296b6a4adbd623d26a91c1d413eb4c8090a3165"
+  resolved "git+https://gitlab+deploy-token-3:i8XTz2vnGPewCoYALnoy@gitlab.infosun.fim.uni-passau.de/se2/scratch/scratch-vm.git#796446fd1e738ff804c3be3d445b641908b982be"
   dependencies:
     "@vernier/godirect" "1.5.0"
     arraybuffer-loader "^1.0.6"
