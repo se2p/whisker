@@ -1,8 +1,9 @@
 import {ScratchMutation} from "./ScratchMutation";
-import {ScratchProgram} from "../ScratchInterface";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ControlFilter, StatementFilter} from "scratch-analysis";
 import {getBlockFromId} from "scratch-analysis";
+import {Project} from "../../../assembler/project/Project";
+import {BlockID} from "../../../assembler/blocks/Block";
 
 
 export class SingleBlockDeletionMutation extends ScratchMutation {
@@ -10,7 +11,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
     /**
      * Contains block ids of blocks that should never be deleted as deleting them probably causes issues in the VM.
      */
-    private ignoreIDs: Set<string>;
+    private ignoreIDs: Set<BlockID>;
 
     constructor(vm: VirtualMachine) {
         super(vm);
@@ -24,9 +25,9 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * to ensure that the VM does not freeze due to the issue described above.
      * @returns Set of block ids that should not be deleted during the mutation operation.
      */
-    private collectExecutionHaltingBeforeCreateClone(): Set<string> {
-        const ignoreIDs = new Set<string>();
-        const createCloneBlocks = [...this.blockMap.values()].filter(block => block['opcode'] == 'control_create_clone_of');
+    private collectExecutionHaltingBeforeCreateClone(): Set<BlockID> {
+        const ignoreIDs = new Set<BlockID>();
+        const createCloneBlocks = [...this.blockMap.values()].filter(block => block.opcode === 'control_create_clone_of');
         for (const createCloneBlock of createCloneBlocks) {
 
             // Check if the current create clone block generates clones of itself.
@@ -58,7 +59,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
      * @param mutantProgram the mutant program from which the mutationBlock will be deleted
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+    public applyMutation(mutationBlockId: BlockID, mutantProgram: Project): boolean {
         const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
 
         // Since we exclude hat blocks, every block that has no parent is a dead block and removing them is pointless.
@@ -106,7 +107,7 @@ export class SingleBlockDeletionMutation extends ScratchMutation {
         mutationBlock['parent'] = null;
         mutationBlock['next'] = null;
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `SBD:${mutationBlock['opcode']}-${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `SBD:${mutationBlock['opcode']}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 

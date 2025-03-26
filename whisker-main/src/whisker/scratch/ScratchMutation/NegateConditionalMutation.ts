@@ -1,10 +1,11 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchProgram} from "../ScratchInterface";
 import uid from "scratch-vm/src/util/uid";
-import {Randomness} from "../../utils/Randomness";
 import logger from "../../../util/logger";
 import {OperatorFilter, getHostingTarget, getBlockFromId} from "scratch-analysis";
+import {BlockID} from "../../../assembler/blocks/Block";
+import {Project} from "../../../assembler/project/Project";
+import {OperatorNot} from "../../../assembler/blocks/categories/Operators";
 
 export class NegateConditionalMutation extends ScratchMutation {
 
@@ -18,9 +19,9 @@ export class NegateConditionalMutation extends ScratchMutation {
      * @param mutantProgram the mutant program in which the conditional block will be negated
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+    public applyMutation(mutationBlockId: BlockID, mutantProgram: Project): boolean {
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `NCM:${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `NCM:${mutantId}`.replace(/,/g, '');
 
         const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         const not_block = NegateConditionalMutation.notBlockGenerator(mutationBlockId, mutationBlock['parent']);
@@ -44,7 +45,7 @@ export class NegateConditionalMutation extends ScratchMutation {
             } else if (parent['inputs']['OPERAND2'][1] === mutationBlockId) {
                 parent['inputs']['OPERAND2'][1] = not_block['id'];
             } else {
-                logger.warn(`Unknown parent block ${parent['id']} for ${mutantProgram.name}`);
+                logger.warn(`Unknown parent block ${parent['id']} for ${mutantProgram.mutantName}`);
                 return false;
             }
         }
@@ -61,8 +62,8 @@ export class NegateConditionalMutation extends ScratchMutation {
      * Valid mutation candidates are conditional blocks that can be negated.
      * @returns an array of mutation candidate block ids.
      */
-    public getMutationCandidates(): string[] {
-        const conditionalBlocks: string[] = [];
+    public getMutationCandidates(): BlockID[] {
+        const conditionalBlocks: BlockID[] = [];
         for (const [id, block] of this.blockMap.entries()) {
             // Negating a not block is pointless since we negate its argument anyway.
             if (OperatorFilter.negatable(block) && block['opcode'] !== 'operator_not') {
@@ -78,10 +79,10 @@ export class NegateConditionalMutation extends ScratchMutation {
      * @param parentId the id of the parent holding the block to negate
      * @returns not block with the block to negate as operand
      */
-    private static notBlockGenerator(blockToNegateId: string, parentId: string): unknown {
+    private static notBlockGenerator(blockToNegateId: BlockID, parentId: BlockID): OperatorNot {
         return {
             fields: {},
-            id: uid(),
+            id: uid(), // non-standard property...
             inputs: {
                 OPERAND: [
                     2,
@@ -93,7 +94,7 @@ export class NegateConditionalMutation extends ScratchMutation {
             parent: parentId,
             shadow: false,
             topLevel: false
-        };
+        } as OperatorNot;
     }
 
     /**

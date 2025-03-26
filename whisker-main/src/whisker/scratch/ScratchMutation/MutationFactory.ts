@@ -8,9 +8,9 @@ import {RelationalOperatorReplacementMutation} from "./RelationalOperatorReplace
 import {NegateConditionalMutation} from "./NegateConditionalMutation";
 import {VariableReplacementMutation} from "./VariableReplacementMutation";
 import {ScratchMutation} from "./ScratchMutation";
-import {ScratchProgram} from "../ScratchInterface";
 import {Randomness} from "../../utils/Randomness";
 import logger from '../../../util/logger';
+import {Project} from "../../../assembler/project/Project";
 
 export class MutationFactory {
 
@@ -94,7 +94,7 @@ export class MutationFactory {
      * removes the generated mutant from the set of available candidates.
      * @returns The generated scratch mutant or null if the mutation operation was unsuccessful.
      */
-    public generateRandomMutant(): ScratchProgram | null {
+    public generateRandomMutant(): Project | null {
         const mutationCandidate = Randomness.getInstance().pick(Array.from(this._candidates));
         this._candidates.delete(mutationCandidate);
         const [operatorKey, ...mutationID] = mutationCandidate.split("-");

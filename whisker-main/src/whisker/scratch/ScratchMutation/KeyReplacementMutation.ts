@@ -1,19 +1,12 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchMutation} from "./ScratchMutation";
 import {Randomness} from "../../utils/Randomness";
-import {ScratchProgram} from "../ScratchInterface";
 import {getBlockFromId} from "scratch-analysis";
+import {keys} from "../../../assembler/blocks/categories/Events";
+import {BlockID} from "../../../assembler/blocks/Block";
+import {Project} from "../../../assembler/project/Project";
 
 export class KeyReplacementMutation extends ScratchMutation {
-
-    /**
-     * Key options are extracted from the options of the dropdown menu in key blocks.
-     */
-    private static readonly KEY_OPTIONS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'space', 'up arrow', 'down arrow', 'right arrow', 'left arrow', 'any'];
-
-
     constructor(vm: VirtualMachine) {
         super(vm);
     }
@@ -24,15 +17,15 @@ export class KeyReplacementMutation extends ScratchMutation {
      * @param mutantProgram the mutant program in which the key will be replaced.
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+    public applyMutation(mutationBlockId: BlockID, mutantProgram: Project): boolean {
         const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         const originalKeyPress = mutationBlock['fields']['KEY_OPTION'][0];
-        let mutantKeyPress = Randomness.getInstance().pick(KeyReplacementMutation.KEY_OPTIONS);
+        let mutantKeyPress = Randomness.getInstance().pick(keys);
         while (originalKeyPress === mutantKeyPress) {
-            mutantKeyPress = Randomness.getInstance().pick(KeyReplacementMutation.KEY_OPTIONS);
+            mutantKeyPress = Randomness.getInstance().pick(keys);
         }
         mutationBlock['fields']['KEY_OPTION'][0] = mutantKeyPress;
-        mutantProgram.name = `KRM:${originalKeyPress}-To-${mutantKeyPress}`;
+        mutantProgram.mutantName = `KRM:${originalKeyPress}-To-${mutantKeyPress}`;
         return true;
     }
 
