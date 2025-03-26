@@ -35,7 +35,7 @@ const AttrChangeArgs = z.union([
     z.tuple([SpriteName, EffectAttribute, NumberOrChangeOp]),
     z.tuple([SpriteName, StringAttribute, EqOrNeq]),
     z.tuple([SpriteName, BooleanAttribute, EqOrNeq]),
-]);
+], {message: "InvalidAttribute"});
 
 
 export interface AttrChangeJSON extends ICheckJSON {

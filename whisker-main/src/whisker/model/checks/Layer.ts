@@ -27,7 +27,7 @@ export type LayerArgs = [
 
 const LayerArgs = z.tuple([
     SpriteName,
-    z.literal("First").or(z.literal("Last")),
+    z.union([z.literal("First"), z.literal("Last")], {message: "NeitherFirstNorLast"})
 ]);
 
 export interface LayerJSON extends ICheckJSON {

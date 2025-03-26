@@ -90,3 +90,5 @@ export const ProbabilityArg = z.coerce.number({message: "NeitherStringNorNumber"
 export const RGBNumber = z.coerce.number({message: "NeitherStringNorNumber"})
     .min(0,{message: "RgbColorSmaller0"})
     .max(255, {message: "RgbColorGreater255"});
+
+export const NonEmptyString = z.string({message: "NoString"}).min(1, {message: "StringIsEmpty"});

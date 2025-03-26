@@ -7,7 +7,7 @@ import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
 import {ModelUtil} from "../util/ModelUtil";
-import {ComparisonOp} from "./CheckTypes";
+import {ComparisonOp, NonEmptyString} from "./CheckTypes";
 
 const name = "BackgroundChange" as const;
 
@@ -19,7 +19,7 @@ export type BackgroundChangeArgs = [
 ];
 
 const BackgroundChangeArgs = z.tuple([
-    z.string(),
+    NonEmptyString,
 ]);
 
 export interface BackgroundChangeJSON extends ICheckJSON {

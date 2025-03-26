@@ -24,7 +24,7 @@ export type VarCompArgs =
 
 const VarCompArgs = z.union([
     z.tuple([SpriteName, VariableName, EqOrNeq, z.string().or(z.number())]),
-    z.tuple([SpriteName, VariableName, ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, VariableName, ComparisonOp, NumberLike], {message: "InvalidVarCompArgs"}),
 ]);
 
 export interface VarCompJSON extends ICheckJSON {
