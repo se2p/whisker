@@ -188,8 +188,8 @@ const setBBTTests = function (bbtTests) {
 const runBBTTest = async function (bbtTest) {
     await new Promise(resolve => {
 
-        if (Whisker.scratch.vm.runtime.bbtTestRunning) {
-            logger.error('runBBTTest aborted: bbtTestRunning!');
+        if (Whisker.scratch.vm.runtime.testRunning) {
+            logger.error('runBBTTest aborted: testRunning!');
             resolve();
         }
 
