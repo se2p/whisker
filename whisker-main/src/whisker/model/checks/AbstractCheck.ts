@@ -42,6 +42,17 @@ export const NumberLike = z.union([
     .pipe(z.coerce.number())
     .refine((n) => !Number.isNaN(n));
 
+/**
+ * Either true, false, "true" or "false"
+ */
+export const BooleanLike = z.preprocess((value) => {
+        return value === "true" ? true : value === false ? false : value;
+    }, z.union([
+        z.string(),
+        z.boolean()
+    ])
+).refine(b => typeof b === "boolean");
+
 export interface ICheckJSON {
     name: string;
     negated: boolean;
