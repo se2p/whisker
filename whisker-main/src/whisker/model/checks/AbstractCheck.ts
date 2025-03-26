@@ -32,6 +32,16 @@ export const AttrName = z.preprocess(
     z.string()
 );
 
+/**
+ * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
+ */
+export const NumberLike = z.union([
+    z.number(),
+    z.string().refine((s) => s.trim() !== "")
+])
+    .pipe(z.coerce.number())
+    .refine((n) => !Number.isNaN(n));
+
 export interface ICheckJSON {
     name: string;
     negated: boolean;

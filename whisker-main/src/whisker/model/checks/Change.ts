@@ -4,6 +4,7 @@ import {Existential, Quantifiable, Quantification, Universal} from "./Quantifica
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
+import {NumberLike} from "./AbstractCheck";
 
 export class Change implements Quantifiable<Change> {
     protected constructor(private readonly _comparison: Comparison) {
@@ -99,16 +100,6 @@ const ChangeOp = z.preprocess(
     },
     z.enum(changeOps)
 );
-
-/**
- * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
- */
-const NumberLike = z.union([
-    z.number(),
-    z.string().refine((s) => s.trim() !== "")
-])
-    .pipe(z.coerce.number())
-    .refine((n) => !Number.isNaN(n));
 
 export type NumberOrChangeOp =
     | number
