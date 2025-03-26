@@ -13,6 +13,7 @@ import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import logger from "../../../util/logger";
 import {InputErrorCodes} from "../checks/newCheck";
+import {AttributeAndEffectNames, AttributeNames, EffectNames, Keys, NumberAttributeNames} from "../checks/CheckTypes";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -22,17 +23,6 @@ export interface Dependencies {
 export interface Expression extends Dependencies {
     expr: string
 }
-
-export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
-export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
-export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
-export const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible"] as const;
-export const AttributeAndEffectNames = [...AttributeNames, ...EffectNames] as const;
-export const Keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-] as const;
 
 export abstract class ModelUtil {
 

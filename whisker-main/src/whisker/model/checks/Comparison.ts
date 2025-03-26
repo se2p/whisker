@@ -1,8 +1,8 @@
-import {z} from "zod";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
+import {ComparisonOp, comparisonOps} from "./CheckTypes";
 
 export type Comparison =
     | Eq
@@ -13,7 +13,7 @@ export type Comparison =
     | Geq
     ;
 
-export type AttributeType = string | boolean | number | { x: number, y: number } | number[];
+export type AttributeType = string | boolean | number;
 
 abstract class AbstractComparison implements Quantifiable<Comparison> {
     protected constructor(private readonly _operand2: AttributeType) {
@@ -185,15 +185,6 @@ export function isValidComparisonOp(op: ArgType): boolean {
     // @ts-ignore
     return comparisonOps.includes(op);
 }
-
-export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);
-
-export type ComparisonOp = typeof comparisonOps[number];
-
-export const ComparisonOp = z.preprocess(
-    (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
-    z.enum(comparisonOps)
-);
 
 export interface ComparingCheck {
     operator: ComparisonOp;

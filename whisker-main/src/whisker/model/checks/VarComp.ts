@@ -2,28 +2,24 @@ import {
     AbstractCheck,
     CheckFun0,
     couldBeSpriteName,
-    EqOrNeq,
     ICheckJSON,
-    NumberLike,
-    SlimCheckJSON,
-    SpriteName,
-    VariableName
+    SlimCheckJSON
 } from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, isValidComparisonOp, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
-import {EqOrNeqOp} from "./AttrChange";
+import {ComparisonOp, EqOrNeq, NumberLike, SpriteName, VariableName} from "./CheckTypes";
 
 const name = "VarComp" as const;
 
 export type VarCompArgs =
-    [spriteName: SpriteName, varName: VariableName, comparisonOp: EqOrNeqOp, varValue: string | number]
+    [spriteName: SpriteName, varName: VariableName, comparisonOp: EqOrNeq, varValue: string | number]
     | [spriteName: SpriteName, varName: VariableName, comparisonOp: ComparisonOp, varValue: number];
 
 const VarCompArgs = z.union([

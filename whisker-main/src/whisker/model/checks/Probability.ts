@@ -7,6 +7,7 @@ import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {ProbabilityArg} from "./CheckTypes";
 
 const name = "Probability" as const;
 
@@ -19,7 +20,7 @@ export type ProbabilityArgs = [
 ];
 
 const ProbabilityArgs = z.tuple([
-    z.coerce.number().min(0).max(1),
+    ProbabilityArg
 ]);
 
 export interface ProbabilityJSON extends ICheckJSON {

@@ -9,59 +9,9 @@ import {CheckResult, fail} from "./CheckResult";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
-export type SpriteName =
-    | string
-    | [string, ...string[]]
-    ;
-
 export function couldBeSpriteName(name: ArgType): InputErrorCodes {
     return typeof name == "string" || Array.isArray(name) && Object.values(name).every(s => typeof s == "string") ? "" : "invalidSpriteName";
 }
-
-export type VariableName = SpriteName;
-
-export const SpriteName = z.union([
-    z.string(),
-    z.string().array().nonempty()
-]);
-
-export const VariableName = SpriteName;
-
-export const AttrName = z.preprocess(
-    (attrName) => attrName === "costume" || attrName === "currentCostume" ? "currentCostumeName" : attrName,
-    z.string()
-);
-
-/**
- * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
- */
-export const NumberLike = z.union([
-    z.number(),
-    z.string().refine((s) => s.trim() !== "")
-])
-    .pipe(z.coerce.number())
-    .refine((n) => !Number.isNaN(n));
-
-/**
- * Either true, false, "true" or "false"
- */
-export const BooleanLike = z.preprocess((value) => {
-        return value === "true" ? true : value === false ? false : value;
-    }, z.union([
-        z.string(),
-        z.boolean()
-    ])
-).refine(b => typeof b === "boolean");
-
-export const EqOrNeq = z.preprocess(
-    (value) => value === "=" ? "==" : value,
-    z.union([
-        z.literal("=="),
-        z.literal("!=")
-    ])
-);
-
-export const NonNegativeNumber = z.coerce.number().nonnegative();
 
 export interface ICheckJSON {
     name: string;

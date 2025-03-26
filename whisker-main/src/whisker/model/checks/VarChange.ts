@@ -3,9 +3,7 @@ import {
     CheckFun0,
     couldBeSpriteName,
     ICheckJSON,
-    SlimCheckJSON,
-    SpriteName,
-    VariableName
+    SlimCheckJSON
 } from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
@@ -13,10 +11,11 @@ import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
-import {Change, ChangingCheck, isValidChangeOperator, newChange, NumberOrChangeOp} from "./Change";
+import {Change, ChangingCheck, isValidChangeOperator, newChange} from "./Change";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {NumberOrChangeOp, SpriteName, VariableName} from "./CheckTypes";
 
 const name = "VarChange" as const;
 

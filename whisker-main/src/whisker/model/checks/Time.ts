@@ -6,7 +6,6 @@ import {
     CheckFun1,
     CheckFun2,
     ICheckJSON,
-    NonNegativeNumber,
     SlimCheckJSON
 } from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
@@ -17,6 +16,7 @@ import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {NonNegativeNumber} from "./CheckTypes";
 
 export type TimeArgs = [
 

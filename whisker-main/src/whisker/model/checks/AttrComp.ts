@@ -1,14 +1,6 @@
-import {
-    AbstractCheck, BooleanLike,
-    CheckFun0,
-    couldBeSpriteName, EqOrNeq,
-    ICheckJSON,
-    NumberLike,
-    SlimCheckJSON,
-    SpriteName
-} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {EffectNames, ModelUtil, NumberAttributeNames, StringAttributeNames} from "../util/ModelUtil";
+import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -16,31 +8,38 @@ import {
     AttributeType,
     ComparingCheck,
     Comparison,
-    ComparisonOp,
     isValidComparisonOp,
     newQuantifiedComparison
 } from "./Comparison";
 import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
-import {AttrNames, BooleanAttribute, Effect, NumberAttribute, StringAttribute} from "./AttrChange";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {
+    AttrNames,
+    BooleanAttribute,
+    BooleanLike, ComparisonOp,
+    Effect,
+    EffectAttribute,
+    EqOrNeq,
+    NumberAttribute,
+    NumberLike,
+    SpriteName,
+    StringAttribute,
+} from "./CheckTypes";
 
 const name = "AttrComp" as const;
-type PosType = {
-    x: number,
-    y: number
-}
+
 export type AttrCompArgs =
-    [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
-    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number]
-    | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean]
+    [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number]
+    | [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: EqOrNeq, attrValue: string]
+    | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: EqOrNeq, attrValue: boolean]
 
 const AttrCompArgs = z.union([
-    z.tuple([SpriteName, z.enum(NumberAttributeNames), ComparisonOp, NumberLike]),
-    z.tuple([SpriteName, z.enum(EffectNames), ComparisonOp, NumberLike]),
-    z.tuple([SpriteName, z.enum(StringAttributeNames), EqOrNeq, z.string()]),
-    z.tuple([SpriteName, z.literal("visible"), EqOrNeq, BooleanLike]),
+    z.tuple([SpriteName, NumberAttribute, ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, EffectAttribute, ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, StringAttribute, EqOrNeq, z.string()]),
+    z.tuple([SpriteName, BooleanAttribute, EqOrNeq, BooleanLike]),
 ]);
 
 export interface AttrCompJSON extends ICheckJSON {

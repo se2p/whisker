@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
@@ -8,6 +8,7 @@ import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {RGBNumber, SpriteName} from "./CheckTypes";
 
 const name = "SpriteColor" as const;
 
@@ -32,8 +33,6 @@ export type SpriteColorArgs = [
      */
     blue: number,
 ];
-
-const RGBNumber = z.coerce.number().min(0).max(255);
 
 const SpriteColorArgs = z.tuple([
     SpriteName,

@@ -4,8 +4,9 @@ import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {Keys, ModelUtil} from "../util/ModelUtil";
+import {ModelUtil} from "../util/ModelUtil";
 import {InputErrorCodes} from "./newCheck";
+import {KeyArgument} from "./CheckTypes";
 
 const name = "Key" as const;
 
@@ -17,7 +18,7 @@ export type KeyArgs = [
 ];
 
 const KeyArgs = z.tuple([
-    z.enum(Keys),
+    KeyArgument,
 ]);
 
 export interface KeyJSON extends ICheckJSON {

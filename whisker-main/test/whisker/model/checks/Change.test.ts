@@ -1,14 +1,12 @@
 import {fc, it} from "@fast-check/jest";
 import {
-    ChangeOp,
-    changeOps,
     ChangingCheck,
     newChange,
-    newQuantifiedChange,
-    NumberOrChangeOp
+    newQuantifiedChange
 } from "../../../../src/whisker/model/checks/Change";
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {ChangeOp, changeOps, NumberOrChangeOp} from "../../../../src/whisker/model/checks/CheckTypes";
 
 // Generators for 1-tuples, 2-tuples, and 3-tuples of numbers.
 const number = fc.double({noNaN: true});

@@ -12,8 +12,8 @@ import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
 
-import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
 
 function checkConstructorThrows(name: CheckName, negated: boolean, args) {
     expect(() => newCheck(edgeID, {name, negated, args})).toThrow();

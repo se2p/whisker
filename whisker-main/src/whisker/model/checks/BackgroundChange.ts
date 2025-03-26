@@ -1,12 +1,13 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import {ErrorForAttribute} from "../util/ModelError";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
 import {ModelUtil} from "../util/ModelUtil";
+import {ComparisonOp} from "./CheckTypes";
 
 const name = "BackgroundChange" as const;
 

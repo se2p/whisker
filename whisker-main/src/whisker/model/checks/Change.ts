@@ -1,10 +1,10 @@
-import {z} from "zod";
 import {Comparison, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
-import {NumberLike} from "./AbstractCheck";
+
+import {changeOps, NumberOrChangeOp} from "./CheckTypes";
 
 export class Change implements Quantifiable<Change> {
     protected constructor(private readonly _comparison: Comparison) {
@@ -75,38 +75,11 @@ const neq0 = new class Neq0 extends Change {
     }
 };
 
-export const changeOps = ["+", "-", "==", "+=", "-=", "!="] as const;
-
 export function isValidChangeOperator(change: ArgType): boolean {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return changeOps.includes(change);
 }
-
-export type ChangeOp = typeof changeOps[number];
-
-const ChangeOp = z.preprocess(
-    (change) => { // Canonicalize operators, handle aliases.
-        switch (change) {
-            case "++":
-                return "+";
-            case "--":
-                return "-";
-            case "==":
-                return "=";
-            default:
-                return change;
-        }
-    },
-    z.enum(changeOps)
-);
-
-export type NumberOrChangeOp =
-    | number
-    | ChangeOp
-    ;
-
-export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 
 export function newChange({change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">): Change {
     const change = Change.from(numberOrChangeOp);

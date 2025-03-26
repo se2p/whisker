@@ -3,19 +3,18 @@ import {
     CheckFun0,
     couldBeSpriteName,
     ICheckJSON,
-    NonNegativeNumber,
-    SlimCheckJSON,
-    SpriteName
+    SlimCheckJSON
 } from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, isValidComparisonOp, newComparison} from "./Comparison";
 import {Optional} from "../../utils/Optional";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {ComparisonOp, NonNegativeNumber, SpriteName} from "./CheckTypes";
 
 export type NbrOfClonesArgs = [
     /**

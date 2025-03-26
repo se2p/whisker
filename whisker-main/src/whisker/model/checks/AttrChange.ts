@@ -1,16 +1,9 @@
-import {
-    AbstractCheck,
-    CheckFun0,
-    couldBeSpriteName, EqOrNeq,
-    ICheckJSON,
-    SlimCheckJSON,
-    SpriteName
-} from "./AbstractCheck";
-import {EffectNames, ModelUtil, NumberAttributeNames, StringAttributeNames} from "../util/ModelUtil";
+import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {Change, ChangingCheck, isValidChangeOperator, newQuantifiedChange, NumberOrChangeOp} from "./Change";
+import {Change, ChangingCheck, isValidChangeOperator, newQuantifiedChange} from "./Change";
 import {Quantification} from "./Quantification";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
@@ -18,27 +11,30 @@ import {NotYetImplementedException} from "../../core/exceptions/NotYetImplemente
 import {CheckResult, fail, pass} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
+import {
+    AttrNames,
+    BooleanAttribute,
+    Effect,
+    EffectAttribute,
+    EqOrNeq,
+    NumberAttribute,
+    NumberAttributeNames, NumberOrChangeOp, SpriteName,
+    StringAttribute
+} from "./CheckTypes";
 
 const name = "AttrChange" as const;
 
-export const EqOrNeqOPs = ["==", "!="] as const;
-export type StringAttribute = typeof StringAttributeNames[number];
-export type NumberAttribute = typeof NumberAttributeNames[number];
-export type BooleanAttribute = "visible"
-export type Effect = typeof EffectNames[number];
-export type EqOrNeqOp = typeof EqOrNeqOPs[number];
-export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute;
 export type AttrChangeArgs =
-    [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeqOp]
-    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
-    | [spriteName: SpriteName, attrName: "visible", change: EqOrNeqOp];
+    [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
+    | [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeq]
+    | [spriteName: SpriteName, attrName: BooleanAttribute, change: EqOrNeq];
 
 
 const AttrChangeArgs = z.union([
-    z.tuple([SpriteName, z.enum(NumberAttributeNames), NumberOrChangeOp]),
-    z.tuple([SpriteName, z.enum(EffectNames), NumberOrChangeOp]),
-    z.tuple([SpriteName, z.enum(StringAttributeNames), EqOrNeq]),
-    z.tuple([SpriteName, z.literal("visible"), EqOrNeq]),
+    z.tuple([SpriteName, NumberAttribute, NumberOrChangeOp]),
+    z.tuple([SpriteName, EffectAttribute, NumberOrChangeOp]),
+    z.tuple([SpriteName, StringAttribute, EqOrNeq]),
+    z.tuple([SpriteName, BooleanAttribute, EqOrNeq]),
 ]);
 
 
