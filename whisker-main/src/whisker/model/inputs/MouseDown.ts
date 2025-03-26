@@ -5,15 +5,11 @@ import {z} from "zod";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "../checks/newCheck";
 import {ModelUtil} from "../util/ModelUtil";
+import {BooleanLike} from "../checks/CheckTypes";
 
 const name = "InputMouseDown" as const;
 
 type MouseDownArgs = [boolean]; // Whether the mouse button is pressed or released.
-
-const BooleanLike = z.union([
-    z.boolean(),
-    z.union([z.literal("true"), z.literal("false")]).transform((s) => s === "true"),
-]);
 
 const MouseDownArgs = z.tuple([BooleanLike]);
 

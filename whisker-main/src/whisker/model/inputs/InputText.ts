@@ -38,6 +38,6 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
     }
 
     public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.argIsString(args,0)];
+        return [ModelUtil.argIsString(args, 0)];
     }
 }
