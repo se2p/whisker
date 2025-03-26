@@ -26,7 +26,7 @@ export interface Expression extends Dependencies {
 export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
 export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
 export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
-export const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible", "pos", "effects"] as const;
+export const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible"] as const;
 export const AttributeAndEffectNames = [...AttributeNames, ...EffectNames] as const;
 export const Keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',

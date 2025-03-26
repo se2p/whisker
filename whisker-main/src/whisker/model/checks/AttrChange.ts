@@ -28,13 +28,11 @@ export type NumberAttribute = typeof NumberAttributeNames[number];
 export type BooleanAttribute = "visible"
 export type Effect = typeof EffectNames[number];
 export type EqOrNeqOp = typeof EqOrNeqOPs[number];
-export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute | "pos" | "effects";
+export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute;
 export type AttrChangeArgs =
     [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeqOp]
     | [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
-    | [spriteName: SpriteName, attrName: "pos", change: EqOrNeqOp]
-    | [spriteName: SpriteName, attrName: "visible", change: EqOrNeqOp]
-    | [spriteName: SpriteName, attrName: "effects", change: EqOrNeqOp];
+    | [spriteName: SpriteName, attrName: "visible", change: EqOrNeqOp];
 
 
 const AttrChangeArgs = z.union([
@@ -108,7 +106,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         };
         if (this._attributeName == "x" || this._attributeName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, check);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(this._attributeName)) {
+        } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(this._attributeName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, check);
         }
 

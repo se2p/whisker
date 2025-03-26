@@ -185,7 +185,7 @@ describe('ModelUtil tests', function () {
     });
 
     describe('checkAttributeExistence()', () => {
-        const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "pos", "visible", "effects"];
+        const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible"];
         it.each(AttributeNames)('checkAttributeForExistence("%s")', (name) => {
             expect(() => ModelUtil.checkAttributeExistence(null, "sprite", name)).not.toThrow();
         });

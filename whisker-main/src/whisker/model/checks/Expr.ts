@@ -68,7 +68,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         d.attrDependencies.forEach(({spriteName, attrName}) => {
             if (attrName == "x" || attrName == "y") {
                 cu.registerOnMoveEvent(spriteName, this, graphID, predicate);
-            } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+            } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
                 cu.registerOnVisualChange(spriteName, this, graphID, predicate);
             } else if (attrName == "sayText") {
                 cu.registerOutput(spriteName, this, graphID, predicate);

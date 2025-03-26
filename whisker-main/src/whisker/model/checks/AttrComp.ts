@@ -27,13 +27,9 @@ export type AttrCompArgs =
     [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
     | [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number]
     | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean]
-    | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: PosType]
-    | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]];
 
 const AttrCompArgs = z.union([
     z.tuple([SpriteName, z.literal("visible"), z.union([z.literal("=="), z.literal("!=")]), z.string().or(z.boolean())]),
-    z.tuple([SpriteName, z.literal("pos"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
-    z.tuple([SpriteName, z.literal("effects"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
     z.tuple([SpriteName, z.enum(NumberAttributeNames), ComparisonOp, z.string().or(z.number())]),
     z.tuple([SpriteName, z.enum(EffectNames), ComparisonOp, z.string().or(z.number())]),
     z.tuple([SpriteName, z.enum(StringAttributeNames), ComparisonOp, z.string()]),
@@ -101,7 +97,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // on movement listener
         if (this._attrName == "x" || this._attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
         } else if (this._attrName == "sayText") {
             cu.registerOutput(spriteName, this, graphID, listener);
@@ -145,10 +141,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             valid = ModelUtil.parseIntAndUpdate(args, 3);
         } else if (args[1] == "visible") {
             valid = ModelUtil.parseBooleanAndUpdate(args, 3);
-        } else if (args[1] === "pos") {
-            valid = ModelUtil.parsePosAndUpdate(args, 3);
-        } else if (args[1] === "effects") {
-            valid = ModelUtil.parseEffectsArrayAndUpdate(args, 3);
         } else {
             valid = typeof args[3] == "string" ? "" : "NoStringProvided";
         }
