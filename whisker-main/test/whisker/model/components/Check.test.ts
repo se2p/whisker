@@ -148,7 +148,7 @@ describe('string representations', () => {
             ["AttrComp", true, ["sprite", "x", ">", "0"], "!AttrComp(sprite,x,>,0)"],
             ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
             ["Click", true, ["sprite"], "!Click(sprite)"],
-            ["Key", true, ["test"], "!Key(test)"],
+            ["Key", true, ["space"], "!Key(space)"],
             ["Output", true, ["test", "hallo"], "!Output(test,hallo)"],
             ["SpriteColor", true, ["sprite", 0, 0, 0], "!SpriteColor(sprite,0,0,0)"],
             ["SpriteTouching", true, ["sprite1", "sprite2"], "!SpriteTouching(sprite1,sprite2)"],
@@ -406,24 +406,24 @@ describe('Contradictions', () => {
             ["VarChange", true, ['sprite', 'var', '-'], "VarChange", true, ['sprite', 'var', '-='], false],
 
             //attrChange
-            ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '+'], false],
-            ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '-'], false],
-            ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '='], false],
-            ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '+='], false],
-            ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var', '-='], true],
+            ["AttrChange", true, ['sprite', 'layerOrder', '+'], "AttrChange", true, ['sprite', 'layerOrder', '+'], false],
+            ["AttrChange", true, ['sprite', 'layerOrder', '+'], "AttrChange", true, ['sprite', 'layerOrder', '-'], false],
+            ["AttrChange", true, ['sprite', 'layerOrder', '+'], "AttrChange", true, ['sprite', 'layerOrder', '='], false],
+            ["AttrChange", true, ['sprite', 'layerOrder', '+'], "AttrChange", true, ['sprite', 'layerOrder', '+='], false],
+            ["AttrChange", true, ['sprite', 'layerOrder', '+'], "AttrChange", true, ['sprite', 'layerOrder', '-='], true],
 
             //other names
-            ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite2', 'var', '='], false],
-            ["AttrChange", true, ['sprite', 'var', '+'], "AttrChange", true, ['sprite', 'var2', '='], false],
+            ["AttrChange", true, ['sprite', 'layerOrder', '+'], "AttrChange", true, ['sprite2', 'layerOrder', '='], false],
+            ["AttrChange", true, ['sprite', 'layerOrder', '+'], "AttrChange", true, ['sprite', 'volume', '='], false],
 
-            ["AttrChange", true, ['sprite', 'var', '-'], "AttrChange", true, ['sprite', 'var', '+='], true],
-            ["AttrChange", true, ['sprite', 'var', '-'], "AttrChange", true, ['sprite', 'var', '-='], false],
+            ["AttrChange", true, ['sprite', 'layerOrder', '-'], "AttrChange", true, ['sprite', 'layerOrder', '+='], true],
+            ["AttrChange", true, ['sprite', 'layerOrder', '-'], "AttrChange", true, ['sprite', 'layerOrder', '-='], false],
 
             // different values
             ["VarChange", true, ['sprite', 'var', '-5'], "VarChange", true, ['sprite', 'var', '-7'], false],
             ["VarChange", true, ['sprite', 'var', '+5'], "VarChange", true, ['sprite', 'var', '+7'], false],
-            ["AttrChange", false, ['sprite', 'var', '-5'], "AttrChange", false, ['sprite', 'var', '-7'], false],
-            ["AttrChange", false, ['sprite', 'var', '+5'], "AttrChange", false, ['sprite', 'var', '+7'], false],
+            ["AttrChange", false, ['sprite', 'layerOrder', '-5'], "AttrChange", false, ['sprite', 'layerOrder', '-7'], false],
+            ["AttrChange", false, ['sprite', 'layerOrder', '+5'], "AttrChange", false, ['sprite', 'layerOrder', '+7'], false],
         ];
 
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
