@@ -64,9 +64,9 @@ describe('constructor', () => {
         describe("not enough argument: nbrofclones", () => {
             const constructorArguments: [CheckName, boolean, ArgType[]][] = [
                 ["NbrOfClones", true, ["spriteName"]],
-                ["NbrOfClones", true, ["spriteName", "="]],
+                ["NbrOfClones", true, ["spriteName", "=="]],
                 ["NbrOfVisibleClones", true, ["spriteName"]],
-                ["NbrOfVisibleClones", true, ["spriteName", "="]]
+                ["NbrOfVisibleClones", true, ["spriteName", "=="]]
             ];
             it.each(constructorArguments)('Constructor with (%s, %s, %s) throws', checkConstructorThrows);
         });
@@ -159,8 +159,8 @@ describe('string representations', () => {
             ["TimeElapsed", true, [1000], "!TimeElapsed(1000)"],
             ["TimeBetween", true, [1000], "!TimeBetween(1000)"],
             ["TimeAfterEnd", true, [1000], "!TimeAfterEnd(1000)"],
-            ["NbrOfClones", true, ["sprite", "=", 1], "!NbrOfClones(sprite,==,1)"],
-            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "!NbrOfVisibleClones(sprite,==,1)"],
+            ["NbrOfClones", true, ["sprite", "==", 1], "!NbrOfClones(sprite,==,1)"],
+            ["NbrOfVisibleClones", true, ["sprite", "==", 1], "!NbrOfVisibleClones(sprite,==,1)"],
             ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"]
         ];
 
@@ -258,8 +258,8 @@ describe('Contradictions', () => {
         return effects;
     }
 
-    const optionsFirst = [">", ">=", "=", "<=", "<"];
-    const optionsSecond = ["+", "+=", "=", "-=", "-"];
+    const optionsFirst = [">", ">=", "==", "<=", "<"];
+    const optionsSecond = ["+", "+=", "==", "-=", "-"];
 
     function getEffectComparisonChangeCombinations(first: CheckName, second: CheckName): [Check, Check, boolean][] {
         return getEffectsCombinationsFor("sprite", "y", first, optionsFirst, second, optionsSecond);
@@ -458,29 +458,29 @@ describe('Contradictions', () => {
             ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "<=", "1"], false],
             ["VarComp", true, ["sprite", "y", "<=", "0"], "VarComp", true, ["sprite", "y", "<=", "1"], false],
 
-            ["VarComp", false, ["sprite", "y", "=", "0"], "VarComp", false, ["sprite", "y", "=", "1"], true],
-            ["VarComp", false, ["sprite", "y", "=", "0"], "VarComp", true, ["sprite", "y", "=", "0"], true],
+            ["VarComp", false, ["sprite", "y", "==", "0"], "VarComp", false, ["sprite", "y", "==", "1"], true],
+            ["VarComp", false, ["sprite", "y", "==", "0"], "VarComp", true, ["sprite", "y", "==", "0"], true],
 
-            ["VarComp", true, ["sprite", "y", "=", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
-            ["VarComp", true, ["sprite", "y", "=", "0"], "VarComp", true, ["sprite", "y", "=", "0"], false],
+            ["VarComp", true, ["sprite", "y", "==", "0"], "VarComp", true, ["sprite", "y", "==", "1"], false],
+            ["VarComp", true, ["sprite", "y", "==", "0"], "VarComp", true, ["sprite", "y", "==", "0"], false],
 
-            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
-            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", false, ["sprite", "y", "=", "-1"], true],
-            ["VarComp", true, ["sprite", "y", "<", "2"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", true, ["sprite", "y", "==", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<", "0"], "VarComp", false, ["sprite", "y", "==", "-1"], true],
+            ["VarComp", true, ["sprite", "y", "<", "2"], "VarComp", true, ["sprite", "y", "==", "1"], false],
 
-            ["VarComp", true, ["sprite", "y", "<=", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
-            ["VarComp", true, ["sprite", "y", "<=", "2"], "VarComp", true, ["sprite", "y", "=", "1"], false],
-            ["VarComp", true, ["sprite", "y", "<=", "2"], "VarComp", false, ["sprite", "y", "=", "-1"], true],
-            ["VarComp", true, ["sprite", "y", "<=", "1"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "0"], "VarComp", true, ["sprite", "y", "==", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "2"], "VarComp", true, ["sprite", "y", "==", "1"], false],
+            ["VarComp", true, ["sprite", "y", "<=", "2"], "VarComp", false, ["sprite", "y", "==", "-1"], true],
+            ["VarComp", true, ["sprite", "y", "<=", "1"], "VarComp", true, ["sprite", "y", "==", "1"], false],
 
-            ["VarComp", true, ["sprite", "y", ">", "1"], "VarComp", true, ["sprite", "y", "=", "1"], false],
-            ["VarComp", true, ["sprite", "y", ">", "1"], "VarComp", false, ["sprite", "y", "=", "2"], true],
-            ["VarComp", true, ["sprite", "y", ">", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">", "1"], "VarComp", true, ["sprite", "y", "==", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">", "1"], "VarComp", false, ["sprite", "y", "==", "2"], true],
+            ["VarComp", true, ["sprite", "y", ">", "0"], "VarComp", true, ["sprite", "y", "==", "1"], false],
 
-            ["VarComp", true, ["sprite", "y", ">=", "2"], "VarComp", true, ["sprite", "y", "=", "1"], false],
-            ["VarComp", true, ["sprite", "y", ">=", "2"], "VarComp", false, ["sprite", "y", "=", "3"], true],
-            ["VarComp", true, ["sprite", "y", ">=", "0"], "VarComp", true, ["sprite", "y", "=", "1"], false],
-            ["VarComp", true, ["sprite", "y", ">=", "1"], "VarComp", true, ["sprite", "y", "=", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">=", "2"], "VarComp", true, ["sprite", "y", "==", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">=", "2"], "VarComp", false, ["sprite", "y", "==", "3"], true],
+            ["VarComp", true, ["sprite", "y", ">=", "0"], "VarComp", true, ["sprite", "y", "==", "1"], false],
+            ["VarComp", true, ["sprite", "y", ">=", "1"], "VarComp", true, ["sprite", "y", "==", "1"], false],
 
             ["VarComp", false, ["sprite", "y", "<", "3"], "VarComp", false, ["sprite", "y", ">", "1"], false],
             ["VarComp", true, ["sprite", "y", "<", "1"], "VarComp", true, ["sprite", "y", ">", "1"], false],
@@ -501,10 +501,10 @@ describe('Contradictions', () => {
             ["VarComp", false, ["sprite", "y", "<=", "1"], "VarComp", false, ["sprite", "y", ">=", "1"], false],
             ["VarComp", false, ["sprite", "y", "<=", "-1"], "VarComp", false, ["sprite", "y", ">=", "1"], true],
 
-            ["VarComp", false, ["sprite", "y", "=", "3"], "VarComp", false, ["sprite", "y", "!=", "3"], true],
-            ["VarComp", false, ["sprite", "y", "=", "3"], "VarComp", true, ["sprite", "y", "!=", "3"], false],
-            ["VarComp", true, ["sprite", "y", "=", "1"], "VarComp", false, ["sprite", "y", "!=", "1"], false],
-            ["VarComp", true, ["sprite", "y", "=", "1"], "VarComp", true, ["sprite", "y", "!=", "1"], true],
+            ["VarComp", false, ["sprite", "y", "==", "3"], "VarComp", false, ["sprite", "y", "!=", "3"], true],
+            ["VarComp", false, ["sprite", "y", "==", "3"], "VarComp", true, ["sprite", "y", "!=", "3"], false],
+            ["VarComp", true, ["sprite", "y", "==", "1"], "VarComp", false, ["sprite", "y", "!=", "1"], false],
+            ["VarComp", true, ["sprite", "y", "==", "1"], "VarComp", true, ["sprite", "y", "!=", "1"], true],
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
     });
@@ -565,16 +565,16 @@ describe('Contradictions', () => {
 
     describe("contradiction: clones", () => {
         const table: TableEntry[] = [
-            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", true, ["sprite2", "=", 2], false],
-            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", true, ["sprite", "=", 1], false],
-            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", true, ["sprite", "=", 2], false],
-            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", false, ["sprite", "=", 2], false],
+            ["NbrOfClones", true, ["sprite", "==", 1], "NbrOfClones", true, ["sprite2", "==", 2], false],
+            ["NbrOfClones", true, ["sprite", "==", 1], "NbrOfClones", true, ["sprite", "==", 1], false],
+            ["NbrOfClones", true, ["sprite", "==", 1], "NbrOfClones", true, ["sprite", "==", 2], false],
+            ["NbrOfClones", true, ["sprite", "==", 1], "NbrOfClones", false, ["sprite", "==", 2], false],
 
-            ["NbrOfClones", true, ["sprite", "=", 1], "NbrOfClones", false, ["sprite", "=", 1], true],
+            ["NbrOfClones", true, ["sprite", "==", 1], "NbrOfClones", false, ["sprite", "==", 1], true],
 
-            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "NbrOfVisibleClones", true, ["sprite2", "=", 2], false],
-            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "NbrOfVisibleClones", true, ["sprite", "=", 1], false],
-            ["NbrOfVisibleClones", true, ["sprite", "=", 1], "NbrOfVisibleClones", true, ["sprite", "=", 2], false],
+            ["NbrOfVisibleClones", true, ["sprite", "==", 1], "NbrOfVisibleClones", true, ["sprite2", "==", 2], false],
+            ["NbrOfVisibleClones", true, ["sprite", "==", 1], "NbrOfVisibleClones", true, ["sprite", "==", 1], false],
+            ["NbrOfVisibleClones", true, ["sprite", "==", 1], "NbrOfVisibleClones", true, ["sprite", "==", 2], false],
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
 
@@ -640,7 +640,7 @@ describe('Contradictions', () => {
             ["AttrComp", false, ["sprite", "y", "<", "0"], "AttrComp", true, ["sprite", "y", "<=", "0"], true],
             ["AttrComp", false, ["sprite", "y", "<", "0"], "AttrComp", false, ["sprite", "y", "<=", "0"], false],
 
-            ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", "<=", "0"], true],
+            ["AttrComp", false, ["sprite", "y", "==", "0"], "AttrComp", true, ["sprite", "y", "<=", "0"], true],
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<=", "0"], false],
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", true, ["sprite", "y", ">=", "0"], true],
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", ">=", "0"], false],

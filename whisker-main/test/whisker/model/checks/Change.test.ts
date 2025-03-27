@@ -100,9 +100,9 @@ describe("A change", () => {
     });
 
     describe.each([
-        ["a positive number", gtz, ["=", "-", "-="], "+"],
-        ["a negative number", ltz, ["=", "+", "+="], "-"],
-        ["zero", eqz, ["+", "-", "!="], "="],
+        ["a positive number", gtz, ["==", "-", "-="], "+"],
+        ["a negative number", ltz, ["==", "+", "+="], "-"],
+        ["zero", eqz, ["+", "-", "!="], "=="],
     ])('by %s', (_, n, contraOps, compatOp: ChangeOp) => {
         describe.each(contraOps)('contradicts', (op: ChangeOp) => {
             it.prop([n])(`the "${op}" change`, (n) => {
@@ -120,12 +120,12 @@ describe("A change", () => {
     });
 
     describe.each([
-        ["+", ["=", "-", "-="], gt, le, gtz, lez],
-        ["-", ["=", "+", "+="], lt, ge, ltz, gez],
-        ["=", ["+", "-", "!="], eq, ne, eqz, nez],
+        ["+", ["==", "-", "-="], gt, le, gtz, lez],
+        ["-", ["==", "+", "+="], lt, ge, ltz, gez],
+        ["==", ["+", "-", "!="], eq, ne, eqz, nez],
         ["+=", ["-"], ge, lt, gez, ltz],
         ["-=", ["+"], le, gt, lez, gtz],
-        ["!=", ["="], ne, eq, nez, eqz],
+        ["!=", ["=="], ne, eq, nez, eqz],
     ])('given by "%s"', (op: ChangeOp, contraOps: ChangeOp[], passing, failing, compat, contra) => {
         it.each(contraOps)('contradicts the "%s" change', (op2) => {
             const c1 = newChange({change: op});
@@ -217,7 +217,7 @@ describe("The schema validation for Change", () => {
     it.each([
         ["++", "+"],
         ["--", "-"],
-        ["==", "="],
+        ["==", "=="],
     ])('converts "%s" to "%s"', (op1, op2) => {
         expect(NumberOrChangeOp.parse(op1)).toBe(op2);
     });
