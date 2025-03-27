@@ -2,7 +2,7 @@ import {fc, it} from "@fast-check/jest";
 import {
     ComparingCheck,
     ComparisonOp,
-    comparisonOps,
+    comparisonOps, CONST_FAIL, CONST_PASS,
     newComparison,
     newQuantifiedComparison
 } from "../../../../src/whisker/model/checks/Comparison";
@@ -295,4 +295,22 @@ describe("A comparison with an interval [min, max]", () => {
     });
 });
 
-// TODO: string comparisons?
+describe("The CONST_PASS comparison", () => {
+    it.prop([fc.double()])("always passes", (i) => {
+        expect(CONST_PASS.apply(i)).toStrictEqual(pass());
+    });
+
+    it("returns CONST_FAIL when negated", () => {
+        expect(CONST_PASS.negate()).toBe(CONST_FAIL);
+    });
+});
+
+describe("The CONST_FAIL comparison", () => {
+    it.prop([fc.double()])("always fails", (i) => {
+        expect(CONST_FAIL.apply(i)).toStrictEqual(fail({message: "CONST_FAIL"}));
+    });
+
+    it("returns CONST_PASS when negated", () => {
+        expect(CONST_FAIL.negate()).toBe(CONST_PASS);
+    });
+});
