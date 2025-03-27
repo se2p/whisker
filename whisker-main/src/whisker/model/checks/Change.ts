@@ -25,7 +25,7 @@ export class Change implements Quantifiable<Change> {
     static from(numberOrChangeOp: NumberOrChangeOp): Change {
         // Special handling to support string operands as the subtraction trick would not work.
         switch (numberOrChangeOp) {
-            case "=":
+            case "==":
                 return eq0;
             case "!=":
                 return neq0;
