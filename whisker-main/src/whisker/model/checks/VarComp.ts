@@ -1,10 +1,4 @@
-import {
-    AbstractCheck,
-    CheckFun0,
-    couldBeSpriteName,
-    ICheckJSON,
-    SlimCheckJSON
-} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
@@ -14,7 +8,7 @@ import {ComparingCheck, Comparison, isValidComparisonOp, newComparison} from "./
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
-import {ComparisonOp, EqOrNeq, NumberLike, SpriteName, VariableName} from "./CheckTypes";
+import {ComparisonOp, EqOrNeq, EqOrNeqOPs, NumberLike, SpriteName, VariableName} from "./CheckTypes";
 
 const name = "VarComp" as const;
 
@@ -23,8 +17,8 @@ export type VarCompArgs =
     | [spriteName: SpriteName, varName: VariableName, comparisonOp: ComparisonOp, varValue: number];
 
 const VarCompArgs = z.union([
-    z.tuple([SpriteName, VariableName, EqOrNeq, z.string().or(z.number())]),
     z.tuple([SpriteName, VariableName, ComparisonOp, NumberLike], {message: "InvalidVarCompArgs"}),
+    z.tuple([SpriteName, VariableName, z.enum(EqOrNeqOPs, {message: "InvalidComparison"}), z.string().or(z.number())]),
 ]);
 
 export interface VarCompJSON extends ICheckJSON {

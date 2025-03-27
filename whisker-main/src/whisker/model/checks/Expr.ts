@@ -12,7 +12,9 @@ const name = "Expr" as const;
 
 export type ExprArgs = [string, ...string[]];
 
-const ExprArgs = z.string().array().nonempty();
+const ExprArgs = z.string().array()
+    .nonempty()
+    .refine(arg => arg.some(s => s && s.length > 0, {message: "NoNonEmptyExprText"}));
 
 export interface ExprJSON extends ICheckJSON {
     name: typeof name;

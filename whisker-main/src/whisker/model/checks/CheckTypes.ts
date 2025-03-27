@@ -1,4 +1,5 @@
-import {z} from "zod";
+import {SafeParseReturnType, z, ZodIssue} from "zod";
+import {ArgType} from "../util/schema";
 
 export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
 export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
@@ -32,25 +33,27 @@ export const NumberAttribute = z.enum(NumberAttributeNames);
 export const EffectAttribute = z.enum(EffectNames);
 export const StringAttribute = z.enum(StringAttributeNames);
 export const BooleanAttribute = z.enum(BooleanAttributeNames);
-export const KeyArgument = z.enum(Keys, {message: "InvalidKey"});
-
+export const KeyArgument = z.preprocess(
+    (key) => ["left", "right", "up", "down"].includes(key as string) ? `${key} arrow` : key,
+    z.enum(Keys, {message: "InvalidKey"})
+);
 
 export const SpriteName = z.union([
-    z.string(),
+    z.string({message: "NoStringProvided"}).min(1, {message: "StringIsEmpty"}),
     z.string().array().nonempty()
-], {message: "invalidSpriteName"});
+], {message: "InvalidSpriteName"});
 
-export const VariableName = z.string({message: "invalidVariableName"});
+export const VariableName = z.string({message: "NoStringProvided"}).min(1, {message: "StringIsEmpty"});
 
 /**
  * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
  */
 export const NumberLike = z.union([
     z.number(),
-    z.string().refine((s) => s.trim() !== "")
-], {message: "NeitherStringNorNumber"})
-    .pipe(z.coerce.number({message: "NeitherStringNorNumber"}))
-    .refine((n) => !Number.isNaN(n), {message: "NeitherStringNorNumber"});
+    z.string().refine((s) => s.trim() !== "", "StringIsEmpty")
+], {message: "NeitherNumberNorString"})
+    .pipe(z.coerce.number({message: "NoNumber"}))
+    .refine((n) => !Number.isNaN(n), {message: "NoNumber"});
 /**
  * Either true, false, "true" or "false"
  */
@@ -62,33 +65,34 @@ export const BooleanLike = z.preprocess((value) => {
     ], {message: "NeitherTrueNorFalse"})
 ).refine(b => typeof b === "boolean", {message: "NeitherTrueNorFalse"});
 
-export const NonNegativeNumber = z.coerce.number({message: "NeitherStringNorNumber"})
+export const NonNegativeNumber = z.coerce.number({message: "NoNumber"})
     .nonnegative({message: "NumberMustBeNonNegative"});
 
 export const EqOrNeq = z.preprocess(
     (value) => value === "=" ? "==" : value,
-    z.enum(EqOrNeqOPs, {message: "NeitherEqOrNeq"})
+    z.enum(EqOrNeqOPs, {message: "InvalidOpForAttribute"})
 );
 
 export const ComparisonOp = z.preprocess(
     (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
-    z.enum(comparisonOps, {message: "InvalidComparisonOp"})
+    z.enum(comparisonOps, {message: "InvalidComparison"})
 );
 const ChangeOp = z.preprocess(
     (change) => change === "=" ? "==" : change,
-    z.enum(changeOps, {message: "InvalidChangeOp"})
+    z.enum(changeOps, {message: "InvalidChange"})
 );
 export const NumberOrChangeOp = z.union([
     NumberLike,
     ChangeOp
-], {message: "NeitherChangeNorNumber"});
+], { errorMap: () => ({ message: "NeitherNumberNorChange" }) });
 
-export const ProbabilityArg = z.coerce.number({message: "NeitherStringNorNumber"})
+export const ProbabilityArg = z.coerce.number({message: "NoNumber"})
     .transform(value => value > 1 ? value / 100 : value)
     .refine(value => 0 <= value && value <= 1, {message: "ValueIsNoProbability"});
 
-export const RGBNumber = z.coerce.number({message: "NeitherStringNorNumber"})
-    .min(0,{message: "RgbColorSmaller0"})
-    .max(255, {message: "RgbColorGreater255"});
+export const RGBNumber = z.coerce.number({message: "NoNumber"})
+    .min(0, {message: "OutOfRgbRange"})
+    .max(255, {message: "OutOfRgbRange"});
 
-export const NonEmptyString = z.string({message: "NoString"}).min(1, {message: "StringIsEmpty"});
+export const NonEmptyString = z.string({message: "NoStringProvided"}).min(1, {message: "StringIsEmpty"});
+
