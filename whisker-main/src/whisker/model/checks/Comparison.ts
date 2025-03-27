@@ -194,6 +194,30 @@ class Geq<T extends Interval> extends AbstractComparison<T> {
     }
 }
 
+export const CONST_PASS = new class ConstPass extends Neq<null> {
+    constructor() {
+        super(NaN, null);
+    }
+
+    override negate(): Comparison<null> {
+        return CONST_FAIL;
+    }
+};
+
+export const CONST_FAIL = new class ConstFail extends Eq<null> {
+    constructor() {
+        super(NaN, null);
+    }
+
+    override apply(operand1: AttributeType): CheckResult {
+        return super.apply(operand1).replace({message: "CONST_FAIL"});
+    }
+
+    override negate(): Comparison<null> {
+        return CONST_PASS;
+    }
+};
+
 type ComparisonCtor<T extends Interval> = new (operand2: AttributeType, interval: Interval) => Comparison<T>;
 
 const Comparison: Record<ComparisonOp, ComparisonCtor<Interval>> = Object.freeze({
