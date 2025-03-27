@@ -78,7 +78,7 @@
                             "Stern",
                             "visible",
                             "==",
-                            "false"
+                            false
                         ],
                         "negated": false
                     }
