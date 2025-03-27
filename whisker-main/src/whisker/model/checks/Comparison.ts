@@ -4,7 +4,7 @@ import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 
-export type Comparison<T extends Interval = Interval> =
+export type Comparison<T extends Interval | null = null> =
     | Eq<T>
     | Neq<T>
     | Lt<T>
@@ -20,7 +20,7 @@ export interface Interval {
     max: number;
 }
 
-abstract class AbstractComparison<T extends Interval> implements Quantifiable<Comparison<T>> {
+abstract class AbstractComparison<T extends Interval | null> implements Quantifiable<Comparison<T>> {
     protected constructor(
         private readonly _operand2: AttributeType,
         private readonly _interval: T | null,
@@ -68,7 +68,7 @@ abstract class AbstractComparison<T extends Interval> implements Quantifiable<Co
     }
 }
 
-class Eq<T extends Interval> extends AbstractComparison<T> {
+class Eq<T extends Interval | null> extends AbstractComparison<T> {
     constructor(operand2: AttributeType, interval: T | null = null) {
         super(operand2, interval);
     }
@@ -86,7 +86,7 @@ class Eq<T extends Interval> extends AbstractComparison<T> {
     }
 }
 
-class Neq<T extends Interval> extends AbstractComparison<T> {
+class Neq<T extends Interval | null> extends AbstractComparison<T> {
     private readonly _boundaries: AttributeType[];
 
     constructor(operand2: AttributeType, interval: T | null = null) {
@@ -110,7 +110,7 @@ class Neq<T extends Interval> extends AbstractComparison<T> {
     }
 }
 
-class Leq<T extends Interval> extends AbstractComparison<T> {
+class Leq<T extends Interval | null> extends AbstractComparison<T> {
     constructor(operand2: AttributeType, interval: T | null = null) {
         super(operand2, interval);
     }
@@ -128,7 +128,7 @@ class Leq<T extends Interval> extends AbstractComparison<T> {
     }
 }
 
-class Lt<T extends Interval> extends AbstractComparison<T> {
+class Lt<T extends Interval | null> extends AbstractComparison<T> {
     private readonly _boundaries: AttributeType[];
 
     constructor(operand2: AttributeType, interval: T | null = null) {
@@ -152,7 +152,7 @@ class Lt<T extends Interval> extends AbstractComparison<T> {
     }
 }
 
-class Gt<T extends Interval> extends AbstractComparison<T> {
+class Gt<T extends Interval | null> extends AbstractComparison<T> {
     private readonly _boundaries: AttributeType[];
 
     constructor(operand2: AttributeType, interval: T | null = null) {
@@ -176,7 +176,7 @@ class Gt<T extends Interval> extends AbstractComparison<T> {
     }
 }
 
-class Geq<T extends Interval> extends AbstractComparison<T> {
+class Geq<T extends Interval | null> extends AbstractComparison<T> {
     constructor(operand2: AttributeType, interval: T | null = null) {
         super(operand2, interval);
     }
@@ -199,7 +199,7 @@ export const CONST_PASS = new class ConstPass extends Neq<null> {
         super(NaN, null);
     }
 
-    override negate(): Comparison<null> {
+    override negate(): Comparison {
         return CONST_FAIL;
     }
 };
@@ -213,12 +213,12 @@ export const CONST_FAIL = new class ConstFail extends Eq<null> {
         return super.apply(operand1).replace({message: "CONST_FAIL"});
     }
 
-    override negate(): Comparison<null> {
+    override negate(): Comparison {
         return CONST_PASS;
     }
 };
 
-type ComparisonCtor<T extends Interval> = new (operand2: AttributeType, interval: Interval) => Comparison<T>;
+type ComparisonCtor<T extends Interval | null> = new (operand2: AttributeType, interval: Interval) => Comparison<T>;
 
 const Comparison: Record<ComparisonOp, ComparisonCtor<Interval>> = Object.freeze({
     "==": Eq,
@@ -229,9 +229,9 @@ const Comparison: Record<ComparisonOp, ComparisonCtor<Interval>> = Object.freeze
     ">=": Geq,
 });
 
-export function newComparison<T extends Interval>(
+export function newComparison<T extends Interval | null>(
     {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
-    interval: T | null = null,
+    interval: T = null,
 ): Comparison<T> {
     const comparison = new Comparison[operator](value, interval) as Comparison<T>;
     return negated ? comparison.negate() : comparison;
@@ -256,7 +256,7 @@ export interface ComparingCheck {
     negated: boolean;
 }
 
-export function newQuantifiedComparison<T extends Interval>(
+export function newQuantifiedComparison<T extends Interval | null>(
     {operator, value, negated = false}: Optional<ComparingCheck, 'negated'>,
     interval: T | null = null,
 ): Quantification<Comparison<T>> {
