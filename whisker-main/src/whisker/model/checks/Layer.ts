@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
@@ -6,8 +6,7 @@ import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
-import {SpriteName} from "./CheckTypes";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "Layer" as const;
 
@@ -27,7 +26,7 @@ export type LayerArgs = [
 
 const LayerArgs = z.tuple([
     SpriteName,
-    z.union([z.literal("First"), z.literal("Last")], {message: "NeitherFirstNorLast"})
+    z.union([z.literal("First"), z.literal("Last")], {errorMap: () => ({message: "NeitherFirstNorLast"})})
 ]);
 
 export interface LayerJSON extends ICheckJSON {
@@ -77,10 +76,7 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [
-            couldBeSpriteName(args[0]),
-            args[1] === "First" || args[1] === "Last" ? "" : "NeitherFirstNorLast"
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(LayerArgs.safeParse(args));
     }
 }

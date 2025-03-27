@@ -1,16 +1,15 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {Change, ChangingCheck, isValidChangeOperator, newQuantifiedChange} from "./Change";
+import {Change, ChangingCheck, newQuantifiedChange} from "./Change";
 import {Quantification} from "./Quantification";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {CheckResult, fail, pass} from "./CheckResult";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
 import {
     AttrNames,
     BooleanAttribute,
@@ -18,7 +17,11 @@ import {
     EffectAttribute,
     EqOrNeq,
     NumberAttribute,
-    NumberAttributeNames, NumberOrChangeOp, SpriteName,
+    NumberAttributeNames,
+    NumberOrChangeOp,
+    parseAttributeError,
+    ParsingResult,
+    SpriteName,
     StringAttribute
 } from "./CheckTypes";
 
@@ -233,22 +236,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.applySingle(current, old);
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        let message: InputErrorCodes;
-        if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
-            message = "";
-        } else if (ModelUtil.isEffectOrNumberAttribute(args[1])) {
-            message = ModelUtil.parseIntAndUpdate(args, 2);
-            if (message != "") {
-                message = isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange";
-            }
-        } else {
-            message = "invalidChangeForAttribute";
-        }
-        return [
-            couldBeSpriteName(args[0]),
-            ModelUtil.isAnAttributeOrEffectMessage(args[1]),
-            message
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseAttributeError(AttrChangeArgs.safeParse(args));
     }
 }

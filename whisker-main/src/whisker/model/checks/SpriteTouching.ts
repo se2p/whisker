@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
@@ -6,8 +6,7 @@ import {z} from "zod";
 import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
-import {SpriteName} from "./CheckTypes";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "SpriteTouching" as const;
 
@@ -96,10 +95,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [
-            couldBeSpriteName(args[0]),
-            couldBeSpriteName(args[1])
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(SpriteTouchingArgs.safeParse(args));
     }
 }

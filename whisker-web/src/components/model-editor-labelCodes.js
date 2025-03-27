@@ -1,6 +1,6 @@
 // for building model-editor checks, should equal CheckName.ts in model and InputEffectName in InputEffect.ts
 
-import {Keys} from 'whisker-main/src/whisker/model/checks/CheckType';
+import {Keys} from 'whisker-main/src/whisker/model/checks/CheckTypes';
 
 const argType = {
     spriteName: 'spriteName',

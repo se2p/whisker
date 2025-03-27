@@ -26,6 +26,7 @@ import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapse
 import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
 import {PointsTo, PointsToJSON} from "./PointsTo";
 import {AnyKey, AnyKeyJSON} from "./AnyKey";
+import {ParsingResult} from "./CheckTypes";
 
 export type CheckJSON =
     | AttrChangeJSON
@@ -194,29 +195,7 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
     }
 }
 
-export type InputErrorCodes =
-    ""
-    | "NeitherNumberNorChange"
-    | "NoNumber"
-    | "NeitherTrueNorFalse"
-    | "wrongPosFormat"
-    | "Not7Numbers"
-    | "NoStringProvided"
-    | "invalidSpriteName"
-    | "invalidAttributeOrEffect"
-    | "invalidChangeForAttribute"
-    | "CannotParseArray"
-    | "InvalidComparisonForAttribute"
-    | "invalidComparison"
-    | "InvalidKey"
-    | "OutOfRgbRange"
-    | "invalidVarName"
-    | "NeitherNumberNorString"
-    | "NoNonEmptyExprText"
-    | "NeitherFirstNorLast"
-    | "NeitherNumberNorExpr";
-
-export function convertArgs(checkJSON: CheckJSON): InputErrorCodes[] {
+export function convertArgs(checkJSON: CheckJSON): ParsingResult {
     const name = checkJSON.name;
 
     switch (name) {

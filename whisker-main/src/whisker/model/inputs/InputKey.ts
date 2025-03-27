@@ -2,9 +2,7 @@ import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "../checks/newCheck";
-import {ModelUtil} from "../util/ModelUtil";
-import {KeyArgument} from "../checks/CheckTypes";
+import {KeyArgument, parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
 
 const name = "InputKey" as const;
 
@@ -36,7 +34,7 @@ export class InputKey extends AbstractUserInput<InputKeyJSON> {
         return t.inputImmediate({device: "keyboard", key: this._key, isDown: true, steps: 1});
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.isKey(args[0]) ? "" : "InvalidKey"];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(InputKeyArgs.safeParse(args));
     }
 }

@@ -6,8 +6,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
-import {ProbabilityArg} from "./CheckTypes";
+import {parseNonUnionError, ParsingResult, ProbabilityArg} from "./CheckTypes";
 
 const name = "Probability" as const;
 
@@ -67,8 +66,7 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.parseIntAndUpdate(args, 0)];
-
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ProbabilityArgs.safeParse(args));
     }
 }

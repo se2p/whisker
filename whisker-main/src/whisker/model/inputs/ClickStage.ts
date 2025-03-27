@@ -3,18 +3,19 @@ import TestDriver from "../../../test/test-driver";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "../checks/newCheck";
-import {couldBeSpriteName} from "../checks/AbstractCheck";
+import {parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
 
 const name = "InputClickStage" as const;
 
 type ClickStageArgs = [];
 
+export const ClickStageArgs = z.tuple([]);
+
 export type ClickStageJSON = IUserInputJSON<typeof name, ClickStageArgs>;
 
 export const ClickStageJSON = z.object({
     name: z.literal(name),
-    args: z.tuple([]),
+    args: ClickStageArgs,
 });
 
 export class ClickStage extends AbstractUserInput<ClickStageJSON> {
@@ -31,7 +32,7 @@ export class ClickStage extends AbstractUserInput<ClickStageJSON> {
         return clickStageEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClickStageArgs.safeParse(args));
     }
 }

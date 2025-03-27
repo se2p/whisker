@@ -1,21 +1,14 @@
-import {
-    AbstractCheck,
-    CheckFun0,
-    couldBeSpriteName,
-    ICheckJSON,
-    SlimCheckJSON
-} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
-import {Change, ChangingCheck, isValidChangeOperator, newChange} from "./Change";
+import {Change, ChangingCheck, newChange} from "./Change";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
-import {NumberOrChangeOp, SpriteName, VariableName} from "./CheckTypes";
+import {NumberOrChangeOp, parseNonUnionError, ParsingResult, SpriteName, VariableName} from "./CheckTypes";
 
 const name = "VarChange" as const;
 
@@ -115,20 +108,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        let message: InputErrorCodes;
-        if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
-            message = "";
-        } else {
-            message = ModelUtil.parseIntAndUpdate(args, 2);
-            if (message != "") {
-                message = isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange";
-            }
-        }
-        return [
-            couldBeSpriteName(args[0]),
-            typeof args[1] == "string" ? "" : "invalidVarName",
-            message,
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(VarChangeArgs.safeParse(args));
     }
 }

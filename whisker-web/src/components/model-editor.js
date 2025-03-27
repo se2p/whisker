@@ -9,7 +9,7 @@ const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
 const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
-const {AttributeAndEffectNames} = require('whisker-main/src/whisker/model/util/ModelUtil');
+const {AttributeAndEffectNames} = require('whisker-main/src/whisker/model/checks/CheckTypes');
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -257,38 +257,23 @@ class ModelEditor {
         const name = $(ModelEditor.CHECK_CHOOSER).val();
         const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         let args = [];
-        if (name === 'Expr'){
-            args = $(`#${ModelEditor.INPUT_ID}${0}`).val()
-                .trim()
-                .split('\n');
+        const argNumber = checkLabelCodes[name] ?? inputLabelCodes[name];
+        for (let i = 0; i < argNumber.length; i++) {
+            args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
+        }
+        const result = this.currentModel.usage === 'user' ?
+            convertInputArgs({name: name, args: args}) :
+            convertArgs({name: name, negated: negated, args: args});
+        const valid = result.passed;
+        if (valid) {
+            args = result.data;
         } else {
-            const argNumber = checkLabelCodes[name] ?? inputLabelCodes[name];
-            for (let i = 0; i < argNumber.length; i++) {
-                args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
+            for (const [index, code] of Object.entries(result.problems)){
+                const element = $(`#${ModelEditor.INPUT_ID}${index}`);
+                element.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                element.attr('title', i18n.t(`modelEditor:${code}`));
             }
-            let argsValid;
-            try {
-                argsValid = convertArgs({name: name, negated: negated, args: args});
-            } catch (e){
-                argsValid = convertInputArgs({name: name, args: args});
-            }
-            let valid = true;
-            for (let i = 0; i < argNumber.length; i++) {
-                if (argsValid[i] && argsValid[i].length > 0) {
-                    const element = $(`#${ModelEditor.INPUT_ID}${i}`);
-                    element.addClass(ModelEditor.INVALID_INPUT_CLASS);
-                    element.attr('title', i18n.t(`modelEditor:${argsValid[i]}`));
-                    valid = false;
-                }
-            }
-            if (name === 'Probability') {
-                args[0] = Number(args[0]) / 100;
-            }
-
-            // if any arg is empty string or invalid stop and mark it
-            if (!valid) {
-                return false;
-            }
+            return false;
         }
 
 
@@ -1340,7 +1325,7 @@ class ModelEditor {
                         .append($('<option/>', {value: '<'}).text('<'))
                         .append($('<option/>', {value: '>='}).text('>='))
                         .append($('<option/>', {value: '<='}).text('<='))
-                        .val(value)
+                        .val('==')
                 )
             ));
     }
@@ -1375,7 +1360,7 @@ class ModelEditor {
                 .text(i18n.t('modelEditor:attrName')))
         )
             .append($('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(select)));
-        select.val(value);
+        select.val(AttributeAndEffectNames[0]);
     }
 
     appendBool (value, idNbr) {

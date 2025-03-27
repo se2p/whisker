@@ -1,29 +1,25 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {
-    AttributeType,
-    ComparingCheck,
-    Comparison,
-    isValidComparisonOp,
-    newQuantifiedComparison
-} from "./Comparison";
+import {AttributeType, ComparingCheck, Comparison, newQuantifiedComparison} from "./Comparison";
 import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
 import {
     AttrNames,
     BooleanAttribute,
-    BooleanLike, ComparisonOp,
+    BooleanLike,
+    ComparisonOp,
     Effect,
     EffectAttribute,
     EqOrNeq,
     NumberAttribute,
     NumberLike,
+    parseAttributeError,
+    ParsingResult,
     SpriteName,
     StringAttribute,
 } from "./CheckTypes";
@@ -141,25 +137,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return this._comparison.contradicts(that._comparison);
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        let valid: InputErrorCodes;
-        const shouldBeNumber = ModelUtil.isEffectOrNumberAttribute(args[1]);
-        if (shouldBeNumber) {
-            valid = ModelUtil.parseIntAndUpdate(args, 3);
-        } else if (args[1] == "visible") {
-            valid = ModelUtil.parseBooleanAndUpdate(args, 3);
-        } else {
-            valid = typeof args[3] == "string" ? "" : "NoStringProvided";
-        }
-        return [
-            couldBeSpriteName(args[0]),
-            ModelUtil.isAnAttributeOrEffectMessage(args[1]),
-            ModelUtil.isOperatorEqOrNeq(args, 2)
-                ? ""
-                : shouldBeNumber
-                    ? "InvalidComparisonForAttribute"
-                    : isValidComparisonOp(args[2]) ? "" : "invalidComparison",
-            valid,
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseAttributeError(AttrCompArgs.safeParse(args));
     }
 }

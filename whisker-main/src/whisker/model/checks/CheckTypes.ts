@@ -1,4 +1,4 @@
-import {SafeParseReturnType, z, ZodIssue} from "zod";
+import {SafeParseReturnType, z} from "zod";
 import {ArgType} from "../util/schema";
 
 export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
@@ -96,3 +96,76 @@ export const RGBNumber = z.coerce.number({message: "NoNumber"})
 
 export const NonEmptyString = z.string({message: "NoStringProvided"}).min(1, {message: "StringIsEmpty"});
 
+export type InputErrorCodes =
+    | "InvalidAttributeOrEffect"
+    | "InvalidChange"
+    | "InvalidComparison"
+    | "InvalidKey"
+    | "InvalidOpForAttribute"
+    | "InvalidSpriteName"
+    | "InvalidVarName"
+    | "NeitherFirstNorLast"
+    | "NeitherNumberNorChange"
+    | "NeitherNumberNorExpr"
+    | "NeitherNumberNorString"
+    | "NeitherTrueNorFalse"
+    | "NoNonEmptyExprText"
+    | "NoNumber"
+    | "NoStringProvided"
+    | "NumberMustBeNonNegative"
+    | "OutOfRgbRange"
+    | "StringIsEmpty"
+    | "ValueIsNoProbability"
+    | "There is a bug"
+    ;
+
+export type ParsingSuccess = {
+    passed: true,
+    data: ArgType[],
+};
+export type ParsingFailure = {
+    passed: false,
+    problems: Record<number, InputErrorCodes>,
+};
+
+export type ParsingResult = ParsingSuccess | ParsingFailure;
+
+export function parseAttributeError(res: SafeParseReturnType<unknown, unknown>): ParsingResult {
+    return parseUnionError(res, {1: "InvalidAttributeOrEffect"});
+}
+
+export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defaultMap: Record<number, InputErrorCodes>): ParsingResult {
+    if (res.success === false) {
+        let codes: Record<number, InputErrorCodes> = {};
+        const issues = res.error.issues;
+        if (issues.length === 1 && issues[0].code === "invalid_union") {
+            const error = issues[0].unionErrors.filter(
+                e => e.issues.every(i => i.code !== "invalid_enum_value" || i.path[0] != 1)
+            ); // remove options of the union where no correct value of the enum was chosen
+            if (error.length > 0) {
+                error.sort((a, b) => a.issues.length - b.issues.length);
+                // take option with the lowest amount of issues and display issues for this option
+                error[0].issues.forEach((error) => {
+                    codes[error.path[0]] = error.message;
+                });
+            } else {
+                codes = defaultMap; // no correct value of enums was chosen -> default value
+            }
+        } else {
+            return parseNonUnionError(res); // top level is not a union so the wrong method was called
+        }
+        return {passed: false, problems: codes};
+    }
+    return {passed: true, data: res.data as ArgType[]};
+}
+
+export function parseNonUnionError(res: SafeParseReturnType<unknown, unknown>): ParsingResult {
+    if (res.success === false) {
+        const codes = {};
+        res.error.issues.forEach((error) => {
+            codes[error.path[0]] = error.message;
+        });
+        return {passed: false, problems: codes};
+    }
+    return {passed: true, data: res.data as ArgType[]};
+}

@@ -3,9 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "../checks/newCheck";
-import {ModelUtil} from "../util/ModelUtil";
-import {BooleanLike} from "../checks/CheckTypes";
+import {BooleanLike, parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
 
 const name = "InputMouseDown" as const;
 
@@ -38,7 +36,7 @@ export class MouseDown extends AbstractUserInput<MouseDownJSON> {
         return mouseDownEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.parseBooleanAndUpdate(args, 0)];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(MouseDownArgs.safeParse(args));
     }
 }

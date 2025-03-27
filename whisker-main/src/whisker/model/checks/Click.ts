@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -6,8 +6,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
-import {SpriteName} from "./CheckTypes";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "Click" as const;
 
@@ -84,7 +83,7 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [couldBeSpriteName(args[0])];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClickArgs.safeParse(args));
     }
 }

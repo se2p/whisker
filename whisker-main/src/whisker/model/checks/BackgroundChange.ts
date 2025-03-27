@@ -5,9 +5,7 @@ import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import {ErrorForAttribute} from "../util/ModelError";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
-import {ModelUtil} from "../util/ModelUtil";
-import {ComparisonOp, NonEmptyString} from "./CheckTypes";
+import {ComparisonOp, NonEmptyString, parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 const name = "BackgroundChange" as const;
 
@@ -78,7 +76,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.argIsString(args, 0)];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(BackgroundChangeArgs.safeParse(args));
     }
 }

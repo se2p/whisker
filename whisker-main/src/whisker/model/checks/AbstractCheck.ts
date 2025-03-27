@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON, InputErrorCodes} from "./newCheck";
+import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
@@ -8,10 +8,6 @@ import {Optional} from "../../utils/Optional";
 import {CheckResult, fail} from "./CheckResult";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
-
-export function couldBeSpriteName(name: ArgType): InputErrorCodes {
-    return typeof name == "string" || Array.isArray(name) && Object.values(name).every(s => typeof s == "string") ? "" : "invalidSpriteName";
-}
 
 export interface ICheckJSON {
     name: string;
