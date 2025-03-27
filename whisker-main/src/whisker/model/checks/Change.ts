@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {Comparison, ComparisonOp, Interval, newComparison} from "./Comparison";
+import {Comparison, ComparisonOp, CONST_PASS, Interval, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
@@ -95,7 +95,7 @@ export class Change implements Quantifiable<Change> {
          *    =         after - before == 0
          *    !=        after - before != 0
          */
-        const comparison = newComparison(
+        const comparison = newComparison<null>(
             typeof numberOrChangeOp === "number"
                 ? {operator: "==", value: numberOrChangeOp}
                 : {operator: operatorMap[numberOrChangeOp], value: 0}
@@ -118,46 +118,41 @@ export class Change implements Quantifiable<Change> {
     }
 }
 
-/**
- * Implements the modulo operator. This is similar to JavaScript's remainder operator (`x % y`). In fact, if `x` and
- * `y` have the same sign, the two operators are equivalent. Otherwise, the result of `x % y` has the same sign as
- * the dividend (`x`), while `mod(x, y)` has the same sign as the divisor (`y`).
- *
- * @param x dividend
- * @param y divisor
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder
- */
-export function mod(x: number, y: number): number {
-    return ((x % y) + y) % y;
-}
-
-export function mapInterval(x: number, {min, max}: Interval): number {
-    return mod(
-        x - min, // Shift interval such that it starts at 0, which allows mod to be used
-        max - min + 1 // Length of the interval
-    ) + min; // Shift interval back to original position
-}
-
 class CyclicChange extends Change {
+    private readonly _length: number;
+
     constructor(comparison: Comparison, bounds: CyclicBounds) {
-        super(comparison, bounds);
+        if (["<=", ">="].includes(comparison.operator)) { // Always passes
+            super(CONST_PASS, bounds);
+        } else if (["<", ">"].includes(comparison.operator)) { // Equivalent to !=
+            super(newComparison({operator: "!=", value: 0}), bounds);
+        } else {
+            super(comparison, bounds);
+        }
+
+        this._length = bounds.max - bounds.min + 1;
     }
 
-    /**
-     * Maps the given number `x` to the interval. Returns `x` unchanged if it is already inside the interval. Otherwise,
-     * adds or subtracts the interval length to `x` repeatedly until we get a number inside the interval. This number is
-     * then returned.
-     *
-     * @param x The number to map to the interval
-     * @private
-     */
-    private _mapInterval(x: number): number {
-        return mapInterval(x, this._bounds);
-    }
+    protected override _apply(after: number, before: number): CheckResult {
+        const result = super._apply(after, before);
 
-    override _apply(after: number, before: number): CheckResult {
-        const actualChange = this._mapInterval(after - before);
-        return this._comparison.apply(actualChange);
+        if (!["==", "!="].includes(this._comparison.operator)) {
+            return result;
+        }
+
+        if (this._comparison.operator === "==" && result.passed) {
+            return result;
+        }
+
+        if (this._comparison.operator === "!=" && !result.passed) {
+            return result;
+        }
+
+        if (this._comparison.operand2 > 0) {
+            return super._apply(after + this._length, before);
+        } else {
+            return super._apply(after - this._length, before);
+        }
     }
 }
 
@@ -213,7 +208,7 @@ class ClampedChange extends Change {
         this._atBounds = newComparison({operator: op, value: 0});
     }
 
-    override _apply(after: number, before: number): CheckResult {
+    protected override _apply(after: number, before: number): CheckResult {
         return this._ifBounds.includes(after)
             ? this._atBounds.apply(after - before)
             : super._apply(after, before);
