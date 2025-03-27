@@ -2,8 +2,7 @@ import {fc, it} from "@fast-check/jest";
 import {
     ChangeOp,
     changeOps,
-    ChangingCheck, mapInterval,
-    mod,
+    ChangingCheck,
     newChange,
     newQuantifiedChange,
     NumberOrChangeOp
@@ -245,80 +244,7 @@ describe("The schema validation for Change", () => {
 const pos = fc.integer({min: 1});
 const neg = fc.integer({max: -1});
 const num = fc.oneof(pos, neg);
-const posPos = fc.tuple(pos, pos);
-const posNeg = fc.tuple(pos, neg);
-const negNeg = fc.tuple(neg, neg);
-const negPos = fc.tuple(neg, pos);
-const numNum = fc.tuple(num, num);
-const sameSign = fc.oneof(posPos, negNeg);
-const diffSign = fc.oneof(posNeg, negPos);
-const coprime = (a: fc.Arbitrary<[number, number]>) => a.filter(([x, y]) => x % y !== 0);
-
-describe("mod(x, y)", () => {
-    test.each([
-        [3, 5, 3],
-        [0, 5, 0],
-        [5, 5, 0],
-        [-1, 5, 4],
-        [-2, 5, 3],
-        [-3, 5, 2],
-        [-4, 5, 1],
-        [6, 5, 1],
-    ])("mod(%s, %s) === %s", (x, y, m) => {
-        expect(mod(x, y)).toStrictEqual(m);
-    });
-
-    it.prop([sameSign])("equals x % y, if x and y have the same sign", ([x, y]) => {
-        expect(mod(x, y)).toStrictEqual(x % y);
-    });
-
-    it.prop([coprime(diffSign)])("equals (x % y) + y, if x and y are coprime and have different signs", ([x, y]) => {
-        expect(mod(x, y)).toStrictEqual((x % y) + y);
-    });
-
-    it.prop([coprime(numNum)])("has the same sign as y, if x and y are coprime", ([x, y]) => {
-        expect(Math.sign(mod(x, y))).toStrictEqual(Math.sign(y));
-    });
-});
-
 const bounds = fc.tuple(num, pos).map(([min, x]) => [min, min + x]);
-
-describe("mapInterval(x, {min, max})", () => {
-    test.each([
-        [0, -3, 3, 0],
-        [-3, -3, 3, -3],
-        [-4, -3, 3, 3],
-        [3, -3, 3, 3],
-        [4, -3, 3, -3],
-        [5, -3, 3, -2],
-        [6, -3, 3, -1],
-        [7, -3, 3, 0],
-    ])("mapInterval(%s, {min: %s, max: %s}) === %s", (x, min, max, y) => {
-        expect(mapInterval(x, {min, max})).toStrictEqual(y);
-    });
-
-    const inside = bounds.chain(([min, max]) => fc.record({
-        x: fc.integer({min, max}),
-        min: fc.constant(min),
-        max: fc.constant(max),
-    }));
-
-    it.prop([inside])("returns x if it is already inside the interval", ({x, min, max}) => {
-        expect(mapInterval(x, {min, max})).toStrictEqual(x);
-    });
-
-    it.prop([num, bounds])("maps x to a number inside the interval", (x, [min, max]) => {
-        const y = mapInterval(x, {min, max});
-        expect(y).toBeGreaterThanOrEqual(min);
-        expect(y).toBeLessThanOrEqual(max);
-    });
-
-    it.prop([num, bounds])("maps x to y by repeatedly adding or subtracting the interval length", (x, [min, max]) => {
-        const y = mapInterval(x, {min, max});
-        const len = max - min + 1;
-        expect(Math.abs(y - x) % len).toStrictEqual(0);
-    });
-});
 
 describe("A clamped change with bounds [min, max]", () => {
     describe('using operator "+"', () => {
@@ -526,3 +452,158 @@ describe("A clamped change with bounds [min, max]", () => {
         });
     });
 });
+
+describe("A cyclic change with bounds [min, max]", () => {
+    describe.each(["+=", "-="])('using operator "%s"', (op: ChangeOp) => {
+        // Choose bounds first, then choose two arbitrary values within bounds.
+        const values = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min, max}),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([values])("always passes", ({after, before, min, max}) => {
+            const change = newChange({change: op}, {min, max, kind: "cyclic"});
+            expect(change.apply(after, before)).toStrictEqual(pass());
+        });
+    });
+
+    describe.each(["+", "-"])('using operator "%s"', (op: ChangeOp) => {
+        // Choose bounds first, then choose two arbitrary values (after, before) within bounds, then decide with
+        // equal probability if (1) after === before, or (2) after !== before.
+        const values = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min, max}),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        })).chain(({after, before, min, max}) => fc.record({
+            after: fc.oneof( // Ensure pass() and fail() equally likely
+                fc.constant(before),
+                fc.constant(after),
+            ),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([values])('is equivalent to "!="', ({after, before, min, max}) => {
+            const change = newChange({change: op}, {min, max, kind: "cyclic"});
+            const unequal = newChange({change: "!="}, {min, max, kind: "cyclic"});
+            expect(change.apply(after, before)).toStrictEqual(unequal.apply(after, before));
+        });
+    });
+
+    describe.each(["=", '!='])('using operator "%s"', (op: ChangeOp) => {
+        const values = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min, max}),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        })).chain(({after, before, min, max}) => fc.record({
+            after: fc.oneof( // Ensure pass() and fail() equally likely
+                fc.constant(before),
+                fc.constant(after),
+            ),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([values])('is equivalent to the regular change', ({after, before, min, max}) => {
+            const cyclic = newChange({change: op}, {min, max, kind: "cyclic"});
+            const regular = newChange({change: op});
+            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+
+    describe("by a positive number", () => {
+        // Choose bounds first, then choose after and before such that after < before
+        const passing = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min, max: max - 1}), // To allow after < before later
+            min: fc.constant(min),
+            max: fc.constant(max),
+        })).chain(({after, min, max}) => fc.record({
+            after: fc.constant(after),
+            before: fc.integer({min: after + 1, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([passing])("passes for after < before if wrapping around correctly", ({after, before, min, max}) => {
+            const change = (max - before) + (after - min) + 1;
+            const c = newChange({change}, {min, max, kind: "cyclic"});
+            expect(c.apply(after, before)).toStrictEqual(pass());
+        });
+
+        const failing = passing.chain(({after, before, min, max}) => fc.record({
+            after: fc.constant(after),
+            before: fc.constant(before),
+            min: fc.constant(min),
+            max: fc.constant(max),
+            change: fc.integer({min: 1, max: max - min}).filter((c) => c !== (max - before) + (after - min) + 1),
+        }));
+
+        it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
+            const c = newChange({change}, {min, max, kind: "cyclic"});
+            expect(c.apply(after, before)).toStrictEqual(fail(expect.any(Object)));
+        });
+    });
+
+    describe("by a negative number", () => {
+        // Choose bounds first, then choose after and before such that after > before
+        const passing = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min: min + 1, max}), // To allow after > before later
+            min: fc.constant(min),
+            max: fc.constant(max),
+        })).chain(({after, min, max}) => fc.record({
+            after: fc.constant(after),
+            before: fc.integer({min, max: after - 1}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([passing])("passes for after > before if wrapping around correctly", ({after, before, min, max}) => {
+            const change = -((max - after) + (before - min) + 1);
+            const c = newChange({change}, {min, max, kind: "cyclic"});
+            expect(c.apply(after, before)).toStrictEqual(pass());
+        });
+
+        const failing = passing.chain(({after, before, min, max}) => fc.record({
+            after: fc.constant(after),
+            before: fc.constant(before),
+            min: fc.constant(min),
+            max: fc.constant(max),
+            change: fc.integer(({min: min - max, max: 0})).filter((c) => c !== -((max - after) + (before - min) + 1)),
+        }));
+
+        it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
+            const c = newChange({change}, {min, max, kind: "cyclic"});
+            expect(c.apply(after, before)).toStrictEqual(fail(expect.any(Object)));
+        });
+    });
+
+    describe("by 0", () => {
+        const values = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min, max}),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        })).chain(({after, before, min, max}) => fc.record({
+            after: fc.oneof( // Ensure pass() and fail() equally likely
+                fc.constant(before),
+                fc.constant(after),
+            ),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([values])("has the same result as the regular change", ({after, before, min, max}) => {
+            const cyclic = newChange({change: 0}, {min, max, kind: "cyclic"});
+            const regular = newChange({change: 0});
+            expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+});
+
