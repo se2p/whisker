@@ -34,7 +34,20 @@ export class Change implements Quantifiable<Change> {
         return this._comparison.apply(after - before);
     }
 
+    private _checkBounds(v: number): void {
+        if (this._bounds === null) {
+            return;
+        }
+
+        const {min, max} = this._bounds;
+
+        if (!(min <= v && v <= max)) {
+            throw new RangeError(`Expected value ${v} to be in interval [${min}, ${max}]`);
+        }
+    }
+
     apply(after: number, before: number): CheckResult {
+        [after, before].forEach((v) => this._checkBounds(v));
         return this._apply(after, before).replace({before, after});
     }
 
