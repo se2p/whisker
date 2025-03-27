@@ -18,7 +18,7 @@ export const changeOps = ["+", "-", "==", "+=", "-=", "!="] as const;
 export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);
 
 export type SpriteName = string | [string, ...string[]];
-export type VariableName = string;
+export type VariableName = SpriteName;
 export type StringAttribute = typeof StringAttributeNames[number];
 export type NumberAttribute = typeof NumberAttributeNames[number];
 export type BooleanAttribute = typeof BooleanAttributeNames[number];
@@ -43,7 +43,7 @@ export const SpriteName = z.union([
     z.string().array().nonempty()
 ], {message: "InvalidSpriteName"});
 
-export const VariableName = z.string({message: "NoStringProvided"}).min(1, {message: "StringIsEmpty"});
+export const VariableName = SpriteName;
 
 /**
  * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
