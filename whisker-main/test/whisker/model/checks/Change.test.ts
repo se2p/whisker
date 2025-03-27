@@ -214,12 +214,8 @@ describe("The schema validation for Change", () => {
         expect(NumberOrChangeOp.parse(op)).toBe(op);
     });
 
-    it.each([
-        ["++", "+"],
-        ["--", "-"],
-        ["==", "=="],
-    ])('converts "%s" to "%s"', (op1, op2) => {
-        expect(NumberOrChangeOp.parse(op1)).toBe(op2);
+    test('converts "=" to "=="', () => {
+        expect(NumberOrChangeOp.parse("=")).toBe("==");
     });
 
     it.prop([numberLike])("succeeds for numbers and number-like strings", (n) => {
