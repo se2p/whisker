@@ -282,7 +282,6 @@ describe("mod(x, y)", () => {
 });
 
 const bounds = fc.tuple(num, pos).map(([min, x]) => [min, min + x]);
-const inside = bounds.chain(([min, max]) => fc.tuple(fc.integer({min, max}), fc.constant(min), fc.constant(max)));
 
 describe("mapInterval(x, {min, max})", () => {
     test.each([
@@ -298,7 +297,13 @@ describe("mapInterval(x, {min, max})", () => {
         expect(mapInterval(x, {min, max})).toStrictEqual(y);
     });
 
-    it.prop([inside])("returns x if it is already inside the interval", ([x, min, max]) => {
+    const inside = bounds.chain(([min, max]) => fc.record({
+        x: fc.integer({min, max}),
+        min: fc.constant(min),
+        max: fc.constant(max),
+    }));
+
+    it.prop([inside])("returns x if it is already inside the interval", ({x, min, max}) => {
         expect(mapInterval(x, {min, max})).toStrictEqual(x);
     });
 
@@ -312,5 +317,212 @@ describe("mapInterval(x, {min, max})", () => {
         const y = mapInterval(x, {min, max});
         const len = max - min + 1;
         expect(Math.abs(y - x) % len).toStrictEqual(0);
+    });
+});
+
+describe("A clamped change with bounds [min, max]", () => {
+    describe('using operator "+"', () => {
+        const op = "+";
+
+        // Rationale: If it was already max before, it can only be at most max afterward, and the check should pass.
+        it.prop([bounds])('is true if before == after == max', ([min, max]) => {
+            const change = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(change.apply(max, max)).toStrictEqual(pass());
+        });
+
+        // Values that don't reach the max bound.
+        const values = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min, max: max - 1}),
+            before: fc.integer({min, max: max - 1}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
+            const regular = newChange({change: op});
+            const clamped = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+
+    describe('using operator "-"', () => {
+        const op = "-";
+
+        // Rationale: If it was already min before, it can only be at least min afterward, and the check should pass.
+        it.prop([bounds])('is true if before == after == min', ([min, max]) => {
+            const change = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(change.apply(min, min)).toStrictEqual(pass());
+        });
+
+        // Values that don't reach the min bound.
+        const values = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min: min + 1, max}),
+            before: fc.integer({min: min + 1, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
+            const regular = newChange({change: op});
+            const clamped = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+
+    describe('using operator "!="', () => {
+        const op = "!=";
+
+        // Rationale: If value was already max before, it can only be max afterward. The value could have tried to
+        // increase, but stayed the same due to clamping. The check should pass.
+        it.prop([bounds])('is true if before == after == max', ([min, max]) => {
+            const change = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(change.apply(max, max)).toStrictEqual(pass());
+        });
+
+        // Rationale: If value was already min before, it can only be min afterward. The value could have tried to
+        // decrease, but stayed the same due to clamping. The check should pass.
+        it.prop([bounds])('is true if before == after == min', ([min, max]) => {
+            const change = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(change.apply(min, min)).toStrictEqual(pass());
+        });
+
+        // Values that reach neither min nor max bound.
+        const values = bounds
+            .filter(([min, max]) => max - min > 1) // To avoid min > max later
+            .chain(([min, max]) => fc.record({
+                after: fc.integer({min: min + 1, max: max - 1}),
+                before: fc.integer({min: min + 1, max: max - 1}),
+                min: fc.constant(min),
+                max: fc.constant(max),
+            })).chain(({after, before, min, max}) => fc.record({
+                after: fc.oneof(  // Ensure pass() and fail() are equally likely
+                    fc.constant(after),
+                    fc.constant(before)
+                ),
+                before: fc.constant(before),
+                min: fc.constant(min),
+                max: fc.constant(max),
+            }));
+
+        it.prop([values])('has the same result as a regular change otherwise', ({after, before, min, max}) => {
+            const regular = newChange({change: op});
+            const clamped = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+
+    // These operators all include "=", whose semantics are not affected by clamping.
+    describe.each(["=", "+=", "-="])('using operator "%s"', (op: ChangeOp) => {
+        const values = bounds.chain(([min, max]) => fc.record({
+            after: fc.integer({min, max}),
+            before: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([values])('always has the same result as a regular change', ({after, before, min, max}) => {
+            const regular = newChange({change: op});
+            const clamped = newChange({change: op}, {min, max, kind: "clamped"});
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+
+    describe("by a positive number", () => {
+        const values = bounds.chain(([min, max]) => fc.record({
+            before: fc.integer({min, max}),
+            after: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        const reachMax = values.chain(({before, min, max}) => fc.record({
+            before: fc.constant(before),
+            change: fc.integer({min: max - before}), // Make sure it reaches or exceeds max
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([reachMax])("is true if it reaches max", ({before, change, min, max}) => {
+            const c = newChange({change}, {min, max, kind: "clamped"});
+            expect(c.apply(max, before)).toStrictEqual(pass());
+        });
+
+        const within = values
+            .filter(({before, max}) => max - before > 1) // Ensure change by at least 1 later
+            .chain(({before, after, min, max}) => fc.record({
+                before: fc.constant(before),
+                after: fc.constant(after),
+                change: fc.integer({min: 1, max: max - before}), // Make sure it stays within bounds
+                min: fc.constant(min),
+                max: fc.constant(max),
+            }));
+
+        it.prop([within])("has the same result as a regular change otherwise", ({after, before, change, min, max}) => {
+            const clamped = newChange({change}, {min, max, kind: "clamped"});
+            const regular = newChange({change});
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+
+    describe("by a negative number", () => {
+        const values = bounds.chain(([min, max]) => fc.record({
+            before: fc.integer({min, max}),
+            after: fc.integer({min, max}),
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+
+        const reachMin = values.chain(({before, min, max}) => fc.record({
+            before: fc.constant(before),
+            change: fc.integer({max: min - before}), // Make sure it reaches or drops below min
+            min: fc.constant(min),
+            max: fc.constant(max),
+        }));
+
+        it.prop([reachMin])("is true if it reaches min", ({before, change, min, max}) => {
+            const c = newChange({change}, {min, max, kind: "clamped"});
+            expect(c.apply(min, before)).toStrictEqual(pass());
+        });
+
+        const within = values
+            .filter(({before, min}) => before - min > 1) // Ensure change by at least 1 later
+            .chain(({before, after, min, max}) => fc.record({
+                before: fc.constant(before),
+                after: fc.constant(after),
+                change: fc.integer({min: min - before, max: -1}), // Make sure it stays within bounds
+                min: fc.constant(min),
+                max: fc.constant(max),
+            }));
+
+        it.prop([within])("has the same result as a regular change otherwise", ({after, before, change, min, max}) => {
+            const clamped = newChange({change}, {min, max, kind: "clamped"});
+            const regular = newChange({change});
+            expect(clamped.apply(after, before)).toStrictEqual(regular.apply(after, before));
+        });
+    });
+
+    describe("by 0", () => {
+        const values = fc.tuple(num, pos, pos, pos)
+            .map(([min, x, y, z]) => ({
+                min,
+                x: min + x,
+                y: min + x + y,
+                max: min + x + y + z
+            })).chain(({min, x, y, max}) => fc.record({
+                min: fc.constant(min),
+                x: fc.oneof( // Ensure pass() and fail() equally likely
+                    fc.constant(x),
+                    fc.constant(y),
+                ),
+                y: fc.constant(y),
+                max: fc.constant(max),
+            }));
+
+        it.prop([values])("has the same result as a regular change", ({min, x, y, max}) => {
+            const clamped = newChange({change: 0}, {min, max, kind: "clamped"});
+            const regular = newChange({change: 0});
+            expect(clamped.apply(x, y)).toStrictEqual(regular.apply(x, y));
+        });
     });
 });
