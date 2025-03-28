@@ -475,24 +475,24 @@ describe("A cyclic change with bounds [min, max]", () => {
         });
     });
 
-    describe.each(["+", "-"])('using operator "%s"', (op: ChangeOp) => {
-        // Choose bounds first, then choose two arbitrary values (after, before) within bounds, then decide with
-        // equal probability if (1) after === before, or (2) after !== before.
-        const values = bounds.chain(([min, max]) => fc.record({
-            after: fc.integer({min, max}),
-            before: fc.integer({min, max}),
-            min: fc.constant(min),
-            max: fc.constant(max),
-        })).chain(({after, before, min, max}) => fc.record({
-            after: fc.oneof( // Ensure pass() and fail() equally likely
-                fc.constant(before),
-                fc.constant(after),
-            ),
-            before: fc.integer({min, max}),
-            min: fc.constant(min),
-            max: fc.constant(max),
-        }));
+    // Choose bounds first, then choose two arbitrary values (after, before) within bounds, then decide with
+    // equal probability if (1) after === before, or (2) after !== before.
+    const values = bounds.chain(([min, max]) => fc.record({
+        after: fc.integer({min, max}),
+        before: fc.integer({min, max}),
+        min: fc.constant(min),
+        max: fc.constant(max),
+    })).chain(({after, before, min, max}) => fc.record({
+        after: fc.oneof( // Ensure pass() and fail() equally likely
+            fc.constant(before),
+            fc.constant(after),
+        ),
+        before: fc.integer({min, max}),
+        min: fc.constant(min),
+        max: fc.constant(max),
+    }));
 
+    describe.each(["+", "-"])('using operator "%s"', (op: ChangeOp) => {
         it.prop([values])('is equivalent to "!="', ({after, before, min, max}) => {
             const change = newChange({change: op}, {min, max, kind: "cyclic"});
             const unequal = newChange({change: "!="}, {min, max, kind: "cyclic"});
@@ -501,21 +501,6 @@ describe("A cyclic change with bounds [min, max]", () => {
     });
 
     describe.each(["=", '!='])('using operator "%s"', (op: ChangeOp) => {
-        const values = bounds.chain(([min, max]) => fc.record({
-            after: fc.integer({min, max}),
-            before: fc.integer({min, max}),
-            min: fc.constant(min),
-            max: fc.constant(max),
-        })).chain(({after, before, min, max}) => fc.record({
-            after: fc.oneof( // Ensure pass() and fail() equally likely
-                fc.constant(before),
-                fc.constant(after),
-            ),
-            before: fc.integer({min, max}),
-            min: fc.constant(min),
-            max: fc.constant(max),
-        }));
-
         it.prop([values])('is equivalent to the regular change', ({after, before, min, max}) => {
             const cyclic = newChange({change: op}, {min, max, kind: "cyclic"});
             const regular = newChange({change: op});
@@ -597,21 +582,6 @@ describe("A cyclic change with bounds [min, max]", () => {
     });
 
     describe("by 0", () => {
-        const values = bounds.chain(([min, max]) => fc.record({
-            after: fc.integer({min, max}),
-            before: fc.integer({min, max}),
-            min: fc.constant(min),
-            max: fc.constant(max),
-        })).chain(({after, before, min, max}) => fc.record({
-            after: fc.oneof( // Ensure pass() and fail() equally likely
-                fc.constant(before),
-                fc.constant(after),
-            ),
-            before: fc.integer({min, max}),
-            min: fc.constant(min),
-            max: fc.constant(max),
-        }));
-
         it.prop([values])("has the same result as the regular change", ({after, before, min, max}) => {
             const cyclic = newChange({change: 0}, {min, max, kind: "cyclic"});
             const regular = newChange({change: 0});
