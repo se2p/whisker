@@ -109,7 +109,7 @@ class Input {
         switch (data.device) {
             case 'mouse':
             case 'keyboard':
-                this._inputs.vmWrapper.vm.postIOData(data.device, data);
+                this._inputs.vmWrapper.vm.postIOData(data.device, data, true);
                 break;
             case 'text':
                 this._inputs.vmWrapper.vm.runtime.emit('ANSWER', data.answer);
@@ -337,6 +337,10 @@ class Inputs {
      * Resets the mouse to its default settings.
      */
     resetMouse () {
+        if (!this.vmWrapper.vm.runtime.renderer) {
+            return;
+        }
+
         const clientPos = this.vmWrapper.getClientCoords(0, 0);
         const canvasRect = this.vmWrapper.getCanvasRect();
 
