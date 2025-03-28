@@ -43,21 +43,20 @@ export class Change implements Quantifiable<Change> {
         return this._comparison.apply(after - before);
     }
 
-    private _checkBounds(v: number): void {
+    private _clampToBounds(v: number): number {
         if (this._bounds === null) {
-            return;
+            return v;
         }
 
+        // Although the stage has a width of 480 with bounds [-240, 240], it appears the x values of sprites can
+        // sometimes drop below -240 or exceed 240. This might happen for other attributes as well. Our computations
+        // might not expect values outside the interval, so we clamp these values back to it.
         const {min, max} = this._bounds;
-
-        if (!(min <= v && v <= max)) {
-            throw new RangeError(`Expected value ${v} to be in interval [${min}, ${max}]`);
-        }
+        return v < min ? min : v > max ? max : v;
     }
 
     apply(after: number, before: number): CheckResult {
-        [after, before].forEach((v) => this._checkBounds(v));
-        return this._apply(after, before).replace({before, after});
+        return this._apply(this._clampToBounds(after), this._clampToBounds(before)).replace({before, after});
     }
 
     contradicts(that: Change): boolean {

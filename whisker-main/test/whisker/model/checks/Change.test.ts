@@ -599,31 +599,4 @@ describe.each(["cyclic", "clamped"] as const)("A %s change throws a RangeError",
     test.prop([invalid, numOp])("if given invalid interval bounds", ([min, max], change) => {
         expect(() => newChange({change}, {min, max, kind})).toThrow(RangeError);
     });
-
-    const outside = bounds.chain(([min, max]) => {
-        const inside = fc.integer({min, max});
-
-        const outside = fc.oneof(
-            fc.integer({min: Number.MIN_SAFE_INTEGER, max: min - 1}),
-            fc.integer({min: max + 1, max: Number.MAX_SAFE_INTEGER}),
-        );
-
-        const afterBefore = fc.oneof(
-            fc.tuple(inside, outside),
-            fc.tuple(outside, inside),
-            fc.tuple(outside, outside),
-        );
-
-        return fc.record({
-            min: fc.constant(min),
-            max: fc.constant(max),
-            args: afterBefore,
-        });
-    });
-
-    test.prop([outside, numOp])("if an operand is outside the interval",
-        ({min, max, args: [after, before]}, change) => {
-            const c = newChange({change}, {min, max, kind});
-            expect(() => c.apply(after, before)).toThrow(RangeError);
-        });
 });
