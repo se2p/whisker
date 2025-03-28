@@ -12,6 +12,15 @@ function initTracker(tracker, line, covered, coveredCumulative) {
     };
 }
 
+/**
+ * Intended as a factory for {@link OnExecutedAssertionCallback} and {@link OnExecutedAssumptionCallback} by currying
+ * the `tracker` parameter.
+ *
+ * @param tracker A plain JSON object where traces will be stored
+ * @param {number} line Line number of the assertion/assumption about to be executed
+ * @param {Set<string>} covered IDs of the blocks covered since the last assertion/assumption was executed
+ * @param {Set<string>} coveredCumulative IDs of the blocks covered since the beginning of the current test
+ */
 export function onExecuted(tracker, line, covered, coveredCumulative) {
     initTracker(tracker, line, covered, coveredCumulative);
 
@@ -23,6 +32,13 @@ export function onExecuted(tracker, line, covered, coveredCumulative) {
     }
 }
 
+/**
+ * Intended as a factory for {@link OnPassedAssertionCallback} and {@link OnPassedAssumptionCallback} by currying the
+ * `tracker` parameter.
+ *
+ * @param tracker A plain JSON object where traces will be stored
+ * @param {number} line Line number of the assertion/assumption that just passed.
+ */
 export function onPassed(tracker, line) {
     tracker[line].status = "pass";
     tracker[line].passCount += 1;

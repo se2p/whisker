@@ -1377,7 +1377,7 @@ module.exports = {
  * @callback OnExecutedAssertionCallback
  * @param {number} line Line number of the assertion about to be executed
  * @param {Set<string>} coveredBlockIdsPerAssertion IDs of the blocks covered since the last assertion was executed
- * @param {Set<string>} CoveredBlockIdsPerTest IDs of the blocks covered since the beginning of the current test
+ * @param {Set<string>} coveredBlockIdsPerTest IDs of the blocks covered since the beginning of the current test
  */
 
 /**
@@ -1393,7 +1393,7 @@ module.exports = {
  * @callback OnExecutedAssumptionCallback
  * @param {number} line Line number of the assumption about to be executed
  * @param {Set<string>} coveredBlockIdsPerAssumption IDs of the blocks covered since the last assumption was executed
- * @param {Set<string>} CoveredBlockIdsPerTest IDs of the blocks covered since the beginning of the current test
+ * @param {Set<string>} coveredBlockIdsPerTest IDs of the blocks covered since the beginning of the current test
  */
 
 /**
