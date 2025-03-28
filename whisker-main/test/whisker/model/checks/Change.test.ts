@@ -241,10 +241,14 @@ describe("The schema validation for Change", () => {
     });
 });
 
-const pos = fc.integer({min: 1});
-const neg = fc.integer({max: -1});
-const num = fc.oneof(pos, neg);
-const bounds = fc.tuple(num, pos).map(([min, x]) => [min, min + x]);
+const MIN = 1 << 31;
+const MAX = ~MIN;
+
+// Random generator for interval bounds such that min < max
+const bounds = fc.integer({min: MIN, max: MAX - 1}).chain((min) => fc.tuple(
+    fc.constant(min),
+    fc.integer({min: min + 1, max: MAX}),
+));
 
 describe("A clamped change with bounds [min, max]", () => {
     describe('using operator "+"', () => {
@@ -363,7 +367,7 @@ describe("A clamped change with bounds [min, max]", () => {
 
         const reachMax = values.chain(({before, min, max}) => fc.record({
             before: fc.constant(before),
-            change: fc.integer({min: max - before}), // Make sure it reaches or exceeds max
+            change: fc.integer({min: max - before, max: Number.MAX_SAFE_INTEGER}), // Make it reach or exceed max
             min: fc.constant(min),
             max: fc.constant(max),
         }));
@@ -398,10 +402,9 @@ describe("A clamped change with bounds [min, max]", () => {
             max: fc.constant(max),
         }));
 
-
         const reachMin = values.chain(({before, min, max}) => fc.record({
             before: fc.constant(before),
-            change: fc.integer({max: min - before}), // Make sure it reaches or drops below min
+            change: fc.integer({min: Number.MIN_SAFE_INTEGER, max: min - before}), // Make it reach or drop below min
             min: fc.constant(min),
             max: fc.constant(max),
         }));
@@ -429,6 +432,9 @@ describe("A clamped change with bounds [min, max]", () => {
     });
 
     describe("by 0", () => {
+        const num = fc.integer();
+        const pos = fc.integer({min: 1});
+
         const values = fc.tuple(num, pos, pos, pos)
             .map(([min, x, y, z]) => ({
                 min,
@@ -536,13 +542,15 @@ describe("A cyclic change with bounds [min, max]", () => {
             expect(c.apply(after, before)).toStrictEqual(pass());
         });
 
-        const failing = passing.chain(({after, before, min, max}) => fc.record({
-            after: fc.constant(after),
-            before: fc.constant(before),
-            min: fc.constant(min),
-            max: fc.constant(max),
-            change: fc.integer({min: 1, max: max - min}).filter((c) => c !== (max - before) + (after - min) + 1),
-        }));
+        const failing = passing
+            .filter(({min, max}) => max - min > 1) // Ensure it's possible to have min < v < max
+            .chain(({after, before, min, max}) => fc.record({
+                after: fc.constant(after),
+                before: fc.constant(before),
+                min: fc.constant(min),
+                max: fc.constant(max),
+                change: fc.integer({min: 1, max: max - min}).filter((c) => c !== (max - before) + (after - min) + 1),
+            }));
 
         it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
             const c = newChange({change}, {min, max, kind: "cyclic"});
@@ -569,13 +577,18 @@ describe("A cyclic change with bounds [min, max]", () => {
             expect(c.apply(after, before)).toStrictEqual(pass());
         });
 
-        const failing = passing.chain(({after, before, min, max}) => fc.record({
-            after: fc.constant(after),
-            before: fc.constant(before),
-            min: fc.constant(min),
-            max: fc.constant(max),
-            change: fc.integer(({min: min - max, max: 0})).filter((c) => c !== -((max - after) + (before - min) + 1)),
-        }));
+        const failing = passing
+            .filter(({min, max}) => max - min > 1) // Ensure it's possible to have min < v < max
+            .chain(({after, before, min, max}) => fc.record({
+                after: fc.constant(after),
+                before: fc.constant(before),
+                min: fc.constant(min),
+                max: fc.constant(max),
+                change: fc.integer(({
+                    min: min - max,
+                    max: 0
+                })).filter((c) => c !== -((max - after) + (before - min) + 1)),
+            }));
 
         it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
             const c = newChange({change}, {min, max, kind: "cyclic"});
@@ -606,4 +619,3 @@ describe("A cyclic change with bounds [min, max]", () => {
         });
     });
 });
-
