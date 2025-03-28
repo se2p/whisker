@@ -28,6 +28,15 @@ export class Change implements Quantifiable<Change> {
         protected readonly _comparison: Comparison,
         protected readonly _bounds: Bounds | null = null,
     ) {
+        if (_bounds === null) {
+            return;
+        }
+
+        const {min, max} = _bounds;
+
+        if (min >= max) {
+            throw new RangeError(`Expected min < max, but got min=${min} and max=${max}`);
+        }
     }
 
     protected _apply(after: number, before: number): CheckResult {
