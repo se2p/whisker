@@ -7,13 +7,7 @@ import {
     SlimCheckJSON,
     SpriteName
 } from "./AbstractCheck";
-import {
-    AttrNames,
-    EffectName,
-    ModelUtil,
-    NumberAttribute,
-    StringAttribute
-} from "../util/ModelUtil";
+import {AttrNames, EffectName, ModelUtil, NumberAttribute, StringAttribute} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
@@ -111,50 +105,36 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
             ModelUtil.checkAttributeExistence(t, spriteName, attrName);
         }
 
+        const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+
+        const listener = (sprite: Sprite) => {
+            try {
+                return this._change.applySingle(...this._getAttr(sprite));
+            } catch (e) {
+                throw new Exception(pSpriteName, attrName, e);
+            }
+        };
+
         // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
         // is not a numerical value and e.g. an increase (+) on a string is not desired to be representable. An
         // AttributeChange predicate with sayText fails in the execution with e.g.
         // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
-            this._registerOnMoveAttrChange(cu, graphID, spriteName);
+            cu.registerOnMoveEvent(spriteName, this, graphID, listener);
         } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-            this._registerOnVisualAttrChange(cu, graphID, spriteName);
+            cu.registerOnVisualChange(spriteName, this, graphID, listener);
         }
 
         return () => {
             const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
-            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
-                return this._change.apply(sprites.map((s) => this._getAttr(s)));
+                return this._change.apply(sprites.map((s: Sprite) => this._getAttr(s)));
             } catch (e) {
                 throw new Exception(pSpriteName, attrName, e);
             }
         };
-    }
-
-    private _registerOnMoveAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName] = this._args;
-        cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
-            try {
-                return this._change.applySingle(sprite[attrName], sprite.old[attrName]);
-            } catch (e) {
-                throw new ErrorForAttribute(pSpriteName, attrName, e);
-            }
-        });
-    }
-
-    private _registerOnVisualAttrChange(cu: CheckUtility, graphID: string, spriteName: string) {
-        const [pSpriteName, attrName] = this._args;
-        const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
-        cu.registerOnVisualChange(spriteName, this, graphID, (sprite) => {
-            try {
-                return this._change.applySingle(...this._getAttr(sprite));
-            } catch (e) {
-                throw new Exception(pSpriteName, attrName, e);
-            }
-        });
     }
 
     private _getAttr(s: Sprite) {
