@@ -9,7 +9,6 @@ const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFa
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const CoverageGenerator = require("../coverage/coverage");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
-const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
 const logger = require("../util/logger");
 const {ModelTester} = require("../whisker/model/ModelTester");
 
@@ -242,6 +241,91 @@ class TestRunner extends EventEmitter {
                 duration, undefined, modelResults);
         }
         return csv;
+    }
+
+    /**
+     * Runs a test in a VM that is already started and has the respective project already loaded.
+     * Intended to run tests in a VM that is already in use, e.g. by a regular scratch-gui instance.
+     *
+     * @param {VirtualMachine} preloadedVM an existing scratch-vm instance that has
+     *                                     the project under test already loaded
+     * @param {Test} test a single Whisker test to be executed
+     * @return {Promise<TestResult>} the test result
+     */
+    async runTestInPreloadedVM(preloadedVM, test) {
+
+        const util = new WhiskerUtil(preloadedVM, null);
+        const vmWrapper = util.getVMWrapper();
+        await preloadedVM.runtime.translateText2Speech();
+
+        preloadedVM.runtime.virtualSound = -1;
+
+        const result = new TestResult(test);
+
+        if (test.skip) {
+            result.status = Test.SKIP;
+            return result;
+        }
+
+        const testDriver = util.getTestDriver(
+            {
+                extend: {
+                    assert: assert,
+                    assume: assume,
+                    log: message => {
+                        result.log.push(message);
+                    }
+                }
+            }
+        );
+
+        this.saveState = vmWrapper._recordInitialState();
+
+        this._setRNGSeeds(undefined, test, preloadedVM);
+        this._checkSeed(test);
+
+        preloadedVM.greenFlag(); // I am unsure if this is correct, but vm-wrapper.js "start()" contains it, too.
+
+        preloadedVM.runtime.testRunning = true;
+
+        const defaultTimeout = 0; // same value as in the executeTest function
+        const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeout;
+
+        try {
+            if (timeout > 0) {
+                const timeoutError = new Error("Timeout");
+                const testTimeout = (prom, time, exception) => {
+                    let timer;
+                    return Promise.race([
+                        prom,
+                        new Promise((_r, rej) => timer = setTimeout(rej, time, exception))
+                    ]).finally(() => clearTimeout(timer));
+                };
+                await testTimeout(test.test(testDriver), timeout, timeoutError);
+
+            } else {
+                await test.test(testDriver);
+            }
+
+            result.status = Test.PASS;
+
+        } catch (e) {
+            result.error = e;
+
+            if (e.message === "Timeout") {
+                result.status = Test.FAIL;
+            } else if (isAssertionError(e)) {
+                result.status = Test.FAIL;
+            } else if (isAssumptionError(e)) {
+                result.status = Test.SKIP;
+            } else {
+                result.status = Test.ERROR;
+            }
+        }
+
+        preloadedVM.runtime.testRunning = false;
+        vmWrapper.loadSaveState(this.saveState);
+        return result;
     }
 
     /**
