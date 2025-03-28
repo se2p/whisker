@@ -13,6 +13,7 @@ import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import logger from "../../../util/logger";
 import {InputErrorCodes} from "../checks/newCheck";
+import {BooleanAttribute} from "../checks/AttrChange";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -23,16 +24,61 @@ export interface Expression extends Dependencies {
     expr: string
 }
 
-export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
-export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
-export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
-export const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible", "pos", "effects"] as const;
-export const AttributeAndEffectNames = [...AttributeNames, ...EffectNames] as const;
-export const Keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
+export const stringAttributeNames = Object.freeze([
+    "currentCostumeName",
+    "sayText",
+    "rotationStyle",
+] as const);
+
+export type StringAttribute = typeof stringAttributeNames[number];
+
+export const numberAttributeNames = Object.freeze([
+    "x",
+    "y",
+    "size",
+    "direction",
+    "layerOrder",
+    "volume",
+] as const);
+
+export type NumberAttribute = typeof numberAttributeNames[number];
+
+export const effectNames = Object.freeze([
+    "color",
+    "fisheye",
+    "whirl",
+    "pixelate",
+    "mosaic",
+    "brightness",
+    "ghost",
+] as const);
+
+export type EffectName = typeof effectNames[number];
+
+export const attributeNames = Object.freeze([
+    ...stringAttributeNames,
+    ...numberAttributeNames,
+    "visible",
+    "pos",
+    "effects"
+] as const);
+
+export type AttrNames =
+    | StringAttribute
+    | NumberAttribute
+    | EffectName
+    | BooleanAttribute
+    | "pos"
+    | "effects"
+    ;
+
+export const attributeAndEffectNames = Object.freeze([...attributeNames, ...effectNames] as const);
+
+export const keys = Object.freeze(['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-] as const;
+] as const);
 
 export abstract class ModelUtil {
 
@@ -146,9 +192,7 @@ export abstract class ModelUtil {
 
     public static isAnAttribute(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return AttributeNames.includes(attrName);
+        return (attributeNames as readonly string[]).includes(attrName);
     }
 
     /**
@@ -156,10 +200,8 @@ export abstract class ModelUtil {
      * @param effectName The name of the effect
      * @return true if {@linkcode effectName} is a valid name for an effect
      * */
-    public static isAnEffect(effectName: string): boolean {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return (EffectNames as string[]).includes(effectName);
+    public static isAnEffect(effectName: ArgType): boolean {
+        return (effectNames as readonly ArgType[]).includes(effectName);
     }
 
     /**
@@ -168,9 +210,7 @@ export abstract class ModelUtil {
      * @return true if {@linkcode name} is a valid name for an effect or an attribute that is a number
      * */
     public static isEffectOrNumberAttribute(name: ArgType): boolean {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return ModelUtil.isAnEffect(name) || (NumberAttributeNames as string[]).includes(name);
+        return ModelUtil.isAnEffect(name) || (numberAttributeNames as readonly ArgType[]).includes(name);
     }
 
     /**
@@ -179,15 +219,11 @@ export abstract class ModelUtil {
      * @return true if {@linkcode name} is a valid name for an effect
      * */
     public static isAnAttributeOrEffectMessage(name: ArgType): InputErrorCodes {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return (AttributeAndEffectNames as string[]).includes(name) ? "" : "invalidAttributeOrEffect";
+        return (attributeAndEffectNames as readonly ArgType[]).includes(name) ? "" : "invalidAttributeOrEffect";
     }
 
     public static isKey(name: ArgType): boolean {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return Keys.includes(name);
+        return (keys as readonly ArgType[]).includes(name);
     }
 
     /**
@@ -533,7 +569,7 @@ export abstract class ModelUtil {
             const str = String(args[index]);
             const [start, end] = str.startsWith("[") && str.endsWith("]") ? [1, str.length - 1] : [0, str.length];
             const parsed = str.substring(start, end).split(",").map(ModelUtil.testNumber);
-            if (parsed.length == EffectNames.length) {
+            if (parsed.length == effectNames.length) {
                 args[index] = parsed;
                 return "";
             }

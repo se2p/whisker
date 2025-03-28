@@ -2,11 +2,12 @@ import {fc, it} from "@fast-check/jest";
 import {
     ComparingCheck,
     ComparisonOp,
-    comparisonOps,
+    comparisonOps, CONST_FAIL, CONST_PASS,
     newComparison,
     newQuantifiedComparison
 } from "../../../../src/whisker/model/checks/Comparison";
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
+import {pass, fail} from "../../../../src/whisker/model/checks/CheckResult";
 
 const number = fc.double({noNaN: true});
 const xy = fc.tuple(number, number);
@@ -84,6 +85,29 @@ describe.each([
 });
 
 describe.each([
+    ["<", "y as lower bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, x])],
+    [">", "y as upper bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, y])],
+    ["!=", "y as lower bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, x])],
+    ["!=", "y as upper bound", xy.filter(([x, y]) => x <= y).map(([x, y]) => [x, y, y])],
+])('The bounded "x %s y" comparison with %s', (operator: ComparisonOp, _, bounds) => {
+    it.prop([bounds])("is true if x == y", ([min, max, value]) => {
+        expect(newComparison({operator, value}, {min, max}).apply(value).passed).toBe(true);
+    });
+
+    const inBounds = bounds.chain(([min, max]) => fc.tuple(
+        fc.constant(min),
+        fc.constant(max),
+        fc.double({min, max}).filter((v) => v !== min && v !== max)
+    ));
+
+    it.prop([inBounds])("has the same result as the unbounded comparison otherwise", ([min, max, value]) => {
+        const actual = newComparison({operator, value}, {min, max}).apply(value);
+        const expected = newComparison({operator, value}).apply(value);
+        expect(actual).toStrictEqual(expected);
+    });
+});
+
+describe.each([
     ["==", "==", xy.filter(([y, b]) => y != b), true, "if y != b"],
     ["==", "!=", xy.filter(([y, b]) => y != b), false, "if y != b"],
     ["==", "!=", number.map((y) => [y, y]), true, "if y == b"],
@@ -136,7 +160,7 @@ function comparingCheck(negated: boolean): fc.Arbitrary<ComparingCheck> {
     });
 }
 
-describe("newQuantifiedChange", () => {
+describe("newQuantifiedComparison", () => {
     it.prop([comparingCheck(false)])("returns an Existential when not negated", (c) => {
         const q = newQuantifiedComparison(c);
         expect(q).toBeInstanceOf(Existential);
@@ -165,4 +189,128 @@ describe("The schema validation for comparison operators", () => {
     });
 });
 
-// TODO: string comparisons?
+const pos = fc.integer({min: 1});
+const neg = fc.integer({max: -1});
+const num = fc.oneof(pos, neg);
+const bounds = fc.tuple(num, pos).map(([min, x]) => [min, min + x]);
+
+describe("A comparison with an interval [min, max]", () => {
+    describe.each(["==", "<=", ">="])('using operator "%s"', (op: ComparisonOp) => {
+        const values = bounds
+            .chain(([min, max]) => fc.tuple(
+                fc.integer({min, max}),
+                fc.integer({min, max}),
+                fc.constant(min),
+                fc.constant(max),
+            )).chain(([x, y, min, max]) => fc.tuple(
+                fc.oneof(
+                    {arbitrary: fc.constant(x), weight: 1}, // 33% -> x == y
+                    {arbitrary: fc.constant(y), weight: 2}, // 66% -> x != y (33% -> x < y, 33% -> y > x)
+                ),
+                fc.constant(y),
+                fc.constant(min),
+                fc.constant(max),
+            ));
+
+        it.prop([values])("has the same result as a regular comparison", ([x, y, min, max]) => {
+            const regular = newComparison({operator: op, value: y});
+            const interval = newComparison({operator: op, value: y}, {min, max});
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+        });
+    });
+
+    describe('using operator ">"', () => {
+        const operator = ">";
+
+        it.prop([bounds])("is true for x == y == max", ([min, max]) => {
+            const comp = newComparison({operator, value: max}, {min, max});
+            expect(comp.apply(max)).toStrictEqual(pass());
+        });
+
+        it.prop([bounds])("is false for x == min and y == max", ([min, max]) => {
+            const comp = newComparison({operator, value: max}, {min, max});
+            expect(comp.apply(min)).toStrictEqual(fail(expect.any(Object)));
+        });
+
+        const values = fc.tuple(num, pos, pos, pos)
+            .map(([min, x, y, z]) => [min, min + x, min + x + y, min + x + y + z]);
+
+        it.prop([values])("has the same result as the regular comparison otherwise", ([min, x, y, max]) => {
+            const regular = newComparison({operator, value: y});
+            const interval = newComparison({operator, value: y}, {min, max});
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+        });
+    });
+
+    describe('using operator "<"', () => {
+        const operator = "<";
+
+        it.prop([bounds])("is true for x == y == min", ([min, max]) => {
+            const comp = newComparison({operator, value: min}, {min, max});
+            expect(comp.apply(min)).toStrictEqual(pass());
+        });
+
+        it.prop([bounds])("is false for x == max and y == min", ([min, max]) => {
+            const comp = newComparison({operator, value: min}, {min, max});
+            expect(comp.apply(max)).toStrictEqual(fail(expect.any(Object)));
+        });
+
+        const values = fc.tuple(num, pos, pos, pos)
+            .map(([min, x, y, z]) => [min, min + x, min + x + y, min + x + y + z]);
+
+        it.prop([values])("has the same result as the regular comparison otherwise", ([min, x, y, max]) => {
+            const regular = newComparison({operator, value: y});
+            const interval = newComparison({operator, value: y}, {min, max});
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+        });
+    });
+
+    describe('using operator "!="', () => {
+        const operator = "!=";
+
+        it.prop([bounds])("is true for x == y == min", ([min, max]) => {
+            const comp = newComparison({operator, value: min}, {min, max});
+            expect(comp.apply(min)).toStrictEqual(pass());
+        });
+
+        it.prop([bounds])("is true for x == y == max", ([min, max]) => {
+            const comp = newComparison({operator, value: max}, {min, max});
+            expect(comp.apply(max)).toStrictEqual(pass());
+        });
+
+        const values = bounds
+            .filter(([min, max]) => max - min > 1) // To avoid min > max later
+            .chain(([min, max]) => fc.tuple(
+                fc.integer({min: min + 1, max: max - 1}),
+                fc.integer({min: min + 1, max: max - 1}),
+                fc.constant(min),
+                fc.constant(max),
+            ));
+
+        it.prop([values])("has the same result as the regular comparison otherwise", ([x, y, min, max]) => {
+            const regular = newComparison({operator, value: y});
+            const interval = newComparison({operator, value: y}, {min, max});
+            expect(interval.apply(x)).toStrictEqual(regular.apply(x));
+        });
+    });
+});
+
+describe("The CONST_PASS comparison", () => {
+    it.prop([fc.double()])("always passes", (i) => {
+        expect(CONST_PASS.apply(i)).toStrictEqual(pass());
+    });
+
+    it("returns CONST_FAIL when negated", () => {
+        expect(CONST_PASS.negate()).toBe(CONST_FAIL);
+    });
+});
+
+describe("The CONST_FAIL comparison", () => {
+    it.prop([fc.double()])("always fails", (i) => {
+        expect(CONST_FAIL.apply(i)).toStrictEqual(fail({message: "CONST_FAIL"}));
+    });
+
+    it("returns CONST_PASS when negated", () => {
+        expect(CONST_FAIL.negate()).toBe(CONST_PASS);
+    });
+});

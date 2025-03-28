@@ -1,17 +1,62 @@
 import {z} from "zod";
-import {Comparison, newComparison} from "./Comparison";
+import {Comparison, ComparisonOp, CONST_PASS, Interval, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
+import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
+
+interface IBounds extends Interval {
+    kind: "clamped" | "cyclic";
+}
+
+interface ClampedBounds extends IBounds {
+    kind: "clamped";
+}
+
+interface CyclicBounds extends IBounds {
+    kind: "cyclic";
+}
+
+export type Bounds =
+    | ClampedBounds
+    | CyclicBounds
+    ;
 
 export class Change implements Quantifiable<Change> {
-    protected constructor(private readonly _comparison: Comparison) {
+    protected constructor(
+        protected readonly _comparison: Comparison,
+        protected readonly _bounds: Bounds | null = null,
+    ) {
+        if (_bounds === null) {
+            return;
+        }
+
+        const {min, max} = _bounds;
+
+        if (!(min < max)) {
+            throw new RangeError(`Expected min < max, but got min=${min} and max=${max}`);
+        }
+    }
+
+    protected _apply(after: number, before: number): CheckResult {
+        return this._comparison.apply(after - before);
+    }
+
+    private _clampToBounds(v: number): number {
+        if (this._bounds === null) {
+            return v;
+        }
+
+        // Although the stage has a width of 480 with bounds [-240, 240], it appears the x values of sprites can
+        // sometimes drop below -240 or exceed 240. This might happen for other attributes as well. Our computations
+        // might not expect values outside the interval, so we clamp these values back to it.
+        const {min, max} = this._bounds;
+        return v < min ? min : v > max ? max : v;
     }
 
     apply(after: number, before: number): CheckResult {
-        const actual = after - before;
-        return this._comparison.apply(actual).replace({before, after});
+        return this._apply(this._clampToBounds(after), this._clampToBounds(before)).replace({before, after});
     }
 
     contradicts(that: Change): boolean {
@@ -19,36 +64,170 @@ export class Change implements Quantifiable<Change> {
     }
 
     negate(): Change {
-        return new Change(this._comparison.negate());
+        return new Change(this._comparison.negate(), this._bounds);
     }
 
-    static from(numberOrChangeOp: NumberOrChangeOp): Change {
+    static from(numberOrChangeOp: NumberOrChangeOp, bounds: Bounds | null = null): Change {
         // Special handling to support string operands as the subtraction trick would not work.
-        switch (numberOrChangeOp) {
-            case "=":
-                return eq0;
-            case "!=":
-                return neq0;
+        if (bounds === null) {
+            switch (numberOrChangeOp) {
+                case "=":
+                    return new Eq0(bounds);
+                case "!=":
+                    return new Neq0(bounds);
+            }
         }
 
-        if (typeof numberOrChangeOp === "number") {
-            return new Change(newComparison({operator: "==", value: numberOrChangeOp}));
-        }
-
-        const operator = ({
+        const operatorMap = {
             "+": ">",
             "-": "<",
             "+=": ">=",
-            "-=": "<="
-        } as const)[numberOrChangeOp];
+            "-=": "<=",
+            "=": "==",
+            "!=": "!=",
+        } as Record<ChangeOp, ComparisonOp>;
 
-        return new Change(newComparison({operator, value: 0}));
+        /*
+         * Expresses a change in terms of a comparison:
+         *
+         * Operator     Comparison
+         *
+         *    +n        after - before == +n
+         *    -n        after - before == -n
+         *    0         after - before == 0
+         *
+         *    +         after - before >  0
+         *    +=        after - before >= 0
+         *    -         after - before <  0
+         *    -=        after - before <= 0
+         *    =         after - before == 0
+         *    !=        after - before != 0
+         */
+        const comparison = newComparison<null>(
+            typeof numberOrChangeOp === "number"
+                ? {operator: "==", value: numberOrChangeOp}
+                : {operator: operatorMap[numberOrChangeOp], value: 0}
+        );
+
+        if (bounds === null) {
+            return new Change(comparison);
+        }
+
+        const boundsKind = bounds.kind;
+
+        switch (boundsKind) {
+            case "clamped":
+                return new ClampedChange(comparison, bounds);
+            case "cyclic":
+                return new CyclicChange(comparison, bounds);
+            default:
+                throw new NonExhaustiveCaseDistinction(boundsKind);
+        }
     }
 }
 
-const eq0 = new class Eq0 extends Change {
-    constructor() {
-        super(newComparison({operator: "==", value: 0}));
+class CyclicChange extends Change {
+    private readonly _length: number;
+
+    constructor(comparison: Comparison, bounds: CyclicBounds) {
+        if (["<=", ">="].includes(comparison.operator)) { // Always passes
+            super(CONST_PASS, bounds);
+        } else if (["<", ">"].includes(comparison.operator)) { // Equivalent to !=
+            super(newComparison({operator: "!=", value: 0}), bounds);
+        } else {
+            super(comparison, bounds);
+        }
+
+        this._length = bounds.max - bounds.min + 1;
+    }
+
+    protected override _apply(after: number, before: number): CheckResult {
+        const result = super._apply(after, before);
+
+        if (!["==", "!="].includes(this._comparison.operator)) {
+            return result;
+        }
+
+        // The special handling below is required only for changes by an exact number.
+
+        if (this._comparison.operator === "==" && result.passed) {
+            // Because the comparison passed, we know the `after` value did not wrap around -> pass.
+            return result;
+        }
+
+        if (this._comparison.operator === "!=" && !result.passed) {
+            // Because the comparison failed, we know the `after` value did not wrap around -> fail.
+            return result;
+        }
+
+        // The `after` value might have wrapped around. We have to simulate the comparison as if that had not occurred.
+        const uncycle = after + (this._comparison.operand2 > 0 ? this._length : -this._length);
+        return super._apply(uncycle, before);
+    }
+}
+
+class ClampedChange extends Change {
+    /**
+     * The boundary points where a special comparison is required.
+     * @private
+     */
+    private readonly _ifBounds: number[];
+
+    /**
+     * Comparison to perform when the "after" value of the change is at a boundary point.
+     * @private
+     */
+    private readonly _atBounds: Comparison;
+
+    constructor(comparison: Comparison, bounds: ClampedBounds) {
+        super(comparison, bounds);
+
+        const {operator, operand2: expectedChange} = comparison;
+        const {min, max} = bounds;
+
+        type OpBounds = [ComparisonOp, number[]];
+
+        if (operator === "==" && expectedChange !== 0) {
+            // Expects a "strict" change by a specific amount. If a value is at a boundary point afterward, it could be
+            // because the expected change was too large/small to fit into the interval. In this case, pass. But it
+            // could also be that the expected change was smaller/larger than the actual change, which would be a
+            // failure. The comparison below rules out this possibility.
+            const [op, ifBounds]: OpBounds = expectedChange > 0
+                ? ["<=", [max]]
+                : [">=", [min]];
+
+            this._ifBounds = ifBounds;
+            this._atBounds = newComparison({operator: op, value: expectedChange});
+            return;
+        }
+
+        const [op, ifBounds] = ({
+            // Expects a "strict" change, but if the value was already at a boundary point before, the best it could
+            // possibly do is stay the same. Thus, allow equality as well.
+            ">": [">=", [max]],
+            "<": ["<=", [min]],
+            "!=": ["==", [min, max]],
+
+            // "Non-strict" change already allows equality, hence no explicit special handling required.
+            ">=": [">=", [max]],
+            "<=": ["<=", [min]],
+            "==": ["==", []],
+        } as Record<ComparisonOp, OpBounds>)[operator];
+
+        this._ifBounds = ifBounds;
+        this._atBounds = newComparison({operator: op, value: 0});
+    }
+
+    protected override _apply(after: number, before: number): CheckResult {
+        return this._ifBounds.includes(after)
+            ? this._atBounds.apply(after - before)
+            : super._apply(after, before);
+    }
+}
+
+class Eq0 extends Change {
+    constructor(bounds: Bounds | null) {
+        super(newComparison({operator: "==", value: 0}), bounds);
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
@@ -56,13 +235,13 @@ const eq0 = new class Eq0 extends Change {
     }
 
     override negate(): Change {
-        return neq0;
+        return new Neq0(this._bounds);
     }
-};
+}
 
-const neq0 = new class Neq0 extends Change {
-    constructor() {
-        super(newComparison({operator: "!=", value: 0}));
+class Neq0 extends Change {
+    constructor(bounds: Bounds | null) {
+        super(newComparison({operator: "!=", value: 0}), bounds);
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
@@ -70,16 +249,14 @@ const neq0 = new class Neq0 extends Change {
     }
 
     override negate(): Change {
-        return eq0;
+        return new Eq0(this._bounds);
     }
-};
+}
 
 export const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
 
 export function isValidChangeOperator(change: ArgType): boolean {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return changeOps.includes(change);
+    return (changeOps as readonly ArgType[]).includes(change);
 }
 
 export type ChangeOp = typeof changeOps[number];
@@ -117,8 +294,11 @@ export type NumberOrChangeOp =
 
 export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 
-export function newChange({change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">): Change {
-    const change = Change.from(numberOrChangeOp);
+export function newChange(
+    {change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">,
+    bounds: Bounds | null = null,
+): Change {
+    const change = Change.from(numberOrChangeOp, bounds);
     return negated ? change.negate() : change;
 }
 
@@ -128,9 +308,10 @@ export interface ChangingCheck {
 }
 
 export function newQuantifiedChange(
-    {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>
+    {change: numOp, negated = false}: Optional<ChangingCheck, 'negated'>,
+    bounds: Bounds | null = null,
 ): Quantification<Change> {
-    const change = newChange({change: numOp, negated: false});
+    const change = newChange({change: numOp, negated: false}, bounds);
 
     return negated
         ? new Universal(change.negate())

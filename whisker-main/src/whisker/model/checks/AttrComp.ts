@@ -1,6 +1,15 @@
 import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {EffectNames, ModelUtil, NumberAttributeNames, StringAttributeNames} from "../util/ModelUtil";
+import {
+    AttrNames,
+    EffectName,
+    effectNames,
+    ModelUtil,
+    NumberAttribute,
+    numberAttributeNames,
+    StringAttribute,
+    stringAttributeNames
+} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -14,29 +23,32 @@ import {
 } from "./Comparison";
 import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
-import {AttrNames, BooleanAttribute, Effect, NumberAttribute, StringAttribute} from "./AttrChange";
+import {BooleanAttribute} from "./AttrChange";
 import {ArgType} from "../util/schema";
 import {InputErrorCodes} from "./newCheck";
 
-const name = "AttrComp" as const;
-type PosType = {
-    x: number,
-    y: number
+interface Position {
+    x: number;
+    y: number;
 }
+
+const name = "AttrComp" as const;
+
 export type AttrCompArgs =
-    [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
-    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number]
+    | [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
+    | [spriteName: SpriteName, attrName: NumberAttribute | EffectName, comparisonOp: ComparisonOp, attrValue: number]
     | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean]
-    | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: PosType]
-    | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]];
+    | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: Position]
+    | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]]
+    ;
 
 const AttrCompArgs = z.union([
     z.tuple([SpriteName, z.literal("visible"), z.union([z.literal("=="), z.literal("!=")]), z.string().or(z.boolean())]),
     z.tuple([SpriteName, z.literal("pos"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
     z.tuple([SpriteName, z.literal("effects"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
-    z.tuple([SpriteName, z.enum(NumberAttributeNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(EffectNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(StringAttributeNames), ComparisonOp, z.string()]),
+    z.tuple([SpriteName, z.enum(numberAttributeNames), ComparisonOp, z.string().or(z.number())]),
+    z.tuple([SpriteName, z.enum(effectNames), ComparisonOp, z.string().or(z.number())]),
+    z.tuple([SpriteName, z.enum(stringAttributeNames), ComparisonOp, z.string()]),
 ]);
 
 export interface AttrCompJSON extends ICheckJSON {
@@ -89,8 +101,9 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             ModelUtil.checkAttributeExistence(t, spriteName, this._attrName);
         }
 
+        const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+
         const listener = (sprite: Sprite) => {
-            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
             try {
                 return this._comparison.applySingle(this._getAttr(sprite));
             } catch (e) {
@@ -109,7 +122,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         return () => {
             const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
-            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
                 return this._comparison.apply(sprites.map(s => this._getAttr(s)));

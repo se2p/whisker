@@ -15,7 +15,15 @@ export type SpriteName =
     ;
 
 export function couldBeSpriteName(name: ArgType): InputErrorCodes {
-    return typeof name == "string" || Array.isArray(name) && Object.values(name).every(s => typeof s == "string") ? "" : "invalidSpriteName";
+    if (typeof name === "string") {
+        return "";
+    }
+
+    if (Array.isArray(name) && (name as unknown[]).every((s) => typeof s === "string")) {
+        return ""
+    }
+
+    return "invalidSpriteName";
 }
 
 export type VariableName = SpriteName;
