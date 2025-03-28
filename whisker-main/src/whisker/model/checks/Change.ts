@@ -34,7 +34,7 @@ export class Change implements Quantifiable<Change> {
 
         const {min, max} = _bounds;
 
-        if (min >= max) {
+        if (!(min < max)) {
             throw new RangeError(`Expected min < max, but got min=${min} and max=${max}`);
         }
     }
@@ -148,19 +148,21 @@ class CyclicChange extends Change {
             return result;
         }
 
+        // The special handling below is required only for changes by an exact number.
+
         if (this._comparison.operator === "==" && result.passed) {
+            // Because the comparison passed, we know the `after` value did not wrap around -> pass.
             return result;
         }
 
         if (this._comparison.operator === "!=" && !result.passed) {
+            // Because the comparison failed, we know the `after` value did not wrap around -> fail.
             return result;
         }
 
-        if (this._comparison.operand2 > 0) {
-            return super._apply(after + this._length, before);
-        } else {
-            return super._apply(after - this._length, before);
-        }
+        // The `after` value might have wrapped around. We have to simulate the comparison as if that had not occurred.
+        const uncycle = after + (this._comparison.operand2 > 0 ? this._length : -this._length);
+        return super._apply(uncycle, before);
     }
 }
 
