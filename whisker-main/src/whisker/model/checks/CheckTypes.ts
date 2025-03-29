@@ -1,20 +1,20 @@
 import {SafeParseReturnType, z} from "zod";
 import {ArgType} from "../util/schema";
 
-export const StringAttributeNames = ["currentCostumeName", "sayText", "rotationStyle"] as const;
-export const NumberAttributeNames = ["x", "y", "size", "direction", "layerOrder", "volume"] as const;
-export const EffectNames = ["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const;
-export const BooleanAttributeNames = ["visible"] as const;
-export const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, ...BooleanAttributeNames] as const;
-export const AttributeAndEffectNames = [...AttributeNames, ...EffectNames] as const;
-export const Keys = [
+export const StringAttributeNames = Object.freeze(["currentCostumeName", "sayText", "rotationStyle"] as const);
+export const NumberAttributeNames = Object.freeze(["x", "y", "size", "direction", "layerOrder", "volume"] as const);
+export const EffectNames = Object.freeze(["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const);
+export const BooleanAttributeNames = Object.freeze(["visible"] as const);
+export const AttributeNames = Object.freeze([...StringAttributeNames, ...NumberAttributeNames, ...BooleanAttributeNames] as const);
+export const AttributeAndEffectNames = Object.freeze([...AttributeNames, ...EffectNames] as const);
+export const Keys = Object.freeze([
     'space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-] as const;
-export const EqOrNeqOPs = ["==", "!="] as const;
-export const changeOps = ["+", "-", "==", "+=", "-=", "!="] as const;
+] as const);
+export const EqOrNeqOPs = Object.freeze(["==", "!="] as const);
+export const changeOps = Object.freeze(["+", "-", "==", "+=", "-=", "!="] as const);
 export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);
 
 export type SpriteName = string | [string, ...string[]];

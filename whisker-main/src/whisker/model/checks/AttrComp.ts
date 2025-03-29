@@ -88,8 +88,9 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
             ModelUtil.checkAttributeExistence(t, spriteName, this._attrName);
         }
 
+        const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
+
         const listener = (sprite: Sprite) => {
-            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
             try {
                 return this._comparison.applySingle(this._getAttr(sprite));
             } catch (e) {
@@ -108,7 +109,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         return () => {
             const sprites: Sprite[] = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
-            const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
             try {
                 return this._comparison.apply(sprites.map(s => this._getAttr(s)));

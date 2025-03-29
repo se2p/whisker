@@ -134,9 +134,7 @@ export abstract class ModelUtil {
 
     public static isAnAttribute(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return AttributeNames.includes(attrName);
+        return (AttributeNames as readonly string[]).includes(attrName);
     }
 
     /**
@@ -144,10 +142,8 @@ export abstract class ModelUtil {
      * @param effectName The name of the effect
      * @return true if {@linkcode effectName} is a valid name for an effect
      * */
-    public static isAnEffect(effectName: string): boolean {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return (EffectNames as string[]).includes(effectName);
+    public static isAnEffect(effectName: ArgType): boolean {
+        return (EffectNames as readonly ArgType[]).includes(effectName);
     }
 
     /**
