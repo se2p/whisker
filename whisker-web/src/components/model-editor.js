@@ -9,7 +9,7 @@ const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
 const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
-const {AttributeAndEffectNames} = require('whisker-main/src/whisker/model/checks/CheckTypes');
+const {attributeAndEffectNames} = require('whisker-main/src/whisker/model/checks/CheckTypes');
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -1354,19 +1354,19 @@ class ModelEditor {
     appendAttributeNames (value, idNbr) {
         const id = ModelEditor.INPUT_ID + idNbr;
         const select = $('<select/>', {name: `selectAttrName${idNbr}`, id: id});
-        for (let i = 0; i < AttributeAndEffectNames.length; i++) {
-            // const attribute = `modelEditor:${AttributeAndEffectNames[i]}`;
+        for (let i = 0; i < attributeAndEffectNames.length; i++) {
+            // const attribute = `modelEditor:${attributeAndEffectNames[i]}`;
             // TODO should attributes be translated? probably not
-            // select.append($('<option/>', {'value': AttributeAndEffectNames[i],
+            // select.append($('<option/>', {'value': attributeAndEffectNames[i],
             // 'data-i18n': attribute}).text(i18n.t(attribute)));
-            select.append($('<option/>', {value: AttributeAndEffectNames[i]}).text(AttributeAndEffectNames[i]));
+            select.append($('<option/>', {value: attributeAndEffectNames[i]}).text(attributeAndEffectNames[i]));
         }
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:attrName'})
                 .text(i18n.t('modelEditor:attrName')))
         )
             .append($('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(select)));
-        select.val(AttributeAndEffectNames[0]);
+        select.val(attributeAndEffectNames[0]);
     }
 
     appendBool (value, idNbr) {

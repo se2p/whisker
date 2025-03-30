@@ -11,7 +11,7 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
-import {AttributeNames, EffectNames} from "../checks/CheckTypes";
+import {attributeNames, effectNames} from "../checks/CheckTypes";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -134,7 +134,7 @@ export abstract class ModelUtil {
 
     public static isAnAttribute(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
-        return (AttributeNames as readonly string[]).includes(attrName);
+        return (attributeNames as readonly string[]).includes(attrName);
     }
 
     /**
@@ -143,7 +143,7 @@ export abstract class ModelUtil {
      * @return true if {@linkcode effectName} is a valid name for an effect
      * */
     public static isAnEffect(effectName: ArgType): boolean {
-        return (EffectNames as readonly ArgType[]).includes(effectName);
+        return (effectNames as readonly ArgType[]).includes(effectName);
     }
 
     /**

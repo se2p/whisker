@@ -13,7 +13,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
-import {NumberAttributeNames, StringAttributeNames} from "../../../../src/whisker/model/checks/CheckTypes";
+import {numberAttributeNames, stringAttributeNames} from "../../../../src/whisker/model/checks/CheckTypes";
 
 describe('ModelUtil tests', function () {
     describe("testNumber()", () => {
@@ -184,7 +184,7 @@ describe('ModelUtil tests', function () {
     });
 
     describe('checkAttributeExistence()', () => {
-        const AttributeNames = [...StringAttributeNames, ...NumberAttributeNames, "visible"];
+        const AttributeNames = [...stringAttributeNames, ...numberAttributeNames, "visible"];
         it.each(AttributeNames)('checkAttributeForExistence("%s")', (name) => {
             expect(() => ModelUtil.checkAttributeExistence(null, "sprite", name)).not.toThrow();
         });

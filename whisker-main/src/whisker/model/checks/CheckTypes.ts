@@ -1,41 +1,41 @@
 import {SafeParseReturnType, z} from "zod";
 import {ArgType} from "../util/schema";
 
-export const StringAttributeNames = Object.freeze(["currentCostumeName", "sayText", "rotationStyle"] as const);
-export const NumberAttributeNames = Object.freeze(["x", "y", "size", "direction", "layerOrder", "volume"] as const);
-export const EffectNames = Object.freeze(["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const);
-export const BooleanAttributeNames = Object.freeze(["visible"] as const);
-export const AttributeNames = Object.freeze([...StringAttributeNames, ...NumberAttributeNames, ...BooleanAttributeNames] as const);
-export const AttributeAndEffectNames = Object.freeze([...AttributeNames, ...EffectNames] as const);
-export const Keys = Object.freeze([
+export const stringAttributeNames = Object.freeze(["currentCostumeName", "sayText", "rotationStyle"] as const);
+export const numberAttributeNames = Object.freeze(["x", "y", "size", "direction", "layerOrder", "volume"] as const);
+export const effectNames = Object.freeze(["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const);
+export const booleanAttributeNames = Object.freeze(["visible"] as const);
+export const attributeNames = Object.freeze([...stringAttributeNames, ...numberAttributeNames, ...booleanAttributeNames] as const);
+export const attributeAndEffectNames = Object.freeze([...attributeNames, ...effectNames] as const);
+export const keys = Object.freeze([
     'space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
 ] as const);
-export const EqOrNeqOPs = Object.freeze(["==", "!="] as const);
+export const eqOrNeqOPs = Object.freeze(["==", "!="] as const);
 export const changeOps = Object.freeze(["+", "-", "==", "+=", "-=", "!="] as const);
 export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);
 
 export type SpriteName = string | [string, ...string[]];
 export type VariableName = SpriteName;
-export type StringAttribute = typeof StringAttributeNames[number];
-export type NumberAttribute = typeof NumberAttributeNames[number];
-export type BooleanAttribute = typeof BooleanAttributeNames[number];
-export type Effect = typeof EffectNames[number];
+export type StringAttribute = typeof stringAttributeNames[number];
+export type NumberAttribute = typeof numberAttributeNames[number];
+export type BooleanAttribute = typeof booleanAttributeNames[number];
+export type Effect = typeof effectNames[number];
 export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute;
-export type EqOrNeq = typeof EqOrNeqOPs[number];
+export type EqOrNeq = typeof eqOrNeqOPs[number];
 export type ComparisonOp = typeof comparisonOps[number];
 export type ChangeOp = typeof changeOps[number];
 export type NumberOrChangeOp = number | ChangeOp;
 
-export const NumberAttribute = z.enum(NumberAttributeNames);
-export const EffectAttribute = z.enum(EffectNames);
-export const StringAttribute = z.enum(StringAttributeNames);
-export const BooleanAttribute = z.enum(BooleanAttributeNames);
+export const NumberAttribute = z.enum(numberAttributeNames);
+export const EffectAttribute = z.enum(effectNames);
+export const StringAttribute = z.enum(stringAttributeNames);
+export const BooleanAttribute = z.enum(booleanAttributeNames);
 export const KeyArgument = z.preprocess(
     (key) => ["left", "right", "up", "down"].includes(key as string) ? `${key} arrow` : key,
-    z.enum(Keys, {message: "InvalidKey"})
+    z.enum(keys, {message: "InvalidKey"})
 );
 
 export const SpriteName = z.union([
@@ -70,7 +70,7 @@ export const NonNegativeNumber = z.coerce.number({message: "NoNumber"})
 
 export const EqOrNeq = z.preprocess(
     (value) => value === "=" ? "==" : value,
-    z.enum(EqOrNeqOPs, {message: "InvalidOpForAttribute"})
+    z.enum(eqOrNeqOPs, {message: "InvalidOpForAttribute"})
 );
 
 export const ComparisonOp = z.preprocess(

@@ -10,7 +10,7 @@ import {ArgType} from "../util/schema";
 import {
     ComparisonOp,
     EqOrNeq,
-    EqOrNeqOPs,
+    eqOrNeqOPs,
     NumberLike,
     parseUnionError,
     ParsingResult,
@@ -25,7 +25,7 @@ export type VarCompArgs =
     | [spriteName: SpriteName, varName: VariableName, comparisonOp: ComparisonOp, varValue: number];
 
 const VarCompArgs = z.union([
-    z.tuple([SpriteName, VariableName, z.enum(EqOrNeqOPs, {message: "InvalidComparison"}), z.string().or(z.number())]),
+    z.tuple([SpriteName, VariableName, z.enum(eqOrNeqOPs, {message: "InvalidComparison"}), z.string().or(z.number())]),
     z.tuple([SpriteName, VariableName, ComparisonOp, NumberLike], {message: "InvalidVarCompArgs"}),
 ]);
 
