@@ -87,8 +87,6 @@ const checkLabelCodes = {
     AnyKey: []
 };
 
-const keys = keys;
-
 const placeholders = {
     spriteNameRegex: '',
     attrName: '',
@@ -110,4 +108,4 @@ const placeholders = {
     layerSelection: 'First or Last'
 };
 
-export {argType, checkLabelCodes, inputLabelCodes, keys, placeholders};
+export {argType, checkLabelCodes, inputLabelCodes, placeholders};
