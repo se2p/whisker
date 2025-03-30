@@ -9,7 +9,7 @@ import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {
-    AttrNames,
+    AttrName,
     BooleanAttribute,
     Effect,
     EffectAttribute,
@@ -24,7 +24,7 @@ import {
 
 const name = "AttrChange" as const;
 
-const bounds: Record<AttrNames, Bounds | null> = Object.freeze({
+const bounds: Record<AttrName, Bounds | null> = Object.freeze({
     x: {min: -240, max: 240, kind: "clamped"},
     y: {min: -180, max: 180, kind: "clamped"},
     layerOrder: {min: 1, max: Number.MAX_VALUE, kind: "clamped"},
@@ -57,8 +57,7 @@ export type AttrChangeArgs =
 
 
 const AttrChangeArgs = z.union([
-    z.tuple([SpriteName, NumberAttribute, NumberOrChangeOp]),
-    z.tuple([SpriteName, EffectAttribute, NumberOrChangeOp]),
+    z.tuple([SpriteName, NumberAttribute.or(EffectAttribute), NumberOrChangeOp]),
     z.tuple([SpriteName, StringAttribute, EqOrNeq]),
     z.tuple([SpriteName, BooleanAttribute, EqOrNeq]),
 ], {message: "InvalidAttribute"});
@@ -76,7 +75,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
-    private readonly _attributeName: AttrNames;
+    private readonly _attributeName: AttrName;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
@@ -127,7 +126,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
         }
 

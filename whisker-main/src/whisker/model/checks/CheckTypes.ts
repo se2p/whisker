@@ -23,7 +23,7 @@ export type StringAttribute = typeof stringAttributeNames[number];
 export type NumberAttribute = typeof numberAttributeNames[number];
 export type BooleanAttribute = typeof booleanAttributeNames[number];
 export type Effect = typeof effectNames[number];
-export type AttrNames = StringAttribute | NumberAttribute | Effect | BooleanAttribute;
+export type AttrName = StringAttribute | NumberAttribute | Effect | BooleanAttribute;
 export type EqOrNeq = typeof eqOrNeqOPs[number];
 export type ComparisonOp = typeof comparisonOps[number];
 export type ChangeOp = typeof changeOps[number];
@@ -54,6 +54,7 @@ export const NumberLike = z.union([
 ], {message: "NeitherNumberNorString"})
     .pipe(z.coerce.number({message: "NoNumber"}))
     .refine((n) => !Number.isNaN(n), {message: "NoNumber"});
+
 /**
  * Either true, false, "true" or "false"
  */
@@ -77,10 +78,12 @@ export const ComparisonOp = z.preprocess(
     (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
     z.enum(comparisonOps, {message: "InvalidComparison"})
 );
+
 const ChangeOp = z.preprocess(
     (change) => change === "=" ? "==" : change,
     z.enum(changeOps, {message: "InvalidChange"})
 );
+
 export const NumberOrChangeOp = z.union([
     NumberLike,
     ChangeOp
@@ -135,28 +138,32 @@ export function parseAttributeError(res: SafeParseReturnType<unknown, unknown>):
 }
 
 export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defaultMap: Record<number, InputErrorCodes>): ParsingResult {
-    if (res.success === false) {
-        let codes: Record<number, InputErrorCodes> = {};
-        const issues = res.error.issues;
-        if (issues.length === 1 && issues[0].code === "invalid_union") {
-            const error = issues[0].unionErrors.filter(
-                e => e.issues.every(i => i.code !== "invalid_enum_value" || i.path[0] != 1)
-            ); // remove options of the union where no correct value of the enum was chosen
-            if (error.length > 0) {
-                error.sort((a, b) => a.issues.length - b.issues.length);
-                // take option with the lowest amount of issues and display issues for this option
-                error[0].issues.forEach((error) => {
-                    codes[error.path[0]] = error.message;
-                });
-            } else {
-                codes = defaultMap; // no correct value of enums was chosen -> default value
-            }
-        } else {
-            return parseNonUnionError(res); // top level is not a union so the wrong method was called
-        }
-        return {passed: false, problems: codes};
+    if (res.success !== false) {
+        return {passed: true, data: res.data as ArgType[]};
     }
-    return {passed: true, data: res.data as ArgType[]};
+
+    const issues = res.error.issues;
+
+    if (!(issues.length === 1 && issues[0].code === "invalid_union")) {
+        return parseNonUnionError(res); // top level is not a union so the wrong method was called
+    }
+
+    const error = issues[0].unionErrors.filter(
+        e => e.issues.every(i => i.code !== "invalid_enum_value" || i.path[0] != 1)
+    ); // remove options of the union where no correct value of the enum was chosen
+
+    let codes: Record<number, InputErrorCodes> = {};
+    if (error.length > 0) {
+        error.sort((a, b) => a.issues.length - b.issues.length);
+        // take option with the lowest amount of issues and display issues for this option
+        error[0].issues.forEach((error) => {
+            codes[error.path[0]] = error.message;
+        });
+    } else {
+        codes = defaultMap; // no correct value of enums was chosen -> default value
+    }
+
+    return {passed: false, problems: codes};
 }
 
 export function parseNonUnionError(res: SafeParseReturnType<unknown, unknown>): ParsingResult {

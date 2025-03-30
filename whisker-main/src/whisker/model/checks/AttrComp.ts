@@ -9,7 +9,7 @@ import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {
-    AttrNames,
+    AttrName,
     BooleanAttribute,
     BooleanLike,
     ComparisonOp,
@@ -32,8 +32,7 @@ export type AttrCompArgs =
     | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: EqOrNeq, attrValue: boolean]
 
 const AttrCompArgs = z.union([
-    z.tuple([SpriteName, NumberAttribute, ComparisonOp, NumberLike]),
-    z.tuple([SpriteName, EffectAttribute, ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, NumberAttribute.or(EffectAttribute), ComparisonOp, NumberLike]),
     z.tuple([SpriteName, StringAttribute, EqOrNeq, z.string()]),
     z.tuple([SpriteName, BooleanAttribute, EqOrNeq, BooleanLike]),
 ], {message: "InvalidAttribute"});
@@ -51,7 +50,7 @@ export const AttrCompJSON = ICheckJSON.extend({
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Quantification<Comparison>;
     private readonly _isForEffect: boolean;
-    private readonly _attrName: AttrNames;
+    private readonly _attrName: AttrName;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
