@@ -7,9 +7,9 @@ const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
-const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
+const {argType, checkLabelCodes, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
-const {attributeAndEffectNames} = require('whisker-main/src/whisker/model/checks/CheckTypes');
+const {attributeAndEffectNames, keys} = require('whisker-main/src/whisker/model/checks/CheckTypes');
 
 /**
  * Model editor for building and editing models for testing in Scratch.
