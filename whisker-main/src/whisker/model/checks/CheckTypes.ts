@@ -38,12 +38,14 @@ export const KeyArgument = z.preprocess(
     z.enum(keys, {message: "InvalidKey"})
 );
 
-export const SpriteName = z.union([
+const name = (name: string) => z.union([
     z.string({message: "NoStringProvided"}).min(1, {message: "StringIsEmpty"}),
     z.string().array().nonempty()
-], {message: "InvalidSpriteName"});
+], {message: `Invalid${name}Name`});
 
-export const VariableName = SpriteName;
+export const SpriteName = name("Sprite");
+export const VariableName = name("Variable");
+
 
 /**
  * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
