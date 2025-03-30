@@ -32,8 +32,7 @@ export type AttrCompArgs =
     | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: EqOrNeq, attrValue: boolean]
 
 const AttrCompArgs = z.union([
-    z.tuple([SpriteName, NumberAttribute, ComparisonOp, NumberLike]),
-    z.tuple([SpriteName, EffectAttribute, ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, NumberAttribute.or(EffectAttribute), ComparisonOp, NumberLike]),
     z.tuple([SpriteName, StringAttribute, EqOrNeq, z.string()]),
     z.tuple([SpriteName, BooleanAttribute, EqOrNeq, BooleanLike]),
 ], {message: "InvalidAttribute"});

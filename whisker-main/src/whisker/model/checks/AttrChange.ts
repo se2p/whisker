@@ -57,8 +57,7 @@ export type AttrChangeArgs =
 
 
 const AttrChangeArgs = z.union([
-    z.tuple([SpriteName, NumberAttribute, NumberOrChangeOp]),
-    z.tuple([SpriteName, EffectAttribute, NumberOrChangeOp]),
+    z.tuple([SpriteName, NumberAttribute.or(EffectAttribute), NumberOrChangeOp]),
     z.tuple([SpriteName, StringAttribute, EqOrNeq]),
     z.tuple([SpriteName, BooleanAttribute, EqOrNeq]),
 ], {message: "InvalidAttribute"});
@@ -127,7 +126,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
         }
 

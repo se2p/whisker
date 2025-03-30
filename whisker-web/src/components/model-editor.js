@@ -265,12 +265,11 @@ class ModelEditor {
             convertInputArgs({name: name, args: args}) :
             convertArgs({name: name, negated: negated, args: args});
         const valid = result.passed;
-        if (valid) {
-            args = result.data;
-        } else {
+        if (!valid) {
             for (let index = 0; index < argNumber.length; index++) {
                 const element = $(`#${ModelEditor.INPUT_ID}${index}`);
                 const code = result.problems[index];
+
                 if (code === undefined) {
                     element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
                     element.removeAttr("title");
@@ -281,6 +280,8 @@ class ModelEditor {
             }
             return false;
         }
+
+        args = result.data;
 
 
         // get the list that check gets added to
