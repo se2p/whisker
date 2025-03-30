@@ -17,6 +17,13 @@ const {ModelTester} = require("../whisker/model/ModelTester");
 const {onExecuted, onPassed} = require("../coverage/assertion-level-tracing");
 const {serializeError} = require("../util/serialize-error");
 
+function enableAssertionLevelBlockTracing(assertions, assumptions) {
+    assert.onExecutedAssertion = onExecuted.bind(null, assertions);
+    assume.onExecutedAssumption = onExecuted.bind(null, assumptions);
+    assert.onPassedAssertion = onPassed.bind(null, assertions);
+    assume.onPassedAssumption = onPassed.bind(null, assumptions);
+}
+
 function postProcessResults(test, result) {
     // We are interested in the name of the JavaScript test function itself, not the human-readable name of the
     // test, which is test.name and could be ambiguous.
@@ -42,13 +49,6 @@ function postProcessResults(test, result) {
     });
 
     return {name, exportedName, description, status, error: serializableError, coveredBlocks, assertions, assumptions};
-}
-
-function enableAssertionLevelBlockTracing(assertions, assumptions) {
-    assert.onExecutedAssertion = onExecuted.bind(null, assertions);
-    assume.onExecutedAssumption = onExecuted.bind(null, assumptions);
-    assert.onPassedAssertion = onPassed.bind(null, assertions);
-    assume.onPassedAssumption = onPassed.bind(null, assumptions);
 }
 
 class TestRunner extends EventEmitter {
