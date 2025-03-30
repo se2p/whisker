@@ -268,10 +268,16 @@ class ModelEditor {
         if (valid) {
             args = result.data;
         } else {
-            for (const [index, code] of Object.entries(result.problems)){
+            for (let index = 0; index < argNumber.length; index++) {
                 const element = $(`#${ModelEditor.INPUT_ID}${index}`);
-                element.addClass(ModelEditor.INVALID_INPUT_CLASS);
-                element.attr('title', i18n.t(`modelEditor:${code}`));
+                const code = result.problems[index];
+                if (code === undefined) {
+                    element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
+                    element.removeAttr("title");
+                } else {
+                    element.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                    element.attr('title', i18n.t(`modelEditor:${code}`));
+                }
             }
             return false;
         }
@@ -1348,12 +1354,12 @@ class ModelEditor {
     appendAttributeNames (value, idNbr) {
         const id = ModelEditor.INPUT_ID + idNbr;
         const select = $('<select/>', {name: `selectAttrName${idNbr}`, id: id});
-        for (let i = 0; i < attributeAndEffectNames.length; i++) {
+        for (let i = 0; i < AttributeAndEffectNames.length; i++) {
             // const attribute = `modelEditor:${AttributeAndEffectNames[i]}`;
             // TODO should attributes be translated? probably not
             // select.append($('<option/>', {'value': AttributeAndEffectNames[i],
             // 'data-i18n': attribute}).text(i18n.t(attribute)));
-            select.append($('<option/>', {value: attributeAndEffectNames[i]}).text(attributeAndEffectNames[i]));
+            select.append($('<option/>', {value: AttributeAndEffectNames[i]}).text(AttributeAndEffectNames[i]));
         }
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:attrName'})
