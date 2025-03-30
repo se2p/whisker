@@ -130,21 +130,22 @@ const loadTestsFromString = async function (string) {
     // Manually generated test suite or test suite generated through search algorithms.
     let tests;
     try {
+        /*
+         * Evil hack: Every Whisker test is a CommonJS module. As such, it contains a "module.exports"
+         * declaration at the end. In the browser, CommonJS modules usually cannot be used as the global
+         * "module" object does not exist there. For our purposes, we work around this by creating an empty
+         * dummy object called "module", letting the test set the "module.exports" property, and return that as
+         * result of evaluating the test.
+         */
         /* eslint-disable-next-line no-eval */
-        tests = eval(`
-            (function () {
-                /*
-                 * Evil hack: Every Whisker test is a CommonJS module. As such, it contains a "module.exports"
-                 * declaration at the end. In the browser, CommonJS modules usually cannot be used as the global
-                 * "module" object does not exist there. For our purposes, we work around this by creating an empty
-                 * dummy object called "module", letting the test set the "module.exports" property, and return that as
-                 * result of evaluating the test.
-                 */
-                const module = Object.create(null);
-                ${string};
-                return module.exports;
-            })();
-        `);
+        // IMPORTANT!!!
+        // DO NOT CHANGE THE FORMATTING OF THE NEXT LINE OR CODE WILL BREAK!                                    (lol)
+        // For some parts of Whisker (e.g., program repair) it is important not to change the stack traces of Whisker
+        // tests, which would be the case if, e.g., line breaks were added in the code below to put every statement
+        // on one line.
+        // @formatter:off
+        tests = eval(`(function () { const module = Object.create(null); ${string}; return module.exports; })();`);
+        // @formatter:on
     } catch (err) {
         logger.error(err);
         const message = `${err.name}: ${err.message}`;
@@ -345,6 +346,8 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     let summary;
     let csvResults;
     let coverage;
+    let coveragePerTest;
+    let timingsPerTest;
     let coverageModels = {};
 
     const setMutators = document.querySelector('#container').mutators;
@@ -382,7 +385,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
 
         CoverageGenerator.prepareVM(vm);
 
-        [summary, csvResults, mutantPrograms] = await Whisker.testRunner.runTests(vm, project, tests,
+        [summary, csvResults, mutantPrograms, coveragePerTest, timingsPerTest] = await Whisker.testRunner.runTests(vm, project, tests,
             Whisker.modelTester, props, {duration, repetitions});
         coverage = CoverageGenerator.getCoverage();
         Whisker.outputLog.println(csvResults);
@@ -417,6 +420,9 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
             const serializableModelCoverage = {modelCoverage};
             window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
         }
+    } catch (e) {
+        logger.error('Error while running tests:', e instanceof Error ? e.stack : e);
+        throw e;
     } finally {
         _showRunIcon();
         enableVMRelatedButtons();
@@ -425,7 +431,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     }
 
     if (summary === null) {
-        return;
+        return [coveragePerTest, timingsPerTest];
     }
 
     const formattedSummary = TAP13Formatter.formatSummary(summary);
@@ -447,6 +453,8 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         coverageString,
         modelCoverageString
     ].join('\n'));
+
+    return [coveragePerTest, timingsPerTest];
 };
 
 const runTest = async function (test) {
@@ -503,6 +511,58 @@ const abortRunAllTests = function () {
     _showRunIcon();
     _enableVMRelatedButtons();
 };
+
+const abortTestRun = function () {
+    Whisker.scratch.stop();
+    Whisker.outputRun.clear();
+    Whisker.outputLog.clear();
+};
+
+window.Whisker.runTestsForRepair = async function () {
+    abortTestRun();
+
+    const vm = Whisker.scratch.vm;
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer(0);
+
+    // Seems to be necessary to load the project here as well (even though it is also loaded by the test runner later).
+    // But if we don't load it here, the VMWrapper fails to set or restore the save state because stuff is undefined.
+    await vm.loadProject(project);
+
+    // Performance optimizations: Avoid overhead caused by tracing used by test generation etc.
+    const tracerSettings = {
+        traceBlockCoverage: false,
+        traceBranchCoverage: false,
+        traceAttributes: false,
+        traceDebug: false
+    };
+
+    const [traces, timings] = await _runTestsWithCoverage(vm, project, Whisker.tests, tracerSettings, true);
+
+    for (const trace of traces) {
+        // Rename the property key "coveredBlocks" to "covered".
+        trace.covered = trace.coveredBlocks;
+        delete trace.coveredBlocks;
+
+        // Add coverage level information.
+        trace.level = 'block';
+    }
+
+    const resetProject = timings.reduce((s, timing) => timing.resetProject + s, 0);
+    const runTests = timings.reduce((s, timing) => timing.runTest + s, 0);
+
+    // The coverage achieved by the entire test suite.
+    const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
+
+    return {
+        traces,
+        coverage: covered / total,
+        timings: {
+            resetProject,
+            runTests
+        }
+    };
+};
+
 
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
