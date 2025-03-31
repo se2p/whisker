@@ -247,28 +247,29 @@ class VMWrapper {
         this._runStepsExecuted = 0;
 
         while (this.isScratchRunning() && this._runStepsExecuted < steps && !condition()) {
-            if (!this.vm.runtime.paused || this.vm.runtime.oneStep) {
-                [assertionError] = await Promise.all([
-                    this.step(),
-                    pause(STEP_TIME / this.accelerationFactor)
-                ]);
-
-                this._totalStepsExecuted++;
-                this._runStepsExecuted++;
-
-                this._totalTimeElapsed = this.vm.runtime.currentMSecs;
-                this._runTimeElapsed = this._totalTimeElapsed - timeBefore;
-
-                const realTimeAfter = Date.now();
-                this._realTotalTimeElapsed = realTimeAfter - this._realStartTime;
-                this._realRunTimeElapsed = realTimeAfter - realTimeBefore;
-
-                if (stopOnError && assertionError !== null) {
-                    break;
-                }
-            } else {
+            if (this.vm.runtime.paused && !this.vm.runtime.oneStep) {
                 // The execution of a test is paused in the debugger. Without the timeout, the debugger GUI freezes.
                 await pause(100);
+                continue;
+            }
+
+            [assertionError] = await Promise.all([
+                this.step(),
+                pause(STEP_TIME / this.accelerationFactor)
+            ]);
+
+            this._totalStepsExecuted++;
+            this._runStepsExecuted++;
+
+            this._totalTimeElapsed = this.vm.runtime.currentMSecs;
+            this._runTimeElapsed = this._totalTimeElapsed - timeBefore;
+
+            const realTimeAfter = Date.now();
+            this._realTotalTimeElapsed = realTimeAfter - this._realStartTime;
+            this._realRunTimeElapsed = realTimeAfter - realTimeBefore;
+
+            if (stopOnError && assertionError !== null) {
+                break;
             }
         }
 

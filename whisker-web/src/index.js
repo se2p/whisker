@@ -331,7 +331,7 @@ const runSearch = async function () {
     return searchResult.javaScriptText;
 };
 
-const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings) {
+const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings, headless) {
 
     // Activate listener for tracing executed blocks
     tracerSettings.traceAttributes = document.querySelector('#container').traceAttributes;
@@ -343,7 +343,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         });
     }
 
-    let summary;
+    let summary = null;
     let csvResults;
     let coverage;
     let coveragePerTest;
@@ -368,6 +368,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         maxMutants: document.querySelector('#container').maxMutants,
         mutantDownload: mutantDownload,
         log: true,
+        headless,
         useSaveStates: $('#use-save-states').is(':checked'),
         ...tracerSettings
     };
@@ -462,7 +463,7 @@ const runTest = async function (test) {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, [test], Whisker.testRunner, defaultTracerSettings);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, [test], Whisker.testRunner, defaultTracerSettings, false);
 };
 
 /**
@@ -665,7 +666,7 @@ const runAllTests = async function () {
                 ((Whisker.tests && Whisker.tests.length > 0) ||
                 Whisker.modelTester.someModelLoaded())) {
 
-                await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, defaultTracerSettings);
+                await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, defaultTracerSettings, false);
             }
 
             testsRunning = false;
