@@ -22,7 +22,7 @@
                     {
                         "name": "keys",
                         "args": [
-                            "Space"
+                            "space"
                         ],
                         "negated": false
                     }

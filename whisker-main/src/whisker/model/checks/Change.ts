@@ -1,9 +1,9 @@
-import {z} from "zod";
-import {Comparison, ComparisonOp, CONST_PASS, Interval, newComparison} from "./Comparison";
+import {Comparison, CONST_PASS, Interval, newComparison} from "./Comparison";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
-import {ArgType} from "../util/schema";
+
+import {ChangeOp, ComparisonOp, NumberOrChangeOp} from "./CheckTypes";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 
 interface IBounds extends Interval {
@@ -71,7 +71,7 @@ export class Change implements Quantifiable<Change> {
         // Special handling to support string operands as the subtraction trick would not work.
         if (bounds === null) {
             switch (numberOrChangeOp) {
-                case "=":
+                case "==":
                     return new Eq0(bounds);
                 case "!=":
                     return new Neq0(bounds);
@@ -83,7 +83,7 @@ export class Change implements Quantifiable<Change> {
             "-": "<",
             "+=": ">=",
             "-=": "<=",
-            "=": "==",
+            "==": "==",
             "!=": "!=",
         } as Record<ChangeOp, ComparisonOp>;
 
@@ -252,47 +252,6 @@ class Neq0 extends Change {
         return new Eq0(this._bounds);
     }
 }
-
-export const changeOps = ["+", "-", "=", "+=", "-=", "!="] as const;
-
-export function isValidChangeOperator(change: ArgType): boolean {
-    return (changeOps as readonly ArgType[]).includes(change);
-}
-
-export type ChangeOp = typeof changeOps[number];
-
-const ChangeOp = z.preprocess(
-    (change) => { // Canonicalize operators, handle aliases.
-        switch (change) {
-            case "++":
-                return "+";
-            case "--":
-                return "-";
-            case "==":
-                return "=";
-            default:
-                return change;
-        }
-    },
-    z.enum(changeOps)
-);
-
-/**
- * Either a number, or a number-like string, e.g., "3.14", "-5", "+1.234", "0e4", but not the empty string.
- */
-const NumberLike = z.union([
-    z.number(),
-    z.string().refine((s) => s.trim() !== "")
-])
-    .pipe(z.coerce.number())
-    .refine((n) => !Number.isNaN(n));
-
-export type NumberOrChangeOp =
-    | number
-    | ChangeOp
-    ;
-
-export const NumberOrChangeOp = NumberLike.or(ChangeOp);
 
 export function newChange(
     {change: numberOrChangeOp, negated = false}: Optional<ChangingCheck, "negated">,

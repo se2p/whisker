@@ -1,14 +1,8 @@
 import {fc, it, test} from "@fast-check/jest";
-import {
-    ChangeOp,
-    changeOps,
-    ChangingCheck,
-    newChange,
-    newQuantifiedChange,
-    NumberOrChangeOp
-} from "../../../../src/whisker/model/checks/Change";
+import {ChangingCheck, newChange, newQuantifiedChange} from "../../../../src/whisker/model/checks/Change";
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {ChangeOp, changeOps, NumberOrChangeOp} from "../../../../src/whisker/model/checks/CheckTypes";
 
 // Generators for 1-tuples, 2-tuples, and 3-tuples of numbers.
 const number = fc.double({noNaN: true});
@@ -102,9 +96,9 @@ describe("A change", () => {
     });
 
     describe.each([
-        ["a positive number", gtz, ["=", "-", "-="], "+"],
-        ["a negative number", ltz, ["=", "+", "+="], "-"],
-        ["zero", eqz, ["+", "-", "!="], "="],
+        ["a positive number", gtz, ["==", "-", "-="], "+"],
+        ["a negative number", ltz, ["==", "+", "+="], "-"],
+        ["zero", eqz, ["+", "-", "!="], "=="],
     ])('by %s', (_, n, contraOps, compatOp: ChangeOp) => {
         describe.each(contraOps)('contradicts', (op: ChangeOp) => {
             it.prop([n])(`the "${op}" change`, (n) => {
@@ -122,12 +116,12 @@ describe("A change", () => {
     });
 
     describe.each([
-        ["+", ["=", "-", "-="], gt, le, gtz, lez],
-        ["-", ["=", "+", "+="], lt, ge, ltz, gez],
-        ["=", ["+", "-", "!="], eq, ne, eqz, nez],
+        ["+", ["==", "-", "-="], gt, le, gtz, lez],
+        ["-", ["==", "+", "+="], lt, ge, ltz, gez],
+        ["==", ["+", "-", "!="], eq, ne, eqz, nez],
         ["+=", ["-"], ge, lt, gez, ltz],
         ["-=", ["+"], le, gt, lez, gtz],
-        ["!=", ["="], ne, eq, nez, eqz],
+        ["!=", ["=="], ne, eq, nez, eqz],
     ])('given by "%s"', (op: ChangeOp, contraOps: ChangeOp[], passing, failing, compat, contra) => {
         it.each(contraOps)('contradicts the "%s" change', (op2) => {
             const c1 = newChange({change: op});
@@ -176,7 +170,7 @@ describe("A change", () => {
             expect(change.apply(x, y)).toStrictEqual(fail(expect.any(Object)));
         });
 
-        if (op === "=" || op === "!=") {
+        if (op === "==" || op === "!=") {
             it.prop([fc.oneof(eq, ne)])("has a symmetric apply() method", ([x, y]) => {
                 const change = newChange({change: op});
                 expect(change.apply(x, y).passed).toStrictEqual(change.apply(y, x).passed);
@@ -216,12 +210,8 @@ describe("The schema validation for Change", () => {
         expect(NumberOrChangeOp.parse(op)).toBe(op);
     });
 
-    it.each([
-        ["++", "+"],
-        ["--", "-"],
-        ["==", "="],
-    ])('converts "%s" to "%s"', (op1, op2) => {
-        expect(NumberOrChangeOp.parse(op1)).toBe(op2);
+    test('converts "=" to "=="', () => {
+        expect(NumberOrChangeOp.parse("=")).toBe("==");
     });
 
     it.prop([numberLike])("succeeds for numbers and number-like strings", (n) => {
@@ -342,7 +332,7 @@ describe("A clamped change with bounds [min, max]", () => {
     });
 
     // These operators all include "=", whose semantics are not affected by clamping.
-    describe.each(["=", "+=", "-="])('using operator "%s"', (op: ChangeOp) => {
+    describe.each(["==", "+=", "-="])('using operator "%s"', (op: ChangeOp) => {
         const values = bounds.chain(([min, max]) => fc.record({
             after: fc.integer({min, max}),
             before: fc.integer({min, max}),
@@ -500,7 +490,7 @@ describe("A cyclic change with bounds [min, max]", () => {
         });
     });
 
-    describe.each(["=", '!='])('using operator "%s"', (op: ChangeOp) => {
+    describe.each(["==", '!='])('using operator "%s"', (op: ChangeOp) => {
         it.prop([values])('is equivalent to the regular change', ({after, before, min, max}) => {
             const cyclic = newChange({change: op}, {min, max, kind: "cyclic"});
             const regular = newChange({change: op});

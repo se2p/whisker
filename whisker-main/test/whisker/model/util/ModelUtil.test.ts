@@ -1,8 +1,6 @@
 import {
     Dependencies,
-    ModelUtil,
-    numberAttributeNames,
-    stringAttributeNames
+    ModelUtil
 } from "../../../../src/whisker/model/util/ModelUtil";
 import {
     EmptyExpressionError,
@@ -15,6 +13,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
+import {numberAttributeNames, stringAttributeNames} from "../../../../src/whisker/model/checks/CheckTypes";
 
 describe('ModelUtil tests', function () {
     describe("testNumber()", () => {
@@ -185,7 +184,7 @@ describe('ModelUtil tests', function () {
     });
 
     describe('checkAttributeExistence()', () => {
-        const AttributeNames = [...stringAttributeNames, ...numberAttributeNames, "pos", "visible", "effects"];
+        const AttributeNames = [...stringAttributeNames, ...numberAttributeNames, "visible"];
         it.each(AttributeNames)('checkAttributeForExistence("%s")', (name) => {
             expect(() => ModelUtil.checkAttributeExistence(null, "sprite", name)).not.toThrow();
         });

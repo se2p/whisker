@@ -2,7 +2,7 @@ import {z} from "zod";
 import {CheckJSON} from "../checks/newCheck";
 import {UserInputJSON} from "../inputs/newUserInput";
 
-export type ArgType = string | number | string[] | number[] | boolean | { x: number, y: number };
+export type ArgType = string | number | string[] | boolean;
 
 export type EdgeID = string;
 const EdgeID = z.string();

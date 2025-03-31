@@ -1,13 +1,14 @@
 import {fc, it} from "@fast-check/jest";
 import {
     ComparingCheck,
-    ComparisonOp,
-    comparisonOps, CONST_FAIL, CONST_PASS,
+    CONST_FAIL,
+    CONST_PASS,
     newComparison,
     newQuantifiedComparison
 } from "../../../../src/whisker/model/checks/Comparison";
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
-import {pass, fail} from "../../../../src/whisker/model/checks/CheckResult";
+import {ComparisonOp, comparisonOps} from "../../../../src/whisker/model/checks/CheckTypes";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 const number = fc.double({noNaN: true});
 const xy = fc.tuple(number, number);

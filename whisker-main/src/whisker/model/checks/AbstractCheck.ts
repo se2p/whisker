@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON, InputErrorCodes} from "./newCheck";
+import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Checks} from "../util/Checks";
@@ -8,37 +8,6 @@ import {Optional} from "../../utils/Optional";
 import {CheckResult, fail} from "./CheckResult";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
-
-export type SpriteName =
-    | string
-    | [string, ...string[]]
-    ;
-
-export function couldBeSpriteName(name: ArgType): InputErrorCodes {
-    if (typeof name === "string") {
-        return "";
-    }
-
-    if (Array.isArray(name) && (name as unknown[]).every((s) => typeof s === "string")) {
-        return ""
-    }
-
-    return "invalidSpriteName";
-}
-
-export type VariableName = SpriteName;
-
-export const SpriteName = z.union([
-    z.string(),
-    z.string().array().nonempty()
-]);
-
-export const VariableName = SpriteName;
-
-export const AttrName = z.preprocess(
-    (attrName) => attrName === "costume" || attrName === "currentCostume" ? "currentCostumeName" : attrName,
-    z.string()
-);
 
 export interface ICheckJSON {
     name: string;

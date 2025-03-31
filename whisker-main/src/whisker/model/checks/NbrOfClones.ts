@@ -1,13 +1,13 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import {Optional} from "../../utils/Optional";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {ComparisonOp, NonNegativeNumber, parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 export type NbrOfClonesArgs = [
     /**
@@ -29,7 +29,7 @@ export type NbrOfClonesArgs = [
 const NbrOfClonesArgs = z.tuple([
     SpriteName,
     ComparisonOp,
-    z.number().nonnegative(),
+    NonNegativeNumber,
 ]);
 
 type TNbrOfClonesJSON =
@@ -94,12 +94,8 @@ abstract class AbstractNbrOfClones<
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [
-            couldBeSpriteName(args[0]),
-            isValidComparisonOp(args[1]) ? "" : "invalidComparison",
-            ModelUtil.parseIntAndUpdate(args, 2)
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(NbrOfClonesArgs.safeParse(args));
     }
 }
 

@@ -3,8 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "../checks/newCheck";
-import {ModelUtil} from "../util/ModelUtil";
+import {parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
 
 const name = "InputText" as const;
 
@@ -37,7 +36,7 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
         return textEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.argIsString(args,0)];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(InputTextArgs.safeParse(args));
     }
 }

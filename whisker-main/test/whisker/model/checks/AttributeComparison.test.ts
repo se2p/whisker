@@ -1,11 +1,11 @@
 import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
-import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
 import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
 
 
 describe('AttributeComparison', () => {

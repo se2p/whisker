@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
@@ -7,7 +7,7 @@ import {z} from "zod";
 import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
 
 const name = "SpriteColor" as const;
 
@@ -32,8 +32,6 @@ export type SpriteColorArgs = [
      */
     blue: number,
 ];
-
-const RGBNumber = z.number().min(0).max(255);
 
 const SpriteColorArgs = z.tuple([
     SpriteName,
@@ -115,12 +113,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [
-            couldBeSpriteName(args[0]),
-            ModelUtil.parseRGBAndUpdate(args, 1),
-            ModelUtil.parseRGBAndUpdate(args, 2),
-            ModelUtil.parseRGBAndUpdate(args, 3)
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(SpriteColorArgs.safeParse(args));
     }
 }

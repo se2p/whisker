@@ -1,7 +1,5 @@
 // for building model-editor checks, should equal CheckName.ts in model and InputEffectName in InputEffect.ts
 
-import {keys} from 'whisker-main/src/whisker/model/util/ModelUtil';
-
 const argType = {
     spriteName: 'spriteName',
     attrName: 'attrName',
@@ -110,4 +108,4 @@ const placeholders = {
     layerSelection: 'First or Last'
 };
 
-export {argType, checkLabelCodes, inputLabelCodes, keys, placeholders};
+export {argType, checkLabelCodes, inputLabelCodes, placeholders};

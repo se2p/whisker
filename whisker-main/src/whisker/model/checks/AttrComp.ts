@@ -1,55 +1,41 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {
-    AttrNames,
-    EffectName,
-    effectNames,
-    ModelUtil,
-    NumberAttribute,
-    numberAttributeNames,
-    StringAttribute,
-    stringAttributeNames
-} from "../util/ModelUtil";
+import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {
-    AttributeType,
-    ComparingCheck,
-    Comparison,
-    ComparisonOp,
-    isValidComparisonOp,
-    newQuantifiedComparison
-} from "./Comparison";
+import {AttributeType, ComparingCheck, Comparison, newQuantifiedComparison} from "./Comparison";
 import {Quantification} from "./Quantification";
 import TestDriver from "../../../test/test-driver";
-import {BooleanAttribute} from "./AttrChange";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
-
-interface Position {
-    x: number;
-    y: number;
-}
+import {
+    AttrName,
+    BooleanAttribute,
+    BooleanLike,
+    ComparisonOp,
+    Effect,
+    EffectAttribute,
+    EqOrNeq,
+    NumberAttribute,
+    NumberLike,
+    parseAttributeError,
+    ParsingResult,
+    SpriteName,
+    StringAttribute,
+} from "./CheckTypes";
 
 const name = "AttrComp" as const;
 
 export type AttrCompArgs =
-    | [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: "==" | "!=", attrValue: string]
-    | [spriteName: SpriteName, attrName: NumberAttribute | EffectName, comparisonOp: ComparisonOp, attrValue: number]
-    | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: "==" | "!=", attrValue: boolean]
-    | [spriteName: SpriteName, attrName: "pos", comparisonOp: "==" | "!=", attrValue: Position]
-    | [spriteName: SpriteName, attrName: "effects", comparisonOp: "==" | "!=", attrValue: number[]]
-    ;
+    [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number]
+    | [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: EqOrNeq, attrValue: string]
+    | [spriteName: SpriteName, attrName: BooleanAttribute, comparisonOp: EqOrNeq, attrValue: boolean]
 
 const AttrCompArgs = z.union([
-    z.tuple([SpriteName, z.literal("visible"), z.union([z.literal("=="), z.literal("!=")]), z.string().or(z.boolean())]),
-    z.tuple([SpriteName, z.literal("pos"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
-    z.tuple([SpriteName, z.literal("effects"), z.union([z.literal("=="), z.literal("!=")]), z.string()]),
-    z.tuple([SpriteName, z.enum(numberAttributeNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(effectNames), ComparisonOp, z.string().or(z.number())]),
-    z.tuple([SpriteName, z.enum(stringAttributeNames), ComparisonOp, z.string()]),
-]);
+    z.tuple([SpriteName, NumberAttribute.or(EffectAttribute), ComparisonOp, NumberLike]),
+    z.tuple([SpriteName, StringAttribute, EqOrNeq, z.string()]),
+    z.tuple([SpriteName, BooleanAttribute, EqOrNeq, BooleanLike]),
+], {message: "InvalidAttribute"});
 
 export interface AttrCompJSON extends ICheckJSON {
     name: typeof name;
@@ -64,7 +50,7 @@ export const AttrCompJSON = ICheckJSON.extend({
 export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Quantification<Comparison>;
     private readonly _isForEffect: boolean;
-    private readonly _attrName: AttrNames;
+    private readonly _attrName: AttrName;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrCompJSON>) {
         super(edgeLabel, {...json, name});
@@ -114,7 +100,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         // on movement listener
         if (this._attrName == "x" || this._attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
         } else if (this._attrName == "sayText") {
             cu.registerOutput(spriteName, this, graphID, listener);
@@ -150,29 +136,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return this._comparison.contradicts(that._comparison);
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        let valid: InputErrorCodes;
-        const shouldBeNumber = ModelUtil.isEffectOrNumberAttribute(args[1]);
-        if (shouldBeNumber) {
-            valid = ModelUtil.parseIntAndUpdate(args, 3);
-        } else if (args[1] == "visible") {
-            valid = ModelUtil.parseBooleanAndUpdate(args, 3);
-        } else if (args[1] === "pos") {
-            valid = ModelUtil.parsePosAndUpdate(args, 3);
-        } else if (args[1] === "effects") {
-            valid = ModelUtil.parseEffectsArrayAndUpdate(args, 3);
-        } else {
-            valid = typeof args[3] == "string" ? "" : "NoStringProvided";
-        }
-        return [
-            couldBeSpriteName(args[0]),
-            ModelUtil.isAnAttributeOrEffectMessage(args[1]),
-            ModelUtil.isOperatorEqOrNeq(args, 2)
-                ? ""
-                : shouldBeNumber
-                    ? "InvalidComparisonForAttribute"
-                    : isValidComparisonOp(args[2]) ? "" : "invalidComparison",
-            valid,
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseAttributeError(AttrCompArgs.safeParse(args));
     }
 }

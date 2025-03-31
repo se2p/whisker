@@ -1,51 +1,32 @@
-import {
-    AbstractCheck,
-    CheckFun0,
-    couldBeSpriteName,
-    ICheckJSON,
-    SlimCheckJSON,
-    SpriteName,
-    VariableName
-} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, ComparisonOp, isValidComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {
+    ComparisonOp,
+    EqOrNeq,
+    eqOrNeqOPs,
+    NumberLike,
+    parseUnionError,
+    ParsingResult,
+    SpriteName,
+    VariableName
+} from "./CheckTypes";
 
 const name = "VarComp" as const;
 
-export type VarCompArgs = [
-    /**
-     * The name of the sprite whose variable is being evaluated
-     */
-    spriteName: SpriteName,
+export type VarCompArgs =
+    [spriteName: SpriteName, varName: VariableName, comparisonOp: EqOrNeq, varValue: string | number]
+    | [spriteName: SpriteName, varName: VariableName, comparisonOp: ComparisonOp, varValue: number];
 
-    /**
-     * The name of the variable.
-     */
-    varName: VariableName,
-
-    /**
-     * Mode of comparison, e.g. =, <, >, <=, >=
-     */
-    comparisonOp: ComparisonOp,
-
-    /**
-     * Value to compare to the variable's current value.
-     */
-    varValue: string | number,
-];
-
-const VarCompArgs = z.tuple([
-    SpriteName,
-    VariableName,
-    ComparisonOp,
-    z.string().or(z.number()),
+const VarCompArgs = z.union([
+    z.tuple([SpriteName, VariableName, z.enum(eqOrNeqOPs, {message: "InvalidComparison"}), z.string().or(z.number())]),
+    z.tuple([SpriteName, VariableName, ComparisonOp, NumberLike], {message: "InvalidVarCompArgs"}),
 ]);
 
 export interface VarCompJSON extends ICheckJSON {
@@ -123,13 +104,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [
-            couldBeSpriteName(args[0]),
-            typeof args[1] == "string" ? "" : "invalidVarName",
-            isValidComparisonOp(args[2]) ? "" : "invalidComparison",
-            ModelUtil.parseIntAndUpdate(args, 3) || typeof args[3] == "string" ? "" : "NeitherNumberNorString"
-            // TODO this should probably be improved to avoid something like "20" > "100" which would evaluate to false
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"});
     }
 }

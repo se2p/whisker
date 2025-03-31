@@ -1,8 +1,7 @@
-import {z} from "zod";
 import {Existential, Quantifiable, Quantification, Universal} from "./Quantification";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
-import {ArgType} from "../util/schema";
+import {ComparisonOp} from "./CheckTypes";
 
 export type Comparison<T extends Interval | null = null> =
     | Eq<T>
@@ -13,7 +12,7 @@ export type Comparison<T extends Interval | null = null> =
     | Geq<T>
     ;
 
-export type AttributeType = string | boolean | number | { x: number, y: number } | number[];
+export type AttributeType = string | boolean | number;
 
 export interface Interval {
     min: number;
@@ -236,19 +235,6 @@ export function newComparison<T extends Interval | null>(
     const comparison = new Comparison[operator](value, interval) as Comparison<T>;
     return negated ? comparison.negate() : comparison;
 }
-
-export function isValidComparisonOp(op: ArgType): boolean {
-    return (comparisonOps as readonly ArgType[]).includes(op);
-}
-
-export const comparisonOps = Object.freeze(["==", "!=", ">", ">=", "<", "<="] as const);
-
-export type ComparisonOp = typeof comparisonOps[number];
-
-export const ComparisonOp = z.preprocess(
-    (v) => v === "=" ? "==" : v, // Canonicalize "=" to "=="
-    z.enum(comparisonOps)
-);
 
 export interface ComparingCheck {
     operator: ComparisonOp;

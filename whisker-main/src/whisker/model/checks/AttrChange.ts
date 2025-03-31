@@ -1,26 +1,30 @@
-import {
-    AbstractCheck,
-    AttrName,
-    CheckFun0,
-    couldBeSpriteName,
-    ICheckJSON,
-    SlimCheckJSON,
-    SpriteName
-} from "./AbstractCheck";
-import {AttrNames, EffectName, ModelUtil, NumberAttribute, StringAttribute} from "../util/ModelUtil";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
-import {Bounds, Change, ChangingCheck, isValidChangeOperator, newQuantifiedChange, NumberOrChangeOp} from "./Change";
+import {Bounds, Change, ChangingCheck, newQuantifiedChange} from "./Change";
 import {Quantification} from "./Quantification";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {
+    AttrName,
+    BooleanAttribute,
+    Effect,
+    EffectAttribute,
+    EqOrNeq,
+    NumberAttribute,
+    NumberOrChangeOp,
+    parseAttributeError,
+    ParsingResult,
+    SpriteName,
+    StringAttribute
+} from "./CheckTypes";
 
 const name = "AttrChange" as const;
 
-const bounds: Record<AttrNames, Bounds | null> = Object.freeze({
+const bounds: Record<AttrName, Bounds | null> = Object.freeze({
     x: {min: -240, max: 240, kind: "clamped"},
     y: {min: -180, max: 180, kind: "clamped"},
     layerOrder: {min: 1, max: Number.MAX_VALUE, kind: "clamped"},
@@ -46,17 +50,17 @@ const bounds: Record<AttrNames, Bounds | null> = Object.freeze({
     effects: null,
 });
 
-export type BooleanAttribute = "visible";
-
 export type AttrChangeArgs =
-    | [spriteName: SpriteName, attrName: StringAttribute | "pos" | "visible" | "effects", change: "=" | "!="]
-    | [spriteName: SpriteName, attrName: NumberAttribute | EffectName, change: NumberOrChangeOp]
-    ;
+    [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
+    | [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeq]
+    | [spriteName: SpriteName, attrName: BooleanAttribute, change: EqOrNeq];
+
 
 const AttrChangeArgs = z.union([
-    z.tuple([SpriteName, AttrName, NumberOrChangeOp,]),
-    z.tuple([])
-]);
+    z.tuple([SpriteName, NumberAttribute.or(EffectAttribute), NumberOrChangeOp]),
+    z.tuple([SpriteName, StringAttribute, EqOrNeq]),
+    z.tuple([SpriteName, BooleanAttribute, EqOrNeq]),
+], {message: "InvalidAttribute"});
 
 export interface AttrChangeJSON extends ICheckJSON {
     name: typeof name;
@@ -71,7 +75,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
 export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
-    private readonly _attributeName: AttrNames;
+    private readonly _attributeName: AttrName;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
@@ -122,7 +126,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
             cu.registerOnMoveEvent(spriteName, this, graphID, listener);
-        } else if (this._isForEffect || ["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+        } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
             cu.registerOnVisualChange(spriteName, this, graphID, listener);
         }
 
@@ -158,22 +162,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.contradicts(that._change);
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        let message: InputErrorCodes;
-        if (ModelUtil.isOperatorEqOrNeq(args, 2)) {
-            message = "";
-        } else if (ModelUtil.isEffectOrNumberAttribute(args[1])) {
-            message = ModelUtil.parseIntAndUpdate(args, 2);
-            if (message != "") {
-                message = isValidChangeOperator(args[2]) ? "" : "NeitherNumberNorChange";
-            }
-        } else {
-            message = "invalidChangeForAttribute";
-        }
-        return [
-            couldBeSpriteName(args[0]),
-            ModelUtil.isAnAttributeOrEffectMessage(args[1]),
-            message
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseAttributeError(AttrChangeArgs.safeParse(args));
     }
 }

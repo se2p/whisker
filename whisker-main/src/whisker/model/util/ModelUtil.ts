@@ -11,9 +11,7 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
-import logger from "../../../util/logger";
-import {InputErrorCodes} from "../checks/newCheck";
-import {BooleanAttribute} from "../checks/AttrChange";
+import {attributeNames, effectNames} from "../checks/CheckTypes";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -23,62 +21,6 @@ export interface Dependencies {
 export interface Expression extends Dependencies {
     expr: string
 }
-
-export const stringAttributeNames = Object.freeze([
-    "currentCostumeName",
-    "sayText",
-    "rotationStyle",
-] as const);
-
-export type StringAttribute = typeof stringAttributeNames[number];
-
-export const numberAttributeNames = Object.freeze([
-    "x",
-    "y",
-    "size",
-    "direction",
-    "layerOrder",
-    "volume",
-] as const);
-
-export type NumberAttribute = typeof numberAttributeNames[number];
-
-export const effectNames = Object.freeze([
-    "color",
-    "fisheye",
-    "whirl",
-    "pixelate",
-    "mosaic",
-    "brightness",
-    "ghost",
-] as const);
-
-export type EffectName = typeof effectNames[number];
-
-export const attributeNames = Object.freeze([
-    ...stringAttributeNames,
-    ...numberAttributeNames,
-    "visible",
-    "pos",
-    "effects"
-] as const);
-
-export type AttrNames =
-    | StringAttribute
-    | NumberAttribute
-    | EffectName
-    | BooleanAttribute
-    | "pos"
-    | "effects"
-    ;
-
-export const attributeAndEffectNames = Object.freeze([...attributeNames, ...effectNames] as const);
-
-export const keys = Object.freeze(['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-] as const);
 
 export abstract class ModelUtil {
 
@@ -202,28 +144,6 @@ export abstract class ModelUtil {
      * */
     public static isAnEffect(effectName: ArgType): boolean {
         return (effectNames as readonly ArgType[]).includes(effectName);
-    }
-
-    /**
-     * Checks if the given string is the name of an effect of a sprite or an attribute that is a number
-     * @param name The name of the effect or attribute
-     * @return true if {@linkcode name} is a valid name for an effect or an attribute that is a number
-     * */
-    public static isEffectOrNumberAttribute(name: ArgType): boolean {
-        return ModelUtil.isAnEffect(name) || (numberAttributeNames as readonly ArgType[]).includes(name);
-    }
-
-    /**
-     * Checks if the given string is the name of an effect or attribute of a sprite
-     * @param name The name of the effect or attribute
-     * @return true if {@linkcode name} is a valid name for an effect
-     * */
-    public static isAnAttributeOrEffectMessage(name: ArgType): InputErrorCodes {
-        return (attributeAndEffectNames as readonly ArgType[]).includes(name) ? "" : "invalidAttributeOrEffect";
-    }
-
-    public static isKey(name: ArgType): boolean {
-        return (keys as readonly ArgType[]).includes(name);
     }
 
     /**
@@ -519,76 +439,5 @@ export abstract class ModelUtil {
         } else {
             return () => asNumber;
         }
-    }
-
-    static parseIntAndUpdate(args: ArgType[], index: number): InputErrorCodes {
-        const converted = ModelUtil.returnNumberIfPossible(args[index], null);
-        if (converted != null) {
-            args[index] = converted;
-            return "";
-        }
-        return "NoNumber";
-    }
-
-    static parseRGBAndUpdate(args: ArgType[], index: number): InputErrorCodes {
-        const converted = ModelUtil.returnNumberIfPossible(args[index], null);
-        if (converted != null) {
-            if (0 <= converted && converted <= 255) {
-                args[index] = converted;
-                return "";
-            }
-            return "OutOfRgbRange";
-        }
-        return "NoNumber";
-    }
-
-    static parseBooleanAndUpdate(args: ArgType[], index: number): InputErrorCodes {
-        if (args[index] === "true") {
-            args[index] = true;
-        } else if (args[index] === "false") {
-            args[index] = false;
-        }
-        return typeof args[index] == "boolean" ? "" : "NeitherTrueNorFalse";
-    }
-
-    static parsePosAndUpdate(args: ArgType[], index: number): InputErrorCodes {
-        const parsed = JSON.parse(String(args[index]));
-        if (parsed && parsed.x && parsed.y) {
-            const x = ModelUtil.returnNumberIfPossible(parsed.x, null);
-            const y = ModelUtil.returnNumberIfPossible(parsed.y, null);
-            if (x && y) {
-                args[index] = {x: x, y: y};
-                return "";
-            }
-        }
-        return "wrongPosFormat";
-    }
-
-    static parseEffectsArrayAndUpdate(args: ArgType[], index: number): InputErrorCodes {
-        try {
-            const str = String(args[index]);
-            const [start, end] = str.startsWith("[") && str.endsWith("]") ? [1, str.length - 1] : [0, str.length];
-            const parsed = str.substring(start, end).split(",").map(ModelUtil.testNumber);
-            if (parsed.length == effectNames.length) {
-                args[index] = parsed;
-                return "";
-            }
-            return "Not7Numbers";
-        } catch (e) {
-            logger.debug(e);
-        }
-        return "CannotParseArray";
-    }
-
-    static argIsString(args: ArgType[], index: number): InputErrorCodes {
-        return typeof args[index] == "string" ? "" : "NoStringProvided";
-    }
-
-    static isOperatorEqOrNeq(args: ArgType[], index: number): boolean {
-        if (args[index] === "=") {
-            args[index] = "==";
-            return true;
-        }
-        return args[index] === "==" || args[index] === "!=";
     }
 }

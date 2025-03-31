@@ -6,13 +6,15 @@ import {z} from "zod";
 import {CheckResult, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 const name = "Expr" as const;
 
 export type ExprArgs = [string, ...string[]];
 
-const ExprArgs = z.string().array().nonempty();
+const ExprArgs = z.string().array()
+    .nonempty()
+    .refine(arg => arg.some(s => s && s.length > 0, {message: "NoNonEmptyExprText"}));
 
 export interface ExprJSON extends ICheckJSON {
     name: typeof name;
@@ -68,7 +70,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         d.attrDependencies.forEach(({spriteName, attrName}) => {
             if (attrName == "x" || attrName == "y") {
                 cu.registerOnMoveEvent(spriteName, this, graphID, predicate);
-            } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+            } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
                 cu.registerOnVisualChange(spriteName, this, graphID, predicate);
             } else if (attrName == "sayText") {
                 cu.registerOutput(spriteName, this, graphID, predicate);
@@ -86,7 +88,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [typeof args[0] == "string" && args[0].length > 0 ? "" : "NoNonEmptyExprText"];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ExprArgs.safeParse(args));
     }
 }

@@ -4,8 +4,7 @@ import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {ModelUtil} from "../util/ModelUtil";
-import {InputErrorCodes} from "./newCheck";
+import {KeyArgument, parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 const name = "Key" as const;
 
@@ -17,7 +16,7 @@ export type KeyArgs = [
 ];
 
 const KeyArgs = z.tuple([
-    z.string(),
+    KeyArgument,
 ]);
 
 export interface KeyJSON extends ICheckJSON {
@@ -59,7 +58,7 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.isKey(args[0]) ? "" : "InvalidKey"];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(KeyArgs.safeParse(args));
     }
 }

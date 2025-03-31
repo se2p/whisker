@@ -7,7 +7,7 @@ import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {NonNegativeNumber, parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 export type TimeArgs = [
 
@@ -18,7 +18,7 @@ export type TimeArgs = [
 ];
 
 const TimeArgs = z.tuple([
-    z.number().nonnegative(),
+    NonNegativeNumber,
 ]);
 
 interface ITimeJSON extends ICheckJSON {
@@ -60,8 +60,8 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [ModelUtil.parseIntAndUpdate(args, 0)];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(TimeArgs.safeParse(args));
     }
 }
 

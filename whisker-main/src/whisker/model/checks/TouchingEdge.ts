@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, couldBeSpriteName, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
@@ -7,7 +7,7 @@ import {Optional} from "../../utils/Optional";
 import {any, CheckResult, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "./newCheck";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 export type TouchingEdgeArgs = [
     /**
@@ -72,8 +72,8 @@ abstract class AbstractTouchingEdge<
         return false;
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [couldBeSpriteName(args[0])];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(TouchingEdgeArgs.safeParse(args));
     }
 }
 

@@ -4,7 +4,7 @@ import {ModelUtil} from "../util/ModelUtil";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
-import {InputErrorCodes} from "../checks/newCheck";
+import {parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
 
 const name = "InputMouseMove" as const;
 
@@ -46,10 +46,7 @@ export class MouseMove extends AbstractUserInput<MouseMoveJSON> {
         return mouseEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): InputErrorCodes[] {
-        return [
-            typeof args[0] == "string" && args[0].length > 0 ? "" : "NeitherNumberNorExpr",
-            typeof args[1] == "string" && args[1].length > 0 ? "" : "NeitherNumberNorExpr"
-        ];
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(MouseMoveArgs.safeParse(args));
     }
 }

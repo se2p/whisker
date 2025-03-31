@@ -7,9 +7,9 @@ const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
-const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
+const {argType, checkLabelCodes, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
-const {attributeAndEffectNames} = require('whisker-main/src/whisker/model/util/ModelUtil');
+const {attributeAndEffectNames, keys} = require('whisker-main/src/whisker/model/checks/CheckTypes');
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -257,39 +257,31 @@ class ModelEditor {
         const name = $(ModelEditor.CHECK_CHOOSER).val();
         const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         let args = [];
-        if (name === 'Expr'){
-            args = $(`#${ModelEditor.INPUT_ID}${0}`).val()
-                .trim()
-                .split('\n');
-        } else {
-            const argNumber = checkLabelCodes[name] ?? inputLabelCodes[name];
-            for (let i = 0; i < argNumber.length; i++) {
-                args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
-            }
-            let argsValid;
-            try {
-                argsValid = convertArgs({name: name, negated: negated, args: args});
-            } catch (e){
-                argsValid = convertInputArgs({name: name, args: args});
-            }
-            let valid = true;
-            for (let i = 0; i < argNumber.length; i++) {
-                if (argsValid[i] && argsValid[i].length > 0) {
-                    const element = $(`#${ModelEditor.INPUT_ID}${i}`);
+        const argNumber = checkLabelCodes[name] ?? inputLabelCodes[name];
+        for (let i = 0; i < argNumber.length; i++) {
+            args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
+        }
+        const result = this.currentModel.usage === 'user' ?
+            convertInputArgs({name: name, args: args}) :
+            convertArgs({name: name, negated: negated, args: args});
+        const valid = result.passed;
+        if (!valid) {
+            for (let index = 0; index < argNumber.length; index++) {
+                const element = $(`#${ModelEditor.INPUT_ID}${index}`);
+                const code = result.problems[index];
+
+                if (code === undefined) {
+                    element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
+                    element.removeAttr("title");
+                } else {
                     element.addClass(ModelEditor.INVALID_INPUT_CLASS);
-                    element.attr('title', i18n.t(`modelEditor:${argsValid[i]}`));
-                    valid = false;
+                    element.attr('title', i18n.t(`modelEditor:${code}`));
                 }
             }
-            if (name === 'Probability') {
-                args[0] = Number(args[0]) / 100;
-            }
-
-            // if any arg is empty string or invalid stop and mark it
-            if (!valid) {
-                return false;
-            }
+            return false;
         }
+
+        args = result.data;
 
 
         // get the list that check gets added to
@@ -1340,7 +1332,7 @@ class ModelEditor {
                         .append($('<option/>', {value: '<'}).text('<'))
                         .append($('<option/>', {value: '>='}).text('>='))
                         .append($('<option/>', {value: '<='}).text('<='))
-                        .val(value)
+                        .val('==')
                 )
             ));
     }
@@ -1364,9 +1356,9 @@ class ModelEditor {
         const id = ModelEditor.INPUT_ID + idNbr;
         const select = $('<select/>', {name: `selectAttrName${idNbr}`, id: id});
         for (let i = 0; i < attributeAndEffectNames.length; i++) {
-            // const attribute = `modelEditor:${AttributeAndEffectNames[i]}`;
+            // const attribute = `modelEditor:${attributeAndEffectNames[i]}`;
             // TODO should attributes be translated? probably not
-            // select.append($('<option/>', {'value': AttributeAndEffectNames[i],
+            // select.append($('<option/>', {'value': attributeAndEffectNames[i],
             // 'data-i18n': attribute}).text(i18n.t(attribute)));
             select.append($('<option/>', {value: attributeAndEffectNames[i]}).text(attributeAndEffectNames[i]));
         }
@@ -1375,7 +1367,7 @@ class ModelEditor {
                 .text(i18n.t('modelEditor:attrName')))
         )
             .append($('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(select)));
-        select.val(value);
+        select.val(attributeAndEffectNames[0]);
     }
 
     appendBool (value, idNbr) {
