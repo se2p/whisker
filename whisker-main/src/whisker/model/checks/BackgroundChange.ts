@@ -6,6 +6,7 @@ import {ErrorForAttribute} from "../util/ModelError";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {ComparisonOp, NonEmptyString, parseNonUnionError, ParsingResult} from "./CheckTypes";
+import {STAGE_NAME} from "../../../assembler/utils/selectors";
 
 const name = "BackgroundChange" as const;
 
@@ -63,7 +64,7 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
                 return this._comparison.apply(t.getStage()["currentCostumeName"]);
             } catch (e) {
                 // should not even happen...
-                throw new ErrorForAttribute("_stage_", "costume", e);
+                throw new ErrorForAttribute(STAGE_NAME, "costume", e);
             }
         };
     }

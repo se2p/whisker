@@ -33,6 +33,16 @@ class TestResult {
          * @type {Set<string>}
          */
         this.covered = new Set();
+
+        /**
+         * @type {number[]}
+         */
+        this.passedAssertions = [];
+
+        /**
+         * @type {number[]}
+         */
+        this.passedAssumptions = [];
     }
 }
 

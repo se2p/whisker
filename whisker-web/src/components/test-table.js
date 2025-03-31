@@ -68,7 +68,7 @@ class TestTable {
 
         this.table.on('click', '.run-test', event => {
 
-            if (window.Whisker.scratch.vm.runtime.bbtTestRunning) {
+            if (window.Whisker.scratch.vm.runtime.testRunning) {
                 logger.error('Cannot start a test while another is already running!');
                 return;
             }
@@ -123,6 +123,10 @@ class TestTable {
      * @param {Test[]} tests .
      */
     onRunStart (tests) {
+        if (this.testRunner.headless) {
+            return;
+        }
+
         if (tests) { // may be null for model test
             tests.forEach(test => this.showNewRun(test));
         }
@@ -132,6 +136,10 @@ class TestTable {
      * @param {TestResult} result .
      */
     onTestDone(result) {
+        if (this.testRunner.headless) {
+            return;
+        }
+
         if (result.test) {
             let test = result.test;
             let status = result.status;

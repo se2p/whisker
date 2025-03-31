@@ -82,8 +82,8 @@ export class NeatChromosome extends NetworkChromosome {
         clone.uID = this.uID;
         clone.fitness = this.fitness;
         clone.sharedFitness = this.sharedFitness;
-        clone.targetFitness = this.targetFitness;
-        clone.openStatementTargets = this.openStatementTargets;
+        clone.targetObjective = this.targetObjective;
+        clone.coverageObjectives = this.coverageObjectives;
         clone.isSpeciesChampion = this.isSpeciesChampion;
         clone.isPopulationChampion = this.isPopulationChampion;
         clone.isParent = this.isParent;
@@ -295,8 +295,8 @@ export class NeatChromosome extends NetworkChromosome {
         network['aF'] = ActivationFunction[this.activationFunction];
         network['cM'] = this.inputConnectionMethod;
 
-        if (this.targetFitness instanceof StatementFitnessFunction) {
-            network['tf'] = this.targetFitness.getNodeId();
+        if (this.targetObjective instanceof StatementFitnessFunction) {
+            network['tf'] = this.targetObjective.getNodeId();
         }
 
         const nodes = {};

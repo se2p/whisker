@@ -65,7 +65,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         }
         logger.debug("1+1 EA started at " + this._startTime);
 
-        let bestIndividual = this._chromosomeGenerator.get();
+        let bestIndividual = await this._chromosomeGenerator.get();
         await bestIndividual.evaluate(true);
         await this.updateArchive(bestIndividual);
         this._bestIndividual = bestIndividual;
@@ -76,7 +76,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         }
 
         while (!(await this._stoppingCondition.isFinished(this))) {
-            const candidateChromosome = bestIndividual.mutate();
+            const candidateChromosome = await bestIndividual.mutate();
             await candidateChromosome.evaluate(true);
             await this.updateArchive(candidateChromosome);
             const candidateFitness = await candidateChromosome.getFitness(this._fitnessFunction);

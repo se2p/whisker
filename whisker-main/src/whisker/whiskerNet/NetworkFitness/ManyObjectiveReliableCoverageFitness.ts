@@ -46,7 +46,7 @@ export class ManyObjectiveReliableCoverageFitness extends ReliableCoverageFitnes
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
         await executor.execute(network);
         await executor.resetState();
-        network.resetOpenStatement();
+        network.resetCoverageMap();
     }
 
 

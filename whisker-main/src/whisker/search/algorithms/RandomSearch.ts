@@ -63,7 +63,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().startTime = Date.now();
 
         while (!(await this._stoppingCondition.isFinished(this))) {
-            const candidateChromosome = this._chromosomeGenerator.get();
+            const candidateChromosome = await this._chromosomeGenerator.get();
             await candidateChromosome.evaluate(true);
             await this.updateArchive(candidateChromosome);
 
@@ -79,7 +79,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             }
             this.updateStatistics();
             this._iterations++;
-            logger.debug(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
+            logger.debug(`Iteration ${this._iterations}: covered objectives:  ${this._archive.size}/${this._fitnessFunctions.size}`);
         }
         return this._archive;
     }

@@ -10,7 +10,7 @@ export class UniformNeatCrossover extends NeatCrossover {
      * @param parent1 the first crossover parent.
      * @param parent2 the second crossover parent.
      */
-    override apply(parent1: NeatChromosome, parent2: NeatChromosome): Pair<NeatChromosome> {
+    override async apply(parent1: NeatChromosome, parent2: NeatChromosome): Promise<Pair<NeatChromosome>> {
         const parent1Clone = parent1.clone();
         const parent2Clone = parent2.clone();
 
@@ -31,7 +31,7 @@ export class UniformNeatCrossover extends NeatCrossover {
      * Applies the crossover operator.
      * @param parents the parents that should be mated with each other.
      */
-    override applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {
+    override async applyFromPair(parents: Pair<NeatChromosome>): Promise<Pair<NeatChromosome>> {
         return this.apply(parents[0], parents[1]);
     }
 

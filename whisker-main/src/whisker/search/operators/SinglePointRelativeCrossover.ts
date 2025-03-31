@@ -49,7 +49,7 @@ export class SinglePointRelativeCrossover<C extends ListChromosome<any>> extends
         return parent1.cloneWith(offspringGenes);
     }
 
-    apply(parent1: C, parent2: C): Pair<C> {
+    override async apply(parent1: C, parent2: C): Promise<Pair<C>> {
         const parent1EventSpaced = Arrays.chunk(parent1.getGenes(), this._reservedCodons);
         const parent2EventSpaced = Arrays.chunk(parent2.getGenes(), this._reservedCodons);
 

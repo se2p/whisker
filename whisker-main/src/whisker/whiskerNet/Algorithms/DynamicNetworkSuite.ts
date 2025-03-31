@@ -10,7 +10,6 @@ import {BasicNeuroevolutionParameter} from "../HyperParameter/BasicNeuroevolutio
 import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
-import {ScratchProgram} from "../../scratch/ScratchInterface";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
@@ -20,6 +19,7 @@ import {NetworkAnalysis} from "../Misc/NetworkAnalysis";
 import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import logger from "../../../util/logger";
+import {Project} from "../../../assembler/project/Project";
 
 
 export class DynamicNetworkSuite {
@@ -100,11 +100,11 @@ export class DynamicNetworkSuite {
      * Loads the dynamic test cases by initialising the saved networks.
      */
     protected loadTestCases(): NeatChromosome[] {
-        const fitnessTargets = [...this.statementMap.values()]
+        const objectives = [...this.statementMap.values()]
             .concat(...this.branchMap.values()) as unknown as StatementFitnessFunction[];
         const eventExtractor = new NeuroevolutionScratchEventExtractor(this.vm);
         const networkLoader = new NetworkLoader(this._testSuiteJSON['Networks'],
-            eventExtractor.extractStaticEvents(this.vm), fitnessTargets);
+            eventExtractor.extractStaticEvents(this.vm), objectives);
         return networkLoader.loadNetworks();
     }
 
@@ -141,10 +141,10 @@ export class DynamicNetworkSuite {
     /**
      * Performs mutation analysis on a given test project based on the specified mutation operators.
      */
-    protected async mutationAnalysis(): Promise<ScratchProgram[]> {
+    protected async mutationAnalysis(): Promise<Project[]> {
         const mutantFactory = new MutationFactory(this.vm, this.properties.mutators as string[]);
         const maxMutants = this.properties.maxMutants as number || Number.MAX_SAFE_INTEGER;
-        const mutantPrograms: ScratchProgram[] = [];
+        const mutantPrograms: Project[] = [];
         let i = 0;
         while (i < maxMutants && mutantFactory.candidates.size > 0) {
             // Generate mutant
@@ -160,7 +160,7 @@ export class DynamicNetworkSuite {
             }
 
             // Execute test suite on mutant
-            const projectMutation = `${this.projectName}-${mutant.name}`;
+            const projectMutation = `${this.projectName}-${mutant.mutantName}`;
             logger.debug(`Analysing mutant ${i}: ${projectMutation}`);
             const executedTests: NeatChromosome[] = [];
             this.statementArchive.clear();
@@ -217,13 +217,13 @@ export class DynamicNetworkSuite {
      * cases on the original project or the created mutants.
      * @returns Results of network suite execution in csv format.
      */
-    protected async execute(): Promise<[string, ScratchProgram[]]> {
+    protected async execute(): Promise<[string, Project[]]> {
 
         // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
         await this.initialiseCommonVariables();
         this.initialiseExecutionParameter();
-        this.initialiseFitnessTargets(this.vm);
+        this.initialiseCoverageMaps(this.vm);
         this.testCases = this.loadTestCases();
         if (this.properties.minimiseSuite && this.testCases.length > 1) {
             await this.minimiseSuite();
@@ -285,23 +285,23 @@ export class DynamicNetworkSuite {
     }
 
     /**
-     * Initialises the statement map.
+     * Initialises the coverage maps.
      */
-    private initialiseFitnessTargets(vm: VirtualMachine): void {
+    private initialiseCoverageMaps(vm: VirtualMachine): void {
         // Initialise Statements
         const statementFactory = new StatementFitnessFunctionFactory();
-        const statementTargets = statementFactory.extractFitnessFunctions(vm, []);
+        const statementObjectives = statementFactory.extractFitnessFunctions(vm, []);
         this.statementMap = new Map<number, FitnessFunction<Chromosome>>();
-        for (let i = 0; i < statementTargets.length; i++) {
-            this.statementMap.set(i, statementTargets[i] as unknown as FitnessFunction<NeatChromosome>);
+        for (let i = 0; i < statementObjectives.length; i++) {
+            this.statementMap.set(i, statementObjectives[i] as unknown as FitnessFunction<NeatChromosome>);
         }
 
         // Initialise Branches
         const branchFactory = new BranchCoverageFitnessFunctionFactory();
-        const branchTargets = branchFactory.extractFitnessFunctions(vm, []);
+        const branchObjectives = branchFactory.extractFitnessFunctions(vm, []);
         this.branchMap = new Map<number, FitnessFunction<Chromosome>>();
-        for (let i = 0; i < branchTargets.length; i++) {
-            this.branchMap.set(i, branchTargets[i] as unknown as FitnessFunction<NeatChromosome>);
+        for (let i = 0; i < branchObjectives.length; i++) {
+            this.branchMap.set(i, branchObjectives[i] as unknown as FitnessFunction<NeatChromosome>);
         }
     }
 
@@ -314,7 +314,7 @@ export class DynamicNetworkSuite {
             await this.executeTestCase(test, false);
             await test.determineCoveredObjectives([...this.branchMap.values()]);
         }
-        this.testCases.sort((a, b) => b.coveredStatements - a.coveredStatements);
+        this.testCases.sort((a, b) => b.coveredObjectives - a.coveredObjectives);
         let coverage = 0;
         const shortenedTestCases = [];
         for (const test of this.testCases) {
@@ -450,11 +450,11 @@ export class DynamicNetworkSuite {
      * Loads a given Scratch mutant by initialising the VmWrapper and the NetworkExecutor with the mutant.
      * @param mutant a mutant of a Scratch project.
      */
-    protected async loadMutant(mutant: ScratchProgram): Promise<void> {
+    protected async loadMutant(mutant: Project): Promise<void> {
         const util = new WhiskerUtil(this.vm, mutant);
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
-        this.initialiseFitnessTargets(vmWrapper.vm);
+        this.initialiseCoverageMaps(vmWrapper.vm);
         this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', false);
     }
 

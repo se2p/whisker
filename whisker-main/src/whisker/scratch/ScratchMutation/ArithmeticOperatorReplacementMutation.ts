@@ -1,8 +1,9 @@
 import {ScratchMutation} from "./ScratchMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchProgram} from "../ScratchInterface";
 import {Randomness} from "../../utils/Randomness";
 import {OperatorFilter, getBlockFromId} from "scratch-analysis";
+import {BlockID} from "../../../assembler/blocks/Block";
+import {Project} from "../../../assembler/project/Project";
 
 export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
 
@@ -20,7 +21,7 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
      * @param mutantProgram the mutant program in which the arithmetic operation will be replaced
      * @returns true if the mutation was successful.
      */
-    public applyMutation(mutationBlockId: string, mutantProgram: ScratchProgram): boolean {
+    public applyMutation(mutationBlockId: BlockID, mutantProgram: Project): boolean {
         const mutationBlock = getBlockFromId(mutantProgram.targets, mutationBlockId);
         const originalOpcode = mutationBlock['opcode'];
         let mutantOpcode = Randomness.getInstance().pick(ArithmeticOperatorReplacementMutation.ARITHMETIC_OPCODES);
@@ -29,7 +30,7 @@ export class ArithmeticOperatorReplacementMutation extends ScratchMutation {
         }
         mutationBlock['opcode'] = mutantOpcode;
         const mutantId = this.getMutantId(mutationBlockId);
-        mutantProgram.name = `AOR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
+        mutantProgram.mutantName = `AOR:${originalOpcode}-${mutantOpcode}-${mutantId}`.replace(/,/g, '');
         return true;
     }
 

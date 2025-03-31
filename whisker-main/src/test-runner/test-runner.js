@@ -2,16 +2,54 @@ const EventEmitter = require('events');
 const Test = require('./test');
 const TestResult = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
-const {assert, assume} = require('./assert');
+const {
+    assert,
+    assume,
+} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const {Randomness} = require("../whisker/utils/Randomness");
 const {MutationFactory} = require("../whisker/scratch/ScratchMutation/MutationFactory");
 const {StatementFitnessFunctionFactory} = require("../whisker/testcase/fitness/StatementFitnessFunctionFactory");
 const CoverageGenerator = require("../coverage/coverage");
 const {BranchCoverageFitnessFunctionFactory} = require("../whisker/testcase/fitness/BranchCoverageFitnessFunctionFactory");
-const {ExecutionTrace} = require("../whisker/testcase/ExecutionTrace");
 const logger = require("../util/logger");
 const {ModelTester} = require("../whisker/model/ModelTester");
+const {onExecuted, onPassed} = require("../coverage/assertion-level-tracing");
+const {serializeError} = require("../util/serialize-error");
+
+function enableAssertionLevelBlockTracing(assertions, assumptions) {
+    assert.onExecutedAssertion = onExecuted.bind(null, assertions);
+    assume.onExecutedAssumption = onExecuted.bind(null, assumptions);
+    assert.onPassedAssertion = onPassed.bind(null, assertions);
+    assume.onPassedAssumption = onPassed.bind(null, assumptions);
+}
+
+function postProcessResults(test, result) {
+    // We are interested in the name of the JavaScript test function itself, not the human-readable name of the
+    // test, which is test.name and could be ambiguous.
+    const name = test.test.name;
+    const exportedName = test.name;
+    const description = test.description;
+    const {status, error} = result;
+
+    // Turn the Error object into a plain JSON object to avoid serialization problems. For example, the stack
+    // property on the Error class is sometimes implemented as a getter function, which is not serializable.
+    const serializableError = serializeError(error);
+
+    const coveredBlocks = Array.from(CoverageGenerator.getCoveredBlockIdsPerTest());
+    const assertions = Object.values(result.assertions);
+    const assumptions = Object.values(result.assumptions);
+    assertions.forEach((assertion) => {
+        assertion.covered = Array.from(assertion.covered);
+        assertion.coveredCumulative = Array.from(assertion.coveredCumulative);
+    });
+    assumptions.forEach((assumption) => {
+        assumption.covered = Array.from(assumption.covered);
+        assumption.coveredCumulative = Array.from(assumption.coveredCumulative);
+    });
+
+    return {name, exportedName, description, status, error: serializableError, coveredBlocks, assertions, assumptions};
+}
 
 class TestRunner extends EventEmitter {
 
@@ -23,6 +61,7 @@ class TestRunner extends EventEmitter {
          * @type {[]}
          */
         this.attributeTraces = [];
+        this.headless = false;
     }
 
     /**
@@ -75,6 +114,12 @@ class TestRunner extends EventEmitter {
         const finalResults = {};
         let csv = this._generateCSVHeader(tests, modelProps);
 
+        // repair-specific variables
+        const coveragePerTest = [];
+        const timingsPerTest = [];
+
+        this.headless = !!props.headless;
+
         this.emit(TestRunner.RUN_START, tests);
 
         const generatedMutants = [];
@@ -101,7 +146,7 @@ class TestRunner extends EventEmitter {
                         generatedMutants.push(mutant);
                     }
                 }
-                const projectMutation = `${projectName}-${mutant.name}`;
+                const projectMutation = `${projectName}-${mutant.mutantName}`;
                 logger.info(`Analysing mutant ${i}: ${projectMutation}`);
                 this.util = await this._loadProject(vm, mutant, props);
                 this.saveState = this.vmWrapper._recordInitialState();
@@ -113,7 +158,7 @@ class TestRunner extends EventEmitter {
                     csv += await this._executeTests(vm, tests, modelTester, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectMutation, totalAssertions,
-                        600000, false);
+                        600000, false, coveragePerTest, timingsPerTest);
                 } else {
                     csv += await this._executeUserModels(vm, modelTester, mutant, props, modelProps,
                         testResults, projectMutation, totalAssertions, 0);
@@ -141,7 +186,7 @@ class TestRunner extends EventEmitter {
             const res = await this._executeTests(vm, tests, modelTester, props, modelProps,
                 resultRecords, testStatusResults, testResults,
                 startTime, projectName, totalAssertions,
-                0, true);
+                0, true, coveragePerTest, timingsPerTest);
             if (res == null) {
                 return null;
             }
@@ -152,7 +197,7 @@ class TestRunner extends EventEmitter {
         csv += "\n";    // We add another newline here to make it easier finding the csv output within the logs
 
         this.emit(TestRunner.RUN_END, finalResults);
-        return [finalResults, csv, generatedMutants];
+        return [finalResults, csv, generatedMutants, coveragePerTest, timingsPerTest];
     }
 
     /**
@@ -171,14 +216,19 @@ class TestRunner extends EventEmitter {
      * @param {number} totalAssertions
      * @param {number} defaultTimeoutPerTest
      * @param {boolean} canBeAborted
+     * @param coveragePerTest
+     * @param timingsPerTest
      * @return {Promise<string|null>}
      */
     async _executeTests(vm, tests, modelTester, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectName, totalAssertions,
-                        defaultTimeoutPerTest, canBeAborted) {
+                        defaultTimeoutPerTest, canBeAborted, coveragePerTest, timingsPerTest) {
         for (const test of tests) {
+            let timeResetProject = Date.now();
             await this.vmWrapper.resetProject(this.saveState);
+            timeResetProject = Date.now() - timeResetProject;
+
             let result;
             if ("generationAlgorithm" in test) {
                 resultRecords.generationAlgorithm = test.generationAlgorithm;
@@ -190,12 +240,24 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
+                let timeRunTest = Date.now();
                 result = await this._executeTest(vm, test, modelTester, props, modelProps, defaultTimeoutPerTest);
+                timeRunTest = Date.now() - timeRunTest;
+
                 testStatusResults.push(result.status);
+                timingsPerTest.push({
+                    resetProject: timeResetProject,
+                    runTest: timeRunTest,
+                });
+
                 this._propagateTestResults(result, resultRecords);
             }
 
             testResults.push(result);
+
+            if (!test.skip) {
+                coveragePerTest.push(postProcessResults(test, result));
+            }
 
             if (canBeAborted && this.aborted) {
                 return null;
@@ -242,6 +304,91 @@ class TestRunner extends EventEmitter {
                 duration, undefined, modelResults);
         }
         return csv;
+    }
+
+    /**
+     * Runs a test in a VM that is already started and has the respective project already loaded.
+     * Intended to run tests in a VM that is already in use, e.g. by a regular scratch-gui instance.
+     *
+     * @param {VirtualMachine} preloadedVM an existing scratch-vm instance that has
+     *                                     the project under test already loaded
+     * @param {Test} test a single Whisker test to be executed
+     * @return {Promise<TestResult>} the test result
+     */
+    async runTestInPreloadedVM(preloadedVM, test) {
+
+        const util = new WhiskerUtil(preloadedVM, null);
+        const vmWrapper = util.getVMWrapper();
+        await preloadedVM.runtime.translateText2Speech();
+
+        preloadedVM.runtime.virtualSound = -1;
+
+        const result = new TestResult(test);
+
+        if (test.skip) {
+            result.status = Test.SKIP;
+            return result;
+        }
+
+        const testDriver = util.getTestDriver(
+            {
+                extend: {
+                    assert: assert,
+                    assume: assume,
+                    log: message => {
+                        result.log.push(message);
+                    }
+                }
+            }
+        );
+
+        this.saveState = vmWrapper._recordInitialState();
+
+        this._setRNGSeeds(undefined, test, preloadedVM);
+        this._checkSeed(test);
+
+        preloadedVM.greenFlag(); // I am unsure if this is correct, but vm-wrapper.js "start()" contains it, too.
+
+        preloadedVM.runtime.testRunning = true;
+
+        const defaultTimeout = 0; // same value as in the executeTest function
+        const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeout;
+
+        try {
+            if (timeout > 0) {
+                const timeoutError = new Error("Timeout");
+                const testTimeout = (prom, time, exception) => {
+                    let timer;
+                    return Promise.race([
+                        prom,
+                        new Promise((_r, rej) => timer = setTimeout(rej, time, exception))
+                    ]).finally(() => clearTimeout(timer));
+                };
+                await testTimeout(test.test(testDriver), timeout, timeoutError);
+
+            } else {
+                await test.test(testDriver);
+            }
+
+            result.status = Test.PASS;
+
+        } catch (e) {
+            result.error = e;
+
+            if (e.message === "Timeout") {
+                result.status = Test.FAIL;
+            } else if (isAssertionError(e)) {
+                result.status = Test.FAIL;
+            } else if (isAssumptionError(e)) {
+                result.status = Test.SKIP;
+            } else {
+                result.status = Test.ERROR;
+            }
+        }
+
+        preloadedVM.runtime.testRunning = false;
+        vmWrapper.loadSaveState(this.saveState);
+        return result;
     }
 
     /**
@@ -491,15 +638,22 @@ class TestRunner extends EventEmitter {
             },
         );
 
+        const assertions = {};
+        const assumptions = {};
+
+        CoverageGenerator.clearCoveragePerTest();
+        CoverageGenerator.clearCoveragePerAssertion();
 
         this.emit(TestRunner.TEST_START, test);
         await this.vmWrapper.start();
         this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
-
         if (test) {
+            enableAssertionLevelBlockTracing(assertions, assumptions);
+
             ModelTester.prepare(modelTester, testDriver);
+
             try {
                 // Use the default timeout (given as function parameter), unless the test specifies its own timeout.
                 const timeout = Object.prototype.hasOwnProperty.call(test, 'timeout') ? test['timeout'] : defaultTimeoutPerTest;
@@ -532,6 +686,11 @@ class TestRunner extends EventEmitter {
                 } else {
                     result.status = Test.ERROR;
                 }
+            } finally {
+                assert.onExecutedAssertion = null;
+                assume.onExecutedAssumption = null;
+                assert.onPassedAssertion = null;
+                assume.onPassedAssumption = null;
             }
             ModelTester.stopModelsAndUpdateResult(modelTester, result);
             await this._determineCoverages(test, props);
@@ -539,6 +698,9 @@ class TestRunner extends EventEmitter {
         } else if (modelTester && modelTester.someModelLoaded()) {
             await modelTester.executeModelsWithoutTest(testDriver, modelProps.duration, result, userModelIndex);
         }
+
+        result.assertions = assertions;
+        result.assumptions = assumptions;
 
         // If desired, save execution trace after executing each block.
         if (props['traceAttributes']) {
@@ -624,7 +786,6 @@ class TestRunner extends EventEmitter {
     _log(test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
-
 
     abort() {
         this.aborted = true;

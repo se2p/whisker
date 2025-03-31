@@ -4,7 +4,7 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 import {AssertionTargetState} from "./AssertionObserver";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class TouchingAssertion extends WhiskerAssertion {
 
@@ -52,7 +52,7 @@ export class TouchingAssertion extends WhiskerAssertion {
         const assertConditionBlockId = uid();
         const isTouchingBlockId = uid();
 
-        const assertConditionBlock: ScratchVMBlock =
+        const assertConditionBlock: SubVMBlock =
             {
                 "id": assertConditionBlockId,
                 "opcode": this._touching ? "bbt_assertCondition" : "bbt_assertConditionFalse",
@@ -70,7 +70,7 @@ export class TouchingAssertion extends WhiskerAssertion {
                 "breakpoint": false
             };
 
-        const isTouchingBlock: ScratchVMBlock =
+        const isTouchingBlock: SubVMBlock =
             {
                 "id": isTouchingBlockId,
                 "opcode": "bbt_isTouching",

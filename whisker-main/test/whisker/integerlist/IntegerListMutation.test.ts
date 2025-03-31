@@ -24,13 +24,13 @@ import {SinglePointCrossover} from "../../../src/whisker/search/operators/Single
 
 describe('IntegerListMutation', () => {
 
-    test('Check number is replaced', () => {
+    test('Check number is replaced', async () => {
         const originalNumbers = [0]; // This is smaller than the range specified for the mutation
         const chromosome = new IntegerListChromosome(originalNumbers,
             new IntegerListMutation(0, 10), new SinglePointCrossover<IntegerListChromosome>());
 
         const mutation = new IntegerListMutation(10, 20);
-        const offspring = mutation.apply(chromosome);
+        const offspring = await mutation.apply(chromosome);
         const mutatedNumbers = offspring.getGenes();
 
         expect(mutatedNumbers.length).toBe(originalNumbers.length);

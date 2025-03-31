@@ -16,6 +16,8 @@
     "explain-recording" : "Inputs such as \"key pressed\" can be recorded and transformed to code automatically so that you don't have to type inputs out manually. Note that existing tests will be discarded.",
     "acceleration" : "Test Acceleration:",
     "search" : "Start Test Generation",
+    "use-bbt-tests" : "Generate Block-Based Tests",
+    "use-bbt-tests-add-comment": "Add test description as comment block",
     "t-tests" : "Run all tests",
     "running" : "Running",
     "reset" : "Reset",

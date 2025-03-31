@@ -68,7 +68,7 @@ describe('Test NeatChromosome', () => {
         return new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully');
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
         crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,
@@ -100,7 +100,7 @@ describe('Test NeatChromosome', () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
-        chromosome = generator.get();
+        chromosome = await generator.get();
         properties = new NeatParameter();
         properties.populationSize = 10;
         NeatPopulation.innovations = [];
@@ -153,7 +153,7 @@ describe('Test NeatChromosome', () => {
         chromosome.surpriseCount = 3;
         chromosome.referenceUncertainty = refUncertainty;
         chromosome.testUncertainty = new Map<number, number>();
-        chromosome.openStatementTargets = new Map<number, number>();
+        chromosome.coverageObjectives = new Map<number, number>();
 
         expect(chromosome.uID).toBe(1234);
         expect(chromosome.fitness).toEqual(4);
@@ -175,7 +175,7 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.surpriseCount).toEqual(3);
         expect(chromosome.referenceUncertainty.size).toEqual(1);
         expect(chromosome.testUncertainty.size).toEqual(0);
-        expect(chromosome.openStatementTargets).not.toBeUndefined();
+        expect(chromosome.coverageObjectives).not.toBeUndefined();
     });
 
     test("Deep clone", () => {
@@ -188,8 +188,8 @@ describe('Test NeatChromosome', () => {
         expect(clone.trace).toEqual(chromosome.trace);
         expect(clone.fitness).toEqual(chromosome.fitness);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
-        expect(clone.targetFitness).toEqual(chromosome.targetFitness);
-        expect(clone.openStatementTargets).toEqual(chromosome.openStatementTargets);
+        expect(clone.targetObjective).toEqual(chromosome.targetObjective);
+        expect(clone.coverageObjectives).toEqual(chromosome.coverageObjectives);
         expect(clone.isSpeciesChampion).toEqual(chromosome.isSpeciesChampion);
         expect(clone.isPopulationChampion).toEqual(chromosome.isPopulationChampion);
         expect(clone.isParent).toEqual(chromosome.isParent);
@@ -463,19 +463,19 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.activateNetwork(dummyInputs)).toBeTruthy();
     });
 
-    test("Test getRegressionNodes", () => {
-        chromosome = generator.get();
+    test("Test getRegressionNodes", async () => {
+        chromosome = await generator.get();
         const regressionNodes = chromosome.regressionNodes;
         expect(regressionNodes.get("WaitEvent").length).toEqual(1);
         expect(regressionNodes.get("MouseMoveEvent").length).toEqual(2);
     });
 
-    test("Test updateOutputNodes sparse", () => {
+    test("Test updateOutputNodes sparse", async () => {
         const sparseGenerator = new NeatChromosomeGenerator(genInputs, [new WaitEvent()], 'sparse',
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
-        chromosome = sparseGenerator.get();
-        const chromosome2 = sparseGenerator.get();
-        const chromosome3 = sparseGenerator.get();
+        chromosome = await sparseGenerator.get();
+        const chromosome2 = await sparseGenerator.get();
+        const chromosome3 = await sparseGenerator.get();
         const oldNodeSize = chromosome.getNumNodes();
         const oldOutputNodesSize = chromosome.layers.get(1).length;
         const oldRegressionNodesSize = chromosome.regressionNodes.size;
@@ -491,8 +491,8 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toEqual(0);
     });
 
-    test("Test setUpInputs", () => {
-        chromosome = generator.get();
+    test("Test setUpInputs", async () => {
+        chromosome = await generator.get();
         genInputs.set("New", new Map<string, number>());
         genInputs.get("New").set("First", 1);
         genInputs.get("New").set("Second", 2);

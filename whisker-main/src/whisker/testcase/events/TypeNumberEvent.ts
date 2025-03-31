@@ -23,7 +23,7 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class TypeNumberEvent extends ScratchEvent {
@@ -44,7 +44,7 @@ export class TypeNumberEvent extends ScratchEvent {
         const simulateAnswerBlockId = uid();
         const answerInputBlockId = uid();
 
-        const simulateAnswerBlock: ScratchVMBlock =
+        const simulateAnswerBlock: SubVMBlock =
             {
                 "id": simulateAnswerBlockId,
                 "opcode": "bbt_simulateAnswerInput",
@@ -63,7 +63,7 @@ export class TypeNumberEvent extends ScratchEvent {
                 "breakpoint": false
             };
 
-        const answerInputBlock: ScratchVMBlock =
+        const answerInputBlock: SubVMBlock =
             {
                 "id": answerInputBlockId,
                 "opcode": "text",

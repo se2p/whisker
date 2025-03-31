@@ -10,12 +10,12 @@ import {NeatMutation} from "../../../../src/whisker/whiskerNet/Operators/NeatMut
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {NeatChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGenerator";
 import {
-    TargetStatementPopulation
-} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/TargetStatementPopulation";
+    NeatestPopulation
+} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatestPopulation";
 import {InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
 import logger from "../../../../src/util/logger";
 
-describe("Test TargetStatementPopulation", () => {
+describe("Test NeatestPopulation", () => {
 
     let properties: NeatParameter;
     let chromosomeGenerator: NeatChromosomeGenerator;
@@ -60,35 +60,35 @@ describe("Test TargetStatementPopulation", () => {
         properties.populationSize = size;
     });
 
-    test("Generate population without starting networks", () => {
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+    test("Generate population without starting networks", async () => {
+        const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, [], 0);
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.networks.length).toBe(size);
     });
 
-    test("Generate population with starting networks and low random fraction", () => {
+    test("Generate population with starting networks and low random fraction", async () => {
         const networks = [];
         for (let i = 0; i < 5; i++) {
-            networks.push(chromosomeGenerator.get());
+            networks.push(await chromosomeGenerator.get());
         }
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+        const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 0.1);
         const innovations = NeatPopulation.innovations.length;
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.networks.length).toBe(size);
         expect(NeatPopulation.innovations.length).toBeGreaterThan(innovations);
     });
 
-    test("Generate population with starting networks and maximum random fraction", () => {
+    test("Generate population with starting networks and maximum random fraction", async () => {
         const networks = [];
         for (let i = 0; i < 5; i++) {
-            networks.push(chromosomeGenerator.get());
+            networks.push(await chromosomeGenerator.get());
         }
-        const population = new TargetStatementPopulation(chromosomeGenerator, properties, [],
+        const population = new NeatestPopulation(chromosomeGenerator, properties, [],
             undefined, networks, 1);
         const innovations = NeatPopulation.innovations.length;
-        population.generatePopulation();
+        await population.generatePopulation();
         expect(population.networks.length).toBe(size);
         expect(NeatPopulation.innovations.length).toBe(innovations);
     });

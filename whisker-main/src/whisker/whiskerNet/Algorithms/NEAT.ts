@@ -44,7 +44,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      */
     async findSolution(): Promise<Map<number, NeatChromosome>> {
         const population = this.getPopulation();
-        population.generatePopulation();
+        await population.generatePopulation();
         this._iterations = 0;
         this._startTime = Date.now();
 
@@ -53,7 +53,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             population.updatePopulationStatistics();
             this.reportOfCurrentIteration(population);
             this.updateBestIndividualAndStatistics(population);
-            population.evolve();
+            await population.evolve();
             this._iterations++;
         }
         return this._archive as Map<number, NeatChromosome>;
@@ -137,7 +137,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             }
         }
         logger.debug(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        logger.debug(`Covered goals: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
+        logger.debug(`Covered objectives: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
         if (this._neuroevolutionProperties.printPopulationRecord) {
             const currentPopulationRecord = {};
             currentPopulationRecord[`Generation ${this._iterations}`] = population;

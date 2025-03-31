@@ -3,7 +3,7 @@ import {AssertionFactory} from "./AssertionFactory";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {AssertionTargetState} from "./AssertionObserver";
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class GraphicsEffectAssertion extends WhiskerAssertion {
@@ -40,7 +40,7 @@ export class GraphicsEffectAssertion extends WhiskerAssertion {
         const [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB]
             = generateEqualityAssertion(attributeBlockId, this._status.toString());
 
-        const attributeBlock: ScratchVMBlock =
+        const attributeBlock: SubVMBlock =
             {
                 "id": attributeBlockId,
                 "opcode": "bbt_attributeOf",

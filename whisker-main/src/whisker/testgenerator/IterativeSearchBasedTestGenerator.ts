@@ -29,8 +29,8 @@ import logger from '../../util/logger';
 
 /**
  * To generate a test suite using single-objective search,
- * this class iterates over the list of coverage goals in
- * a project and instantiates a new search for each goal.
+ * this class iterates over the list of coverage objective in
+ * a project and instantiates a new search for each objective.
  */
 export class IterativeSearchBasedTestGenerator extends TestGenerator {
 
@@ -45,18 +45,18 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
         const startTime = Date.now();
-        this._fitnessFunctions = this.extractCoverageGoals();
+        this._fitnessFunctions = this.extractCoverageObjectives();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
-        let numGoal = 1;
-        const totalGoals = this._fitnessFunctions.size;
+        let numObjective = 1;
+        const totalNumObjectives = this._fitnessFunctions.size;
         let createdTestsToReachFullCoverage = 0;
         for (const fitnessFunction of this._fitnessFunctions.keys()) {
-            logger.info(`Current goal ${numGoal}/${totalGoals}:${this._fitnessFunctions.get(fitnessFunction)}`);
-            numGoal++;
+            logger.info(`Current objective ${numObjective}/${totalNumObjectives}:${this._fitnessFunctions.get(fitnessFunction)}`);
+            numObjective++;
             if (this._archive.has(fitnessFunction)) {
                 // If already covered, we don't need to search again
-                logger.info(`Goal ${fitnessFunction} already covered, skipping.`);
+                logger.info(`Objective ${fitnessFunction} already covered, skipping.`);
                 continue;
             }
             // Generate searchAlgorithm responsible for covering the selected target statement.
@@ -65,7 +65,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             const nextFitnessTarget = this._fitnessFunctions.get(fitnessFunction);
             searchAlgorithm.setFitnessFunction(nextFitnessTarget);
             if(nextFitnessTarget instanceof StatementFitnessFunction) {
-                Container.statementFitnessFunctions = [nextFitnessTarget];
+                Container.coverageObjectives = [nextFitnessTarget];
             }
             searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
             // TODO: Assuming there is at least one solution?

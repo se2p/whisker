@@ -4,6 +4,7 @@ import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target
 import {AssertionTargetState} from "./AssertionObserver";
 import uid from "scratch-vm/src/util/uid";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class CloneCountAssertion extends WhiskerAssertion {
 
@@ -37,7 +38,7 @@ export class CloneCountAssertion extends WhiskerAssertion {
         const [assertEqualsBlock, assertEqualsBlockA, assertEqualsBlockB]
             = generateEqualityAssertion(clonesOfTargetBlockId, this._count.toString());
 
-        const clonesOfTargetBlock =
+        const clonesOfTargetBlock: SubVMBlock =
             {
                 "id": clonesOfTargetBlockId,
                 "opcode": "bbt_attributeOf",

@@ -55,8 +55,8 @@ describe("NeuroevolutionUtil Tests", () => {
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
     });
 
-    test("Test Softmax calculation", () => {
-        const chromosome = generator.get();
+    test("Test Softmax calculation", async () => {
+        const chromosome = await generator.get();
         chromosome.activateNetwork(chromosome.generateDummyInputs());
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);
         expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toBe(1);

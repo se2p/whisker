@@ -12,6 +12,7 @@ import {
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import {attributeNames, effectNames} from "../checks/CheckTypes";
+import {STAGE_NAME} from "../../../assembler/utils/selectors";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -30,7 +31,7 @@ export abstract class ModelUtil {
      * @param pSpriteName Name of the sprite or "_stage_" for the stage
      */
     static getStageOrSprite(testDriver: TestDriver, pSpriteName: ArgType): Sprite {
-        if (pSpriteName == "_stage_") {
+        if (pSpriteName == STAGE_NAME) {
             return testDriver.getStage();
         }
         return ModelUtil.checkSpriteExistence(testDriver, pSpriteName);
@@ -251,7 +252,7 @@ export abstract class ModelUtil {
         if (!spriteName || spriteName == "") {
             throw new EmptyExpressionError();
         }
-        const sprite: Sprite = spriteName == "_stage_" ? t.getStage() : t.getSprite(spriteName);
+        const sprite: Sprite = spriteName == STAGE_NAME ? t.getStage() : t.getSprite(spriteName);
         if (!sprite) {
             throw new SpriteNotFoundError(spriteName);
         }

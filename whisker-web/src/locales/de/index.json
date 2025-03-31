@@ -16,6 +16,8 @@
     "explain-recording" : "Du kannst Eingaben wie \"Taste gedrückt\" aufzeichnen und in Code umwandeln lassen, statt den Code selbst zu schreiben. Beachte, dass dabei deine bisherigen Tests verloren gehen.",
     "acceleration" : "Testbeschleunigung:",
     "search" : "Generiere automatisch Tests",
+    "use-bbt-tests" : "Blockbasierte Tests generieren",
+    "use-bbt-tests-add-comment": "Testbeschreibung als Kommentar-Block hinzufügen",
     "t-tests" : "Starte alle Tests",
     "running" : "Tests laufen",
     "reset" : "Zurücksetzen",

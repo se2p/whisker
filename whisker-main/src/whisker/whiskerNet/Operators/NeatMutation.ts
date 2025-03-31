@@ -111,7 +111,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * Apply the mutation operator
      * @param parent the chromosome to mutate
      */
-    apply(parent: NeatChromosome): NeatChromosome {
+    async apply(parent: NeatChromosome): Promise<NeatChromosome> {
         let mutated = false;
         const mutant = parent.cloneStructure(true);
         do {

@@ -6,6 +6,7 @@ import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
+import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 
 describe('AttributeComparison', () => {
@@ -88,7 +89,7 @@ describe('AttributeComparison', () => {
     });
 
     test('Output is registered on CheckUtil for changing visual', () => {
-        const sprite = new SpriteMock("_stage_");
+        const sprite = new SpriteMock(STAGE_NAME);
         sprite.currentCostumeName = "defaultStage";
         const tdMock = new TestDriverMock([sprite]);
         tdMock.stage = sprite.updateSprite();
@@ -102,9 +103,9 @@ describe('AttributeComparison', () => {
             fn(spriteName, c, graphID, predicate);
         };
         const cu = cuMock.getCheckUtility();
-        const c = new AttrComp('label', {negated: true, args: ["_stage_", "currentCostumeName", "==", "win"]});
+        const c = new AttrComp('label', {negated: true, args: [STAGE_NAME, "currentCostumeName", "==", "win"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith("_stage_", c, graphID, check);
+        expect(fn).toHaveBeenLastCalledWith(STAGE_NAME, c, graphID, check);
         expect(check(sprite.sprite)).toStrictEqual(pass());
         sprite.currentCostumeName = "win";
         sprite.updateSprite();

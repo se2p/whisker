@@ -29,7 +29,7 @@ export class MosaNeatest extends ManyObjectiveNeatest {
      */
     override async findSolution(): Promise<Map<number, NeatChromosome>> {
         this.initialize();
-        this.initPopulation();
+        await this.initPopulation();
         this.updateCurrentTargets();
         await this.evaluatePopulation(this._population.networks);
 
@@ -91,23 +91,23 @@ export class MosaNeatest extends ManyObjectiveNeatest {
 
             // Apply crossover with a given probability.
             if (this._random.nextDouble() < this._crossoverProbability) {
-                [child1, child2] = parent1.crossover(parent2);
+                [child1, child2] = await parent1.crossover(parent2);
 
                 // If NeatCrossover is chosen as crossover operator, child2 is undefined.
                 // To compensate, we mutate the parent.
-                child2 ??= parent2.mutate();
+                child2 ??= await parent2.mutate();
 
                 // With a given chance, mutate the crossover children.
                 if (this._random.nextDouble() < this._mutationProbability) {
-                    child1 = child1.mutate();
+                    child1 = await child1.mutate();
                 }
                 if (this._random.nextDouble() < this._mutationProbability) {
-                    child2 = child2.mutate();
+                    child2 = await child2.mutate();
                 }
 
             } else { // If no crossover is applied, we always mutate.
-                child1 = parent1.mutate();
-                child2 = parent2.mutate();
+                child1 = await parent1.mutate();
+                child2 = await parent2.mutate();
             }
 
             offspringPopulation.push(child1);
@@ -116,7 +116,7 @@ export class MosaNeatest extends ManyObjectiveNeatest {
             }
         }
 
-        this.initOpenStatements(offspringPopulation);
+        this.initCoverageObjectivesMap(offspringPopulation);
         return offspringPopulation;
     }
 

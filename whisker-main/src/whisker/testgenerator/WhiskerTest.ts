@@ -22,6 +22,8 @@ import {TestChromosome} from '../testcase/TestChromosome';
 import {JavaScriptConverter} from "../testcase/JavaScriptConverter";
 import {WhiskerAssertion} from "./assertions/WhiskerAssertion";
 import assert from "assert";
+import {toBlockBasedTest} from "../testcase/BlockBasedTestingConverter";
+import {BlockBasedTest} from "../../types/BlockBasedTest";
 
 /**
  * Internal representation of a test case such that we
@@ -72,6 +74,17 @@ export class WhiskerTest {
     toJavaScriptCode(): string {
         const jsConverter = new JavaScriptConverter();
         return jsConverter.getText(this);
+    }
+
+    /**
+     * Returns a Block-Based Test. Relies on blocks from the
+     * Block-Based Testing extension (opcodes bbt_*).
+     *
+     * @param addDescriptionAsComment whether a comment should be appended to the BBT test hat,
+     * containing the natural language textual description
+     */
+    toBlockBasedTest(addDescriptionAsComment = false): BlockBasedTest {
+        return toBlockBasedTest(this, addDescriptionAsComment);
     }
 
     public toString = () : string => {

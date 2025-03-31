@@ -67,7 +67,7 @@ export abstract class TestGenerator {
         return builder.buildSearchAlgorithm();
     }
 
-    protected extractCoverageGoals(): Map<number, FitnessFunction<any>> {
+    protected extractCoverageObjectives(): Map<number, FitnessFunction<any>> {
         return new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .initializeFitnessFunction(this._config.getFitnessFunctionType(),
                 this._config.searchAlgorithmProperties['chromosomeLength'], // FIXME: unsafe access

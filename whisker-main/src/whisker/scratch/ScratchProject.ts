@@ -23,7 +23,7 @@ import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedEx
 /**
  * This class provides an entrypoint for analysing Scratch projects.
  * We need this to:
- * - Extract coverage goals (fitness functions)
+ * - Extract coverage objectives (fitness functions)
  * - Extract constants for seeding numbers and text
  * - Probably for instantiating the VM runtime
  */

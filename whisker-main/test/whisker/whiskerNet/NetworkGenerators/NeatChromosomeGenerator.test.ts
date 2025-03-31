@@ -53,10 +53,10 @@ describe('Test NeatChromosomeGenerator', () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
     });
 
-    test('Create initial random Chromosome using fully connection mode', () => {
+    test('Create initial random Chromosome using fully connection mode', async () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fully',
             ActivationFunction.TANH, mutationOp, crossoverOp);
-        const neatChromosome = generator.get();
+        const neatChromosome = await generator.get();
         expect(neatChromosome.getAllNodes().length).toBe(19);
         expect(neatChromosome.connections.length).toBe(90);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
@@ -69,10 +69,10 @@ describe('Test NeatChromosomeGenerator', () => {
         expect(neatChromosome.layers.get(1).length).toBe(9);
     });
 
-    test('Create initial random Chromosome using sparse connection mode', () => {
+    test('Create initial random Chromosome using sparse connection mode', async () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'sparse',
             ActivationFunction.TANH, mutationOp, crossoverOp);
-        const neatChromosome = generator.get();
+        const neatChromosome = await generator.get();
         expect(neatChromosome.getAllNodes().length).toBeGreaterThanOrEqual(15);
         expect(neatChromosome.connections.length).toBeGreaterThanOrEqual(18);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
@@ -85,11 +85,11 @@ describe('Test NeatChromosomeGenerator', () => {
         expect(neatChromosome.layers.get(1).length).toBe(9);
     });
 
-    test('Create two Chromosomes to test if every one of them gets the same innovation numbers', () => {
+    test('Create two Chromosomes to test if every one of them gets the same innovation numbers', async () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fully',
             ActivationFunction.TANH, mutationOp, crossoverOp);
-        const chromosome1 = generator.get();
-        const chromosome2 = generator.get();
+        const chromosome1 = await generator.get();
+        const chromosome2 = await generator.get();
         const randomNodeIndex = Randomness.getInstance().nextInt(0, chromosome1.getAllNodes().length);
         expect(chromosome1.getAllNodes()[randomNodeIndex].uID).toBe(chromosome2.getAllNodes()[randomNodeIndex].uID);
         expect(chromosome1.inputNodes.get("Sprite1").get("Y-Position").uID).toBe(

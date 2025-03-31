@@ -38,7 +38,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * Generates a single NeatChromosome using the specified connection method.
      * @returns generated NeatChromosome.
      */
-    get(): NeatChromosome {
+    async get(): Promise<NeatChromosome> {
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, []);
 

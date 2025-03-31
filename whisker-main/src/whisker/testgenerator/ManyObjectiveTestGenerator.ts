@@ -30,7 +30,7 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
 
     async generateTests(): Promise<WhiskerTestListWithSummary> {
 
-        // TODO: Ensure this is a many-objective algorithm taking all goals
+        // TODO: Ensure this is a many-objective algorithm taking all objectives
         const searchAlgorithm = this.buildSearchAlgorithm(true);
 
         // TODO: Assuming there is at least one solution?

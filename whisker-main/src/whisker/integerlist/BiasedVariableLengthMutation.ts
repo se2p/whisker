@@ -37,7 +37,7 @@ export class BiasedVariableLengthMutation extends AbstractVariableLengthMutation
         return 2 * (idx + 1) / (numberOfCodons * (numberOfCodons + 1));
     }
 
-    apply(chromosome: IntegerListChromosome): IntegerListChromosome {
+    override async apply(chromosome: IntegerListChromosome): Promise<IntegerListChromosome> {
         return super.applyUpTo(chromosome, chromosome.getLength());
     }
 

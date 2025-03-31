@@ -22,7 +22,7 @@ import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import uid from "scratch-vm/src/util/uid";
-import {ScratchVMBlock} from "../../../types/ScratchVMBlock";
+import {SubVMBlock} from "../../../types/ScratchVMBlock";
 import {ScratchScriptSnippet} from "../../../types/ScratchScriptSnippet";
 
 export class ClickSpriteEvent extends ScratchEvent {
@@ -73,10 +73,10 @@ export class ClickSpriteEvent extends ScratchEvent {
     }
 
     public toScratchBlocks(): ScratchScriptSnippet {
-        const blocks: ScratchVMBlock[] = [];
+        const blocks: SubVMBlock[] = [];
 
         const mainBlockId = uid();
-        const mainBlock: ScratchVMBlock = {
+        const mainBlock: SubVMBlock = {
             "id": mainBlockId,
             "opcode": null,
             "inputs": {},

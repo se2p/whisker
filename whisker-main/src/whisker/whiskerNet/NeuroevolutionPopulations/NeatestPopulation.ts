@@ -8,11 +8,11 @@ import {NeatestParameter} from "../HyperParameter/NeatestParameter";
 import {NeatParameter} from "../HyperParameter/NeatParameter";
 import {BranchCoverageFitnessFunction} from "../../testcase/fitness/BranchCoverageFitnessFunction";
 
-export class TargetStatementPopulation extends NeatPopulation {
+export class NeatestPopulation extends NeatPopulation {
 
     constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatParameter,
-                private readonly _allStatements: number[],
-                private readonly _targetStatementFitness: StatementFitnessFunction,
+                private readonly _allObjectives: number[],
+                private readonly _targetedObjective: StatementFitnessFunction,
                 private readonly _startingNetworks: NeatChromosome[],
                 private readonly _randomFraction: number) {
         super(generator, hyperParameter);
@@ -20,21 +20,23 @@ export class TargetStatementPopulation extends NeatPopulation {
 
     /**
      * Generates an initial population of networks by cloning and mutating networks that
-     * proved to be viable solutions for their targeted statement. To not get stuck in certain network structures
-     * and to favour simple network structures, we also generate some new networks. In case we have not yet covered
-     * anything, we just generate the desired number of networks using the defined NetworkGenerator.
+     * proved to be viable solutions for their targeted objective.
+     * To not get stuck in certain network structures and to favour simple network structures,
+     * we also generate some new networks.
+     * In case we have not yet covered anything,
+     * we just generate the desired number of networks using the defined NetworkGenerator.
      */
-    public override generatePopulation(): void {
+    public override async generatePopulation(): Promise<void> {
         // If we don't have any starting networks, i.e., it's the first ever selected fitness target generate
         // the desired number of networks using the defined generator.
         if (this._startingNetworks.length === 0) {
             while (this.networks.length < this.populationSize) {
-                const network = this.generator.get();
+                const network = await this.generator.get();
                 this.networks.push(network);
 
                 // Do not apply gradient descent for the first statement since it will always be the green flag,
                 // which is covered trivially without further optimisations.
-                if (this._targetStatementFitness instanceof BranchCoverageFitnessFunction) {
+                if (this._targetedObjective instanceof BranchCoverageFitnessFunction) {
                     this.applyGradientDescent(network);
                 }
             }
@@ -56,7 +58,7 @@ export class TargetStatementPopulation extends NeatPopulation {
                 if (this.networks.length >= this.hyperParameter.populationSize) {
                     break;
                 }
-                const network = this.generator.get();
+                const network = await this.generator.get();
 
                 this.applyGradientDescent(network);
 
@@ -68,17 +70,17 @@ export class TargetStatementPopulation extends NeatPopulation {
             let i = 0;
             while (this.networks.length < this.hyperParameter.populationSize) {
                 const parent = this._startingNetworks[i % this._startingNetworks.length];
-                const mutant = parent.mutate();
+                const mutant = await parent.mutate();
                 this.networks.push(mutant);
                 i++;
             }
         }
 
-        // Finally, allocate the statementTarget map, set the fitness to the targeted statement and speciate each
+        // Finally, allocate the objective map, set the fitness to the targeted objective and speciate each
         // generated network.
         for (const network of this.networks) {
-            network.initialiseOpenStatements(this._allStatements);
-            network.targetFitness = this._targetStatementFitness;
+            network.initialiseCoverageObjectives(this._allObjectives);
+            network.targetObjective = this._targetedObjective;
             this.assignSpecies(network);
         }
     }
@@ -95,7 +97,7 @@ export class TargetStatementPopulation extends NeatPopulation {
 
         const randomNumber = Randomness.getInstance().nextDouble();
         if (randomNumber <= (this.hyperParameter as NeatestParameter).gradientDescentParameter.probability) {
-            Container.backpropagationInstance.gradientDescent(network, this._targetStatementFitness.getNodeId());
+            Container.backpropagationInstance.gradientDescent(network, this._targetedObjective.getNodeId());
         }
     }
 }

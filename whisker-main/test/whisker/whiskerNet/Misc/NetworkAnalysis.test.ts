@@ -19,7 +19,7 @@ describe("Network Analysis", () => {
     let referenceTrace: ActivationTrace;
     let network: NeatChromosome;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         logger.suggest.deny(/.*/, "debug");
         referenceNodeTrace = [];
         for (let step = 0; step < 10; step++) {
@@ -50,7 +50,7 @@ describe("Network Analysis", () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         const generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
             ActivationFunction.SIGMOID, undefined, undefined);
-        network = generator.get();
+        network = await generator.get();
     });
 
     test("LSA same distribution as test AT; shorter test trace", () => {

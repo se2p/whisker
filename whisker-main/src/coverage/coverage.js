@@ -1,4 +1,6 @@
 const _coveredBlockIds = new Set();
+const _coveredBlockIdsPerTest = new Set();
+const _coveredBlockIdsPerAssertion = new Set();
 const _blockIdsPerSprite = new Map();
 const _blockDescriptions = new Map();
 const cloneDeep = require('lodash.clonedeep');
@@ -7,7 +9,7 @@ const Util = require("../vm/util");
 
 /* Only works with Scratch 3.0 (.sb3) projects. sb2 projects can be easily converted by saving them with Scratch 3.0. */
 class Coverage {
-    constructor (coveredBlockIdsPerSprite, blockIdsPerSprite, blockDescriptions) {
+    constructor(coveredBlockIdsPerSprite, blockIdsPerSprite, blockDescriptions, coveredBlockIdsPerTest, coveredBlockIdsPerAssertion) {
 
         /**
          * @type {Map<string, Set<string>>}
@@ -19,38 +21,61 @@ class Coverage {
          */
         this.blockIdsPerSprite = blockIdsPerSprite;
 
-
         /**
-         * @type {Map<string, {sprite: string, opcode: string: id: string}}
+         * @type {Map<string, {sprite: string, opcode: string: id: string}>}
          */
         this.blockDescriptions = blockDescriptions;
+
+        /**
+         * @type {Set<string>}
+         */
+        this.coveredBlockIdsPerTest = coveredBlockIdsPerTest;
+
+        /**
+         * @type {Set<string>}
+         */
+        this.coveredBlockIdsPerAssertion = coveredBlockIdsPerAssertion;
     }
 
     /**
      * @return {Map<string,Set<string>>} .
      */
-    getCoveredBlockIdsPerSprite () {
+    getCoveredBlockIdsPerSprite() {
         return new Map(this.coveredBlockIdsPerSprite);
     }
 
     /**
+     * @return {Set<string>}
+     */
+    getCoveredBlockIdsPerTest() {
+        return new Set(this.coveredBlockIdsPerTest);
+    }
+
+    /**
+     * @return {Set<string>}
+     */
+    getCoveredBlockIdsPerAssertion() {
+        return new Set(this.coveredBlockIdsPerAssertion);
+    }
+
+    /**
      * @return {Map<string,Set<string>>} .
      */
-    getBlockIdsPerSprite () {
+    getBlockIdsPerSprite() {
         return new Map(this.blockIdsPerSprite);
     }
 
     /**
-     * @return {Map<string, {sprite: string, opcode: string: id: string}}
+     * @return {Map<string, {sprite: string, opcode: string: id: string}>}
      */
-    getBlockDescriptions () {
+    getBlockDescriptions() {
         return new Map(this.blockDescriptions);
     }
 
     /**
      * @return {Map<string, {covered: number, total: number}>} .
      */
-    getCoveragePerSprite () {
+    getCoveragePerSprite() {
         const coverage = {};
 
         for (const [spriteName, coveredBlockIds] of this.coveredBlockIdsPerSprite) {
@@ -65,7 +90,7 @@ class Coverage {
     /**
      * @return {{covered: number, total: number}} .
      */
-    getCoverageTotal () {
+    getCoverageTotal() {
         let numCovered = 0;
         let numTotal = 0;
 
@@ -87,22 +112,26 @@ class Coverage {
 class CoverageGenerator {
 
     /**
-     * @param {number} blockId .
+     * @param {string} blockId .
      */
-    static _coverBlock (blockId) {
+    static _coverBlock(blockId) {
         if (blockId) {
             // if (!_coveredBlockIds.has(blockId)) {
             //     logger.debug(_blockDescriptions.get(blockId));
             // }
             _coveredBlockIds.add(blockId);
+            _coveredBlockIdsPerTest.add(blockId);
+            _coveredBlockIdsPerAssertion.add(blockId);
         }
     }
 
     /**
      * @param {VirtualMachine} vm .
      */
-    static prepareVM (vm) {
+    static prepareVM(vm) {
         _coveredBlockIds.clear();
+        _coveredBlockIdsPerTest.clear();
+        _coveredBlockIdsPerAssertion.clear();
         _blockIdsPerSprite.clear();
         _blockDescriptions.clear();
 
@@ -124,11 +153,11 @@ class CoverageGenerator {
 
     /**
      * @param {Blocks} targetBlocks .
-     * @param {Set<string>} blockIds .
+     * @param {string} targetName .
      * @param {string} blockId .
      * @private
      */
-    static _addBlocks (targetBlocks, targetName, blockId) {
+    static _addBlocks(targetBlocks, targetName, blockId) {
         const blockIds = _blockIdsPerSprite.get(targetName);
         if (blockIds.has(blockId)) {
             return;
@@ -163,14 +192,22 @@ class CoverageGenerator {
         return vm.runtime.onBlockCoveredCallback !== null;
     }
 
-    static clearCoverage () {
+    static clearCoverage() {
         _coveredBlockIds.clear();
+    }
+
+    static clearCoveragePerTest() {
+        _coveredBlockIdsPerTest.clear();
+    }
+
+    static clearCoveragePerAssertion() {
+        _coveredBlockIdsPerAssertion.clear();
     }
 
     /**
      * @return {Map<string, Set<string>>} .
      */
-    static getCoveredBlockIdsPerSprite () {
+    static getCoveredBlockIdsPerSprite() {
         const coveredMap = new Map();
         for (const [spriteName, blockIds] of _blockIdsPerSprite) {
             const coveredBlockIds = new Set();
@@ -184,10 +221,22 @@ class CoverageGenerator {
         return coveredMap;
     }
 
+    static getCoveredBlockIds() {
+        return new Set(_coveredBlockIds);
+    }
+
+    static getCoveredBlockIdsPerTest() {
+        return new Set(_coveredBlockIdsPerTest);
+    }
+
+    static getCoveredBlockIdsPerAssertion() {
+        return new Set(_coveredBlockIdsPerAssertion);
+    }
+
     /**
      * @return {Map<string, Set<string>>} .
      */
-    static getBlockIdsPerSprite () {
+    static getBlockIdsPerSprite() {
         const map = new Map();
         for (const [spriteName, blockIds] of _blockIdsPerSprite) {
             map.set(spriteName, new Set(blockIds));
@@ -196,20 +245,22 @@ class CoverageGenerator {
     }
 
     /**
-     * @return {Map<string, {sprite: string, opcode: string: id: string}}
+     * @return {Map<string, {sprite: string, opcode: string: id: string}>}
      */
-    static getBlockDescriptions () {
+    static getBlockDescriptions() {
         return new Map(_blockDescriptions);
     }
 
     /**
      * @return {Coverage} .
      */
-    static getCoverage () {
+    static getCoverage() {
         return new Coverage(
             CoverageGenerator.getCoveredBlockIdsPerSprite(),
             CoverageGenerator.getBlockIdsPerSprite(),
-            CoverageGenerator.getBlockDescriptions()
+            CoverageGenerator.getBlockDescriptions(),
+            CoverageGenerator.getCoveredBlockIdsPerTest(),
+            CoverageGenerator.getCoveredBlockIdsPerAssertion(),
         );
     }
 
@@ -217,8 +268,9 @@ class CoverageGenerator {
      * @param {Coverage[]} coverages .
      * @return {Coverage} .
      */
+
     /* Assumes the coverage scores are all from the same project. */
-    static mergeCoverage (coverages) {
+    static mergeCoverage(coverages) {
         if (coverages.length === 0) {
             return new Coverage(new Map(), new Map());
         }

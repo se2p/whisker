@@ -33,6 +33,5 @@ export interface Mutation<C extends Chromosome> {
      * @param chromosome the parent chromosome to modify by mutation
      * @returns the offspring fromed by mutating the parent
      */
-    apply(chromosome: C): C;
-
+    apply(chromosome: C): Promise<C>;
 }

@@ -63,18 +63,10 @@ export abstract class ManyObjectiveNeatest extends Neatest {
     /**
      * Initializes the population with newly generated networks.
      */
-    protected initPopulation(): void {
+    protected async initPopulation(): Promise<void> {
         this._population = new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
-        this._population.generatePopulation();
-        this.initOpenStatements(this._population.networks);
-    }
-
-    /**
-     * Initializes or updates the open target statements for the supplied population.
-     */
-    protected initOpenStatements(networks: NeatChromosome[]): void {
-        const openStatements = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));
-        networks.forEach(network => network.initialiseOpenStatements(openStatements));
+        await this._population.generatePopulation();
+        this.initCoverageObjectivesMap(this._population.networks);
     }
 
     /**
@@ -88,7 +80,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
      */
     protected async compareChromosomes(chromosome1: NeatChromosome, chromosome2: NeatChromosome,
                                        objective: FitnessFunction<Chromosome>): Promise<number> {
-        const fitnessKey = this.mapStatementToKey(objective as StatementFitnessFunction);
+        const fitnessKey = this.mapObjectiveToKey(objective as StatementFitnessFunction);
         const fitness1 = await chromosome1.getFitness(objective, fitnessKey);
         const fitness2 = await chromosome2.getFitness(objective, fitnessKey);
 
@@ -177,7 +169,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
         const nearestTargets = this.getNearestTargets();
 
         for (const stmt of nearestTargets) {
-            const statementKey = this.mapStatementToKey(stmt);
+            const statementKey = this.mapObjectiveToKey(stmt);
             this._currentTargets.push(statementKey);
         }
     }
@@ -189,7 +181,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
      */
     protected override async evaluatePopulation(networks: NeatChromosome[]): Promise<void> {
         logger.debug(`Evaluate ${this._neuroevolutionProperties.populationSize} networks on ${this._currentTargets.length} targets...`);
-        this.initOpenStatements(networks);
+        this.initCoverageObjectivesMap(networks);
 
         const timeout = this._neuroevolutionProperties.timeout;
         const eventSelection = this._neuroevolutionProperties.eventSelection;

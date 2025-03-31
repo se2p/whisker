@@ -34,7 +34,7 @@ export interface ChromosomeGenerator<C extends Chromosome> {
      * Creates and returns a random chromosome.
      * @returns a random chromosome
      */
-    get(): C;
+    get(): Promise<C>;
 
     /**
      * Helper method to ensure a mutation operator is configured in the generator.

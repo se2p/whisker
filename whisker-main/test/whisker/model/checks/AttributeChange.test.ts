@@ -5,17 +5,18 @@ import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {AttrChange} from "../../../../src/whisker/model/checks/AttrChange";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 
 describe('AttributeChange', () => {
     const graphID = "graphID";
     const dummyCU = getDummyCheckUtility();
-    const stage = new SpriteMock("_stage_", [{
+    const stage = new SpriteMock(STAGE_NAME, [{
         name: "currentCostumeName",
         value: "win",
         old: {name: "currentCostumeName", value: "lose"}
     }]);
-    const oldStage = new SpriteMock("_stage_", [{name: "currentCostumeName", value: "lose"}]);
+    const oldStage = new SpriteMock(STAGE_NAME, [{name: "currentCostumeName", value: "lose"}]);
     const apple = new SpriteMock("apple", [{name: "x", value: 2}, {name: "size", value: 10}]);
     apple.old = new SpriteMock("apple", [{name: "x", value: 42}, {name: "size", value: 20}]);
     const banana = new SpriteMock("banana");
@@ -55,7 +56,7 @@ describe('AttributeChange', () => {
     });
 
     test('Check is not a constant function', () => {
-        const c = new AttrChange('label', {negated: true, args: ["_stage_", "currentCostumeName", "=="]});
+        const c = new AttrChange('label', {negated: true, args: [STAGE_NAME, "currentCostumeName", "=="]});
         c.registerComponents(t, dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
         stage.variables = [{

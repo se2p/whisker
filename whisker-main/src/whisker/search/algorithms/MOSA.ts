@@ -106,7 +106,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (await this._stoppingCondition.isFinished(this)) {
                 break;
             }
-            population.push(this._chromosomeGenerator.get());
+            population.push(await this._chromosomeGenerator.get());
         }
         return population;
     }
@@ -135,7 +135,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this.updateStatistics();
         }
         while (!(await this._stoppingCondition.isFinished(this))) {
-            logger.debug(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
+            logger.debug(`Iteration ${this._iterations}: covered objectives:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = await this._generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
             this._nonOptimisedObjectives = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));
@@ -210,15 +210,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             let child1: C;
             let child2: C;
             if (this._random.nextDouble() < this._properties.crossoverProbability) {
-                [child1, child2] = parent1.crossover(parent2);
+                [child1, child2] = await parent1.crossover(parent2);
             } else {
                 [child1, child2] = [parent1.clone() as C, parent2.clone() as C];
             }
             if (this._random.nextDouble() < this._properties.mutationProbability) {
-                child1 = child1.mutate();
+                child1 = await child1.mutate();
             }
             if (this._random.nextDouble() < this._properties.mutationProbability) {
-                child2 = child2.mutate();
+                child2 = await child2.mutate();
             }
 
             // If no mutation/crossover was applied clone the parents
