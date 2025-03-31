@@ -139,6 +139,18 @@ export function parseAttributeError(res: SafeParseReturnType<unknown, unknown>):
     return parseUnionError(res, {1: "InvalidAttributeOrEffect"});
 }
 
+/**
+ * This method parses zod types where the top level type is a union. The assumption is that one argument of a fixed
+ * index will always provide multiple options such as ["==","!="] or ["x", "y"] and another argument at the same index
+ * may instead provide [">","<"] or ["sayText", "currentCostume"]. The types of the remaining arguments typically depend
+ * on this option. If no argument option matches the input at the index then no valid option was provided.
+ * In this case the {@linkcode defaultMap} is used because there is no other way to provide feedback on the wrong input.
+ * This map should be something of the form {1: "invalidOptionForArgument1}.
+ * If at the fixed index a valid option like "==" is used this method assumes the goal was to choose the union option
+ * where "==" is valid at the given index. Then this option is used for parsing.
+ * @param res The result of some .safeParse(...) call
+ * @param defaultMap Error map that is returned if the specific index is not valid for each option of the top level union.
+ */
 export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defaultMap: Record<number, InputErrorCodes>): ParsingResult {
     if (res.success !== false) {
         return {passed: true, data: res.data as ArgType[]};
@@ -159,7 +171,7 @@ export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defa
         error.sort((a, b) => a.issues.length - b.issues.length);
         // take option with the lowest amount of issues and display issues for this option
         error[0].issues.forEach((error) => {
-            codes[error.path[0]] = error.message;
+            codes[error.path[0]] = error.message; //path[0] contains the index issue which was caused by a faulty arg
         });
     } else {
         codes = defaultMap; // no correct value of enums was chosen -> default value
@@ -168,11 +180,16 @@ export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defa
     return {passed: false, problems: codes};
 }
 
+/**
+ * Parses the result of a safeParse call from zod. If the parsing was a success the parsed result is returned, otherwise
+ * the zod error is converted to a map of the form: "index of invalid argument" -> "error code"
+ * @param res The result of some .safeParse(...) call
+ */
 export function parseNonUnionError(res: SafeParseReturnType<unknown, unknown>): ParsingResult {
     if (res.success === false) {
         const codes = {};
         res.error.issues.forEach((error) => {
-            codes[error.path[0]] = error.message;
+            codes[error.path[0]] = error.message;  //path[0] contains the index issue which was caused by a faulty arg
         });
         return {passed: false, problems: codes};
     }
