@@ -61,6 +61,7 @@ class TestRunner extends EventEmitter {
          * @type {[]}
          */
         this.attributeTraces = [];
+        this.headless = false;
     }
 
     /**
@@ -116,6 +117,8 @@ class TestRunner extends EventEmitter {
         // repair-specific variables
         const coveragePerTest = [];
         const timingsPerTest = [];
+
+        this.headless = !!props.headless;
 
         this.emit(TestRunner.RUN_START, tests);
 

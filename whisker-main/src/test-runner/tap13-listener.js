@@ -63,6 +63,10 @@ class TAP13Listener {
      * @param {Test[]} tests .
      */
     onRunStart (tests) {
+        if (this.testRunner.headless) {
+            return;
+        }
+
         if (tests) {
             this.tests = tests;
             const lastTestIndex = tests.length;
@@ -107,6 +111,10 @@ class TAP13Listener {
      * @param {TestResult} result .
      */
     onTestDone (result) {
+        if (this.testRunner.headless) {
+            return;
+        }
+
         const success = (result.status === Test.PASS);
         const testName = result.test.name ? ` - ${result.test.name}` : '';
         const testIndex = this.tests.indexOf(result.test) + 1;
