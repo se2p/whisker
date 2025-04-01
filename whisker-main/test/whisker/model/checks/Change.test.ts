@@ -202,7 +202,7 @@ describe("newQuantifiedChange", () => {
 
 const numberLike = fc.oneof(number, number.map((n) => `${n}`));
 const notNumberLike = fc.string().filter((s) =>
-    s.trim().length > 0 && Number.isNaN(Number(s)) && !changeOps.includes(s as ChangeOp));
+    s.trim().length > 0 && Number.isNaN(Number(s)) && !changeOps.includes(s as ChangeOp) && s != "=");
 const blank = fc.stringMatching(/^\s+$/);
 
 describe("The schema validation for Change", () => {
