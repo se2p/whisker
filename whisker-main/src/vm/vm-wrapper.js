@@ -454,6 +454,7 @@ class VMWrapper {
     async resetProject(saveState) {
         if (this._useSaveStates) {
             this.loadSaveState(saveState);
+            this.vm.resetRenderer();
         } else {
             await this.resetVM();
         }
