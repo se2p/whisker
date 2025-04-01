@@ -1,15 +1,12 @@
 /* eslint-disable valid-jsdoc */
 
-const {ModelTester} = require('whisker-main');
-const {convertArgs} = require('../../../whisker-main/src/whisker/model/checks/newCheck');
-const {convertInputArgs} = require('../../../whisker-main/src/whisker/model/inputs/newUserInput');
+const {ModelTester, attributeAndEffectNames, keys, convertArgs, convertInputArgs} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
 const {argType, checkLabelCodes, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
-const {attributeAndEffectNames, keys} = require('whisker-main/src/whisker/model/checks/CheckTypes');
 
 /**
  * Model editor for building and editing models for testing in Scratch.

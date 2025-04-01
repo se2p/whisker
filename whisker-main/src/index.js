@@ -7,6 +7,9 @@ const CoverageGenerator = require('./coverage/coverage');
 const Util = require('./vm/util');
 const Search = require("./whisker/Search");
 const ModelTester = require("./whisker/model/ModelTester");
+const {keys, attributeAndEffectNames} = require("./whisker/model/checks/CheckTypes");
+const {convertArgs} = require("./whisker/model/checks/newCheck");
+const {convertInputArgs} = require("./whisker/model/inputs/newUserInput");
 
 module.exports = {
     Test,
@@ -17,5 +20,9 @@ module.exports = {
     WhiskerUtil,
     CoverageGenerator,
     Util,
-    ModelTester
+    ModelTester,
+    attributeAndEffectNames,
+    keys,
+    convertArgs,
+    convertInputArgs
 };
