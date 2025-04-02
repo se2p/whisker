@@ -698,19 +698,20 @@ class TestRunner extends EventEmitter {
             await this._determineCoverages(test, props);
 
         } else if (modelTester.someModelLoaded()) {
+            let updateResultStatus = true;
             // this code executes a User Model or executes the Models without inputs depending on the userModelIndex
             try {
                 // wait until either a maximal duration or until the model stops
                 await testDriver.runUntil(() => {
                     return !modelTester.running();
                 }, modelProps.duration);
-
-                modelTester.stopAndUpdateResultStatus(result);
             } catch (e) {
                 // probably run aborted
                 logger.error(e);
-                modelTester.stopAndUpdateResultStatus(result);
+                updateResultStatus = false;
                 result.status = Test.ERROR;
+            } finally {
+                modelTester.stopAndUpdateResultStatus(result, updateResultStatus);
             }
 
         }
