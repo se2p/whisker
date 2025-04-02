@@ -440,6 +440,7 @@ class VMWrapper {
                 layer: this.vm.runtime.targets[targetsKey].getLayerOrder()
             };
         }
+        initialState["totalStepsExecuted"] = this.getTotalStepsExecuted();
         return initialState;
     }
 
@@ -502,6 +503,7 @@ class VMWrapper {
         this.inputs.clearInputs();
         this.inputs.resetMouse();
         this.inputs.resetKeyboard();
+        this._totalStepsExecuted = saveState["totalStepsExecuted"];
     }
 
     /**
@@ -585,6 +587,7 @@ class VMWrapper {
     async resetVM() {
         await this.waitForProjectLoadFinished();
         await this.vm.loadProject(this._originalProjectJSON);
+        this._totalStepsExecuted = 0;
     }
 
     /**
