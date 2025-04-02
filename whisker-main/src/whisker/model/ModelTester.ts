@@ -349,7 +349,7 @@ export class ModelTester extends EventEmitter {
     stopAndUpdateResultStatus(result: TestResult, updateResultStatus = true): void {
         const res = this.stopAndGetModelResult();
         result.modelResult = res;
-        if (res && updateResultStatus !== false) {
+        if (res && updateResultStatus) {
             result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
         }
     }
