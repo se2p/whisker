@@ -161,7 +161,7 @@ export class ModelTester extends EventEmitter {
             this._runningUserModel = this._userModels[umIndex];
             allModels.push(this._runningUserModel);
             logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
-        } else if (umIndex === ModelTester.NO_USER_MODEL || umIndex === null || umIndex === undefined) {
+        } else if (umIndex === ModelTester.NO_USER_MODEL || umIndex === null) {
             this._runningUserModel = null;
         } else {
             throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
