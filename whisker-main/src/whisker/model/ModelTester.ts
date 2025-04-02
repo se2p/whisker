@@ -358,7 +358,7 @@ export class ModelTester extends EventEmitter {
      * Get the result of the test run as a ModelResult.
      */
     stopAndGetModelResult(): ModelResult | null {
-        if(!this.someModelLoaded()){
+        if (!this.someModelLoaded()) {
             return null;
         }
         this._isRunning = false;
