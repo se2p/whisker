@@ -22,8 +22,8 @@ import {Model} from "./components/AbstractModel";
 
 export class ModelTester extends EventEmitter {
 
-    private _testDriverNextAutomaticRun = null;
-    private _umIndexNextAutomaticRun = ModelTester.NO_USER_MODEL;
+    private _nextTestDriver = null;
+    private _nextUmIndex = ModelTester.NO_USER_MODEL;
     private _programModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
     private _runningUserModel: UserModel = null;
@@ -124,12 +124,12 @@ export class ModelTester extends EventEmitter {
         return result;
     }
 
-    set testDriverNextAutomaticRun(value: TestDriver) {
-        this._testDriverNextAutomaticRun = value;
+    set nextTestDriver(value: TestDriver) {
+        this._nextTestDriver = value;
     }
 
-    set umIndexNextAutomaticRun(value: number) {
-        this._umIndexNextAutomaticRun = value;
+    set nextUmIndex(value: number) {
+        this._nextUmIndex = value;
     }
 
     getAllModels(): ModelJSON[] {
@@ -153,7 +153,7 @@ export class ModelTester extends EventEmitter {
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
         Container.testDriver = t;
-        this._testDriverNextAutomaticRun = t;
+        this._nextTestDriver = t;
 
         const allModels: Model[] = [...this._programModels, ...this._onTestEndModels];
 
@@ -196,7 +196,7 @@ export class ModelTester extends EventEmitter {
      * Prepares the model for another run with the last selected UserModel and TestDriver.
      */
     prepareModelForNextRun(): void {
-        this.prepareModel(this._testDriverNextAutomaticRun, this._umIndexNextAutomaticRun);
+        this.prepareModel(this._nextTestDriver, this._nextUmIndex);
     }
 
     private _doOneStepOnProgramModel(model: ProgramModel | EndModel, notStoppedModels: (ProgramModel | EndModel)[]) {

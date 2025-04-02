@@ -645,8 +645,8 @@ class TestRunner extends EventEmitter {
         CoverageGenerator.clearCoveragePerAssertion();
 
         this.emit(TestRunner.TEST_START, test);
-        modelTester.testDriverNextAutomaticRun = testDriver;
-        modelTester.umIndexNextAutomaticRun = userModelIndex;
+        modelTester.nextTestDriver = testDriver;
+        modelTester.nextUmIndex = userModelIndex;
         await this.vmWrapper.start();
         modelTester.prepareModelForNextRun();
         this._setRNGSeeds(props.seed, test, vm);
