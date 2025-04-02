@@ -53,7 +53,7 @@ const TAP13Formatter = {
         const formattedSummary = {};
         for (const [projectName, summary] of Object.entries(summaryRecord)) {
             formattedSummary[projectName] = {};
-            if (summary.length > 0 && summary[0].test !== undefined) {
+            if (summary.length > 0 && summary[0].test) {
                 const tests = summary.length;
                 const passedResults = summary.filter(result => result.status === Test.PASS);
                 const pass = passedResults.length;

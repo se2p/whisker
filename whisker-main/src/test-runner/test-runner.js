@@ -291,7 +291,7 @@ class TestRunner extends EventEmitter {
         for (const uM of indices) {
             this.util = await this._loadProject(vm, project, props);
             const startTime = Date.now();
-            const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
+            const result = await this._executeTest(vm, null, modelTester, props, modelProps, 0, uM);
             result.modelResult.testNbr = Math.min(0, rep * modelTester.userModelCount + uM);
             this.emit(TestRunner.TEST_MODEL, result);
             testResults.push(result);
@@ -402,13 +402,13 @@ class TestRunner extends EventEmitter {
         let seedDateObject = false;
 
         // Prioritise seeds set using the CLI.
-        if (seed !== undefined && seed !== 'undefined' && seed !== "") {
+        if (seed && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
             seedDateObject = true;
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
-        else if (test !== undefined && "seed" in test) {
+        else if (test && "seed" in test) {
             Randomness.setInitialSeeds(test.seed);
             seedDateObject = true;
         }
@@ -427,7 +427,7 @@ class TestRunner extends EventEmitter {
      * @param {Test} test
      */
     _checkSeed(test) {
-        if (test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()) {
+        if (test && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()) {
             logger.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
