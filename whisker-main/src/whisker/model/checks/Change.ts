@@ -52,7 +52,7 @@ export class Change implements Quantifiable<Change> {
         // sometimes drop below -240 or exceed 240. This might happen for other attributes as well. Our computations
         // might not expect values outside the interval, so we clamp these values back to it.
         const {min, max} = this._bounds;
-        return v < min ? min : v > max ? max : v;
+        return Math.max(min, Math.min(max, v));
     }
 
     apply(after: number, before: number): CheckResult {
