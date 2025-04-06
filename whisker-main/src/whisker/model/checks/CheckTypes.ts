@@ -61,7 +61,7 @@ export const NumberLike = z.union([
  * Either true, false, "true" or "false"
  */
 export const BooleanLike = z.preprocess((value) => {
-        return value === "true" ? true : value === false ? false : value;
+        return value === "true" ? true : value === "false" ? false : value;
     }, z.union([
         z.string(),
         z.boolean()
