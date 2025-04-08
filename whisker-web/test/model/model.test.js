@@ -85,13 +85,13 @@ describe('Model tests on multiple events per step', () => {
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00],
         ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00],
-        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 0.8]
+        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 1.00]
     ]
 
     it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage) => {
         await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
             `test/model/model-jsons/${modelFileName}.json`);
-        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 20);
+        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
         await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 1);
         await (await page.$('#run-all-tests')).click();
         const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
