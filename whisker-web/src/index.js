@@ -331,6 +331,57 @@ const runSearch = async function () {
     return searchResult.javaScriptText;
 };
 
+const _generateResults = function (coverage, coverageModels, summary) {
+    if (typeof window.messageServantCallback !== 'function') {
+        return;
+    }
+    const coveredBlockIdsPerSprite =
+        [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+    const blockIdsPerSprite =
+        [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+
+    const modelCoverage = [];
+    if (Whisker.modelTester.programModelsLoaded()) {
+        for (const modelName in coverageModels) {
+            const content = [];
+            const elem = coverageModels[modelName];
+            content.push({key: 'covered', values: elem.covered});
+            content.push({key: 'total', values: elem.total});
+            content.push({key: 'missedEdges', values: elem.missedEdges});
+            modelCoverage.push({key: modelName, values: content});
+        }
+    }
+    const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+    const serializableModelCoverage = {modelCoverage};
+    window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
+};
+
+const _printSummaryForTestsAndModels = function (summary, coverage) {
+    const coverageModels = Whisker.modelTester.getTotalCoverage();
+
+    _generateResults(coverage, coverageModels, summary);
+
+    const formattedSummary = TAP13Formatter.formatSummary(summary);
+    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+
+    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+    let modelCoverageString = '';
+
+    // Add model coverage if we have model-based results
+    if (Object.keys(coverageModels).length > 0) {
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+        modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+    }
+
+    Whisker.outputRun.println([
+        summaryString,
+        coverageString,
+        modelCoverageString
+    ].join('\n'));
+};
+
 const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings, headless) {
 
     // Activate listener for tracing executed blocks
@@ -348,7 +399,6 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     let coverage;
     let coveragePerTest;
     let timingsPerTest;
-    let coverageModels = {};
 
     const setMutators = document.querySelector('#container').mutators;
     const mutantDownload = document.querySelector('#container').downloadMutants;
@@ -386,40 +436,14 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
 
         CoverageGenerator.prepareVM(vm);
 
-        [summary, csvResults, mutantPrograms, coveragePerTest, timingsPerTest] = await Whisker.testRunner.runTests(vm, project, tests,
-            Whisker.modelTester, props, {duration, repetitions});
+        [summary, csvResults, mutantPrograms, coveragePerTest, timingsPerTest] =
+            await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, props, {duration, repetitions});
         coverage = CoverageGenerator.getCoverage();
         Whisker.outputLog.println(csvResults);
 
         // Download generated mutants if desired.
         if (mutantDownload && mutantPrograms.length > 0){
             await downloadMutants(mutantPrograms);
-        }
-
-        if (Whisker.modelTester.programModelsLoaded()) {
-            coverageModels = Whisker.modelTester.getTotalCoverage();
-        }
-
-        if (typeof window.messageServantCallback === 'function') {
-            const coveredBlockIdsPerSprite =
-                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-            const blockIdsPerSprite =
-                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-
-            const modelCoverage = [];
-            if (Whisker.modelTester.programModelsLoaded()) {
-                for (const modelName in coverageModels) {
-                    const content = [];
-                    const elem = coverageModels[modelName];
-                    content.push({key: 'covered', values: elem.covered});
-                    content.push({key: 'total', values: elem.total});
-                    content.push({key: 'missedEdges', values: elem.missedEdges});
-                    modelCoverage.push({key: modelName, values: content});
-                }
-            }
-            const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-            const serializableModelCoverage = {modelCoverage};
-            window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
         }
     } catch (e) {
         logger.error('Error while running tests:', e instanceof Error ? e.stack : e);
@@ -435,25 +459,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
         return [coveragePerTest, timingsPerTest];
     }
 
-    const formattedSummary = TAP13Formatter.formatSummary(summary);
-    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-
-    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-
-    let modelCoverageString = '';
-
-    // Add model coverage if we have model-based results
-    if (Object.keys(coverageModels).length > 0) {
-        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-        modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
-    }
-
-    Whisker.outputRun.println([
-        summaryString,
-        coverageString,
-        modelCoverageString
-    ].join('\n'));
+    _printSummaryForTestsAndModels(summary, coverage);
 
     return [coveragePerTest, timingsPerTest];
 };

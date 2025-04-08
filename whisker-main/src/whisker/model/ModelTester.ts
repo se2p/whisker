@@ -22,6 +22,8 @@ import {Model} from "./components/AbstractModel";
 
 export class ModelTester extends EventEmitter {
 
+    private _nextTestDriver = null;
+    private _nextUmIndex = ModelTester.NO_USER_MODEL;
     private _programModels: ProgramModel[] = [];
     private _userModels: UserModel[] = [];
     private _runningUserModel: UserModel = null;
@@ -58,31 +60,6 @@ export class ModelTester extends EventEmitter {
         this._modelStepCallback = null;
         this._onTestEndCallback = null;
         this._haltAllCallback = null;
-    }
-
-    async executeModelsWithoutTest(testDriver: TestDriver, duration: number, result: TestResult,
-                                   userModelIndex: number): Promise<void> {
-        if (!this.someModelLoaded()) {
-            return;
-        }
-        this.prepareModel(testDriver, userModelIndex);
-        // Start the test run with either a maximal duration or until the model stops
-        try {
-            await testDriver.runUntil(() => {
-                return !this.running();
-            }, duration);
-
-            // TODO: Refactor coverage computation for model executions to be similar to test executions.
-            result.modelResult = this.stopAndGetModelResult();
-            result.status = result.modelResult.errors.length > 0
-                ? Test.ERROR
-                : result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
-        } catch (e) {
-            // probably run aborted
-            logger.error(e);
-            result.modelResult = this.stopAndGetModelResult();
-            result.status = Test.ERROR;
-        }
     }
 
     /**
@@ -147,6 +124,14 @@ export class ModelTester extends EventEmitter {
         return result;
     }
 
+    set nextTestDriver(value: TestDriver) {
+        this._nextTestDriver = value;
+    }
+
+    set nextUmIndex(value: number) {
+        this._nextUmIndex = value;
+    }
+
     getAllModels(): ModelJSON[] {
         return [...this._programModels, ...this._userModels, ...this._onTestEndModels].map((m) => m.toJSON());
     }
@@ -158,10 +143,17 @@ export class ModelTester extends EventEmitter {
      *                       If the index is not valid all UserModels are used.
      */
     prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
+        if (!this.someModelLoaded()) {
+            return;
+        }
+        if (!t) {
+            throw new Error("No TestDriver provided.");
+        }
         // logger.debug("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
         Container.testDriver = t;
+        this._nextTestDriver = t;
 
         const allModels: Model[] = [...this._programModels, ...this._onTestEndModels];
 
@@ -169,7 +161,7 @@ export class ModelTester extends EventEmitter {
             this._runningUserModel = this._userModels[umIndex];
             allModels.push(this._runningUserModel);
             logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
-        } else if (umIndex === ModelTester.NO_USER_MODEL) {
+        } else if (umIndex === ModelTester.NO_USER_MODEL || umIndex === null) {
             this._runningUserModel = null;
         } else {
             throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
@@ -198,6 +190,13 @@ export class ModelTester extends EventEmitter {
         }
         this._onTestEndCallback?.disable();
         this._isRunning = true;
+    }
+
+    /**
+     * Prepares the model for another run with the last selected UserModel and TestDriver.
+     */
+    prepareModelForNextRun(): void {
+        this.prepareModel(this._nextTestDriver, this._nextUmIndex);
     }
 
     private _doOneStepOnProgramModel(model: ProgramModel | EndModel, notStoppedModels: (ProgramModel | EndModel)[]) {
@@ -247,7 +246,9 @@ export class ModelTester extends EventEmitter {
             model.setTransitionsStartTo(steps);
             model.programEndStep = steps;
         });
-        this._runningUserModel.stepNbrOfProgramEnd = steps;
+        if (this._runningUserModel) {
+            this._runningUserModel.stepNbrOfProgramEnd = steps;
+        }
         this._onTestEndCallback!.enable();
     }
 
@@ -345,10 +346,21 @@ export class ModelTester extends EventEmitter {
         //     logger.debug("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
     }
 
+    stopAndUpdateResultStatus(result: TestResult, updateResultStatus = true): void {
+        const res = this.stopAndGetModelResult();
+        result.modelResult = res;
+        if (res && updateResultStatus) {
+            result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
+        }
+    }
+
     /**
      * Get the result of the test run as a ModelResult.
      */
-    stopAndGetModelResult(): ModelResult {
+    stopAndGetModelResult(): ModelResult | null {
+        if (!this.someModelLoaded()) {
+            return null;
+        }
         this._isRunning = false;
         this._checkUtility!.stop();
         this._modelStepCallback!.disable();
@@ -422,29 +434,5 @@ export class ModelTester extends EventEmitter {
         logger.error("EFFECTS CONTRADICTING", output);
         this._result!.log.push("EFFECTS CONTRADICTING" + output);
         this.emit(ModelTester.MODEL_WARNING, output);
-    }
-
-    /**
-     * Prepares the modelTester for testing if it has any models loaded.
-     * @param modelTester ModelTester with at least one model loaded.
-     * @param testDriver TestDriver for evaluating checks.
-     * @param userModelIndex Index of the UserModel to use for this run.
-     */
-    public static prepare(modelTester: ModelTester | null, testDriver: TestDriver, userModelIndex: number): void {
-        if (modelTester && modelTester.someModelLoaded()) {
-            modelTester.prepareModel(testDriver, userModelIndex);
-        }
-    }
-
-    /**
-     * Stops the ModelTester sets the {@linkcode result.modelResult} attribute if a ModelTester with some loaded model
-     * is given.
-     * @param modelTester ModelTester or null if no models are required.
-     * @param result Result to be updated with the model results.
-     */
-    public static stopModelsAndUpdateResult(modelTester: ModelTester | null, result: TestResult): void {
-        if (modelTester && modelTester.someModelLoaded()) {
-            result.modelResult = modelTester.stopAndGetModelResult();
-        }
     }
 }

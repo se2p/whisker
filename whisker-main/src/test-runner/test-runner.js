@@ -168,7 +168,7 @@ class TestRunner extends EventEmitter {
                 testResults.length = 0;
                 i++;
             }
-        } else if (modelTester && (!tests || tests.length === 0)) {
+        } else if (modelTester.someModelLoaded() && (!tests || tests.length === 0)) {
             this._initialiseFitnessTargets(vm);
             // test only by models
 
@@ -291,7 +291,7 @@ class TestRunner extends EventEmitter {
         for (const uM of indices) {
             this.util = await this._loadProject(vm, project, props);
             const startTime = Date.now();
-            const result = await this._executeTest(vm, undefined, modelTester, props, modelProps, 0, uM);
+            const result = await this._executeTest(vm, null, modelTester, props, modelProps, 0, uM);
             result.modelResult.testNbr = Math.min(0, rep * modelTester.userModelCount + uM);
             this.emit(TestRunner.TEST_MODEL, result);
             testResults.push(result);
@@ -402,13 +402,13 @@ class TestRunner extends EventEmitter {
         let seedDateObject = false;
 
         // Prioritise seeds set using the CLI.
-        if (seed !== undefined && seed !== 'undefined' && seed !== "") {
+        if (seed && seed !== 'undefined' && seed !== "") {
             Randomness.setInitialSeeds(seed);
             seedDateObject = true;
         }
 
         // Check if a seed is saved in the test and set the RNG generators to that seed if present.
-        else if (test !== undefined && "seed" in test) {
+        else if (test && "seed" in test) {
             Randomness.setInitialSeeds(test.seed);
             seedDateObject = true;
         }
@@ -427,7 +427,7 @@ class TestRunner extends EventEmitter {
      * @param {Test} test
      */
     _checkSeed(test) {
-        if (test !== undefined && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()) {
+        if (test && "seed" in test && Randomness.getInitialRNGSeed().toString() !== test.seed.toString()) {
             logger.warn(`The generation seed (${test.seed}) and the execution seed (${Randomness.getInitialRNGSeed()}) do not match. This may lead to non-deterministic behaviour!`);
         }
     }
@@ -621,7 +621,7 @@ class TestRunner extends EventEmitter {
      * @private
      */
     async _executeTest(vm, test, modelTester, props,
-                       modelProps, defaultTimeoutPerTest = 0, userModelIndex = ModelTester.NO_USER_MODEL) {
+                       modelProps, defaultTimeoutPerTest = 0, userModelIndex = null) {
         const result = new TestResult(test);
         const testDriver = this.util.getTestDriver(
             {
@@ -645,14 +645,15 @@ class TestRunner extends EventEmitter {
         CoverageGenerator.clearCoveragePerAssertion();
 
         this.emit(TestRunner.TEST_START, test);
+        modelTester.nextTestDriver = testDriver;
+        modelTester.nextUmIndex = userModelIndex;
         await this.vmWrapper.start();
+        modelTester.prepareModelForNextRun();
         this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
         if (test) {
             enableAssertionLevelBlockTracing(assertions, assumptions);
-
-            ModelTester.prepare(modelTester, testDriver);
 
             try {
                 // Use the default timeout (given as function parameter), unless the test specifies its own timeout.
@@ -692,11 +693,27 @@ class TestRunner extends EventEmitter {
                 assert.onPassedAssertion = null;
                 assume.onPassedAssumption = null;
             }
-            ModelTester.stopModelsAndUpdateResult(modelTester, result);
+            modelTester.stopAndUpdateResultStatus(result,false);
+
             await this._determineCoverages(test, props);
 
-        } else if (modelTester && modelTester.someModelLoaded()) {
-            await modelTester.executeModelsWithoutTest(testDriver, modelProps.duration, result, userModelIndex);
+        } else if (modelTester.someModelLoaded()) {
+            let updateResultStatus = true;
+            // this code executes a User Model or executes the Models without inputs depending on the userModelIndex
+            try {
+                // wait until either a maximal duration or until the model stops
+                await testDriver.runUntil(() => {
+                    return !modelTester.running();
+                }, modelProps.duration);
+            } catch (e) {
+                // probably run aborted
+                logger.error(e);
+                updateResultStatus = false;
+                result.status = Test.ERROR;
+            } finally {
+                modelTester.stopAndUpdateResultStatus(result, updateResultStatus);
+            }
+
         }
 
         result.assertions = assertions;

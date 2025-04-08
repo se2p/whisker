@@ -423,7 +423,6 @@ const subCommands = [
             (duration) => util.processPositiveInt(duration),
             30)
         .optionTestPath()
-        .option('-c, --model-case-sensitive', 'whether model test should test names case sensitive')
         .optionNumberOfJobs()
         // .optionMutators()    // TODO: Implement ModelTesting + MutationAnalysis
         .optionMutantsDownloadPath()
