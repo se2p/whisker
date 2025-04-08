@@ -17,8 +17,8 @@ describe('ModelLoader', () => {
             ["No stopNodes as attribute.", 'SimpleGraph-noterror-no-stopNodes.json', 1, 0, 0],
             ["No stopAllNodes as attribute.", 'SimpleGraph-noterror-no-stopAllNodes.json', 1, 0, 0],
             ["No graph id given.", 'SimpleGraph-noterror-no-graph-id.json', 1, 0, 0],
-            ["Loading big file with multipleModels", 'fruitcatcher-random-fruit.json', 19, 1, 1],
-            ["Loading big file with multipleModels (and new Nodes with Labels)", 'spaceshipModels.json', 1, 0, 1]
+            ["Loading big file with multipleModels", 'fruitcatcher-random-fruit.json', 19, 3, 1],
+            ["Loading big file with multipleModels (and new Nodes with Labels)", 'spaceshipModels.json', 10, 3, 1]
         ];
         it.each(table)('%s',
             (name: string, file: string, pmCount: number, umCount: number, otemCount: number) => {

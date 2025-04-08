@@ -5,12 +5,16 @@ import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckResult, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 const name = "Expr" as const;
 
 export type ExprArgs = [string, ...string[]];
 
-const ExprArgs = z.string().array().nonempty();
+const ExprArgs = z.string().array()
+    .nonempty()
+    .refine(arg => arg.some(s => s && s.length > 0, {message: "NoNonEmptyExprText"}));
 
 export interface ExprJSON extends ICheckJSON {
     name: typeof name;
@@ -66,7 +70,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         d.attrDependencies.forEach(({spriteName, attrName}) => {
             if (attrName == "x" || attrName == "y") {
                 cu.registerOnMoveEvent(spriteName, this, graphID, predicate);
-            } else if (["size", "direction", "effect", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+            } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
                 cu.registerOnVisualChange(spriteName, this, graphID, predicate);
             } else if (attrName == "sayText") {
                 cu.registerOutput(spriteName, this, graphID, predicate);
@@ -82,5 +86,9 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         // Expressions are very powerful. While it's possible for two expressions to be contradicting, it's also very
         // difficult to check it here. Thus, we assume that expressions have been crafted not to contradict each other.
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ExprArgs.safeParse(args));
     }
 }

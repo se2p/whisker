@@ -17,6 +17,14 @@ async function loadProject(scratchPath, modelPath) {
 }
 
 async function readModelErrors() {
+    const errorWhenUploadingModelStart = `MODEL: [
+      {
+        "code": "invalid_type",
+        "expected": "number",
+        "received": "string",
+        "path": [`;
+
+
     const coverageOutput = await page.$('#output-run .output-content');
     while (true) {
         const log = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
@@ -37,11 +45,13 @@ async function readModelErrors() {
             const coverageIndex = logArray.findIndex(x => x.includes("modelCoverage"));
             const coverage = logArray[coverageIndex + 1].split(": ")[1].split(" ")[0];
             return {
-                errorsInModel: errors,
-                failsInModel: fails,
-                modelCoverage: coverage,
+                errorsInModel: parseInt(errors),
+                failsInModel: parseInt(fails),
+                modelCoverage: parseFloat(coverage),
                 loggedOutput: logArray.filter(s => s !== "").join("\n")
             };
+        } else if (log.includes('"ZodError"') || log.indexOf(errorWhenUploadingModelStart) !== -1) {
+            throw new Error(`Could not parse the model. Message:\n${log}`);
         }
     }
 }
@@ -64,24 +74,27 @@ beforeEach(async () => {
 describe('Model tests on multiple events per step', () => {
 
     const table = [
-        ['color event listener', 'ColorEvent', 'ColorEvent', "0", "0", "1.00" ],
-        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', "0", "0", "1.00" ],
-        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', "0", "0", "1.00" ],
-        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', "0", "0", "1.00" ],
-        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', "0", "0", "1.00" ],
-        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', "0", "0", "1.00" ],
-        ['output event listener', 'OutputEvent', 'OutputEvent', "0", "0", "1.00" ],
-        ['variable change event listener', 'VariableEvent', 'VariableEvent', "0", "0", "1.00" ],
-        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', "0", "0", "1.00" ],
-        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', "0", "0", "1.00" ],
-        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', "0", "0", "1.00" ],
+        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00],
+        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00],
+        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00],
+        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00],
+        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00],
+        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00],
+        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00],
+        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00],
+        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00],
+        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00],
+        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00],
     ]
 
-    it.each(table)('%s', async (name, projectFileName, modelFileName ,errors, fails, coverage ) => {
+    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage) => {
         await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
             `test/model/model-jsons/${modelFileName}.json`);
         await (await page.$('#run-all-tests')).click();
         const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
+        if (errorsInModel + failsInModel > errors + fails) {
+            console.log(loggedOutput);
+        }
         expect(errorsInModel).toBe(errors);
         expect(failsInModel).toBe(fails);
         expect(modelCoverage).toBe(coverage);
@@ -96,11 +109,11 @@ describe('Model tests on multiple events per step', () => {
         const startTestButton = await page.$('#run-all-tests');
         await startTestButton.click();
         const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
-        if (parseInt(errorsInModel, 10) + parseInt(failsInModel, 10) > 0) {
+        if (errorsInModel + failsInModel > 0) {
             console.log(loggedOutput);
         }
-        expect(errorsInModel).toBe("0");
-        expect(failsInModel).toBe("0");
+        expect(errorsInModel).toBe(0);
+        expect(failsInModel).toBe(0);
         // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.8.
         expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.8);
     })

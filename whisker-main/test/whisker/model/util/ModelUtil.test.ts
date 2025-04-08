@@ -1,4 +1,7 @@
-import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
+import {
+    Dependencies,
+    ModelUtil
+} from "../../../../src/whisker/model/util/ModelUtil";
 import {
     EmptyExpressionError,
     ExpressionSyntaxError,
@@ -10,6 +13,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import Sprite from "../../../../src/vm/sprite";
 import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
+import {numberAttributeNames, stringAttributeNames} from "../../../../src/whisker/model/checks/CheckTypes";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 describe('ModelUtil tests', function () {
@@ -181,14 +185,11 @@ describe('ModelUtil tests', function () {
     });
 
     describe('checkAttributeExistence()', () => {
-        const validNames = [
-            "effects", "x", "y", "pos", "direction", "visible", "size", "currentCostume",
-            "costume", "currentCostumeName", "volume", "layerOrder", "sayText", "rotationStyle"
-        ];
-        it.each(validNames)('checkAttributeForExistence("%s")', (name) => {
+        const AttributeNames = [...stringAttributeNames, ...numberAttributeNames, "visible"];
+        it.each(AttributeNames)('checkAttributeForExistence("%s")', (name) => {
             expect(() => ModelUtil.checkAttributeExistence(null, "sprite", name)).not.toThrow();
         });
-        it.each(validNames)('checkAttributeForExistence("%s") does not throw', (name) => {
+        it.each(AttributeNames)('checkAttributeForExistence("%s") does not throw', (name) => {
             expect(() => ModelUtil.checkAttributeExistence(null, "sprite", "old." + name)).not.toThrow();
         });
         const nonValidNames = ["test", "something", "variable", "DIRECTION", "X", "Y", "Z", "z", "old.X"];

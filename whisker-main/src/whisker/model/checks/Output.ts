@@ -1,10 +1,12 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, pass, fail, result} from "./CheckResult";
+import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "Output" as const;
 
@@ -102,5 +104,9 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         }
 
         return outputThis !== outputThat; // The same sprite cannot output two different things at the same time.
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(OutputArgs.safeParse(args));
     }
 }

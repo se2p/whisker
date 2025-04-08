@@ -3,6 +3,8 @@ import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
 import {result} from "./CheckResult";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 const name = "AnyKey" as const;
 
@@ -47,5 +49,9 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(AnyKeyArgs.safeParse(args));
     }
 }

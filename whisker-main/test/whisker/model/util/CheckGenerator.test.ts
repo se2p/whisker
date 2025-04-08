@@ -22,8 +22,8 @@ import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../..
 import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../../../../src/whisker/model/checks/Time";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 
-import {ComparisonOp} from "../../../../src/whisker/model/checks/Comparison";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 describe('CheckGenerator', () => {
@@ -197,7 +197,7 @@ describe('CheckGenerator', () => {
         tdMock.stage = stage.sprite;
 
         it.each(["someInvalidComparison", "<=>", "<>", "><"])('throws for comparison %s', (cmp: ComparisonOp) => {
-            expect(() => new VarComp('label', {args: ["apple", "x", cmp, "3"]})).toThrowError();
+            expect(() => new VarComp('label', {args: ["apple", "x", cmp, 3]})).toThrowError();
         });
 
         test('VarEvent is registered on CheckUtil', () => {

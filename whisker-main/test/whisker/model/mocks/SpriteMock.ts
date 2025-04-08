@@ -49,7 +49,7 @@ export class SpriteMock {
             old: this.old == null ? null : this.old._sprite,
             sprite: this._sprite,
             _target: {sprite: this._sprite, isOriginal: this._original},
-            isStage: this.name == "_stage",
+            isStage: this.name == "_stage_",
             isTouchingMouse: () => this.touchingMouse,
             isTouchingColor: () => this.touchingColor,
             isTouchingSprite: () => this.touchingSprite,

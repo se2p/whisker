@@ -27,7 +27,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "BackgroundChange",
                         "args": [
                             "Soccer 2"

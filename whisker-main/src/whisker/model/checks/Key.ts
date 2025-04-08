@@ -3,6 +3,8 @@ import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {KeyArgument, parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 const name = "Key" as const;
 
@@ -14,7 +16,7 @@ export type KeyArgs = [
 ];
 
 const KeyArgs = z.tuple([
-    z.string(),
+    KeyArgument,
 ]);
 
 export interface KeyJSON extends ICheckJSON {
@@ -54,5 +56,9 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(KeyArgs.safeParse(args));
     }
 }

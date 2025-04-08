@@ -1,12 +1,14 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName, VariableName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
 import {z} from "zod";
-import {Change, ChangingCheck, newChange, NumberOrChangeOp} from "./Change";
+import {Change, ChangingCheck, newChange} from "./Change";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {NumberOrChangeOp, parseNonUnionError, ParsingResult, SpriteName, VariableName} from "./CheckTypes";
 
 const name = "VarChange" as const;
 
@@ -104,5 +106,9 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(VarChangeArgs.safeParse(args));
     }
 }

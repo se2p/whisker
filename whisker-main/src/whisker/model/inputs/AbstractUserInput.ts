@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
-import {SpriteName} from "../checks/AbstractCheck";
 import {UserInputJSON} from "./newUserInput";
+import {SpriteName} from "../checks/CheckTypes";
 
 export interface IUserInputJSON<N extends string, A extends (string | number | boolean | SpriteName)[]> {
     name: N;

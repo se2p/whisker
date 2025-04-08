@@ -77,8 +77,8 @@
                         "args": [
                             "Stern",
                             "visible",
-                            "=",
-                            "false"
+                            "==",
+                            false
                         ],
                         "negated": false
                     }
@@ -109,7 +109,7 @@
                         "args": [
                             "Stern",
                             "x",
-                            "="
+                            "=="
                         ],
                         "negated": false
                     },
@@ -119,7 +119,7 @@
                         "args": [
                             "Stern",
                             "y",
-                            "="
+                            "=="
                         ],
                         "negated": false
                     }

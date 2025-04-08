@@ -2,6 +2,8 @@ import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {z} from "zod";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
 
 const name = "InputText" as const;
 
@@ -32,5 +34,9 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
     override async inputImmediate(_t: TestDriver): Promise<void> {
         const textEvent = new TypeTextEvent(this._text);
         return textEvent.apply();
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(InputTextArgs.safeParse(args));
     }
 }

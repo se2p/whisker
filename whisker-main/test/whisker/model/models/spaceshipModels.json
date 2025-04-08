@@ -33,13 +33,12 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "starship touches star",
                         "name": "SpriteTouching",
+                        "negated": false,
                         "args": [
                             "Raumschiff",
                             "Stern"
-                        ],
-                        "negated": false
+                        ]
                     }
                 ],
                 "effects": []
@@ -53,13 +52,12 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "outputsDuSchaffstDas",
                         "name": "Output",
+                        "negated": false,
                         "args": [
                             "Stern",
                             "Du Schaffst Das!"
-                        ],
-                        "negated": false
+                        ]
                     }
                 ],
                 "effects": []
@@ -73,15 +71,14 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "starIsVisible",
                         "name": "AttrComp",
+                        "negated": false,
                         "args": [
                             "Stern",
                             "visible",
-                            "=",
-                            "false"
-                        ],
-                        "negated": false
+                            "==",
+                            false
+                        ]
                     }
                 ],
                 "effects": []
@@ -95,48 +92,2242 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "true",
                         "name": "Expr",
+                        "negated": false,
                         "args": [
                             "true"
-                        ],
-                        "negated": false
+                        ]
                     }
                 ],
                 "effects": [
                     {
-                        "id": "star.x_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Stern",
                             "x",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     },
                     {
-                        "id": "star.y_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Stern",
                             "y",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     }
                 ]
             }
         ]
     },
     {
-        "usage": "end",
-        "id": "end",
-        "startNodeId": "wait",
+        "usage": "program",
+        "id": "Star moves random",
+        "startNodeId": "start",
         "stopNodeIds": [
             "end"
         ],
         "stopAllNodeIds": [],
         "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> end",
+                "label": "touches spaceship",
+                "from": "start",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteTouching",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "Stern"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "start -> start",
+                "label": "moves",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Stern",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "TimeBetween",
+                        "negated": false,
+                        "args": [
+                            500
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Stern', 'x')!=$('Stern', 'old').x||$('Stern', 'y')!=$('Stern', 'old').y"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Big Black Hole",
+        "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "Bottom point",
+                "label": "Bottom point"
+            },
+            {
+                "id": "Top point",
+                "label": "Top point"
+            },
+            {
+                "id": "Moves To Bottom Point",
+                "label": "Moves To Bottom Point"
+            },
+            {
+                "id": "Moves To Top Point",
+                "label": "Moves To Top Point"
+            }
+        ],
+        "edges": [
+            {
+                "id": "starts moving",
+                "label": "starts moving",
+                "from": "start",
+                "to": "Moves To Bottom Point",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "-"
+                        ]
+                    },
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "-"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "close to bottom point",
+                "label": "close to bottom point",
+                "from": "Moves To Bottom Point",
+                "to": "Bottom point",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "<",
+                            -85
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            ">",
+                            -95
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "<",
+                            -25
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            ">",
+                            -35
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "moves to bottom point",
+                "label": "moves to bottom point",
+                "from": "Moves To Bottom Point",
+                "to": "Moves To Bottom Point",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "-"
+                        ]
+                    },
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "-"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "starts moving to top point",
+                "label": "starts moving to top point",
+                "from": "Bottom point",
+                "to": "Moves To Top Point",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "+"
+                        ]
+                    },
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "+"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "close to top point",
+                "label": "close To Top Point",
+                "from": "Moves To Top Point",
+                "to": "Top point",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "<",
+                            105
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            ">",
+                            95
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "<",
+                            15
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            ">",
+                            5
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "moves to top point",
+                "label": "moves to top point",
+                "from": "Moves To Top Point",
+                "to": "Moves To Top Point",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "+"
+                        ]
+                    },
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "+"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "starts moving to bottom point",
+                "label": "x and y decrease",
+                "from": "Top point",
+                "to": "Moves To Bottom Point",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "-"
+                        ]
+                    },
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "-"
+                        ]
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Init",
+        "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "running",
+                "label": "running"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> running",
+                "label": "init",
+                "from": "start",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "==",
+                            -200
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "==",
+                            170
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            "==",
+                            20
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "y",
+                            "==",
+                            70
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "running -> running",
+                "label": "clone count should not change",
+                "from": "running",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "NbrOfClones",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "==",
+                            1
+                        ]
+                    },
+                    {
+                        "name": "NbrOfClones",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "==",
+                            1
+                        ]
+                    },
+                    {
+                        "name": "NbrOfClones",
+                        "negated": false,
+                        "args": [
+                            "Stern",
+                            "==",
+                            1
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Winning the game",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "End reached",
+                "label": "End reached"
+            },
+            {
+                "id": "Stage changed",
+                "label": "Stage changed"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> End reached",
+                "label": "reaches end",
+                "from": "start",
+                "to": "End reached",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            214,
+                            221,
+                            209
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "End reached -> Stage changed",
+                "label": "stage changes",
+                "from": "End reached",
+                "to": "Stage changed",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Sieg"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "Stage changed -> end",
+                "label": "everything disappears",
+                "from": "Stage changed",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Stern",
+                            "visible",
+                            "==",
+                            false
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "visible",
+                            "==",
+                            false
+                        ]
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Black Hole Collision",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "End"
+        ],
+        "stopAllNodeIds": [
+            "End"
+        ],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "Collision happened",
+                "label": "Collision happened"
+            },
+            {
+                "id": "Calls for help",
+                "label": "Calls for help"
+            },
+            {
+                "id": "End",
+                "label": "End"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> Collision happened",
+                "label": "collision",
+                "from": "start",
+                "to": "Collision happened",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "Collision happened -> Calls for help",
+                "label": "help text appears",
+                "from": "Collision happened",
+                "to": "Calls for help",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Output",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "Hilfe!"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "Calls for help -> end",
+                "label": "spaceship disappears",
+                "from": "Calls for help",
+                "to": "End",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            false
+                        ]
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Spaceship moves right",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "moves correctly"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "moved once",
+                "label": "moved once"
+            },
+            {
+                "id": "moved twice",
+                "label": "moved twice"
+            },
+            {
+                "id": "moves correctly",
+                "label": "moves correctly"
+            }
+        ],
+        "edges": [
+            {
+                "id": "moves right (1)",
+                "label": "moves right (1)",
+                "from": "start",
+                "to": "moved once",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'x')<t.getMousePos().x-5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "+"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves right (2)",
+                "label": "moves right (2)",
+                "from": "moved once",
+                "to": "moved twice",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'x')<t.getMousePos().x-5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "+"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves right (3)",
+                "label": "moves right (3)",
+                "from": "moved twice",
+                "to": "moves correctly",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'x')<t.getMousePos().x-5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "+"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Spaceship moves left",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "moves correctly"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "moved once",
+                "label": "moved once"
+            },
+            {
+                "id": "moved twice",
+                "label": "moved twice"
+            },
+            {
+                "id": "moves correctly",
+                "label": "moves correctly"
+            }
+        ],
+        "edges": [
+            {
+                "id": "moves left (1)",
+                "label": "moves left (1)",
+                "from": "start",
+                "to": "moved once",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'x')>t.getMousePos().x+5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "-"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves left (2)",
+                "label": "moves left (2)",
+                "from": "moved once",
+                "to": "moved twice",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'x')>t.getMousePos().x+5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "-"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves left (3)",
+                "label": "moves left (3)",
+                "from": "moved twice",
+                "to": "moves correctly",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'x')>t.getMousePos().x+5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            "-"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Spaceship moves up",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "moves correctly"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "moved once",
+                "label": "moved once"
+            },
+            {
+                "id": "moved twice",
+                "label": "moved twice"
+            },
+            {
+                "id": "moves correctly",
+                "label": "moves correctly"
+            }
+        ],
+        "edges": [
+            {
+                "id": "moves up (1)",
+                "label": "moves up (1)",
+                "from": "start",
+                "to": "moved once",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'y')<t.getMousePos().y-5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "+"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves up (2)",
+                "label": "moves up (2)",
+                "from": "moved once",
+                "to": "moved twice",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'y')<t.getMousePos().y-5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "+"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves up (3)",
+                "label": "moves up (3)",
+                "from": "moved twice",
+                "to": "moves correctly",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'y')<t.getMousePos().y-5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "+"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "Spaceship moves down",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "moves correctly"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "moved once",
+                "label": "moved once"
+            },
+            {
+                "id": "moved twice",
+                "label": "moved twice"
+            },
+            {
+                "id": "moves correctly",
+                "label": "moves correctly"
+            }
+        ],
+        "edges": [
+            {
+                "id": "moves down (1)",
+                "label": "moves down (1)",
+                "from": "start",
+                "to": "moved once",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'y')>t.getMousePos().y+5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "-"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves down (2)",
+                "label": "moves down (2)",
+                "from": "moved once",
+                "to": "moved twice",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'y')>t.getMousePos().y+5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "-"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "moves down (3)",
+                "label": "moves down (3)",
+                "from": "moved twice",
+                "to": "moves correctly",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Raumschiff', 'y')>t.getMousePos().y+5"
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "_stage_",
+                            "currentCostumeName",
+                            "==",
+                            "Weltall"
+                        ]
+                    },
+                    {
+                        "name": "SpriteColor",
+                        "negated": true,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "visible",
+                            "==",
+                            true
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').x-$('Raumschiff', 'x'))<30"
+                        ]
+                    },
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "Math.abs($('Raumschiff', 'old').y-$('Raumschiff', 'y'))<30"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrChange",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "-"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "Crashing into big black hole",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "bottom left",
+                "label": "bottom left"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> bottom left",
+                "label": "bottom left reached",
+                "from": "start",
+                "to": "bottom left",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "<=",
+                            -140
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "start <->",
+                "label": "move down",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "-180",
+                            "-150"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "bottom left -> end",
+                "label": "collision with big black hole",
+                "from": "bottom left",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "bottom left <->",
+                "label": "move up to big black hole",
+                "from": "bottom left",
+                "to": "bottom left",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "-90",
+                            "-40"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "Crashing into small black hole",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> end",
+                "label": "collision with small black hole",
+                "from": "start",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "start <->",
+                "label": "move to small black hole",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "220",
+                            "-160"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "Winning the Game",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
+            {
+                "id": "bottom left",
+                "label": "bottom left"
+            },
+            {
+                "id": "savepoint",
+                "label": "savepoint"
+            },
+            {
+                "id": "bottom right",
+                "label": "bottom right"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "edges": [
+            {
+                "id": "start -> bottom left",
+                "label": "bottom left reached",
+                "from": "start",
+                "to": "bottom left",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            "<=",
+                            -140
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "start <->",
+                "label": "move down",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "-180",
+                            "-150"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "bottom left -> savepoint",
+                "label": "savepoint reached",
+                "from": "bottom left",
+                "to": "savepoint",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "y",
+                            ">=",
+                            50
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "bottom left <->",
+                "label": "move up to savepoint",
+                "from": "bottom left",
+                "to": "bottom left",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Großes Schwarzes Loch",
+                            "x",
+                            ">=",
+                            0
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "0",
+                            "60"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "wait at bottom left",
+                "label": "wait/escape black hole",
+                "from": "bottom left",
+                "to": "bottom left",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "-100",
+                            "-100"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "savepoint -> bottom right",
+                "label": "bottom right reached",
+                "from": "savepoint",
+                "to": "bottom right",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            "x",
+                            ">=",
+                            100
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "savepoint <->",
+                "label": "move down",
+                "from": "savepoint",
+                "to": "savepoint",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "200",
+                            "-150"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "bottom right <->",
+                "label": "move up",
+                "from": "bottom right",
+                "to": "bottom right",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputMouseMove",
+                        "args": [
+                            "220",
+                            "50"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "bottom right -> end",
+                "label": "end reached",
+                "from": "bottom right",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "negated": false,
+                        "args": [
+                            "Raumschiff",
+                            221,
+                            219,
+                            218
+                        ]
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "end",
+        "id": "end",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            },
             {
                 "id": "wait",
                 "label": "wait"
@@ -148,6 +2339,24 @@
         ],
         "edges": [
             {
+                "id": "start -> wait",
+                "label": "1s elapsed",
+                "from": "start",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "TimeAfterEnd",
+                        "negated": false,
+                        "args": [
+                            1000
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
                 "id": "stop",
                 "label": "stop",
                 "from": "wait",
@@ -156,12 +2365,11 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "2000msElapsed",
                         "name": "TimeAfterEnd",
+                        "negated": false,
                         "args": [
-                            "2000"
-                        ],
-                        "negated": false
+                            2000
+                        ]
                     }
                 ],
                 "effects": []
@@ -175,74 +2383,67 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "true",
                         "name": "Expr",
+                        "negated": false,
                         "args": [
                             "true"
-                        ],
-                        "negated": false
+                        ]
                     }
                 ],
                 "effects": [
                     {
-                        "id": "spaceship.x_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Raumschiff",
                             "x",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     },
                     {
-                        "id": "spaceship.y_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Raumschiff",
                             "y",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     },
                     {
-                        "id": "star.x_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Stern",
                             "x",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     },
                     {
-                        "id": "star.y_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Stern",
                             "y",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     },
                     {
-                        "id": "blackHole.x_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Großes Schwarzes Loch",
                             "x",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     },
                     {
-                        "id": "blackHole.y_DoesNotChange",
                         "name": "AttrChange",
+                        "negated": false,
                         "args": [
                             "Großes Schwarzes Loch",
                             "y",
-                            "="
-                        ],
-                        "negated": false
+                            "=="
+                        ]
                     }
                 ]
             }

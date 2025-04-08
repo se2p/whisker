@@ -3,6 +3,8 @@ import TestDriver from "../../../test/test-driver";
 import {ModelUtil} from "../util/ModelUtil";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {z} from "zod";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
 
 const name = "InputMouseMove" as const;
 
@@ -42,5 +44,9 @@ export class MouseMove extends AbstractUserInput<MouseMoveJSON> {
         const yFunc = ModelUtil.getNumberFunction(this._y, t);
         const mouseEvent = new MouseMoveEvent(xFunc(), yFunc());
         return mouseEvent.apply();
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(MouseMoveArgs.safeParse(args));
     }
 }

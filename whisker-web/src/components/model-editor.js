@@ -1,11 +1,11 @@
 /* eslint-disable valid-jsdoc */
 
-const {ModelTester} = require('whisker-main');
+const {ModelTester, attributeAndEffectNames, keys, convertArgs, convertInputArgs} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
 const {i18n} = require('../index');
-const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
+const {argType, checkLabelCodes, placeholders, inputLabelCodes} = require('./model-editor-labelCodes');
 const logger = require('../logger');
 
 /**
@@ -78,7 +78,7 @@ class ModelEditor {
 
     // checking arguments
     static NOT_EMPTY_PATTERN = /^\S+$/g;
-    static CHANGE_PATTERN = /^(-=|\+=|=|[+-]|([+-]?)([0-9]+\.)?[0-9]+)$/g;
+    static CHANGE_PATTERN = /^(-=|\+=|==|[+-]|!=|([+-]?)([0-9]+\.)?[0-9]+)$/g;
     static TIME_PATTERN = /^([0-9]+)$/g;
     static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
     static RGB_PATTERN = /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/g;
@@ -204,8 +204,8 @@ class ModelEditor {
         this.models.push({
             id: id,
             usage: 'program',
-            startNodeId: '0',
-            nodes: [{id: '0', label: 'start'}],
+            startNodeId: 'start',
+            nodes: [{id: 'start', label: 'start'}],
             stopNodeIds: [],
             stopAllNodeIds: [],
             edges: []
@@ -251,84 +251,51 @@ class ModelEditor {
 
     /** For the currently selected edge by the network save the check in the check div. */
     saveCheck () {
-        const type = $(ModelEditor.CHECK_CHOOSER).val();
+        const name = $(ModelEditor.CHECK_CHOOSER).val();
+        const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
         let args = [];
-        if (type === 'Expr'){
-            args = $(`#${ModelEditor.INPUT_ID}${0}`).val()
-                .trim()
-                .split('\n');
-        } else {
-            const argNumber = checkLabelCodes[type] ?? inputLabelCodes[type];
-
-            let valid = true;
-            for (let i = 0; i < argNumber.length; i++) {
-                const element = $(`#${ModelEditor.INPUT_ID}${i}`);
-                args[i] = element.val();
-                valid = this.checkValidCheckArgument(argNumber[i], args[i]);
-                if (argNumber[i] === argType.probValue) {
-                    args[i] = args[i] / 100;
-                }
-                if (!valid) {
-                    element.addClass(ModelEditor.INVALID_INPUT_CLASS);
-                }
-            }
-
-            // if any arg is empty string or invalid stop and mark it
-            if (!valid) {
-                return false;
-            }
+        const argNumber = checkLabelCodes[name] ?? inputLabelCodes[name];
+        for (let i = 0; i < argNumber.length; i++) {
+            args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
         }
+        const result = this.currentModel.usage === 'user' ?
+            convertInputArgs({name: name, args: args}) :
+            convertArgs({name: name, negated: negated, args: args});
+        const valid = result.passed;
+        if (!valid) {
+            for (let index = 0; index < argNumber.length; index++) {
+                const element = $(`#${ModelEditor.INPUT_ID}${index}`);
+                const code = result.problems[index];
+
+                if (code === undefined) {
+                    element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
+                    element.removeAttr("title");
+                } else {
+                    element.addClass(ModelEditor.INVALID_INPUT_CLASS);
+                    element.attr('title', i18n.t(`modelEditor:${code}`));
+                }
+            }
+            return false;
+        }
+
+        args = result.data;
 
 
         // get the list that check gets added to
         const edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
-        let chosenCheckList;
-        if (this.chosenList === 'condition') {
-            chosenCheckList = edge.conditions;
-        } else {
-            chosenCheckList = edge.effects;
-        }
-
-        const negated = $(ModelEditor.CHECK_NEGATED).prop('checked');
-        const name = $(ModelEditor.CHECK_CHOOSER).val();
+        const chosenCheckList = this.chosenList === 'condition' ? edge.conditions : edge.effects;
         if (this.checkIndex === -1) {
-            chosenCheckList.push({args, negated, name});
+            chosenCheckList.push({name: name, negated: negated, args: args});
         } else {
-            chosenCheckList[this.checkIndex].args = args;
-            chosenCheckList[this.checkIndex].negated = negated;
             chosenCheckList[this.checkIndex].name = name;
+            chosenCheckList[this.checkIndex].negated = negated;
+            chosenCheckList[this.checkIndex].args = args;
         }
         this.checkIndex = -1;
         this.chosenList = null;
         return true;
     }
 
-    checkValidCheckArgument (type, value) {
-        switch (type) {
-        case argType.change:
-            return value.match(ModelEditor.CHANGE_PATTERN);
-        case argType.probValue:
-            return value.match(ModelEditor.PROB_PATTERN);
-        case argType.time:
-            return value.match(ModelEditor.TIME_PATTERN);
-        case argType.r:
-        case argType.g:
-        case argType.b:
-            return value.match(ModelEditor.RGB_PATTERN);
-        case argType.coordX:
-        case argType.coordY:
-        case argType.spriteNameRegex:
-        case argType.varNameRegex:
-        case argType.attrName:
-        case argType.costumeName:
-        case argType.value:
-            return value.trim().length > 0;
-        case argType.expr:
-            return true; // expressions are used for output checks which can have value "" (sprite.sayText)
-        default:
-            return true;
-        }
-    }
 
     getEdgeById (edgeID) {
         return this.currentModel.edges.find(e => e.id === edgeID);
@@ -1222,17 +1189,16 @@ class ModelEditor {
 
     appendInputBasedOnType (type, value, i) {
         switch (type) {
-        case argType.spriteNameRegex:
+        case argType.spriteName:
             this.appendInputWithPattern('modelEditor:spriteName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, '(Regex)');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, i18n.t('modelEditor:spriteName'));
             break;
-        case argType.varNameRegex:
+        case argType.varName:
             this.appendInputWithPattern('modelEditor:varName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, '(Regex)');
+                ModelEditor.NOT_EMPTY_PATTERN, i, null, null, i18n.t('modelEditor:spriteName'));
             break;
         case argType.attrName:
-            this.appendInputWithPattern('modelEditor:attrName', value,
-                ModelEditor.NOT_EMPTY_PATTERN, i);
+            this.appendAttributeNames(value, i);
             break;
         case argType.costumeName:
             this.appendInputWithPattern('modelEditor:costumeName', value,
@@ -1357,12 +1323,13 @@ class ModelEditor {
             .append(
                 $('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(
                     $('<select/>', {name: `selectChange${idNbr}`, id: id})
-                        .append($('<option/>', {value: '='}).text('=='))
+                        .append($('<option/>', {value: '=='}).text('=='))
+                        .append($('<option/>', {value: '!='}).text('!='))
                         .append($('<option/>', {value: '>'}).text('>'))
                         .append($('<option/>', {value: '<'}).text('<'))
                         .append($('<option/>', {value: '>='}).text('>='))
                         .append($('<option/>', {value: '<='}).text('<='))
-                        .val(value)
+                        .val('==')
                 )
             ));
     }
@@ -1380,6 +1347,24 @@ class ModelEditor {
         )
             .append($('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(select)));
         select.val(value);
+    }
+
+    appendAttributeNames (value, idNbr) {
+        const id = ModelEditor.INPUT_ID + idNbr;
+        const select = $('<select/>', {name: `selectAttrName${idNbr}`, id: id});
+        for (let i = 0; i < attributeAndEffectNames.length; i++) {
+            // const attribute = `modelEditor:${attributeAndEffectNames[i]}`;
+            // TODO should attributes be translated? probably not
+            // select.append($('<option/>', {'value': attributeAndEffectNames[i],
+            // 'data-i18n': attribute}).text(i18n.t(attribute)));
+            select.append($('<option/>', {value: attributeAndEffectNames[i]}).text(attributeAndEffectNames[i]));
+        }
+        $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
+            $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:attrName'})
+                .text(i18n.t('modelEditor:attrName')))
+        )
+            .append($('<div/>', {class: 'col mt-1', style: 'float:left;'}).append(select)));
+        select.val(attributeAndEffectNames[0]);
     }
 
     appendBool (value, idNbr) {

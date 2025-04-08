@@ -1,10 +1,12 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {any, pass, fail} from "./CheckResult";
+import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "Click" as const;
 
@@ -79,5 +81,9 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClickArgs.safeParse(args));
     }
 }

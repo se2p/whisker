@@ -27,24 +27,22 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "SpriteColor",
                         "args": [
                             "Sprite1",
-                            "255",
-                            "0",
-                            "0"
+                            255,
+                            0,
+                            0
                         ],
                         "negated": false
                     },
                     {
-                        "id": "1",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "visible",
-                            "=",
-                            "true"
+                            "==",
+                            true
                         ],
                         "negated": false
                     }

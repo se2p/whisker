@@ -35,7 +35,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Output",
                         "args": [
                             "Sprite1",
@@ -55,7 +54,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Output",
                         "args": [
                             "Sprite1",
@@ -75,7 +73,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Output",
                         "args": [
                             "Sprite1",
@@ -124,12 +121,11 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "sayText",
-                            "=",
+                            "==",
                             "Hello!"
                         ],
                         "negated": false
@@ -146,12 +142,11 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "sayText",
-                            "=",
+                            "==",
                             "Hello!"
                         ],
                         "negated": true
@@ -168,12 +163,11 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "sayText",
-                            "=",
+                            "==",
                             "Hello!"
                         ],
                         "negated": false
@@ -219,7 +213,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Expr",
                         "args": [
                             "$('Sprite1', 'sayText') == 'Hello!'"
@@ -238,7 +231,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Expr",
                         "args": [
                             "$('Sprite1', 'sayText') == 'Hello!'"
@@ -257,7 +249,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Expr",
                         "args": [
                             "$('Sprite1', 'sayText') == 'Hello!'"

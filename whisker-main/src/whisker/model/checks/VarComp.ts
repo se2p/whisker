@@ -1,41 +1,32 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName, VariableName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {
+    ComparisonOp,
+    EqOrNeq,
+    eqOrNeqOPs,
+    NumberLike,
+    parseUnionError,
+    ParsingResult,
+    SpriteName,
+    VariableName
+} from "./CheckTypes";
 
 const name = "VarComp" as const;
 
-export type VarCompArgs = [
-    /**
-     * The name of the sprite whose variable is being evaluated
-     */
-    spriteName: SpriteName,
+export type VarCompArgs =
+    [spriteName: SpriteName, varName: VariableName, comparisonOp: EqOrNeq, varValue: string | number]
+    | [spriteName: SpriteName, varName: VariableName, comparisonOp: ComparisonOp, varValue: number];
 
-    /**
-     * The name of the variable.
-     */
-    varName: VariableName,
-
-    /**
-     * Mode of comparison, e.g. =, <, >, <=, >=
-     */
-    comparisonOp: ComparisonOp,
-
-    /**
-     * Value to compare to the variable's current value.
-     */
-    varValue: string | number,
-];
-
-const VarCompArgs = z.tuple([
-    SpriteName,
-    VariableName,
-    ComparisonOp,
-    z.string().or(z.number()),
+const VarCompArgs = z.union([
+    z.tuple([SpriteName, VariableName, z.enum(eqOrNeqOPs, {message: "InvalidComparison"}), z.string().or(z.number())]),
+    z.tuple([SpriteName, VariableName, ComparisonOp, NumberLike], {message: "InvalidVarCompArgs"}),
 ]);
 
 export interface VarCompJSON extends ICheckJSON {
@@ -111,5 +102,9 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"});
     }
 }

@@ -2,7 +2,7 @@ import {TestDriverMock} from "../mocks/TestDriverMock";
 import {SpriteMock} from "../mocks/SpriteMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {PointsTo} from "../../../../src/whisker/model/checks/PointsTo";
-import {pass,fail} from "../../../../src/whisker/model/checks/CheckResult";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 
 describe('PointsToTest', () => {

@@ -1,10 +1,12 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
-import {any, pass, fail, result} from "./CheckResult";
+import {any, result} from "./CheckResult";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "Layer" as const;
 
@@ -24,7 +26,7 @@ export type LayerArgs = [
 
 const LayerArgs = z.tuple([
     SpriteName,
-    z.literal("First").or(z.literal("Last")),
+    z.union([z.literal("First"), z.literal("Last")], {errorMap: () => ({message: "NeitherFirstNorLast"})})
 ]);
 
 export interface LayerJSON extends ICheckJSON {
@@ -72,5 +74,9 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
 
     get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(LayerArgs.safeParse(args));
     }
 }

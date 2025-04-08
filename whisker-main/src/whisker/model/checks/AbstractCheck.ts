@@ -9,25 +9,6 @@ import {CheckResult, fail} from "./CheckResult";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
-export type SpriteName =
-    | string
-    | [string, ...string[]]
-    ;
-
-export type VariableName = SpriteName;
-
-export const SpriteName = z.union([
-    z.string(),
-    z.string().array().nonempty()
-]);
-
-export const VariableName = SpriteName;
-
-export const AttrName = z.preprocess(
-    (attrName) => attrName === "costume" || attrName === "currentCostume" ? "currentCostumeName" : attrName,
-    z.string()
-);
-
 export interface ICheckJSON {
     name: string;
     negated: boolean;

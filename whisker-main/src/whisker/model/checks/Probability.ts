@@ -5,6 +5,8 @@ import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult, ProbabilityArg} from "./CheckTypes";
 
 const name = "Probability" as const;
 
@@ -17,7 +19,7 @@ export type ProbabilityArgs = [
 ];
 
 const ProbabilityArgs = z.tuple([
-    z.coerce.number().min(0).max(1),
+    ProbabilityArg
 ]);
 
 export interface ProbabilityJSON extends ICheckJSON {
@@ -62,5 +64,9 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ProbabilityArgs.safeParse(args));
     }
 }

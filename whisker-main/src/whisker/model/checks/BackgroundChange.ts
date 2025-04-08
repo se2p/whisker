@@ -1,9 +1,11 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import {ErrorForAttribute} from "../util/ModelError";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {ComparisonOp, NonEmptyString, parseNonUnionError, ParsingResult} from "./CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
 
 const name = "BackgroundChange" as const;
@@ -16,7 +18,7 @@ export type BackgroundChangeArgs = [
 ];
 
 const BackgroundChangeArgs = z.tuple([
-    z.string(),
+    NonEmptyString,
 ]);
 
 export interface BackgroundChangeJSON extends ICheckJSON {
@@ -73,5 +75,9 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(BackgroundChangeArgs.safeParse(args));
     }
 }

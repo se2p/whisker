@@ -1,11 +1,13 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ComparingCheck, Comparison, ComparisonOp, newComparison} from "./Comparison";
+import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import {Optional} from "../../utils/Optional";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {ComparisonOp, NonNegativeNumber, parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 export type NbrOfClonesArgs = [
     /**
@@ -27,7 +29,7 @@ export type NbrOfClonesArgs = [
 const NbrOfClonesArgs = z.tuple([
     SpriteName,
     ComparisonOp,
-    z.coerce.number().nonnegative(),
+    NonNegativeNumber,
 ]);
 
 type TNbrOfClonesJSON =
@@ -90,6 +92,10 @@ abstract class AbstractNbrOfClones<
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(NbrOfClonesArgs.safeParse(args));
     }
 }
 

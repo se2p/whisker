@@ -6,6 +6,8 @@ import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {NonNegativeNumber, parseNonUnionError, ParsingResult} from "./CheckTypes";
 
 export type TimeArgs = [
 
@@ -16,7 +18,7 @@ export type TimeArgs = [
 ];
 
 const TimeArgs = z.tuple([
-    z.coerce.number().nonnegative(),
+    NonNegativeNumber,
 ]);
 
 interface ITimeJSON extends ICheckJSON {
@@ -56,6 +58,10 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(TimeArgs.safeParse(args));
     }
 }
 

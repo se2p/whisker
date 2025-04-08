@@ -6,6 +6,7 @@ import {MouseDown, MouseDownJSON} from "./MouseDown";
 import {MouseMove, MouseMoveJSON} from "./MouseMove";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
 import {z} from "zod";
+import {ParsingResult} from "../checks/CheckTypes";
 
 export type UserInput =
     | ClickSprite
@@ -49,6 +50,26 @@ export function newUserInput(inputJSON: UserInputJSON): UserInput {
             return new MouseDown(...inputJSON.args);
         case "InputMouseMove":
             return new MouseMove(...inputJSON.args);
+        default:
+            throw new NonExhaustiveCaseDistinction(name);
+    }
+}
+
+export function convertInputArgs(inputJSON: UserInputJSON): ParsingResult {
+    const name = inputJSON.name;
+    switch (name) {
+        case "InputClickSprite":
+            return ClickSprite.convertArgs(inputJSON.args);
+        case "InputClickStage":
+            return ClickStage.convertArgs(inputJSON.args);
+        case "InputKey":
+            return InputKey.convertArgs(inputJSON.args);
+        case "InputText":
+            return InputKey.convertArgs(inputJSON.args);
+        case "InputMouseDown":
+            return MouseDown.convertArgs(inputJSON.args);
+        case "InputMouseMove":
+            return MouseMove.convertArgs(inputJSON.args);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

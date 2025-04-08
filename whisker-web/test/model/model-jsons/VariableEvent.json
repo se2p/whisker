@@ -31,7 +31,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "VarChange",
                         "args": [
                             "Sprite1",
@@ -52,7 +51,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "VarChange",
                         "args": [
                             "Sprite1",

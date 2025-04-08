@@ -1,10 +1,12 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "PointsTo" as const;
 
@@ -52,16 +54,29 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
         if (this._args[1] != "_mouse_") {
             ModelUtil.checkSpriteExistence(t, this._args[1]).name;
         }
+
+        const check = (s: Sprite) => {
+            let expectedDirection: number, hasCorrectDirection: boolean;
+            if (this._args[1] == "_mouse_") {
+                expectedDirection = ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(s, t);
+                hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
+            } else {
+                const target = t.getSprite(this._args[1]);
+                expectedDirection = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, target);
+                hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
+                if (!hasCorrectDirection) {
+                    // maybe the sprite just moved so it did point to the sprite
+                    const dirOld = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, target.old);
+                    hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, dirOld);
+                }
+            }
+            return result(hasCorrectDirection, {actual: s.direction, expected: expectedDirection});
+        };
+
+        cu.registerOnVisualChange(spriteNameRotate, this, graphID, check);
+
         return () => {
-            const rotatingSprite: Sprite = t.getSprite(spriteNameRotate);
-            const expectedDirection = this._args[1] == "_mouse_"
-                ? ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(rotatingSprite, t)
-                : ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(rotatingSprite, t.getSprite(this._args[1]));
-            const sprites = rotatingSprite.getClones(true);
-            const check = (s: Sprite) => result(
-                ModelUtil.checkDirectionWithinDelta(s, expectedDirection),
-                {actual: s.direction, expected: expectedDirection}
-            );
+            const sprites = t.getSprite(spriteNameRotate).getClones(true);
             return any(check, this.negated, sprites);
         };
     }
@@ -76,5 +91,9 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
 
     get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(PointsToArgs.safeParse(args));
     }
 }

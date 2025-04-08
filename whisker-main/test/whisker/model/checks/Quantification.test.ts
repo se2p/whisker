@@ -60,7 +60,10 @@ function newQuantifiable({apply = null, contradicts = null} = {}) {
  * Generators for random predicates, existential quantifiers, and universal quantifiers.
  */
 const pred = fc.func(fc.boolean().map((b) => b ? pass() : fail({})));
-const exist = fc.tuple(pred, pred).map(([apply, contradicts]) => new Existential(newQuantifiable({apply, contradicts})));
+const exist = fc.tuple(pred, pred).map(([apply, contradicts]) => new Existential(newQuantifiable({
+    apply,
+    contradicts
+})));
 const univ = fc.tuple(pred, pred).map(([apply, contradicts]) => new Universal(newQuantifiable({apply, contradicts})));
 const quant = fc.oneof(exist, univ);
 

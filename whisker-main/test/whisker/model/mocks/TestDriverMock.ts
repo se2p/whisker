@@ -3,7 +3,7 @@ import TestDriver from "../../../../src/test/test-driver";
 import {SpriteMock} from "./SpriteMock";
 
 export class TestDriverMock {
-    public currentSprites: Sprite[];
+    public _currentSprites: Sprite[];
     public stage: Sprite;
     public isMouseDown: boolean;
     public totalStepsExecuted = 0;
@@ -14,9 +14,8 @@ export class TestDriverMock {
     public clickStage: () => void;
     public clickSprite: (name: string, steps: number) => void;
 
-    constructor(currentSprites: SpriteMock[] = [], steps = 0, stage: Sprite = null, isMouseDown = true) {
+    constructor(currentSprites: SpriteMock[] = [], steps = 0, isMouseDown = true) {
         this.currentSprites = SpriteMock.toSpriteArray(currentSprites);
-        this.stage = stage;
         this.isMouseDown = isMouseDown;
         this.totalStepsExecuted = steps;
     }
@@ -37,6 +36,15 @@ export class TestDriverMock {
             clickSprite: (name: string, steps: number) => this.clickSprite(name, steps),
             getMousePos: () => this.mousePos
         } as unknown as TestDriver;
+    }
+
+    set currentSprites(value: Sprite[]) {
+        this._currentSprites = value;
+        this.stage = this._currentSprites.filter(s => s.isStage)[0];
+    }
+
+    get currentSprites(): Sprite[] {
+        return this._currentSprites;
     }
 }
 

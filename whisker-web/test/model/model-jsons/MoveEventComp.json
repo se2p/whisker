@@ -31,10 +31,9 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "TimeElapsed",
                         "args": [
-                            "5000"
+                            5000
                         ],
                         "negated": false
                     }
@@ -50,13 +49,12 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "y",
-                            "=",
-                            "-10"
+                            "==",
+                            -10
                         ],
                         "negated": false
                     }
@@ -72,13 +70,12 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "y",
-                            "=",
-                            "0"
+                            "==",
+                            0
                         ],
                         "negated": false
                     }

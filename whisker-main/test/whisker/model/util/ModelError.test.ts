@@ -32,7 +32,7 @@ describe('ModelError', () => {
     test("getEffectFailedOutput() with TimeBetween", () => {
         const edge = getEdge();
         edge.addCondition(new TimeBetween("label", {negated: true, args: [123]}));
-        const effect = new AttrComp("label", {args: ["Apple", "x", ">", "0"]});
+        const effect = new AttrComp("label", {args: ["Apple", "x", ">", 0]});
         const expected = 'graphID-label: AttrComp(Apple,x,>,0) after 123ms {"message":"check failed"}';
         expect(getEffectFailedOutput(edge, effect, reason)).toEqual(expected);
     });
@@ -62,7 +62,7 @@ describe('ModelError', () => {
 
     test("getTimeLimitFailedAtOutput()", () => {
         const condition = new Click("label", {args: ["Bowl"]});
-        expect(getTimeLimitFailedAtOutput(getEdge(), condition, 42,reason)).toEqual('graphID-label: Click(Bowl) at 42ms {"message":"check failed"}');
+        expect(getTimeLimitFailedAtOutput(getEdge(), condition, 42, reason)).toEqual('graphID-label: Click(Bowl) at 42ms {"message":"check failed"}');
     });
 
     test("getErrorOnEdgeOutput()", () => {

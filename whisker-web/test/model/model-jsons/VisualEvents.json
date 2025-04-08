@@ -59,7 +59,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Output",
                         "args": [
                             "Sprite1",
@@ -79,7 +78,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "Output",
                         "args": [
                             "Sprite1",
@@ -99,12 +97,11 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
-                            "costume",
-                            "=",
+                            "currentCostumeName",
+                            "==",
                             "costume2"
                         ],
                         "negated": false
@@ -121,7 +118,6 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrChange",
                         "args": [
                             "Sprite1",
@@ -142,13 +138,12 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "visible",
-                            "=",
-                            "false"
+                            "==",
+                            false
                         ],
                         "negated": false
                     }
@@ -164,13 +159,12 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "visible",
-                            "=",
-                            "true"
+                            "==",
+                            true
                         ],
                         "negated": false
                     }
@@ -186,12 +180,11 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "rotationStyle",
-                            "=",
+                            "==",
                             "all around"
                         ],
                         "negated": false
@@ -208,13 +201,12 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "direction",
-                            "=",
-                            "-90"
+                            "==",
+                            -90
                         ],
                         "negated": false
                     }
@@ -230,12 +222,11 @@
                 "forceTestAt": -1,
                 "conditions": [
                     {
-                        "id": "0",
                         "name": "AttrComp",
                         "args": [
                             "Sprite1",
                             "rotationStyle",
-                            "=",
+                            "==",
                             "left-right"
                         ],
                         "negated": false

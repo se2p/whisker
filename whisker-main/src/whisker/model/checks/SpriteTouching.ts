@@ -1,10 +1,12 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, pass, fail, result} from "./CheckResult";
+import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "SpriteTouching" as const;
 
@@ -68,8 +70,9 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         return () => {
             const touchingCheck = (s: Sprite) => {
                 if (!s.visible) {
-                    return fail({message: `Expected sprite "${s}" to be visible`
-                });
+                    return fail({
+                        message: `Expected sprite "${s}" to be visible`
+                    });
                 }
 
                 if (!s.isTouchingSprite(spriteName2)) {
@@ -90,5 +93,9 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(SpriteTouchingArgs.safeParse(args));
     }
 }

@@ -11,6 +11,7 @@ import {
 } from "./ModelError";
 import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
+import {attributeNames, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
 
 export interface Dependencies {
@@ -21,8 +22,6 @@ export interface Dependencies {
 export interface Expression extends Dependencies {
     expr: string
 }
-
-export type ParamType = string | number | boolean | string[];
 
 export abstract class ModelUtil {
 
@@ -35,7 +34,7 @@ export abstract class ModelUtil {
         if (pSpriteName == STAGE_NAME) {
             return testDriver.getStage();
         }
-        return this.checkSpriteExistence(testDriver, pSpriteName);
+        return ModelUtil.checkSpriteExistence(testDriver, pSpriteName);
     }
 
     /**
@@ -100,7 +99,7 @@ export abstract class ModelUtil {
      */
     static checkAttributeExistence(testDriver: TestDriver, spriteName: string, pAttrName: ArgType): void {
         const attrName = String(pAttrName);
-        if (!this._isAnAttribute(attrName)) {
+        if (!ModelUtil._isAnAttribute(attrName)) {
             throw new AttributeNotFoundError(spriteName, attrName);
         }
     }
@@ -108,8 +107,8 @@ export abstract class ModelUtil {
     /**
      * Test whether a value is a number.
      */
-    static testNumber(value: ParamType): number {
-        const result = this.returnNumberIfPossible(value);
+    static testNumber(value: ArgType): number {
+        const result = ModelUtil.returnNumberIfPossible(value);
         if (result == null) {
             throw new NotANumericalValueError(String(value));
         }
@@ -122,7 +121,7 @@ export abstract class ModelUtil {
      * @param defaultValue This value is returned when {@linkcode value} is not a number
      * @return The input converted to a number
      */
-    public static returnNumberIfPossible(value: ParamType, defaultValue: number | null = null): number | null {
+    public static returnNumberIfPossible(value: ArgType, defaultValue: number | null = null): number | null {
         if (value == null || value === '' || isNaN(Number(value))) {
             return defaultValue;
         }
@@ -130,28 +129,13 @@ export abstract class ModelUtil {
     }
 
     private static _isAnAttribute(attrName: string): boolean {
-        return this._testAttributeName(attrName) ||
-            (attrName.startsWith('old.') && this._testAttributeName(attrName.substring(4)));
+        return ModelUtil.isAnAttribute(attrName) ||
+            (attrName.startsWith('old.') && ModelUtil.isAnAttribute(attrName.substring(4)));
     }
 
-    private static _testAttributeName(attrName: string): boolean {
+    public static isAnAttribute(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
-        return [
-            "effects",
-            "x",
-            "y",
-            "pos",
-            "direction",
-            "visible",
-            "size",
-            "currentCostume",
-            "costume",
-            "currentCostumeName",
-            "volume",
-            "layerOrder",
-            "sayText",
-            "rotationStyle",
-        ].includes(attrName);
+        return (attributeNames as readonly string[]).includes(attrName);
     }
 
     /**
@@ -159,16 +143,8 @@ export abstract class ModelUtil {
      * @param effectName The name of the effect
      * @return true if {@linkcode effectName} is a valid name for an effect
      * */
-    public static isAnEffect(effectName: string): boolean {
-        return [
-            "color",
-            "fisheye",
-            "whirl",
-            "pixelate",
-            "mosaic",
-            "brightness",
-            "ghost",
-        ].includes(effectName);
+    public static isAnEffect(effectName: ArgType): boolean {
+        return (effectNames as readonly ArgType[]).includes(effectName);
     }
 
     /**
@@ -249,7 +225,7 @@ export abstract class ModelUtil {
         const toEval = String(pToEval);
         const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
         const $ = (s: string, a: string, c: boolean) =>
-            this.getValueForSubExpression(t, s, a, c, dependencies);
+            ModelUtil.getValueForSubExpression(t, s, a, c, dependencies);
         try {
             // fill dependencies and check if the expression works
             eval(`($) => ${toEval}`)($);
@@ -302,13 +278,13 @@ export abstract class ModelUtil {
         } else {
             variable = sprite[attribute];
             if (!variable) {
-                if (this._isAnAttribute(attribute)) {
+                if (ModelUtil._isAnAttribute(attribute)) {
                     // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
                     variable = t.getSprite(spriteName)[attribute];
                 } else {
                     try {
                         // maybe custom flag was not specified by accident -> try custom variables
-                        return this.getValueForSubExpression(t, spriteName, attribute, true, dependencies);
+                        return ModelUtil.getValueForSubExpression(t, spriteName, attribute, true, dependencies, log);
                     } catch (e) {
                         throw new AttributeNotFoundError(spriteName, attribute);
                     }
@@ -326,7 +302,7 @@ export abstract class ModelUtil {
 
     public static evaluateExpression(t: TestDriver, expression: string, log: Record<string, string> = {}): unknown {
         const $ = (spriteName: string, attribute: string, custom: boolean) =>
-            this.getValueForSubExpression(t, spriteName, attribute, custom, undefined, log);
+            ModelUtil.getValueForSubExpression(t, spriteName, attribute, custom, undefined, log);
         return eval(expression)(t, $);
     }
 
@@ -457,7 +433,7 @@ export abstract class ModelUtil {
     }
 
     static getNumberFunction(text: ArgType, t: TestDriver): () => number {
-        const asNumber = this.returnNumberIfPossible(text);
+        const asNumber = ModelUtil.returnNumberIfPossible(text);
         if (asNumber == null) {
             const func = ModelUtil.getExpressionForEval(t, text).expr;
             return () => ModelUtil.testNumber(Number(ModelUtil.evaluateExpression(t, func)));

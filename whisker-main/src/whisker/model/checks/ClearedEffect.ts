@@ -1,10 +1,12 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON, SpriteName} from "./AbstractCheck";
+import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
-import {any, fail, pass, result} from "./CheckResult";
+import {any, result} from "./CheckResult";
+import {ArgType} from "../util/schema";
+import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 
 const name = "ClearedEffects" as const;
 
@@ -60,5 +62,9 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
 
     override get dependsOnSayText(): boolean {
         return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClearedEffectArgs.safeParse(args));
     }
 }
