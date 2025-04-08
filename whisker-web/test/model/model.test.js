@@ -102,7 +102,7 @@ describe('Model tests on multiple events per step', () => {
 
     test('fruitcatcher with random model input', async () => {
         await loadProject('test/model/scratch-programs/fruitcatcher.sb3',
-            'test/model/model-jsons/fruitcatcher-random-fruit.json');
+            'test/model/model-jsons/fruitcatcher.json');
         await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 20);
         await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 1);
 
