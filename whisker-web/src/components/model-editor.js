@@ -1352,12 +1352,9 @@ class ModelEditor {
     appendAttributeNames (value, idNbr) {
         const id = ModelEditor.INPUT_ID + idNbr;
         const select = $('<select/>', {name: `selectAttrName${idNbr}`, id: id});
-        for (let i = 0; i < attributeAndEffectNames.length; i++) {
-            // const attribute = `modelEditor:${attributeAndEffectNames[i]}`;
-            // TODO should attributes be translated? probably not
-            // select.append($('<option/>', {'value': attributeAndEffectNames[i],
-            // 'data-i18n': attribute}).text(i18n.t(attribute)));
-            select.append($('<option/>', {value: attributeAndEffectNames[i]}).text(attributeAndEffectNames[i]));
+        for (const attrName of attributeAndEffectNames) {
+            const i18nKey = `modelEditor:${attrName}`;
+            select.append($('<option/>', {'value': attrName, 'data-i18n': i18nKey}).text(i18n.t(i18nKey)));
         }
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: 'row'}).append(
             $('<div/>', {class: 'col-4 mt-1'}).append($('<label/>', {'data-i18n': 'modelEditor:attrName'})
