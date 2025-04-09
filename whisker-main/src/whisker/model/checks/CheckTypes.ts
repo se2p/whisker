@@ -1,4 +1,4 @@
-import {SafeParseReturnType, z} from "zod";
+import {SafeParseReturnType, z, ZodError} from "zod";
 import {ArgType} from "../util/schema";
 
 export const stringAttributeNames = Object.freeze(["currentCostumeName", "sayText", "rotationStyle"] as const);
@@ -135,8 +135,12 @@ export type ParsingFailure = {
 
 export type ParsingResult = ParsingSuccess | ParsingFailure;
 
-export function parseAttributeError(res: SafeParseReturnType<unknown, unknown>): ParsingResult {
-    return parseUnionError(res, {1: "InvalidAttributeOrEffect"});
+export function parseAttributeError(res: SafeParseReturnType<unknown, unknown>, attributeIndex: number): ParsingResult {
+    const map = {};
+    map[attributeIndex] = "InvalidAttributeOrEffect";
+    // if there is no error at the attribute index for some option the issues of this option should be displayed
+    const keyExtractor: (e: ZodError) => number = e => e.issues.filter(i => i.path[0] === attributeIndex).length > 0 ? 1 : 0;
+    return parseUnionError(res, map, keyExtractor);
 }
 
 /**
@@ -150,8 +154,10 @@ export function parseAttributeError(res: SafeParseReturnType<unknown, unknown>):
  * where "==" is valid at the given index. Then this option is used for parsing.
  * @param res The result of some .safeParse(...) call
  * @param defaultMap Error map that is returned if the specific index is not valid for each option of the top level union.
+ * @param keyExtractor
  */
-export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defaultMap: Record<number, InputErrorCodes>): ParsingResult {
+export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defaultMap: Record<number, InputErrorCodes>,
+                                keyExtractor: (issue: ZodError) => number): ParsingResult {
     if (res.success !== false) {
         return {passed: true, data: res.data as ArgType[]};
     }
@@ -162,15 +168,15 @@ export function parseUnionError(res: SafeParseReturnType<unknown, unknown>, defa
         return parseNonUnionError(res); // top level is not a union so the wrong method was called
     }
 
-    const error = issues[0].unionErrors.filter(
+    const errors = issues[0].unionErrors.filter(
         e => e.issues.every(i => i.code !== "invalid_enum_value" || i.path[0] != 1)
     ); // remove options of the union where no correct value of the enum was chosen
 
     let codes: Record<number, InputErrorCodes> = {};
-    if (error.length > 0) {
-        error.sort((a, b) => a.issues.length - b.issues.length);
-        // take option with the lowest amount of issues and display issues for this option
-        error[0].issues.forEach((error) => {
+    if (errors.length > 0) {
+        // take preferred option
+        errors.sort((a, b) => keyExtractor(a) - keyExtractor(b));
+        errors[0].issues.forEach((error) => {
             codes[error.path[0]] = error.message; //path[0] contains the index issue which was caused by a faulty arg
         });
     } else {

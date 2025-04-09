@@ -26,6 +26,8 @@ import {
 
 const name = "AttrComp" as const;
 
+const attrNameIndex = 1;
+
 export type AttrCompArgs =
     [spriteName: SpriteName, attrName: NumberAttribute | Effect, comparisonOp: ComparisonOp, attrValue: number]
     | [spriteName: SpriteName, attrName: StringAttribute, comparisonOp: EqOrNeq, attrValue: string]
@@ -137,6 +139,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseAttributeError(AttrCompArgs.safeParse(args));
+        return parseAttributeError(AttrCompArgs.safeParse(args), attrNameIndex);
     }
 }
