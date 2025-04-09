@@ -263,19 +263,22 @@ class ModelEditor {
             convertArgs({name: name, negated: negated, args: args});
         const valid = result.passed;
         if (!valid) {
+            const codes = [];
             for (let index = 0; index < argNumber.length; index++) {
                 const element = $(`#${ModelEditor.INPUT_ID}${index}`);
                 const code = result.problems[index];
-
                 if (code === undefined) {
                     element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
-                    element.removeAttr("title");
+                    element.removeAttr('title');
                 } else {
                     element.addClass(ModelEditor.INVALID_INPUT_CLASS);
-                    element.attr('title', i18n.t(`modelEditor:${code}`));
+                    const translatedCode = i18n.t(`modelEditor:${code}`);
+                    const argTranslation = i18n.t(`modelEditor:${argNumber[index]}`);
+                    codes.push(`${argTranslation}: ${translatedCode}`);
+                    element.attr('title', translatedCode);
                 }
             }
-            return false;
+            return {status: false, message: codes.join('<br>')};
         }
 
         args = result.data;
@@ -293,7 +296,7 @@ class ModelEditor {
         }
         this.checkIndex = -1;
         this.chosenList = null;
-        return true;
+        return {status: true, message:''};
     }
 
 
@@ -619,13 +622,14 @@ class ModelEditor {
         });
 
         $(ModelEditor.CHECK_SAVE).on('click', () => {
-            if (this.saveCheck()) {
+            const res = this.saveCheck();
+            if (res.status) {
                 const selection = this.network.getSelection();
                 this.loadModel(this.currentTab);
                 this.network.setSelection(selection);
                 this.showEdgeOptions(this.network.getSelectedEdges()[0]);
             } else {
-                this.showPopup(i18n.t('modelEditor:notValid'));
+                this.showPopup(`${i18n.t('modelEditor:notValid')}<br>${res.message}`);
             }
         });
         $(ModelEditor.FORCE_TEST_AT).on('keyup change', () => {
