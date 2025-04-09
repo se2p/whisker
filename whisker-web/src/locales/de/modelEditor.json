@@ -130,7 +130,7 @@
     "InvalidAttributeOrEffect": "Das is kein gültiges Attribut",
     "InvalidChange": "Das is keine gültige Veränderung. Erlaubt ist: -,-=,==,+=,+,!=",
     "InvalidComparison": "Das is kein gültiger Vergleich. Erlaubt ist: <,<=,==,>=,>,!=",
-    "InvalidOpForAttribute": "Diese Attribut erlaubt nur == und !=",
+    "InvalidOpForAttribute": "Dieses Attribut erlaubt nur == und !=",
     "InvalidKey": "Das is keine erlaubte Taste",
     "InvalidSpriteName": "Das ist kein gültiger Name für ein Sprite",
     "InvalidVarName": "Ungültiger Name für eine Variable",
