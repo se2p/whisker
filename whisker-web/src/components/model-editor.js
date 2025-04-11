@@ -1132,20 +1132,16 @@ class ModelEditor {
             }
         }
 
-        const currentOptions = new Set($(`${ModelEditor.CHECK_CHOOSER} option`).map((_, option) => $(option).val()));
-
+        const chooser = $(ModelEditor.CHECK_CHOOSER);
+        chooser.children().remove();
         checkNames.forEach(name => {
-            if (currentOptions.has(name)) {
-                return;
-            }
-
             const key = `modelEditor:${name}`;
-            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {'value': name, 'data-i18n': key}).text(i18n.t(key)));
+            chooser.append($('<option/>', {'value': name, 'data-i18n': key}).text(i18n.t(key)));
         });
 
         $(ModelEditor.CHECK_NEGATED).prop('checked', check.negated);
         $(ModelEditor.CHECK_CHOOSER).val(check.name);
-        this.changeCheckType(check.name, check.id, check.args);
+        this.changeCheckType(isAnEffect, isAUserModel, check.name, check.id, check.args);
 
         this.addExplanation(check.name);
     }
@@ -1187,12 +1183,15 @@ class ModelEditor {
 
     /**
      * Show check argument inputs for the chosen type.
+     * @param isAnEffect Flag if the check is an effect
+     * @param isAUserModel Flag if the check is part of a UserModel
      * @param type Type of check, has to be of checkLabelCodes
      * @param id Id of the check.
      * @param args Arguments of the check
      */
-    changeCheckType (type, id, args) {
-        const argNames = checkLabelCodes[type] ?? inputLabelCodes[type];
+    changeCheckType (isAnEffect, isAUserModel, type, id, args) {
+        const codes = isAnEffect && isAUserModel ? inputLabelCodes : checkLabelCodes[type];
+        const argNames = codes[type];
 
         if (args.length !== argNames.length) {
             logger.error(`Loaded model has a check with wrong number of arguments. Check.id:${id}`);
