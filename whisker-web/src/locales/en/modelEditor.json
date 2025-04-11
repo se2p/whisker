@@ -146,5 +146,22 @@
     "NumberMustBeNonNegative": "Number must be non-negative",
     "OutOfRgbRange": "Number must be between 0 and 255",
     "StringIsEmpty": "The text must not be empty",
-    "ValueIsNoProbability": "The number must be between 0 and 1"
+    "ValueIsNoProbability": "The number must be between 0 and 1",
+    "currentCostumeName": "costume name",
+    "sayText": "say text",
+    "rotationStyle": "rotation style",
+    "x": "x",
+    "y": "y",
+    "size": "size",
+    "direction": "direction",
+    "layerOrder": "layer",
+    "volume": "volume",
+    "visible": "visibility",
+    "color": "color",
+    "fisheye": "fisheye",
+    "whirl": "whirl",
+    "pixelate": "pixelate",
+    "mosaic": "mosaic",
+    "brightness": "brightness",
+    "ghost": "ghost"
 }
