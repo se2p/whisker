@@ -105,6 +105,6 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"});
+        return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"}, e => e.issues.length);
     }
 }

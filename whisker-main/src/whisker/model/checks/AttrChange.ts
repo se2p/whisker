@@ -50,6 +50,8 @@ const bounds: Record<AttrName, Bounds | null> = Object.freeze({
     effects: null,
 });
 
+const attrNameIndex = 1;
+
 export type AttrChangeArgs =
     [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
     | [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeq]
@@ -163,6 +165,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseAttributeError(AttrChangeArgs.safeParse(args));
+        return parseAttributeError(AttrChangeArgs.safeParse(args), attrNameIndex);
     }
 }

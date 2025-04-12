@@ -145,5 +145,22 @@
     "NumberMustBeNonNegative": "Die Zahl darf nicht negativ sein",
     "OutOfRgbRange": "Die Zahl muss zwischen 0 und 255 liegen",
     "StringIsEmpty": "Der Text darf nicht leer sein",
-    "ValueIsNoProbability": "Die Zahl muss zwischen 0 und 1 liegen"
+    "ValueIsNoProbability": "Die Zahl muss zwischen 0 und 1 liegen",
+    "currentCostumeName": "Kostümname",
+    "sayText": "Sage Text",
+    "rotationStyle": "Drehtyp",
+    "x": "x",
+    "y": "y",
+    "size": "Größe",
+    "direction": "Richtung",
+    "layerOrder": "Ebene",
+    "volume": "Lautstärke",
+    "visible": "Sichtbarkeit",
+    "color": "Farbe",
+    "fisheye": "Fischauge",
+    "whirl": "Wirbel",
+    "pixelate": "Pixel",
+    "mosaic": "Mosaic",
+    "brightness": "Helligkeit",
+    "ghost": "Durchsichtigkeit"
 }
