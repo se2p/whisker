@@ -55,7 +55,7 @@
     "userInput": "Benutzereingabe",
     "userInputs": "Benutzereingaben",
     "newUserInput": "Neue Benutzereingabe",
-    "t-userInputs": "Eingaben werden nach jedem Kantenübergang gemacht",
+    "t-userInputs": "Eingaben werden nach jedem Kantenübergang ausgeführt",
     "back": "Abbrechen",
     "saveCheck": "Speichern",
     "add": "+",
