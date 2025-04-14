@@ -258,7 +258,9 @@ class ModelEditor {
         for (let i = 0; i < argNumber.length; i++) {
             args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
         }
-        const result = this.currentModel.usage === 'user' ?
+        const isUserInput = this.currentModel.usage === 'user' &&
+            document.getElementById('model-check-label').attributes['data-i18n'].value === 'modelEditor:newEffect';
+        const result = isUserInput ?
             convertInputArgs({name: name, args: args}) :
             convertArgs({name: name, negated: negated, args: args});
         const valid = result.passed;
@@ -269,7 +271,7 @@ class ModelEditor {
 
                 if (code === undefined) {
                     element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
-                    element.removeAttr("title");
+                    element.removeAttr('title');
                 } else {
                     element.addClass(ModelEditor.INVALID_INPUT_CLASS);
                     element.attr('title', i18n.t(`modelEditor:${code}`));
