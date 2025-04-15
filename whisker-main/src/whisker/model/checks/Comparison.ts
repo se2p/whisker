@@ -4,7 +4,7 @@ import {CheckResult, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
 import {ModelUtil} from "../util/ModelUtil";
 
-const EPSILON = 1e-5;
+export const EPSILON = 1e-5;
 
 export type Comparison<T extends Interval | null = null> =
     | Eq<T>
@@ -70,6 +70,18 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
     }
 }
 
+function areEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
+    if (operand1 == operand2) {
+        return true;
+    }
+    const actual = ModelUtil.returnNumberIfPossible(operand1, null);
+    if (typeof operand2 != "number" || actual == null || (Number.isInteger(operand2) && Number.isInteger(actual))) {
+        return false;
+    } else {
+        return Math.abs(actual - operand2) <= EPSILON;
+    }
+}
+
 class Eq<T extends Interval | null> extends AbstractComparison<T> {
     constructor(operand2: AttributeType, interval: T | null = null) {
         super(operand2, interval);
@@ -80,14 +92,9 @@ class Eq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        let res:boolean;
-        const actual = ModelUtil.returnNumberIfPossible(operand1, null);
-        if(typeof this.operand2 != "number" || actual == null || (Number.isInteger(this.operand2) && Number.isInteger(actual))) {
-            res = operand1 == this.operand2;
-        }else{
-            res = Math.abs(actual-this.operand2) <= EPSILON;
-        }
-        return result(res, {actual: operand1, expected: this.operand2});
+        const message = {actual: operand1, expected: this.operand2};
+        const res = areEqualWithinEpsilonRange(operand1, this.operand2);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -108,10 +115,9 @@ class Neq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(
-            operand1 != this.operand2 || this._boundaries.includes(operand1),
-            {actual: operand1}
-        );
+        const message = {actual: operand1};
+        const res = areEqualWithinEpsilonRange(operand1, this.operand2);
+        return result(!res || this._boundaries.includes(operand1), message);
     }
 
     override negate(): Comparison<T> {
@@ -205,7 +211,7 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
 
 export const CONST_PASS = new class ConstPass extends Neq<null> {
     constructor() {
-        super(NaN, null);
+        super(undefined, null);
     }
 
     override negate(): Comparison {
@@ -215,7 +221,7 @@ export const CONST_PASS = new class ConstPass extends Neq<null> {
 
 export const CONST_FAIL = new class ConstFail extends Eq<null> {
     constructor() {
-        super(NaN, null);
+        super(undefined, null);
     }
 
     override apply(operand1: AttributeType): CheckResult {
