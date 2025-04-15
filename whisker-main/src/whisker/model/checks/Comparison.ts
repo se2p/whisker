@@ -2,6 +2,9 @@ import {Existential, Quantifiable, Quantification, Universal} from "./Quantifica
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
+import {ModelUtil} from "../util/ModelUtil";
+
+const EPSILON = 1e-5;
 
 export type Comparison<T extends Interval | null = null> =
     | Eq<T>
@@ -77,7 +80,14 @@ class Eq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(operand1 == this.operand2, {actual: operand1, expected: this.operand2});
+        let res:boolean;
+        const actual = ModelUtil.returnNumberIfPossible(operand1, null);
+        if(typeof this.operand2 != "number" || actual == null || (Number.isInteger(this.operand2) && Number.isInteger(actual))) {
+            res = operand1 == this.operand2;
+        }else{
+            res = Math.abs(actual-this.operand2) <= EPSILON;
+        }
+        return result(res, {actual: operand1, expected: this.operand2});
     }
 
     override negate(): Comparison<T> {
