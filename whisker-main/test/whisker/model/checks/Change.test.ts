@@ -3,6 +3,7 @@ import {ChangingCheck, newChange, newQuantifiedChange} from "../../../../src/whi
 import {Existential, Universal} from "../../../../src/whisker/model/checks/Quantification";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ChangeOp, changeOps, NumberOrChangeOp} from "../../../../src/whisker/model/checks/CheckTypes";
+import {EPSILON} from "../../../../src/whisker/model/checks/Comparison";
 
 // Generators for 1-tuples, 2-tuples, and 3-tuples of numbers.
 const number = fc.double({noNaN: true});
@@ -11,7 +12,7 @@ const n3 = fc.tuple(number, number, number);
 
 // Generators for pairs [x, y] of numbers where x === y, x !== y, x > y, etc.
 const eq = number.map((x) => [x, x] as [number, number]);
-const ne = n2.filter(([x, y]) => x !== y);
+const ne = n2.filter(([x, y]) => x !== y && Math.abs(x - y) > EPSILON);
 const gt = n2.filter(([x, y]) => x > y);
 const lt = n2.filter(([x, y]) => x < y);
 const ge = n2.filter(([x, y]) => x >= y);
@@ -19,10 +20,10 @@ const le = n2.filter(([x, y]) => x <= y);
 
 // Generators for numbers x where x === 0, x !== 0, x >= 0, etc.
 const eqz = fc.constant(0);
-const nez = number.filter((n) => n !== 0);
-const gez = fc.double({noNaN: true, min: 0});
+const nez = number.filter((n) => n !== 0 && Math.abs(n) > EPSILON);
+const gez = number.filter((n) => n === 0 || n > EPSILON);
 const gtz = gez.filter((n) => n !== 0);
-const lez = fc.double({noNaN: true, max: 0});
+const lez = number.filter((n) => n === 0 || n < -EPSILON);
 const ltz = lez.filter((n) => n !== 0);
 
 // Generates a number or one of the 6 operators, each with probability 1/7.
@@ -83,7 +84,7 @@ describe("A change", () => {
                 expect(c.apply(after, before)).toStrictEqual(pass());
             });
 
-        it.prop([n3.filter(([c, b, a]) => a - b !== c)])(
+        it.prop([n3.filter(([c, b, a]) => Math.abs((a - b) - c) > EPSILON)])(
             "returns false for incorrect deltas", ([change, before, after]) => {
                 const c = newChange({change});
                 expect(c.apply(after, before)).toStrictEqual(fail(expect.any(Object)));
@@ -151,6 +152,9 @@ describe("A change", () => {
         it.prop([contra])("it contradicts changes with incompatible deltas", (change) => {
             const c1 = newChange({change: op});
             const c2 = newChange({change});
+            if(change == -5e-324){
+                change = change;
+            }
             expect(c1.contradicts(c2)).toBe(true);
         });
 
