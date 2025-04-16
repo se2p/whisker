@@ -75,7 +75,7 @@ function areEqualWithinEpsilonRange(operand1: AttributeType, operand2: Attribute
         return true;
     }
     const actual = ModelUtil.returnNumberIfPossible(operand1, null);
-    if (typeof operand2 == "number" && actual != null && (!Number.isInteger(operand2) || !Number.isInteger(operand2))) {
+    if (typeof operand2 == "number" && typeof actual == "number") {
         return Math.abs(actual - operand2) <= EPSILON;
     }
     return false; // values are not numbers or both are integers so previous check proved the values are not equal
