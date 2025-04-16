@@ -75,11 +75,10 @@ function areEqualWithinEpsilonRange(operand1: AttributeType, operand2: Attribute
         return true;
     }
     const actual = ModelUtil.returnNumberIfPossible(operand1, null);
-    if (typeof operand2 != "number" || actual == null || (Number.isInteger(operand2) && Number.isInteger(actual))) {
-        return false;
-    } else {
+    if (typeof operand2 == "number" && actual != null && (!Number.isInteger(operand2) || !Number.isInteger(operand2))) {
         return Math.abs(actual - operand2) <= EPSILON;
     }
+    return false; // values are not numbers or both are integers so previous check proved the values are not equal
 }
 
 class Eq<T extends Interval | null> extends AbstractComparison<T> {

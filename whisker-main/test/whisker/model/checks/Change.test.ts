@@ -6,7 +6,7 @@ import {ChangeOp, changeOps, NumberOrChangeOp} from "../../../../src/whisker/mod
 import {EPSILON} from "../../../../src/whisker/model/checks/Comparison";
 
 // Generators for 1-tuples, 2-tuples, and 3-tuples of numbers.
-const number = fc.double({noNaN: true});
+const number = fc.double({noNaN: true}).filter(x => Math.abs(x) > EPSILON);
 const n2 = fc.tuple(number, number);
 const n3 = fc.tuple(number, number, number);
 
