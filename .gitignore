@@ -13,6 +13,7 @@
 */dist
 /playground
 /docs
+**/.webpack-cache*
 
 # Stuff
 /stuff

@@ -5,6 +5,9 @@
         "outDir": "dist",                        /* Redirect output structure to the directory. */
         "moduleResolution": "node",            /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
 
+        "incremental": true,                        /* Enable incremental compilation */
+        "tsBuildInfoFile": "./dist/.tsbuildinfo",   /* Specify file to store incremental compilation information */
+
         "noUnusedLocals": false,                /* Report errors on unused locals. */
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
