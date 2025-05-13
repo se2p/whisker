@@ -57,6 +57,7 @@ class ModelEditor {
     // configuration right pane, edge settings
     static CONFIG_EDGE = '#model-edge-configuration';
     static CONFIG_EDGE_LABEL = '#model-edge-label';
+    static EFFECT_OR_INPUT_LABEL = '#model-effect-or-input-label';
     static CONDITIONS = '#model-conditions';
     static EFFECTS = '#model-effects';
     static ADD_CONDITION = '#model-editor-addC';
@@ -298,7 +299,6 @@ class ModelEditor {
         this.chosenList = null;
         return {status: true, message:''};
     }
-
 
     getEdgeById (edgeID) {
         return this.currentModel.edges.find(e => e.id === edgeID);
@@ -680,12 +680,16 @@ class ModelEditor {
         this.addExplanation('AttrChange');
     }
 
-
     addEffectAction () {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
-        $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:newEffect');
-        $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newEffect'));
+        if (this.currentModel.usage === 'user'){
+            $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:newUserInput');
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newUserInput'));
+        } else {
+            $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:newEffect');
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newEffect'));
+        }
         $(ModelEditor.CHECK_CHOOSER).children()
             .remove();
         $(ModelEditor.CHECK_NEGATED).prop('checked', false);
@@ -1066,6 +1070,14 @@ class ModelEditor {
             .remove();
 
         const isAUserModel = this.currentModel.usage === 'user';
+        const effectInputLabel = $(ModelEditor.EFFECT_OR_INPUT_LABEL);
+        if (isAUserModel){
+            effectInputLabel.attr('data-original-title', i18n.t('modelEditor:t-userInputs'));
+            effectInputLabel.text(i18n.t('modelEditor:userInputs'));
+        } else {
+            effectInputLabel.attr('data-original-title', i18n.t('modelEditor:t-effects'));
+            effectInputLabel.text(i18n.t('modelEditor:effects'));
+        }
         if (edge.conditions.length > 0) {
             $(ModelEditor.CONDITIONS).append(this.getCheckElement(edge.conditions[0], 0));
             for (let i = 1; i < edge.conditions.length; i++) {
@@ -1107,12 +1119,14 @@ class ModelEditor {
             $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
             checkNames = Object.keys(checkLabelCodes).sort((a, b) => (a < b ? -1 : 0));
         } else if (isAnEffect) {
-            $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:effect');
-            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'));
             if (isAUserModel) {
+                $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:userInput');
+                $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:userInput'));
                 $(ModelEditor.CHECK_NEGATED_DIV).addClass('hide');
                 checkNames = Object.keys(inputLabelCodes).sort((a, b) => (a < b ? -1 : 0));
             } else {
+                $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:effect');
+                $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'));
                 $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
                 checkNames = Object.keys(checkLabelCodes).sort((a, b) => (a < b ? -1 : 0));
             }
