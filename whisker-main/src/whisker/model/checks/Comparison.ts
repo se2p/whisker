@@ -70,15 +70,33 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
     }
 }
 
-function areEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
-    if (operand1 == operand2) {
-        return true;
-    }
+function difOfTwoNumbersIsAtMostEpsilon(operand1: AttributeType, operand2: AttributeType): boolean {
     const actual = ModelUtil.returnNumberIfPossible(operand1, null);
     if (typeof operand2 == "number" && typeof actual == "number") {
         return Math.abs(actual - operand2) <= EPSILON;
     }
-    return false; // values are not numbers or both are integers so previous check proved the values are not equal
+    return false; // at least one value is not a number, so the dif cannot be calulated
+}
+
+function areEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
+    if (operand1 == operand2) {
+        return true;
+    }
+    return difOfTwoNumbersIsAtMostEpsilon(operand1, operand2);
+}
+
+function isSmallerOrEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
+    if (operand1 <= operand2) {
+        return true;
+    }
+    return difOfTwoNumbersIsAtMostEpsilon(operand1, operand2);
+}
+
+function isBiggerOrEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
+    if (operand1 >= operand2) {
+        return true;
+    }
+    return difOfTwoNumbersIsAtMostEpsilon(operand1, operand2);
 }
 
 class Eq<T extends Interval | null> extends AbstractComparison<T> {
@@ -134,7 +152,9 @@ class Leq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(operand1 <= this.operand2, {actual: operand1, expected: this.operand2});
+        const message = {actual: operand1, expected: this.operand2};
+        const res = isSmallerOrEqualWithinEpsilonRange(operand1, this.operand2);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -155,10 +175,9 @@ class Lt<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(
-            operand1 < this.operand2 || this._boundaries.includes(operand1),
-            {actual: operand1, expected: this.operand2}
-        );
+        const message = {actual: operand1, expected: this.operand2};
+        const res = !isBiggerOrEqualWithinEpsilonRange(operand1, this.operand2) || this._boundaries.includes(operand1);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -179,10 +198,9 @@ class Gt<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(
-            operand1 > this.operand2 || this._boundaries.includes(operand1),
-            {actual: operand1, expected: this.operand2}
-        );
+        const message = {actual: operand1, expected: this.operand2};
+        const res = !isSmallerOrEqualWithinEpsilonRange(operand1, this.operand2) || this._boundaries.includes(operand1);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -200,7 +218,9 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(operand1 >= this.operand2, {actual: operand1, expected: this.operand2});
+        const message = {actual: operand1, expected: this.operand2};
+        const res = isBiggerOrEqualWithinEpsilonRange(operand1, this.operand2);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
