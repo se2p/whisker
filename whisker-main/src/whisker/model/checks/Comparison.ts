@@ -4,6 +4,11 @@ import {CheckResult, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
 import {ModelUtil} from "../util/ModelUtil";
 
+/**
+ * Threshold for two numbers to be considered approximately equal. The value is chosen to be large enough to ignore
+ * rounding errors introduced by floating point arithmetics, and small enough to not mask actual programming errors in
+ * the Scratch program under test.
+ */
 export const EPSILON = 1e-10;
 
 export type Comparison<T extends Interval | null = null> =
@@ -70,33 +75,50 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
     }
 }
 
-function difOfTwoNumbersIsAtMostEpsilon(operand1: AttributeType, operand2: AttributeType): boolean {
-    const actual = ModelUtil.returnNumberIfPossible(operand1, null);
-    if (typeof operand2 != "number" || typeof actual != "number") {
+function approxEqNum(x: AttributeType, y: AttributeType): boolean {
+    const actual = ModelUtil.returnNumberIfPossible(x, null);
+
+    if (typeof y != "number" || typeof actual != "number") {
         return false; // at least one value is not a number, so the difference does not exist
     }
-    return Math.abs(actual - operand2) <= EPSILON;
+
+    return Math.abs(actual - y) <= EPSILON;
 }
 
-function areEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
+function approxEq(operand1: AttributeType, operand2: AttributeType) {
     if (operand1 == operand2) {
         return true;
     }
-    return difOfTwoNumbersIsAtMostEpsilon(operand1, operand2);
+
+    return approxEqNum(operand1, operand2);
 }
 
-function isSmallerOrEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
-    if (operand1 <= operand2) {
-        return true;
-    }
-    return difOfTwoNumbersIsAtMostEpsilon(operand1, operand2);
+function approxNeq(operand1: AttributeType, operand2: AttributeType) {
+    return !approxEqNum(operand1, operand2);
 }
 
-function isBiggerOrEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
-    if (operand1 >= operand2) {
+function approxLeq(x: AttributeType, y: AttributeType) {
+    if (x <= y) {
         return true;
     }
-    return difOfTwoNumbersIsAtMostEpsilon(operand1, operand2);
+
+    return approxEqNum(x, y);
+}
+
+function approxGt(x: AttributeType, y: AttributeType) {
+    return !approxLeq(x, y);
+}
+
+function approxGeq(x: AttributeType, y: AttributeType) {
+    if (x >= y) {
+        return true;
+    }
+
+    return approxEqNum(x, y);
+}
+
+function approxLt(x: AttributeType, y: AttributeType) {
+    return !approxGeq(x, y);
 }
 
 class Eq<T extends Interval | null> extends AbstractComparison<T> {
@@ -110,7 +132,7 @@ class Eq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = areEqualWithinEpsilonRange(operand1, this.operand2);
+        const res = approxEq(operand1, this.operand2);
         return result(res, message);
     }
 
@@ -133,8 +155,8 @@ class Neq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1};
-        const res = areEqualWithinEpsilonRange(operand1, this.operand2);
-        return result(!res || this._boundaries.includes(operand1), message);
+        const res = approxNeq(operand1, this.operand2);
+        return result(res || this._boundaries.includes(operand1), message);
     }
 
     override negate(): Comparison<T> {
@@ -153,7 +175,7 @@ class Leq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = isSmallerOrEqualWithinEpsilonRange(operand1, this.operand2);
+        const res = approxLeq(operand1, this.operand2);
         return result(res, message);
     }
 
@@ -176,7 +198,7 @@ class Lt<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = !isBiggerOrEqualWithinEpsilonRange(operand1, this.operand2) || this._boundaries.includes(operand1);
+        const res = approxLt(operand1, this.operand2) || this._boundaries.includes(operand1);
         return result(res, message);
     }
 
@@ -199,7 +221,7 @@ class Gt<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = !isSmallerOrEqualWithinEpsilonRange(operand1, this.operand2) || this._boundaries.includes(operand1);
+        const res = approxGt(operand1, this.operand2) || this._boundaries.includes(operand1);
         return result(res, message);
     }
 
@@ -219,7 +241,7 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
-        const res = isBiggerOrEqualWithinEpsilonRange(operand1, this.operand2);
+        const res = approxGeq(operand1, this.operand2);
         return result(res, message);
     }
 
