@@ -72,10 +72,10 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
 
 function difOfTwoNumbersIsAtMostEpsilon(operand1: AttributeType, operand2: AttributeType): boolean {
     const actual = ModelUtil.returnNumberIfPossible(operand1, null);
-    if (typeof operand2 == "number" && typeof actual == "number") {
-        return Math.abs(actual - operand2) <= EPSILON;
+    if (typeof operand2 != "number" || typeof actual != "number") {
+        return false; // at least one value is not a number, so the difference does not exist
     }
-    return false; // at least one value is not a number, so the dif cannot be calulated
+    return Math.abs(actual - operand2) <= EPSILON;
 }
 
 function areEqualWithinEpsilonRange(operand1: AttributeType, operand2: AttributeType) {
