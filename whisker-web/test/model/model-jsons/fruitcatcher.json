@@ -573,7 +573,12 @@
                         "name": "SpriteColor",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             255,
                             0,
                             0
@@ -618,7 +623,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -639,7 +649,12 @@
                         "name": "SpriteTouching",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "Bowl"
                         ]
                     }
@@ -658,7 +673,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -728,7 +748,12 @@
                         "name": "SpriteColor",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             255,
                             0,
                             0
@@ -749,7 +774,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -770,7 +800,12 @@
                         "name": "SpriteTouching",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "Bowl"
                         ]
                     }
@@ -813,7 +848,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -956,7 +996,12 @@
                         "name": "NbrOfVisibleClones",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "<=",
                             1
                         ]
@@ -979,17 +1024,40 @@
                 "label": "start"
             },
             {
+                "id": "1s elapsed",
+                "label": "1s elapsed"
+            },
+            {
                 "id": "stop",
                 "label": "stop"
             }
         ],
         "edges": [
             {
+                "id": "1s elapsed",
+                "label": "1s elapsed",
+                "from": "start",
+                "to": "1s elapsed",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "TimeBetween",
+                        "negated": false,
+                        "args": [
+                            1000
+                        ]
+                    }
+                ],
+                "effects": [
+                ]
+            },
+            {
                 "id": "dec",
                 "label": "dec",
-                "from": "start",
+                "from": "1s elapsed",
                 "to": "start",
-                "forceTestAfter": 1000,
+                "forceTestAfter": 70,
                 "forceTestAt": -1,
                 "conditions": [
                     {
@@ -1006,13 +1074,6 @@
                     }
                 ],
                 "effects": [
-                    {
-                        "name": "TimeBetween",
-                        "negated": false,
-                        "args": [
-                            1000
-                        ]
-                    }
                 ]
             },
             {
@@ -1334,7 +1395,12 @@
                         "name": "SpriteTouching",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "Bowl"
                         ]
                     }
@@ -1377,7 +1443,12 @@
                         "name": "SpriteColor",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             255,
                             0,
                             0
@@ -1398,7 +1469,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -1408,7 +1484,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "-"
                         ]
@@ -1441,7 +1522,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             true
@@ -1633,7 +1719,12 @@
                         "name": "AttrChange",
                         "negated": true,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "x",
                             "="
                         ]
@@ -1644,7 +1735,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "==",
                             170
@@ -1689,7 +1785,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             true
@@ -1699,7 +1800,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -1720,7 +1826,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             true
@@ -1730,7 +1841,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "-"
                         ]
@@ -1903,7 +2019,12 @@
                         "name": "AttrChange",
                         "negated": true,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "x",
                             "="
                         ]
@@ -1923,7 +2044,12 @@
                         "name": "AttrChange",
                         "negated": true,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "x",
                             "="
                         ]
@@ -1961,7 +2087,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "-"
                         ]
@@ -2133,7 +2264,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             false
@@ -2154,7 +2290,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             true
@@ -2183,7 +2324,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "-"
                         ]
@@ -2252,7 +2398,12 @@
                         "name": "SpriteTouching",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "Bowl"
                         ]
                     }
@@ -2271,7 +2422,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -2292,7 +2448,12 @@
                         "name": "SpriteColor",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             255,
                             0,
                             0
@@ -2304,7 +2465,12 @@
                         "name": "Output",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "-8"
                         ]
                     }
@@ -2331,7 +2497,12 @@
                         "name": "Output",
                         "negated": true,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "-8"
                         ]
                     }
@@ -2349,7 +2520,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -2370,7 +2546,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "-"
                         ]
@@ -2379,7 +2560,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             true
@@ -2389,14 +2575,24 @@
                         "name": "TouchingHorizEdge",
                         "negated": true,
                         "args": [
-                            "Bananas"
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ]
                         ]
                     },
                     {
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "<",
                             170
@@ -2408,7 +2604,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             -7
                         ]
@@ -2417,7 +2618,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "x",
                             "="
                         ]
@@ -2489,7 +2695,12 @@
                         "name": "SpriteTouching",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "Bowl"
                         ]
                     }
@@ -2508,7 +2719,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -2529,7 +2745,12 @@
                         "name": "SpriteColor",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             255,
                             0,
                             0
@@ -2550,7 +2771,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             false
@@ -2579,7 +2805,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "visible",
                             "==",
                             true
@@ -2608,7 +2839,12 @@
                         "name": "AttrComp",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             ">",
                             100
@@ -2618,7 +2854,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "y",
                             "-"
                         ]
@@ -2702,16 +2943,146 @@
     },
     {
         "usage": "user",
-        "id": "move away",
+        "id": "follow apple",
         "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            }
+        ],
+        "edges": [
+            {
+                "id": "left",
+                "label": "left",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')-10>$('Apple', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "right",
+                "label": "right",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')+10<$('Apple', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "right"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "follow banana",
+        "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            }
+        ],
+        "edges": [
+            {
+                "id": "left",
+                "label": "left",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')-10>$('Bananas', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "right",
+                "label": "right",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')+10<$('Bananas', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "right"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "move away",
+        "startNodeId": "move away",
         "stopNodeIds": [
             "dont-move"
         ],
         "stopAllNodeIds": [],
         "nodes": [
             {
-                "id": "start",
-                "label": "start"
+                "id": "move away",
+                "label": "move away"
             },
             {
                 "id": "dont-move",
@@ -2720,9 +3091,9 @@
         ],
         "edges": [
             {
-                "id": "wait",
-                "label": "wait",
-                "from": "start",
+                "id": "game over",
+                "label": "game over",
+                "from": "move away",
                 "to": "dont-move",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
@@ -2753,8 +3124,8 @@
             {
                 "id": "away-left",
                 "label": "away-left",
-                "from": "start",
-                "to": "start",
+                "from": "move away",
+                "to": "move away",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
@@ -2770,7 +3141,7 @@
                     {
                         "name": "InputKey",
                         "args": [
-                            "left arrow"
+                            "left"
                         ]
                     }
                 ]
@@ -2778,8 +3149,8 @@
             {
                 "id": "away-right",
                 "label": "away-right",
-                "from": "start",
-                "to": "start",
+                "from": "move away",
+                "to": "move away",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
@@ -2795,316 +3166,7 @@
                     {
                         "name": "InputKey",
                         "args": [
-                            "right arrow"
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "usage": "user",
-        "id": "follow apple",
-        "startNodeId": "start",
-        "stopNodeIds": [],
-        "stopAllNodeIds": [],
-        "nodes": [
-            {
-                "id": "start",
-                "label": "start"
-            }
-        ],
-        "edges": [
-            {
-                "id": "follow-left",
-                "label": "follow-left",
-                "from": "start",
-                "to": "start",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "$('Bowl', 'x')>$('Apple', 'x')"
-                        ]
-                    },
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "InputKey",
-                        "args": [
-                            "left arrow"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "follow-right",
-                "label": "follow-right",
-                "from": "start",
-                "to": "start",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "$('Bowl', 'x')<$('Apple', 'x')"
-                        ]
-                    },
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "InputKey",
-                        "args": [
-                            "right arrow"
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "usage": "user",
-        "id": "random fruit",
-        "startNodeId": "start",
-        "stopNodeIds": [],
-        "stopAllNodeIds": [],
-        "nodes": [
-            {
-                "id": "start",
-                "label": "start"
-            },
-            {
-                "id": "apple",
-                "label": "apple"
-            },
-            {
-                "id": "bananas",
-                "label": "bananas"
-            }
-        ],
-        "edges": [
-            {
-                "id": "appleProb",
-                "label": "appleProb",
-                "from": "start",
-                "to": "apple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Probability",
-                        "negated": false,
-                        "args": [
-                            0.5
-                        ]
-                    }
-                ],
-                "effects": []
-            },
-            {
-                "id": "caughtApple",
-                "label": "caughtApple",
-                "from": "apple",
-                "to": "start",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "AttrChange",
-                        "negated": true,
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "x",
-                            "="
-                        ]
-                    }
-                ],
-                "effects": []
-            },
-            {
-                "id": "a-left",
-                "label": "a-left",
-                "from": "apple",
-                "to": "apple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "$('Bowl', 'x')>$('Apple', 'x')"
-                        ]
-                    },
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "InputKey",
-                        "args": [
-                            "left arrow"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "a-right",
-                "label": "a-right",
-                "from": "apple",
-                "to": "apple",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "$('Bowl', 'x')<$('Apple', 'x')"
-                        ]
-                    },
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Apple', 'x'))>10"
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "InputKey",
-                        "args": [
-                            "right arrow"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "BananasProb",
-                "label": "BananasProb",
-                "from": "start",
-                "to": "bananas",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Probability",
-                        "negated": false,
-                        "args": [
-                            1
-                        ]
-                    }
-                ],
-                "effects": []
-            },
-            {
-                "id": "caughtBananas",
-                "label": "caughtBananas",
-                "from": "bananas",
-                "to": "start",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "AttrChange",
-                        "negated": true,
-                        "args": [
-                            "Bananas",
-                            "x",
-                            "="
-                        ]
-                    }
-                ],
-                "effects": []
-            },
-            {
-                "id": "b-left",
-                "label": "b-left",
-                "from": "bananas",
-                "to": "bananas",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "$('Bowl', 'x')>$('Bananas', 'x')"
-                        ]
-                    },
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "InputKey",
-                        "args": [
-                            "left arrow"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "b-right",
-                "label": "b-right",
-                "from": "bananas",
-                "to": "bananas",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "$('Bowl', 'x')<$('Bananas', 'x')"
-                        ]
-                    },
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "Math.abs($('Bowl', 'x')-$('Bananas', 'x'))>10"
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "InputKey",
-                        "args": [
-                            "right arrow"
+                            "right"
                         ]
                     }
                 ]
@@ -3194,7 +3256,12 @@
                         "name": "AttrChange",
                         "negated": false,
                         "args": [
-                            "Bananas",
+                            [
+                                "Bananas",
+                                "Banana",
+                                "Bananen",
+                                "Banane"
+                            ],
                             "x",
                             "="
                         ]

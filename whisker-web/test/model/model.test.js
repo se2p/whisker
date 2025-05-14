@@ -85,11 +85,14 @@ describe('Model tests on multiple events per step', () => {
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00],
         ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00],
+        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 1.00]
     ]
 
     it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage) => {
         await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
             `test/model/model-jsons/${modelFileName}.json`);
+        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
+        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 1);
         await (await page.$('#run-all-tests')).click();
         const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
         if (errorsInModel + failsInModel > errors + fails) {
@@ -97,24 +100,6 @@ describe('Model tests on multiple events per step', () => {
         }
         expect(errorsInModel).toBe(errors);
         expect(failsInModel).toBe(fails);
-        expect(modelCoverage).toBe(coverage);
+        expect(modelCoverage).toBeGreaterThanOrEqual(coverage);
     }, timeout);
-
-    test('fruitcatcher with random model input', async () => {
-        await loadProject('test/model/scratch-programs/fruitcatcher.sb3',
-            'test/model/model-jsons/fruitcatcher-random-fruit.json');
-        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 20);
-        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 1);
-
-        const startTestButton = await page.$('#run-all-tests');
-        await startTestButton.click();
-        const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
-        if (errorsInModel + failsInModel > 0) {
-            console.log(loggedOutput);
-        }
-        expect(errorsInModel).toBe(0);
-        expect(failsInModel).toBe(0);
-        // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.8.
-        expect(Number.parseFloat(modelCoverage)).toBeGreaterThan(0.8);
-    })
 });
