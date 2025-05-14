@@ -4,7 +4,7 @@ import {CheckResult, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
 import {ModelUtil} from "../util/ModelUtil";
 
-export const EPSILON = 1e-5;
+export const EPSILON = 1e-10;
 
 export type Comparison<T extends Interval | null = null> =
     | Eq<T>
