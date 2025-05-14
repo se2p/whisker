@@ -94,7 +94,7 @@ function approxEq(operand1: AttributeType, operand2: AttributeType) {
 }
 
 function approxNeq(operand1: AttributeType, operand2: AttributeType) {
-    return !approxEqNum(operand1, operand2);
+    return !approxEq(operand1, operand2);
 }
 
 function approxLeq(x: AttributeType, y: AttributeType) {
@@ -155,8 +155,8 @@ class Neq<T extends Interval | null> extends AbstractComparison<T> {
 
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1};
-        const res = approxNeq(operand1, this.operand2);
-        return result(res || this._boundaries.includes(operand1), message);
+        const res = approxNeq(operand1, this.operand2) || this._boundaries.includes(operand1);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
