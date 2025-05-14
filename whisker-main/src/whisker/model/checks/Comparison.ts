@@ -230,7 +230,7 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
 
 export const CONST_PASS = new class ConstPass extends Neq<null> {
     constructor() {
-        super(undefined, null);
+        super(NaN, null);
     }
 
     override negate(): Comparison {
@@ -240,7 +240,7 @@ export const CONST_PASS = new class ConstPass extends Neq<null> {
 
 export const CONST_FAIL = new class ConstFail extends Eq<null> {
     constructor() {
-        super(undefined, null);
+        super(NaN, null);
     }
 
     override apply(operand1: AttributeType): CheckResult {
