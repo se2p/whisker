@@ -2,6 +2,14 @@ import {Existential, Quantifiable, Quantification, Universal} from "./Quantifica
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
+import {ModelUtil} from "../util/ModelUtil";
+
+/**
+ * Threshold for two numbers to be considered approximately equal. The value is chosen to be large enough to ignore
+ * rounding errors introduced by floating point arithmetics, and small enough to not mask actual programming errors in
+ * the Scratch program under test.
+ */
+export const EPSILON = 1e-10;
 
 export type Comparison<T extends Interval | null = null> =
     | Eq<T>
@@ -67,6 +75,52 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
     }
 }
 
+function approxEqNum(x: AttributeType, y: AttributeType): boolean {
+    const actual = ModelUtil.returnNumberIfPossible(x, null);
+
+    if (typeof y != "number" || typeof actual != "number") {
+        return false; // at least one value is not a number, so the difference does not exist
+    }
+
+    return Math.abs(actual - y) <= EPSILON;
+}
+
+function approxEq(operand1: AttributeType, operand2: AttributeType) {
+    if (operand1 == operand2) {
+        return true;
+    }
+
+    return approxEqNum(operand1, operand2);
+}
+
+function approxNeq(operand1: AttributeType, operand2: AttributeType) {
+    return !approxEq(operand1, operand2);
+}
+
+function approxLeq(x: AttributeType, y: AttributeType) {
+    if (x <= y) {
+        return true;
+    }
+
+    return approxEqNum(x, y);
+}
+
+function approxGt(x: AttributeType, y: AttributeType) {
+    return !approxLeq(x, y);
+}
+
+function approxGeq(x: AttributeType, y: AttributeType) {
+    if (x >= y) {
+        return true;
+    }
+
+    return approxEqNum(x, y);
+}
+
+function approxLt(x: AttributeType, y: AttributeType) {
+    return !approxGeq(x, y);
+}
+
 class Eq<T extends Interval | null> extends AbstractComparison<T> {
     constructor(operand2: AttributeType, interval: T | null = null) {
         super(operand2, interval);
@@ -77,7 +131,9 @@ class Eq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(operand1 == this.operand2, {actual: operand1, expected: this.operand2});
+        const message = {actual: operand1, expected: this.operand2};
+        const res = approxEq(operand1, this.operand2);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -98,10 +154,9 @@ class Neq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(
-            operand1 != this.operand2 || this._boundaries.includes(operand1),
-            {actual: operand1}
-        );
+        const message = {actual: operand1};
+        const res = approxNeq(operand1, this.operand2) || this._boundaries.includes(operand1);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -119,7 +174,9 @@ class Leq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(operand1 <= this.operand2, {actual: operand1, expected: this.operand2});
+        const message = {actual: operand1, expected: this.operand2};
+        const res = approxLeq(operand1, this.operand2);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -140,10 +197,9 @@ class Lt<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(
-            operand1 < this.operand2 || this._boundaries.includes(operand1),
-            {actual: operand1, expected: this.operand2}
-        );
+        const message = {actual: operand1, expected: this.operand2};
+        const res = approxLt(operand1, this.operand2) || this._boundaries.includes(operand1);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -164,10 +220,9 @@ class Gt<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(
-            operand1 > this.operand2 || this._boundaries.includes(operand1),
-            {actual: operand1, expected: this.operand2}
-        );
+        const message = {actual: operand1, expected: this.operand2};
+        const res = approxGt(operand1, this.operand2) || this._boundaries.includes(operand1);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -185,7 +240,9 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
     }
 
     override apply(operand1: AttributeType): CheckResult {
-        return result(operand1 >= this.operand2, {actual: operand1, expected: this.operand2});
+        const message = {actual: operand1, expected: this.operand2};
+        const res = approxGeq(operand1, this.operand2);
+        return result(res, message);
     }
 
     override negate(): Comparison<T> {
@@ -195,7 +252,7 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
 
 export const CONST_PASS = new class ConstPass extends Neq<null> {
     constructor() {
-        super(NaN, null);
+        super(NaN, null); // Hack: Assuming x is a number, x != NaN is always true as per IEEE 754
     }
 
     override negate(): Comparison {
@@ -205,7 +262,7 @@ export const CONST_PASS = new class ConstPass extends Neq<null> {
 
 export const CONST_FAIL = new class ConstFail extends Eq<null> {
     constructor() {
-        super(NaN, null);
+        super(NaN, null); // Hack: Assuming x is a number, x == NaN is always false as per IEEE 754
     }
 
     override apply(operand1: AttributeType): CheckResult {

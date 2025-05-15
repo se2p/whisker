@@ -3,6 +3,7 @@ import {
     ComparingCheck,
     CONST_FAIL,
     CONST_PASS,
+    EPSILON,
     newComparison,
     newQuantifiedComparison
 } from "../../../../src/whisker/model/checks/Comparison";
@@ -45,8 +46,8 @@ describe.each([
     });
 
     describe.each([
-        ["x < y", resLt, xy.filter(([x, y]) => x < y)],
-        ["x > y", resGt, xy.filter(([x, y]) => x > y)],
+        ["x < y", resLt, xy.filter(([x, y]) => x < y && y - x > EPSILON)],
+        ["x > y", resGt, xy.filter(([x, y]) => x > y && x - y > EPSILON)],
         ["x == y", resEq, number.map((x) => [x, x])],
     ])("when %s", (_, expected, arbitrary) => {
         it.prop([arbitrary])(`is ${expected}`, ([x, value]) => {
@@ -109,17 +110,17 @@ describe.each([
 });
 
 describe.each([
-    ["==", "==", xy.filter(([y, b]) => y != b), true, "if y != b"],
-    ["==", "!=", xy.filter(([y, b]) => y != b), false, "if y != b"],
+    ["==", "==", xy.filter(([y, b]) => y != b && Math.abs(y-b)>EPSILON), true, "if y != b"],
+    ["==", "!=", xy.filter(([y, b]) => y != b && Math.abs(y-b)>EPSILON), false, "if y != b"],
     ["==", "!=", number.map((y) => [y, y]), true, "if y == b"],
-    ["==", ">", xy.filter(([y, b]) => y > b), false, "if y > b"],
+    ["==", ">", xy.filter(([y, b]) => y > b && Math.abs(y-b)>EPSILON), false, "if y > b"],
     ["==", ">", xy.filter(([y, b]) => y <= b), true, "if y <= b"],
     ["==", ">=", xy.filter(([y, b]) => y >= b), false, "if y >= b"],
-    ["==", ">=", xy.filter(([y, b]) => y < b), true, "if y < b"],
-    ["==", "<", xy.filter(([y, b]) => y < b), false, "if y < b"],
+    ["==", ">=", xy.filter(([y, b]) => y < b && Math.abs(y-b)>EPSILON), true, "if y < b"],
+    ["==", "<", xy.filter(([y, b]) => y < b && Math.abs(y-b)>EPSILON), false, "if y < b"],
     ["==", "<", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
     ["==", "<=", xy.filter(([y, b]) => y <= b), false, "if y <= b"],
-    ["==", "<=", xy.filter(([y, b]) => y > b), true, "if y > b"],
+    ["==", "<=", xy.filter(([y, b]) => y > b && Math.abs(y-b)>EPSILON), true, "if y > b"],
 
     ["!=", ">", xy, false, "always"],
     ["!=", ">=", xy, false, "always"],
@@ -128,14 +129,14 @@ describe.each([
 
     [">", ">=", xy, false, "always"],
     [">", "<", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
-    [">", "<", xy.filter(([y, b]) => y < b), false, "if y < b"],
+    [">", "<", xy.filter(([y, b]) => y < b && Math.abs(y-b)>EPSILON), false, "if y < b"],
     [">", "<=", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
-    [">", "<=", xy.filter(([y, b]) => y < b), false, "if y < b"],
+    [">", "<=", xy.filter(([y, b]) => y < b && Math.abs(y-b)>EPSILON), false, "if y < b"],
 
-    [">=", "<", xy.filter(([y, b]) => y < b), false, "if y < b"],
+    [">=", "<", xy.filter(([y, b]) => y < b && Math.abs(y-b)>EPSILON), false, "if y < b"],
     [">=", "<", xy.filter(([y, b]) => y >= b), true, "if y >= b"],
     [">=", "<=", xy.filter(([y, b]) => y <= b), false, "if y <= b"],
-    [">=", "<=", xy.filter(([y, b]) => y > b), true, "if y > b"],
+    [">=", "<=", xy.filter(([y, b]) => y > b && Math.abs(y-b)>EPSILON), true, "if y > b"],
 
     ["<", "<=", xy, false, "always"],
 ])('The contradiction of "x %s y" and "a %s b"',
