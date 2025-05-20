@@ -52,7 +52,6 @@ module.exports = [
                         loader: 'ts-loader',
                         options: {
                             transpileOnly: true, // Speeds up compilation by skipping type checking
-                            experimentalWatchApi: true, // Enables the experimental watch API for faster incremental builds
                         }
                     },
                     exclude: path.resolve(__dirname, '/node_modules/'),
