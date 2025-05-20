@@ -5,7 +5,7 @@ const fs = require("fs");
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = 20000;
+const timeout = 25000;
 const ACCELERATION = Infinity;
 
 async function loadProject(scratchPath, modelPath) {
@@ -71,35 +71,47 @@ beforeEach(async () => {
 });
 
 // Tests for events during a step with a listener in check utility
-describe('Model tests on multiple events per step', () => {
+describe('Model tests', () => {
 
     const table = [
-        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00],
-        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00],
-        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00],
-        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00],
-        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00],
-        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00],
-        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00],
-        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00],
-        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00],
-        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00],
-        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00],
-        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 1.00]
+        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null],
+        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null],
+        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00, null],
+        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null],
+        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null],
+        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null],
+        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null],
+        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00, null],
+        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null],
+        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null],
+        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, null],
+        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 0.95, null],
+        ["fruitcatcher with dynamic inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.7, "test/integration/networkSuites/FruitCatchingDynamic.json"],
+        // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
+        ["fruitcatcher with static inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.97, "test/model/FruitCatching-manual_small.js"],
+        // the lowest coverage value for fruit catcher should be 79/83 = 0.9518..., so 0.95 should not be flaky
     ]
 
-    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage) => {
+    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage, testPath) => {
         await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
             `test/model/model-jsons/${modelFileName}.json`);
-        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
-        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 1);
+        if (testPath === null){
+            await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
+        }else{
+            await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        }
+        const seed = Date.now();
+        await page.evaluate((seed) => document.querySelector('#seed').value = seed, seed);
         await (await page.$('#run-all-tests')).click();
+
         const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
-        if (errorsInModel + failsInModel > errors + fails) {
+        if (errorsInModel + failsInModel > errors + fails || modelCoverage < coverage) {
+            console.log("Used seed:", seed);
             console.log(loggedOutput);
         }
         expect(errorsInModel).toBe(errors);
         expect(failsInModel).toBe(fails);
         expect(modelCoverage).toBeGreaterThanOrEqual(coverage);
     }, timeout);
+
 });

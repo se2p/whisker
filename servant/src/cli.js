@@ -191,8 +191,8 @@ class WhiskerSubCommand extends Command {
     optionTestPath() {
         return this.option(
             '-t, --test-path <Path>',
-            'path to Whisker tests to run (".js")',
-            (testPath) => util.processFilePathExists(testPath, '.js'),
+            'path to Whisker tests to run (".js") or dynamic test suites',
+            (testPath) => util.processFilePathExists(testPath, ['.js', '.json']),
         );
     }
 

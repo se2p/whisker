@@ -105,7 +105,7 @@ class TestRunner extends EventEmitter {
 
         // Load the project and establish an initial save state
         vm.setInterrogativeDebuggerSupported(false);
-        this.util = await this._loadProject(vm, project, props);
+        this.util = await this._loadProject(vm, project, props, modelTester);
         this.vmWrapper.useSaveStates = props.useSaveStates;
         this.saveState = this.vmWrapper._recordInitialState();
 
@@ -148,14 +148,14 @@ class TestRunner extends EventEmitter {
                 }
                 const projectMutation = `${projectName}-${mutant.mutantName}`;
                 logger.info(`Analysing mutant ${i}: ${projectMutation}`);
-                this.util = await this._loadProject(vm, mutant, props);
+                this.util = await this._loadProject(vm, mutant, props, modelTester);
                 this.saveState = this.vmWrapper._recordInitialState();
                 this._initialiseFitnessTargets(vm);
                 this.emit(TestRunner.TEST_MUTATION, projectMutation);
                 this.emit(TestRunner.RESET_TABLE, tests);
                 const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
                 if (tests) {
-                    csv += await this._executeTests(vm, tests, modelTester, props, modelProps,
+                    csv += await this._executeTests(vm, tests, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectMutation, totalAssertions,
                         600000, false, coveragePerTest, timingsPerTest);
@@ -172,7 +172,7 @@ class TestRunner extends EventEmitter {
             this._initialiseFitnessTargets(vm);
             // test only by models
 
-            this.util = await this._loadProject(vm, project, props);
+            this.util = await this._loadProject(vm, project, props, modelTester);
             for (let i = 0; i < modelProps.repetitions; i++) {
                 csv += await this._executeUserModels(vm, modelTester, project, props, modelProps,
                     testResults, projectName, totalAssertions, i);
@@ -183,7 +183,7 @@ class TestRunner extends EventEmitter {
             // test case as long as the test case runs or the model stops.
             this._initialiseFitnessTargets(vm);
             const {startTime, testStatusResults, resultRecords} = this._initialiseCSVRowVariables();
-            const res = await this._executeTests(vm, tests, modelTester, props, modelProps,
+            const res = await this._executeTests(vm, tests, props, modelProps,
                 resultRecords, testStatusResults, testResults,
                 startTime, projectName, totalAssertions,
                 0, true, coveragePerTest, timingsPerTest);
@@ -220,7 +220,7 @@ class TestRunner extends EventEmitter {
      * @param timingsPerTest
      * @return {Promise<string|null>}
      */
-    async _executeTests(vm, tests, modelTester, props, modelProps,
+    async _executeTests(vm, tests, props, modelProps,
                         resultRecords, testStatusResults, testResults,
                         startTime, projectName, totalAssertions,
                         defaultTimeoutPerTest, canBeAborted, coveragePerTest, timingsPerTest) {
@@ -241,7 +241,7 @@ class TestRunner extends EventEmitter {
 
             } else {
                 let timeRunTest = Date.now();
-                result = await this._executeTest(vm, test, modelTester, props, modelProps, defaultTimeoutPerTest);
+                result = await this._executeTest(vm, test, props, modelProps, defaultTimeoutPerTest);
                 timeRunTest = Date.now() - timeRunTest;
 
                 testStatusResults.push(result.status);
@@ -287,12 +287,13 @@ class TestRunner extends EventEmitter {
     async _executeUserModels(vm, modelTester, project, props, modelProps,
                              testResults, projectName, totalAssertions, rep) {
         let csv = "";
-        const indices = modelTester.userModelCount > 0 ? [...Array(modelTester.userModelCount).keys()] : [-1];
+        const indices = modelTester.userModelIndices();
         for (const uM of indices) {
-            this.util = await this._loadProject(vm, project, props);
+            this.util = await this._loadProject(vm, project, props, modelTester);
+            this.vmWrapper.nextUserModelIndex = uM;
             const startTime = Date.now();
-            const result = await this._executeTest(vm, null, modelTester, props, modelProps, 0, uM);
-            result.modelResult.testNbr = Math.min(0, rep * modelTester.userModelCount + uM);
+            const result = await this._executeTest(vm, null, props, modelProps, 0);
+            result.modelResult.testNbr = Math.min(0, rep * indices.length + uM);
             this.emit(TestRunner.TEST_MODEL, result);
             testResults.push(result);
             // Record the results
@@ -446,10 +447,11 @@ class TestRunner extends EventEmitter {
      * @param {ScratchMutant | string} project.
      * @param {{extend: object}=} props
      * @param {boolean} loadSaveState
+     * @param {ModelTester} modelTester
      * @return {Promise<WhiskerUtil>}.
      */
-    async _loadProject(vm, project, props) {
-        const util = new WhiskerUtil(vm, project);
+    async _loadProject(vm, project, props, modelTester) {
+        const util = new WhiskerUtil(vm, project, modelTester);
         await util.prepare(props.accelerationFactor || 1);
         this.vmWrapper = util.getVMWrapper();
         await this.vmWrapper.vm.runtime.translateText2Speech();
@@ -611,17 +613,14 @@ class TestRunner extends EventEmitter {
     /**
      * @param {VirtualMachine} vm .
      * @param {Test} test .
-     * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
      * @param {number} defaultTimeoutPerTest .
-     *
      * @param {duration:number,repetitions:number} modelProps
-     * @param userModelIndex index of the used UserModel
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, test, modelTester, props,
-                       modelProps, defaultTimeoutPerTest = 0, userModelIndex = null) {
+    async _executeTest(vm, test, props,
+                       modelProps, defaultTimeoutPerTest = 0) {
         const result = new TestResult(test);
         const testDriver = this.util.getTestDriver(
             {
@@ -645,10 +644,7 @@ class TestRunner extends EventEmitter {
         CoverageGenerator.clearCoveragePerAssertion();
 
         this.emit(TestRunner.TEST_START, test);
-        modelTester.nextTestDriver = testDriver;
-        modelTester.nextUmIndex = userModelIndex;
         await this.vmWrapper.start();
-        modelTester.prepareModelForNextRun();
         this._setRNGSeeds(props.seed, test, vm);
         this._checkSeed(test);
 
@@ -693,17 +689,15 @@ class TestRunner extends EventEmitter {
                 assert.onPassedAssertion = null;
                 assume.onPassedAssumption = null;
             }
-            modelTester.stopAndUpdateResultStatus(result,false);
-
+            this.vmWrapper.stopModels(result,false);
             await this._determineCoverages(test, props);
-
-        } else if (modelTester.someModelLoaded()) {
+        } else if (this.vmWrapper.modelTester.someModelLoaded()) {
             let updateResultStatus = true;
             // this code executes a User Model or executes the Models without inputs depending on the userModelIndex
             try {
                 // wait until either a maximal duration or until the model stops
                 await testDriver.runUntil(() => {
-                    return !modelTester.running();
+                    return !this.vmWrapper.modelTester.running();
                 }, modelProps.duration);
             } catch (e) {
                 // probably run aborted
@@ -711,10 +705,11 @@ class TestRunner extends EventEmitter {
                 updateResultStatus = false;
                 result.status = Test.ERROR;
             } finally {
-                modelTester.stopAndUpdateResultStatus(result, updateResultStatus);
+                this.vmWrapper.stopModels(result, updateResultStatus);
             }
-
         }
+        // set test driver to null so there is no automatic start before the next test run when resetting vwWrapper
+        this.vmWrapper.nextModelTestDriver = null;
 
         result.assertions = assertions;
         result.assumptions = assumptions;

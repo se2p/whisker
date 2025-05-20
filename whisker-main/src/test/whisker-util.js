@@ -5,7 +5,7 @@ const TestDriver = require('./test-driver');
  * Utility functionality for whisker to access the {@link TestDriver} and {@link VMWrapper}.
  */
 class WhiskerUtil {
-    constructor (vm, project) {
+    constructor (vm, project, modelTester = null) {
 
         /**
          * @type {VirtualMachine} The currently used virtual machine.
@@ -15,7 +15,7 @@ class WhiskerUtil {
         /**
          * @type {VMWrapper} A wrapper for the virtual machine.
          */
-        this.vmWrapper = new VMWrapper(vm, project);
+        this.vmWrapper = new VMWrapper(vm, project, modelTester);
 
         /**
          * @type {string} The project json.
@@ -38,7 +38,9 @@ class WhiskerUtil {
      * @returns {TestDriver} The test driver object.
      */
     getTestDriver (props) {
-        return new TestDriver(this.vmWrapper, props);
+        const t = new TestDriver(this.vmWrapper, props);
+        this.vmWrapper.nextModelTestDriver = t;
+        return t;
     }
 
     /**

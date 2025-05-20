@@ -20,6 +20,7 @@ import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import logger from "../../../util/logger";
 import {Project} from "../../../assembler/project/Project";
+import {ModelTester} from "../../model/ModelTester";
 
 
 export class DynamicNetworkSuite {
@@ -215,13 +216,14 @@ export class DynamicNetworkSuite {
     /**
      * Executes the given network suite by fist initialising required fields and then executing the respective test
      * cases on the original project or the created mutants.
+     * @param modelTester For executing {@linkcode ProgramModel} with inputs from the network.
      * @returns Results of network suite execution in csv format.
      */
-    protected async execute(): Promise<[string, Project[]]> {
+    protected async execute(modelTester: ModelTester): Promise<[string, Project[]]> {
 
         // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
-        await this.initialiseCommonVariables();
+        await this.initialiseCommonVariables(modelTester);
         this.initialiseExecutionParameter();
         this.initialiseCoverageMaps(this.vm);
         this.testCases = this.loadTestCases();
@@ -250,12 +252,15 @@ export class DynamicNetworkSuite {
     /**
      * Initialises the Scratch VM, Container variables used across Whisker and the StatisticsCollector responsible
      * for creating a csv file with the results of the test execution.
+     * @param modelTester For executing {@linkcode ProgramModel} with inputs from the network
      */
-    private async initialiseCommonVariables(): Promise<void> {
+    private async initialiseCommonVariables(modelTester: ModelTester): Promise<void> {
         // Set up Scratch VM.
-        const util = new WhiskerUtil(this.vm, this.project);
+        const util = new WhiskerUtil(this.vm, this.project, modelTester);
         const vmWrapper = util.getVMWrapper();
         await util.prepare(this.properties['acceleration'] as number || 1);
+        // create TestDriver for Model before vmWrapper starts
+        const testDriver = util.getTestDriver({extend: undefined});
         await util.start();
 
         // Activate CoverageTracing
@@ -264,7 +269,7 @@ export class DynamicNetworkSuite {
         // Set up Container variables.
         Container.vm = this.vm;
         Container.vmWrapper = vmWrapper;
-        Container.testDriver = util.getTestDriver({});
+        Container.testDriver = testDriver;
         Container.acceleration = this.properties['acceleration'] as number;
     }
 
