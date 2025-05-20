@@ -76,7 +76,7 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
                 }
 
                 if (!s.isTouchingSprite(spriteName2)) {
-                    return fail({message: `Expected sprite "${s}" to touch sprite "${spriteName2}"`});
+                    return fail({message: `Expected sprite "${s.name}" to touch sprite "${spriteName2}"`});
                 }
 
                 return pass();

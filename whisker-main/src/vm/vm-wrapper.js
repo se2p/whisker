@@ -6,6 +6,7 @@ const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
 require('setimmediate'); // attaches setImmediate to the global scope as side effect
+const TestResult = require("../test-runner/test-result");
 
 const STEP_TIME = 1000 / 30;
 
@@ -21,12 +22,27 @@ function pause(millis) {
  */
 class VMWrapper {
 
-    constructor(vm, project) {
+    constructor(vm, project, modelTester = null) {
 
         /**
          * @type {VirtualMachine} The used virtual machine.
          */
         this.vm = vm;
+
+        /**
+         * @type {ModelTester | null} Executes Models with the provided inputs
+         */
+        this._modelTester = modelTester;
+
+        /**
+         * @type {TestResult} Results of executed models.
+         */
+        this.currentModelTestResult = null;
+
+        /**
+         * @type {TestResult[]} Results of executed models.
+         */
+        this.modelTestResults = [];
 
         /**
          * @type {number}
@@ -467,6 +483,7 @@ class VMWrapper {
      */
     loadSaveState(saveState) {
         // Delete clones
+        this.stopModels();
         const clones = [];
         for (const targetsKey in this.vm.runtime.targets) {
             if (!this.vm.runtime.targets[targetsKey].isOriginal) {
@@ -504,6 +521,7 @@ class VMWrapper {
         this.inputs.resetMouse();
         this.inputs.resetKeyboard();
         this._totalStepsExecuted = saveState["totalStepsExecuted"];
+        this.prepareModelForNextRun();
     }
 
     /**
@@ -535,6 +553,7 @@ class VMWrapper {
         this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange);
 
         this.vm.greenFlag();
+        this.prepareModelForNextRun();
         this.vm.runtime.virtualSound = -1;
 
         this.aborted = false;
@@ -544,6 +563,7 @@ class VMWrapper {
      * Stop the vm wrapper by resetting it to its original state and stopping the virtual machine.
      */
     end() {
+        this.stopModels();
         this.cancelScratchRun();
         this.vm.stopAll();
 
@@ -585,9 +605,11 @@ class VMWrapper {
      * @returns {Promise<void>}
      */
     async resetVM() {
+        this.stopModels();
         await this.waitForProjectLoadFinished();
         await this.vm.loadProject(this._originalProjectJSON);
         this._totalStepsExecuted = 0;
+        this.prepareModelForNextRun();
     }
 
     /**
@@ -796,6 +818,69 @@ class VMWrapper {
 
     get useSaveStates() {
         return this._useSaveStates;
+    }
+
+    get modelTester(){
+        return this._modelTester;
+    }
+
+    /**
+     * Sets the TestDriver for the ModelTester if a ModelTester is loaded in this vm-wrapper
+     * @param {TestDriver} testDriver
+     */
+    set nextModelTestDriver(testDriver) {
+        if (this._modelTester){
+            this._modelTester.nextTestDriver = testDriver;
+        }
+    }
+
+    /**
+     * Sets the index of the UserModel to be executed in the next run if a ModelTester is loaded in this vm-wrapper
+     * @param {number} umIndex
+     */
+    set nextUserModelIndex(umIndex){
+        if (this._modelTester){
+            this._modelTester.nextUmIndex = umIndex;
+        }
+    }
+
+    /**
+     * Stops the models and updates the results if required.
+     */
+    stopModels(result = null, updateResultStatus = true) {
+        if (!this._modelTester) {
+            return;
+        }
+
+        if (result !== null) {
+            this._modelTester.stopModels(result, updateResultStatus);
+        } else if (this.modelTester.canBeStopped) {
+            // automatic stop
+            this._modelTester.stopModels(this.currentModelTestResult, updateResultStatus);
+            this.modelTestResults.push(this.currentModelTestResult);
+            this.currentModelTestResult = null;
+        }
+    }
+
+    prepareModelForNextRun() {
+        if (this._modelTester && this._modelTester.nextTestDriver) {
+            this.stopModels();
+            this.currentModelTestResult = new TestResult(null);
+            this._modelTester.prepareModelForNextRun();
+        }
+    }
+
+    /**
+     * Generates a record where the key {@linkcode} is set to {@linkcode this.modelTestResults}
+     * @param projectName Name of the project
+     * @return {Record<string, TestResult[]>} results for this project
+     */
+    getTestResultsForProjectName(projectName) {
+        this.stopModels();
+        const summary = {};
+        summary[projectName] = this.modelTestResults;
+        this.modelTestResults = [];
+        return summary;
     }
 
     /**
