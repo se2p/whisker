@@ -21,17 +21,6 @@ module.exports = [
             ]
         },
 
-        // Enable persistent caching with management options
-        cache: {
-            type: 'filesystem',
-            buildDependencies: {
-                config: [__filename]
-            },
-            cacheDirectory: path.resolve(__dirname, '.webpack-cache-css-html'),
-            maxAge: 1000 * 60 * 60, // 1 hour
-            compression: 'gzip' // Compress cache files to save space
-        },
-
         output: {
             path: path.resolve(__dirname, 'dist'),
         },
@@ -146,7 +135,7 @@ module.exports = [
                     use: {
                         loader: 'ts-loader',
                         options: {
-                            experimentalWatchApi: true, // Enables the experimental watch API for faster incremental builds
+                            experimentalWatchApi: true, // Faster builds through caching
                         }
                     }
                     // TODO: Include only 'src' once whisker-main isn't included through '../../whisker-main' anymore.

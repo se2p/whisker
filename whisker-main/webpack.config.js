@@ -14,17 +14,6 @@ module.exports = [
             extensions: ['.tsx', '.ts', '.js']
         },
 
-        // Enable persistent caching with management options
-        cache: {
-            type: 'filesystem',
-            buildDependencies: {
-                config: [__filename]
-            },
-            cacheDirectory: path.resolve(__dirname, '.webpack-cache-web'),
-            maxAge: 1000 * 60 * 60, // 1 hour
-            compression: 'gzip' // Compress cache files to save space
-        },
-
         output: {
             library: 'Whisker',
             filename: '[name].js',
@@ -71,17 +60,6 @@ module.exports = [
             whisker: path.resolve('src', 'index.js')
         },
 
-        // Enable persistent caching with management options
-        cache: {
-            type: 'filesystem',
-            buildDependencies: {
-                config: [__filename]
-            },
-            cacheDirectory: path.resolve(__dirname, '.webpack-cache-node'),
-            maxAge: 1000 * 60 * 60, // 1 hour
-            compression: 'gzip' // Compress cache files to save space
-        },
-
         output: {
             filename: '[name].js',
             libraryTarget: 'commonjs2',
@@ -111,7 +89,6 @@ module.exports = [
                         loader: 'ts-loader',
                         options: {
                             transpileOnly: true, // Speeds up compilation by skipping type checking
-                            experimentalWatchApi: true, // Enables the experimental watch API for faster incremental builds
                         }
                     },
                     exclude: /node_modules/
