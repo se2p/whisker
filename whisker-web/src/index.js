@@ -5,6 +5,7 @@ import {StateActionRecorder} from 'whisker-main/src/whisker/whiskerNet/Misc/Stat
 import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
 import {FileSaver} from './web-libs';
 import uid from 'scratch-vm/src/util/uid';
+import {Container} from "whisker-main/src/whisker/utils/Container";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -596,8 +597,12 @@ const runAllTests = async function () {
     // Dynamic Suite
     if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
         let coverage;
+        let summary;
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
+
+            Whisker.scratch.vm.runtime.onBlockCovered(blockId => CoverageGenerator._coverBlock(blockId));
+
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
 
             const properties = {};
@@ -619,8 +624,9 @@ const runAllTests = async function () {
 
             const dynamicSuite = new DynamicNetworkSuite(Whisker.scratch.project, Whisker.scratch.vm, Whisker.tests,
                 properties);
-            const [csv, mutantPrograms] = await dynamicSuite.execute();
+            const [csv, mutantPrograms] = await dynamicSuite.execute(Whisker.modelTester);
 
+            summary = Container.vmWrapper.getTestResultsForProjectName(properties.projectName);
             // Download generated mutants if desired.
             if (mutantDownload && mutantPrograms.length > 0){
                 await downloadMutants(mutantPrograms);
@@ -639,12 +645,17 @@ const runAllTests = async function () {
             return;
         }
 
-        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+        if (Whisker.modelTester.someModelLoaded()) {
+            _printSummaryForTestsAndModels(summary, coverage);
+        } else {
+            const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+            const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
-        Whisker.outputRun.println([
-            coverageString
-        ].join('\n'));
+            Whisker.outputRun.println([
+                coverageString
+            ].join('\n'));
+        }
+
     } else { // Static Suite
         for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
             const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);

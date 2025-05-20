@@ -107,6 +107,14 @@ export class ModelTester extends EventEmitter {
         return this._userModels.length;
     }
 
+    get canBeStopped(): boolean {
+        return this._isRunning;
+    }
+
+    userModelIndices(): number[] {
+        return this.userModelCount > 0 ? [...Array(this.userModelCount).keys()] : [ModelTester.NO_USER_MODEL];
+    }
+
     running(): boolean {
         if (!this._isRunning) {
             return false;
@@ -124,6 +132,10 @@ export class ModelTester extends EventEmitter {
         return result;
     }
 
+    get nextTestDriver():TestDriver {
+        return this._nextTestDriver;
+    }
+
     set nextTestDriver(value: TestDriver) {
         this._nextTestDriver = value;
     }
@@ -136,13 +148,7 @@ export class ModelTester extends EventEmitter {
         return [...this._programModels, ...this._userModels, ...this._onTestEndModels].map((m) => m.toJSON());
     }
 
-    /**
-     * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
-     * @param t Instance of the test driver for this test run.
-     * @param umIndex Index of the UserModel to use for generating input.
-     *                       If the index is not valid all UserModels are used.
-     */
-    prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
+    private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
         if (!this.someModelLoaded()) {
             return;
         }
@@ -157,12 +163,12 @@ export class ModelTester extends EventEmitter {
 
         const allModels: Model[] = [...this._programModels, ...this._onTestEndModels];
 
-        if (0 <= umIndex && umIndex < this.userModelCount) {
+        if (umIndex === ModelTester.NO_USER_MODEL) {
+            this._runningUserModel = null;
+        } else if (0 <= umIndex && umIndex < this.userModelCount && umIndex !== null) { // 0<=null<=0 evaluates to true
             this._runningUserModel = this._userModels[umIndex];
             allModels.push(this._runningUserModel);
             logger.debug(`start test with user model with id: ${this._runningUserModel.id}`);
-        } else if (umIndex === ModelTester.NO_USER_MODEL || umIndex === null) {
-            this._runningUserModel = null;
         } else {
             throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
         }
@@ -193,7 +199,8 @@ export class ModelTester extends EventEmitter {
     }
 
     /**
-     * Prepares the model for another run with the last selected UserModel and TestDriver.
+     * Prepare the model for a test run with the last selected UserModel and TestDriver.
+     * Resets the models and adds the callbacks to the test driver.
      */
     prepareModelForNextRun(): void {
         this.prepareModel(this._nextTestDriver, this._nextUmIndex);
@@ -346,7 +353,7 @@ export class ModelTester extends EventEmitter {
         //     logger.debug("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
     }
 
-    stopAndUpdateResultStatus(result: TestResult, updateResultStatus = true): void {
+    stopModels(result: TestResult, updateResultStatus = true): void {
         const res = this.stopAndGetModelResult();
         result.modelResult = res;
         if (res && updateResultStatus) {
@@ -361,46 +368,48 @@ export class ModelTester extends EventEmitter {
         if (!this.someModelLoaded()) {
             return null;
         }
-        this._isRunning = false;
-        this._checkUtility!.stop();
-        this._modelStepCallback!.disable();
-        this._onTestEndCallback!.disable();
-        this._haltAllCallback!.disable();
-        const models = [...this._programModels, ...this._onTestEndModels];
-        models.forEach(model => {
-            if (model.stopped()) {
-                // logger.debug(`Model '${model.id}' stopped.`);
-                this._result!.log.push("Model '" + model.id + "' stopped.");
-                this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
-            }
-        });
-        const sprites = this._testDriver!.getSprites(() => true, false);
-        const log = [];
-        log.push("--- State of variables:");
-
-        sprites.forEach((sprite: Sprite) => {
-            sprite.getVariables().forEach(variable => {
-                const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
-                this._result!.state.push(varOutput);
-                log.push("--- " + varOutput);
+        if (this._isRunning) {
+            this._isRunning = false;
+            this._checkUtility!.stop();
+            this._modelStepCallback!.disable();
+            this._onTestEndCallback!.disable();
+            this._haltAllCallback!.disable();
+            const models = [...this._programModels, ...this._onTestEndModels];
+            models.forEach(model => {
+                if (model.stopped()) {
+                    // logger.debug(`Model '${model.id}' stopped.`);
+                    this._result!.log.push("Model '" + model.id + "' stopped.");
+                    this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
+                }
             });
-        });
-        if (log.length > 1) {
-            this.emit(ModelTester.MODEL_LOG, log.join("\n"));
+            const sprites = this._testDriver!.getSprites(() => true, false);
+            const log = [];
+            log.push("--- State of variables:");
+
+            sprites.forEach((sprite: Sprite) => {
+                sprite.getVariables().forEach(variable => {
+                    const varOutput = sprite.name + "." + variable.name + " = " + variable.value;
+                    this._result!.state.push(varOutput);
+                    log.push("--- " + varOutput);
+                });
+            });
+            if (log.length > 1) {
+                this.emit(ModelTester.MODEL_LOG, log.join("\n"));
+            }
+
+            const coverages = {covered: [] as string[][], total: 0};
+
+            const programModels = [...this._programModels, ...this._onTestEndModels];
+            programModels.forEach(model => {
+                const currentCov = model.getCoverageCurrentRun();
+                coverages.covered.push(currentCov.covered);
+                coverages.total += currentCov.total;
+                this._result!.coverage[model.id] = currentCov;
+            });
+
+            this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
+            // logger.debug("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         }
-
-        const coverages = {covered: [] as string[][], total: 0};
-
-        const programModels = [...this._programModels, ...this._onTestEndModels];
-        programModels.forEach(model => {
-            const currentCov = model.getCoverageCurrentRun();
-            coverages.covered.push(currentCov.covered);
-            coverages.total += currentCov.total;
-            this._result!.coverage[model.id] = currentCov;
-        });
-
-        this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
-        // logger.debug("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         return this._result!;
     }
 

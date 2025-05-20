@@ -2173,13 +2173,16 @@
                         ]
                     },
                     {
-                        "name": "TouchingHorizEdge",
-                        "negated": true,
+                        "name": "AttrComp",
+                        "negated": false,
                         "args": [
                             [
                                 "Apfel",
                                 "Apple"
-                            ]
+                            ],
+                            "y",
+                            ">",
+                            -130
                         ]
                     },
                     {
