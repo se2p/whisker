@@ -6,17 +6,17 @@ import {FitnessFunction} from "../../search/FitnessFunction";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {Randomness} from "../../utils/Randomness";
-import {RegressionNode} from "../NetworkComponents/RegressionNode";
-import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
+import {ActionNode} from "../NetworkComponents/ActionNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {name} from "ntc";
 import assert from "assert";
-import {FeatureGroup, InputFeatures} from "../Misc/InputExtraction";
+import {InputFeatures} from "../Misc/InputExtraction";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
+import {MouseMoveDimensionEvent} from "../../testcase/events/MouseMoveDimensionEvent";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -34,16 +34,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Maps sprites and their respective features to the corresponding input node.
      */
     private readonly _inputNodes = new Map<string, Map<string, InputNode>>()
-
-    /**
-     * Maps events to the corresponding classification node.
-     */
-    protected readonly _classificationNodes = new Map<string, ClassificationNode>();
-
-    /**
-     * Maps events which take at least one parameter as input to the corresponding regression nodes.
-     */
-    protected readonly _regressionNodes = new Map<string, RegressionNode[]>();
 
     /**
      * Reference activation trace serving as the ground truth.
@@ -101,7 +91,7 @@ export abstract class NetworkChromosome extends Chromosome {
     private _playTime = 0;
 
     /**
-     * Determined whether on a child with equivalent network structure, gradient descent has already been applied.
+     * Determined if on a child with equivalent network structure, gradient descent has already been applied.
      * There is no reason for applying gradient descent on the same parent twice.
      */
     private _gradientDescentChild = false;
@@ -125,12 +115,6 @@ export abstract class NetworkChromosome extends Chromosome {
      * Saves the achieved coverage of the chromosome during the playthrough.
      */
     private _coverage = new Set<string>();
-
-    /**
-     * Saves the codons of the network similarly to other non-network chromosomes.
-     * Used for transforming the network into a TestChromosome for evaluating its StatementFitness.
-     */
-    private _codons: number[] = [];
 
     /**
      * Random number generator.
@@ -199,7 +183,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
                 this.inputNodes.set(spriteKey, spriteNodes);
             } else {
-                // We haven't encountered a new Sprite, but we still have to check
+                // We have not encountered a new Sprite, but we still have to check
                 // if we encountered new features of a Sprite.
                 for (const featureKey of featureKeys) {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
@@ -222,7 +206,7 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Adds additional classification/regression nodes if we have encountered a new event during the playthrough.
+     * Adds additional output nodes if we have encountered new events during the playthrough.
      * @param events a list of encountered events.
      */
     public updateOutputNodes(events: ScratchEvent[]): void {
@@ -232,8 +216,8 @@ export abstract class NetworkChromosome extends Chromosome {
             // Update MouseMoveEvents by changing the Event itself to prevent an explosion of such events.
             if (event instanceof MouseMoveToEvent) {
                 const targetSprite = event.sprite;
-                for (const classNode of this.classificationNodes.values()) {
-                    const nodeEvent = classNode.event;
+                for (const actionNode of this.getTriggerActionNodes()) {
+                    const nodeEvent = actionNode.event;
                     if (nodeEvent instanceof MouseMoveToEvent && nodeEvent.sprite === targetSprite
                         && (nodeEvent.x !== event.x || nodeEvent.y !== event.y)) {
                         nodeEvent.x = event.x;
@@ -243,25 +227,15 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
             }
 
-            // Check if we have to add new event nodes.
-            if (!this.classificationNodes.has(event.stringIdentifier())) {
+            // Check if we have to add a new action node.
+            const actionNodes = [...this.getTriggerActionNodes(), ...this.getContinuousActionNodes()];
+            if (!actionNodes.some(node => node.event.stringIdentifier() === event.stringIdentifier())) {
                 updated = true;
-                const featureID = `C:${event.stringIdentifier()}`;
+                const featureID = `A:${event.stringIdentifier()}`;
                 const id = NetworkChromosome.getNonHiddenNodeId(featureID);
-                const classificationNode = new ClassificationNode(id, event, ActivationFunction.NONE);
-                this._layers.get(1).push(classificationNode);
-                this.connectNodesToInputLayer([classificationNode], this._inputConnectionMethod);
-            }
-            // Check if we also have to add new regression nodes.
-            if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
-                updated = true;
-                for (const parameter of event.getSearchParameterNames()) {
-                    const featureID = `R:${event.stringIdentifier()}-${parameter}`;
-                    const id = NetworkChromosome.getNonHiddenNodeId(featureID);
-                    const regressionNode = new RegressionNode(id, event, parameter);
-                    this._layers.get(1).push(regressionNode);
-                    this.connectNodesToInputLayer([regressionNode], this._inputConnectionMethod);
-                }
+                const actionNode = new ActionNode(id, event, event instanceof MouseMoveDimensionEvent);
+                this._layers.get(1).push(actionNode);
+                this.connectNodesToInputLayer([actionNode], this._inputConnectionMethod);
             }
         }
         // If the network's structure has changed, re-generate the new network.
@@ -310,26 +284,6 @@ export abstract class NetworkChromosome extends Chromosome {
             }
         }
 
-        // Add output nodes to the corresponding maps.
-        for (const node of this._layers.get(1)) {
-            // Add classification nodes to the ClassificationNode-Map.
-            if (node instanceof ClassificationNode) {
-                if (!this.classificationNodes.has(node.event.stringIdentifier())) {
-                    this.classificationNodes.set(node.event.stringIdentifier(), node);
-                }
-            }
-
-            // Add Regression nodes to the RegressionNode-Map.
-            if (node instanceof RegressionNode) {
-                if (!this.regressionNodes.has(node.event.stringIdentifier())) {
-                    const newParameterVector: RegressionNode[] = [];
-                    newParameterVector.push(node);
-                    this.regressionNodes.set(node.event.stringIdentifier(), newParameterVector);
-                } else if (!this.regressionNodes.get(node.event.stringIdentifier()).includes(node))
-                    this.regressionNodes.get(node.event.stringIdentifier()).push(node);
-            }
-        }
-
         // Go through each connection and set up the incoming connections of each node.
         for (const connection of this._connections) {
             const targetNode = connection.target;
@@ -364,57 +318,16 @@ export abstract class NetworkChromosome extends Chromosome {
 
         const layers = [...this._layers.keys()].sort();
         for (const layer of layers) {
-            const nodes = this.layers.get(layer);
-
-            // In the first layer, we set up our inputs.
             if (layer === 0) {
                 this.setUpInputs(inputs);
-            }
-
-            // Hidden nodes
-            else if (layer < 1) {
-                // For each node fetch the incoming connections, calculate the node value and activate the node using
-                // the defined activation function.
-                for (const node of nodes) {
+            } else {
+                for (const node of this._layers.get(layer)) {
                     this._calculateNodeValue(node);
                     node.activationValue = node.activate();
                 }
-            } else {
-                // For output nodes, calculate the node values first since we require them for the softmax function within
-                // the classification nodes.
-                for (const node of nodes) {
-                    this._calculateNodeValue(node);
-                }
-
-                // Check if at least one output node has received an input. If not, we have a defect network.
-                if (this.layers.get(1).every(node => !node.activatedFlag)) {
-                    return false;
-                }
-
-                // Collect Node values
-                const classNodeValues: number[] = [];
-                for (const node of this.classificationNodes.values()) {
-                    if (node.activatedFlag) {
-                        classNodeValues.push(node.nodeValue);
-                    }
-                }
-
-                // Softmax Normalisation
-                const maxValue = Math.max(...classNodeValues);
-                const denominator = classNodeValues.reduce((acc, curr) => acc + Math.exp(curr - maxValue), 0);
-
-                // Activate the classification nodes using softmax and
-                // the regression nodes with their specified activation function.
-                for (const node of nodes) {
-                    if (node instanceof ClassificationNode) {
-                        node.activationValue = node.activate(denominator, maxValue);
-                    } else if (node instanceof RegressionNode) {
-                        node.activationValue = node.activate();
-                    }
-                }
             }
         }
-        return true;
+        return [...this.layers.get(1)].some(node => node.activatedFlag);
     }
 
     /**
@@ -508,7 +421,7 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     public updateActivationTrace(step: number): void {
         const tracedNodes = this.getAllNodes()
-            .filter(node => node.type === NodeType.HIDDEN || node instanceof ClassificationNode);
+            .filter(node => node.type === NodeType.HIDDEN || node.type === NodeType.OUTPUT);
 
         if (this.testActivationTrace === undefined) {
             this.testActivationTrace = new ActivationTrace(tracedNodes);
@@ -527,7 +440,7 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Generates a string representation in dot format of the given NetworkChromosome.
+     * Generates a string representation in the dot format of the given NetworkChromosome.
      * @returns string dot format of the given chromosome
      */
     override toString(): string {
@@ -576,7 +489,7 @@ export abstract class NetworkChromosome extends Chromosome {
     public abstract toJSON(): Record<string, (number | NodeGene | ConnectionGene)>;
 
     getLength(): number {
-        return this._codons.length;
+        return this.layers.size;
     }
 
     override async getFitness(fitnessFunction: FitnessFunction<this>, fitnessKey: number): Promise<number> {
@@ -646,38 +559,40 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
+     * Returns all trigger action nodes of the network.
+     * @returns all trigger action nodes of the network.
+     */
+    public getTriggerActionNodes(): ActionNode[] {
+        return this.getActionNodes().filter(node => !node.continuous);
+    }
+
+    /**
+     * Returns all continuous action nodes of the network.
+     * @returns all continuous action nodes of the network.
+     */
+    public getContinuousActionNodes(): ActionNode[] {
+        return this.getActionNodes().filter(node => node.continuous);
+    }
+
+    /**
+     * Returns all action nodes of the network.
+     * In theory, the final layer should only contain action nodes.
+     * However, in practice, the final layer can also contain hidden nodes.
+     * This can happen if a recurrent self-loop is added to one of the output neurons
+     * and a hidden neuron is inserted by splitting this recurrent connection.
+     *
+     *
+     * @returns all action nodes of the network.
+     */
+    public getActionNodes(): ActionNode[] {
+        return [...this.layers.get(1)].filter(node => node instanceof ActionNode) as ActionNode[];
+    }
+
+    /**
      * Sorts the layer map by increasing keys.
      */
     public sortLayer(): void {
-        this._layers = new Map([...this.layers.entries()].sort());
-    }
-
-    /**
-     * Extracts the {@link InputFeatures} from the input neurons.
-     * @return InputFeatures loaded in the input layer.
-     */
-    public extractInputFeatures(): InputFeatures {
-        const features: InputFeatures = new Map<string, FeatureGroup>();
-        for (const [sprite, spriteFeatures] of this.inputNodes.entries()) {
-            const featureGroup: FeatureGroup = new Map<string, number>();
-            for (const features of spriteFeatures.keys()) {
-                featureGroup.set(features, 0);
-            }
-            features.set(sprite, featureGroup);
-        }
-        return features;
-    }
-
-    /**
-     * Extracts the supported output features of this node from the output nodes.
-     * @returns mapping of event identifier to found {@link ScratchEvent} in output nodes.
-     */
-    public extractOutputFeatures(): Map<string, ScratchEvent> {
-        const outputFeatures = new Map<string, ScratchEvent>();
-        for (const event of [...this.classificationNodes.values()].map(node => node.event)) {
-            outputFeatures.set(event.stringIdentifier(), event);
-        }
-        return outputFeatures;
+        this._layers = new Map([...this.layers.entries()].sort(([keyA], [keyB]) => keyA - keyB));
     }
 
     get uID(): number {
@@ -706,14 +621,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     get inputNodes(): Map<string, Map<string, InputNode>> {
         return this._inputNodes;
-    }
-
-    get classificationNodes(): Map<string, ClassificationNode> {
-        return this._classificationNodes;
-    }
-
-    get regressionNodes(): Map<string, RegressionNode[]> {
-        return this._regressionNodes;
     }
 
     get fitness(): number {
@@ -834,14 +741,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set noveltyScore(value: number) {
         this._noveltyScore = value;
-    }
-
-    set codons(value: number[]) {
-        this._codons = value;
-    }
-
-    get codons(): number[] {
-        return this._codons;
     }
 
     get coverageObjectives(): Map<number, number> {

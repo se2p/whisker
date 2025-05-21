@@ -15,6 +15,7 @@ async function openWindow({page}) {
         logger.info(`Start Recording ${recordProject.path} for ${recordingTime} seconds`);
 
         // Start game and recording.
+        await new Promise((resolve) => setTimeout(resolve, 500))
         await (await page.$('#record')).click();
         await (await page.$('#green-flag')).click();
         await (await page.$('#scratch-stage')).focus();

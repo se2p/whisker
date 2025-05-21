@@ -121,7 +121,6 @@ describe('Test NEAT', () => {
         let found = false;
         let speciesString = "Current fitness Target: XOR\n";
         while (!found) {
-            // logger.debug("Generation: " + generation);
             for (const network of population.networks) {
                 let error_sum = 0;
                 for (let i = 0; i < 2; i++) {
@@ -136,14 +135,13 @@ describe('Test NEAT', () => {
                         inputMap.get("Test").set("Gate2", k);
                         network.activateNetwork(inputMap);
 
-                        const networkOutput = NeuroevolutionUtil.sigmoid(network.classificationNodes.get('XOR').nodeValue, 1);
+                        const networkOutput = NeuroevolutionUtil.sigmoid(network.getTriggerActionNodes().find(node => node.event.stringIdentifier() === 'XOR')?.nodeValue ?? 0, 1);
                         error_sum += Math.abs(groundTruth - Math.abs(networkOutput));
                     }
                 }
                 network.fitness = (4 - error_sum) ** 2;
                 if (network.fitness >= 15.8) {
                     found = true;
-                    // logger.debug(network.toString());
                     break;
                 }
             }
@@ -159,7 +157,6 @@ describe('Test NEAT', () => {
 
             await population.evolve();
         }
-        // logger.debug(speciesString);
         expect(population.populationChampion.fitness).toBeGreaterThan(15.7);
     });
 

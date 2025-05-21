@@ -4,7 +4,7 @@ import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponen
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
-import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {ActionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActionNode";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
@@ -129,8 +129,8 @@ describe("Test NeatMutation", () => {
     test("Test MutateAddConnection with recurrent connection between output Nodes", () => {
         const innovationLengthBefore = NeatPopulation.innovations.length;
         const iNode = new InputNode(0, "Sprite1", "X-Position");
-        const oNode1 = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
-        const oNode2 = new ClassificationNode(2, new ClickStageEvent(), ActivationFunction.SIGMOID);
+        const oNode1 = new ActionNode(1, new WaitEvent());
+        const oNode2 = new ActionNode(2, new ClickStageEvent());
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [iNode]);
         layer.set(1, [oNode1, oNode2]);

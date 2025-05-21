@@ -62,18 +62,16 @@ export class JavaScriptConverter {
         // If we create a NE Suite, we have to set some configurations.
         const configs = {};
         if (Container.isNeuroevolution) {
-            // Set necessary configuration parameter for re-executing the dynamic suite.
+            // Set the necessary configuration parameter for re-executing the dynamic suite.
             configs['testSuiteType'] = 'dynamic';
             configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
             configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
             configs['seed'] = Container.config.getRandomSeed();
 
-            const durationConfigs = {};
-            durationConfigs['waitStepUpperBound'] = Container.config.getWaitStepUpperBound();
-            durationConfigs['pressDurationUpperBound'] = Container.config.getPressDurationUpperBound();
-            durationConfigs['soundDuration'] = Container.config.getSoundDuration();
-            durationConfigs['clickDuration'] = Container.config.getClickDuration();
-            configs['durations'] = durationConfigs;
+            const eventConfigs = {};
+            eventConfigs['skipFrame'] = Container.config.getSkipFrame();
+            eventConfigs['typeNumberMagnitude'] = Container.config.getTypeNumberMagnitude();
+            configs['events'] = eventConfigs;
         }
 
         // Generate static test suite.

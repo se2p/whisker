@@ -10,21 +10,18 @@ import Runtime from "scratch-vm/src/engine/runtime";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
-import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
-import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {Util} from "../../../index";
 import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {MouseDownForStepsEvent} from "../../testcase/events/MouseDownForStepsEvent";
 import WhiskerUtil from "../../../test/whisker-util";
-import logger from "../../../util/logger";
 
 
 export class StateActionRecorder extends EventEmitter {
     private readonly WAIT_THRESHOLD = Infinity;
     private readonly MOUSE_MOVE_THRESHOLD = 5;
-    private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveEvent'
+    private readonly MOUSE_MOVE_ACTION_KEY = 'MouseMoveDimensionEvent-X'
     private readonly MOUSE_DOWN_ACTION_KEY = 'MouseDownForStepsEvent'
 
     private readonly _scratch: Scratch;
@@ -136,11 +133,8 @@ export class StateActionRecorder extends EventEmitter {
         const event = this._inputToEvent(actionData);
         if (event) {
             const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(event => event.stringIdentifier());
-
-            // Check if event is present at all. Always include typeTextEvents since they can only be emitted if a
-            // question was asked.
-            if (availableActions.some(actionId => actionId.localeCompare(event.stringIdentifier(), 'en', {sensitivity: 'base'}) === 0) ||
-                event instanceof TypeTextEvent || event instanceof TypeNumberEvent) {
+            const isActionAvailable = availableActions.some(actionId => actionId.localeCompare(event.stringIdentifier(), 'en', {sensitivity: 'base'}) === 0);
+            if (isActionAvailable) {
                 this._recordAction(event);
             }
         }
@@ -149,75 +143,57 @@ export class StateActionRecorder extends EventEmitter {
     /**
      * Maps a received action data object to the corresponding {@link ScratchEvent}.
      * @param actionData the action data object containing details of the input event.
-     * @returns the ScratchEvent corresponding to the supplied action data.
+     * @returns the ScratchEvent corresponding to the supplied action data, or null if the action is not supported.
      */
-    private _inputToEvent(actionData): ScratchEvent {
+    private _inputToEvent(actionData): ScratchEvent | null {
         let event: ScratchEvent;
         switch (actionData.device) {
             case 'keyboard':
                 event = this._handleKeyBoardInput(actionData);
                 break;
-            case 'text':
-                event = this._handleTextInput(actionData);
-                break;
             case 'mouse':
                 event = this._handleMouseInput(actionData);
                 break;
             default:
-                event = undefined;
+                event = null;
         }
         return event;
     }
 
     /**
      * Handles keyboard input such as key presses.
+     * We only store key presses once they have been released again.
      * @param actionData the action data object containing details of the input event.
-     * @returns the Scratch event to the observed action data.
+     * @returns the key press to be recorded if it has been executed entirely, i.e., the key has been released again.
+     * Otherwise, returns null.
      */
-    private _handleKeyBoardInput(actionData): ScratchEvent {
-        if (actionData.isDown && actionData.key !== null) {
-            const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(actionData.key);
+    private _handleKeyBoardInput(actionData): ScratchEvent | null {
+        const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(actionData.key);
 
-            // Long key-presses account for multiple isDown actions leading to the replacement of the first press.
-            // Hence, we only set a counter if the key is not registered yet.
+        if (actionData.isDown && actionData.key !== null) { // Start of key press or key is still pressed.
+
+            // Register the key press if the key has not been pressed before.
             if (!this._pressedKeys.has(key)) {
-                // Check if we had a long period without any actions being executed.
                 this._checkForWait(false);
                 this._pressedKeys.set(key, this._getCurrentStepCount());
                 this._stateAtAction.set(new KeyPressEvent(key).stringIdentifier(), InputExtraction.extractFeatures(this._vm));
             }
-        } else if (!actionData.isDown && actionData.key !== null) {
-            const key = this._vm.runtime.ioDevices.keyboard._keyStringToScratchKey(actionData.key);
+        } else if (!actionData.isDown && actionData.key !== null) { // Key has been released.
             if (this._pressedKeys.has(key)) {
                 const steps = this._getCurrentStepCount() - this._pressedKeys.get(key);
                 this._pressedKeys.delete(key);
                 return new KeyPressEvent(key, steps);
             }
         }
-        return undefined;
+        return null;
     }
 
     /**
-     * Handles text input of an asked question.
-     * @param actionData the action data object containing the answer as string.
-     * @returns {@link TypeNumberEvent} if the obtained text is a number and {@link TypeTextEvent} otherwise.
-     */
-    private _handleTextInput(actionData): ScratchEvent {
-        const text = actionData.text;
-        if (isNaN(text)) {
-            return new TypeTextEvent(text);
-        } else {
-            return new TypeNumberEvent(text);
-        }
-    }
-
-    /**
-     * Handles mouse input.
+     * Handles mouse input by recording mouse clicks and triggers the callback for recording mouse move events.
      * @param actionData the action data object containing mouse parameter.
-     * @returns a mouse click event if the mouse has been clicked and triggers the callback for mouse move events
-     * if the mouse has been moved.
+     * @returns a mouse click event if the mouse has been clicked, or null if the mouse has just been moved.
      */
-    private _handleMouseInput(actionData): ScratchEvent {
+    private _handleMouseInput(actionData): ScratchEvent | null {
         const scratchMouse = this._vm.runtime.ioDevices['mouse'];
         this._mouseCoordinates = [scratchMouse.getScratchX(), scratchMouse.getScratchY()];
         this._lastMouseMoveStep = this._getCurrentStepCount();
@@ -227,7 +203,6 @@ export class StateActionRecorder extends EventEmitter {
         if (!this._stateAtAction.has(this.MOUSE_MOVE_ACTION_KEY) && !('isDown' in actionData) &&
             availableActions.includes(this.MOUSE_MOVE_ACTION_KEY)) {
             this._checkForMouseMoveInterval = window.setInterval(this._checkForMouseMoveCallBack, 500);
-            // Check if we had a long period without any actions being executed.
             this._checkForWait(false);
             this._stateAtAction.set(this.MOUSE_MOVE_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
         }
@@ -243,10 +218,7 @@ export class StateActionRecorder extends EventEmitter {
                     this._stateAtAction.delete(this.MOUSE_MOVE_ACTION_KEY);
                     event = new ClickSpriteEvent(clickTarget);
                 } else if (availableActions.includes(new MouseDownForStepsEvent().stringIdentifier())) {
-                    // Check if we had a long period without any actions being executed.
                     this._checkForWait(false);
-                    // Register mouse down Event and save the current step count
-                    // to compute the number of steps the mouse has been pressed.
                     this._stateAtAction.set(this.MOUSE_DOWN_ACTION_KEY, InputExtraction.extractFeatures(this._vm));
                     this._mousePressedStep = this._getCurrentStepCount();
                 }
@@ -257,7 +229,7 @@ export class StateActionRecorder extends EventEmitter {
             }
         }
 
-        return undefined;
+        return null;
     }
 
     /**
@@ -278,7 +250,8 @@ export class StateActionRecorder extends EventEmitter {
                 event = new MouseMoveEvent(this._mouseCoordinates[0], this._mouseCoordinates[1]);
             }
 
-            if (availableActions.indexOf(event.stringIdentifier()) >= 0) {
+            if (availableActions.includes(event.stringIdentifier()) ||
+                (event instanceof MouseMoveEvent && availableActions.includes(this.MOUSE_MOVE_ACTION_KEY))) {
                 this._recordAction(event);
             }
             clearInterval(this._checkForMouseMoveInterval);
@@ -295,10 +268,11 @@ export class StateActionRecorder extends EventEmitter {
         const stepsSinceLastAction = this._getCurrentStepCount() - this._lastActionStep;
         const availableActions = this._eventExtractor.extractStaticEvents(this._vm).map(action => action.stringIdentifier());
         // Only add Waits if the vm permits us to do so, and if we have a saved state for it.
-        // Don't add a Wait if another action is currently being executed.
+        // Do not add a Wait if another action is currently being executed.
         if (availableActions.includes("WaitEvent") && this._stateAtAction.has('WaitEvent') && this._stateAtAction.size == 1) {
             // Add a Wait if the function was called from a periodic check, in which case we only add a WaitEvent
-            // if we've exceeded the maximum Wait boundary. Otherwise, we add a Wait if we've exceeded the threshold.
+            // if we have exceeded the maximum Wait boundary.
+            // Otherwise, we add a Wait if we have exceeded the threshold.
             if ((periodicCheck && stepsSinceLastAction >= Container.config.getWaitStepUpperBound() && stepsSinceLastAction > this.WAIT_THRESHOLD) ||
                 (!periodicCheck && this._lastActionStep > 0 && stepsSinceLastAction > this.WAIT_THRESHOLD)) {
                 this._recordAction(new WaitEvent(stepsSinceLastAction));
@@ -328,47 +302,28 @@ export class StateActionRecorder extends EventEmitter {
             }
         }
 
-        let parameter: Record<string, number>;
+        let parameter: Record<string, number> = {};
         switch (event.toJSON()['type']) {
-            case "WaitEvent":
-                parameter = {'Duration': Math.min(event.getParameters().pop() / Container.config.getWaitStepUpperBound(), 1)};     // Wait duration
-                break;
-            case "KeyPressEvent":
-                parameter = {'Steps': Math.min(event.getParameters()[1] / Container.config.getPressDurationUpperBound(), 1)};      // Press duration
-                break;
-            case "TypeTextEvent":
-                parameter = {};
-                break;
-            case "TypeNumberEvent":
-                parameter = {"Number": event.getParameters().pop()};   // Number
-                break;
             case "MouseMoveEvent":
                 parameter = {"X": event.getParameters()[0] / 240, "Y": event.getParameters()[1] / 180}; // Coordinates.
                 break;
             case "MouseDownForStepsEvent":
-                parameter = {"Steps": Math.min(event.getParameters().pop() / Container.config.getClickDuration(), 1)}; // Steps;
                 this._checkForMouseMove(true);
                 break;
-            case "ClickSpriteEvent":
-                parameter = {};
-                break;
-            case "MouseMoveToEvent":
-                parameter = {};
-                break;
-            default:
-                logger.warn("Missing event handler: ", event);
-        }
-
-        // Reduce the required storage capacity by rounding action parameter.
-        for (const key in parameter) {
-            parameter[key] = Math.round(parameter[key] * 100) / 100;
         }
 
         const record: ActionRecord = {
             state: stateFeatures,
             action: action,
-            actionParameter: parameter
         };
+
+        for (const key in parameter) {
+            parameter[key] = Math.round(parameter[key] * 100) / 100;
+        }
+
+        if (Object.keys(parameter).length > 0) {
+            record.actionParameter = parameter;
+        }
 
         this._actionRecords.push(record);
         this._lastActionStep = this._getCurrentStepCount();

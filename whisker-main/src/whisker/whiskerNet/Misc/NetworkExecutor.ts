@@ -7,19 +7,17 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {InputExtraction, InputFeatures} from "./InputExtraction";
-import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../../testcase/ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
-import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
 import {Container} from "../../utils/Container";
-import {ParameterType} from "../../testcase/events/ParameterType";
 import {ScoreFitness} from "../NetworkFitness/ScoreFitness";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NetworkFitnessFunctionType} from "../NetworkFitness/NetworkFitnessFunctionType";
-import logger = require("../../../util/logger.js");
 import {CosineStateNovelty} from "../NetworkFitness/Novelty/CosineStateNovelty";
-import {TestChromosome} from "../../testcase/TestChromosome";
+import {MouseMoveDimensionEvent} from "../../testcase/events/MouseMoveDimensionEvent";
+import {ActionNode} from "../NetworkComponents/ActionNode";
+import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
 
 export class NetworkExecutor {
 
@@ -54,6 +52,16 @@ export class NetworkExecutor {
     private _eventExtractor: ScratchEventExtractor;
 
     /**
+     * The number of frames to skip between events.
+     */
+    private readonly _skipFrame: number;
+
+    /**
+     * The threshold for an activation value that must be met for an action to be executed.
+     */
+    private readonly _actionThreshold: number;
+
+    /**
      * Constructs a new NetworkExecutor object.
      * @param _vmWrapper the wrapper of the Scratch-VM.
      * @param _timeout timeout after which each playthrough is halted.
@@ -67,6 +75,8 @@ export class NetworkExecutor {
         this._vm = this._vmWrapper.vm;
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
         this._initialState = this._vmWrapper._recordInitialState();
+        this._skipFrame = Container.config.getSkipFrame();
+        this._actionThreshold = Container.config.getActionThreshold();
     }
 
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
@@ -74,76 +84,38 @@ export class NetworkExecutor {
 
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch(this._vm);
-        const _onRunStop = this.projectStopped.bind(this);
+        const _onRunStop = this._projectStopped.bind(this);
         this._projectRunning = true;
         await this._vmWrapper.start();
-
-        // Initialise required variables.
-        network.codons = [];
         let stepCount = 0;
-
-        // Play the game until we reach a GameOver state or the timeout.
-        const coverageObjective = network.targetObjective as StatementFitnessFunction;
-        const isGreenFlag = this._stopEarly &&
-            coverageObjective !== undefined &&
-            coverageObjective.getTargetNode().block.opcode === 'event_whenflagclicked';
 
         this._vm.runtime.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
-            // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm);
+
+            // Execute WaitEvent if there are no events available.
             if (this.availableEvents.length === 0) {
-                logger.warn("No events available for project.");
-                break;
+                await new WaitEvent(this._skipFrame).apply();
+                continue;
             }
 
-            // Update input nodes and load inputs into the Network.
+            // Update input/output nodes if novel inputs/actions have been discovered.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
-
-            // Check if we encountered additional sprites/events during the playthrough
-            // If we did so add corresponding input/output nodes to the network.
             network.updateInputNodes(spriteFeatures);
             network.updateOutputNodes(this.availableEvents);
-            const defect = !network.activateNetwork(spriteFeatures);
-
-            // Stop if our network is defect.
-            if (defect) {
-                logger.warn("Defect network:", network.toString());
-                break;
-            }
 
             // Select the next event and execute it if we did not decide to wait
-            let eventIndex = this.selectNextEvent(network, isGreenFlag);
-            let nextEvent = this.availableEvents[eventIndex];
-
-            // If something goes wrong, e.g., we have a defect network due to all active input nodes being
-            // disconnected to every output node, insert a Wait.
-            if (nextEvent === undefined) {
-                eventIndex = this.availableEvents.findIndex(event => event instanceof WaitEvent);
-                nextEvent = this.availableEvents[eventIndex];
-
-                // If we still don't have a WaitEvent, we must add it manually.
-                // This could happen if we encounter type text events.
-                if (nextEvent === undefined) {
-                    this.availableEvents.push(new WaitEvent());
-                    nextEvent = this.availableEvents[this.availableEvents.length - 1];
-                }
-            }
-            network.codons.push(eventIndex);
-            await this.executeNextEvent(network, nextEvent, events, isGreenFlag);
+            network.activateNetwork(spriteFeatures);
+            const nextEvents = this._selectNextEvents(network);
+            await this._executeNextEvents(nextEvents, events, network);
 
             // Record the activation trace and increase the stepCount.
-            this.recordActivationTrace(network, stepCount, spriteFeatures);
+            this._recordActivationTrace(network, stepCount, spriteFeatures);
             stepCount++;
 
-            // Check if we have reached our selected target and stop if it's not the green flag.
-            // Keep executing when the green flag was covered to cover all easy targets at once.
-            if (this._stopEarly && !isGreenFlag) {
-                network.trace = new ExecutionTrace(this._vm.getTraces().branchDistances, events);
-                if (await coverageObjective.isCovered(network as unknown as TestChromosome)) {
-                    break;
-                }
+            if (this._doStopEarly(network.targetObjective as StatementFitnessFunction)) {
+                break;
             }
         }
 
@@ -173,8 +145,23 @@ export class NetworkExecutor {
     /**
      * Event listener which checks if the project is still running, i.e., no GameOver state was reached.
      */
-    private projectStopped() {
+    private _projectStopped() {
         return this._projectRunning = false;
+    }
+
+    /**
+     * Determines whether to stop early if the specified objective has been covered.
+     *
+     * @param {StatementFitnessFunction} objective to be covered.
+     * @return {boolean} True if the process should stop early, false otherwise.
+     */
+    private _doStopEarly(objective: StatementFitnessFunction): boolean {
+        if (!this._stopEarly) {
+            return false;
+        }
+        const traces: CoverageTrace = this._vm.getTraces();
+        const coverages = new Set([...traces.blockCoverage, ...traces.branchCoverage]);
+        return coverages.has(objective.getNodeId());
     }
 
     /**
@@ -184,12 +171,11 @@ export class NetworkExecutor {
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch(this._vm);
-        const _onRunStop = this.projectStopped.bind(this);
+        const _onRunStop = this._projectStopped.bind(this);
         this._projectRunning = true;
         await this._vmWrapper.start();
 
         const eventTrace = network.trace.events;
-        const targetObjective = network.targetObjective as StatementFitnessFunction;
         this._vm.on(Runtime.PROJECT_STOP_ALL, _onRunStop);
         const startTime = Date.now();
         for (let i = 0; i < eventTrace.length; i++) {
@@ -207,14 +193,10 @@ export class NetworkExecutor {
             await event.apply();
 
             // Record Activation trace.
-            this.recordActivationTrace(network, i, spriteFeatures);
+            this._recordActivationTrace(network, i, spriteFeatures);
 
-            // Check if we have reached our selected target and stop if this is the case.
-            if (this._stopEarly && targetObjective !== undefined) {
-                const currentCoverage: Set<string> = this._vm.getTraces().blockCoverage;
-                if (currentCoverage.has(targetObjective.getTargetNode().id)) {
-                    break;
-                }
+            if (this._doStopEarly(network.targetObjective as StatementFitnessFunction)) {
+                break;
             }
         }
 
@@ -235,98 +217,76 @@ export class NetworkExecutor {
     }
 
     /**
-     * Selects the next event by 1) Waiting for 1 step if we are currently trying to cover the GreenFlag event.
-     *                           2) Selecting a random event if the eventSelection variable is set appropriately.
-     *                           3) Querying the network's classification head.
-     * @param network the network that will be queried in case of 3).
-     * @param isGreenFlag boolean determining whether we are currently trying to cover the greenFlagEvent.
-     * @returns the index of the chosen event parameter based on the set of events extracted from the Scratch state.
+     * Selects the next event by selecting a random event if the eventSelection variable is set correspondingly
+     * or by querying the network otherwise.
+     * @param network the network that will be used to determine the next events.
+     * @returns the set of events to be executed in the next step.
      */
-    private selectNextEvent(network: NetworkChromosome, isGreenFlag: boolean): number {
-        // 1) GreenFlag is the current target objective
-        if (isGreenFlag) {
-            return this.availableEvents.findIndex(event => event instanceof WaitEvent);
-        }
-        // 2) Random event selection
-        else if (this._eventSelection === 'random') {
-            return this._random.nextInt(0, this.availableEvents.length);
-        }
-        // 3) Query the network's classification head.
-        else {
-            // Choose the event with the highest probability according to the softmax values
-            const eventProbabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            if (eventProbabilities.size > 0) {
-                const mostProbablePair = [...eventProbabilities.entries()].reduce(
-                    (pV, cV) => cV[1] > pV [1] ? cV : pV);
-                return this.availableEvents.findIndex(event => event.stringIdentifier() === mostProbablePair[0].stringIdentifier());
-            } else {
-                // It can happen that all output nodes of corresponding available events do not have an active path
-                // starting from the input nodes, i.e., they did not get activated.
-                // In that case, we just wait.
-                return this.availableEvents.findIndex(event => event instanceof WaitEvent);
-            }
+    private _selectNextEvents(network: NetworkChromosome): ScratchEvent[] {
+        if (this._eventSelection === 'random') {
+            return this.availableEvents.filter(() => this._random.nextDouble());
+        } else {
+            const triggerNodes = network.getTriggerActionNodes().filter(node => node.activationValue > this._actionThreshold);
+            const continuousNodes = network.getContinuousActionNodes();
+            return [...this._filterMatchingEvents(triggerNodes), ...this._filterMatchingEvents(continuousNodes)];
         }
     }
 
     /**
-     * Selects the next event and executes it.
-     * @param network determines the next action to take.
-     * @param nextEvent the event that should be executed next.
-     * @param events saves a trace of executed events.
-     * @param greenFlag whether the current target objective corresponds to the green flag event.
+     * Filters the available events to only include those that match the given action nodes.
+     * @param node the action nodes to filter the events by.
      */
-    private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[],
-                                   greenFlag = false): Promise<EventAndParameters> {
-        let setParameter: number[];
-        const argType: ParameterType = this._eventSelection as ParameterType;
-        if (nextEvent.numSearchParameter() > 0 && !greenFlag) {
-            const parameters = NetworkExecutor.getArgs(nextEvent, network);
-            setParameter = nextEvent.setParameter(parameters, argType);
-        }
+    private _filterMatchingEvents(node: ActionNode[]): ScratchEvent[] {
+        return this.availableEvents.filter(e => node
+            .some(n => n.event.stringIdentifier() === e.stringIdentifier()));
+    }
 
-        let nextEventAndParams = undefined;
-        // Do not double press Keys as this just interrupts the prior key press.
-        if (!this.isDoubleKeyPress(nextEvent)) {
-            nextEventAndParams = new EventAndParameters(nextEvent, setParameter);
-            events.push(nextEventAndParams);
+    /**
+     * Execute the selected events.
+     * @param nextEvents the event that should be executed next.
+     * @param events saves a trace of executed events.
+     * @param network the network that will be used to determine parameters.
+     */
+    private async _executeNextEvents(nextEvents: ScratchEvent[], events: EventAndParameters[], network: NetworkChromosome) {
+        for (const nextEvent of nextEvents) {
+            const parameters = [this._getParameter(nextEvent, network)];
+            events.push(new EventAndParameters(nextEvent, parameters));
+            nextEvent.setParameter(parameters, "activation");
             await nextEvent.apply();
         }
 
-        // To perform non-waiting actions, we have to execute a Wait
-        // so that the VM can react to the simulated user input.
-        if (!(nextEvent instanceof WaitEvent)) {
-            const waitEvent = new WaitEvent(1);
-            events.push(new EventAndParameters(waitEvent, [1]));
-            await waitEvent.apply();
-        }
+        const waitEvent = new WaitEvent(this._skipFrame);
+        events.push(new EventAndParameters(waitEvent, [this._skipFrame]));
+        await waitEvent.apply();
 
         StatisticsCollector.getInstance().incrementEventsCount();
-        return nextEventAndParams;
     }
 
     /**
-     * Checks for double key presses. We do not want to re-press an already pressed key since this only interrupts
-     * the key press signal sent to the VM.
-     * @param nextEvent the nextEvent which will be checked against a double keyPress.
-     * @returns true if we are about to double-press an already pressed key.
+     * Gets the parameters for the next event.
+     * @param event the event whose parameters should be retrieved.
+     * @param network the network that will be used to determine parameters.
+     * @returns the parameters for the next event.
      */
-    private isDoubleKeyPress(nextEvent: ScratchEvent): boolean {
-        const key = String(nextEvent.getParameters()[0]);
-        return nextEvent instanceof KeyPressEvent && this._vmWrapper.inputs.isKeyDown(key);
-    }
-
-    /**
-     * Extracts the arguments for parameters by querying the regression head of the neural network.
-     * @param event for which parameter will be extracted
-     * @param network that will be queried for parameter
-     * @returns the extracted parameter.
-     */
-    private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
-        const args = [];
-        for (const node of network.regressionNodes.get(event.stringIdentifier())) {
-            args.push(node.activationValue);
+    private _getParameter(event: ScratchEvent, network: NetworkChromosome): number {
+        if (event instanceof MouseMoveDimensionEvent) {
+            const mouseMoveByNode = this._findNodeByEvent(event, network);
+            return mouseMoveByNode.activationValue;
+        } else if (event instanceof TypeNumberEvent) {
+            const typeNumberNode = this._findNodeByEvent(event, network);
+            return typeNumberNode.activationValue;
         }
-        return args;
+        return this._skipFrame;
+    }
+
+    /**
+     * Finds the node corresponding to the given event in the network.
+     * @param event the event whose node should be found.
+     * @param network the network in which to search for the node.
+     * @returns the node corresponding to the event.
+     */
+    private _findNodeByEvent(event: ScratchEvent, network: NetworkChromosome): ActionNode {
+        return network.getActionNodes().find(node => node.event.stringIdentifier() === event.stringIdentifier());
     }
 
     /**
@@ -336,15 +296,10 @@ export class NetworkExecutor {
      * @param step determines whether we want to record the trace at the current step.
      * @param inputs the inputs based on which an activationTrace will be recorded.
      */
-    private recordActivationTrace(network: NetworkChromosome, step: number, inputs: InputFeatures) {
+    private _recordActivationTrace(network: NetworkChromosome, step: number, inputs: InputFeatures) {
         if (network.recordNetworkStatistics && step > 0 && (step % 5 == 0 || step == 1)) {
             network.setUpInputs(inputs);
             network.updateActivationTrace(step);
-            const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            if (probabilities.size > 0) {
-                network.testUncertainty.set(step, 1 - [...probabilities.values()].reduce(
-                    (pv, cv) => pv + Math.pow(cv, 2), 0));
-            }
         }
     }
 

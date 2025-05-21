@@ -104,4 +104,14 @@ export abstract class ScratchEvent {
         y = (y % height) - (height / 2);
         return {x, y};
     }
+
+    /**
+     * Scales the output of a sigmoid function to the range [-magnitude, magnitude].
+     * @param value the value to scale, which should be in the range [0, 1]
+     * @param magnitude the magnitude to scale to
+     * @returns the scaled value in the range [-magnitude, magnitude]
+     */
+    protected _scaleSigmoidToMagnitude(value: number, magnitude: number): number {
+        return (value * 2 * magnitude) - magnitude;
+    }
 }

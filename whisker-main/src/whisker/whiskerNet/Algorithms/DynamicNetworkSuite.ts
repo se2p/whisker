@@ -10,7 +10,6 @@ import {BasicNeuroevolutionParameter} from "../HyperParameter/BasicNeuroevolutio
 import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {Chromosome} from "../../search/Chromosome";
-import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
@@ -20,6 +19,7 @@ import {MutationFactory} from "../../scratch/ScratchMutation/MutationFactory";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import logger from "../../../util/logger";
 import {Project} from "../../../assembler/project/Project";
+import {ActionNode} from "../NetworkComponents/ActionNode";
 import {ModelTester} from "../../model/ModelTester";
 
 
@@ -88,13 +88,13 @@ export class DynamicNetworkSuite {
     protected initialiseExecutionParameter(): void {
         const config = new WhiskerSearchConfiguration(this._testSuiteJSON['Configs']);
         this.parameter = config.dynamicSuiteParameter;
+        Container.config = config;
 
         if (this.properties.winningStates) {
             StatisticsCollector.getInstance().parseWinningStates(this.properties.winningStates as string);
         }
 
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
-        Container.config = config;
     }
 
     /**
@@ -427,9 +427,9 @@ export class DynamicNetworkSuite {
     public isMutant(executedTest: Readonly<NetworkChromosome>, originalTest: Readonly<NetworkChromosome>, printReason = true): boolean {
         // If the network structure has changed within the output nodes, we have found new events suggesting that
         // something has been mutated within the controls of the program.
-        const execClassNodes = executedTest.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+        const execClassNodes = executedTest.layers.get(1) as ActionNode[];
         const execEvents = execClassNodes.map(node => node.event.stringIdentifier());
-        const originalClassNodes = originalTest.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
+        const originalClassNodes = originalTest.layers.get(1) as ActionNode[];
         const originalEvents = originalClassNodes.map(node => node.event.stringIdentifier());
         const newEvents = execEvents.filter(eventString => !originalEvents.includes(eventString));
         if (newEvents.length > 0) {

@@ -55,13 +55,6 @@ describe("NeuroevolutionUtil Tests", () => {
             ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
     });
 
-    test("Test Softmax calculation", async () => {
-        const chromosome = await generator.get();
-        chromosome.activateNetwork(chromosome.generateDummyInputs());
-        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);
-        expect(Math.round([...softmaxOutput.values()].reduce((a, b) => a + b))).toBe(1);
-    });
-
     test("Test RELU activation function", () => {
         expect(NeuroevolutionUtil.relu(Math.PI)).toEqual(Math.PI);
         expect(NeuroevolutionUtil.relu(-Math.PI)).toEqual(0);

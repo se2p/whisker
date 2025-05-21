@@ -2,7 +2,6 @@ import {ScratchBlocks} from "./ScratchEventExtractor";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "./events/ScratchEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
-import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {Container} from "../utils/Container";
 import {MouseMoveToEvent} from "./events/MouseMoveToEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
@@ -12,9 +11,10 @@ import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
 import {MouseDownForStepsEvent} from "./events/MouseDownForStepsEvent";
 import {TypeNumberEvent} from "./events/TypeNumberEvent";
-import {WaitEvent} from "./events/WaitEvent";
 import Arrays from "../utils/Arrays";
 import {ScratchInterface} from "../scratch/ScratchInterface";
+import {WaitEvent} from "./events/WaitEvent";
+import {MouseMoveDimensionEvent} from "./events/MouseMoveDimensionEvent";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
@@ -27,6 +27,11 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
 
     constructor(vm: VirtualMachine) {
         super(vm);
+    }
+
+    public override extractEvents(vm: VirtualMachine): ScratchEvent[] {
+        const events = super.extractEvents(vm);
+        return events.filter(event => !(event instanceof WaitEvent));
     }
 
     /**
@@ -47,8 +52,6 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 this.traverseBlocks(target, hatBlock, eventList);
             }
         }
-
-        eventList.push(new WaitEvent());
 
         const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         this._staticMode = false;
@@ -89,8 +92,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
             case 'sensing_mousex':
             case 'sensing_mousey':
             case 'pen_penDown': {
-                // Mouse move
-                eventList.push(new MouseMoveEvent());
+                this._addMouseMoveEvents(eventList);
                 break;
             }
 
@@ -98,7 +100,7 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 // GoTo MousePointer block
                 const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
                 if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
-                    eventList.push(new MouseMoveEvent());
+                    this._addMouseMoveEvents(eventList);
                 }
                 break;
             }
@@ -109,12 +111,12 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
 
                 // Target senses Mouse
                 if (value == "_mouse_" && target.visible) {
-                    const currentMousePosition = ScratchInterface.getMousePosition();
                     // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
+                    const currentMousePosition = ScratchInterface.getMousePositionClient();
                     if (!target.isTouchingPoint(currentMousePosition.x, currentMousePosition.y)) {
                         eventList.push(new MouseMoveToEvent(target.x, target.y, target.sprite.name));
                     }
-                    eventList.push(new MouseMoveEvent());
+                    this._addMouseMoveEvents(eventList);
                 }
                 break;
             }
@@ -123,14 +125,14 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
                 const field = target.blocks.getFields(distanceMenuBlock);
                 const value = field.DISTANCETOMENU.value;
                 if (value == "_mouse_") {
-                    eventList.push(new MouseMoveEvent());
+                    this._addMouseMoveEvents(eventList);
                 }
                 break;
             }
             case 'motion_pointtowards': {
                 const towards = target.blocks.getBlock(block.inputs.TOWARDS.block);
                 if (towards.fields.TOWARDS && towards.fields.TOWARDS.value === '_mouse_')
-                    eventList.push(new MouseMoveEvent());
+                    this._addMouseMoveEvents(eventList);
                 break;
             }
             case 'sensing_mousedown': {
@@ -221,5 +223,15 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
             }
         }
         return eventList;
+    }
+
+    /**
+     * Neuroevolution controllers move the mouse continuously in the x and y direction.
+     * Therefore, we refrain from using {@link MouseMoveEvent}s and instead apply {@link MouseMoveDimensionEvent}s.
+     * @param eventList to which the {@link MouseMoveDimensionEvent}s are added.
+     */
+    private _addMouseMoveEvents(eventList: ScratchEvent[]): void {
+        eventList.push(new MouseMoveDimensionEvent("X"));
+        eventList.push(new MouseMoveDimensionEvent("Y"));
     }
 }

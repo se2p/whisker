@@ -35,7 +35,12 @@ export class ScratchInterface {
         return Math.hypot(this.getWidthOfTarget(target), this.getHeightOfTarget(target)) / 2 + safetySpace;
     }
 
-    public static getMousePosition(): ScratchPosition {
+    public static getMousePositionScratch(): ScratchPosition {
+        const mouse = Container.vm.runtime.ioDevices[`mouse`];
+        return new ScratchPosition(mouse._scratchX, mouse._scratchY);
+    }
+
+    public static getMousePositionClient(): ScratchPosition {
         const mouse = Container.vm.runtime.ioDevices[`mouse`];
         return new ScratchPosition(mouse._clientX, mouse._clientY);
     }
