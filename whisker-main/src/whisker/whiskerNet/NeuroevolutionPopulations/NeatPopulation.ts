@@ -163,7 +163,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Updates the CompatibilityThreshold to come closer to the desired number of species.
      */
     public updateCompatibilityThreshold(): void {
-        const compatibilityModifier = 0.3;
+        const compatibilityModifier = 0.1;
         // If we have less species than desired, we have to reduce the threshold.
         if (this.species.length < this.numberOfSpeciesTargeted) {
             this._compatibilityThreshold -= compatibilityModifier;

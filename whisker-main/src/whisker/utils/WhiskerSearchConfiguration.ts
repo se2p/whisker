@@ -557,7 +557,6 @@ export class WhiskerSearchConfiguration {
                     this._config['chromosome']['minSampleLength'],
                     this._config['chromosome']['maxSampleLength']);
             case 'neatChromosome': {
-                const eventExtractor = this.getEventExtractor();
                 const mutationOperator = this._getMutationOperator();
                 if (!(mutationOperator instanceof NeatMutation)) {
                     throw new ConfigException(`The neatChromosome generator requires a NeatMutation operator, but  ${typeof mutationOperator} was specified`);
@@ -566,9 +565,16 @@ export class WhiskerSearchConfiguration {
                 if (!(crossoverOperator instanceof NeatCrossover)) {
                     throw new ConfigException(`The neatChromosome generator requires a NeatCrossover operator, but  ${typeof crossoverOperator} was specified`);
                 }
+
+                const eventExtractor = this.getEventExtractor();
+                let outputSpace = eventExtractor.extractEvents(Container.vm);
+                if (outputSpace.length == 0 && eventExtractor instanceof NeuroevolutionScratchEventExtractor) {
+                    outputSpace = eventExtractor.extractStaticEvents(Container.vm);
+                }
+
                 return new NeatChromosomeGenerator(
                     InputExtraction.extractFeatures(Container.vm),
-                    eventExtractor.extractEvents(Container.vm),
+                    outputSpace,
                     this.getInputConnectionMethod(),
                     this.neuroevolutionProperties.activationFunction,
                     mutationOperator,
@@ -744,7 +750,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getWaitStepUpperBound(): number {
-        if (this._config['durations']['waitStepUpperBound']) {
+        if (this._config['durations'] && this._config['durations']['waitStepUpperBound']) {
             return this._config['durations']['waitStepUpperBound'];
         } else {
             return 100;
@@ -752,7 +758,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getPressDurationUpperBound(): number {
-        if (this._config['durations']['pressDuration']) {
+        if (this._config['durations'] && this._config['durations']['pressDuration']) {
             return this._config['durations']['pressDuration'];
         } else {
             return 10;
@@ -760,7 +766,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getSoundDuration(): number {
-        if (this._config['durations']['soundDuration']) {
+        if (this._config['durations'] && this._config['durations']['soundDuration']) {
             return this._config['durations']['soundDuration'];
         } else {
             return 10;
@@ -768,7 +774,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getClickDuration(): number {
-        if (this._config['durations']['clickDuration']) {
+        if (this._config['durations'] && this._config['durations']['clickDuration']) {
             return this._config['durations']['clickDuration'];
         } else {
             return 10;
@@ -834,5 +840,29 @@ export class WhiskerSearchConfiguration {
             return this._config['networkFitness']['stableCount'];
         }
         return 1;
+    }
+
+    public getSkipFrame(): number {
+        if (this._config['events'] && this._config['events']['skipFrame']) {
+            return this._config['events']['skipFrame'];
+        } else {
+            return 1;
+        }
+    }
+
+    public getActionThreshold(): number {
+        if (this._config['events'] && this._config['events']['actionThreshold']) {
+            return this._config['events']['actionThreshold'];
+        } else {
+            return 0.5;
+        }
+    }
+
+    public getTypeNumberMagnitude():number {
+        if (this._config['events'] && this._config['events']['typeNumberMagnitude']) {
+            return this._config['events']['typeNumberMagnitude'];
+        } else {
+            return 100;
+        }
     }
 }

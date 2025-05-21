@@ -2,15 +2,15 @@ import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
-import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {InputConnectionMethod, NetworkLayer} from "../Networks/NetworkChromosome";
 import {InputNode} from "../NetworkComponents/InputNode";
 import {BiasNode} from "../NetworkComponents/BiasNode";
-import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {InputFeatures} from "../Misc/InputExtraction";
+import {ActionNode} from "../NetworkComponents/ActionNode";
+import {MouseMoveDimensionEvent} from "../../testcase/events/MouseMoveDimensionEvent";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
@@ -42,7 +42,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, []);
 
-        // Create the Input Nodes
+        // Input layer
         let numNodes = 0;
         for (const [sprite, featureMap] of this._inputSpace) {
             for (const feature of featureMap.keys()) {
@@ -51,24 +51,16 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
             }
         }
 
-        // Add the Bias
+        // Bias node
         const biasNode = new BiasNode(numNodes++);
         layer.get(0).push(biasNode);
 
-        // Create the classification output nodes and add them to the nodes list
+        // Output layer
         layer.set(1, []);
         for (const event of this._outputSpace) {
-            const classificationNode = new ClassificationNode(numNodes++, event, ActivationFunction.NONE);
-            layer.get(1).push(classificationNode);
+            layer.get(1).push(new ActionNode(numNodes++, event, event instanceof MouseMoveDimensionEvent));
         }
 
-        // Add regression nodes for each parameter of each parameterised Event
-        const parameterizedEvents = this._outputSpace.filter(event => event.numSearchParameter() > 0);
-        if (parameterizedEvents.length !== 0) {
-            this.addRegressionNodes(numNodes, layer, parameterizedEvents);
-        }
-
-        // Create connections between input and output nodes
         const chromosome = new NeatChromosome(layer, [], this._mutationOperator, this._crossoverOperator,
             this._inputConnectionMethod, this._activationFunction);
         const outputNodes = [...chromosome.layers.get(1).values()];
@@ -77,35 +69,11 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         return chromosome;
     }
 
-    /**
-     * Adds regression nodes to the network.
-     * @param nodeId the id that will be assigned to the regression node.
-     * @param layer the map of layers to which the node will be added.
-     * @param parameterizedEvents contains all parameterized Events of the given Scratch-Project.
-     */
-    protected addRegressionNodes(nodeId: number, layer: NetworkLayer, parameterizedEvents: ScratchEvent[]): void {
-        for (const event of parameterizedEvents) {
-            for (const parameter of event.getSearchParameterNames()) {
-                // Create the regression Node and add it to the NodeList
-                const regressionNode = new RegressionNode(nodeId++, event, parameter);
-                layer.get(1).push(regressionNode);
-            }
-        }
-    }
-
     setMutationOperator(mutationOp: NeatMutation): void {
         this._mutationOperator = mutationOp;
     }
 
     setCrossoverOperator(crossoverOp: NeatCrossover): void {
         this._crossoverOperator = crossoverOp;
-    }
-
-    set inputSpace(value: InputFeatures) {
-        this._inputSpace = value;
-    }
-
-    set outputSpace(value: ScratchEvent[]) {
-        this._outputSpace = value;
     }
 }

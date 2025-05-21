@@ -4,8 +4,6 @@ import {InputNode} from "../NetworkComponents/InputNode";
 import {BiasNode} from "../NetworkComponents/BiasNode";
 import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
-import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
-import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatMutation} from "../Operators/NeatMutation";
@@ -14,6 +12,8 @@ import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {InputConnectionMethod, NetworkLayer} from "../Networks/NetworkChromosome";
+import {ActionNode} from "../NetworkComponents/ActionNode";
+import {MouseMoveDimensionEvent} from "../../testcase/events/MouseMoveDimensionEvent";
 
 export class NetworkLoader {
 
@@ -77,21 +77,10 @@ export class NetworkLoader {
                         layers.get(depth).push(hiddenNode);
                         break;
                     }
-                    case "C": {
+                    case "A": {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
-                        if (event) {
-                            const classificationNode = new ClassificationNode(savedNode['id'], event,
-                                ActivationFunction.NONE);
-                            layers.get(1).push(classificationNode);
-                        }
-                        break;
-                    }
-                    case "R": {
-                        const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
-                        if (event) {
-                            const regressionNode = new RegressionNode(savedNode['id'], event, savedNode['eventP']);
-                            layers.get(1).push(regressionNode);
-                        }
+                        const actionNode = new ActionNode(savedNode['id'], event, event instanceof MouseMoveDimensionEvent);
+                        layers.get(1).push(actionNode);
                         break;
                     }
                 }

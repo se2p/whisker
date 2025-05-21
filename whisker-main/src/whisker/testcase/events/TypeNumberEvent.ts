@@ -117,9 +117,11 @@ export class TypeNumberEvent extends ScratchEvent {
                 this._num = args[0] - range / 2;
                 break;
             }
-            case "activation":
-                this._num = Math.round(args[0]);
+            case "activation": {
+                const magnitude = Container.config.getTypeNumberMagnitude();
+                this._num = Math.round(this._scaleSigmoidToMagnitude(args[0], magnitude));
                 break;
+            }
         }
         return [this._num];
     }

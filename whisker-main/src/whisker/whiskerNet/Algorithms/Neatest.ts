@@ -81,15 +81,13 @@ export class Neatest extends NEAT {
                 // Update the population, report the current status to the user and evolve the population.
                 this._population.updatePopulationStatistics();
 
-                // Switch the target if we stop improving for a set number of times and have objectives to which we
-                // can switch to left
-                const uncoveredObjectiveIds = [...this.getUncoveredTargets()].map(objective => objective.getNodeId());
-                const uncoveredUntouchedTargets = uncoveredObjectiveIds.filter(targetId => !this._switchedTargets.has(targetId));
-                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchObjectiveCount &&
-                    uncoveredUntouchedTargets.length > 0) {
-                    const currentTargetId = this._getIdOfCurrentObjective();
-                    this._switchedTargets.add(currentTargetId);
-                    logger.debug("Switching Target " + currentTargetId + " due to missing improvement.");
+                // Switch if we stopped improving for a set number of generations.
+                const viableIds = [...this.getNearestTargets()]
+                    .map(statement => statement.getNodeId())
+                    .filter(id => id !== currentTarget.getNodeId() && !this._switchedTargets.has(id));
+                if (this._population.highestFitnessLastChanged >= this._neuroevolutionProperties.switchObjectiveCount && viableIds.length > 0) {
+                    this._switchedTargets.add(currentTarget.getNodeId());
+                    logger.debug("Switching Target " + currentTarget.getNodeId() + " due to missing improvement.");
                     break;
                 }
 
@@ -119,7 +117,7 @@ export class Neatest extends NEAT {
 
     /**
      * Initializes or updates the coverage objective map.
-     * @param networks the networks for which the open statements should be initialised.
+     * @param networks the networks for which the open statements should be initialized.
      */
     protected initCoverageObjectivesMap(networks: NeatChromosome[]): void {
         networks.forEach(network => network.initialiseCoverageObjectives([...this._fitnessFunctionMap.keys()]));
@@ -229,7 +227,6 @@ export class Neatest extends NEAT {
             if (![...this._archive.values()].includes(network)) {
                 network.trace = null;
                 network.coverage = null;
-                network.codons = null;
             }
 
             // Check if we just covered the greenFlag event, and if so, save the number of blocks that are covered

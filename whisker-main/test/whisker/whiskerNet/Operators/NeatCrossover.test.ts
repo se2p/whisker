@@ -4,8 +4,8 @@ import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponen
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
-import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {ActionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActionNode";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
@@ -55,7 +55,7 @@ describe("Test NeatCrossover", () => {
         const iNode3 = new BiasNode(2);
         layer1.set(0, [iNode1, iNode2, iNode3]);
 
-        const oNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const oNode1 = new ActionNode(4, new WaitEvent());
         layer1.set(1, [oNode1]);
         const hiddenNode1 = new HiddenNode(3, 0.5,ActivationFunction.SIGMOID);
         layer1.set(0.5, [hiddenNode1]);
@@ -153,7 +153,7 @@ describe("Test NeatCrossover", () => {
 
         // Create Nodes of first network
         const iNode1 = new InputNode(0, "InputNode", "Nothing");
-        const oNode1 = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
+        const oNode1 = new ActionNode(1, new WaitEvent());
         const layer1:NetworkLayer = new Map<number, NodeGene[]>();
         layer1.set(0, [iNode1]);
         layer1.set(1, [oNode1]);

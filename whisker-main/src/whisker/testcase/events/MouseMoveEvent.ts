@@ -30,8 +30,8 @@ import {SubVMBlock} from "../../../types/ScratchVMBlock";
 
 export class MouseMoveEvent extends ScratchEvent {
 
-    private _x: number;
-    private _y: number;
+    protected _x: number;
+    protected _y: number;
 
     constructor(x = 0, y = 0) {
         super();
@@ -129,14 +129,14 @@ export class MouseMoveEvent extends ScratchEvent {
     }
 
     numSearchParameter(): number {
-        return 2; // x and y?
+        return 2; // x and y
     }
 
     getParameters(): [number, number] {
         return [this._x, this._y];
     }
 
-    getSearchParameterNames(): [string, string] {
+    getSearchParameterNames(): string[] {
         return ["X", "Y"];
     }
 

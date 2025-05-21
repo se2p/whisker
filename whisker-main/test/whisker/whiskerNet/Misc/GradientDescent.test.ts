@@ -1,76 +1,27 @@
 import groundTruthFruitCatching from "./GroundTruthFruitCatching.json";
 import groundTruthFruitCatchingCombined from "./GroundTruthFruitCatchingCombined.json";
 import fruitCatchingNetwork from "./fruitCatchingNetwork.json";
-import {
-    GradientDescent,
-    gradientDescentParameter,
-    LossFunction
-} from "../../../../src/whisker/whiskerNet/Misc/GradientDescent";
-import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
-import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
-import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
-import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
-import {NeatChromosome} from "../../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import groundTruthPong from "./GroundTruthPong.json";
+import pongNetwork from "./pongNetwork.json";
+import {GradientDescent, gradientDescentParameter} from "../../../../src/whisker/whiskerNet/Misc/GradientDescent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {FeatureGroup, InputFeatures} from "../../../../src/whisker/whiskerNet/Misc/InputExtraction";
-import {NetworkChromosome, NetworkLayer} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
-import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkLoader";
-import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
-import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/RegressionNode";
 import {TypeNumberEvent} from "../../../../src/whisker/testcase/events/TypeNumberEvent";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import logger from "../../../../src/util/logger";
+import {MouseMoveDimensionEvent} from "../../../../src/whisker/testcase/events/MouseMoveDimensionEvent";
 
-
-const generateNetwork = () => {
-    const i1 = new InputNode(3, "i", "1");
-    const i2 = new InputNode(4, "i", "2");
-    const bias = new BiasNode(2);
-    const h1 = new HiddenNode(1, 0.5, ActivationFunction.SIGMOID);
-    const h2 = new HiddenNode(2, 0.5, ActivationFunction.SIGMOID);
-    const o1 = new RegressionNode(5, new WaitEvent(), "Duration");
-    const o2 = new RegressionNode(6, new KeyPressEvent("k"), "Steps");
-    const layer: NetworkLayer = new Map<number, NodeGene[]>();
-    layer.set(0, [i1, i2, bias]);
-    layer.set(0.5, [h1, h2]);
-    layer.set(1, [o1, o2]);
-
-    const c1 = new ConnectionGene(i1, h1, 0.15, true, 0);
-    const c2 = new ConnectionGene(i1, h2, 0.3, true, 1);
-    const c3 = new ConnectionGene(i2, h1, 0.20, true, 2);
-    const c4 = new ConnectionGene(i2, h2, 0.25, true, 3);
-    const c5 = new ConnectionGene(bias, h1, 0.35, true, 6);
-    const c6 = new ConnectionGene(bias, h2, 0.35, true, 7);
-
-    const c7 = new ConnectionGene(h1, o1, 0.4, true, 8);
-    const c8 = new ConnectionGene(h1, o2, 0.5, true, 9);
-    const c9 = new ConnectionGene(h2, o1, 0.45, true, 10);
-    const c10 = new ConnectionGene(h2, o2, 0.55, true, 11);
-    const c11 = new ConnectionGene(bias, o1, 0.60, true, 12);
-    const c12 = new ConnectionGene(bias, o2, 0.60, true, 13);
-
-    const cons = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12];
-
-    return new NeatChromosome(layer, cons, undefined, undefined, undefined);
-};
 
 const loadNetwork = (networkJSON: any): NetworkChromosome => {
-    const networkLoader = new NetworkLoader(networkJSON, [new WaitEvent(), new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow'), new TypeNumberEvent()]);
+    const networkLoader = new NetworkLoader(networkJSON, [
+        new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow'),
+        new TypeNumberEvent(),
+        new MouseMoveDimensionEvent("X"), new MouseMoveDimensionEvent("Y")]);
     const net = networkLoader.loadNetworks()[0];
     const random = Randomness.getInstance();
     net.connections.forEach(connection => connection.weight = random.nextDouble());
     return net;
-};
-
-const generateInputs = (): InputFeatures => {
-    const inputFeatures: InputFeatures = new Map<string, FeatureGroup>();
-    const featureGroup: FeatureGroup = new Map<string, number>();
-    featureGroup.set("1", 0.05);
-    featureGroup.set("2", 0.1);
-    inputFeatures.set("i", featureGroup);
-    return inputFeatures;
 };
 
 describe('Test Gradient Descent', () => {
@@ -122,50 +73,7 @@ describe('Test Gradient Descent', () => {
         expect(numCombined).toBeGreaterThan(numIndividuals);
     });
 
-    test("Forward Pass", () => {
-        // Example from https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
-        const net = generateNetwork();
-        const inputs = generateInputs();
-        const labelMap = new Map<string, number>();
-        labelMap.set("WaitEvent-Duration", 0.01);
-        labelMap.set("KeyPressEvent-k-Steps", 0.99);
-        const loss = forwardPassGradientDescent._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
-        expect(Math.round(loss * 1000) / 1000).toEqual(0.298);
-    });
-
-    test("Backward Pass and adjust weights", () => {
-        const gradientDescentParameter: gradientDescentParameter = {
-            probability: 1,
-            learningRate: 0.5,
-            learningRateAlgorithm: 'Static',
-            epochs: 1,
-            batchSize: 1,
-            combinePlayerRecordings: false,
-        };
-        // Example from https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
-        const backpropagation = new GradientDescent(groundTruthFruitCatching, gradientDescentParameter);
-        const net = generateNetwork();
-        const inputs = generateInputs();
-        const labelMap = new Map<string, number>();
-        labelMap.set("WaitEvent-Duration", 0.01);
-        labelMap.set("KeyPressEvent-k-Steps", 0.99);
-        const startLoss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
-        backpropagation._backwardPass(net, labelMap);
-        backpropagation._adjustWeights(net, 0.5);
-        const connectionWeights = net.connections.filter(connection => !(connection.source instanceof BiasNode)).map(conn => Math.round(conn.weight * 1000) / 1000).sort();
-        expect(Math.round(startLoss * 1000) / 1000).toEqual(0.298);
-        expect(connectionWeights.sort()).toEqual([0.15, 0.2, 0.25, 0.3, 0.359, 0.409, 0.511, 0.561]);
-
-        for (let i = 0; i < 10000; i++) {
-            backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
-            backpropagation._backwardPass(net, labelMap);
-            backpropagation._adjustWeights(net, 0.5);
-        }
-        const finalLoss = backpropagation._forwardPass(net, inputs, labelMap, LossFunction.SQUARED_ERROR);
-        expect(finalLoss).toBeLessThan(0.00001);
-    });
-
-    test("Mini-Batch Gradient descent with gradual decreasing learning rate", () => {
+    test("Mini-batch gradient descent with gradual decreasing learning rate", () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const startingLoss = forwardPassGradientDescent.gradientDescent(net, statement);
 
@@ -177,7 +85,7 @@ describe('Test Gradient Descent', () => {
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
     });
 
-    test("Stochastic Gradient descent", () => {
+    test("Stochastic gradient descent", () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const startingLoss = forwardPassGradientDescent.gradientDescent(net, statement);
 
@@ -189,13 +97,24 @@ describe('Test Gradient Descent', () => {
     });
 
 
-    test("Batch Gradient descent", () => {
+    test("Batch gradient descent", () => {
         const net = loadNetwork(fruitCatchingNetwork);
         const startingLoss = forwardPassGradientDescent.gradientDescent(net, statement);
 
         gradientDescentLearning.batchSize = 4;
         const backpropagation = new GradientDescent(groundTruthFruitCatching, gradientDescentLearning);
         const finalLoss = backpropagation.gradientDescent(net, statement);
+        expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
+    });
+
+    test("Stochastic gradient descent with regression mouse move nodes", () => {
+        const net = loadNetwork(pongNetwork);
+        const forwardPassGradientDescent = new GradientDescent(groundTruthPong, gradientDescentForward);
+        const startingLoss = forwardPassGradientDescent.gradientDescent(net, "x|uP^bqm{]xwITPjY@yB");
+
+        gradientDescentLearning.batchSize = 4;
+        const backpropagation = new GradientDescent(groundTruthPong, gradientDescentLearning);
+        const finalLoss = backpropagation.gradientDescent(net, "x|uP^bqm{]xwITPjY@yB");
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
     });
 });

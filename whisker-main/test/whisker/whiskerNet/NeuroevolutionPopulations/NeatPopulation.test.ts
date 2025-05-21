@@ -8,7 +8,7 @@ import {
 } from "../../../../src/whisker/whiskerNet/HyperParameter/NeatParameter";
 import Arrays from "../../../../src/whisker/utils/Arrays";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
-import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {ActionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActionNode";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
@@ -218,7 +218,7 @@ describe("Test NeatPopulation", () => {
     test("Test Compatibility Distance of Chromosomes with disjoint connections", () => {
         const inputNode1 = new InputNode(1, "Sprite1", "X-Position");
         const inputNode2 = new InputNode(2, "Sprite2", "Y-Position");
-        const outputNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
+        const outputNode = new ActionNode(3, new WaitEvent());
 
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [inputNode1, inputNode2]);
@@ -244,7 +244,7 @@ describe("Test NeatPopulation", () => {
     test("Test Compatibility Distance of Chromosomes with disjoint connections switched", () => {
         const inputNode1 = new InputNode(1, "Sprite1", "X-Position");
         const inputNode2 = new InputNode(2, "Sprite2", "Y-Position");
-        const outputNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
+        const outputNode = new ActionNode(3, new WaitEvent());
 
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [inputNode1, inputNode2]);
@@ -280,7 +280,7 @@ describe("Test NeatPopulation", () => {
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {
         const inputNode1 = new InputNode(1, "Sprite1", "X-Position");
         const inputNode2 = new InputNode(2, "Sprite2", "Y-Position");
-        const outputNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
+        const outputNode = new ActionNode(3, new WaitEvent());
 
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [inputNode1, inputNode2]);

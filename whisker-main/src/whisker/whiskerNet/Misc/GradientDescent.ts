@@ -1,15 +1,15 @@
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {FeatureGroup, InputFeatures} from "./InputExtraction";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
-import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import Arrays from "../../utils/Arrays";
-import {RegressionNode} from "../NetworkComponents/RegressionNode";
+import {ActionNode} from "../NetworkComponents/ActionNode";
 import {Randomness} from "../../utils/Randomness";
 import logger from "../../../util/logger";
 import {Container} from "../../utils/Container";
 import {BranchCoverageFitnessFunctionFactory} from "../../testcase/fitness/BranchCoverageFitnessFunctionFactory";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
+import {MouseMoveDimensionEvent} from "../../testcase/events/MouseMoveDimensionEvent";
 
 export class GradientDescent {
 
@@ -28,7 +28,10 @@ export class GradientDescent {
      */
     private static DERIVATIVES = {
         // Loss functions
-        "SQUARED_ERROR": (prediction: number, label: number): number => -(label - prediction),
+        "BINARY_CROSS_ENTROPY": (prediction: number, label: number): number =>
+            (prediction - label) / (prediction * (1 - prediction) + Number.EPSILON),
+        "MSE": (prediction: number, label: number): number =>
+            2 * (prediction - label),
 
         // Activation functions
         "NONE": (): number => 1,
@@ -43,10 +46,10 @@ export class GradientDescent {
     /**
      * The ground truth data corresponding to a given target.
      */
-    private _trainingData: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+    private _trainingData: StateActionRecord = new Map<ObjectInputFeatures, EventAndParametersObject>();
 
     /**
-     * The current target statement. If changed new ground truth data for the new target must be selected.
+     * The current target statement. If changed, new ground truth data for the new target must be selected.
      */
     private _currentTarget: string
 
@@ -146,7 +149,7 @@ export class GradientDescent {
     }
 
     /**
-     * Assembles the labels of classification and regression nodes in a label to value map.
+     * Assembles the labels of classification and regression nodes in a label-to-value map.
      * @param network whose classification and regression outputs are compared to the labels.
      * @param batch the entire data batch hosting the label values.
      * @param example the data sample that will be used in the forward pass.
@@ -155,10 +158,16 @@ export class GradientDescent {
     private _prepareLabels(network: NetworkChromosome, batch: StateActionRecord,
                            example: ObjectInputFeatures): Map<string, number> {
 
-        // One-hot encoded label vector.
         const eventLabel = batch.get(example).event;
         const labelVector = new Map<string, number>();
-        for (const event of network.classificationNodes.keys()) {
+
+        // Special handling for continuous action nodes like mouse movements.
+        if (eventLabel === "MouseMoveEvent") {
+            this._computeMouseMoveLabels(batch.get(example), network, labelVector);
+        }
+
+        // Trigger actions are one-hot encoded.
+        for (const event of network.getTriggerActionNodes().map(node => node.event.stringIdentifier())) {
             if (event.localeCompare(eventLabel, 'en', {sensitivity: 'base'}) === 0) {
                 labelVector.set(event, 1);
             } else {
@@ -166,15 +175,56 @@ export class GradientDescent {
             }
         }
 
-        // Evaluate regression nodes if we have some for the target event.
-        if (network.regressionNodes.has(eventLabel)) {
-            for (const regNode of network.regressionNodes.get(eventLabel)) {
-                const trueValue = batch.get(example).parameter[regNode.eventParameter];
-                labelVector.set(this._regressionNodeIdentifier(regNode), trueValue);
-            }
+        return labelVector;
+    }
+
+    /**
+     * Computes and labels for {@link MouseMoveDimensionEvent}s.
+     *
+     * @param {StateActionRecord} labelAction The ground truth action and parameter output.
+     * @param {NetworkChromosome} network The network chromosome that is optimised.
+     * @param {Map<string, number>} labelVector The label vector mapping action events to target labels.
+     */
+    private _computeMouseMoveLabels(labelAction: EventAndParametersObject, network: NetworkChromosome,
+                                    labelVector: Map<string, number>): void {
+
+        const mouseMoveDimensionX = network.getContinuousActionNodes()
+            .find(n => n.event.stringIdentifier() === "MouseMoveDimensionEvent-X");
+        const mouseMoveDimensionY = network.getContinuousActionNodes()
+            .find(n => n.event.stringIdentifier() === "MouseMoveDimensionEvent-Y");
+
+        // If we do not have matching action nodes in our network, exit.
+        if (!mouseMoveDimensionX || !mouseMoveDimensionY) {
+            return;
         }
 
-        return labelVector;
+        const mouseMoveDimensionEventX = mouseMoveDimensionX.event as MouseMoveDimensionEvent;
+        const mouseMoveDimensionEventY = mouseMoveDimensionY.event as MouseMoveDimensionEvent;
+
+        const targetX = labelAction.parameter.X * 240;
+        const targetY = labelAction.parameter.Y * 180;
+
+        const magnitudeX = mouseMoveDimensionEventX.magnitude;
+        const magnitudeY = mouseMoveDimensionEventY.magnitude;
+
+        const targetActivationX = this._castScratchPositionToSigmoid(targetX, magnitudeX);
+        const targetActivationY = this._castScratchPositionToSigmoid(targetY, magnitudeY);
+
+        labelVector.set(mouseMoveDimensionEventX.stringIdentifier(), targetActivationX);
+        labelVector.set(mouseMoveDimensionEventY.stringIdentifier(), targetActivationY);
+    }
+
+    /**
+     * Computes the target label of {@link MouseMoveDimensionEvent} action nodes
+     * by inverting the scaleSigmoidToMagnitude function of the {@link ScratchEvent} class.
+     * @param delta The difference along the x or y dimension between the mouse position
+     * of the training input and the targeted mouse position.
+     * @param magnitude The magnitude to which the sigmoid output is scaled to during network inference.
+     * @returns the target label of {@link MouseMoveDimensionEvent} action nodes.
+     */
+    private _castScratchPositionToSigmoid(delta: number, magnitude: number): number {
+        const inverted = (delta + magnitude) / (2 * magnitude);
+        return Math.min(1, Math.max(0, inverted));
     }
 
     /**
@@ -203,9 +253,8 @@ export class GradientDescent {
                     continue;
                 }
 
-
                 // Compute loss and determine gradients of weights.
-                trainingLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
+                trainingLoss += this._forwardPass(network, inputFeatures, labelVector);
                 this._backwardPass(network, labelVector);
                 numTrainingExamples++;
             }
@@ -247,8 +296,8 @@ export class GradientDescent {
                     continue;
                 }
 
-                // Compute the loss on validation set.
-                validationLoss += this._forwardPass(network, inputFeatures, labelVector, LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED);
+                // Compute the loss on the validation set.
+                validationLoss += this._forwardPass(network, inputFeatures, labelVector);
                 numValidationExamples++;
             }
         }
@@ -269,65 +318,24 @@ export class GradientDescent {
      * @param network the network to be trained.
      * @param inputs the provided feature vector.
      * @param labelVector the provided label vector corresponding to the input features.
-     * @param lossFunction the loss function to be used to calculate the loss value.
      * @returns the loss value for the given inputs and labels.
      */
-    public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>,
-                        lossFunction: LossFunction): number {
+    public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>): number {
         network.activateNetwork(inputs);
-        let loss = 0;
-        switch (lossFunction) {
-            case LossFunction.SQUARED_ERROR: {
-                const regressionNodes = network.layers.get(1).filter(node => node instanceof RegressionNode) as RegressionNode[];
-                loss = this._squaredLoss(regressionNodes, labelVector);
-                break;
-            }
-            case LossFunction.CATEGORICAL_CROSS_ENTROPY: {
-                const classificationNodes = network.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
-                loss = this._categoricalCrossEntropyLoss(classificationNodes, labelVector);
-                break;
-            }
-            case LossFunction.SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED: {
-                const regressionNodes = network.layers.get(1).filter(node => node instanceof RegressionNode) as RegressionNode[];
-                const classificationNodes = network.layers.get(1).filter(node => node instanceof ClassificationNode) as ClassificationNode[];
-                loss = this._squaredLoss(regressionNodes, labelVector) + this._categoricalCrossEntropyLoss(classificationNodes, labelVector);
-            }
-        }
-        return loss;
-    }
+        const actionNodes = network.getActionNodes();
+        let totalLoss = 0;
+        for (const node of actionNodes) {
+            const label = labelVector.get(node.event.stringIdentifier()) ?? 0;
+            const prediction = node.activationValue;
 
-    /**
-     * Calculates the squared loss function between the regression prediction of a node and the true label value.
-     * @param regNodes the regression nodes on which the squared loss will be computed.
-     * @param labels vector of true target labels.
-     * @returns squared loss between regression prediction and label.
-     */
-    private _squaredLoss(regNodes: RegressionNode[], labels: Map<string, number>): number {
-        let loss = 0;
-        for (const node of regNodes) {
-            const trueValue = labels.get(this._regressionNodeIdentifier(node));
-            if (!isNaN(trueValue)) {
-                const node_error = 0.5 * Math.pow(trueValue - node.activationValue, 2);
-                loss += node_error;
+            if (node.event instanceof MouseMoveDimensionEvent) {
+                totalLoss += this._mseLoss(prediction, label);
+            } else {
+                totalLoss += this._binaryCrossEntropyLoss(prediction, label);
             }
         }
-        return loss;
-    }
 
-    /**
-     * Calculates the categorical cross-entropy loss function between a classification prediction and the true label.
-     * @param classNodes the classification nodes on which the cross-entropy loss will be computed.
-     * @param labels vector of true target labels.
-     * @returns categorical cross-entropy loss between classification prediction and label.
-     */
-    private _categoricalCrossEntropyLoss(classNodes: ClassificationNode[], labels: Map<string, number>): number {
-        let loss = 0;
-        for (const node of classNodes) {
-            const trueValue = labels.get(node.event.stringIdentifier());
-            const node_error = trueValue * Math.log(Math.max(node.activationValue, 1e-15));
-            loss += node_error;
-        }
-        return -loss;
+        return totalLoss / actionNodes.length;
     }
 
     /**
@@ -340,30 +348,30 @@ export class GradientDescent {
         const layersInverted = [...network.layers.keys()].sort((a, b) => b - a);
         for (const layer of layersInverted) {
 
-            // Calculate the gradients for each connection going into the output layer.
             if (layer == 1) {
+
+                // First pass: Calculate gradients for each output node
                 for (const node of network.layers.get(layer)) {
+                    if (node instanceof ActionNode) {
+                        const label = labelVector.get(node.event.stringIdentifier()) ?? 0;
+                        const prediction = node.activationValue;
 
-                    // Calculate gradient for classification nodes.
-                    if (node instanceof ClassificationNode) {
-                        const label = labelVector.get(node.event.stringIdentifier());
-                        node.gradient += node.activationValue - label;  // Combined gradient for SoftMax + Cross-Entropy
+                        const lossGradient = node.event instanceof MouseMoveDimensionEvent ?
+                            GradientDescent.DERIVATIVES.MSE(prediction, label) :
+                            GradientDescent.DERIVATIVES.BINARY_CROSS_ENTROPY(prediction, label);
+                        const activationFunctionGradient = GradientDescent.DERIVATIVES[ActivationFunction[node.activationFunction]](prediction);
+                        node.gradient = lossGradient * activationFunctionGradient;
                     }
+                }
 
-                    // Calculate gradient for regression nodes.
-                    if (node instanceof RegressionNode) {
-                        const label = labelVector.get(`${node.event.stringIdentifier()}-${node.eventParameter}`);
-                        if (label === undefined) {
-                            continue;
+                // Second pass: Update connection weights
+                const outputSize = network.layers.get(layer).length;
+                for (const node of network.layers.get(layer)) {
+                    if (node instanceof ActionNode) {
+                        for (const connection of node.incomingConnections) {
+                            // To avoid gradient explosion, each connection is normalized by the total number of outputs
+                            connection.gradient += (node.gradient / outputSize) * connection.source.activationValue;
                         }
-                        const lossGradient = GradientDescent.DERIVATIVES[LossFunction[LossFunction.SQUARED_ERROR]];
-                        const activationFunctionGradient = GradientDescent.DERIVATIVES[ActivationFunction[node.activationFunction]];
-                        node.gradient += lossGradient(node.activationValue, label) * activationFunctionGradient(node.activationValue);
-                    }
-
-                    // Calculate gradients for incoming connections of output nodes.
-                    for (const connection of node.incomingConnections) {
-                        connection.gradient += node.gradient * connection.source.activationValue;
                     }
                 }
             }
@@ -380,23 +388,6 @@ export class GradientDescent {
                 }
             }
         }
-    }
-
-    /**
-     * Computes the gradient for hidden neurons by summarising the gradient of outgoing connections.
-     * @param network the network hosting the neuron for which the gradient should be calculated.
-     * @param neuron the neuron whose gradient is to be determined.
-     * @returns gradient of given neuron.
-     */
-    private _incomingGradientHiddenNode(network: NetworkChromosome, neuron: NodeGene): number {
-        let gradient = 0;
-        for (const connection of network.connections) {
-            if (connection.source === neuron) {
-                gradient += (connection.target.gradient * connection.weight);
-            }
-        }
-
-        return gradient;
     }
 
     /**
@@ -422,7 +413,7 @@ export class GradientDescent {
         }
 
         if (this._parameter.combinePlayerRecordings) {
-            const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+            const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, EventAndParametersObject>();
             for (const player in this._groundTruth) {
                 const playerRecording = this._groundTruth[player] as Record<string, unknown>;
                 const playerData = this._extractDataForStatementFromPlayer(statement, playerRecording);
@@ -445,7 +436,7 @@ export class GradientDescent {
      * @returns structured data for the gradient descent process.
      */
     private _extractDataForStatementFromPlayer(statement: string, playerRecording: Record<string, unknown>): StateActionRecord {
-        const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+        const stateActionRecord: StateActionRecord = new Map<ObjectInputFeatures, EventAndParametersObject>();
         if (!playerRecording) {
             return stateActionRecord;
         }
@@ -460,7 +451,7 @@ export class GradientDescent {
 
             // Extract an executed action and the corresponding state from the .json file
             for (const record of Object.values(recording)) {
-                const eventAndParams: eventAndParametersObject = {
+                const eventAndParams: EventAndParametersObject = {
                     event: record['action'],
                     parameter: record['parameter']
                 };
@@ -494,7 +485,7 @@ export class GradientDescent {
         // Randomly select data points from the training dataset and combine them to form a training batch until all
         // data points have been distributed.
         while (keys.length > 0) {
-            const batch: StateActionRecord = new Map<ObjectInputFeatures, eventAndParametersObject>();
+            const batch: StateActionRecord = new Map<ObjectInputFeatures, EventAndParametersObject>();
             while (batch.size < this._parameter.batchSize && keys.length > 0) {
                 const ranDataSample = random.pick(keys);
                 batch.set(ranDataSample, this.trainingData.get(ranDataSample));
@@ -543,6 +534,46 @@ export class GradientDescent {
     }
 
     /**
+     * Computes the gradient for hidden neurons by summarising the gradient of outgoing connections.
+     * @param network the network hosting the neuron for which the gradient should be calculated.
+     * @param neuron the neuron whose gradient is to be determined.
+     * @returns gradient of given neuron.
+     */
+    private _incomingGradientHiddenNode(network: NetworkChromosome, neuron: NodeGene): number {
+        let gradient = 0;
+        for (const connection of network.connections) {
+            if (connection.source === neuron) {
+                gradient += (connection.target.gradient * connection.weight);
+            }
+        }
+
+        return gradient;
+    }
+
+    /**
+     * Computes the binary cross-entropy loss between the prediction and label value.
+     * @param prediction The prediction of the model.
+     * @param label The ground truth label.
+     * @returns The binary cross-entropy loss between the prediction and label value.
+     */
+    private _binaryCrossEntropyLoss(prediction: number, label: number) {
+        return -(label * Math.log(prediction + Number.EPSILON) +
+            (1 - label) * Math.log(1 - prediction + Number.EPSILON));
+    }
+
+    /**
+     * Computes the mean_squared error loss between the prediction and label value.
+     * @param prediction The prediction of the model.
+     * @param label The ground truth label.
+     * @returns The mean-squared error loss between the prediction and label value.
+     */
+    private _mseLoss(prediction: number, label: number) {
+        const error = prediction - label;
+        return error * error;
+    }
+
+
+    /**
      * Returns a learning rate value based on the defined learning rate adaption algorithm.
      * @param epoch number of epochs executed.
      * @returns learning rate value.
@@ -575,15 +606,6 @@ export class GradientDescent {
             alpha = epoch / pointAtNoDecrease;
         }
         return (1 - alpha) * this._parameter.learningRate + alpha * minLearningRate;
-    }
-
-    /**
-     * Returns a unique identifier for regression nodes to save and fetch regression labels in the label map.
-     * @param node for which an id should be generated.
-     * @return regression neuron label id
-     */
-    private _regressionNodeIdentifier(node: RegressionNode) {
-        return `${node.event.stringIdentifier()}-${node.eventParameter}`;
     }
 
     /**
@@ -685,7 +707,7 @@ export class GradientDescent {
 /**
  * Maps executed actions to the corresponding input features representing the program state.
  */
-export type StateActionRecord = Map<ObjectInputFeatures, eventAndParametersObject>;
+export type StateActionRecord = Map<ObjectInputFeatures, EventAndParametersObject>;
 
 /**
  * Represents input features via a mapping from sprites to sprite features and their corresponding values.
@@ -695,18 +717,9 @@ export type ObjectInputFeatures = Record<string, Record<string, number>>;
 /**
  * Represents the structure of Scratch actions.
  */
-export interface eventAndParametersObject {
+export interface EventAndParametersObject {
     event: string,
     parameter: Record<string, number>
-}
-
-/**
- * Enumerator for the used loss functions.
- */
-export enum LossFunction {
-    SQUARED_ERROR,
-    CATEGORICAL_CROSS_ENTROPY,
-    SQUARED_ERROR_CATEGORICAL_CROSS_ENTROPY_COMBINED
 }
 
 /**

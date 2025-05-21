@@ -478,6 +478,8 @@ class Inputs {
      */
     keyPress (key, steps) {
         const keyString = Util.scratchKeyToKeyString(key);
+        // Avoid double key presses as this interrupts the key press signal sent to the VM.
+        this.inputs = this.inputs.filter(input => input._data.key !== keyString);
         this.inputImmediate({
             device: 'keyboard',
             key: keyString,

@@ -57,32 +57,29 @@ describe('Test NeatChromosomeGenerator', () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fully',
             ActivationFunction.TANH, mutationOp, crossoverOp);
         const neatChromosome = await generator.get();
-        expect(neatChromosome.getAllNodes().length).toBe(19);
-        expect(neatChromosome.connections.length).toBe(90);
+        expect(neatChromosome.getAllNodes().length).toBe(14);
+        expect(neatChromosome.connections.length).toBe(40);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toBe(0);
-        expect(neatChromosome.classificationNodes.size).toBe(4);
-        expect(neatChromosome.regressionNodes.size).toBe(4);
+        expect(neatChromosome.getTriggerActionNodes().length).toBe(4);
         expect(neatChromosome.layers.size).toEqual(2);
         expect(neatChromosome.layers.get(0).length).toEqual(10);
-        expect(neatChromosome.layers.get(1).length).toBe(9);
+        expect(neatChromosome.layers.get(1).length).toBe(4);
     });
 
     test('Create initial random Chromosome using sparse connection mode', async () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'sparse',
             ActivationFunction.TANH, mutationOp, crossoverOp);
         const neatChromosome = await generator.get();
-        expect(neatChromosome.getAllNodes().length).toBeGreaterThanOrEqual(15);
-        expect(neatChromosome.connections.length).toBeGreaterThanOrEqual(18);
+        expect(neatChromosome.connections.length).toBeGreaterThanOrEqual(1);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.getAllNodes().filter(node => node instanceof HiddenNode).length).toBe(0);
-        expect(neatChromosome.classificationNodes.size).toBe(4);
-        expect(neatChromosome.regressionNodes.size).toBe(4);
+        expect(neatChromosome.getTriggerActionNodes().length).toBe(4);
         expect(neatChromosome.layers.size).toEqual(2);
         expect(neatChromosome.layers.get(0).length).toEqual(10);
-        expect(neatChromosome.layers.get(1).length).toBe(9);
+        expect(neatChromosome.layers.get(1).length).toBe(4);
     });
 
     test('Create two Chromosomes to test if every one of them gets the same innovation numbers', async () => {
