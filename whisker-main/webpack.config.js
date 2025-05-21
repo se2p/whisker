@@ -37,7 +37,18 @@ module.exports = [
                 },
                 {
                     test: /\.ts|\.tsx$/,
-                    use: 'ts-loader',
+                    use: {
+                        loader: 'ts-loader',
+                        options: {
+                            // Speeds up compilation by skipping type checking.
+                            // We validate types by invoking tsc separately.
+                            transpileOnly: true,
+
+                            // We do not cache previous builds via experimentalWatchApi
+                            // as transpileOnly and incremental builds are incompatible.
+                            // https://github.com/TypeStrong/ts-loader/issues/1124#issuecomment-657266185
+                        }
+                    },
                     exclude: path.resolve(__dirname, '/node_modules/'),
                     include: path.resolve(__dirname, 'src')
                 }
@@ -54,6 +65,7 @@ module.exports = [
         entry: {
             whisker: path.resolve('src', 'index.js')
         },
+
         output: {
             filename: '[name].js',
             libraryTarget: 'commonjs2',
@@ -79,7 +91,18 @@ module.exports = [
                 },
                 {
                     test: /\.tsx?$/,
-                    use: 'ts-loader',
+                    use: {
+                        loader: 'ts-loader',
+                        options: {
+                            // Speeds up compilation by skipping type checking.
+                            // We validate types by invoking tsc separately.
+                            transpileOnly: true,
+
+                            // We do not cache previous builds via experimentalWatchApi
+                            // as transpileOnly and incremental builds are incompatible.
+                            // https://github.com/TypeStrong/ts-loader/issues/1124#issuecomment-657266185
+                        }
+                    },
                     exclude: /node_modules/
                 }
             ]

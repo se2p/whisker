@@ -18,6 +18,7 @@ cache:
     - node_modules/
     - .yarn
     - .cache
+    - .webpack-cache-js/
 
 build_all:
   stage: build

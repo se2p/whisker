@@ -23,7 +23,8 @@
         "ci:prepare-downstream-build": "node .prepare-downstream-build.js",
         "servant": "yarn --cwd servant node servant.js",
         "test": "yarn --cwd whisker-main test && yarn --cwd servant unittest",
-        "integrationtest": "yarn --cwd whisker-web test && yarn --cwd servant integrationtest"
+        "integrationtest": "yarn --cwd whisker-web test && yarn --cwd servant integrationtest",
+        "clean:cache": "rm -rf **/.webpack-cache*"
     },
     "dependencies": {
         "assert": "^2.0.0",

@@ -20,6 +20,7 @@ module.exports = [
                 path.resolve(__dirname, 'src/index.css')
             ]
         },
+
         output: {
             path: path.resolve(__dirname, 'dist'),
         },
@@ -94,6 +95,18 @@ module.exports = [
         entry: {
             'whisker-gui': path.resolve(__dirname, 'src/index.js')
         },
+
+        // Enable persistent caching to decrease build times.
+        cache: {
+            type: 'filesystem',
+            buildDependencies: {
+                config: [__filename]
+            },
+            cacheDirectory: path.resolve(__dirname, '.webpack-cache-js'),
+            maxAge: 1000 * 60 * 60, // Clean cache after 1 hour
+            compression: 'gzip' // Compress cache files to save space
+        },
+
         output: {
             path: path.resolve(__dirname, 'dist'),
             filename: '[name].js',
@@ -119,7 +132,12 @@ module.exports = [
                 },
                 {
                     test: /\.ts$/,
-                    loader: 'ts-loader'
+                    use: {
+                        loader: 'ts-loader',
+                        options: {
+                            experimentalWatchApi: true, // Faster builds through caching
+                        }
+                    }
                     // TODO: Include only 'src' once whisker-main isn't included through '../../whisker-main' anymore.
                     // include: path.resolve(__dirname, 'src')
                 }
