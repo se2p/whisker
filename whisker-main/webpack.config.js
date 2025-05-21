@@ -40,7 +40,9 @@ module.exports = [
                     use: {
                         loader: 'ts-loader',
                         options: {
-                            transpileOnly: true, // Speeds up compilation by skipping type checking
+                            // Speeds up compilation by skipping type checking.
+                            // We validate types by invoking tsc separately.
+                            transpileOnly: true,
                         }
                     },
                     exclude: path.resolve(__dirname, '/node_modules/'),
@@ -88,7 +90,9 @@ module.exports = [
                     use: {
                         loader: 'ts-loader',
                         options: {
-                            transpileOnly: true, // Speeds up compilation by skipping type checking
+                            // Speeds up compilation by skipping type checking.
+                            // We validate types by invoking tsc separately.
+                            transpileOnly: true,
                         }
                     },
                     exclude: /node_modules/
