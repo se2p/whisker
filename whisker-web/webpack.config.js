@@ -96,14 +96,14 @@ module.exports = [
             'whisker-gui': path.resolve(__dirname, 'src/index.js')
         },
 
-        // Enable persistent caching with management options
+        // Enable persistent caching to decrease build times.
         cache: {
             type: 'filesystem',
             buildDependencies: {
                 config: [__filename]
             },
             cacheDirectory: path.resolve(__dirname, '.webpack-cache-js'),
-            maxAge: 1000 * 60 * 60, // 1 hour
+            maxAge: 1000 * 60 * 60, // Clean cache after 1 hour
             compression: 'gzip' // Compress cache files to save space
         },
 
