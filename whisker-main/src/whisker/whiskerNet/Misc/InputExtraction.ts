@@ -88,7 +88,7 @@ export class InputExtraction {
             }
         }
 
-        // Check if we add the mouse position to our input features.
+        // Check if we add the mouse position and the costume number to our input features.
         let mouse = false;
         for (const t of vm.runtime.targets) {
             for (const blockId of Object.keys(t.blocks._blocks)) {
@@ -134,6 +134,11 @@ export class InputExtraction {
                             mouse = true;
                         break;
                     }
+
+                    case "looks_switchbackdropto": {
+                        this.addCostumeFeature(target, stageFeatures);
+                        break;
+                    }
                 }
             }
         }
@@ -148,6 +153,20 @@ export class InputExtraction {
             stageFeatures.set('Mouse-Y', y);
         }
         return stageFeatures;
+    }
+
+    /**
+     * Adds a feature that represents the currently selected costume of the given target.
+     * @param target The target for which the costume number should be recorded.
+     * @param featureMap A map maintaining the the extracted features of the given target.
+     */
+    private static addCostumeFeature(target: any, featureMap: Map<string, number>) {
+        const costumeValue = target.currentCostume;
+        const numberOfCostumes = target.sprite.costumes_.length;
+        if (numberOfCostumes > 1) {
+            const costumeNormalized = this.mapValueIntoRange(costumeValue, 0, numberOfCostumes - 1);
+            featureMap.set("Costume", costumeNormalized);
+        }
     }
 
     /**
@@ -234,15 +253,9 @@ export class InputExtraction {
                     break;
                 }
 
-                // Check if the target is capable of switching his costume.
+                // Check if the target is capable of switching the costume.
                 case "looks_switchcostumeto": {
-                    const costumeValue = target.currentCostume;
-                    const numberOfCostumes = target.sprite.costumes_.length;
-                    // Only add the costume number if there are indeed multiple costumes.
-                    if (numberOfCostumes > 1) {
-                        const costumeNormalized = this.mapValueIntoRange(costumeValue, 0, numberOfCostumes - 1);
-                        spriteFeatures.set("Costume", costumeNormalized);
-                    }
+                    this.addCostumeFeature(target, spriteFeatures);
                     break;
                 }
             }
