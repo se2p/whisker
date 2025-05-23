@@ -232,6 +232,7 @@ export class WhiskerSearchConfiguration {
         const mutateEnableConnection = this._config['mutation']['mutateEnableConnection'] as number;
 
         const distanceThreshold = this._config['compatibility']['distanceThreshold'] as number;
+        const distanceModifier = this._config['compatibility']['distanceModifier'] as number;
         const disjointCoefficient = this._config['compatibility']['disjointCoefficient'] as number;
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
@@ -269,6 +270,7 @@ export class WhiskerSearchConfiguration {
         properties.mutateEnableConnection = mutateEnableConnection;
 
         properties.compatibilityDistanceThreshold = distanceThreshold;
+        properties.compatibilityModifier = distanceModifier;
         properties.disjointCoefficient = disjointCoefficient;
         properties.excessCoefficient = excessCoefficient;
         properties.weightCoefficient = weightCoefficient;

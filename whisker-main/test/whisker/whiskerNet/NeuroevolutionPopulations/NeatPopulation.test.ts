@@ -70,6 +70,7 @@ describe("Test NeatPopulation", () => {
         properties.excessCoefficient = 1;
         properties.weightCoefficient = 0.5;
         properties.compatibilityDistanceThreshold = 3;
+        properties.compatibilityModifier = 0.1;
         properties.penalizingAge = 10;
         properties.ageSignificance = 1.0;
         properties.parentsPerSpecies = 0.2;
