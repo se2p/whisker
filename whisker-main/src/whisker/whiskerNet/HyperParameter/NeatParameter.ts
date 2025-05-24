@@ -131,6 +131,12 @@ export class NeatParameter extends BasicNeuroevolutionParameter {
     private _compatibilityDistanceThreshold = 3.0;
 
     /**
+     * The rate at which the compatibility distance threshold gets updated if the population contains
+     * too few or too many species.
+     */
+    private _compatibilityModifier: number;
+
+    /**
      * Defines the importance of disjoint connections.
      */
     private _disjointCoefficient = 1;
@@ -345,6 +351,14 @@ export class NeatParameter extends BasicNeuroevolutionParameter {
 
     set compatibilityDistanceThreshold(value: number) {
         this._compatibilityDistanceThreshold = value;
+    }
+
+    get compatibilityModifier(): number {
+        return this._compatibilityModifier;
+    }
+
+    set compatibilityModifier(value: number) {
+        this._compatibilityModifier = value;
     }
 
     get disjointCoefficient(): number {

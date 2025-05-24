@@ -39,6 +39,7 @@
     },
     "compatibility": {
         "distanceThreshold": 1.0,
+        "distanceModifier": 0.1,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
         "weightCoefficient": 0.4

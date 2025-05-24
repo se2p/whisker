@@ -45,7 +45,13 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     /**
      * The threshold determining at which point two networks are defined to belong to different species.
      */
-    private _compatibilityThreshold: number
+    private _compatibilityThreshold: number;
+
+    /**
+     * The rate at which the compatibility distance threshold gets updated if the population contains
+     * too few or too many species.
+     */
+    private readonly _compatibilityModifier: number;
 
     /**
      * Maps input, classification and regression nodes to corresponding node ids via input features, events and
@@ -67,6 +73,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
         this._compatibilityThreshold = hyperParameter.compatibilityDistanceThreshold;
+        this._compatibilityModifier = hyperParameter.compatibilityModifier;
     }
 
     public static getAvailableInnovationNumber(): number {
@@ -163,18 +170,17 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Updates the CompatibilityThreshold to come closer to the desired number of species.
      */
     public updateCompatibilityThreshold(): void {
-        const compatibilityModifier = 0.1;
-        // If we have less species than desired, we have to reduce the threshold.
+        // If we have fewer species than desired, we have to reduce the threshold.
         if (this.species.length < this.numberOfSpeciesTargeted) {
-            this._compatibilityThreshold -= compatibilityModifier;
+            this._compatibilityThreshold -= this._compatibilityModifier;
         }
 
         // If we have more species than desired, we have to increase the threshold.
         else if (this.species.length > this.numberOfSpeciesTargeted) {
-            this._compatibilityThreshold += compatibilityModifier;
+            this._compatibilityThreshold += this._compatibilityModifier;
         }
 
-        // Let it not fall below 0.1 though!
+        // Let the threshold not fall below 0.1.
         if (this._compatibilityThreshold < 0.1) {
             this._compatibilityThreshold = 0.1;
         }
@@ -228,7 +234,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         this.populationChampion.isPopulationChampion = true;
         this.populationChampion.numberOffspringPopulationChamp = this.hyperParameter.populationChampionNumberOffspring;
 
-        // Assign lost children due to rounding errors to random population.
+        // Assign lost children due to rounding errors to a random population.
         if (totalOffspringExpected < this.populationSize) {
             const lostChildren = this.populationSize - totalOffspringExpected;
             Randomness.getInstance().pick(this.species).expectedOffspring += lostChildren;
@@ -248,7 +254,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             this.highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize / 2;
 
-            // If we only have one Specie allow only the champ to reproduce
+            // If we only have one Specie, allow only the champ to reproduce
             if (this.species.length == 1) {
                 const specie = this.species[0];
                 specie.networks[0].numberOffspringPopulationChamp = Math.floor(this.populationSize);
@@ -364,7 +370,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         let matching = 0;
         let weight_diff = 0;
 
-        // Size of both networks measured based on their number of connections.
+        // The size of both networks measured based on their number of connections.
         const size1 = network1.connections.length;
         const size2 = network2.connections.length;
         const maxSize = Math.max(size1, size2);
