@@ -3,7 +3,7 @@
     "algorithm": "mioNeatest",
     "eventSelection": "activation",
     "numberOfSpecies": 2,
-    "parentsPerSpecies": 0.20,
+    "parentsPerSpecies": 0.30,
     "ageSignificance": 1.0,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
@@ -12,14 +12,14 @@
     "diversityMetric": "cosineNovelty",
     "chromosome": {
         "type": "neatChromosome",
-        "activationFunction": "RELU",
+        "activationFunction": "SIGMOID",
         "inputConnectionMethod": "fully"
     },
     "crossover": {
         "operator": "uniformNeatCrossover",
         "crossoverWithoutMutation": 0.25,
         "interspeciesRate": 0.001,
-        "weightAverageRate": 0.4
+        "weightAverageRate": 0.5
     },
     "mutation": {
         "operator": "neatMutation",
@@ -41,9 +41,9 @@
     },
     "compatibility": {
         "distanceThreshold": 1.0,
-        "distanceModifier": 0.1,
-        "disjointCoefficient": 1,
-        "excessCoefficient": 1,
+        "distanceModifier": 0.2,
+        "disjointCoefficient": 3,
+        "excessCoefficient": 3,
         "weightCoefficient": 0.4
     },
     "fitnessFunction": {
@@ -74,10 +74,10 @@
             }
         ]
     },
-    "durations": {
-        "waitStepUpperBound": 100,
-        "clickDuration": 10,
-        "pressDuration": 10
+    "events": {
+        "actionThreshold": 0.5,
+        "skipFrame": 3,
+        "typeNumberMagnitude": 100
     },
     "focusedPhase": {
         "focusedPhaseStart": 1.0,
