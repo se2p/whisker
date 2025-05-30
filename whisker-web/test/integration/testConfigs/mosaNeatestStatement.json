@@ -73,10 +73,9 @@
             }
         ]
     },
-    "durations": {
-        "waitStepUpperBound": 100,
-        "clickDuration": 3,
-        "pressDuration": 10,
-        "soundDuration": 10
+    "events": {
+        "actionThreshold": 0.5,
+        "skipFrame": 3,
+        "typeNumberMagnitude": 100
     }
 }

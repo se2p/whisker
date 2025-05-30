@@ -4,44 +4,44 @@
     "eventSelection": "activation",
     "populationSize": 150,
     "numberOfSpecies": 5,
-    "parentsPerSpecies": 0.20,
-    "penalizingAge": 15,
+    "parentsPerSpecies": 0.30,
+    "penalizingAge": 20,
     "ageSignificance": 1.0,
     "switchObjectiveCount": 10,
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
     "chromosome": {
         "type": "neatChromosome",
-        "activationFunction": "RELU",
+        "activationFunction": "SIGMOID",
         "inputConnectionMethod": "fully"
     },
     "crossover": {
         "operator": "neatCrossover",
         "crossoverWithoutMutation": 0.25,
         "interspeciesRate": 0.001,
-        "weightAverageRate": 0.4
+        "weightAverageRate": 0.5
     },
     "mutation": {
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
-        "mutationAddConnection": 0.05,
-        "recurrentConnection": 0.1,
+        "mutationAddConnection": 0.1,
+        "recurrentConnection": 0.05,
         "addConnectionTries": 10,
         "populationChampionNumberOffspring": 3,
         "populationChampionNumberClones": 1,
         "populationChampionConnectionMutation": 0.3,
-        "mutationAddNode": 0.03,
+        "mutationAddNode": 0.05,
         "mutateWeights": 0.8,
-        "perturbationPower": 1,
-        "mutateToggleEnableConnection": 0.1,
+        "perturbationPower": 0.5,
+        "mutateToggleEnableConnection": 0.05,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
         "distanceThreshold": 1.0,
-        "distanceModifier": 0.1,
-        "disjointCoefficient": 1,
-        "excessCoefficient": 1,
+        "distanceModifier": 0.2,
+        "disjointCoefficient": 3,
+        "excessCoefficient": 3,
         "weightCoefficient": 0.4
     },
     "fitnessFunction": {
@@ -72,10 +72,10 @@
             }
         ]
     },
-    "durations": {
-        "waitStepUpperBound": 100,
-        "clickDuration": 10,
-        "pressDuration": 10
+    "events": {
+        "actionThreshold": 0.5,
+        "skipFrame": 3,
+        "typeNumberMagnitude": 100
     },
     "assertions": false,
     "minimizeAssertions": false
