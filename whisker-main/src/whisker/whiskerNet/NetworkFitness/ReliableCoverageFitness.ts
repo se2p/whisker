@@ -57,7 +57,6 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
      */
     protected async checkStableCoverage(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<void> {
         // Save some values to recover them later
-        const originalSeed = Randomness.scratchSeed;
         const {playTime, score, trace, finalState, coverage} = this.copyNetworkAttributes(network);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
         const repetitionSeeds = Array(this.stableCount - 1).fill(0).map(
@@ -75,8 +74,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
             await executor.resetState();
         }
 
-        // Reset to the old Scratch seed and network attributes.
-        Randomness.setScratchSeed(originalSeed, true);
+        // Reset network attributes.
         this.restoreNetworkAttributes(network, playTime, score, trace, finalState, coverage);
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
 
