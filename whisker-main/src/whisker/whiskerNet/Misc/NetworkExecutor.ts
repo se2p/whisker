@@ -83,7 +83,6 @@ export class NetworkExecutor {
         const events: EventAndParameters[] = [];
 
         // Set up the Scratch-VM and start the game
-        Randomness.seedScratch(this._vm);
         const _onRunStop = this._projectStopped.bind(this);
         this._projectRunning = true;
         await this._vmWrapper.start();
@@ -170,7 +169,6 @@ export class NetworkExecutor {
      */
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
         // Set up the Scratch-VM and start the game
-        Randomness.seedScratch(this._vm);
         const _onRunStop = this._projectStopped.bind(this);
         this._projectRunning = true;
         await this._vmWrapper.start();
