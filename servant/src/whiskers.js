@@ -159,6 +159,13 @@ class Whisker {
         this._keepaliveWatchdog = null;
 
         /**
+         * The time (in milliseconds since epoch) the keepalive watchdog timer last fired (if it is enabled).
+         * @type {number}
+         * @private
+         */
+        this._lastKeepaliveTime = 0;
+
+        /**
          * Timer that will close the browser if the evaluation time limit is exceeded.
          * @type {NodeJS.Timeout|null}
          * @private
@@ -371,18 +378,42 @@ class Whisker {
             return;
         }
 
-        this._keepaliveWatchdog = this._keepaliveWatchdog !== null
-            ? this._keepaliveWatchdog.refresh()
-            : setTimeout(async () => {
-                logger.info(`Whisker #${this._id} dead after ${timeout} ms!`);
+        this._lastKeepaliveTime = Date.now();
 
-                if (this._reason === null) {
-                    // If no reason for death until now (e.g., page crash or uncaught error), assume the VM has frozen.
-                    this._reason = "The page froze";
-                }
+        if (this._keepaliveWatchdog !== null) {
+            // The timer is already running -> Just restart it.
+            this._keepaliveWatchdog = this._keepaliveWatchdog.refresh();
+            return;
+        }
 
-                await this._pool.destroy(this);
-            }, timeout);
+        // This is the first time invoking keepAlive(). The timer has not been started yet -> We do this below.
+        this._keepaliveWatchdog = setTimeout(async () => {
+
+            /*
+             * Workaround for issue #419, see MR !637:
+             * If the JS event loop of Node.js is blocked, e.g., due to heavy workloads like offspring generation in
+             * automatic repair using structural mutation, the communication with individual browsers is also blocked.
+             * As a result, resetting the keepalive timer via keepAlive() will not have an effect during that time, such
+             * that it might expire, even though the corresponding browser is still functional. To avoid shutting the
+             * browser down prematurely in such cases, we delay the execution until a few ticks of the JS event loop,
+             * which is what the line below does. This gives blocked keepAlive() calls a chance to run first.
+             */
+            await new Promise((resolve) => setTimeout(resolve, 10));
+
+            if (Date.now() - this._lastKeepaliveTime < this._pool._keepaliveTimeout) {
+                // A keepAlive() call was blocked. Shutting down the browser would be a mistake. Do nothing and return.
+                return;
+            }
+
+            logger.info(`Whisker #${this._id} dead after ${timeout} ms!`);
+
+            if (this._reason === null) {
+                // If no reason for death until now (e.g., page crash or uncaught error), assume the VM has frozen.
+                this._reason = "The page froze";
+            }
+
+            await this._pool.destroy(this);
+        }, timeout);
     }
 
     /**
