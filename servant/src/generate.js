@@ -77,7 +77,20 @@ async function runGeneticSearch(page) {
             downloadPath: testDownloadDir,
         });
         await (await page.$('.editor-save')).click();
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        // Create a promise that will resolve when download is complete
+        // See https://stackoverflow.com/a/74107205
+        const waitForDownload = new Promise((resolve, reject) => {
+            page._client().on('Page.downloadProgress', (event) => {
+                if (event.state === 'completed') {
+                    resolve();
+                } else if (event.state === 'canceled') {
+                    reject(new Error('Download canceled'));
+                }
+            });
+        });
+
+        await waitForDownload;
     }
 
     try {
