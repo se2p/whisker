@@ -25,6 +25,7 @@ mkShell {
     libdrm
     liberation_ttf
     libexif
+    libgbm
     libglvnd
     libkrb5
     libpng
