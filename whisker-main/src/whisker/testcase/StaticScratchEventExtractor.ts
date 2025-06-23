@@ -157,8 +157,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_distanceto': {
                 const distanceMenuBlock = target.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
                 const field = target.blocks.getFields(distanceMenuBlock);
-                const value = field['DISTANCETOMENU'].value;
-                if (value == "_mouse_") {
+                if (field['DISTANCETOMENU'] && field['DISTANCETOMENU'].value == "_mouse_") {
                     eventList.push(new MouseMoveEvent());
                 }
                 break;
