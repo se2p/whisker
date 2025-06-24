@@ -3,9 +3,6 @@
         "usage": "program",
         "id": "sprite",
         "startNodeId": "n0",
-        "stopNodeIds": [
-            "n9"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {

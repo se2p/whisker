@@ -3,9 +3,6 @@
         "usage": "program",
         "id": "test",
         "startNodeId": "n0",
-        "stopNodeIds": [
-            "n2"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {

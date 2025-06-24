@@ -84,37 +84,37 @@ function loadModel(raw: ModelJSON): Model {
 }
 
 function loadUserModel(raw: UserModelJSON): UserModel {
+    const {id, startNodeId, stopAllNodeIds} = raw;
     const nodes = loadNodes<UserModelEdge>(raw);
     const edges = loadUserModelEdges(raw);
-    addConnections(nodes, edges);
-    const {id, startNodeId, stopNodeIds, stopAllNodeIds} = raw;
-    return new UserModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopNodeIds, stopAllNodeIds);
+    addConnections(id, nodes, edges);
+    return new UserModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds);
 }
 
 function loadProgramModel(raw: ProgramModelJSON): ProgramModel {
+    const {id, startNodeId, stopAllNodeIds} = raw;
     const nodes = loadNodes<ProgramModelEdge>(raw);
     const edges = loadProgramModelEdges(raw);
-    addConnections(nodes, edges);
-    const {id, startNodeId, stopNodeIds, stopAllNodeIds} = raw;
-    return new ProgramModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopNodeIds, stopAllNodeIds);
+    addConnections(id, nodes, edges);
+    return new ProgramModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds);
 }
 
 function loadEndModel(raw: EndModelJSON): EndModel {
+    const {id, startNodeId, stopAllNodeIds} = raw;
     const nodes = loadNodes<ProgramModelEdge>(raw);
     const edges = loadProgramModelEdges(raw);
-    addConnections(nodes, edges);
-    const {id, startNodeId, stopNodeIds, stopAllNodeIds} = raw;
-    return new EndModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopNodeIds, stopAllNodeIds);
+    addConnections(id, nodes, edges);
+    return new EndModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds);
 }
 
-function addConnections<E extends ModelEdge>(nodes: Map<string, ModelNode<E>>, edges: Map<string, E>): void {
+function addConnections<E extends ModelEdge>(graphId: string, nodes: Map<string, ModelNode<E>>, edges: Map<string, E>): void {
     for (const [edgeID, edge] of edges) {
         if (!nodes.has(edge.from)) {
-            throw new Error(`${edgeID}: Unknown node id '${edge.from}'.`);
+            throw new Error(`graph ${graphId}, edge: ${edgeID}: Unknown node id '${edge.from}'.`);
         }
 
         if (!nodes.has(edge.to)) {
-            throw new Error(`${edgeID}: Unknown node id '${edge.to}'.`);
+            throw new Error(`graph ${graphId}, edge: ${edgeID}: Unknown node id '${edge.to}'.`);
         }
 
         nodes.get(edge.from).addOutgoingEdge(edge);
@@ -129,12 +129,8 @@ function loadNodes<E extends ModelEdge>(raw: ModelJSON): Map<string, ModelNode<E
             throw new Error("Node id '" + id + "' already defined.");
         }
 
-        nodes.set(id, new ModelNode(id, label));
+        nodes.set(id, new ModelNode(id, label, raw.stopAllNodeIds.includes(id)));
     });
-
-    nodes.get(raw.startNodeId).isStartNode = true;
-    raw.stopNodeIds.forEach((id) => nodes.get(id).isStopNode = true);
-    raw.stopAllNodeIds.forEach((id) => nodes.get(id).isStopAllNode = true);
     return nodes;
 }
 

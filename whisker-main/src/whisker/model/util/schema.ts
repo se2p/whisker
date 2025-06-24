@@ -82,7 +82,6 @@ interface IModelJSON {
     id: string;
     usage: ModelUsage;
     startNodeId: string;
-    stopNodeIds: string[];
     stopAllNodeIds: string[];
     edges: IModelEdgeJSON[];
     nodes: ModelNodeJSON[];
@@ -94,7 +93,6 @@ const IModelJSON = z.object({
     startNodeId: z.string({
         invalid_type_error: "Expected exactly one start node"
     }),
-    stopNodeIds: z.array(z.string()).default([]),
     stopAllNodeIds: z.array(z.string()).default([]),
     edges: z.array(ModelEdgeJSON),
     nodes: z.array(ModelNodeJSON),

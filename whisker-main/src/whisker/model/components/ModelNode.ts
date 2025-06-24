@@ -17,23 +17,31 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     readonly label: string;
     edges: E[] = []; //outgoing edges
 
-    // FIXME: this should be private readonly and already be set in the constructor!
-    isStartNode = false;
-    isStopNode = false;
-    isStopAllNode = false;
+    private readonly _isStopNode: boolean;
+    private readonly _isStopAllNode: boolean;
 
     /**
      * Node of a graph with a unique id identifier.
      * @param id Id of the node
      * @param label Label of the node
+     * @param isStopAllNode Frag if this node is a stopping node for all active graphs
      */
-    constructor(id: string, label: string = id) {
+    constructor(id: string, label: string = id, isStopAllNode = false) {
         if (!id) {
             throw new Error("No id given.");
         }
 
         this.id = id;
         this.label = label;
+        this._isStopAllNode = isStopAllNode;
+    }
+
+    public get isStopNode(): boolean {
+        return this.edges.length === 0;
+    }
+
+    public get isStopAllNode(): boolean {
+        return this._isStopAllNode;
     }
 
     /**

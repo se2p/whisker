@@ -16,7 +16,6 @@ export abstract class AbstractModel<E extends ModelEdge> {
     private readonly _id: string;
 
     protected readonly startNodeId: string;
-    protected readonly stopNodeIds: string[];
     protected readonly stopAllNodeIds: string[];
 
     protected readonly nodes: Record<string, ModelNode<E>>;
@@ -27,7 +26,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
     secondLastTransitionStep = 0;
 
     protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<E>>, edges: Record<string, E>,
-                          stopNodeIds: string[], stopAllNodeIds: string[]) {
+                          stopAllNodeIds: string[]) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -39,7 +38,6 @@ export abstract class AbstractModel<E extends ModelEdge> {
         this.nodes = nodes;
         this.edges = edges;
         this.startNodeId = startNodeId;
-        this.stopNodeIds = stopNodeIds;
         this.stopAllNodeIds = stopAllNodeIds;
     }
 

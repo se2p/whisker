@@ -43,12 +43,11 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
      * @param startNodeId Id of the start node
      * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
-     * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
     protected constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
-                          edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
+                          edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[]) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds);
     }
 
     /**
@@ -171,8 +170,8 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
 
 export class EndModel extends AbstractProgramModel {
     constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
-                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
+                edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[]) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds);
     }
 
     override get usage(): "end" {
@@ -184,7 +183,6 @@ export class EndModel extends AbstractProgramModel {
             usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
-            stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
@@ -194,8 +192,8 @@ export class EndModel extends AbstractProgramModel {
 
 export class ProgramModel extends AbstractProgramModel {
     constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
-                edges: Record<string, ProgramModelEdge>, stopNodeIds: string[], stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
+                edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[]) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds);
     }
 
     override get usage(): "program" {
@@ -207,7 +205,6 @@ export class ProgramModel extends AbstractProgramModel {
             usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
-            stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
