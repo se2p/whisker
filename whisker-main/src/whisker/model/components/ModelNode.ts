@@ -17,7 +17,6 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     readonly label: string;
     edges: E[] = []; //outgoing edges
 
-    private readonly _isStopNode: boolean;
     private readonly _isStopAllNode: boolean;
 
     /**
