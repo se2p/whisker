@@ -23,7 +23,7 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
      * Node of a graph with a unique id identifier.
      * @param id Id of the node
      * @param label Label of the node
-     * @param isStopAllNode Frag if this node is a stopping node for all active graphs
+     * @param isStopAllNode Flag if this node is a stopping node for all active graphs
      */
     constructor(id: string, label: string = id, isStopAllNode = false) {
         if (!id) {
