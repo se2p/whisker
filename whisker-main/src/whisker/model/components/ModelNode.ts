@@ -76,8 +76,7 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
                  checks: Checks): E | null {
         for (const e of this.edges) {
             const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks);
-
-            if (result && result.length == 0) {
+            if (result) {
                 e.lastTransition = t.getTotalStepsExecuted() + 1;
                 return e;
             }
