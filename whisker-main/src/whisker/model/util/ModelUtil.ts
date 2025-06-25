@@ -482,7 +482,7 @@ export abstract class ModelUtil {
     }
 
     public static flipDirectionHorizontally(direction: number): number {
-        return (direction < 0 ? 180 : -180) - direction;
+        return (direction < 0 ? -180 : 180) - direction;
     }
 
     public static flipDirectionVertically(direction: number): number {
