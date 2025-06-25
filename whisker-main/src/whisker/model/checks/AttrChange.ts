@@ -40,6 +40,7 @@ const bounds: Record<AttrName, Bounds | null> = Object.freeze({
     pixelate: {min: 0, max: Number.MAX_VALUE, kind: "clamped"},
     mosaic: {min: 0, max: 5105, kind: "clamped"},
     whirl: null,
+    currentCostume: null, //depends on how many costumes a sprite has
 
     // These attributes don't have numeric values -> specifying bounds wouldn't make sense.
     currentCostumeName: null,
