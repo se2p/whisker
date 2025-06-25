@@ -27,6 +27,8 @@ import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
 import {PointsTo, PointsToJSON} from "./PointsTo";
 import {AnyKey, AnyKeyJSON} from "./AnyKey";
 import {ParsingResult} from "./CheckTypes";
+import {MoveSteps, MoveStepsJSON} from "./MoveSteps";
+import {Bounce, BounceJSON} from "./Bounce";
 
 export type CheckJSON =
     | AttrChangeJSON
@@ -53,6 +55,8 @@ export type CheckJSON =
     | LayerJSON
     | ClearedEffectJSON
     | PointsToJSON
+    | MoveStepsJSON
+    | BounceJSON
     ;
 
 export const CheckJSON = z.discriminatedUnion("name", [
@@ -80,6 +84,8 @@ export const CheckJSON = z.discriminatedUnion("name", [
     LayerJSON,
     ClearedEffectJSON,
     PointsToJSON,
+    MoveStepsJSON,
+    BounceJSON
 ]);
 
 export type Check =
@@ -107,6 +113,8 @@ export type Check =
     | Layer
     | ClearedEffect
     | PointsTo
+    | MoveSteps
+    | Bounce
     ;
 
 export type CheckName = CheckJSON['name'];
@@ -136,6 +144,8 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "PointsTo",
     "Layer",
     "ClearedEffects",
+    "MoveSteps",
+    "Bounce"
 ]);
 
 export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
@@ -190,6 +200,10 @@ export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
             return new ClearedEffect(edgeLabel, checkJSON);
         case "PointsTo":
             return new PointsTo(edgeLabel, checkJSON);
+        case "MoveSteps":
+            return new MoveSteps(edgeLabel, checkJSON);
+        case "Bounce":
+            return new Bounce(edgeLabel, checkJSON);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }
@@ -247,6 +261,10 @@ export function convertArgs(checkJSON: CheckJSON): ParsingResult {
             return ClearedEffect.convertArgs(checkJSON.args);
         case "PointsTo":
             return PointsTo.convertArgs(checkJSON.args);
+        case "MoveSteps":
+            return MoveSteps.convertArgs(checkJSON.args);
+        case "Bounce":
+            return Bounce.convertArgs(checkJSON.args);
         default:
             throw new NonExhaustiveCaseDistinction(name);
     }

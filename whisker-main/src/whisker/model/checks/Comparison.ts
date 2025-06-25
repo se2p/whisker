@@ -85,7 +85,7 @@ function approxEqNum(x: AttributeType, y: AttributeType): boolean {
     return Math.abs(actual - y) <= EPSILON;
 }
 
-function approxEq(operand1: AttributeType, operand2: AttributeType) {
+export function approxEq(operand1: AttributeType, operand2: AttributeType): boolean {
     if (operand1 == operand2) {
         return true;
     }

@@ -13,6 +13,8 @@ import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import {attributeNames, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
+import {approxEq} from "../checks/Comparison";
+import {CheckResult, result} from "../checks/CheckResult";
 
 export interface Dependencies {
     varDependencies: { spriteName: string, varName: string }[],
@@ -441,4 +443,64 @@ export abstract class ModelUtil {
             return () => asNumber;
         }
     }
+
+    /**
+     * Calculate the Euclidean distance between two points.
+     * @param pos1 The first point.
+     * @param pos2 The second point.
+     * @return The distance between the two points.
+     */
+    public static getDistance(pos1: { x: number, y: number }, pos2: { x: number, y: number }): number {
+        const a = pos1.x - pos2.x;
+        const b = pos1.y - pos2.y;
+        return Math.sqrt(a * a + b * b);
+    }
+
+    /**
+     * Calculates the distance the sprite has moved since the last step.
+     *
+     * @param sprite Moving sprite.
+     * @return The distance the sprite has moved since the last step.
+     */
+    public static getMovedSteps(sprite: Sprite): number {
+        return this.getDistance(sprite, sprite.old);
+    }
+
+    public static movedCorrectAmountOfSteps(s: Sprite, expected: number, negated = false): CheckResult {
+        const actual = ModelUtil.getMovedSteps(s);
+        const forward = expected >= 0;
+        const movedDirection = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s.old, s);
+        const oldMovedForwards = ModelUtil.checkDirectionWithinDelta(s.old, movedDirection, 89);
+        const directionCorrect = forward || !oldMovedForwards;
+        const correct = directionCorrect && approxEq(actual, Math.abs(expected));
+        return result(correct, {
+            actualDistance: actual,
+            expectedDistance: expected,
+            oldDirection: s.old.direction,
+            movedDirection: movedDirection,
+        }, negated);
+    }
+
+    public static flipDirectionHorizontally(direction: number): number {
+        return (direction < 0 ? 180 : -180) - direction;
+    }
+
+    public static flipDirectionVertically(direction: number): number {
+        return -direction;
+    }
+
+    public static hexToRgb(hexString: string): [number, number, number] {
+        let start = hexString.indexOf("#") + 1;
+        if (start == 0) {
+            start = hexString.indexOf("0x") + 2;
+            if (start == 1) {
+                start = 0;
+            }
+        }
+        const r = parseInt(hexString.substring(start, start + 2), 16);
+        const g = parseInt(hexString.substring(start + 2, start + 4), 16);
+        const b = parseInt(hexString.substring(start + 4, start + 6), 16);
+        return [r, g, b];
+    }
+
 }
