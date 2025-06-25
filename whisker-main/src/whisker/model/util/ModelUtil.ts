@@ -472,7 +472,7 @@ export abstract class ModelUtil {
         const movedDirection = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s.old, s);
         const oldMovedForwards = ModelUtil.checkDirectionWithinDelta(s.old, movedDirection, 89);
         const directionCorrect = forward || !oldMovedForwards;
-        const correct = directionCorrect && approxEq(actual, Math.abs(expected));
+        const correct = directionCorrect && approxEq(actual, Math.abs(expected), 0.9);
         return result(correct, {
             actualDistance: actual,
             expectedDistance: expected,

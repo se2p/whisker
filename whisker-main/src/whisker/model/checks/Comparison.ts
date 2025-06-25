@@ -75,22 +75,22 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
     }
 }
 
-function approxEqNum(x: AttributeType, y: AttributeType): boolean {
+function approxEqNum(x: AttributeType, y: AttributeType, epsilon = EPSILON): boolean {
     const actual = ModelUtil.returnNumberIfPossible(x, null);
 
     if (typeof y != "number" || typeof actual != "number") {
         return false; // at least one value is not a number, so the difference does not exist
     }
 
-    return Math.abs(actual - y) <= EPSILON;
+    return Math.abs(actual - y) <= epsilon;
 }
 
-export function approxEq(operand1: AttributeType, operand2: AttributeType): boolean {
+export function approxEq(operand1: AttributeType, operand2: AttributeType, epsilon = EPSILON): boolean {
     if (operand1 == operand2) {
         return true;
     }
 
-    return approxEqNum(operand1, operand2);
+    return approxEqNum(operand1, operand2, epsilon);
 }
 
 function approxNeq(operand1: AttributeType, operand2: AttributeType) {
