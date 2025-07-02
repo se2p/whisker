@@ -49,7 +49,7 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
 
         const check = (s: Sprite) => {
             const isDirFlipped = (expected: number) =>
-                ModelUtil.checkCyclicValueWithinDelta(s.direction, expected, -180, 180, 3);
+                ModelUtil.checkCyclicValueWithinDelta(s.direction, expected, -180, 180);
             const reason: Record<string, unknown> = {direction: s.direction, oldDirection: s.old.direction};
             let res: boolean | null = null;
             if (s.isTouchingVerticalEdge()) {

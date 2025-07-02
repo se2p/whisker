@@ -187,7 +187,9 @@ export abstract class ModelUtil {
         return (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
     }
 
-    public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = 3.0, useMode = false): boolean {
+    private static readonly DEFAULT_CYCLIC_DELTA = 3.0;
+
+    public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = ModelUtil.DEFAULT_CYCLIC_DELTA, useMode = false): boolean {
         if (!useMode || sprite.rotationStyle == "all round") {
             return ModelUtil.checkCyclicValueWithinDelta(sprite.direction, expected, -180, 180, delta);
         }
@@ -205,7 +207,7 @@ export abstract class ModelUtil {
      * @param delta Defines the range of valid values
      * @return true if the value is within the valid cyclic bound
      */
-    public static checkCyclicValueWithinDelta(actual: number, expected: number, min: number, max: number, delta: number): boolean {
+    public static checkCyclicValueWithinDelta(actual: number, expected: number, min: number, max: number, delta = ModelUtil.DEFAULT_CYCLIC_DELTA): boolean {
         const lowerBound = expected - delta;
         const upperBound = expected + delta;
         if (lowerBound <= min) {
@@ -470,8 +472,10 @@ export abstract class ModelUtil {
         const actual = ModelUtil.getMovedSteps(s);
         const forward = expected >= 0;
         const movedDirection = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s.old, s);
-        const oldMovedForwards = ModelUtil.checkDirectionWithinDelta(s.old, movedDirection, 89);
+        const oldMovedForwards = ModelUtil.checkDirectionWithinDelta(s.old, movedDirection);
         const directionCorrect = forward || !oldMovedForwards;
+        // The floating point operations cause some slight offset of 0.xyz -> epsilon to accept a slightly wrong value.
+        // With epsilon of 0.9, a difference of moving one step more than expected is not correct anymore.
         const correct = directionCorrect && approxEq(actual, Math.abs(expected), 0.9);
         return result(correct, {
             actualDistance: actual,
