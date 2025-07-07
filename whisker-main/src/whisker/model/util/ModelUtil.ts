@@ -455,7 +455,7 @@ export abstract class ModelUtil {
     public static getDistance(pos1: { x: number, y: number }, pos2: { x: number, y: number }): number {
         const a = pos1.x - pos2.x;
         const b = pos1.y - pos2.y;
-        return Math.sqrt(a * a + b * b);
+        return Math.hypot(a, b);
     }
 
     /**
