@@ -75,7 +75,7 @@ export class ProgramModelEdge extends AbstractEdge {
             return this.conditions.length === 0;
         }
 
-        return !this.conditions.some(c => !checks.includes(c) && !c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
+        return this.conditions.all(c => checks.includes(c) || c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
     }
 
 
