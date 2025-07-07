@@ -64,7 +64,7 @@ export class MoveSteps extends AbstractCheck<MoveStepsJSON, CheckFun0> {
     }
 
     protected _contradicts(that: MoveSteps): boolean {
-        return false; // two different objects can be at the same location
+        return false; // a sprite and a clone can touch both edges at the same time
     }
 
     protected _validate(checkJSON: MoveStepsJSON): MoveStepsJSON {
