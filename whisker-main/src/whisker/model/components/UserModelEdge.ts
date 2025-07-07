@@ -2,7 +2,6 @@ import TestDriver from "../../../test/test-driver";
 import {AbstractEdge} from "./AbstractEdge";
 import {UserModelEdgeJSON} from "../util/schema";
 import {Checks} from "../util/Checks";
-import {Check} from "../checks/newCheck";
 import {UserInput} from "../inputs/newUserInput";
 
 /**
@@ -47,8 +46,8 @@ export class UserModelEdge extends AbstractEdge {
         }
     }
 
-    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _checks: Checks): Check[] {
-        return this.conditions;
+    checkConditionsOnEvent(_stepsSinceLastTransition: number, _stepsSinceEnd: number, _checks: Checks): boolean {
+        return this.conditions.length === 0;
     }
 
     override toJSON(): UserModelEdgeJSON {

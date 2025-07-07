@@ -240,8 +240,8 @@ describe('Model edges', () => {
             expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 10ms");
             result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual(conditions);
-            result = edge.checkConditionsOnEvent(11, 9, new Checks());
-            expect(result).toStrictEqual(conditions);
+            const res = edge.checkConditionsOnEvent(11, 9, new Checks());
+            expect(res).toStrictEqual(false);
         });
     });
 
@@ -257,7 +257,7 @@ describe('Model edges', () => {
                 new Expr(edge.label, {args: ["false"]}),
             ];
             const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
-            expect(result).toBe(edge.conditions);
+            expect(result).toBe(false);
         });
 
         test("checkConditionsOnEvent() returns conditions when event string not contained", () => {
@@ -280,7 +280,7 @@ describe('Model edges', () => {
             ];
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
-            expect(result).toStrictEqual([edge.conditions[0]]);
+            expect(result).toStrictEqual(false);
         });
 
         test("checkConditionsOnEvent() returns conditions when true is condition and edge has no effect", () => {
@@ -297,7 +297,7 @@ describe('Model edges', () => {
             ];
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditionsOnEvent(5, 7, new Checks(checks));
-            expect(result).toStrictEqual(edge.conditions);
+            expect(result).toStrictEqual(false);
         });
     });
 
