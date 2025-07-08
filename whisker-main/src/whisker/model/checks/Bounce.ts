@@ -51,20 +51,26 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
             const isDirFlipped = (expected: number) =>
                 ModelUtil.checkCyclicValueWithinDelta(s.direction, expected, -180, 180);
             const reason: Record<string, unknown> = {direction: s.direction, oldDirection: s.old.direction};
-            let res: boolean | null = null;
+            let touchingEdge = false;
+            let dirFlipped = false;
+
             if (s.isTouchingVerticalEdge()) {
+                touchingEdge = true;
                 const expected = ModelUtil.flipDirectionVertically(s.old.direction);
                 reason.isTouchingVerticalEdge = true;
                 reason.expectedVerticalFlip = expected;
-                res = isDirFlipped(expected);
+                dirFlipped = isDirFlipped(expected);
             }
+
             if (s.isTouchingHorizEdge()) {
+                touchingEdge = true;
                 const expected = ModelUtil.flipDirectionHorizontally(s.old.direction);
                 reason.isTouchingHorziEdge = true;
                 reason.expectedHorizFlip = expected;
-                res = res === true || isDirFlipped(expected);
+                dirFlipped ||= isDirFlipped(expected);
             }
-            return result(res === true || res === null, reason);
+
+            return result(!touchingEdge || dirFlipped, reason);
         };
 
         cu.registerOnVisualChange(spriteName, this, graphID, check);
