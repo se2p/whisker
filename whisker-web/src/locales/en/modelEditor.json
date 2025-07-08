@@ -22,6 +22,8 @@
     "addNode": "New node",
     "newNode": "new",
     "addEdge": "New edge",
+    "errEdgeStopAllNode": "Stop all nodes cannot have any outgoing edges.",
+    "errStopAllNode": "This node has outgoing edges, so it can't be a stop all node.",
     "cancel": "Cancel",
     "explanationNode": "Click on desired position.",
     "explanationEdge": "Click on start node, hold  down and drag to end node.",

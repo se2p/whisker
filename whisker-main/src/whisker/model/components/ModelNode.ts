@@ -49,8 +49,13 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
      */
     addOutgoingEdge(edge: E): void {
         if (edge.from != this.id) {
-            throw new Error("Edge start node id not from this node.");
+            throw new Error(`Edge start node id not from this node (expected: ${this.id}, actual: ${edge.from}).`);
         }
+
+        if (this._isStopAllNode) {
+            throw new Error(`Cannot add outgoing edge to a stop all node (node id: ${this.id}).`);
+        }
+
         this.edges.push(edge);
     }
 

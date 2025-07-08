@@ -181,6 +181,10 @@ class ModelEditor {
     }
 
     addEdge (data, callback) {
+        if (this.currentModel.stopAllNodeIds.includes(data.from)) {
+            this.showPopup(i18n.t('modelEditor:errEdgeStopAllNode'));
+            return;
+        }
         data.label = data.label ?? '';
         data.id = data.id ?? Math.random().toString(16)
             .slice(2);
@@ -561,10 +565,19 @@ class ModelEditor {
             this.network.setSelection(selection);
         });
         $(ModelEditor.CONFIG_NODE_STOP_ALL).on('click', () => {
-            // when its a stop all node it is also a stop node
-            if ($(ModelEditor.CONFIG_NODE_STOP_ALL).prop('checked')) {
-                this.currentModel.stopAllNodeIds.push(this.network.getSelectedNodes()[0]);
+            const node = this.network.getSelectedNodes()[0];
+            if (this.edges.some(e => e.from === node)) {
+                $(ModelEditor.CONFIG_NODE_STOP_ALL).prop('checked', false);
+                this.showPopup(i18n.t('modelEditor:errStopAllNode'));
+                return;
             }
+            if ($(ModelEditor.CONFIG_NODE_STOP_ALL).prop('checked')) {
+                this.currentModel.stopAllNodeIds.push(node);
+            } else {
+                const index = this.currentModel.stopAllNodeIds.indexOf(node);
+                this.currentModel.stopAllNodeIds.splice(index, 1);
+            }
+
             this.loadModel(this.currentTab);
         });
     }
