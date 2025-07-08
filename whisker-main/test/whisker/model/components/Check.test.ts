@@ -7,7 +7,7 @@ import {
     BackgroundChangeJSON
 } from "../../../../src/whisker/model/checks/BackgroundChange";
 import {Key} from "../../../../src/whisker/model/checks/Key";
-import {Check, CHECK_NAMES, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
+import {Check, CHECK_NAMES, CheckJSON, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
@@ -15,8 +15,12 @@ import {Checks} from "../../../../src/whisker/model/util/Checks";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
 
+function newUnsafeCheck(edgeId:string, checkArgs: {name:CheckName, negated:boolean, args}):Check {
+    return newCheck(edgeId, {name: checkArgs.name, negated: checkArgs.negated, args: checkArgs.args} as unknown as CheckJSON);
+}
+
 function checkConstructorThrows(name: CheckName, negated: boolean, args) {
-    expect(() => newCheck(edgeID, {name, negated, args})).toThrow();
+    expect(() => newUnsafeCheck(edgeID, {name, negated, args})).toThrow();
 }
 
 const edgeID = "edgeID";
@@ -165,7 +169,7 @@ describe('string representations', () => {
         ];
 
         it.each(constructorArguments)('(%s, %s, %s) has the correct toString()', (name: CheckName, negated: boolean, args, expected: string) => {
-            expect(newCheck(edgeID, {name, negated, args: args as any}).toString()).toBe(expected);
+            expect(newUnsafeCheck(edgeID, {name, negated, args: args}).toString()).toBe(expected);
         });
     });
 });
@@ -220,14 +224,14 @@ describe('Contradictions', () => {
 
     function assertSymmetricContradiction2(effect1: Check, name: CheckName, negated: boolean,
                                            args: ArgType[], expected: boolean) {
-        assertSymmetricContradiction(effect1, newCheck(edgeID, {name, negated, args: args as any}), expected);
+        assertSymmetricContradiction(effect1, newUnsafeCheck(edgeID, {name, negated, args: args}), expected);
     }
 
     function mapToTwoEffects(checkName1: CheckName, negated1: boolean, args1: ArgType[],
                              checkName2: CheckName, negated2: boolean, args2: ArgType[], expected: boolean): [Check, Check, boolean] {
         return [
-            newCheck(edgeID, {name: checkName1, negated: negated1, args: args1 as any}),
-            newCheck(edgeID, {name: checkName2, negated: negated2, args: args2 as any}), expected
+            newUnsafeCheck(edgeID, {name: checkName1, negated: negated1, args: args1}),
+            newUnsafeCheck(edgeID, {name: checkName2, negated: negated2, args: args2}), expected
         ];
     }
 
@@ -241,13 +245,13 @@ describe('Contradictions', () => {
                                        second: CheckName, optionsSecond: string[]): [Check, Check, boolean][] {
         const effects: [Check, Check, boolean][] = [];
         for (const option1 of optionsFirst) {
-            const effect1 = newCheck(edgeLabel, {
+            const effect1 = newUnsafeCheck(edgeLabel, {
                 name: first,
                 negated: true,
                 args: [id, edgeLabel, option1, "0"] as any
             });
             for (const option2 of optionsSecond) {
-                const effect2 = newCheck(edgeLabel, {
+                const effect2 = newUnsafeCheck(edgeLabel, {
                     name: second,
                     negated: true,
                     args: [id, edgeLabel, option2] as any

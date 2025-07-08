@@ -2,7 +2,7 @@ import {SafeParseReturnType, z, ZodError} from "zod";
 import {ArgType} from "../util/schema";
 
 export const stringAttributeNames = Object.freeze(["currentCostumeName", "sayText", "rotationStyle"] as const);
-export const numberAttributeNames = Object.freeze(["x", "y", "size", "direction", "layerOrder", "volume"] as const);
+export const numberAttributeNames = Object.freeze(["x", "y", "size", "direction", "layerOrder", "volume", "currentCostume"] as const);
 export const effectNames = Object.freeze(["color", "fisheye", "whirl", "pixelate", "mosaic", "brightness", "ghost"] as const);
 export const booleanAttributeNames = Object.freeze(["visible"] as const);
 export const attributeNames = Object.freeze([...stringAttributeNames, ...numberAttributeNames, ...booleanAttributeNames] as const);
