@@ -121,8 +121,7 @@ export class InputExtraction {
                     case 'sensing_distanceto': {
                         const distanceMenuBlock = t.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
                         const field = t.blocks.getFields(distanceMenuBlock);
-                        const value = field.DISTANCETOMENU.value;
-                        if (value == "_mouse_") {
+                        if (field['DISTANCETOMENU'] && field['DISTANCETOMENU'].value == "_mouse_") {
                             mouse = true;
                         }
                         break;
