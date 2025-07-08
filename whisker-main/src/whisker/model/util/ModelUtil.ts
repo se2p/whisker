@@ -492,19 +492,4 @@ export abstract class ModelUtil {
     public static flipDirectionVertically(direction: number): number {
         return -direction;
     }
-
-    public static hexToRgb(hexString: string): [number, number, number] {
-        let start = hexString.indexOf("#") + 1;
-        if (start == 0) {
-            start = hexString.indexOf("0x") + 2;
-            if (start == 1) {
-                start = 0;
-            }
-        }
-        const r = parseInt(hexString.substring(start, start + 2), 16);
-        const g = parseInt(hexString.substring(start + 2, start + 4), 16);
-        const b = parseInt(hexString.substring(start + 4, start + 6), 16);
-        return [r, g, b];
-    }
-
 }
