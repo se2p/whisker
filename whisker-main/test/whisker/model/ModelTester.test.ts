@@ -85,7 +85,7 @@ describe('ModelTester', () => {
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[0];
             const expectedProgramModel = new ProgramModel("bowl", "init", expectedNodes,
-                {}, ["end"], []);
+                {}, []);
             const expected: ProgramModelJSON = {
                 usage: "program",
                 ...expectedProgramModel.toJSON()
@@ -99,7 +99,7 @@ describe('ModelTester', () => {
             modelTester.load(allModels);
             const loadedModel = modelTester.getAllModels()[1];
             const expectedProgramModel = new UserModel("bowl2", "init", expectedNodesExtended,
-                {}, ["end"], ["end"]);
+                {}, ["end"]);
             const expected: UserModelJSON = {
                 usage: "user",
                 ...expectedProgramModel.toJSON()
@@ -114,7 +114,7 @@ describe('ModelTester', () => {
             const expectedEdge = new ProgramModelEdge("init", "init", "bowl3", "init", "start", -1, -1);
             expectedEdge.addCondition(new Expr('id', {args: ["true"]}));
             const expectedProgramModel = new EndModel("bowl3", "init", expectedNodesExtended,
-                {"e1": expectedEdge}, ["end"], ["end"]);
+                {"e1": expectedEdge}, ["end"]);
             const expected: EndModelJSON = {
                 usage: "end",
                 ...expectedProgramModel.toJSON()

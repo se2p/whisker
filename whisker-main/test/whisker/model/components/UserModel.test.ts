@@ -27,7 +27,7 @@ function getNodesAndEdgesForBiggerModel(): [Record<string, UserModelNode>, Recor
 
 function getBiggerModel(): [UserModel, Record<string, UserModelNode>, Record<string, UserModelEdge>] {
     const [nodes, edges] = getNodesAndEdgesForBiggerModel();
-    return [new UserModel("id", "start", nodes, edges, ["end"], []), nodes, edges];
+    return [new UserModel("id", "start", nodes, edges, []), nodes, edges];
 }
 
 describe('User model', () => {
@@ -35,21 +35,21 @@ describe('User model', () => {
         test("Constructor throws for undefined id", () => {
             expect(() => {
                 new UserModel(undefined, "start", {start: new ModelNode("start", "label")}, {},
-                    [], []);
+                    []);
             }).toThrow();
         });
 
         test("Constructor throws for undefined startNode", () => {
             expect(() => {
                 new UserModel("id", undefined, {start: new ModelNode("start", "label")}, {},
-                    [], []);
+                    []);
             }).toThrow();
         });
 
         test("Constructor throws when startNode ids do not match", () => {
             expect(() => {
                 new UserModel("id", "n", {start: new ModelNode("start", "label")}, {},
-                    [], []);
+                    []);
             }).toThrow();
         });
     });
@@ -61,13 +61,12 @@ describe('User model', () => {
         edges["3"] = new UserModelEdge("3", "label", "graphID", "from", "to", -1, 200);
         edges["4"] = new UserModelEdge("4", "label", "graphID", "from", "to", 1, 200);
         const p = new UserModel("id", "start", {start: new ModelNode("start", "label")},
-            edges, [], []);
+            edges, []);
         const actual = p.toJSON();
         const expected: UserModelJSON = {
             usage: "user",
             id: p.id,
             startNodeId: "start",
-            stopNodeIds: [],
             stopAllNodeIds: [],
             nodes: [
                 {
@@ -122,12 +121,15 @@ describe('User model', () => {
     });
 
     test("UserModel is initially not stopped", () => {
-        const p = new UserModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
+        const node = new ModelNode<UserModelEdge>("start", "label");
+        const edge = new UserModelEdge("start", "label", "id", node.id, node.id, -1, -1);
+        node.addOutgoingEdge(edge);
+        const p = new UserModel("id", "start", {start: node}, {edge: edge}, []);
         expect(p.stopped()).toBe(false);
     });
 
     test("SetTransitionStart changes two values", () => {
-        const p = new UserModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], []);
+        const p = new UserModel("id", "start", {start: new ModelNode("start", "label")}, {}, []);
         p.setTransitionsStartTo(3);
         expect(p.secondLastTransitionStep).toBe(3);
         expect(p.lastTransitionStep).toBe(3);
@@ -142,7 +144,7 @@ describe('User model', () => {
             n3: new ModelNode("n3", "n3"),
         };
         Object.values(nodes).forEach(n => n.registerComponents = fn);
-        const model = new UserModel("model", "start", nodes, {}, [], []);
+        const model = new UserModel("model", "start", nodes, {}, []);
         const cu = getDummyCheckUtility();
         const t = getDummyTestDriver();
         model.registerComponents(cu, t);
@@ -164,7 +166,7 @@ describe('User model', () => {
     //         n1: new ModelNode("n1", "n1"),
     //         n2: new ModelNode("n2", "n2")
     //     };
-    //     const model = new MockedUserModel("model", "start", nodes, {}, [], []);
+    //     const model = new MockedUserModel("model", "start", nodes, {}, []);
     //     model.currentStateOfModel = nodes["n2"];
     //     model.reset();
     //     expect(model.currentStateOfModel).toBe(nodes["start"]);
@@ -177,7 +179,7 @@ describe('User model', () => {
             n1: new MockedModelNode("n1", "n1", fn),
             n2: new MockedModelNode("n1", "n2", fn)
         };
-        const model = new UserModel("model", "start", nodes, {}, [], []);
+        const model = new UserModel("model", "start", nodes, {}, []);
         model.reset();
         expect(fn).toBeCalledTimes(3);
     });

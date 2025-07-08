@@ -29,12 +29,11 @@ export class UserModel extends AbstractModel<UserModelEdge> {
      * @param startNodeId Id of the start node
      * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
-     * @param stopNodeIds Ids of the stop nodes.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
     constructor(id: string, startNodeId: string, nodes: Record<string, UserModelNode>, edges: Record<string, UserModelEdge>,
-                stopNodeIds: string[], stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopNodeIds, stopAllNodeIds);
+                stopAllNodeIds: string[]) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds);
     }
 
     /**
@@ -98,7 +97,6 @@ export class UserModel extends AbstractModel<UserModelEdge> {
             usage: this.usage,
             id: this.id,
             startNodeId: this.startNodeId,
-            stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),

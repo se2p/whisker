@@ -22,6 +22,8 @@
     "addNode": "Neuer Knoten",
     "newNode": "neu",
     "addEdge": "Neue Kante",
+    "errEdgeStopAllNode": "Einem Stopknoten für alle Modelle können keine ausgehenden Kanten hinzugefügt werden.",
+    "errStopAllNode": "Dieser Knoten hat ausgehende Kanten und kann damit kein Stopknoten für alle Modelle sein.",
     "cancel": "Abbrechen",
     "explanationNode": "Auf gewünschte Position klicken.",
     "explanationEdge": "Startknoten anklicken, gedrückt halten und zum Ziel ziehen.",

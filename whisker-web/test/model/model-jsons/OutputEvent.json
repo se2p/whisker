@@ -3,9 +3,6 @@
         "usage": "program",
         "id": "instrumentation",
         "startNodeId": "n0",
-        "stopNodeIds": [
-            "n3"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -89,9 +86,6 @@
         "usage": "program",
         "id": "instrumentation2",
         "startNodeId": "n0",
-        "stopNodeIds": [
-            "n3"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {
@@ -181,9 +175,6 @@
         "usage": "program",
         "id": "instrumentation3",
         "startNodeId": "n0",
-        "stopNodeIds": [
-            "n3"
-        ],
         "stopAllNodeIds": [],
         "nodes": [
             {

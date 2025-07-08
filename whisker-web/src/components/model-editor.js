@@ -49,8 +49,7 @@ class ModelEditor {
     // configuration right pane, node settings
     static CONFIG_NODE = '#model-node-configuration';
     static CONFIG_NODE_LABEL = '#model-node-label';
-    static CONFIG_NODE_STOP1 = '#model-stopNode';
-    static CONFIG_NODE_STOP2 = '#model-stopAllNode';
+    static CONFIG_NODE_STOP_ALL = '#model-stopAllNode';
     static PRIORITY_CHANGER = '#model-priority-changer'
     static PRIORITY_CHANGER_DIV = '.model-priority-div'
 
@@ -182,6 +181,10 @@ class ModelEditor {
     }
 
     addEdge (data, callback) {
+        if (this.currentModel.stopAllNodeIds.includes(data.from)) {
+            this.showPopup(i18n.t('modelEditor:errEdgeStopAllNode'));
+            return;
+        }
         data.label = data.label ?? '';
         data.id = data.id ?? Math.random().toString(16)
             .slice(2);
@@ -207,7 +210,6 @@ class ModelEditor {
             usage: 'program',
             startNodeId: 'start',
             nodes: [{id: 'start', label: 'start'}],
-            stopNodeIds: [],
             stopAllNodeIds: [],
             edges: []
         });
@@ -231,8 +233,6 @@ class ModelEditor {
         if (selection.nodes.includes(this.currentModel.startNodeId)) {
             return false;
         }
-        this.currentModel.stopNodeIds =
-            this.getNotRemovedOnesByString(this.currentModel.stopNodeIds, selection.nodes);
         this.currentModel.stopAllNodeIds =
             this.getNotRemovedOnesByString(this.currentModel.stopAllNodeIds, selection.nodes);
         this.currentModel.nodes =
@@ -389,9 +389,6 @@ class ModelEditor {
                 nodes[node].color = 'rgb(102,102,102)';
                 nodes[node].font = {color: 'rgb(230,230,230)'};
                 nodes[node].title = i18n.t('modelEditor:stopAllNodeTitle');
-            } else if (json.stopNodeIds.includes(nodes[node].id)) {
-                nodes[node].color = 'rgb(201,201,201)';
-                nodes[node].title = i18n.t('modelEditor:stopNodeTitle');
             }
         }
         return nodes;
@@ -567,27 +564,20 @@ class ModelEditor {
             this.loadModel(this.currentTab);
             this.network.setSelection(selection);
         });
-        $(ModelEditor.CONFIG_NODE_STOP1).on('click', () => {
-            if ($(ModelEditor.CONFIG_NODE_STOP1).prop('checked')) {
-                this.currentModel.stopNodeIds.push(this.network.getSelectedNodes()[0]);
-            } else {
-                const index = this.currentModel.stopNodeIds.indexOf(this.network.getSelectedNodes()[0]);
-                this.currentModel.stopNodeIds.splice(index, 1);
+        $(ModelEditor.CONFIG_NODE_STOP_ALL).on('click', () => {
+            const node = this.network.getSelectedNodes()[0];
+            if (this.edges.some(e => e.from === node)) {
+                $(ModelEditor.CONFIG_NODE_STOP_ALL).prop('checked', false);
+                this.showPopup(i18n.t('modelEditor:errStopAllNode'));
+                return;
             }
-            this.loadModel(this.currentTab);
-        });
-        $(ModelEditor.CONFIG_NODE_STOP2).on('click', () => {
-            // when its a stop all node it is also a stop node
-            if ($(ModelEditor.CONFIG_NODE_STOP2).prop('checked')) {
-                $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
-                $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
-                this.currentModel.stopAllNodeIds.push(this.network.getSelectedNodes()[0]);
-                this.currentModel.stopNodeIds.push(this.network.getSelectedNodes()[0]);
+            if ($(ModelEditor.CONFIG_NODE_STOP_ALL).prop('checked')) {
+                this.currentModel.stopAllNodeIds.push(node);
             } else {
-                $(ModelEditor.CONFIG_NODE_STOP1).removeAttr('disabled');
-                const index = this.currentModel.stopAllNodeIds.indexOf(this.network.getSelectedNodes()[0]);
+                const index = this.currentModel.stopAllNodeIds.indexOf(node);
                 this.currentModel.stopAllNodeIds.splice(index, 1);
             }
+
             this.loadModel(this.currentTab);
         });
     }
@@ -970,26 +960,15 @@ class ModelEditor {
         // get the corresponding node
         const node = this.currentModel.nodes.find(n => n.id === nodeID);
 
-        $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
-        if (this.currentModel.stopNodeIds.includes(node.id)) {
-            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
-        } else {
-            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', false);
-        }
         if (this.currentModel.stopAllNodeIds.includes(node.id)) {
-            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', true);
-            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
-            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
+            $(ModelEditor.CONFIG_NODE_STOP_ALL).prop('checked', true);
         } else {
-            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
-            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
+            $(ModelEditor.CONFIG_NODE_STOP_ALL).prop('checked', false);
         }
         if (this.currentModel.startNodeId === node.id) {
-            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', true);
-            $(ModelEditor.CONFIG_NODE_STOP2).attr('disabled', true);
+            $(ModelEditor.CONFIG_NODE_STOP_ALL).attr('disabled', true);
         } else {
-            $(ModelEditor.CONFIG_NODE_STOP1).attr('disabled', false);
-            $(ModelEditor.CONFIG_NODE_STOP2).attr('disabled', false);
+            $(ModelEditor.CONFIG_NODE_STOP_ALL).attr('disabled', false);
         }
 
         this.showPriorityChanger(nodeID, node);

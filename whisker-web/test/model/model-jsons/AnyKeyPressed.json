@@ -17,9 +17,6 @@
                 "label": "end"
             }
         ],
-        "stopNodeIds": [
-            "end"
-        ],
         "stopAllNodeIds": [
             "end"
         ],
@@ -74,9 +71,6 @@
                 "id": "end",
                 "label": "end"
             }
-        ],
-        "stopNodeIds": [
-            "end"
         ],
         "stopAllNodeIds": [],
         "edges": [
