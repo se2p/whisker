@@ -116,7 +116,7 @@ export class WaitEvent extends ScratchEvent {
                 this._steps = args[0];
                 break;
             case "activation":
-                this._steps = args[0] * Container.config.getWaitStepUpperBound();
+                this._steps = Container.config.getSkipFrame();
                 break;
         }
 

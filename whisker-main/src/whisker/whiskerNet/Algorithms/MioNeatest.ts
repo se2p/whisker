@@ -245,7 +245,7 @@ export class MioNeatest extends ManyObjectiveNeatest {
     private async _evaluateChromosome(network: NeatChromosome): Promise<void> {
         this.initCoverageObjectivesMap([network]);
         await this._networkFitnessFunction.calculateFitness(network, this._neuroevolutionProperties.timeout,
-            this._neuroevolutionProperties.eventSelection);
+            this._neuroevolutionProperties.eventSelection, this._neuroevolutionProperties.classificationType);
         await this._archiveUpdate(network);
     }
 

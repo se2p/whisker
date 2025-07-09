@@ -29,7 +29,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     protected async evaluateNetworks(networks: NeatChromosome[]): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
-            await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout, this._neuroevolutionProperties.eventSelection);
+            await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout,
+                this._neuroevolutionProperties.eventSelection, this._neuroevolutionProperties.classificationType);
             // Update the archive and stop in the middle of the evaluation if we already cover all statements.
             await this.updateArchive(network);
             if ((await this._stoppingCondition.isFinished(this))) {

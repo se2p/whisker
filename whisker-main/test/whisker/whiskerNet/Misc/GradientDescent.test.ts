@@ -1,7 +1,8 @@
 import groundTruthFruitCatching from "./GroundTruthFruitCatching.json";
 import groundTruthFruitCatchingCombined from "./GroundTruthFruitCatchingCombined.json";
-import fruitCatchingNetwork from "./fruitCatchingNetwork.json";
 import groundTruthPong from "./GroundTruthPong.json";
+import fruitCatchingMultiLabel from "./fruitCatchingMultiLabel.json";
+import fruitCatchingMultiClass from "./fruitCatchingMultiClass.json";
 import pongNetwork from "./pongNetwork.json";
 import {GradientDescent, gradientDescentParameter} from "../../../../src/whisker/whiskerNet/Misc/GradientDescent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
@@ -11,12 +12,13 @@ import {TypeNumberEvent} from "../../../../src/whisker/testcase/events/TypeNumbe
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import logger from "../../../../src/util/logger";
 import {MouseMoveDimensionEvent} from "../../../../src/whisker/testcase/events/MouseMoveDimensionEvent";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 
 
 const loadNetwork = (networkJSON: any): NetworkChromosome => {
     const networkLoader = new NetworkLoader(networkJSON, [
         new KeyPressEvent('right arrow'), new KeyPressEvent('left arrow'),
-        new TypeNumberEvent(),
+        new TypeNumberEvent(), new WaitEvent(),
         new MouseMoveDimensionEvent("X"), new MouseMoveDimensionEvent("Y")]);
     const net = networkLoader.loadNetworks()[0];
     const random = Randomness.getInstance();
@@ -74,7 +76,7 @@ describe('Test Gradient Descent', () => {
     });
 
     test("Mini-batch gradient descent with gradual decreasing learning rate", () => {
-        const net = loadNetwork(fruitCatchingNetwork);
+        const net = loadNetwork(fruitCatchingMultiLabel);
         const startingLoss = forwardPassGradientDescent.gradientDescent(net, statement);
 
         gradientDescentLearning.batchSize = 4;
@@ -85,8 +87,8 @@ describe('Test Gradient Descent', () => {
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
     });
 
-    test("Stochastic gradient descent", () => {
-        const net = loadNetwork(fruitCatchingNetwork);
+    test("Stochastic gradient descent with multi-label classification network", () => {
+        const net = loadNetwork(fruitCatchingMultiLabel);
         const startingLoss = forwardPassGradientDescent.gradientDescent(net, statement);
 
         gradientDescentLearning.learningRate = 0.01;
@@ -96,9 +98,19 @@ describe('Test Gradient Descent', () => {
         expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
     });
 
+    test("Stochastic gradient descent with multi-class classification network", () => {
+        const net = loadNetwork(fruitCatchingMultiClass);
+        const startingLoss = forwardPassGradientDescent.gradientDescent(net, statement);
+
+        gradientDescentLearning.learningRate = 0.01;
+        gradientDescentLearning.epochs = 1000;
+        const backpropagation = new GradientDescent(groundTruthFruitCatching, gradientDescentLearning);
+        const finalLoss = backpropagation.gradientDescent(net, statement);
+        expect(Math.round(finalLoss * 100) / 100).toBeLessThanOrEqual(Math.round(startingLoss * 100) / 100);
+    });
 
     test("Batch gradient descent", () => {
-        const net = loadNetwork(fruitCatchingNetwork);
+        const net = loadNetwork(fruitCatchingMultiLabel);
         const startingLoss = forwardPassGradientDescent.gradientDescent(net, statement);
 
         gradientDescentLearning.batchSize = 4;

@@ -2,39 +2,71 @@ import {NetworkLoader} from "../../../../src/whisker/whiskerNet/NetworkGenerator
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
-import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
 import {ActionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActionNode";
-import network from "./networkToLoad.json";
+import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
+import multiLabelNetwork from "./multiLabel.json";
+import multiClassNetwork from "./multiClass.json";
 
-//TODO: Fix the test
-describe.skip("Test NetworkLoader", () => {
-    let networkLoader: NetworkLoader;
+describe("Test NetworkLoader", () => {
 
-    beforeEach(() => {
-        const networkJSON = network as any;
-        const events = [new WaitEvent()];
-        networkLoader = new NetworkLoader(networkJSON, events);
-    });
+    test("Load MultiLabel Networks", () => {
+        const events = [new KeyPressEvent("left arrow"), new KeyPressEvent("right arrow")];
+        const networkLoader = new NetworkLoader(multiLabelNetwork as any, events);
 
-    test("Load Networks", () => {
         const networks = networkLoader.loadNetworks();
         expect(networks.length).toBe(2);
+
         const firstNetwork = networks[0];
-        expect(firstNetwork.uID).toBe(0);
-        expect(firstNetwork.activationFunction).toBe(ActivationFunction["TANH"]);
+        const secondNetwork = networks[1];
+        expect(firstNetwork.uID).not.toBe(secondNetwork.uID);
+
+        expect(firstNetwork.outputActivationFunction).toBe(ActivationFunction["SIGMOID"]);
         expect(firstNetwork.inputConnectionMethod).toBe("fully");
-        expect(firstNetwork.targetObjective).toBe(undefined); // We have no CDG -> no actual statements
-        expect(firstNetwork.getAllNodes().length).toBe(8);
-        expect(firstNetwork.connections.length).toBe(8);
-        expect(firstNetwork.layers.get(0).length).toBe(4);
+        expect(firstNetwork.getAllNodes().length).toBe(24);
+        expect(firstNetwork.connections.length).toBe(40);
+        expect(firstNetwork.layers.get(0).length).toBe(21);
         expect(firstNetwork.getAllNodes().filter(n => n instanceof BiasNode).length).toBe(1);
-        expect(firstNetwork.layers.get(0.5).length).toBe(2);
         expect(firstNetwork.layers.get(1).length).toBe(2);
-        expect(firstNetwork.getAllNodes().filter(n => n instanceof ActionNode).length).toBe(1);
-        expect(firstNetwork.referenceActivationTrace.tracedNodes).toEqual(firstNetwork.getAllNodes().filter(node => node instanceof HiddenNode));
-        expect(firstNetwork.referenceActivationTrace.trace.size).toBe(2);
-        expect(firstNetwork.referenceActivationTrace.trace.get(5).size).toBe(2);
-        expect(firstNetwork.referenceActivationTrace.trace.get(1).get("H4")[2]).toBe(0.12);
+        expect(firstNetwork.getAllNodes().filter(n => n instanceof ActionNode).length).toBe(2);
+
+        expect(secondNetwork.outputActivationFunction).toBe(ActivationFunction["SIGMOID"]);
+        expect(secondNetwork.inputConnectionMethod).toBe("fully");
+        expect(secondNetwork.getAllNodes().length).toBe(23);
+        expect(secondNetwork.connections.length).toBe(38);
+        expect(secondNetwork.layers.get(0).length).toBe(21);
+        expect(secondNetwork.getAllNodes().filter(n => n instanceof BiasNode).length).toBe(1);
+        expect(secondNetwork.layers.get(1).length).toBe(2);
+        expect(secondNetwork.getAllNodes().filter(n => n instanceof ActionNode).length).toBe(2);
+    });
+
+    test("Load MultiClass Networks", () => {
+        const events = [new KeyPressEvent("left arrow"), new KeyPressEvent("right arrow"), new WaitEvent()];
+        const networkLoader = new NetworkLoader(multiClassNetwork as any, events);
+        const networks = networkLoader.loadNetworks();
+
+        expect(networks.length).toBe(2);
+
+        const firstNetwork = networks[0];
+        const secondNetwork = networks[1];
+        expect(firstNetwork.uID).not.toBe(secondNetwork.uID);
+
+        expect(firstNetwork.outputActivationFunction).toBe(ActivationFunction["SOFTMAX"]);
+        expect(firstNetwork.inputConnectionMethod).toBe("fully");
+        expect(firstNetwork.getAllNodes().length).toBe(24);
+        expect(firstNetwork.connections.length).toBe(57);
+        expect(firstNetwork.layers.get(0).length).toBe(21);
+        expect(firstNetwork.getAllNodes().filter(n => n instanceof BiasNode).length).toBe(1);
+        expect(firstNetwork.layers.get(1).length).toBe(3);
+        expect(firstNetwork.getAllNodes().filter(n => n instanceof ActionNode).length).toBe(3);
+
+        expect(secondNetwork.outputActivationFunction).toBe(ActivationFunction["SOFTMAX"]);
+        expect(secondNetwork.inputConnectionMethod).toBe("fully");
+        expect(secondNetwork.getAllNodes().length).toBe(24);
+        expect(secondNetwork.connections.length).toBe(57);
+        expect(secondNetwork.layers.get(0).length).toBe(21);
+        expect(secondNetwork.getAllNodes().filter(n => n instanceof BiasNode).length).toBe(1);
+        expect(secondNetwork.layers.get(1).length).toBe(3);
+        expect(secondNetwork.getAllNodes().filter(n => n instanceof ActionNode).length).toBe(3);
     });
 
 });

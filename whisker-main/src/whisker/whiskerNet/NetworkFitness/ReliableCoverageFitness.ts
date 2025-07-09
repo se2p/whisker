@@ -4,7 +4,7 @@ import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../Misc/NetworkExecutor";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
+import {ClassificationType, NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {ExecutionTrace} from "../../testcase/ExecutionTrace";
 import logger from "../../../util/logger";
@@ -26,10 +26,13 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the networks select events.
+     * @param classificationType defines how the networks select events.
      * @returns Promise<number> the fitness of the given network based on reliable coverage.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection,
+                     classificationType: ClassificationType): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection,
+            classificationType, this._earlyStop);
         await executor.execute(network);
         network.resetCoverageMap();
         const fitness = await network.targetObjective.getFitness(network);
@@ -41,7 +44,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         } else {
             // Check for stable coverage if we covered the objective once.
             network.fitness = 1;
-            await this.checkStableCoverage(network, timeout, eventSelection);
+            await this.checkStableCoverage(network, timeout, eventSelection, classificationType);
         }
 
         StatisticsCollector.getInstance().computeStatementCoverage();
@@ -54,8 +57,10 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
      * @param network the network that will be executed.
      * @param timeout the timeout for one playthrough.
      * @param eventSelection the eventSelection method (activation | random).
+     * @param classificationType defines how the networks select events.
      */
-    protected async checkStableCoverage(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<void> {
+    protected async checkStableCoverage(network: NetworkChromosome, timeout: number, eventSelection: string,
+                                        classificationType: ClassificationType): Promise<void> {
         // Save some values to recover them later
         const {playTime, score, trace, finalState, coverage} = this.copyNetworkAttributes(network);
         const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
@@ -65,7 +70,7 @@ export class ReliableCoverageFitness implements NetworkFitnessFunction<NetworkCh
         // Iterate over each seed and calculate the achieved fitness
         for (const seed of repetitionSeeds) {
             Randomness.setScratchSeed(seed, true);
-            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, this._earlyStop);
+            const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, classificationType, this._earlyStop);
             eventSelection === 'random' ? await executor.executeSavedTrace(network) : await executor.execute(network);
             await this.updateUncoveredObjectives(network);
             if (network.targetObjective && await network.targetObjective.isCovered(network)) {

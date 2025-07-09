@@ -126,13 +126,15 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param _layers the networks {@link NetworkLayer}s.
      * @param _connections the connections of the network.
      * @param _inputConnectionMethod determines how novel nodes are being connected to the input layer.
-     * @param _activationFunction the activation function that will be used for hidden nodes.
+     * @param _hiddenActivationFunction the activation function that will be used for hidden nodes.
+     * @param _outputActivationFunction the activation function that will be used for output nodes.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
     protected constructor(protected _layers: NetworkLayer,
                           protected readonly _connections: ConnectionGene[],
                           protected readonly _inputConnectionMethod: InputConnectionMethod,
-                          protected readonly _activationFunction = ActivationFunction.RELU,
+                          protected readonly _hiddenActivationFunction: ActivationFunction,
+                          protected readonly _outputActivationFunction: ActivationFunction.SIGMOID | ActivationFunction.SOFTMAX,
                           incrementID = true) {
         super();
         this._uID = NetworkChromosome._uIDCounter;
@@ -233,7 +235,7 @@ export abstract class NetworkChromosome extends Chromosome {
                 updated = true;
                 const featureID = `A:${event.stringIdentifier()}`;
                 const id = NetworkChromosome.getNonHiddenNodeId(featureID);
-                const actionNode = new ActionNode(id, event, event instanceof MouseMoveDimensionEvent);
+                const actionNode = new ActionNode(id, this._outputActivationFunction, event, event instanceof MouseMoveDimensionEvent);
                 this._layers.get(1).push(actionNode);
                 this.connectNodesToInputLayer([actionNode], this._inputConnectionMethod);
             }
@@ -320,11 +322,15 @@ export abstract class NetworkChromosome extends Chromosome {
         for (const layer of layers) {
             if (layer === 0) {
                 this.setUpInputs(inputs);
-            } else {
-                for (const node of this._layers.get(layer)) {
+            } else if (layer < 1) {
+                this.layers.get(layer).forEach(node => {
                     this._calculateNodeValue(node);
                     node.activationValue = node.activate();
-                }
+                });
+            } else {
+                this._layers.get(layer).forEach(node => this._calculateNodeValue(node));
+                const nodeValues = [...this._layers.get(layer)].map(node => node.nodeValue);
+                this.layers.get(layer).forEach(node => node.activationValue = node.activate(nodeValues));
             }
         }
         return [...this.layers.get(1)].some(node => node.activatedFlag);
@@ -615,8 +621,8 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._inputConnectionMethod;
     }
 
-    get activationFunction(): ActivationFunction {
-        return this._activationFunction;
+    get outputActivationFunction(): ActivationFunction.SIGMOID | ActivationFunction.SOFTMAX {
+        return this._outputActivationFunction;
     }
 
     get inputNodes(): Map<string, Map<string, InputNode>> {

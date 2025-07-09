@@ -220,7 +220,7 @@ export class Neatest extends NEAT {
     protected override async evaluateNetworks(): Promise<void> {
         for (const network of this._population.networks) {
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout,
-                this._neuroevolutionProperties.eventSelection);
+                this._neuroevolutionProperties.eventSelection, this._neuroevolutionProperties.classificationType);
             await this.updateArchive(network);
 
             // Free memory if the network was not added to the archive.

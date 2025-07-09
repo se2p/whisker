@@ -63,7 +63,7 @@ describe("Test NeatPopulation", () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         chromosomeGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
-            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
         properties = new NeatParameter();
         properties.populationSize = size;
         properties.disjointCoefficient = 1;
@@ -219,7 +219,7 @@ describe("Test NeatPopulation", () => {
     test("Test Compatibility Distance of Chromosomes with disjoint connections", () => {
         const inputNode1 = new InputNode(1, "Sprite1", "X-Position");
         const inputNode2 = new InputNode(2, "Sprite2", "Y-Position");
-        const outputNode = new ActionNode(3, new WaitEvent());
+        const outputNode = new ActionNode(3, ActivationFunction.SIGMOID, new WaitEvent());
 
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [inputNode1, inputNode2]);
@@ -235,8 +235,8 @@ describe("Test NeatPopulation", () => {
         const connections2: ConnectionGene[] = [];
         connections2.push(connection2);
 
-        const chromosome1 = new NeatChromosome(layer, connections1, mutation, crossover, 'fully');
-        const chromosome2 = new NeatChromosome(layer, connections2, mutation, crossover, 'fully');
+        const chromosome1 = new NeatChromosome(layer, connections1, mutation, crossover,'fully', ActivationFunction.SIGMOID, ActivationFunction.SIGMOID);
+        const chromosome2 = new NeatChromosome(layer, connections2, mutation, crossover,'fully', ActivationFunction.SIGMOID, ActivationFunction.SIGMOID);
 
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(1);
@@ -245,7 +245,7 @@ describe("Test NeatPopulation", () => {
     test("Test Compatibility Distance of Chromosomes with disjoint connections switched", () => {
         const inputNode1 = new InputNode(1, "Sprite1", "X-Position");
         const inputNode2 = new InputNode(2, "Sprite2", "Y-Position");
-        const outputNode = new ActionNode(3, new WaitEvent());
+        const outputNode = new ActionNode(3, ActivationFunction.SIGMOID, new WaitEvent());
 
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [inputNode1, inputNode2]);
@@ -260,8 +260,8 @@ describe("Test NeatPopulation", () => {
         const connections2: ConnectionGene[] = [];
         connections2.push(connection2);
 
-        const chromosome1 = new NeatChromosome(layer, connections2, mutation, crossover, 'fully');
-        const chromosome2 = new NeatChromosome(layer, connections1, mutation, crossover, 'fully');
+        const chromosome1 = new NeatChromosome(layer, connections2, mutation, crossover, 'fully', ActivationFunction.SIGMOID, ActivationFunction.SIGMOID);
+        const chromosome2 = new NeatChromosome(layer, connections1, mutation, crossover, 'fully', ActivationFunction.SIGMOID, ActivationFunction.SIGMOID);
 
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(1);
@@ -281,7 +281,7 @@ describe("Test NeatPopulation", () => {
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {
         const inputNode1 = new InputNode(1, "Sprite1", "X-Position");
         const inputNode2 = new InputNode(2, "Sprite2", "Y-Position");
-        const outputNode = new ActionNode(3, new WaitEvent());
+        const outputNode = new ActionNode(3, ActivationFunction.SIGMOID, new WaitEvent());
 
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [inputNode1, inputNode2]);
@@ -296,8 +296,8 @@ describe("Test NeatPopulation", () => {
         const connections2: ConnectionGene[] = [];
         connections2.push(connection2);
 
-        const chromosome1 = new NeatChromosome(layer, connections1, mutation, crossover, 'fully');
-        const chromosome2 = new NeatChromosome(layer, connections2, mutation, crossover, 'fully');
+        const chromosome1 = new NeatChromosome(layer, connections1, mutation, crossover, 'fully', ActivationFunction.SIGMOID, ActivationFunction.SIGMOID);
+        const chromosome2 = new NeatChromosome(layer, connections2, mutation, crossover, 'fully', ActivationFunction.SIGMOID, ActivationFunction.SIGMOID);
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe((0.5 * 0.5) / chromosome2.connections.length);
     });

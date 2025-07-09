@@ -55,7 +55,7 @@ describe('Test NeatChromosomeGenerator', () => {
 
     test('Create initial random Chromosome using fully connection mode', async () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fully',
-            ActivationFunction.TANH, mutationOp, crossoverOp);
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, mutationOp, crossoverOp);
         const neatChromosome = await generator.get();
         expect(neatChromosome.getAllNodes().length).toBe(14);
         expect(neatChromosome.connections.length).toBe(40);
@@ -70,7 +70,7 @@ describe('Test NeatChromosomeGenerator', () => {
 
     test('Create initial random Chromosome using sparse connection mode', async () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'sparse',
-            ActivationFunction.TANH, mutationOp, crossoverOp);
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, mutationOp, crossoverOp);
         const neatChromosome = await generator.get();
         expect(neatChromosome.connections.length).toBeGreaterThanOrEqual(1);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
@@ -84,7 +84,7 @@ describe('Test NeatChromosomeGenerator', () => {
 
     test('Create two Chromosomes to test if every one of them gets the same innovation numbers', async () => {
         const generator = new NeatChromosomeGenerator(inputSpace, outputSpace, 'fully',
-            ActivationFunction.TANH, mutationOp, crossoverOp);
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, mutationOp, crossoverOp);
         const chromosome1 = await generator.get();
         const chromosome2 = await generator.get();
         const randomNodeIndex = Randomness.getInstance().nextInt(0, chromosome1.getAllNodes().length);

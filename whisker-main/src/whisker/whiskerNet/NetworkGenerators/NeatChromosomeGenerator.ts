@@ -19,7 +19,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * @param _inputSpace determines the input nodes of the network to generate.
      * @param _outputSpace determines the output nodes of the network to generate.
      * @param _inputConnectionMethod determines how the input layer will be connected to the output layer.
-     * @param _activationFunction the activation function used for the generated nodes.
+     * @param _hiddenActivationFunction the activation function used for generated hidden nodes.
+     * @param _outputActivationFunction the activation function used for generated output nodes.
      * @param _mutationOperator the mutation operator.
      * @param _crossoverOperator the crossover operator.
      * @param _inputRate governs the probability of adding multiple input groups to the network when a sparse
@@ -28,7 +29,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
     public constructor(private _inputSpace: InputFeatures,
                        private _outputSpace: ScratchEvent[],
                        protected readonly _inputConnectionMethod: InputConnectionMethod,
-                       protected readonly _activationFunction: ActivationFunction,
+                       protected readonly _hiddenActivationFunction: ActivationFunction,
+                       protected readonly _outputActivationFunction: ActivationFunction.SIGMOID | ActivationFunction.SOFTMAX,
                        private _mutationOperator: NeatMutation,
                        private _crossoverOperator: NeatCrossover,
                        private _inputRate = 0.3) {
@@ -58,11 +60,11 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         // Output layer
         layer.set(1, []);
         for (const event of this._outputSpace) {
-            layer.get(1).push(new ActionNode(numNodes++, event, event instanceof MouseMoveDimensionEvent));
+            layer.get(1).push(new ActionNode(numNodes++, this._outputActivationFunction, event, event instanceof MouseMoveDimensionEvent));
         }
 
         const chromosome = new NeatChromosome(layer, [], this._mutationOperator, this._crossoverOperator,
-            this._inputConnectionMethod, this._activationFunction);
+            this._inputConnectionMethod, this._hiddenActivationFunction, this._outputActivationFunction);
         const outputNodes = [...chromosome.layers.get(1).values()];
         chromosome.connectNodesToInputLayer(outputNodes, this._inputConnectionMethod, this._inputRate);
 

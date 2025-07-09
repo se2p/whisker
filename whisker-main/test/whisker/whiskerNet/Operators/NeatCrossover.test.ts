@@ -55,9 +55,9 @@ describe("Test NeatCrossover", () => {
         const iNode3 = new BiasNode(2);
         layer1.set(0, [iNode1, iNode2, iNode3]);
 
-        const oNode1 = new ActionNode(4, new WaitEvent());
+        const oNode1 = new ActionNode(4, ActivationFunction.SIGMOID, new WaitEvent());
         layer1.set(1, [oNode1]);
-        const hiddenNode1 = new HiddenNode(3, 0.5,ActivationFunction.SIGMOID);
+        const hiddenNode1 = new HiddenNode(3, 0.5, ActivationFunction.SIGMOID);
         layer1.set(0.5, [hiddenNode1]);
 
         // Create Connections of first parent
@@ -79,7 +79,7 @@ describe("Test NeatCrossover", () => {
         layer2.set(1, [oNode2]);
 
         const hiddenNode2 = hiddenNode1.clone();
-        const hiddenNode3 = new HiddenNode(5, 0.5,ActivationFunction.SIGMOID);
+        const hiddenNode3 = new HiddenNode(5, 0.5, ActivationFunction.SIGMOID);
         layer2.set(0.5, [hiddenNode2, hiddenNode3]);
 
         // Create Connections of second parent
@@ -95,9 +95,9 @@ describe("Test NeatCrossover", () => {
 
 
     test("CrossoverTest with first parent being fitter than second parent", async () => {
-        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, undefined);
+        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, undefined);
+        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent2.fitness = 0;
         const child1 = (await crossoverOp.apply(parent1, parent2))[0];
         const child2 = (await crossoverOp.applyFromPair([parent1, parent2]))[0];
@@ -110,9 +110,9 @@ describe("Test NeatCrossover", () => {
     });
 
     test("CrossoverTest with second parent being fitter than first parent", async () => {
-        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, undefined);
+        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent1.fitness = 0;
-        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, undefined);
+        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent2.fitness = 1;
         const child1 = (await crossoverOp.apply(parent1, parent2))[0];
         const child2 = (await crossoverOp.applyFromPair([parent1, parent2]))[0];
@@ -126,9 +126,9 @@ describe("Test NeatCrossover", () => {
     });
 
     test("CrossoverTest with both parents being equivalently fit", async () => {
-        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, undefined);
+        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp,'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, undefined);
+        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp,'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent2.fitness = 1;
         const child1 = (await crossoverOp.apply(parent1, parent2))[0];
         expect(child1.connections.length).toBeGreaterThanOrEqual(5);
@@ -153,8 +153,8 @@ describe("Test NeatCrossover", () => {
 
         // Create Nodes of first network
         const iNode1 = new InputNode(0, "InputNode", "Nothing");
-        const oNode1 = new ActionNode(1, new WaitEvent());
-        const layer1:NetworkLayer = new Map<number, NodeGene[]>();
+        const oNode1 = new ActionNode(1, ActivationFunction.SIGMOID, new WaitEvent());
+        const layer1: NetworkLayer = new Map<number, NodeGene[]>();
         layer1.set(0, [iNode1]);
         layer1.set(1, [oNode1]);
 
@@ -164,7 +164,7 @@ describe("Test NeatCrossover", () => {
         // Create Nodes of second network
         const iNode2 = iNode1.clone();
         const oNode2 = oNode1.clone();
-        const layer2:NetworkLayer = new Map<number, NodeGene[]>();
+        const layer2: NetworkLayer = new Map<number, NodeGene[]>();
         layer2.set(0, [iNode2]);
         layer2.set(1, [oNode2]);
 
@@ -172,9 +172,9 @@ describe("Test NeatCrossover", () => {
         parent2Connections = [];
 
 
-        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, undefined);
+        const parent1 = new NeatChromosome(layer1, parent1Connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, undefined);
+        const parent2 = new NeatChromosome(layer2, parent2Connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SIGMOID);
         parent2.fitness = 0;
 
 

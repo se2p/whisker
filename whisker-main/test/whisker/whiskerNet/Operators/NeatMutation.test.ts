@@ -58,7 +58,8 @@ describe("Test NeatMutation", () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         networkGenerator = new NeatChromosomeGenerator(genInputs, events, 'fully',
-            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID,
+            new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
         neatChromosome1 = await networkGenerator.get();
         neatChromosome2 = await networkGenerator.get();
     });
@@ -129,8 +130,8 @@ describe("Test NeatMutation", () => {
     test("Test MutateAddConnection with recurrent connection between output Nodes", () => {
         const innovationLengthBefore = NeatPopulation.innovations.length;
         const iNode = new InputNode(0, "Sprite1", "X-Position");
-        const oNode1 = new ActionNode(1, new WaitEvent());
-        const oNode2 = new ActionNode(2, new ClickStageEvent());
+        const oNode1 = new ActionNode(1, ActivationFunction.SIGMOID, new WaitEvent());
+        const oNode2 = new ActionNode(2, ActivationFunction.SIGMOID, new ClickStageEvent());
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [iNode]);
         layer.set(1, [oNode1, oNode2]);
@@ -143,7 +144,8 @@ describe("Test NeatMutation", () => {
         connectionList.push(connection2);
         mutationConfig.recurrentConnection = 1;
         mutation = new NeatMutation(mutationConfig);
-        neatChromosome1 = new NeatChromosome(layer, connectionList, mutation, crossoverOp, 'fully');
+        neatChromosome1 = new NeatChromosome(layer, connectionList, mutation, crossoverOp, 'fully',
+            ActivationFunction.RELU, ActivationFunction.SIGMOID);
         const originalConnectionsSize = neatChromosome1.connections.length;
 
         mutation.mutateAddConnection(neatChromosome1, 30);
@@ -165,7 +167,7 @@ describe("Test NeatMutation", () => {
 
         neatChromosome1.layers.set(0.5, [hiddenLayerNode, hiddenLayerNode2, hiddenLayerNode3, hiddenLayerNode4]);
         neatChromosome1.layers.set(0.25, [deepHiddenLayerNode]);
-        // create some new connections, those will create new nodes in createNetwork()
+        // Create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
         neatChromosome1.connections.push(new ConnectionGene(inputNodes.get("Sprite1").get("X-Position"), hiddenLayerNode, 1, true, 50));
         neatChromosome1.connections.push(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1, true, 51));

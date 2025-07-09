@@ -17,6 +17,11 @@ export class BasicNeuroevolutionParameter {
     private _timeout: number
 
     /**
+     * Determines the type of classification.
+     */
+    private _classificationType: ClassificationType = 'multiLabel';
+
+    /**
      * Determines how events should be selected.
      */
     private _eventSelection: NeuroevolutionEventSelection
@@ -37,6 +42,14 @@ export class BasicNeuroevolutionParameter {
         this._timeout = value;
     }
 
+    get classificationType(): ClassificationType {
+        return this._classificationType;
+    }
+
+    set classificationType(value: ClassificationType) {
+        this._classificationType = value;
+    }
+
     get eventSelection(): NeuroevolutionEventSelection {
         return this._eventSelection;
     }
@@ -48,3 +61,4 @@ export class BasicNeuroevolutionParameter {
 
 export type NeuroevolutionEventSelection = 'random' | 'activation';
 
+export type ClassificationType = 'multiLabel' | 'multiClass';

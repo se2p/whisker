@@ -13,11 +13,15 @@ export class ActionNode extends NodeGene {
     /**
      * Constructs a new event Node.
      * @param uID the unique identifier of this node in the network.
+     * @param activationFunction the activation function used in this output gene.
      * @param _event the event for which this regression node produces values for.
      * @param _continuous whether the event is performed continuously (mouse move) or triggered (key press).
      */
-    constructor(uID: number, private readonly _event: ScratchEvent, private readonly _continuous: boolean = false) {
-        super(uID, 1, ActivationFunction.SIGMOID, NodeType.OUTPUT);
+    constructor(uID: number, activationFunction: ActivationFunction.SIGMOID | ActivationFunction.SOFTMAX,
+                private readonly _event: ScratchEvent, private readonly _continuous: boolean = false) {
+        // Continuous events are always sigmoid activated.
+        const activationFunc = _continuous ? ActivationFunction.SIGMOID : activationFunction;
+        super(uID, 1, activationFunc, NodeType.OUTPUT);
     }
 
     /**
@@ -30,7 +34,7 @@ export class ActionNode extends NodeGene {
     }
 
     clone(): ActionNode {
-        const clone = new ActionNode(this.uID, this.event, this.continuous);
+        const clone = new ActionNode(this.uID, this.activationFunction, this.event, this.continuous);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.activationCount = this.activationCount;
@@ -43,11 +47,15 @@ export class ActionNode extends NodeGene {
      * Calculates the activation value of the event node using the sigmoid activation function.
      * @returns activation value after applying the sigmoid activation function.
      */
-    activate(): number {
-        if (this.activatedFlag) {
-            return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
-        } else
+    activate(nodeValues: number[]): number {
+        if (!this.activatedFlag) {
             return 0.0;
+        }
+        if (this.activationFunction === ActivationFunction.SIGMOID) {
+            return NeuroevolutionUtil.sigmoid(this.nodeValue, 1);
+        } else {
+            return NeuroevolutionUtil.softMax(this.nodeValue, nodeValues);
+        }
     }
 
     get event(): ScratchEvent {
@@ -84,6 +92,7 @@ export class ActionNode extends NodeGene {
         node['t'] = "A";
         node['event'] = this._event.stringIdentifier();
         node['d'] = this.depth;
+        node['aF'] = ActivationFunction[this.activationFunction];
         return node;
     }
 

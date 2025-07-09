@@ -66,7 +66,7 @@ describe('Test NEAT', () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(inputFeatures, events, 'fully',
-            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
 
         const builder = new SearchAlgorithmBuilder('neat');
         const iterations = 20;
@@ -114,7 +114,7 @@ describe('Test NEAT', () => {
 
         const events = [new XOR()];
 
-        const generator = new NeatChromosomeGenerator(inputMap, events, "fully", ActivationFunction.SIGMOID, mutation, crossover);
+        const generator = new NeatChromosomeGenerator(inputMap, events, "fully", ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, mutation, crossover);
         const population = new NeatPopulation(generator, properties);
         await population.generatePopulation();
 

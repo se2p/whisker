@@ -67,10 +67,10 @@ export abstract class NodeGene {
 
     /**
      * Calculates the activation value of the node based on the node value and the activation function.
-     * @params arguments required for specific activation functions
+     * @params node values of other nodes residing in the same layer. Required for softmax activation function.
      * @returns number activation value of the given node.
      */
-    public abstract activate(...args: number[]): number
+    public abstract activate(nodeValues?: number[]): number
 
     /**
      * Resets the node's attributes.

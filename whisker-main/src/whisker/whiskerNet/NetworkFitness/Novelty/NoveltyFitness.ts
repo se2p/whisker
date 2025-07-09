@@ -1,5 +1,5 @@
 import {NetworkChromosome} from "../../Networks/NetworkChromosome";
-import {NeuroevolutionEventSelection} from "../../HyperParameter/BasicNeuroevolutionParameter";
+import {ClassificationType, NeuroevolutionEventSelection} from "../../HyperParameter/BasicNeuroevolutionParameter";
 import {Randomness} from "../../../utils/Randomness";
 import {ReliableCoverageFitness} from "../ReliableCoverageFitness";
 
@@ -29,10 +29,12 @@ export abstract class NoveltyFitness<T> extends ReliableCoverageFitness {
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the networks select events.
+     * @param classificationType defines how the networks select events.
      * @returns Promise<number> the sparseness of the network's behaviour, which is a metric of novelty.
      */
-    override async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
-        const coverageFitness = await super.getFitness(network, timeout, eventSelection);
+    override async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection,
+                              classificationType: ClassificationType): Promise<number> {
+        const coverageFitness = await super.getFitness(network, timeout, eventSelection, classificationType);
         const novelty = this.computeNovelty(network);
 
         let fitness: number;

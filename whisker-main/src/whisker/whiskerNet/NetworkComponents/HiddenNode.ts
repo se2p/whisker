@@ -11,7 +11,7 @@ export class HiddenNode extends NodeGene {
      * @param depth the depth of the node within the network.
      * @param uID the unique identifier of this node in the network.
      */
-    constructor(uID: number, depth:number, activationFunction: ActivationFunction) {
+    constructor(uID: number, depth: number, activationFunction: ActivationFunction) {
         super(uID, depth, activationFunction, NodeType.HIDDEN);
     }
 

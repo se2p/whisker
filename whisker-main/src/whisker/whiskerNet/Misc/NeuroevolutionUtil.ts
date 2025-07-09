@@ -1,4 +1,3 @@
-
 export class NeuroevolutionUtil {
 
     /**
@@ -16,6 +15,18 @@ export class NeuroevolutionUtil {
      */
     public static relu(x: number): number {
         return Math.max(0, x);
+    }
+
+    /**
+     * Computes the softmax activation function for the given input.
+     * @param x The input to the softmax function.
+     * @param nodeValues The node values of the nodes residing in the output layer.
+     * @returns The output of the softmax function.
+     */
+    public static softMax(x: number, nodeValues: number[]): number {
+        const max = Math.max(...nodeValues);
+        const sum = nodeValues.reduce((acc, val) => acc + Math.exp(val - max), 0);
+        return Math.exp(x - max) / sum;
     }
 
     /**
