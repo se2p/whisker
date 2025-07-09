@@ -61,14 +61,17 @@ export class NeatChromosome extends NetworkChromosome {
      * @param mutationOp the mutation operator.
      * @param crossoverOp the crossover operator.
      * @param inputConnectionMethod determines how novel nodes are being connected to the input layer.
-     * @param activationFunction the activation function that will be used for hidden nodes.
+     * @param hiddenActivationFunction the activation function that will be used for hidden nodes.
+     * @param outputActivationFunction the activation function that will be used for output nodes.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
     constructor(layers: NetworkLayer, connections: ConnectionGene[],
                 mutationOp: NeatMutation, crossoverOp: NeatCrossover,
                 inputConnectionMethod: InputConnectionMethod,
-                activationFunction = ActivationFunction.RELU, incrementID = true) {
-        super(layers, connections, inputConnectionMethod, activationFunction, incrementID);
+                hiddenActivationFunction: ActivationFunction,
+                outputActivationFunction: ActivationFunction.SIGMOID | ActivationFunction.SOFTMAX,
+                incrementID = true) {
+        super(layers, connections, inputConnectionMethod, hiddenActivationFunction, outputActivationFunction, incrementID);
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
     }
@@ -118,7 +121,8 @@ export class NeatChromosome extends NetworkChromosome {
             connectionsClone.push(connectionClone);
         }
         return new NeatChromosome(layerClone, connectionsClone, this.getMutationOperator(),
-            this.getCrossoverOperator(), this.inputConnectionMethod, this.activationFunction, incrementID);
+            this.getCrossoverOperator(), this.inputConnectionMethod,
+            this._hiddenActivationFunction, this.outputActivationFunction, incrementID);
     }
 
     /**
@@ -253,15 +257,14 @@ export class NeatChromosome extends NetworkChromosome {
         let newNode: HiddenNode;
         let connection1: ConnectionGene;
         let connection2: ConnectionGene;
-        const activationFunction = this.activationFunction;
         const depth = this.getDepthOfNewNode(sourceNode, targetNode);
         if (innovation && innovation.type === 'addNodeSplitConnection') {
-            newNode = new HiddenNode(innovation.idNewNode, depth, activationFunction);
+            newNode = new HiddenNode(innovation.idNewNode, depth, this._hiddenActivationFunction);
             connection1 = new ConnectionGene(sourceNode, newNode, 1.0, true, innovation.firstInnovationNumber);
             connection2 = new ConnectionGene(newNode, targetNode, oldWeight, true, innovation.secondInnovationNumber);
         } else {
             const nextNodeId = ++NeatPopulation.highestNodeId;
-            newNode = new HiddenNode(nextNodeId, depth, activationFunction);
+            newNode = new HiddenNode(nextNodeId, depth, this._hiddenActivationFunction);
 
             const newInnovation: AddNodeSplitConnectionInnovation = {
                 type: 'addNodeSplitConnection',
@@ -292,7 +295,8 @@ export class NeatChromosome extends NetworkChromosome {
     public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
         const network = {};
         network['id'] = this.uID;
-        network['aF'] = ActivationFunction[this.activationFunction];
+        network['hF'] = ActivationFunction[this._hiddenActivationFunction];
+        network['oF'] = ActivationFunction[this._outputActivationFunction];
         network['cM'] = this.inputConnectionMethod;
 
         if (this.targetObjective instanceof StatementFitnessFunction) {

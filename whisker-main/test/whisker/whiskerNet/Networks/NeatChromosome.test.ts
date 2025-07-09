@@ -28,7 +28,7 @@ function assertCloneStructure(clone: NeatChromosome, chromosome: NeatChromosome)
     expect(clone.layers.size).toEqual(clone.layers.size);
     expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
     expect(clone.layers.get(1).length).toEqual(chromosome.layers.get(1).length);
-    expect(clone.activationFunction).toEqual(chromosome.activationFunction);
+    expect(clone.outputActivationFunction).toEqual(chromosome.outputActivationFunction);
 }
 
 describe('Test NeatChromosome', () => {
@@ -53,8 +53,8 @@ describe('Test NeatChromosome', () => {
 
         // Create classification and Regression Output Nodes
 
-        const eventNode1 = new ActionNode(6, new KeyPressEvent("a"));
-        const eventNode2 = new ActionNode(7, new KeyPressEvent("b"));
+        const eventNode1 = new ActionNode(6, ActivationFunction.SIGMOID, new KeyPressEvent("a"));
+        const eventNode2 = new ActionNode(7, ActivationFunction.SIGMOID, new KeyPressEvent("b"));
         layer.set(1, [eventNode1, eventNode2]);
 
         // Create Connections
@@ -65,7 +65,7 @@ describe('Test NeatChromosome', () => {
         connections.push(new ConnectionGene(iNode2, eventNode2, 0.4, false, 1));
         connections.push(new ConnectionGene(bias, eventNode1, 0.5, true, 1));
         connections.push(new ConnectionGene(bias, eventNode2, 0.6, false, 1));
-        return new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully');
+        return new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SOFTMAX);
     };
 
     beforeEach(async () => {
@@ -99,7 +99,7 @@ describe('Test NeatChromosome', () => {
         const events = [new KeyPressEvent("space"), new KeyPressEvent("left arrow"),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
-            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
         chromosome = await generator.get();
         properties = new NeatParameter();
         properties.populationSize = 10;
@@ -160,7 +160,7 @@ describe('Test NeatChromosome', () => {
         expect(chromosome.getNumNodes()).toEqual(9 + 1 + 2 + 4);  // InputNodes + Bias + HiddenNodes + EventNodes
         expect(hiddenNode.incomingConnections.length).toEqual(1);
         expect(deepHiddenNode.incomingConnections.length).toEqual(1);
-        expect(chromosome.activationFunction).toEqual(ActivationFunction.SIGMOID);
+        expect(chromosome.outputActivationFunction).toEqual(ActivationFunction.SIGMOID);
         expect(chromosome.layers.size).toEqual(4);
         expect(chromosome.layers.get(0).length).toEqual(10);
         expect(chromosome.layers.get(0.5).length).toEqual(1);
@@ -170,11 +170,11 @@ describe('Test NeatChromosome', () => {
 
     test("Sort network layers", () => {
         const iNode = new InputNode(0, "Sprite1", "X-Position");
-        const oNode = new ActionNode(4, new KeyPressEvent("a"));
+        const oNode = new ActionNode(4, ActivationFunction.SIGMOID, new KeyPressEvent("a"));
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(1, [oNode]);
         layer.set(0, [iNode]);
-       const sampleNetwork = new NeatChromosome(layer, [], mutationOp, crossoverOp, 'fully');
+       const sampleNetwork = new NeatChromosome(layer, [], mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SOFTMAX);
        sampleNetwork.sortLayer();
        expect([...sampleNetwork.layers.keys()]).toEqual([0, 1]);
     });
@@ -182,13 +182,13 @@ describe('Test NeatChromosome', () => {
     test('Network activation without path from input to output', () => {
         // Create input Nodes
         const iNode = new InputNode(0, "Sprite1", "X-Position");
-        const oNode = new ActionNode(4, new KeyPressEvent("a"));
+        const oNode = new ActionNode(4, ActivationFunction.SIGMOID, new KeyPressEvent("a"));
         const layer: NetworkLayer = new Map<number, NodeGene[]>();
         layer.set(0, [iNode]);
         layer.set(1, [oNode]);
         const connections = [new ConnectionGene(iNode, oNode, 1, false, 0)];
 
-        chromosome = new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully');
+        chromosome = new NeatChromosome(layer, connections, mutationOp, crossoverOp, 'fully', ActivationFunction.RELU, ActivationFunction.SOFTMAX);
         const inputs: InputFeatures = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -292,7 +292,7 @@ describe('Test NeatChromosome', () => {
 
     test("Test updateOutputNodes sparse", async () => {
         const sparseGenerator = new NeatChromosomeGenerator(genInputs, [new WaitEvent()], 'sparse',
-            ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, new NeatMutation(mutationConfig), new NeatCrossover(crossoverConfig));
         chromosome = await sparseGenerator.get();
         const chromosome2 = await sparseGenerator.get();
         const chromosome3 = await sparseGenerator.get();
@@ -378,13 +378,14 @@ describe('Test NeatChromosome', () => {
     test("toJSON", () => {
         const json = chromosome.toJSON();
         expect(json['id']).toEqual(chromosome.uID);
-        expect(json['aF']).toEqual(ActivationFunction[chromosome.activationFunction]);
+        expect(json['hF']).toEqual("SIGMOID");
+        expect(json['oF']).toEqual("SIGMOID");
         expect(json['cM']).toEqual(chromosome.inputConnectionMethod);
         expect('tf' in json).toBeFalsy();
         expect(Object.keys(json['Nodes']).length).toEqual(chromosome.getNumNodes());
         expect(Object.keys(json['Cons']).length).toEqual(chromosome.connections.length);
         expect(json['AT']).toBeUndefined();
-        expect(Object.keys(json).length).toBe(6);
+        expect(Object.keys(json).length).toBe(7);
 
         chromosome.testActivationTrace = new ActivationTrace([]);
         expect(chromosome.toJSON()['AT']).not.toBeUndefined();

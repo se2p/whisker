@@ -49,7 +49,7 @@ describe("Network Analysis", () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         const generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
-            ActivationFunction.SIGMOID, undefined, undefined);
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, undefined, undefined);
         network = await generator.get();
     });
 

@@ -18,6 +18,8 @@ import {CosineStateNovelty} from "../NetworkFitness/Novelty/CosineStateNovelty";
 import {MouseMoveDimensionEvent} from "../../testcase/events/MouseMoveDimensionEvent";
 import {ActionNode} from "../NetworkComponents/ActionNode";
 import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {ClassificationType} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 export class NetworkExecutor {
 
@@ -66,14 +68,15 @@ export class NetworkExecutor {
      * @param _vmWrapper the wrapper of the Scratch-VM.
      * @param _timeout timeout after which each playthrough is halted.
      * @param _eventSelection defines how a network will select events during its playthrough.
-     * @param _stopEarly determines whether we want to stop the execution as soon was we have covered the network's
-     * fitness objective.
+     * @param _classificationType defines the classification type.
+     * @param _stopEarly determines whether we want to stop the execution when we have covered the network's objective.
      */
     constructor(private readonly _vmWrapper: VMWrapper, private readonly _timeout: number,
                 private readonly _eventSelection: string,
+                _classificationType: ClassificationType,
                 private readonly _stopEarly: boolean) {
         this._vm = this._vmWrapper.vm;
-        this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
+        this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm, _classificationType);
         this._initialState = this._vmWrapper._recordInitialState();
         this._skipFrame = Container.config.getSkipFrame();
         this._actionThreshold = Container.config.getActionThreshold();
@@ -223,10 +226,19 @@ export class NetworkExecutor {
     private _selectNextEvents(network: NetworkChromosome): ScratchEvent[] {
         if (this._eventSelection === 'random') {
             return this.availableEvents.filter(() => this._random.nextDouble());
-        } else {
+        } else if (network.outputActivationFunction === ActivationFunction.SIGMOID) {
             const triggerNodes = network.getTriggerActionNodes().filter(node => node.activationValue > this._actionThreshold);
             const continuousNodes = network.getContinuousActionNodes();
             return [...this._filterMatchingEvents(triggerNodes), ...this._filterMatchingEvents(continuousNodes)];
+        } else if (network.outputActivationFunction === ActivationFunction.SOFTMAX) {
+            const availableEventIdentifier = this.availableEvents.map(e => e.stringIdentifier());
+            const availableNodes = network.getTriggerActionNodes().filter(node => availableEventIdentifier.includes(node.event.stringIdentifier()));
+            const maxTriggerAction = availableNodes.reduce((a, b) => a.activationValue > b.activationValue ? a : b).event;
+
+            const continuousNodes = network.getContinuousActionNodes();
+            return [maxTriggerAction, ...this._filterMatchingEvents(continuousNodes)];
+        } else {
+            throw new Error(`Output activation function ${network.outputActivationFunction} not supported`);
         }
     }
 
@@ -242,22 +254,38 @@ export class NetworkExecutor {
     /**
      * Execute the selected events.
      * @param nextEvents the event that should be executed next.
-     * @param events saves a trace of executed events.
+     * @param events the trace of executed events.
      * @param network the network that will be used to determine parameters.
      */
     private async _executeNextEvents(nextEvents: ScratchEvent[], events: EventAndParameters[], network: NetworkChromosome) {
-        for (const nextEvent of nextEvents) {
+        // If the only event to be executed is a WaitEvent, update the state without sending events to the VM.
+        if (nextEvents.length === 1 && nextEvents[0] instanceof WaitEvent) {
+            await this.updateState(events);
+            return;
+        }
+
+        // Otherwise, if there are other events to be executed, send them to the VM and filter WaitEvents.
+        // We need to filter WaitEvents as otherwise continuous action nodes might not be properly executed in
+        // a multi-class classification network with continuous action nodes.
+        const filteredEvents = nextEvents.filter(e => !(e instanceof WaitEvent));
+        for (const nextEvent of filteredEvents) {
             const parameters = [this._getParameter(nextEvent, network)];
             events.push(new EventAndParameters(nextEvent, parameters));
             nextEvent.setParameter(parameters, "activation");
             await nextEvent.apply();
+            StatisticsCollector.getInstance().incrementEventsCount();
         }
+        await this.updateState(events);
+    }
 
+    /**
+     * Trigger a state update in the VM by executing a WaitEvent.
+     * @param events the trace of executed events.
+     */
+    private async updateState(events: EventAndParameters[]) {
         const waitEvent = new WaitEvent(this._skipFrame);
         events.push(new EventAndParameters(waitEvent, [this._skipFrame]));
         await waitEvent.apply();
-
-        StatisticsCollector.getInstance().incrementEventsCount();
     }
 
     /**

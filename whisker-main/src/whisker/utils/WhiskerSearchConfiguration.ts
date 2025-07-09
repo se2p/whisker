@@ -56,7 +56,7 @@ import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {NeatParameter} from "../whiskerNet/HyperParameter/NeatParameter";
 import {
-    BasicNeuroevolutionParameter,
+    BasicNeuroevolutionParameter, ClassificationType,
     NeuroevolutionEventSelection
 } from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
 import {EventSequenceNovelty} from "../whiskerNet/NetworkFitness/Novelty/EventSequenceNovelty";
@@ -276,6 +276,7 @@ export class WhiskerSearchConfiguration {
         properties.weightCoefficient = weightCoefficient;
 
         properties.eventSelection = this.getNeuroevolutionEventSelection();
+        properties.classificationType = this.getClassificationType();
         properties.timeout = timeout;
         properties.activationTraceRepetitions = activationTraceRepetitions;
         properties.printPopulationRecord = doPrintPopulationRecord;
@@ -353,6 +354,7 @@ export class WhiskerSearchConfiguration {
         const parameter = new BasicNeuroevolutionParameter();
         parameter.timeout = this._config['timeout'];
         parameter.networkFitness = new ReliableCoverageFitness(1, false);
+        parameter.classificationType = this.getClassificationType();
         return parameter;
     }
 
@@ -519,7 +521,7 @@ export class WhiskerSearchConfiguration {
             case 'static':
                 return new StaticScratchEventExtractor(Container.vm);
             case 'neuroevolution':
-                return new NeuroevolutionScratchEventExtractor(Container.vm);
+                return new NeuroevolutionScratchEventExtractor(Container.vm, this.getClassificationType());
             case 'dynamic':
                 return new DynamicScratchEventExtractor(Container.vm);
             default:
@@ -574,11 +576,14 @@ export class WhiskerSearchConfiguration {
                     outputSpace = eventExtractor.extractStaticEvents(Container.vm);
                 }
 
+                const outActivationFunction = this.getClassificationType() == 'multiLabel' ?
+                    ActivationFunction.SIGMOID : ActivationFunction.SOFTMAX;
                 return new NeatChromosomeGenerator(
                     InputExtraction.extractFeatures(Container.vm),
                     outputSpace,
                     this.getInputConnectionMethod(),
                     this.neuroevolutionProperties.activationFunction,
+                    outActivationFunction,
                     mutationOperator,
                     crossoverOperator,
                     Number(this._config['inputRate']));
@@ -866,5 +871,9 @@ export class WhiskerSearchConfiguration {
         } else {
             return 100;
         }
+    }
+
+    private getClassificationType(): ClassificationType {
+        return this._config['classificationType'] ?? 'multiLabel';
     }
 }

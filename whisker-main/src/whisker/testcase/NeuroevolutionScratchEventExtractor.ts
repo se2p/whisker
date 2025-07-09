@@ -15,6 +15,7 @@ import Arrays from "../utils/Arrays";
 import {ScratchInterface} from "../scratch/ScratchInterface";
 import {WaitEvent} from "./events/WaitEvent";
 import {MouseMoveDimensionEvent} from "./events/MouseMoveDimensionEvent";
+import {ClassificationType} from "../whiskerNet/HyperParameter/BasicNeuroevolutionParameter";
 
 export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtractor {
 
@@ -25,13 +26,21 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
      */
     private _staticMode = false;
 
-    constructor(vm: VirtualMachine) {
+    /**
+     * Constructs a new NeuroevolutionScratchEventExtractor.
+     * @param vm The Scratch VM from which events will be extracted.
+     * @param _classificationType The classification type of the network.
+     */
+    constructor(vm: VirtualMachine, private readonly _classificationType: ClassificationType) {
         super(vm);
     }
 
     public override extractEvents(vm: VirtualMachine): ScratchEvent[] {
         const events = super.extractEvents(vm);
-        return events.filter(event => !(event instanceof WaitEvent));
+        if (this._classificationType === 'multiLabel') {
+            return events.filter(event => !(event instanceof WaitEvent));
+        }
+        return events;
     }
 
     /**
@@ -55,6 +64,9 @@ export class NeuroevolutionScratchEventExtractor extends DynamicScratchEventExtr
 
         const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         this._staticMode = false;
+        if (this._classificationType === 'multiClass') {
+            eventList.push(new WaitEvent());
+        }
         return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 

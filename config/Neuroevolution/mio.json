@@ -5,6 +5,7 @@
     "numberOfSpecies": 2,
     "parentsPerSpecies": 0.30,
     "ageSignificance": 1.0,
+    "classificationType": "multiLabel",
     "extractor": "neuroevolution",
     "aTRepetitions": 0,
     "maxArchiveSize": 20,

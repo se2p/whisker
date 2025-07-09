@@ -68,9 +68,9 @@ export class NetworkLoader {
                         break;
                     }
                     case "H": {
-                        const activationFunction = savedNode['aF'] as string;
+                        const hiddenActivationFunction = savedNode['aF'] as string;
                         const depth = savedNode['d'] as number;
-                        const hiddenNode = new HiddenNode(savedNode['id'], depth, ActivationFunction[activationFunction]);
+                        const hiddenNode = new HiddenNode(savedNode['id'], depth, ActivationFunction[hiddenActivationFunction]);
                         if (!layers.has(depth)) {
                             layers.set(depth, []);
                         }
@@ -79,7 +79,9 @@ export class NetworkLoader {
                     }
                     case "A": {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
-                        const actionNode = new ActionNode(savedNode['id'], event, event instanceof MouseMoveDimensionEvent);
+                        const outputActivationFunction = savedNode['aF'] as string;
+                        const actionNode = new ActionNode(savedNode['id'],
+                            ActivationFunction[outputActivationFunction], event, event instanceof MouseMoveDimensionEvent);
                         layers.get(1).push(actionNode);
                         break;
                     }
@@ -97,10 +99,11 @@ export class NetworkLoader {
 
             const mutation = new NeatMutation({});
             const crossover = new NeatCrossover({});
-            const activationFunction = savedNetwork['aF'] as string;
+            const hiddenActivationFunction = savedNetwork['hF'] as string;
+            const outputActivationFunction = savedNetwork['oF'] as string;
             const connectionMethod = savedNetwork['cM'] as InputConnectionMethod;
             const network = new NeatChromosome(layers, allConnections, mutation, crossover, connectionMethod,
-                ActivationFunction[activationFunction]);
+                ActivationFunction[hiddenActivationFunction], ActivationFunction[outputActivationFunction]);
 
             // If the generated networks are based on the StatementFitness function,
             // we load the coverage objectives targeted during test generation.

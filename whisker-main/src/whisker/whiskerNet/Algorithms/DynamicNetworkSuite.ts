@@ -94,7 +94,7 @@ export class DynamicNetworkSuite {
             StatisticsCollector.getInstance().parseWinningStates(this.properties.winningStates as string);
         }
 
-        this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', false);
+        this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation', this.parameter.classificationType, false);
     }
 
     /**
@@ -103,7 +103,7 @@ export class DynamicNetworkSuite {
     protected loadTestCases(): NeatChromosome[] {
         const objectives = [...this.statementMap.values()]
             .concat(...this.branchMap.values()) as unknown as StatementFitnessFunction[];
-        const eventExtractor = new NeuroevolutionScratchEventExtractor(this.vm);
+        const eventExtractor = new NeuroevolutionScratchEventExtractor(this.vm, this.parameter.classificationType);
         const networkLoader = new NetworkLoader(this._testSuiteJSON['Networks'],
             eventExtractor.extractStaticEvents(this.vm), objectives);
         return networkLoader.loadNetworks();
@@ -460,7 +460,7 @@ export class DynamicNetworkSuite {
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
         this.initialiseCoverageMaps(vmWrapper.vm);
-        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', false);
+        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout,'activation', this.parameter.classificationType, false);
     }
 
     /**

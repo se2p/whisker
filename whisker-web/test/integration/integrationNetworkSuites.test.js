@@ -56,8 +56,16 @@ beforeEach(async () => {
 
 describe('Test Dynamic Network Suites', () => {
     jest.setTimeout(timeout);
-    test('Dynamic Suite FruitCatching', async () => {
-        await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingDynamic.json");
+    test('Dynamic Suite FruitCatching with multi-label classification network', async () => {
+        await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingMultiLabel.json");
+        await (await page.$('#run-all-tests')).click();
+        const [statCov, branchCov] = await getLogAfterSearch();
+        expect(Number(statCov)).toBeGreaterThanOrEqual(0.6);
+        expect(Number(branchCov)).toBeGreaterThanOrEqual(0.6);
+    }, timeout);
+
+    test('Dynamic Suite FruitCatching with multi-class classification network', async () => {
+        await (await page.$('#fileselect-tests')).uploadFile("test/integration/networkSuites/FruitCatchingMultiClass.json");
         await (await page.$('#run-all-tests')).click();
         const [statCov, branchCov] = await getLogAfterSearch();
         expect(Number(statCov)).toBeGreaterThanOrEqual(0.6);

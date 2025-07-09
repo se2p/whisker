@@ -162,7 +162,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
 
 
     /**
-     * Updates the currently optimized targets, that are not covered and reachable in the CDG.
+     * Updates the currently optimized targets that are not covered and reachable in the CDG.
      */
     protected updateCurrentTargets(): void {
         this._currentTargets = [];
@@ -185,9 +185,10 @@ export abstract class ManyObjectiveNeatest extends Neatest {
 
         const timeout = this._neuroevolutionProperties.timeout;
         const eventSelection = this._neuroevolutionProperties.eventSelection;
+        const classificationType = this._neuroevolutionProperties.classificationType;
 
         for (const network of networks) {
-            await this._networkFitnessFunction.calculateFitness(network, timeout, eventSelection);
+            await this._networkFitnessFunction.calculateFitness(network, timeout, eventSelection, classificationType);
             await this.updateArchive(network);
             this.updateCurrentTargets();
 
@@ -226,7 +227,7 @@ export abstract class ManyObjectiveNeatest extends Neatest {
             .filter(network => !chromosomes.includes(network))
             .forEach(network => this._population.removeNetworkFromSpecie(network));
 
-        // Delete networks from population
+        // Delete networks from the population
         this._population.networks = this._population.networks.filter(network => chromosomes.includes(network));
 
         // Add networks that are new to the population

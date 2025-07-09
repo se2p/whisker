@@ -3,6 +3,7 @@ import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/In
 import {ActionNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActionNode";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
 
 describe("ConnectionGene Test", () => {
 
@@ -12,7 +13,7 @@ describe("ConnectionGene Test", () => {
 
     beforeEach(() => {
         sourceNode = new InputNode(0, "Sprite1", "X-Position");
-        targetNode = new ActionNode(1, new WaitEvent());
+        targetNode = new ActionNode(1, ActivationFunction.SIGMOID, new WaitEvent());
         connection = new ConnectionGene(sourceNode, targetNode, 0.2, true, ConnectionGene.getNextInnovationNumber());
     });
 
@@ -38,7 +39,7 @@ describe("ConnectionGene Test", () => {
 
     test("Test cloneWithNodes", () => {
         const inNode = new InputNode(2, "Sprite1", "Y-Position");
-        const outNode = new ActionNode(3, new WaitEvent());
+        const outNode = new ActionNode(3, ActivationFunction.SIGMOID, new WaitEvent());
         const cloneConnection = connection.cloneWithNodes(inNode, outNode);
 
         expect(connection.source).not.toBe(cloneConnection.source);
@@ -51,7 +52,7 @@ describe("ConnectionGene Test", () => {
 
     test("Test equalsByNodes with equal nodes", () => {
         const inNode = new InputNode(1, "Sprite1", "X-Position");
-        const outNode = new ActionNode(2, new WaitEvent());
+        const outNode = new ActionNode(2,ActivationFunction.SIGMOID, new WaitEvent());
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1);
         expect(connection.equalsByNodes(otherConnection)).toBe(true);
@@ -59,7 +60,7 @@ describe("ConnectionGene Test", () => {
 
     test("Test equalsByNodes with differing nodes", () => {
         const inNode = new InputNode(2, "Sprite2", "X-Position");
-        const outNode = new ActionNode(3, new WaitEvent());
+        const outNode = new ActionNode(3,ActivationFunction.SIGMOID, new WaitEvent());
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1);
         expect(connection.equalsByNodes(otherConnection)).toBe(false);

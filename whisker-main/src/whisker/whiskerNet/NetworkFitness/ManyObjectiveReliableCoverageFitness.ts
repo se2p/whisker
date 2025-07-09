@@ -1,7 +1,7 @@
 import {Container} from "../../utils/Container";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../Misc/NetworkExecutor";
-import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
+import {ClassificationType, NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {ReliableCoverageFitness} from "./ReliableCoverageFitness";
 import {ManyObjectiveNetworkFitnessFunction} from "./ManyObjectiveNetworkFitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
@@ -16,12 +16,13 @@ export class ManyObjectiveReliableCoverageFitness extends ReliableCoverageFitnes
         this._noveltyFitness = noveltyFitness;
     }
 
-    async calculateFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<void> {
-        await this._executeNetwork(network, timeout, eventSelection);
+    async calculateFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection,
+                           classificationType: ClassificationType): Promise<void> {
+        await this._executeNetwork(network, timeout, eventSelection, classificationType);
 
         // If at least one statement was covered, check reliable fitness
         if (await this.updateUncoveredObjectives(network)) {
-            await this.checkStableCoverage(network, timeout, eventSelection);
+            await this.checkStableCoverage(network, timeout, eventSelection, classificationType);
         }
         StatisticsCollector.getInstance().computeStatementCoverage();
         StatisticsCollector.getInstance().computeBranchCoverage();
@@ -41,9 +42,13 @@ export class ManyObjectiveReliableCoverageFitness extends ReliableCoverageFitnes
      * @param network the network that should be executed.
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the networks select events.
+     * @param classificationType defines how the networks select events.
      */
-    private async _executeNetwork(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<void> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
+    private async _executeNetwork(network: NetworkChromosome, timeout: number,
+                                  eventSelection: NeuroevolutionEventSelection,
+                                  classificationType: ClassificationType): Promise<void> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection,
+            classificationType,false);
         await executor.execute(network);
         await executor.resetState();
         network.resetCoverageMap();

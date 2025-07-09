@@ -3,7 +3,6 @@ import {FeatureGroup, InputFeatures} from "./InputExtraction";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import Arrays from "../../utils/Arrays";
-import {ActionNode} from "../NetworkComponents/ActionNode";
 import {Randomness} from "../../utils/Randomness";
 import logger from "../../../util/logger";
 import {Container} from "../../utils/Container";
@@ -32,6 +31,8 @@ export class GradientDescent {
             (prediction - label) / (prediction * (1 - prediction) + Number.EPSILON),
         "MSE": (prediction: number, label: number): number =>
             2 * (prediction - label),
+        "CATEGORICAL_CROSS_ENTROPY": (prediction: number, label: number): number =>
+            -label / (prediction + Number.EPSILON),
 
         // Activation functions
         "NONE": (): number => 1,
@@ -133,12 +134,17 @@ export class GradientDescent {
 
             if (epochsWithoutImprovement >= GradientDescent.EARLY_STOPPING_THRESHOLD) {
                 this._trainingEpochs.push(i);
+                this._trainingTimes.push(Date.now() - startTime);
                 break;
             }
 
         }
-        this._trainingTimes.push(Date.now() - startTime);
-        this._trainingEpochs.push(this._parameter.epochs);
+
+        // Only record training time and epochs if we didn't break early
+        if (epochsWithoutImprovement < GradientDescent.EARLY_STOPPING_THRESHOLD) {
+            this._trainingTimes.push(Date.now() - startTime);
+            this._trainingEpochs.push(this._parameter.epochs);
+        }
 
         // Reset weights to the ones that obtained the best training loss.
         for (let j = 0; j < network.connections.length; j++) {
@@ -322,20 +328,30 @@ export class GradientDescent {
      */
     public _forwardPass(network: NetworkChromosome, inputs: InputFeatures, labelVector: Map<string, number>): number {
         network.activateNetwork(inputs);
-        const actionNodes = network.getActionNodes();
-        let totalLoss = 0;
-        for (const node of actionNodes) {
-            const label = labelVector.get(node.event.stringIdentifier()) ?? 0;
-            const prediction = node.activationValue;
+        const labels = network.getTriggerActionNodes().map(node => labelVector.get(node.event.stringIdentifier()) ?? 0);
+        const predictions = network.getTriggerActionNodes().map(node => node.activationValue);
+        const triggerActionLoss = network.outputActivationFunction === ActivationFunction.SOFTMAX ?
+            this._categoricalCrossEntropyLoss(predictions, labels) : this._binaryCrossEntropyLoss(predictions, labels);
+        return triggerActionLoss + this.mouseMoveLoss(network, labelVector);
+    }
 
-            if (node.event instanceof MouseMoveDimensionEvent) {
-                totalLoss += this._mseLoss(prediction, label);
-            } else {
-                totalLoss += this._binaryCrossEntropyLoss(prediction, label);
+    /**
+     * Computes the loss function for a multi-label classification network.
+     * @param network the network hosting the mouse move nodes.
+     * @param labelVector the label vector containing the desired network predictions.
+     * @returns the loss value for the given inputs and labels.
+     */
+    private mouseMoveLoss(network: NetworkChromosome, labelVector: Map<string, number>) {
+        const predictions: number[] = [];
+        const labels: number[] = [];
+        for (const node of network.getContinuousActionNodes()) {
+            if (!(node.event instanceof MouseMoveDimensionEvent) || !labelVector.has(node.event.stringIdentifier())) {
+                continue;
             }
+            predictions.push(node.activationValue);
+            labels.push(labelVector.get(node.event.stringIdentifier()));
         }
-
-        return totalLoss / actionNodes.length;
+        return this._mseLoss(predictions, labels);
     }
 
     /**
@@ -349,31 +365,8 @@ export class GradientDescent {
         for (const layer of layersInverted) {
 
             if (layer == 1) {
-
-                // First pass: Calculate gradients for each output node
-                for (const node of network.layers.get(layer)) {
-                    if (node instanceof ActionNode) {
-                        const label = labelVector.get(node.event.stringIdentifier()) ?? 0;
-                        const prediction = node.activationValue;
-
-                        const lossGradient = node.event instanceof MouseMoveDimensionEvent ?
-                            GradientDescent.DERIVATIVES.MSE(prediction, label) :
-                            GradientDescent.DERIVATIVES.BINARY_CROSS_ENTROPY(prediction, label);
-                        const activationFunctionGradient = GradientDescent.DERIVATIVES[ActivationFunction[node.activationFunction]](prediction);
-                        node.gradient = lossGradient * activationFunctionGradient;
-                    }
-                }
-
-                // Second pass: Update connection weights
-                const outputSize = network.layers.get(layer).length;
-                for (const node of network.layers.get(layer)) {
-                    if (node instanceof ActionNode) {
-                        for (const connection of node.incomingConnections) {
-                            // To avoid gradient explosion, each connection is normalized by the total number of outputs
-                            connection.gradient += (node.gradient / outputSize) * connection.source.activationValue;
-                        }
-                    }
-                }
+                this._computeOutputNodeGradients(network, labelVector);
+                this._computeOutputConnectionGradients(network);
             }
 
             // Calculate the gradients and update the weights for each connection going into hidden layers.
@@ -386,6 +379,51 @@ export class GradientDescent {
                         connection.gradient += node.gradient * connection.source.activationValue;
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Computes the gradients for the output nodes of a network.
+     * @param network The network whose gradients should be computed.
+     * @param labelVector The label vector mapping action events to target labels.
+     * @private
+     */
+    private _computeOutputNodeGradients(network: NetworkChromosome, labelVector: Map<string, number>) {
+        const triggerActionNodes = network.getTriggerActionNodes();
+        for (const node of triggerActionNodes) {
+            const label = labelVector.get(node.event.stringIdentifier()) ?? 0;
+            const prediction = node.activationValue;
+            if (node.activationFunction === ActivationFunction.SOFTMAX) {
+                node.gradient = prediction - label;
+            } else {
+                const lossGradient = GradientDescent.DERIVATIVES.BINARY_CROSS_ENTROPY(prediction, label);
+                const activationFunctionGradient = GradientDescent.DERIVATIVES[ActivationFunction[node.activationFunction]](prediction);
+                node.gradient = lossGradient * activationFunctionGradient;
+            }
+        }
+
+        const mouseMoveNodes = network.getContinuousActionNodes();
+        for (const node of mouseMoveNodes) {
+            if (!(node.event instanceof MouseMoveDimensionEvent) || !labelVector.has(node.event.stringIdentifier())) {
+                continue;
+            }
+            const label = labelVector.get(node.event.stringIdentifier());
+            const prediction = node.activationValue;
+            const lossGradient = GradientDescent.DERIVATIVES.MSE(prediction, label);
+            const activationFunctionGradient = GradientDescent.DERIVATIVES[ActivationFunction[node.activationFunction]](prediction);
+            node.gradient = lossGradient * activationFunctionGradient;
+        }
+    }
+
+    /**
+     * Update the gradients for connections leading into an output layer.
+     * @param network The network whose gradients should be updated.
+     */
+    private _computeOutputConnectionGradients(network: NetworkChromosome) {
+        for (const node of network.getActionNodes()) {
+            for (const connection of node.incomingConnections) {
+                connection.gradient += node.gradient * connection.source.activationValue;
             }
         }
     }
@@ -552,24 +590,47 @@ export class GradientDescent {
 
     /**
      * Computes the binary cross-entropy loss between the prediction and label value.
-     * @param prediction The prediction of the model.
-     * @param label The ground truth label.
+     * @param predictions Array of predictions from the model.
+     * @param labels Array of ground truth labels.
      * @returns The binary cross-entropy loss between the prediction and label value.
      */
-    private _binaryCrossEntropyLoss(prediction: number, label: number) {
-        return -(label * Math.log(prediction + Number.EPSILON) +
-            (1 - label) * Math.log(1 - prediction + Number.EPSILON));
+    private _binaryCrossEntropyLoss(predictions: number[], labels: number[]): number {
+        let loss = 0;
+        for (let i = 0; i < predictions.length; i++) {
+            loss += -(labels[i] * Math.log(predictions[i] + Number.EPSILON) +
+                (1 - labels[i]) * Math.log(1 - predictions[i] + Number.EPSILON));
+        }
+        return loss;
     }
 
     /**
      * Computes the mean_squared error loss between the prediction and label value.
-     * @param prediction The prediction of the model.
-     * @param label The ground truth label.
+     * @param predictions Array of predictions from the model.
+     * @param labels Array of ground truth labels.
      * @returns The mean-squared error loss between the prediction and label value.
      */
-    private _mseLoss(prediction: number, label: number) {
-        const error = prediction - label;
-        return error * error;
+    private _mseLoss(predictions: number[], labels: number[]): number {
+        let loss = 0;
+        for (let i = 0; i < predictions.length; i++) {
+            loss += (predictions[i] - labels[i]) ** 2;
+        }
+        return loss;
+    }
+
+    /**
+     * Computes the categorical cross-entropy loss for multi-class classification with softmax activation.
+     * @param predictions Array of predictions from the model.
+     * @param labels Array of one-hot encoded ground truth labels.
+     * @returns The categorical cross-entropy loss.
+     */
+    private _categoricalCrossEntropyLoss(predictions: number[], labels: number[]): number {
+        let loss = 0;
+        for (let i = 0; i < predictions.length; i++) {
+            if (labels[i] > 0) {
+                loss -= labels[i] * Math.log(predictions[i] + Number.EPSILON);
+            }
+        }
+        return loss;
     }
 
 

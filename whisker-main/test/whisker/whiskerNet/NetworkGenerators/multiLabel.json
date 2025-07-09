@@ -1,0 +1,1014 @@
+{
+    "Network 0": {
+        "id": 753,
+        "hF": "SIGMOID",
+        "oF": "SIGMOID",
+        "cM": "fully",
+        "tf": ";]3GkVH_T[iwH`2P,0q[",
+        "Nodes": {
+            "Node 0": {
+                "id": 0,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Stage",
+                "feature": "VARPunkte",
+                "d": 0
+            },
+            "Node 1": {
+                "id": 1,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Stage",
+                "feature": "VARZeit",
+                "d": 0
+            },
+            "Node 2": {
+                "id": 2,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "X",
+                "d": 0
+            },
+            "Node 3": {
+                "id": 3,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "Y",
+                "d": 0
+            },
+            "Node 4": {
+                "id": 4,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "Dir",
+                "d": 0
+            },
+            "Node 5": {
+                "id": 5,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "Size",
+                "d": 0
+            },
+            "Node 6": {
+                "id": 6,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "X",
+                "d": 0
+            },
+            "Node 7": {
+                "id": 7,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "Y",
+                "d": 0
+            },
+            "Node 8": {
+                "id": 8,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "Dir",
+                "d": 0
+            },
+            "Node 9": {
+                "id": 9,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "Size",
+                "d": 0
+            },
+            "Node 10": {
+                "id": 10,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "DISTBowlX",
+                "d": 0
+            },
+            "Node 11": {
+                "id": 11,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "DISTBowlY",
+                "d": 0
+            },
+            "Node 12": {
+                "id": 12,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "X",
+                "d": 0
+            },
+            "Node 13": {
+                "id": 13,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "Y",
+                "d": 0
+            },
+            "Node 14": {
+                "id": 14,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "Dir",
+                "d": 0
+            },
+            "Node 15": {
+                "id": 15,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "Size",
+                "d": 0
+            },
+            "Node 16": {
+                "id": 16,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "DISTBowlX",
+                "d": 0
+            },
+            "Node 17": {
+                "id": 17,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "DISTBowlY",
+                "d": 0
+            },
+            "Node 18": {
+                "id": 18,
+                "t": "B",
+                "aF": "NONE",
+                "d": 0
+            },
+            "Node 19": {
+                "id": 21,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "DIST#ff0000",
+                "d": 0
+            },
+            "Node 20": {
+                "id": 22,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "DIST#ff0000",
+                "d": 0
+            },
+            "Node 21": {
+                "id": 19,
+                "t": "A",
+                "event": "KeyPressEvent-right arrow",
+                "d": 1,
+                "af": "SIGMOID"
+            },
+            "Node 22": {
+                "id": 20,
+                "t": "A",
+                "event": "KeyPressEvent-left arrow",
+                "d": 1,
+                "af": "SIGMOID"
+            },
+            "Node 23": {
+                "id": 38,
+                "t": "H",
+                "aF": "SIGMOID",
+                "d": 0.5
+            }
+        },
+        "Cons": {
+            "Con 0": {
+                "s": 0,
+                "t": 19,
+                "w": 0.27993,
+                "e": true,
+                "i": 0,
+                "r": false
+            },
+            "Con 1": {
+                "s": 0,
+                "t": 20,
+                "w": 0.56571,
+                "e": true,
+                "i": 1,
+                "r": false
+            },
+            "Con 2": {
+                "s": 1,
+                "t": 19,
+                "w": 0.39968,
+                "e": true,
+                "i": 2,
+                "r": false
+            },
+            "Con 3": {
+                "s": 1,
+                "t": 20,
+                "w": -0.43387,
+                "e": true,
+                "i": 3,
+                "r": false
+            },
+            "Con 4": {
+                "s": 2,
+                "t": 19,
+                "w": -3.06239,
+                "e": true,
+                "i": 4,
+                "r": false
+            },
+            "Con 5": {
+                "s": 2,
+                "t": 20,
+                "w": 2.7391,
+                "e": true,
+                "i": 5,
+                "r": false
+            },
+            "Con 6": {
+                "s": 3,
+                "t": 19,
+                "w": -0.71933,
+                "e": true,
+                "i": 6,
+                "r": false
+            },
+            "Con 7": {
+                "s": 3,
+                "t": 20,
+                "w": -0.47223,
+                "e": true,
+                "i": 7,
+                "r": false
+            },
+            "Con 8": {
+                "s": 4,
+                "t": 19,
+                "w": -0.13307,
+                "e": true,
+                "i": 8,
+                "r": false
+            },
+            "Con 9": {
+                "s": 4,
+                "t": 20,
+                "w": -1.29015,
+                "e": true,
+                "i": 9,
+                "r": false
+            },
+            "Con 10": {
+                "s": 5,
+                "t": 19,
+                "w": 0.89812,
+                "e": true,
+                "i": 10,
+                "r": false
+            },
+            "Con 11": {
+                "s": 5,
+                "t": 20,
+                "w": -0.3123,
+                "e": true,
+                "i": 11,
+                "r": false
+            },
+            "Con 12": {
+                "s": 6,
+                "t": 19,
+                "w": 3.34347,
+                "e": true,
+                "i": 12,
+                "r": false
+            },
+            "Con 13": {
+                "s": 6,
+                "t": 20,
+                "w": -3.14291,
+                "e": true,
+                "i": 13,
+                "r": false
+            },
+            "Con 14": {
+                "s": 7,
+                "t": 19,
+                "w": -0.40167,
+                "e": true,
+                "i": 14,
+                "r": false
+            },
+            "Con 15": {
+                "s": 7,
+                "t": 20,
+                "w": -0.17309,
+                "e": true,
+                "i": 15,
+                "r": false
+            },
+            "Con 16": {
+                "s": 8,
+                "t": 19,
+                "w": 0.36369,
+                "e": true,
+                "i": 16,
+                "r": false
+            },
+            "Con 17": {
+                "s": 8,
+                "t": 20,
+                "w": -0.53929,
+                "e": false,
+                "i": 17,
+                "r": false
+            },
+            "Con 18": {
+                "s": 9,
+                "t": 19,
+                "w": -0.43546,
+                "e": true,
+                "i": 18,
+                "r": false
+            },
+            "Con 19": {
+                "s": 9,
+                "t": 20,
+                "w": -0.34334,
+                "e": true,
+                "i": 19,
+                "r": false
+            },
+            "Con 20": {
+                "s": 10,
+                "t": 19,
+                "w": -2.48557,
+                "e": true,
+                "i": 20,
+                "r": false
+            },
+            "Con 21": {
+                "s": 10,
+                "t": 20,
+                "w": 3.2315,
+                "e": true,
+                "i": 21,
+                "r": false
+            },
+            "Con 22": {
+                "s": 11,
+                "t": 19,
+                "w": -0.62051,
+                "e": true,
+                "i": 22,
+                "r": false
+            },
+            "Con 23": {
+                "s": 11,
+                "t": 20,
+                "w": 0.48356,
+                "e": true,
+                "i": 23,
+                "r": false
+            },
+            "Con 24": {
+                "s": 12,
+                "t": 19,
+                "w": 0.17215,
+                "e": true,
+                "i": 24,
+                "r": false
+            },
+            "Con 25": {
+                "s": 12,
+                "t": 20,
+                "w": -0.08172,
+                "e": true,
+                "i": 25,
+                "r": false
+            },
+            "Con 26": {
+                "s": 13,
+                "t": 19,
+                "w": -0.3265,
+                "e": true,
+                "i": 26,
+                "r": false
+            },
+            "Con 27": {
+                "s": 13,
+                "t": 20,
+                "w": 0.23856,
+                "e": true,
+                "i": 27,
+                "r": false
+            },
+            "Con 28": {
+                "s": 14,
+                "t": 19,
+                "w": -1.07961,
+                "e": true,
+                "i": 28,
+                "r": false
+            },
+            "Con 29": {
+                "s": 14,
+                "t": 20,
+                "w": 0.89484,
+                "e": true,
+                "i": 29,
+                "r": false
+            },
+            "Con 30": {
+                "s": 15,
+                "t": 19,
+                "w": 0.80201,
+                "e": true,
+                "i": 30,
+                "r": false
+            },
+            "Con 31": {
+                "s": 15,
+                "t": 20,
+                "w": -1.05878,
+                "e": true,
+                "i": 31,
+                "r": false
+            },
+            "Con 32": {
+                "s": 16,
+                "t": 19,
+                "w": -0.74159,
+                "e": true,
+                "i": 32,
+                "r": false
+            },
+            "Con 33": {
+                "s": 16,
+                "t": 20,
+                "w": 0.82149,
+                "e": true,
+                "i": 33,
+                "r": false
+            },
+            "Con 34": {
+                "s": 17,
+                "t": 19,
+                "w": 0.19561,
+                "e": true,
+                "i": 34,
+                "r": false
+            },
+            "Con 35": {
+                "s": 17,
+                "t": 20,
+                "w": -0.22523,
+                "e": true,
+                "i": 35,
+                "r": false
+            },
+            "Con 36": {
+                "s": 18,
+                "t": 19,
+                "w": 0.1362,
+                "e": true,
+                "i": 36,
+                "r": false
+            },
+            "Con 37": {
+                "s": 18,
+                "t": 20,
+                "w": -1.10866,
+                "e": true,
+                "i": 37,
+                "r": false
+            },
+            "Con 38": {
+                "s": 8,
+                "t": 38,
+                "w": 1,
+                "e": true,
+                "i": 75,
+                "r": false
+            },
+            "Con 39": {
+                "s": 38,
+                "t": 20,
+                "w": -0.53929,
+                "e": true,
+                "i": 76,
+                "r": false
+            }
+        }
+    },
+    "Network 1": {
+        "id": 335,
+        "hF": "SIGMOID",
+        "oF": "SIGMOID",
+        "cM": "fully",
+        "tf": "{q87c8Osj;C7(;_Oul?L",
+        "Nodes": {
+            "Node 0": {
+                "id": 0,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Stage",
+                "feature": "VARPunkte",
+                "d": 0
+            },
+            "Node 1": {
+                "id": 1,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Stage",
+                "feature": "VARZeit",
+                "d": 0
+            },
+            "Node 2": {
+                "id": 2,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "X",
+                "d": 0
+            },
+            "Node 3": {
+                "id": 3,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "Y",
+                "d": 0
+            },
+            "Node 4": {
+                "id": 4,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "Dir",
+                "d": 0
+            },
+            "Node 5": {
+                "id": 5,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bowl",
+                "feature": "Size",
+                "d": 0
+            },
+            "Node 6": {
+                "id": 6,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "X",
+                "d": 0
+            },
+            "Node 7": {
+                "id": 7,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "Y",
+                "d": 0
+            },
+            "Node 8": {
+                "id": 8,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "Dir",
+                "d": 0
+            },
+            "Node 9": {
+                "id": 9,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "Size",
+                "d": 0
+            },
+            "Node 10": {
+                "id": 10,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "DISTBowlX",
+                "d": 0
+            },
+            "Node 11": {
+                "id": 11,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "DISTBowlY",
+                "d": 0
+            },
+            "Node 12": {
+                "id": 12,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "X",
+                "d": 0
+            },
+            "Node 13": {
+                "id": 13,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "Y",
+                "d": 0
+            },
+            "Node 14": {
+                "id": 14,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "Dir",
+                "d": 0
+            },
+            "Node 15": {
+                "id": 15,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "Size",
+                "d": 0
+            },
+            "Node 16": {
+                "id": 16,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "DISTBowlX",
+                "d": 0
+            },
+            "Node 17": {
+                "id": 17,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "DISTBowlY",
+                "d": 0
+            },
+            "Node 18": {
+                "id": 18,
+                "t": "B",
+                "aF": "NONE",
+                "d": 0
+            },
+            "Node 19": {
+                "id": 21,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Apple",
+                "feature": "DIST#ff0000",
+                "d": 0
+            },
+            "Node 20": {
+                "id": 22,
+                "t": "I",
+                "aF": "NONE",
+                "sprite": "Bananas",
+                "feature": "DIST#ff0000",
+                "d": 0
+            },
+            "Node 21": {
+                "id": 19,
+                "t": "A",
+                "event": "KeyPressEvent-right arrow",
+                "d": 1,
+                "af": "SIGMOID"
+            },
+            "Node 22": {
+                "id": 20,
+                "t": "A",
+                "event": "KeyPressEvent-left arrow",
+                "d": 1,
+                "af": "SIGMOID"
+            }
+        },
+        "Cons": {
+            "Con 0": {
+                "s": 0,
+                "t": 19,
+                "w": -0.32985,
+                "e": true,
+                "i": 0,
+                "r": false
+            },
+            "Con 1": {
+                "s": 0,
+                "t": 20,
+                "w": 0.5693,
+                "e": true,
+                "i": 1,
+                "r": false
+            },
+            "Con 2": {
+                "s": 1,
+                "t": 19,
+                "w": -0.21169,
+                "e": true,
+                "i": 2,
+                "r": false
+            },
+            "Con 3": {
+                "s": 1,
+                "t": 20,
+                "w": 0.4828,
+                "e": true,
+                "i": 3,
+                "r": false
+            },
+            "Con 4": {
+                "s": 2,
+                "t": 19,
+                "w": -2.99526,
+                "e": true,
+                "i": 4,
+                "r": false
+            },
+            "Con 5": {
+                "s": 2,
+                "t": 20,
+                "w": 3.36584,
+                "e": true,
+                "i": 5,
+                "r": false
+            },
+            "Con 6": {
+                "s": 3,
+                "t": 19,
+                "w": -0.77528,
+                "e": true,
+                "i": 6,
+                "r": false
+            },
+            "Con 7": {
+                "s": 3,
+                "t": 20,
+                "w": 0.04416,
+                "e": true,
+                "i": 7,
+                "r": false
+            },
+            "Con 8": {
+                "s": 4,
+                "t": 19,
+                "w": 0.34259,
+                "e": true,
+                "i": 8,
+                "r": false
+            },
+            "Con 9": {
+                "s": 4,
+                "t": 20,
+                "w": -0.0748,
+                "e": true,
+                "i": 9,
+                "r": false
+            },
+            "Con 10": {
+                "s": 5,
+                "t": 19,
+                "w": -0.87835,
+                "e": true,
+                "i": 10,
+                "r": false
+            },
+            "Con 11": {
+                "s": 5,
+                "t": 20,
+                "w": 0.522,
+                "e": true,
+                "i": 11,
+                "r": false
+            },
+            "Con 12": {
+                "s": 6,
+                "t": 19,
+                "w": 3.64719,
+                "e": true,
+                "i": 12,
+                "r": false
+            },
+            "Con 13": {
+                "s": 6,
+                "t": 20,
+                "w": -3.58983,
+                "e": true,
+                "i": 13,
+                "r": false
+            },
+            "Con 14": {
+                "s": 7,
+                "t": 19,
+                "w": 0.39501,
+                "e": true,
+                "i": 14,
+                "r": false
+            },
+            "Con 15": {
+                "s": 7,
+                "t": 20,
+                "w": -0.58836,
+                "e": true,
+                "i": 15,
+                "r": false
+            },
+            "Con 16": {
+                "s": 8,
+                "t": 19,
+                "w": -0.14664,
+                "e": true,
+                "i": 16,
+                "r": false
+            },
+            "Con 17": {
+                "s": 8,
+                "t": 20,
+                "w": -0.42,
+                "e": true,
+                "i": 17,
+                "r": false
+            },
+            "Con 18": {
+                "s": 9,
+                "t": 19,
+                "w": 0.40084,
+                "e": true,
+                "i": 18,
+                "r": false
+            },
+            "Con 19": {
+                "s": 9,
+                "t": 20,
+                "w": 0.3933,
+                "e": true,
+                "i": 19,
+                "r": false
+            },
+            "Con 20": {
+                "s": 10,
+                "t": 19,
+                "w": -3.45601,
+                "e": true,
+                "i": 20,
+                "r": false
+            },
+            "Con 21": {
+                "s": 10,
+                "t": 20,
+                "w": 3.2909,
+                "e": true,
+                "i": 21,
+                "r": false
+            },
+            "Con 22": {
+                "s": 11,
+                "t": 19,
+                "w": 0.16291,
+                "e": true,
+                "i": 22,
+                "r": false
+            },
+            "Con 23": {
+                "s": 11,
+                "t": 20,
+                "w": 0.38768,
+                "e": true,
+                "i": 23,
+                "r": false
+            },
+            "Con 24": {
+                "s": 12,
+                "t": 19,
+                "w": -0.07637,
+                "e": true,
+                "i": 24,
+                "r": false
+            },
+            "Con 25": {
+                "s": 12,
+                "t": 20,
+                "w": 0.2321,
+                "e": true,
+                "i": 25,
+                "r": false
+            },
+            "Con 26": {
+                "s": 13,
+                "t": 19,
+                "w": -0.06668,
+                "e": true,
+                "i": 26,
+                "r": false
+            },
+            "Con 27": {
+                "s": 13,
+                "t": 20,
+                "w": 0.40872,
+                "e": true,
+                "i": 27,
+                "r": false
+            },
+            "Con 28": {
+                "s": 14,
+                "t": 19,
+                "w": -0.28583,
+                "e": true,
+                "i": 28,
+                "r": false
+            },
+            "Con 29": {
+                "s": 14,
+                "t": 20,
+                "w": -0.17814,
+                "e": true,
+                "i": 29,
+                "r": false
+            },
+            "Con 30": {
+                "s": 15,
+                "t": 19,
+                "w": 0.87922,
+                "e": true,
+                "i": 30,
+                "r": false
+            },
+            "Con 31": {
+                "s": 15,
+                "t": 20,
+                "w": -1.58062,
+                "e": true,
+                "i": 31,
+                "r": false
+            },
+            "Con 32": {
+                "s": 16,
+                "t": 19,
+                "w": -1.03899,
+                "e": true,
+                "i": 32,
+                "r": false
+            },
+            "Con 33": {
+                "s": 16,
+                "t": 20,
+                "w": 0.71962,
+                "e": true,
+                "i": 33,
+                "r": false
+            },
+            "Con 34": {
+                "s": 17,
+                "t": 19,
+                "w": 0.95113,
+                "e": true,
+                "i": 34,
+                "r": false
+            },
+            "Con 35": {
+                "s": 17,
+                "t": 20,
+                "w": -0.11439,
+                "e": true,
+                "i": 35,
+                "r": false
+            },
+            "Con 36": {
+                "s": 18,
+                "t": 19,
+                "w": 0.30202,
+                "e": true,
+                "i": 36,
+                "r": false
+            },
+            "Con 37": {
+                "s": 18,
+                "t": 20,
+                "w": -0.28101,
+                "e": true,
+                "i": 37,
+                "r": false
+            }
+        }
+    }
+}

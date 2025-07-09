@@ -67,6 +67,7 @@ export class JavaScriptConverter {
             configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
             configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
             configs['seed'] = Container.config.getRandomSeed();
+            configs['classificationType'] = Container.config.neuroevolutionProperties.classificationType;
 
             const eventConfigs = {};
             eventConfigs['skipFrame'] = Container.config.getSkipFrame();

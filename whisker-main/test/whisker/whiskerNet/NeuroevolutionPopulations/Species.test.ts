@@ -53,7 +53,7 @@ describe("Species Test", () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGenerator(genInputs, events, 'fully',
-            ActivationFunction.SIGMOID, mutationOp, crossoverOp);
+            ActivationFunction.SIGMOID, ActivationFunction.SIGMOID, mutationOp, crossoverOp);
         const population: NeatChromosome[] = [];
         populationSize = 50;
         properties = new NeatParameter();

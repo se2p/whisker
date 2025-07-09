@@ -1,5 +1,5 @@
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
+import {ClassificationType, NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 
 /**
@@ -14,8 +14,10 @@ export interface ManyObjectiveNetworkFitnessFunction<T extends NetworkChromosome
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the networks select events.
+     * @param classificationType defines how the networks select events.
      */
-    calculateFitness(network: T, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<void>;
+    calculateFitness(network: T, timeout: number, eventSelection: NeuroevolutionEventSelection,
+                     classificationType: ClassificationType): Promise<void>;
 
 
     /**

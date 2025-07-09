@@ -59,7 +59,8 @@ export class StateActionRecorder extends EventEmitter {
         Container.testDriver = util.getTestDriver({});
 
         this._actionRecords = [];
-        this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm);
+        // Set classificationType to multi-class to also record WaitEvents if desired.
+        this._eventExtractor = new NeuroevolutionScratchEventExtractor(scratch.vm, 'multiClass');
         this._fullRecordings = [];
         this._pressedKeys = new Map<string, number>();
         this._stateAtAction = new Map<string, InputFeatures>();

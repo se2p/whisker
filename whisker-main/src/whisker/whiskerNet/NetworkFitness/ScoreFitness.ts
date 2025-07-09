@@ -3,7 +3,7 @@ import {Container} from "../../utils/Container";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../Misc/NetworkExecutor";
-import {NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
+import {ClassificationType, NeuroevolutionEventSelection} from "../HyperParameter/BasicNeuroevolutionParameter";
 
 
 export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -13,10 +13,12 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * @param network the network that should be evaluated
      * @param timeout the timeout defining how long a network is allowed to play the game.
      * @param eventSelection defines how the networks select events.
+     * @param classificationType defines how the networks select events.
      * @returns Promise<number> the achieved score.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, false);
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: NeuroevolutionEventSelection,
+                     classificationType: ClassificationType): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection, classificationType, false);
         await executor.execute(network);
         let score = ScoreFitness.gatherPoints(Container.vm);
         if (score < 0) {

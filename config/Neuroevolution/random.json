@@ -8,6 +8,7 @@
     "penalizingAge": 20,
     "ageSignificance": 1.0,
     "switchObjectiveCount": 10,
+    "classificationType": "multiLabel",
     "extractor": "neuroevolution",
     "chromosome": {
         "type": "neatChromosome",
