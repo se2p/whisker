@@ -1,6 +1,6 @@
 import {CheckUtilityMock} from "../mocks/CheckUtilityMock";
 import {Key} from "../../../../src/whisker/model/checks/Key";
-import {pass, fail} from "../../../../src/whisker/model/checks/CheckResult";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 test("Key test", () => {
     const cuMock = new CheckUtilityMock({"a": true, "b": false, "c": true,});

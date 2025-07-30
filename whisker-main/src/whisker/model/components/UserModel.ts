@@ -3,7 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {UserModelEdge} from "./UserModelEdge";
-import {UserModelJSON} from "../util/schema";
+import {StorageValueType, UserModelJSON} from "../util/schema";
 
 /**
  *  Graph structure for a user model representing the user's behaviour when playing a Scratch program.
@@ -30,10 +30,11 @@ export class UserModel extends AbstractModel<UserModelEdge> {
      * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
+     * @param initialStorage Initial values of the graph storage before the execution starts
      */
     constructor(id: string, startNodeId: string, nodes: Record<string, UserModelNode>, edges: Record<string, UserModelEdge>,
-                stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopAllNodeIds);
+                stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
     }
 
     /**
@@ -77,7 +78,8 @@ export class UserModel extends AbstractModel<UserModelEdge> {
     /**
      * Register the check listener and test driver on all node's edges.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
+    override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
+        super.registerComponents(checkListener, testDriver);
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(checkListener, testDriver);
         });
@@ -100,6 +102,7 @@ export class UserModel extends AbstractModel<UserModelEdge> {
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
+            initialStorage: this.initialStorage,
         };
     }
 }

@@ -9,7 +9,7 @@ import {Key} from "../../../../src/whisker/model/checks/Key";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {Check, Condition} from "../../../../src/whisker/model/checks/newCheck";
 import {UserInput} from "../../../../src/whisker/model/inputs/newUserInput";
 import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
 import {result} from "../../../../src/whisker/model/checks/CheckResult";
@@ -22,22 +22,22 @@ describe('Model edges', () => {
     const from = "from";
     const to = "to";
 
-    function mockCondition(name: string, value: boolean): Check {
+    function mockCondition(name: string, value: boolean): Condition {
         return {
             check: jest.fn().mockReturnValue(result(value, {})),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as Check;
+        } as unknown as Condition;
     }
 
-    function mockConditionWithError(name: string, value: string): Check {
+    function mockConditionWithError(name: string, value: string): Condition {
         return {
             check: () => {
                 throw new Error(value);
             },
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
-        } as unknown as Check;
+        } as unknown as Condition;
     }
 
     function mockEffect(fn: jest.Mock): Check {
@@ -181,7 +181,7 @@ describe('Model edges', () => {
             const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock([], 5);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            const conditions = [
+            const conditions: Condition[] = [
                 mockCondition("cond0", true),
                 mockCondition("cond1", false),
                 mockCondition("cond2", true),

@@ -1,7 +1,4 @@
-import {
-    Dependencies,
-    ModelUtil
-} from "../../../../src/whisker/model/util/ModelUtil";
+import {Dependencies, ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 import {
     EmptyExpressionError,
     ExpressionSyntaxError,
@@ -15,6 +12,8 @@ import Variable from "../../../../src/vm/variable";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {numberAttributeNames, stringAttributeNames} from "../../../../src/whisker/model/checks/CheckTypes";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
+
+const graphID = "graphID";
 
 describe('ModelUtil tests', function () {
     describe("testNumber()", () => {
@@ -203,28 +202,28 @@ describe('ModelUtil tests', function () {
         test('throws exception when expression cannot be evaluated (wrong syntax)', () => {
             const expr = "'some wrong syntax";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, expr);
+                ModelUtil.getExpressionForEval(t, expr, graphID);
             }).toThrow(ExpressionSyntaxError);
         });
 
         test('throws exception when expression cannot be evaluated (exception', () => {
             const expr = "throw new Exception(\"this is supposed to happen\")";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, expr);
+                ModelUtil.getExpressionForEval(t, expr, graphID);
             }).toThrow(ExpressionSyntaxError);
         });
 
         test('throws exception when expression has no end tag', () => {
             const expr = "$(sprite.name";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, expr);
+                ModelUtil.getExpressionForEval(t, expr, graphID);
             }).toThrow(ExpressionSyntaxError);
         });
 
         test('throws exception when expression is empty  $()', () => {
             const expr = "true && $() == 10";
             expect(() => {
-                ModelUtil.getExpressionForEval(t, expr);
+                ModelUtil.getExpressionForEval(t, expr, graphID);
             }).toThrow(EmptyExpressionError);
         });
 
@@ -232,8 +231,8 @@ describe('ModelUtil tests', function () {
             const tdMock = new TestDriverMock([new SpriteMock("apple", [{name: "x", value: 10}])]);
             const t = tdMock.getTestDriver();
             const expr = "{const value=$('apple', 'x');return value == 10}";
-            const result = ModelUtil.getExpressionForEval(t, expr);
-            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
+            const result = ModelUtil.getExpressionForEval(t, expr, graphID);
+            expect(ModelUtil.evaluateExpression(t, result.expr, graphID)).toBe(true);
         });
 
         test('Evaluated expression correct with dependencies', () => {
@@ -247,11 +246,11 @@ describe('ModelUtil tests', function () {
             const tdMock = new TestDriverMock([apple, kiwi, bowl]);
             const t = tdMock.getTestDriver();
             const expr = '$("Bowl", "name")!="ApPle"&&Math.abs($("Bowl", "old").x-$("Bowl", "x"))==10';
-            const result = ModelUtil.getExpressionForEval(t, expr);
-            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(false);
+            const result = ModelUtil.getExpressionForEval(t, expr, graphID);
+            expect(ModelUtil.evaluateExpression(t, result.expr, graphID)).toBe(false);
             bowl.variables = [{name: "x", value: 15}, {name: "name", value: "Bowl"}];
             tdMock.currentSprites = SpriteMock.toSpriteArray([apple, kiwi, bowl]);
-            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
+            expect(ModelUtil.evaluateExpression(t, result.expr, graphID)).toBe(true);
         });
 
         test('Produces the correct sting for multiple variables and sprites', () => {
@@ -261,8 +260,8 @@ describe('ModelUtil tests', function () {
             const tdMock = new TestDriverMock([bowl, kiwi]);
             const t = tdMock.getTestDriver();
             const expr = '$("Kiwi", "name")+(-1*Math.abs($("Bowl", "old").y-$("Bowl", "x"))).toString()';
-            const result = ModelUtil.getExpressionForEval(t, expr);
-            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe("Kiwi-8");
+            const result = ModelUtil.getExpressionForEval(t, expr, graphID);
+            expect(ModelUtil.evaluateExpression(t, result.expr, graphID)).toBe("Kiwi-8");
         });
 
         test('Produces correct result with () independent of $-expressions', () => {
@@ -273,8 +272,8 @@ describe('ModelUtil tests', function () {
             tdMock.stage = stage.sprite;
             const t = tdMock.getTestDriver();
             const expr = `$("Boat", "x").toString()+(-1*Math.sqrt($("Boat", "speed", true))).toString() == "42-10" && 3*($("Gate", "size")+2) < (2*($("${STAGE_NAME}", "score", true)-1)+10)/1.5`;
-            const result = ModelUtil.getExpressionForEval(t, expr);
-            expect(ModelUtil.evaluateExpression(t, result.expr)).toBe(true);
+            const result = ModelUtil.getExpressionForEval(t, expr, graphID);
+            expect(ModelUtil.evaluateExpression(t, result.expr, graphID)).toBe(true);
         });
     });
 

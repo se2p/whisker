@@ -14,6 +14,8 @@ import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
 
 import('../../../../src/whisker/scratch/ScratchInterface');
 
+const graphID = "graphID";
+
 describe('InputEffect', () => {
 
     describe("not enough arguments", () => {
@@ -64,14 +66,14 @@ describe('InputEffect', () => {
             jest.mock('../../../../src/whisker/scratch/ScratchInterface');
             ScratchInterface.setMousePosition = jest.fn();
             const effect = new MouseMove(12, 34);
-            await effect.inputImmediate(t);
+            await effect.inputImmediate(t, graphID);
             expect(ScratchInterface.setMousePosition).toHaveBeenCalledWith(new ScratchPosition(12, 34));
         });
 
         test("Key input effect", async () => {
             tdMock.inputImmediate = jest.fn();
             const effect = new InputKey("b");
-            await effect.inputImmediate(t);
+            await effect.inputImmediate(t, graphID);
             expect(tdMock.inputImmediate).toHaveBeenCalledWith([{
                 device: "keyboard",
                 key: "b",
@@ -83,7 +85,7 @@ describe('InputEffect', () => {
         test("Text input effect", async () => {
             tdMock.typeText = jest.fn();
             const effect = new InputText("this is some text");
-            await effect.inputImmediate(t);
+            await effect.inputImmediate(t, graphID);
             expect(tdMock.typeText).toHaveBeenCalledWith("this is some text");
         });
 
@@ -91,14 +93,14 @@ describe('InputEffect', () => {
             jest.mock('../../../../src/whisker/utils/Container');
             tdMock.mouseDown = jest.fn();
             const effect = new MouseDown(false);
-            await effect.inputImmediate(t);
+            await effect.inputImmediate(t, graphID);
             expect(tdMock.mouseDown).toHaveBeenCalledWith(false);
         });
 
         test("Click stage input effect", async () => {
             tdMock.clickStage = jest.fn();
             const effect = new ClickStage();
-            await effect.inputImmediate(t);
+            await effect.inputImmediate(t, graphID);
             expect(tdMock.clickStage).toHaveBeenCalledWith();
         });
 
@@ -107,7 +109,7 @@ describe('InputEffect', () => {
             tdMock.currentSprites = SpriteMock.stringsToSpriteArray(["apple", "bowl"]);
             tdMock.clickSprite = jest.fn();
             const effect = new ClickSprite(["bowl"]);
-            await effect.inputImmediate(t);
+            await effect.inputImmediate(t, graphID);
             expect(tdMock.clickSprite).toHaveBeenCalledWith("bowl", 42);
         });
     });

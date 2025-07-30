@@ -1,9 +1,8 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {Dependencies, ModelUtil} from "../util/ModelUtil";
-import Sprite from "../../../vm/sprite";
+import {ModelUtil} from "../util/ModelUtil";
 import {z} from "zod";
-import {CheckResult, result} from "./CheckResult";
+import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "./CheckTypes";
@@ -12,7 +11,7 @@ const name = "Expr" as const;
 
 export type ExprArgs = [string, ...string[]];
 
-const ExprArgs = z.string().array()
+export const ExprArgs = z.string().array()
     .nonempty()
     .refine(arg => arg.some(s => s && s.length > 0, {message: "NoNonEmptyExprText"}));
 
@@ -49,33 +48,13 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const e = ModelUtil.getExpressionForEval(t, this._code);
+        const e = ModelUtil.getExpressionForEval(t, this._code, graphID);
         const check = () => {
             const log = {};
-            return result(Boolean(ModelUtil.evaluateExpression(t, e.expr, log)), log, this.negated);
+            return result(Boolean(ModelUtil.evaluateExpression(t, e.expr, graphID, log)), log, this.negated);
         };
-        this._setupDependencies(cu, graphID, e, check);
-        const dep: Dependencies = ModelUtil.getDependencies(this._code);
-        if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
-            this._setupDependencies(cu, graphID, dep, check);
-        }
+        ModelUtil.setupAllDependenciesForExpressions(this, cu, graphID, e, this._code, check);
         return check;
-    }
-
-    private _setupDependencies(cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult) {
-        d.varDependencies.forEach(dependency => {
-            cu.registerVarEvent(dependency.varName, this, graphID, predicate);
-        });
-
-        d.attrDependencies.forEach(({spriteName, attrName}) => {
-            if (attrName == "x" || attrName == "y") {
-                cu.registerOnMoveEvent(spriteName, this, graphID, predicate);
-            } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-                cu.registerOnVisualChange(spriteName, this, graphID, predicate);
-            } else if (attrName == "sayText") {
-                cu.registerOutput(spriteName, this, graphID, predicate);
-            }
-        });
     }
 
     override get dependsOnSayText(): boolean {

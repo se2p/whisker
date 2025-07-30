@@ -59,14 +59,14 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
         let expression: string;
         try {
-            expression = ModelUtil.getExpressionForEval(t, output).expr;
+            expression = ModelUtil.getExpressionForEval(t, output, graphID).expr;
         } catch (e) {
             // this is probably supposed to be constant text like "apple" and not an expression
-            expression = ModelUtil.getExpressionForEval(t, `'${output}'`).expr;
+            expression = ModelUtil.getExpressionForEval(t, `'${output}'`, graphID).expr;
         }
 
         const sayTextCheck = (s: Sprite) => {
-            const expected = String(ModelUtil.evaluateExpression(t, expression)).toLocaleLowerCase();
+            const expected = String(ModelUtil.evaluateExpression(t, expression, graphID)).toLocaleLowerCase();
 
             if (s.sayText === null) {
                 return fail({actual: null, expected: expected});

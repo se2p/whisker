@@ -89,7 +89,7 @@ const ChangeOp = z.preprocess(
 export const NumberOrChangeOp = z.union([
     NumberLike,
     ChangeOp
-], { errorMap: () => ({ message: "NeitherNumberNorChange" }) });
+], {errorMap: () => ({message: "NeitherNumberNorChange"})});
 
 export const ProbabilityArg = z.coerce.number({message: "NoNumber"})
     .transform(value => value > 1 ? value / 100 : value)
