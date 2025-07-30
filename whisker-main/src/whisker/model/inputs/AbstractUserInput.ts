@@ -17,7 +17,7 @@ export abstract class AbstractUserInput<J extends UserInputJSON> {
     /**
      * Input the saved input effects of this instance to the test driver.
      */
-    abstract inputImmediate(t: TestDriver): Promise<void>;
+    abstract inputImmediate(t: TestDriver, graphID: string): Promise<void>;
 
     protected abstract _validate(json: J): J;
 

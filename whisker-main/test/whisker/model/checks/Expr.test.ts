@@ -6,6 +6,8 @@ import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {expect} from "@jest/globals";
+import {ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 
 describe('Expr tests', () => {
     const graphID = "graphID";
@@ -94,5 +96,33 @@ describe('Expr tests', () => {
         apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
         tdMock.currentSprites = [apple.updateSprite()];
         expect(check(apple.sprite)).toStrictEqual(fail({}));
+    });
+
+    test('Can write with $$-function', () => {
+        const graphID = "someGraphID1232103i123";
+        const key = "someKey";
+        const expectedValue = "someValue";
+        ModelUtil.initialiseStorage(graphID, new Map<string, unknown>());
+        ModelUtil.setStorageValue(graphID, key, "someOtherValue");
+        expect(ModelUtil.getStorageValue(graphID, key)).toBe("someOtherValue");
+        const c = new Expr('label', {args: [`$$('${key}', '${expectedValue}')`]});
+        c.registerComponents(t, cu, graphID);
+        c.check();
+        expect(ModelUtil.getStorageValue(graphID, key)).toBe(expectedValue);
+    });
+
+    test('Can read with $$-function', () => {
+        const graphID = "someGraphID122394239423";
+        const key = "someKey";
+        const expectedValue = "someValue";
+        ModelUtil.initialiseStorage(graphID, new Map<string, unknown>());
+        ModelUtil.setStorageValue(graphID, key, expectedValue);
+        const c = new Expr('label', {args: [`$$('${key}')==='${expectedValue}'`]});
+        c.registerComponents(t, cu, graphID);
+        let res = c.check();
+        expect(res).toStrictEqual(pass());
+        ModelUtil.setStorageValue(graphID, key, "someOtherValue");
+        res = c.check();
+        expect(res).toStrictEqual(fail({someKey: "someOtherValue"}));
     });
 });

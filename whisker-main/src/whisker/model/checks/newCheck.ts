@@ -27,10 +27,12 @@ import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
 import {PointsTo, PointsToJSON} from "./PointsTo";
 import {AnyKey, AnyKeyJSON} from "./AnyKey";
 import {ParsingResult} from "./CheckTypes";
+import {ChangeStorageBy, ChangeStorageByJSON} from "./ChangeStorageBy";
+import {SetStorage, SetStorageJSON} from "./SetStorage";
 import {MoveSteps, MoveStepsJSON} from "./MoveSteps";
 import {Bounce, BounceJSON} from "./Bounce";
 
-export type CheckJSON =
+export type ConditionJSON =
     | AttrChangeJSON
     | AttrCompJSON
     | BackgroundChangeJSON
@@ -59,7 +61,7 @@ export type CheckJSON =
     | BounceJSON
     ;
 
-export const CheckJSON = z.discriminatedUnion("name", [
+export const ConditionJSON = z.discriminatedUnion("name", [
     AttrChangeJSON,
     AttrCompJSON,
     BackgroundChangeJSON,
@@ -84,11 +86,16 @@ export const CheckJSON = z.discriminatedUnion("name", [
     LayerJSON,
     ClearedEffectJSON,
     PointsToJSON,
+    ChangeStorageByJSON,
+    SetStorageJSON,
     MoveStepsJSON,
     BounceJSON
 ]);
 
-export type Check =
+/**
+ * Checks that can be used as conditions for edge transitions.
+ */
+export type Condition =
     | AttrChange
     | AttrComp
     | BackgroundChange
@@ -117,9 +124,30 @@ export type Check =
     | Bounce
     ;
 
+export type CheckJSON =
+    | ConditionJSON
+    | ChangeStorageByJSON
+    | SetStorageJSON
+    ;
+
+export const CheckJSON = z.union([
+    ConditionJSON,
+    ChangeStorageByJSON,
+    SetStorageJSON,
+]);
+
+/**
+ * Checks that can be used as effects of edge transitions.
+ */
+export type Check =
+    | Condition
+    | ChangeStorageBy
+    | SetStorage
+    ;
+
 export type CheckName = CheckJSON['name'];
 
-export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
+export const CONDITIONS_NAMES: readonly CheckName[] = Object.freeze([
     "AttrChange",
     "AttrComp",
     "BackgroundChange",
@@ -148,64 +176,83 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     "Bounce"
 ]);
 
+export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
+    ...CONDITIONS_NAMES,
+    "ChangeStorageBy",
+    "SetStorage",
+]);
+
+export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): Condition {
+    const name = conditionJSON.name;
+
+    switch (name) {
+        case "AttrChange":
+            return new AttrChange(edgeLabel, conditionJSON);
+        case "AttrComp":
+            return new AttrComp(edgeLabel, conditionJSON);
+        case "BackgroundChange":
+            return new BackgroundChange(edgeLabel, conditionJSON);
+        case "Click":
+            return new Click(edgeLabel, conditionJSON);
+        case "Key":
+            return new Key(edgeLabel, conditionJSON);
+        case "AnyKey":
+            return new AnyKey(edgeLabel, conditionJSON);
+        case "Output":
+            return new Output(edgeLabel, conditionJSON);
+        case "SpriteColor":
+            return new SpriteColor(edgeLabel, conditionJSON);
+        case "SpriteTouching":
+            return new SpriteTouching(edgeLabel, conditionJSON);
+        case "VarChange":
+            return new VarChange(edgeLabel, conditionJSON);
+        case "VarComp":
+            return new VarComp(edgeLabel, conditionJSON);
+        case "Expr":
+            return new Expr(edgeLabel, conditionJSON);
+        case "Probability":
+            return new Probability(edgeLabel, conditionJSON);
+        case "TimeElapsed":
+            return new TimeElapsed(edgeLabel, conditionJSON);
+        case "TimeBetween":
+            return new TimeBetween(edgeLabel, conditionJSON);
+        case "TimeAfterEnd":
+            return new TimeAfterEnd(edgeLabel, conditionJSON);
+        case "NbrOfClones":
+            return new NbrOfClones(edgeLabel, conditionJSON);
+        case "NbrOfVisibleClones":
+            return new NbrOfVisibleClones(edgeLabel, conditionJSON);
+        case "TouchingEdge":
+            return new TouchingEdge(edgeLabel, conditionJSON);
+        case "TouchingVerticalEdge":
+            return new TouchingVerticalEdge(edgeLabel, conditionJSON);
+        case "TouchingHorizEdge":
+            return new TouchingHorizEdge(edgeLabel, conditionJSON);
+        case "Layer":
+            return new Layer(edgeLabel, conditionJSON);
+        case "ClearedEffects":
+            return new ClearedEffect(edgeLabel, conditionJSON);
+        case "PointsTo":
+            return new PointsTo(edgeLabel, conditionJSON);
+        case "MoveSteps":
+            return new MoveSteps(edgeLabel, conditionJSON);
+        case "Bounce":
+            return new Bounce(edgeLabel, conditionJSON);
+        default:
+            throw new NonExhaustiveCaseDistinction(name);
+    }
+}
+
 export function newCheck(edgeLabel: string, checkJSON: CheckJSON): Check {
     const name = checkJSON.name;
 
     switch (name) {
-        case "AttrChange":
-            return new AttrChange(edgeLabel, checkJSON);
-        case "AttrComp":
-            return new AttrComp(edgeLabel, checkJSON);
-        case "BackgroundChange":
-            return new BackgroundChange(edgeLabel, checkJSON);
-        case "Click":
-            return new Click(edgeLabel, checkJSON);
-        case "Key":
-            return new Key(edgeLabel, checkJSON);
-        case "AnyKey":
-            return new AnyKey(edgeLabel, checkJSON);
-        case "Output":
-            return new Output(edgeLabel, checkJSON);
-        case "SpriteColor":
-            return new SpriteColor(edgeLabel, checkJSON);
-        case "SpriteTouching":
-            return new SpriteTouching(edgeLabel, checkJSON);
-        case "VarChange":
-            return new VarChange(edgeLabel, checkJSON);
-        case "VarComp":
-            return new VarComp(edgeLabel, checkJSON);
-        case "Expr":
-            return new Expr(edgeLabel, checkJSON);
-        case "Probability":
-            return new Probability(edgeLabel, checkJSON);
-        case "TimeElapsed":
-            return new TimeElapsed(edgeLabel, checkJSON);
-        case "TimeBetween":
-            return new TimeBetween(edgeLabel, checkJSON);
-        case "TimeAfterEnd":
-            return new TimeAfterEnd(edgeLabel, checkJSON);
-        case "NbrOfClones":
-            return new NbrOfClones(edgeLabel, checkJSON);
-        case "NbrOfVisibleClones":
-            return new NbrOfVisibleClones(edgeLabel, checkJSON);
-        case "TouchingEdge":
-            return new TouchingEdge(edgeLabel, checkJSON);
-        case "TouchingVerticalEdge":
-            return new TouchingVerticalEdge(edgeLabel, checkJSON);
-        case "TouchingHorizEdge":
-            return new TouchingHorizEdge(edgeLabel, checkJSON);
-        case "Layer":
-            return new Layer(edgeLabel, checkJSON);
-        case "ClearedEffects":
-            return new ClearedEffect(edgeLabel, checkJSON);
-        case "PointsTo":
-            return new PointsTo(edgeLabel, checkJSON);
-        case "MoveSteps":
-            return new MoveSteps(edgeLabel, checkJSON);
-        case "Bounce":
-            return new Bounce(edgeLabel, checkJSON);
+        case "ChangeStorageBy":
+            return new ChangeStorageBy(edgeLabel, checkJSON);
+        case "SetStorage":
+            return new SetStorage(edgeLabel, checkJSON);
         default:
-            throw new NonExhaustiveCaseDistinction(name);
+            return newCondition(edgeLabel, checkJSON);
     }
 }
 
@@ -261,6 +308,10 @@ export function convertArgs(checkJSON: CheckJSON): ParsingResult {
             return ClearedEffect.convertArgs(checkJSON.args);
         case "PointsTo":
             return PointsTo.convertArgs(checkJSON.args);
+        case "ChangeStorageBy":
+            return ChangeStorageBy.convertArgs(checkJSON.args);
+        case "SetStorage":
+            return SetStorage.convertArgs(checkJSON.args);
         case "MoveSteps":
             return MoveSteps.convertArgs(checkJSON.args);
         case "Bounce":

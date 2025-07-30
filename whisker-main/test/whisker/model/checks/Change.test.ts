@@ -152,9 +152,6 @@ describe("A change", () => {
         it.prop([contra])("it contradicts changes with incompatible deltas", (change) => {
             const c1 = newChange({change: op});
             const c2 = newChange({change});
-            if(change == -5e-324){
-                change = change;
-            }
             expect(c1.contradicts(c2)).toBe(true);
         });
 

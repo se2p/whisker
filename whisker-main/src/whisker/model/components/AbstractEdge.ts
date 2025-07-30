@@ -5,7 +5,7 @@ import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
 import {Checks} from "../util/Checks";
-import {Check} from "../checks/newCheck";
+import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
 
 export type ModelEdge =
@@ -26,7 +26,7 @@ export abstract class AbstractEdge {
     readonly from: string;
     /* Id of the target node*/
     readonly to: string;
-    conditions: Check[] = [];
+    conditions: Condition[] = [];
     _lastTransition = 0;
 
     readonly forceTestAfter: number;
@@ -144,7 +144,7 @@ export abstract class AbstractEdge {
      * Add a condition to the edge. Conditions in the evaluation all need to be fulfilled for the effect to be valid.
      * @param condition Condition function as a string.
      */
-    addCondition(condition: Check): void {
+    addCondition(condition: Condition): void {
         this.conditions.push(condition);
     }
 

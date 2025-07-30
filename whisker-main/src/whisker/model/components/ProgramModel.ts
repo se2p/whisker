@@ -3,7 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {ProgramModelEdge} from "./ProgramModelEdge";
-import {EdgeID, EndModelJSON, ProgramModelJSON} from "../util/schema";
+import {EdgeID, EndModelJSON, ProgramModelJSON, StorageValueType} from "../util/schema";
 import {Checks} from "../util/Checks";
 import logger from "../../../util/logger";
 
@@ -44,10 +44,11 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
      * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
      * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
+     * @param initialStorage Initial values of the graph storage before the execution starts
      */
     protected constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
-                          edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopAllNodeIds);
+                          edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
     }
 
     /**
@@ -156,7 +157,8 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
+    override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
+        super.registerComponents(cu, testDriver);
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(cu, testDriver);
         });
@@ -170,8 +172,8 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
 
 export class EndModel extends AbstractProgramModel {
     constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
-                edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopAllNodeIds);
+                edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
     }
 
     override get usage(): "end" {
@@ -186,14 +188,15 @@ export class EndModel extends AbstractProgramModel {
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
+            initialStorage: this.initialStorage
         };
     }
 }
 
 export class ProgramModel extends AbstractProgramModel {
     constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
-                edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[]) {
-        super(id, startNodeId, nodes, edges, stopAllNodeIds);
+                edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
+        super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
     }
 
     override get usage(): "program" {
@@ -208,6 +211,7 @@ export class ProgramModel extends AbstractProgramModel {
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
+            initialStorage: this.initialStorage
         };
     }
 }

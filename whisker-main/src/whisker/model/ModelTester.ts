@@ -132,7 +132,7 @@ export class ModelTester extends EventEmitter {
         return result;
     }
 
-    get nextTestDriver():TestDriver {
+    get nextTestDriver(): TestDriver {
         return this._nextTestDriver;
     }
 

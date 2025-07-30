@@ -31,7 +31,7 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
         return InputTextJSON.parse(json) as InputTextJSON;
     }
 
-    override async inputImmediate(_t: TestDriver): Promise<void> {
+    override async inputImmediate(_t: TestDriver, graphId: string): Promise<void> {
         const textEvent = new TypeTextEvent(this._text);
         return textEvent.apply();
     }

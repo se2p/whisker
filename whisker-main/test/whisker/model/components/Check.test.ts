@@ -15,8 +15,12 @@ import {Checks} from "../../../../src/whisker/model/util/Checks";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
 
-function newUnsafeCheck(edgeId:string, checkArgs: {name:CheckName, negated:boolean, args}):Check {
-    return newCheck(edgeId, {name: checkArgs.name, negated: checkArgs.negated, args: checkArgs.args} as unknown as CheckJSON);
+function newUnsafeCheck(edgeId: string, checkArgs: { name: CheckName, negated: boolean, args }): Check {
+    return newCheck(edgeId, {
+        name: checkArgs.name,
+        negated: checkArgs.negated,
+        args: checkArgs.args
+    } as unknown as CheckJSON);
 }
 
 function checkConstructorThrows(name: CheckName, negated: boolean, args) {

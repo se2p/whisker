@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {CheckJSON} from "../checks/newCheck";
+import {CheckJSON, ConditionJSON} from "../checks/newCheck";
 import {UserInputJSON} from "../inputs/newUserInput";
 
 export type ArgType = string | number | string[] | boolean;
@@ -27,7 +27,7 @@ export interface IModelEdgeJSON {
     to: NodeID;
     forceTestAt: number;
     forceTestAfter: number
-    conditions: CheckJSON[];
+    conditions: ConditionJSON[];
 }
 
 const IModelEdgeJSON = z.object({
@@ -37,7 +37,7 @@ const IModelEdgeJSON = z.object({
     to: NodeID,
     forceTestAt: z.number().default(-1),
     forceTestAfter: z.number().default(-1),
-    conditions: z.array(CheckJSON),
+    conditions: z.array(ConditionJSON),
 });
 
 export interface ProgramModelEdgeJSON extends IModelEdgeJSON {
@@ -78,6 +78,12 @@ const ModelEdgeJSON = z.union([
     UserModelEdgeJSON,
 ]);
 
+export type StorageValueType = ["number", number] | ["string", string] | ["exprType", string | string[]];
+
+export const StorageValueType = z.tuple([z.literal("string"), z.string()])
+    .or(z.tuple([z.literal("number"), z.number()]))
+    .or(z.tuple([z.literal("exprType"), z.string().or(z.array(z.string()))]));
+
 interface IModelJSON {
     id: string;
     usage: ModelUsage;
@@ -85,6 +91,7 @@ interface IModelJSON {
     stopAllNodeIds: string[];
     edges: IModelEdgeJSON[];
     nodes: ModelNodeJSON[];
+    initialStorage: Record<string, StorageValueType>;
 }
 
 const IModelJSON = z.object({
@@ -96,6 +103,7 @@ const IModelJSON = z.object({
     stopAllNodeIds: z.array(z.string()).default([]),
     edges: z.array(ModelEdgeJSON),
     nodes: z.array(ModelNodeJSON),
+    initialStorage: z.record(z.string(), StorageValueType).default(() => ({})),
 });
 
 export interface UserModelJSON extends IModelJSON {

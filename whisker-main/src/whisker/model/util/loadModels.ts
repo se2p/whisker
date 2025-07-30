@@ -8,7 +8,7 @@ import {UserModelEdge} from "../components/UserModelEdge";
 import logger from "../../../util/logger";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModelJSON, ModelEdgeJSON, ModelJSON, parse, ProgramModelJSON, UserModelJSON} from "./schema";
-import {CheckJSON, newCheck} from "../checks/newCheck";
+import {CheckJSON, ConditionJSON, newCheck, newCondition} from "../checks/newCheck";
 import {newUserInput, UserInputJSON} from "../inputs/newUserInput";
 
 interface Models {
@@ -84,27 +84,27 @@ function loadModel(raw: ModelJSON): Model {
 }
 
 function loadUserModel(raw: UserModelJSON): UserModel {
-    const {id, startNodeId, stopAllNodeIds} = raw;
+    const {id, startNodeId, stopAllNodeIds, initialStorage} = raw;
     const nodes = loadNodes<UserModelEdge>(raw);
     const edges = loadUserModelEdges(raw);
     addConnections(id, nodes, edges);
-    return new UserModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds);
+    return new UserModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds, initialStorage);
 }
 
 function loadProgramModel(raw: ProgramModelJSON): ProgramModel {
-    const {id, startNodeId, stopAllNodeIds} = raw;
+    const {id, startNodeId, stopAllNodeIds, initialStorage} = raw;
     const nodes = loadNodes<ProgramModelEdge>(raw);
     const edges = loadProgramModelEdges(raw);
     addConnections(id, nodes, edges);
-    return new ProgramModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds);
+    return new ProgramModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds, initialStorage);
 }
 
 function loadEndModel(raw: EndModelJSON): EndModel {
-    const {id, startNodeId, stopAllNodeIds} = raw;
+    const {id, startNodeId, stopAllNodeIds, initialStorage} = raw;
     const nodes = loadNodes<ProgramModelEdge>(raw);
     const edges = loadProgramModelEdges(raw);
     addConnections(id, nodes, edges);
-    return new EndModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds);
+    return new EndModel(id, startNodeId, Object.fromEntries(nodes), Object.fromEntries(edges), stopAllNodeIds, initialStorage);
 }
 
 function addConnections<E extends ModelEdge>(graphId: string, nodes: Map<string, ModelNode<E>>, edges: Map<string, E>): void {
@@ -187,6 +187,6 @@ function addEffects(edge: ProgramModelEdge, rawEffects: CheckJSON[]): void {
     rawEffects.forEach((e) => edge.addEffect(newCheck(edge.id, e)));
 }
 
-function addConditions(edge: ModelEdge, rawConditions: CheckJSON[]): void {
-    rawConditions.forEach((c) => edge.addCondition(newCheck(edge.id, c)));
+function addConditions(edge: ModelEdge, rawConditions: ConditionJSON[]): void {
+    rawConditions.forEach((c) => edge.addCondition(newCondition(edge.id, c)));
 }

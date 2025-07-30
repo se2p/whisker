@@ -13,6 +13,8 @@ import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import {attributeNames, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
+import {CheckUtility} from "./CheckUtility";
+import {Check} from "../checks/newCheck";
 import {approxEq} from "../checks/Comparison";
 import {CheckResult, result} from "../checks/CheckResult";
 
@@ -223,16 +225,18 @@ export abstract class ModelUtil {
      * sprites and their attributes or values and combining the original expression parts.
      * @param t Instance of the test driver.
      * @param pToEval Expression to evaluate and make into a function.
+     * @param graphId Id of the graph containing the check with an expression
      */
-    static getExpressionForEval(t: TestDriver, pToEval: ArgType): Expression {
+    static getExpressionForEval(t: TestDriver, pToEval: ArgType, graphId: string): Expression {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
         const toEval = String(pToEval);
         const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
         const $ = (s: string, a: string, c: boolean) =>
             ModelUtil.getValueForSubExpression(t, s, a, c, dependencies);
+        const $$ = ModelUtil.get$$Function(graphId);
         try {
             // fill dependencies and check if the expression works
-            eval(`($) => ${toEval}`)($);
+            eval(`($, $$) => ${toEval}`)($, $$);
         } catch (e: unknown) {
             if (e instanceof SyntaxError) {
                 throw new ExpressionSyntaxError(e.message);
@@ -244,10 +248,45 @@ export abstract class ModelUtil {
             throw new ExprEvalError(e);
         }
         return {
-            expr: `(t, $) => ${toEval}`,
+            expr: `(t, $, $$) => ${toEval}`,
             varDependencies: dependencies.varDependencies,
             attrDependencies: dependencies.attrDependencies
         };
+    }
+
+    private static _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
+
+    /**
+     * The $$-function returned has two parameters. The first parameter is the key of the variable in the storage record.
+     * If the second value is specified, the storage for the key is set to the given value. Otherwise the value
+     * currently stored for the key is returned.
+     * @param graphId Id of the graph for determining the storage.
+     * @param log The log object for information on failed checks.
+     */
+    private static get$$Function(graphId: string, log: Record<string, string> = null) {
+        return (key: string, value?: unknown) => {
+            const storage = ModelUtil._graphStorage.get(graphId);
+            if (value === undefined) {
+                const result = storage.get(key);
+                if (log) {
+                    log[key] = String(result);
+                }
+                return result;
+            }
+            storage.set(key, value);
+        };
+    }
+
+    public static getStorageValue(graphId: string, key: string): unknown {
+        return ModelUtil._graphStorage.get(graphId).get(key);
+    }
+
+    public static setStorageValue(graphId: string, key: string, value: unknown): unknown {
+        return ModelUtil._graphStorage.get(graphId).set(key, value);
+    }
+
+    public static initialiseStorage(graphId: string, value: Map<string, unknown>): void {
+        ModelUtil._graphStorage.set(graphId, value);
     }
 
     private static getValueForSubExpression(t: TestDriver, spriteName: string, attribute: string,
@@ -276,7 +315,7 @@ export abstract class ModelUtil {
                 dependencies.varDependencies.push({spriteName: sprite.name, varName: variable.name});
             }
             if (log) {
-                log[`$("${spriteName}", "${attribute}", true)`] = String(variable.value);
+                log[`$(${spriteName}->${attribute})`] = String(variable.value);
             }
             return variable.value;
         } else {
@@ -284,7 +323,11 @@ export abstract class ModelUtil {
             if (!variable) {
                 if (ModelUtil._isAnAttribute(attribute)) {
                     // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
-                    variable = t.getSprite(spriteName)[attribute];
+                    if (attribute.startsWith("old.")) {
+                        variable = t.getSprite(spriteName).old[attribute.substring(4)];
+                    } else {
+                        variable = t.getSprite(spriteName)[attribute];
+                    }
                 } else {
                     try {
                         // maybe custom flag was not specified by accident -> try custom variables
@@ -298,16 +341,17 @@ export abstract class ModelUtil {
                 dependencies.attrDependencies.push({spriteName: sprite.name, attrName: attribute});
             }
             if (log) {
-                log[`$("${spriteName}", "${attribute}", false)`] = String(variable);
+                log[`${spriteName}.${attribute}`] = String(variable);
             }
             return variable;
         }
     }
 
-    public static evaluateExpression(t: TestDriver, expression: string, log: Record<string, string> = {}): unknown {
+    public static evaluateExpression(t: TestDriver, expression: string, graphId: string, log: Record<string, string> = {}): unknown {
         const $ = (spriteName: string, attribute: string, custom: boolean) =>
             ModelUtil.getValueForSubExpression(t, spriteName, attribute, custom, undefined, log);
-        return eval(expression)(t, $);
+        const $$ = ModelUtil.get$$Function(graphId, log);
+        return eval(expression)(t, $, $$);
     }
 
     /**
@@ -436,11 +480,45 @@ export abstract class ModelUtil {
         return {attrDependencies: newAttrDep, varDependencies: newVarDep};
     }
 
-    static getNumberFunction(text: ArgType, t: TestDriver): () => number {
+    /**
+     * Sets up all dependencies for a check with expressions
+     * (dependencies by $-function calls and parsed with RegEx from test driver use)
+     * @param check The check that has some dependencies
+     * @param cu CheckUtility where the dependencies are registered.
+     * @param graphID Id of the graph
+     * @param expr Expression with the dependencies from the $-function are registered.
+     * @param code Code of the expression
+     * @param predicate Generated check
+     */
+    static setupAllDependenciesForExpressions(check: Check, cu: CheckUtility, graphID: string, expr: Expression, code: string, predicate: (...sprite: Sprite[]) => CheckResult): void {
+        ModelUtil.setupDependencies(check, cu, graphID, expr, predicate);
+        const dep: Dependencies = ModelUtil.getDependencies(code);
+        if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
+            ModelUtil.setupDependencies(check, cu, graphID, dep, predicate);
+        }
+    }
+
+    static setupDependencies(check: Check, cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult): void {
+        d.varDependencies.forEach(dependency => {
+            cu.registerVarEvent(dependency.varName, check, graphID, predicate);
+        });
+
+        d.attrDependencies.forEach(({spriteName, attrName}) => {
+            if (attrName == "x" || attrName == "y") {
+                cu.registerOnMoveEvent(spriteName, check, graphID, predicate);
+            } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+                cu.registerOnVisualChange(spriteName, check, graphID, predicate);
+            } else if (attrName == "sayText") {
+                cu.registerOutput(spriteName, check, graphID, predicate);
+            }
+        });
+    }
+
+    static getNumberFunction(text: ArgType, t: TestDriver, graphId: string): () => number {
         const asNumber = ModelUtil.returnNumberIfPossible(text);
         if (asNumber == null) {
-            const func = ModelUtil.getExpressionForEval(t, text).expr;
-            return () => ModelUtil.testNumber(Number(ModelUtil.evaluateExpression(t, func)));
+            const func = ModelUtil.getExpressionForEval(t, text, graphId).expr;
+            return () => ModelUtil.testNumber(Number(ModelUtil.evaluateExpression(t, func, graphId)));
         } else {
             return () => asNumber;
         }

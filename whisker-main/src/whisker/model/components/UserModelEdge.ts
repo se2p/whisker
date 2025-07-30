@@ -42,7 +42,7 @@ export class UserModelEdge extends AbstractEdge {
      */
     async inputImmediate(t: TestDriver): Promise<void> {
         for (const inputEffect of this._userInputs) {
-            await inputEffect.inputImmediate(t);
+            await inputEffect.inputImmediate(t, this.graphID);
         }
     }
 

@@ -27,7 +27,7 @@ export class ClickStage extends AbstractUserInput<ClickStageJSON> {
         return ClickStageJSON.parse(json) as ClickStageJSON;
     }
 
-    override async inputImmediate(_t: TestDriver): Promise<void> {
+    override async inputImmediate(_t: TestDriver, graphId: string): Promise<void> {
         const clickStageEvent = new ClickStageEvent();
         return clickStageEvent.apply();
     }

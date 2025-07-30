@@ -39,9 +39,9 @@ export class MouseMove extends AbstractUserInput<MouseMoveJSON> {
         return MouseMoveJSON.parse(json) as MouseMoveJSON;
     }
 
-    override async inputImmediate(t: TestDriver): Promise<void> {
-        const xFunc = ModelUtil.getNumberFunction(this._x, t);
-        const yFunc = ModelUtil.getNumberFunction(this._y, t);
+    override async inputImmediate(t: TestDriver, graphId: string): Promise<void> {
+        const xFunc = ModelUtil.getNumberFunction(this._x, t, graphId);
+        const yFunc = ModelUtil.getNumberFunction(this._y, t, graphId);
         const mouseEvent = new MouseMoveEvent(xFunc(), yFunc());
         return mouseEvent.apply();
     }
