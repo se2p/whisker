@@ -1,0 +1,229 @@
+[
+    {
+        "usage": "user",
+        "id": "follow apple",
+        "startNodeId": "start",
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            }
+        ],
+        "edges": [
+            {
+                "id": "left",
+                "label": "left",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')-10>$('Apple', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "right",
+                "label": "right",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')+10<$('Apple', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "right"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "follow banana",
+        "startNodeId": "start",
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "start",
+                "label": "start"
+            }
+        ],
+        "edges": [
+            {
+                "id": "left",
+                "label": "left",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')-10>$('Bananas', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "right",
+                "label": "right",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Bowl', 'x')+10<$('Bananas', 'x')"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "right"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "move away",
+        "startNodeId": "move away",
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "move away",
+                "label": "move away"
+            },
+            {
+                "id": "dont-move",
+                "label": "dont-move"
+            }
+        ],
+        "edges": [
+            {
+                "id": "game over",
+                "label": "game over",
+                "from": "move away",
+                "to": "dont-move",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "negated": false,
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            255,
+                            0,
+                            0
+                        ]
+                    },
+                    {
+                        "name": "TimeElapsed",
+                        "negated": false,
+                        "args": [
+                            1000
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "away-left",
+                "label": "away-left",
+                "from": "move away",
+                "to": "move away",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Apple', 'x')>=0"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "away-right",
+                "label": "away-right",
+                "from": "move away",
+                "to": "move away",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "$('Apple', 'x')<0"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "InputKey",
+                        "args": [
+                            "right"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

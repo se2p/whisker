@@ -9,7 +9,8 @@ const {
     configPath,
     testPath,
     winningStates,
-    keepaliveTimeout
+    keepaliveTimeout,
+    modelPath
 } = opts;
 
 // Dynamic Test suite using Neuroevolution
@@ -26,6 +27,9 @@ async function generateDynamicTests(pool) {
 async function configureWhiskerWebInstance(page) {
     await (await page.$('#fileselect-config')).uploadFile(configPath);
     await (await page.$('#fileselect-tests')).uploadFile(testPath);
+    if (modelPath) {
+        await (await page.$('#fileselect-models')).uploadFile(modelPath);
+    }
 
     await page.evaluate((opts) => {
         document.querySelector('#container').mutators = opts.mutators;

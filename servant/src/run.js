@@ -58,16 +58,16 @@ async function configureWhiskerWebInstance(page) {
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
     }
 
+    if(opts.userModelPath){
+        await (await page.$('#fileselect-user-models')).uploadFile(opts.userModelPath);
+    }
+
     if (opts.modelPath) {
         await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
         await page.evaluate((opts) => {
             document.querySelector('#model-repetitions').value = opts.modelRepetition;
             document.querySelector('#model-duration').value = opts.modelDuration;
         }, opts);
-
-        if (opts.modelCaseSensitive === "true") {
-            await (await page.$('#model-case-sensitive')).click();
-        }
     }
 }
 

@@ -62,24 +62,56 @@ export class ModelTester extends EventEmitter {
         this._haltAllCallback = null;
     }
 
-    /**
-     * Load the models from a xml string. See ModelLoaderXML for more info.
-     * @param modelsString Models as a string coded in xml.
-     */
-    load(modelsString: string): void {
+    _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
         try {
             const {programModels, userModels, onTestEndModels} = loadModels(modelsString);
-            this._programModels = programModels;
-            this._userModels = userModels;
-            this._onTestEndModels = onTestEndModels;
+            if (pModels) {
+                this._programModels = programModels;
+            }
+            if (endModels) {
+                this._onTestEndModels = onTestEndModels;
+            }
+            if (uModels) {
+                this._userModels = userModels;
+            }
             this.emit(ModelTester.MODEL_ON_LOAD);
         } catch (e) {
-            this._programModels = [];
-            this._userModels = [];
-            this._onTestEndModels = [];
+            if (pModels) {
+                this._programModels = [];
+            }
+            if (endModels) {
+                this._onTestEndModels = [];
+            }
+            if (uModels) {
+                this._userModels = [];
+            }
             this.emit(ModelTester.MODEL_LOAD_ERROR, getErrorMessage(e));
             throw e;
         }
+    }
+
+    /**
+     * Load the models from a json string
+     * @param modelsString Models as a string coded in json.
+     */
+    load(modelsString: string): void {
+        this._load(modelsString, true, true, true);
+    }
+
+    /**
+     * Load the models from a json string
+     * @param modelsString Models as a string coded in json.
+     */
+    loadUserModels(modelsString: string): void {
+        this._load(modelsString, false, false, true);
+    }
+
+    /**
+     * Load the models from a json string
+     * @param modelsString Models as a string coded in json.
+     */
+    loadProgramModels(modelsString: string): void {
+        this._load(modelsString, true, true, false);
     }
 
     /**
