@@ -1,6 +1,7 @@
 /* eslint-disable valid-jsdoc */
 
-const {ModelTester, attributeAndEffectNames, keys, convertArgs, convertInputArgs} = require('whisker-main');
+const {ModelTester, attributeAndEffectNames, keys,
+    convertArgs, convertInputArgs} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep');
@@ -33,7 +34,8 @@ class ModelEditor {
     static MODEL_DELETE_BUTTON = '#model-delete-button';
 
     // below the model editor
-    static SAVE_BUTTON = '#model-editor-save';
+    static SAVE_PROGRAM_MODEL_BUTTON = '#model-editor-save-model';
+    static SAVE_USER_MODEL_BUTTON = '#model-editor-save-user-model';
     static APPLY_BUTTON = '#model-editor-apply';
     static ADD_NODE = '#model-add-node';
     static ADD_EDGE = '#model-add-edge';
@@ -299,7 +301,7 @@ class ModelEditor {
         }
         this.checkIndex = -1;
         this.chosenList = null;
-        return {status: true, message:''};
+        return {status: true, message: ''};
     }
 
     getEdgeById (edgeID) {
@@ -448,7 +450,8 @@ class ModelEditor {
     setUpGUI () {
         // apply and download below model editor
         $(ModelEditor.APPLY_BUTTON).on('click', this.applyButton.bind(this));
-        $(ModelEditor.SAVE_BUTTON).on('click', this.downloadButton.bind(this));
+        $(ModelEditor.SAVE_PROGRAM_MODEL_BUTTON).on('click', this.downloadProgramModels.bind(this));
+        $(ModelEditor.SAVE_USER_MODEL_BUTTON).on('click', this.downloadUserModels.bind(this));
 
         // tab behaviour
         $(ModelEditor.ADD_TAB).on('click', () => {
@@ -809,12 +812,20 @@ class ModelEditor {
         this.changeToTab(lastIndex);
     }
 
-    /** Download the models in the editor. */
-    downloadButton () {
+    /** Download the program and end models in the editor. */
+    downloadProgramModels () {
         this.fillEmptyConditions();
-        const json = JSON.stringify(this.models, null, 4);
+        const json = JSON.stringify(this.models.filter(m => m.usage !== 'user'), null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
-        FileSaver.saveAs(blob, 'models.json');
+        FileSaver.saveAs(blob, 'progam-models.json');
+    }
+
+    /** Download the user models in the editor. */
+    downloadUserModels () {
+        this.fillEmptyConditions();
+        const json = JSON.stringify(this.models.filter(m => m.usage === 'user'), null, 4);
+        const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
+        FileSaver.saveAs(blob, 'user-models.json');
     }
 
     /**

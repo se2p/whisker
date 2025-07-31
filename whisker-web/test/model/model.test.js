@@ -8,9 +8,12 @@ const URL = "dist/index.html";
 const timeout = 25000;
 const ACCELERATION = Infinity;
 
-async function loadProject(scratchPath, modelPath) {
+async function loadProject(scratchPath, modelPath, userModelPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#fileselect-models')).uploadFile(modelPath);
+    if(userModelPath){
+        await (await page.$('#fileselect-user-models')).uploadFile(userModelPath);
+    }
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
@@ -74,27 +77,27 @@ beforeEach(async () => {
 describe('Model tests', () => {
 
     const table = [
-        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null],
-        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null],
-        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00, null],
-        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null],
-        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null],
-        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null],
-        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null],
-        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00, null],
-        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null],
-        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null],
-        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, null],
-        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 0.95, null],
-        ["fruitcatcher with dynamic inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
+        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null, false],
+        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null, false],
+        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00, null, false],
+        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null, false],
+        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null, false],
+        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null, false],
+        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null, false],
+        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00, null, false],
+        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null, false],
+        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null, false],
+        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, null, true],
+        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 0.95, null, true],
+        ["fruitcatcher with dynamic inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json", false],
         // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
-        ["fruitcatcher with static inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.97, "test/model/FruitCatching-manual_small.js"],
+        ["fruitcatcher with static inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.97, "test/model/FruitCatching-manual_small.js", false],
         // the lowest coverage value for fruit catcher should be 79/83 = 0.9518..., so 0.95 should not be flaky
     ]
 
-    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage, testPath) => {
+    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage, testPath, userModel) => {
         await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
-            `test/model/model-jsons/${modelFileName}.json`);
+            `test/model/model-jsons/${modelFileName}.json`, userModel ? `test/model/user-model-jsons/${modelFileName}-userModel.json` : null);
         if (testPath === null){
             await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
         }else{

@@ -328,6 +328,13 @@ class WhiskerSubCommand extends Command {
             Infinity);
     }
 
+    optionProgramModel(){
+        return this.option(
+            '-p, --model-path <Path>',
+            'model to test with',
+            (modelPath) => util.processFilePathExists(modelPath))
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -375,6 +382,7 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
+        .optionProgramModel()
         .optionTraceAttributes(),
 
     newSubCommand('generate')
@@ -403,15 +411,16 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
+        .optionProgramModel()
         .optionWinningStates(),
 
     newSubCommand('model')
         .description('test with model')
         .requireScratchPath()
         .requiredOption(
-            '-p, --model-path <Path>',
-            'model to test with',
-            (modelPath) => util.processFilePathExists(modelPath))
+            '-u, --user-model-path <Path>',
+            'user model to execute',
+            (userModelPath) => util.processFilePathExists(userModelPath))
         .requiredOption(
             '-r, --model-repetition <Integer>',
             'model test repetitions',
@@ -427,7 +436,8 @@ const subCommands = [
         // .optionMutators()    // TODO: Implement ModelTesting + MutationAnalysis
         .optionMutantsDownloadPath()
         .optionMutationBudget()
-        .optionMaxMutants(),
+        .optionMaxMutants()
+        .optionProgramModel(),
 ];
 
 // Common configuration for Whisker and all subcommands:

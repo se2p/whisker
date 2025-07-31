@@ -101,9 +101,13 @@ const getCombinedWhiskerAndBBTTests = function () {
     return combined;
 };
 
-const loadModelFromString = function (models) {
+const loadModelFromString = function (models, userModels) {
     try {
-        Whisker.modelTester.load(models);
+        if (userModels) {
+            Whisker.modelTester.loadUserModels(models);
+        } else {
+            Whisker.modelTester.loadProgramModels(models);
+        }
     } catch (err) {
         Whisker.outputLog.println(`ERROR: ${err.message}`);
         logger.error(err);
@@ -113,7 +117,13 @@ const loadModelFromString = function (models) {
     }
 
     if (Whisker.modelTester.userModelsLoaded()) {
-        $('#model-user-loaded').text(i18next.t('model-output-user-model'));
+        if (userModels) {
+            $('#user-model-user-loaded').text(i18next.t('user-model-output-user-model')); // TODO
+        } else {
+            $('#model-user-loaded').text(i18next.t('model-output-user-model'));
+        }
+    } else if (userModels) {
+        $('#user-model-user-loaded').text(i18next.t('user-model-output-no-user-model')); // TODO
     } else {
         $('#model-user-loaded').text(i18next.t('model-output-no-user-model'));
     }
@@ -907,7 +917,9 @@ const initComponents = function () {
     Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0], handleOnLoadProjectFile);
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0], handleOnLoadTestFile);
     Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
-        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string)));
+        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string, false)));
+    Whisker.userModelFileSelect = new FileSelect($('#fileselect-user-models')[0],
+        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string, true)));
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
@@ -1343,6 +1355,14 @@ const _addFileListeners = function () {
             .removeAttr('data-i18n')
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName('label')[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-user-models').on('change', event => {
+        const fileName = Whisker.userModelFileSelect.getName();
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-user-models').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
 };
