@@ -386,6 +386,9 @@ export class DynamicNetworkSuite {
         const modelResults = Container.vmWrapper.getTestResultsForProjectName(modelResKey)[modelResKey]
             .map(tr => tr.modelResult);
         const modelResultCountEqual = modelResults.length === testCases.length;
+        if(!modelResultCountEqual && Container.vmWrapper.modelTester.someModelLoaded()){
+            console.debug("there were", modelResults.length,"model results but", testCases.length,"dynamic test cases.");
+        }
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
             const statements = [...this.statementMap.keys()].length;
