@@ -382,7 +382,8 @@ export class DynamicNetworkSuite {
      */
     protected async updateTestStatistics(testCases: readonly NeatChromosome[], projectName: string,
                                          testName: string): Promise<void> {
-        const modelResults = Container.vmWrapper.getTestResultsForProjectName("key")["key"]
+        const modelResKey = projectName;
+        const modelResults = Container.vmWrapper.getTestResultsForProjectName(modelResKey)[modelResKey]
             .map(tr => tr.modelResult);
         const modelResultCountEqual = modelResults.length === testCases.length;
         for (let i = 0; i < testCases.length; i++) {

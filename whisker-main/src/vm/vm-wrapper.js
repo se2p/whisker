@@ -35,6 +35,11 @@ class VMWrapper {
         this._modelTester = modelTester;
 
         /**
+         * @type {Record<string, TestResult[]>} The results of the models
+         */
+        this._modelSummary = {};
+
+        /**
          * @type {TestResult} Results of executed models.
          */
         this.currentModelTestResult = null;
@@ -879,10 +884,11 @@ class VMWrapper {
      */
     getTestResultsForProjectName(projectName) {
         this.stopModels();
-        const summary = {};
-        summary[projectName] = this.modelTestResults;
+        if (!this._modelSummary[projectName] && this.modelTestResults.length > 0) {
+            this._modelSummary[projectName] = this.modelTestResults;
+        }
         this.modelTestResults = [];
-        return summary;
+        return this._modelSummary;
     }
 
     /**
