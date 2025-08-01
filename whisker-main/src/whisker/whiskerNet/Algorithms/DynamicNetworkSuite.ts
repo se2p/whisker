@@ -382,6 +382,9 @@ export class DynamicNetworkSuite {
      */
     protected async updateTestStatistics(testCases: readonly NeatChromosome[], projectName: string,
                                          testName: string): Promise<void> {
+        const modelResults = Container.vmWrapper.getTestResultsForProjectName("key")["key"]
+            .map(tr => tr.modelResult);
+        const modelResultCountEqual = modelResults.length === testCases.length;
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
             const statements = [...this.statementMap.keys()].length;
@@ -412,6 +415,7 @@ export class DynamicNetworkSuite {
                 surpriseCount: test.surpriseCount,
                 avgUncertainty: averageUncertainty,
                 isMutant: isMutant,
+                modelResult: modelResultCountEqual ? modelResults[i] : undefined
             };
             StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
         }

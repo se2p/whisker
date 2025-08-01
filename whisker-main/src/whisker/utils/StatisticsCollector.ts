@@ -25,6 +25,7 @@ import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
+import {ModelResult} from "../../test-runner/model-result";
 
 
 /**
@@ -434,7 +435,7 @@ export class StatisticsCollector {
                 testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
                 testResult.wonTest, testResult.wonSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.avgUncertainty, testResult.isMutant];
+                testResult.avgUncertainty, testResult.isMutant, ...(testResult.modelResult? testResult.modelResult.getCsvColumns() : [])];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -623,6 +624,7 @@ export interface NetworkTestSuiteResults {
     surpriseCount: number,
     avgUncertainty: number,
     isMutant?: boolean,
+    modelResult?: ModelResult,
 }
 
 export interface CoverageOverTime {
