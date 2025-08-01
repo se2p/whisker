@@ -533,7 +533,7 @@ class TestRunner extends EventEmitter {
             coveragePartAdded = true;
         }
         if (addModels) {
-            header += `${coveragePartAdded ? '' : coveragePart},testResult,${modelCsvHeader}`;
+            header += `${coveragePartAdded ? '' : coveragePart},testResult${modelCsvHeader}`;
         }
         return header + "\n";
     }

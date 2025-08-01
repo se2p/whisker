@@ -82,8 +82,8 @@ export class ModelResult {
             totalModelCoverage += coverages.total;
         }
         const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
-        return [this.testNbr, this.fails.length, this.errors.length, coverageRate];
+        return [this.testNbr ?? 1, this.fails.length, this.errors.length, coverageRate];
     }
 }
 
-export const modelCsvHeader = "modelRepetition,modelFails,modelErrors,modelCoverage";
+export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCoverage";
