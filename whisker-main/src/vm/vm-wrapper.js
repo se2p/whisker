@@ -536,7 +536,7 @@ class VMWrapper {
         this.sprites.reset();
 
         // Reset all listeners registered to targets to avoid an explosion of registered listeners.
-        for (const target of this.vm.runtime.targets){
+        for (const target of this.vm.runtime.targets) {
             target.removeAllListeners();
         }
 
@@ -820,7 +820,7 @@ class VMWrapper {
         return this._useSaveStates;
     }
 
-    get modelTester(){
+    get modelTester() {
         return this._modelTester;
     }
 
@@ -829,7 +829,7 @@ class VMWrapper {
      * @param {TestDriver} testDriver
      */
     set nextModelTestDriver(testDriver) {
-        if (this._modelTester){
+        if (this._modelTester) {
             this._modelTester.nextTestDriver = testDriver;
         }
     }
@@ -838,8 +838,8 @@ class VMWrapper {
      * Sets the index of the UserModel to be executed in the next run if a ModelTester is loaded in this vm-wrapper
      * @param {number} umIndex
      */
-    set nextUserModelIndex(umIndex){
-        if (this._modelTester){
+    set nextUserModelIndex(umIndex) {
+        if (this._modelTester) {
             this._modelTester.nextUmIndex = umIndex;
         }
     }
@@ -856,9 +856,11 @@ class VMWrapper {
             this._modelTester.stopModels(result, updateResultStatus);
         } else if (this.modelTester.canBeStopped) {
             // automatic stop
-            this._modelTester.stopModels(this.currentModelTestResult, updateResultStatus);
-            this.modelTestResults.push(this.currentModelTestResult);
-            this.currentModelTestResult = null;
+            const res = this._modelTester.stopModels(this.currentModelTestResult, updateResultStatus);
+            if (res) {
+                this.modelTestResults.push(this.currentModelTestResult);
+                this.currentModelTestResult = null;
+            }
         }
     }
 

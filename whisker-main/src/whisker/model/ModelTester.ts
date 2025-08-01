@@ -362,12 +362,16 @@ export class ModelTester extends EventEmitter {
         //     logger.debug("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
     }
 
-    stopModels(result: TestResult, updateResultStatus = true): void {
+    stopModels(result: TestResult, updateResultStatus = true): boolean {
         const res = this._stopAndGetModelResult();
         result.modelResult = res;
+        if(res === null){
+            return false;
+        }
         if (res && updateResultStatus) {
             result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
         }
+        return true;
     }
 
     /**
