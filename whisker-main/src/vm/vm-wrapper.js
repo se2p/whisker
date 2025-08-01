@@ -884,7 +884,7 @@ class VMWrapper {
      */
     getTestResultsForProjectName(projectName) {
         this.stopModels();
-        if (!this._modelSummary[projectName] && this.modelTestResults.length > 0) {
+        if (!this._modelSummary[projectName]) {
             this._modelSummary[projectName] = this.modelTestResults;
         }
         this.modelTestResults = [];
