@@ -299,7 +299,7 @@ class TestRunner extends EventEmitter {
             // Record the results
             const duration = (Date.now() - startTime) / 1000;
             const coverage = this._extractCoverage();
-            const modelResults = this._extractModelCSVData(result.modelResult);
+            const modelResults = result.modelResult.extractModelCSVData();
             const seed = Randomness.scratchSeed;
             csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
                 duration, undefined, modelResults);
@@ -585,29 +585,6 @@ class TestRunner extends EventEmitter {
                 resultRecords.skip = resultRecords['skip'] + 1;
                 break;
         }
-    }
-
-    /**
-     * Extracts csv data from observed obtained model results.
-     * @param {object} modelResults
-     * @return {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}}
-     * @private
-     */
-    _extractModelCSVData(modelResults) {
-        let achievedModelCoverage = 0;
-        let totalModelCoverage = 0;
-        for (const coverages of Object.values(modelResults.coverage)) {
-            achievedModelCoverage += coverages.covered.length;
-            totalModelCoverage += coverages.total;
-        }
-        const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
-        return {
-            repetition: modelResults.testNbr,
-            fails: modelResults.fails.length,
-            errors: modelResults.errors.length,
-            coverage: coverageRate,
-            generationAlgorithm: "None"     // We do not generate models automatically yet.
-        };
     }
 
     /**

@@ -61,6 +61,28 @@ class ModelResult {
             this.fails.push(fail);
         }
     }
+
+    /**
+     * Extracts csv data from observed obtained model results.
+     * @return {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}}
+     * @private
+     */
+     extractModelCSVData() {
+        let achievedModelCoverage = 0;
+        let totalModelCoverage = 0;
+        for (const coverages of Object.values(this.coverage)) {
+            achievedModelCoverage += coverages.covered.length;
+            totalModelCoverage += coverages.total;
+        }
+        const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
+        return {
+            repetition: this.testNbr,
+            fails: this.fails.length,
+            errors: this.errors.length,
+            coverage: coverageRate,
+            generationAlgorithm: "None"     // We do not generate models automatically yet.
+        };
+    }
 }
 
 module.exports = ModelResult;
