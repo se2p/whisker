@@ -533,7 +533,7 @@ class TestRunner extends EventEmitter {
             coveragePartAdded = true;
         }
         if (addModels) {
-            header += `${coveragePartAdded ? '': coveragePart},testResult,${modelCsvHeader}`;
+            header += `${coveragePartAdded ? '' : coveragePart},testResult,${modelCsvHeader}`;
         }
         return header + "\n";
     }
@@ -563,7 +563,7 @@ class TestRunner extends EventEmitter {
         if (modelResult !== undefined) {
             csvRow += `,${testStatusResults[0]},${modelResult.getCsvColumnsAsString()}`;
         }
-        return csvRow+'\n';
+        return csvRow + '\n';
     }
 
     /**

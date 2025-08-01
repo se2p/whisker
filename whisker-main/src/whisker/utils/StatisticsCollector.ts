@@ -435,7 +435,7 @@ export class StatisticsCollector {
                 testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
                 testResult.wonTest, testResult.wonSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.avgUncertainty, testResult.isMutant, ...(testResult.modelResult? testResult.modelResult.getCsvColumns() : [])];
+                testResult.avgUncertainty, testResult.isMutant, ...(testResult.modelResult ? testResult.modelResult.getCsvColumns() : [])];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -570,7 +570,7 @@ export class StatisticsCollector {
     private _isWinningStateCovered(): string {
         const coveredStatements = this.getCoveredStatements();
         const winningState = this.getWinningStateForProject(this._projectName);
-        if (! winningState) {
+        if (!winningState) {
             return "NA";
         }
         const won = [...coveredStatements]

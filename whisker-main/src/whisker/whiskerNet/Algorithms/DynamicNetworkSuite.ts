@@ -464,7 +464,7 @@ export class DynamicNetworkSuite {
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
         this.initialiseCoverageMaps(vmWrapper.vm);
-        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout,'activation', this.parameter.classificationType, false);
+        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', this.parameter.classificationType, false);
     }
 
     /**

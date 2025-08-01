@@ -365,7 +365,7 @@ export class ModelTester extends EventEmitter {
     stopModels(result: TestResult, updateResultStatus = true): boolean {
         const res = this._stopAndGetModelResult();
         result.modelResult = res;
-        if(res === null){
+        if (res === null) {
             return false;
         }
         if (res && updateResultStatus) {
