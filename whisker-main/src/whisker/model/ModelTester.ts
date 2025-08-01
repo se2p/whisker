@@ -20,6 +20,8 @@ import TestResult from "../../test-runner/test-result";
 import Test from "../../test-runner/test";
 import {Model} from "./components/AbstractModel";
 
+type OracleModel = ProgramModel | EndModel;
+
 export class ModelTester extends EventEmitter {
 
     private _nextTestDriver = null;
@@ -43,7 +45,6 @@ export class ModelTester extends EventEmitter {
 
     private _modelStepCallback: Callback | null;
     private _onTestEndCallback: Callback | null;
-    private _haltAllCallback: Callback | null;
     private _isRunning = false;
 
     constructor() {
@@ -59,7 +60,6 @@ export class ModelTester extends EventEmitter {
 
         this._modelStepCallback = null;
         this._onTestEndCallback = null;
-        this._haltAllCallback = null;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
@@ -221,7 +221,6 @@ export class ModelTester extends EventEmitter {
 
         this._modelStepCallback = this._addModelCallback(() => this._onModelStep(), true, "modelStep");
         this._onTestEndCallback = this._addModelCallback(() => this._onTestEnd(), true, "stopModelsCheck");
-        this._haltAllCallback = this._addModelCallback(() => this._checkForHaltAll(), true, "checkForHalt");
 
         if (this._programModels.length == 0) {
             this._modelStepCallback?.disable();
@@ -238,7 +237,7 @@ export class ModelTester extends EventEmitter {
         this.prepareModel(this._nextTestDriver, this._nextUmIndex);
     }
 
-    private _doOneStepOnProgramModel(model: ProgramModel | EndModel, notStoppedModels: (ProgramModel | EndModel)[]) {
+    private _doOneStepOnOracleModel(model: OracleModel, notStoppedModels: OracleModel[]) {
         const takenEdge = model.makeOneTransition(this._testDriver!, this._checkUtility!);
         if (takenEdge instanceof ProgramModelEdge) {
             this._checkUtility!.registerEffectCheck(takenEdge, model);
@@ -249,32 +248,23 @@ export class ModelTester extends EventEmitter {
         }
     }
 
-    private _onModelStep(): void {
+    private _doOracleModelStep(models: OracleModel[], fn: () => void): void {
         this._checkUtility!.makeFailedOutputs();
-        const notStoppedModels: ProgramModel[] = [];
-        this._programModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
+        const notStoppedModels: OracleModel[] = [];
+        models.forEach((model: OracleModel) => this._doOneStepOnOracleModel(model, notStoppedModels));
         const contradictingEffects = this._checkUtility!.checkEffects();
         this._printContradictingEffects(contradictingEffects);
-        if (notStoppedModels.length == 0) {
-            this._modelStepCallback!.disable();
+        if (notStoppedModels.length == 0 || models.some(m => m.haltAllModels())) {
+            fn();
         }
     }
 
-    private _checkForHaltAll(): void {
-        if (!this._modelStepCallback!.isActive()) {
-            this._startOnTestEnd();
-            return;
-        }
-        this._programModels.forEach(model => {
-            if (model.haltAllModels()) {
-                this._startOnTestEnd();
-            }
-        });
+    private _onModelStep(): void {
+        this._doOracleModelStep(this._programModels, () => this._startOnTestEnd());
     }
 
     private _startOnTestEnd() {
         this._modelStepCallback!.disable();
-        this._haltAllCallback!.disable();
 
         if (this._onTestEndModels.length === 0) {
             return;
@@ -292,21 +282,7 @@ export class ModelTester extends EventEmitter {
     }
 
     private _onTestEnd(): void {
-        this._checkUtility!.makeFailedOutputs();
-        const notStoppedModels: EndModel[] = [];
-        this._onTestEndModels.forEach(model => this._doOneStepOnProgramModel(model, notStoppedModels));
-        const contradictingEffects = this._checkUtility!.checkEffects();
-        this._printContradictingEffects(contradictingEffects);
-        if (notStoppedModels.length == 0) {
-            this._onTestEndCallback!.disable();
-        }
-
-        notStoppedModels.forEach(model => {
-            if (model.haltAllModels()) {
-                this._onTestEndCallback!.disable();
-                return;
-            }
-        });
+        this._doOracleModelStep(this._onTestEndModels, () => this._onTestEndCallback!.disable());
     }
 
     private _userInputGen() {
@@ -332,7 +308,8 @@ export class ModelTester extends EventEmitter {
         }
 
         // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
-        const models = this._modelStepCallback!.isActive() ? this._programModels : this._onTestEndModels;
+        const inProgramModelStage = this._modelStepCallback!.isActive();
+        const models = inProgramModelStage ? this._programModels : this._onTestEndModels;
         for (const m of models) {
             if (!this._isRunning) {
                 return; //stop the complete testing if the run is ending
@@ -345,7 +322,7 @@ export class ModelTester extends EventEmitter {
         }
 
         // check for halt if not yet stopped
-        if (this._haltAllCallback!.isActive()) {
+        if (inProgramModelStage) {
             let halt = false;
             this._programModels.forEach(model => {
                 if (model.haltAllModels()) {
@@ -386,7 +363,7 @@ export class ModelTester extends EventEmitter {
     }
 
     stopModels(result: TestResult, updateResultStatus = true): void {
-        const res = this.stopAndGetModelResult();
+        const res = this._stopAndGetModelResult();
         result.modelResult = res;
         if (res && updateResultStatus) {
             result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
@@ -396,7 +373,7 @@ export class ModelTester extends EventEmitter {
     /**
      * Get the result of the test run as a ModelResult.
      */
-    stopAndGetModelResult(): ModelResult | null {
+    private _stopAndGetModelResult(): ModelResult | null {
         if (!this.someModelLoaded()) {
             return null;
         }
@@ -405,7 +382,10 @@ export class ModelTester extends EventEmitter {
             this._checkUtility!.stop();
             this._modelStepCallback!.disable();
             this._onTestEndCallback!.disable();
-            this._haltAllCallback!.disable();
+            if (this._testDriver.getTotalStepsExecuted() < 1) {
+                // the test execution did not even start
+                return null;
+            }
             const models = [...this._programModels, ...this._onTestEndModels];
             models.forEach(model => {
                 if (model.stopped()) {
