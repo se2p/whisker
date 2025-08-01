@@ -66,6 +66,14 @@ export class ModelResult {
      * Returns this result in a csv representation.
      * @return {string}
      */
+    getCsvColumnsAsString() {
+        return this.getCsvColumns().join(",");
+    }
+
+    /**
+     * Returns this object as a tuple containing all values given in the header.
+     * @return {[number,number,number,number]}
+     */
     getCsvColumns() {
         let achievedModelCoverage = 0;
         let totalModelCoverage = 0;
@@ -74,7 +82,7 @@ export class ModelResult {
             totalModelCoverage += coverages.total;
         }
         const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
-        return `${this.testNbr},${this.fails.length},${this.errors.length},${coverageRate}`;
+        return [this.testNbr, this.fails.length, this.errors.length, coverageRate];
     }
 }
 

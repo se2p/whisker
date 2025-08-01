@@ -561,7 +561,7 @@ class TestRunner extends EventEmitter {
             csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration}`;
         }
         if (modelResult !== undefined) {
-            csvRow += `,${testStatusResults[0]},${modelResult.getCsvColumns()}`;
+            csvRow += `,${testStatusResults[0]},${modelResult.getCsvColumnsAsString()}`;
         }
         return csvRow+'\n';
     }
