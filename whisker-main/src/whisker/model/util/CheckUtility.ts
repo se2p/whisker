@@ -1,5 +1,5 @@
 import TestDriver from "../../../test/test-driver";
-import ModelResult from "../../../test-runner/model-result";
+import {ModelResult} from "../../../test-runner/model-result";
 import {AbstractEdge} from "../components/AbstractEdge";
 import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
 import EventEmitter from "events";

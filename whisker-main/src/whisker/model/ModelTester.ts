@@ -2,7 +2,7 @@ import {UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
-import ModelResult from "../../test-runner/model-result";
+import {ModelResult} from "../../test-runner/model-result";
 import {AbstractEdge} from "./components/AbstractEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";

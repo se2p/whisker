@@ -5,7 +5,7 @@
  * @property {string[]} covered
  */
 
-class ModelResult {
+export class ModelResult {
     constructor() {
         /**
          * @type {number}
@@ -63,11 +63,10 @@ class ModelResult {
     }
 
     /**
-     * Extracts csv data from observed obtained model results.
-     * @return {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}}
-     * @private
+     * Returns this result in a csv representation.
+     * @return {string}
      */
-     extractModelCSVData() {
+    getCsvColumns() {
         let achievedModelCoverage = 0;
         let totalModelCoverage = 0;
         for (const coverages of Object.values(this.coverage)) {
@@ -75,14 +74,8 @@ class ModelResult {
             totalModelCoverage += coverages.total;
         }
         const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
-        return {
-            repetition: this.testNbr,
-            fails: this.fails.length,
-            errors: this.errors.length,
-            coverage: coverageRate,
-            generationAlgorithm: "None"     // We do not generate models automatically yet.
-        };
+        return `${this.testNbr},${this.fails.length},${this.errors.length},${coverageRate}`;
     }
 }
 
-module.exports = ModelResult;
+export const modelCsvHeader = "modelRepetition,modelFails,modelErrors,modelCoverage";
