@@ -63,14 +63,6 @@ export class ModelResult {
     }
 
     /**
-     * Returns this result in a csv representation.
-     * @return {string}
-     */
-    getCsvColumnsAsString() {
-        return this.getCsvColumns().join(",");
-    }
-
-    /**
      * Returns this object as a tuple containing all values given in the header.
      * @return {[number,number,number,number]}
      */
@@ -87,3 +79,14 @@ export class ModelResult {
 }
 
 export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCoverage";
+
+/**
+ * Converts the result into the data for the csv file. If no valid result but instead null/ undefined,
+ * all values of the returned tuple will be {@linkcode defaultValue}.
+ * @param result
+ * @param defaultValue
+ * @return {string|*[]}
+ */
+export function modelResultToCsvData(result, defaultValue  = null) {
+    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue];
+}

@@ -25,7 +25,7 @@ import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
-import {modelCsvHeader, ModelResult} from "../../test-runner/model-result";
+import {modelCsvHeader, ModelResult, modelResultToCsvData} from "../../test-runner/model-result";
 
 
 /**
@@ -428,7 +428,7 @@ export class StatisticsCollector {
             "totalBranches,testBranchCoverage,suiteBranchCoverage," +
             "testWon,suiteWon," +
             "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant" +
-            (this._networkSuiteResults.some(res => res.modelResult) ? modelCsvHeader : "") + "\n";
+            modelCsvHeader + "\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
@@ -436,10 +436,8 @@ export class StatisticsCollector {
                 testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
                 testResult.wonTest, testResult.wonSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.avgUncertainty, testResult.isMutant];
-            if (testResult.modelResult) {
-                data.push(...testResult.modelResult.getCsvColumns());
-            }
+                testResult.avgUncertainty, testResult.isMutant, ...modelResultToCsvData(testResult.modelResult)
+            ];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }

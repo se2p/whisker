@@ -16,7 +16,7 @@ const logger = require("../util/logger");
 const {ModelTester} = require("../whisker/model/ModelTester");
 const {onExecuted, onPassed} = require("../coverage/assertion-level-tracing");
 const {serializeError} = require("../util/serialize-error");
-const {modelCsvHeader} = require("./model-result");
+const {modelCsvHeader, modelResultToCsvData} = require("./model-result");
 
 function enableAssertionLevelBlockTracing(assertions, assumptions) {
     assert.onExecutedAssertion = onExecuted.bind(null, assertions);
@@ -113,7 +113,7 @@ class TestRunner extends EventEmitter {
         const projectName = props['projectName'];
         const testResults = [];
         const finalResults = {};
-        let csv = this._generateCSVHeader(tests, modelTester.someModelLoaded());
+        let csv = this._generateCSVHeader(tests);
 
         // repair-specific variables
         const coveragePerTest = [];
@@ -518,23 +518,17 @@ class TestRunner extends EventEmitter {
     /**
      * Generates the csv header
      * @param {Test[]} tests
-     * @param {boolean} addModels
      * @return {string}
      */
-    _generateCSVHeader(tests, addModels) {
+    _generateCSVHeader(tests) {
         let header = `\nprojectName,seed,assertions,generationAlgorithm`;
-        const coveragePart = ',statements,statementCoverage,branches,branchCoverage,duration';
-        let coveragePartAdded = false;
         if (tests) {
             for (const test of tests) {
                 header += `,${test.name}`;
             }
-            header += `,passed,failed,error,skip${coveragePart}`;
-            coveragePartAdded = true;
+            header += `,passed,failed,error,skip`;
         }
-        if (addModels) {
-            header += `${coveragePartAdded ? '' : coveragePart},testResult${modelCsvHeader}`;
-        }
+        header += `,statements,statementCoverage,branches,branchCoverage,duration,testResult${modelCsvHeader}`;
         return header + "\n";
     }
 
@@ -560,9 +554,7 @@ class TestRunner extends EventEmitter {
             }
             csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration}`;
         }
-        if (modelResult !== undefined) {
-            csvRow += `,${testStatusResults[0]},${modelResult.getCsvColumnsAsString()}`;
-        }
+        csvRow += `,${testStatusResults[0]},${modelResultToCsvData(modelResult)}`;
         return csvRow + '\n';
     }
 
