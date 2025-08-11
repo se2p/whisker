@@ -40,6 +40,14 @@ abstract class AbstractTouchingEdge<
         super(edgeLabel, json);
     }
 
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(TouchingEdgeArgs.safeParse(args));
+    }
+
     /**
      * Get a method to check whether a sprite is touching an edge.
      * @param t Instance of the test driver for checking if a sprite or its clones is touching an edge.
@@ -66,14 +74,6 @@ abstract class AbstractTouchingEdge<
 
     protected override _contradicts(_that: AbstractTouchingEdge): boolean {
         return false;
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(TouchingEdgeArgs.safeParse(args));
     }
 }
 

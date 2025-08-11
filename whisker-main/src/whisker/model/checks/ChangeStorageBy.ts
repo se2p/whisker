@@ -39,8 +39,12 @@ export class ChangeStorageBy extends AbstractCheck<ChangeStorageByJSON, CheckFun
         return this._value;
     }
 
-    protected _validate(checkJSON: ChangeStorageByJSON): ChangeStorageByJSON {
-        return ChangeStorageByJSON.parse(checkJSON) as ChangeStorageByJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ChangeStorageByArgs.safeParse(args));
     }
 
     /**
@@ -61,15 +65,11 @@ export class ChangeStorageBy extends AbstractCheck<ChangeStorageByJSON, CheckFun
         };
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
+    protected _validate(checkJSON: ChangeStorageByJSON): ChangeStorageByJSON {
+        return ChangeStorageByJSON.parse(checkJSON) as ChangeStorageByJSON;
     }
 
     protected _contradicts(_that: ChangeStorageBy): boolean {
         return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(ChangeStorageByArgs.safeParse(args));
     }
 }

@@ -24,17 +24,6 @@ type OracleModel = ProgramModel | EndModel;
 
 export class ModelTester extends EventEmitter {
 
-    private _nextTestDriver = null;
-    private _nextUmIndex = ModelTester.NO_USER_MODEL;
-    private _programModels: ProgramModel[] = [];
-    private _userModels: UserModel[] = [];
-    private _runningUserModel: UserModel = null;
-    private _onTestEndModels: EndModel[] = [];
-
-    private _checkUtility: CheckUtility | null;
-    private _result: ModelResult | null;
-    private _testDriver: TestDriver | null;
-
     public static readonly NO_USER_MODEL = -1;
     static readonly MODEL_LOAD_ERROR = "ModelLoadError";
     static readonly MODEL_LOG = "ModelLog";
@@ -42,7 +31,13 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
     static readonly MODEL_LOG_MISSED_EDGES = "ModelLogMissedEdges";
     static readonly MODEL_ON_LOAD = "ModelOnLoad";
-
+    private _programModels: ProgramModel[] = [];
+    private _userModels: UserModel[] = [];
+    private _runningUserModel: UserModel = null;
+    private _onTestEndModels: EndModel[] = [];
+    private _checkUtility: CheckUtility | null;
+    private _result: ModelResult | null;
+    private _testDriver: TestDriver | null;
     private _modelStepCallback: Callback | null;
     private _onTestEndCallback: Callback | null;
     private _isRunning = false;
@@ -60,6 +55,30 @@ export class ModelTester extends EventEmitter {
 
         this._modelStepCallback = null;
         this._onTestEndCallback = null;
+    }
+
+    private _nextTestDriver = null;
+
+    get nextTestDriver(): TestDriver {
+        return this._nextTestDriver;
+    }
+
+    set nextTestDriver(value: TestDriver) {
+        this._nextTestDriver = value;
+    }
+
+    private _nextUmIndex = ModelTester.NO_USER_MODEL;
+
+    set nextUmIndex(value: number) {
+        this._nextUmIndex = value;
+    }
+
+    get userModelCount(): number {
+        return this._userModels.length;
+    }
+
+    get canBeStopped(): boolean {
+        return this._isRunning;
     }
 
     _load(modelsString: string, pModels: boolean, endModels: boolean, uModels: boolean): void {
@@ -135,14 +154,6 @@ export class ModelTester extends EventEmitter {
         return this._userModels.length > 0;
     }
 
-    get userModelCount(): number {
-        return this._userModels.length;
-    }
-
-    get canBeStopped(): boolean {
-        return this._isRunning;
-    }
-
     userModelIndices(): number[] {
         return this.userModelCount > 0 ? [...Array(this.userModelCount).keys()] : [ModelTester.NO_USER_MODEL];
     }
@@ -164,20 +175,43 @@ export class ModelTester extends EventEmitter {
         return result;
     }
 
-    get nextTestDriver(): TestDriver {
-        return this._nextTestDriver;
-    }
-
-    set nextTestDriver(value: TestDriver) {
-        this._nextTestDriver = value;
-    }
-
-    set nextUmIndex(value: number) {
-        this._nextUmIndex = value;
-    }
-
     getAllModels(): ModelJSON[] {
         return [...this._programModels, ...this._userModels, ...this._onTestEndModels].map((m) => m.toJSON());
+    }
+
+    /**
+     * Prepare the model for a test run with the last selected UserModel and TestDriver.
+     * Resets the models and adds the callbacks to the test driver.
+     */
+    prepareModelForNextRun(): void {
+        this.prepareModel(this._nextTestDriver, this._nextUmIndex);
+    }
+
+    stopModels(result: TestResult, updateResultStatus = true): void {
+        const res = this._stopAndGetModelResult();
+        result.modelResult = res;
+        if (res && updateResultStatus) {
+            result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
+        }
+    }
+
+    /**
+     * Get the total coverage of the program models of all test runs.
+     */
+    getTotalCoverage(): Record<string, CoverageResult> {
+        const coverage: Record<string, CoverageResult> = {};
+        const programModels = [...this._programModels, ...this._onTestEndModels];
+        const missedEdges: Record<string, string[]> = {};
+        programModels.forEach(model => {
+            const totalCov = model.getTotalCoverage();
+            if (totalCov.missedEdges.length > 0) {
+                missedEdges[model.id] = totalCov.missedEdges;
+                logger.debug(`missed edges for model '${model.id}': ${totalCov.missedEdges}`);
+            }
+            coverage[model.id] = {covered: totalCov.covered, total: totalCov.total};
+        });
+        this.emit(ModelTester.MODEL_LOG_MISSED_EDGES, {missedEdges: missedEdges});
+        return coverage;
     }
 
     private prepareModel(t: TestDriver, umIndex = ModelTester.NO_USER_MODEL): void {
@@ -227,14 +261,6 @@ export class ModelTester extends EventEmitter {
         }
         this._onTestEndCallback?.disable();
         this._isRunning = true;
-    }
-
-    /**
-     * Prepare the model for a test run with the last selected UserModel and TestDriver.
-     * Resets the models and adds the callbacks to the test driver.
-     */
-    prepareModelForNextRun(): void {
-        this.prepareModel(this._nextTestDriver, this._nextUmIndex);
     }
 
     private _doOneStepOnOracleModel(model: OracleModel, notStoppedModels: OracleModel[]) {
@@ -362,14 +388,6 @@ export class ModelTester extends EventEmitter {
         //     logger.debug("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
     }
 
-    stopModels(result: TestResult, updateResultStatus = true): void {
-        const res = this._stopAndGetModelResult();
-        result.modelResult = res;
-        if (res && updateResultStatus) {
-            result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
-        }
-    }
-
     /**
      * Get the result of the test run as a ModelResult.
      */
@@ -423,25 +441,6 @@ export class ModelTester extends EventEmitter {
             // logger.debug("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         }
         return this._result!;
-    }
-
-    /**
-     * Get the total coverage of the program models of all test runs.
-     */
-    getTotalCoverage(): Record<string, CoverageResult> {
-        const coverage: Record<string, CoverageResult> = {};
-        const programModels = [...this._programModels, ...this._onTestEndModels];
-        const missedEdges: Record<string, string[]> = {};
-        programModels.forEach(model => {
-            const totalCov = model.getTotalCoverage();
-            if (totalCov.missedEdges.length > 0) {
-                missedEdges[model.id] = totalCov.missedEdges;
-                logger.debug(`missed edges for model '${model.id}': ${totalCov.missedEdges}`);
-            }
-            coverage[model.id] = {covered: totalCov.covered, total: totalCov.total};
-        });
-        this.emit(ModelTester.MODEL_LOG_MISSED_EDGES, {missedEdges: missedEdges});
-        return coverage;
     }
 
     private _printContradictingEffects(contradictingEffects: Check[]): void {

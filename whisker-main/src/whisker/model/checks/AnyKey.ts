@@ -27,8 +27,12 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: AnyKeyJSON): AnyKeyJSON {
-        return AnyKeyJSON.parse(checkJSON) as AnyKeyJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(AnyKeyArgs.safeParse(args));
     }
 
     /**
@@ -43,15 +47,11 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
         };
     }
 
+    protected _validate(checkJSON: AnyKeyJSON): AnyKeyJSON {
+        return AnyKeyJSON.parse(checkJSON) as AnyKeyJSON;
+    }
+
     protected _contradicts(_that: AnyKey): boolean {
         return false; // Multiple keys can be pressed at the same time.
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(AnyKeyArgs.safeParse(args));
     }
 }

@@ -43,6 +43,14 @@ export class MoveSteps extends AbstractCheck<MoveStepsJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
+    get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(MoveStepsArgs.safeParse(args));
+    }
+
     /**
      * Get a method whether a sprite moved a certain number of steps
      *
@@ -69,13 +77,5 @@ export class MoveSteps extends AbstractCheck<MoveStepsJSON, CheckFun0> {
 
     protected _validate(checkJSON: MoveStepsJSON): MoveStepsJSON {
         return MoveStepsJSON.parse(checkJSON) as MoveStepsJSON;
-    }
-
-    get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(MoveStepsArgs.safeParse(args));
     }
 }

@@ -22,19 +22,19 @@ export class InputKey extends AbstractUserInput<InputKeyJSON> {
         super({name, args});
     }
 
-    protected _validate(json: InputKeyJSON): InputKeyJSON {
-        return InputKeyJSON.parse(json) as InputKeyJSON;
-    }
-
     private get _key(): string {
         return this._inputJSON.args[0];
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(InputKeyArgs.safeParse(args));
     }
 
     override async inputImmediate(t: TestDriver, graphId: string): Promise<void> {
         return t.inputImmediate({device: "keyboard", key: this._key, isDown: true, steps: 1});
     }
 
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(InputKeyArgs.safeParse(args));
+    protected _validate(json: InputKeyJSON): InputKeyJSON {
+        return InputKeyJSON.parse(json) as InputKeyJSON;
     }
 }

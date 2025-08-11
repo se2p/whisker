@@ -42,8 +42,12 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: OutputJSON): OutputJSON {
-        return OutputJSON.parse(checkJSON) as OutputJSON;
+    override get dependsOnSayText(): true {
+        return true;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(OutputArgs.safeParse(args));
     }
 
     /**
@@ -91,8 +95,8 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         };
     }
 
-    override get dependsOnSayText(): true {
-        return true;
+    protected _validate(checkJSON: OutputJSON): OutputJSON {
+        return OutputJSON.parse(checkJSON) as OutputJSON;
     }
 
     protected override _contradicts(that: Output): boolean {
@@ -104,9 +108,5 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         }
 
         return outputThis !== outputThat; // The same sprite cannot output two different things at the same time.
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(OutputArgs.safeParse(args));
     }
 }

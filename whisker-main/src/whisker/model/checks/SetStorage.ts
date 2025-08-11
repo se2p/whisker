@@ -54,8 +54,12 @@ export class SetStorage extends AbstractCheck<SetStorageJSON, CheckFun0> {
         return this._value;
     }
 
-    protected _validate(checkJSON: SetStorageJSON): SetStorageJSON {
-        return SetStorageJSON.parse(checkJSON) as SetStorageJSON;
+    override get dependsOnSayText(): boolean {
+        return this._code.includes(".sayText");
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(SetStorageArgs.safeParse(args));
     }
 
     /**
@@ -84,15 +88,11 @@ export class SetStorage extends AbstractCheck<SetStorageJSON, CheckFun0> {
         return check;
     }
 
-    override get dependsOnSayText(): boolean {
-        return this._code.includes(".sayText");
+    protected _validate(checkJSON: SetStorageJSON): SetStorageJSON {
+        return SetStorageJSON.parse(checkJSON) as SetStorageJSON;
     }
 
     protected _contradicts(_that: SetStorage): boolean {
         return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(SetStorageArgs.safeParse(args));
     }
 }

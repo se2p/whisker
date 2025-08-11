@@ -39,16 +39,20 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         this._comparison = newComparison(this);
     }
 
-    protected _validate(checkJSON: BackgroundChangeJSON): BackgroundChangeJSON {
-        return BackgroundChangeJSON.parse(checkJSON) as BackgroundChangeJSON;
-    }
-
     get operator(): ComparisonOp {
         return "==";
     }
 
     get value(): string {
         return this._args[0];
+    }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(BackgroundChangeArgs.safeParse(args));
     }
 
     /**
@@ -69,15 +73,11 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         };
     }
 
+    protected _validate(checkJSON: BackgroundChangeJSON): BackgroundChangeJSON {
+        return BackgroundChangeJSON.parse(checkJSON) as BackgroundChangeJSON;
+    }
+
     protected override _contradicts(that: BackgroundChange): boolean {
         return this._comparison.contradicts(that._comparison);
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(BackgroundChangeArgs.safeParse(args));
     }
 }

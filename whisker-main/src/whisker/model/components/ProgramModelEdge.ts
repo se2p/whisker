@@ -26,16 +26,16 @@ export class ProgramModelEdge extends AbstractEdge {
         super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
     }
 
+    get effects(): readonly Check[] {
+        return this._effects;
+    }
+
     /**
      * Add an effect to the edge.
      * @param effect Effect function as a string.
      */
     addEffect(effect: Check): void {
         this._effects.push(effect);
-    }
-
-    get effects(): readonly Check[] {
-        return this._effects;
     }
 
     /**
@@ -78,6 +78,18 @@ export class ProgramModelEdge extends AbstractEdge {
         return this.conditions.every(c => checks.includes(c) || c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
     }
 
+    override toJSON(): ProgramModelEdgeJSON {
+        return {
+            id: this.id,
+            label: this.label,
+            from: this.from,
+            to: this.to,
+            forceTestAfter: this.forceTestAfter,
+            forceTestAt: this.forceTestAt,
+            conditions: this.conditions.map((c) => c.toJSON()),
+            effects: this._effects.map(effect => effect.toJSON())
+        };
+    }
 
     private _testEffectsOnEvent(checks: Checks): boolean {
         for (const e of this._effects) {
@@ -92,18 +104,5 @@ export class ProgramModelEdge extends AbstractEdge {
         }
 
         return false;
-    }
-
-    override toJSON(): ProgramModelEdgeJSON {
-        return {
-            id: this.id,
-            label: this.label,
-            from: this.from,
-            to: this.to,
-            forceTestAfter: this.forceTestAfter,
-            forceTestAt: this.forceTestAt,
-            conditions: this.conditions.map((c) => c.toJSON()),
-            effects: this._effects.map(effect => effect.toJSON())
-        };
     }
 }

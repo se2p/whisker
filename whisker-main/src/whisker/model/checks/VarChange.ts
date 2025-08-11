@@ -54,8 +54,12 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return this._args[2];
     }
 
-    protected _validate(checkJSON: VarChangeJSON): VarChangeJSON {
-        return VarChangeJSON.parse(checkJSON) as VarChangeJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(VarChangeArgs.safeParse(args));
     }
 
     /**
@@ -93,6 +97,10 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return check;
     }
 
+    protected _validate(checkJSON: VarChangeJSON): VarChangeJSON {
+        return VarChangeJSON.parse(checkJSON) as VarChangeJSON;
+    }
+
     protected override _contradicts(that: VarChange): boolean {
         const [spriteNameThis, varNameThis] = this._args;
         const [spriteNameThat, varNameThat] = that._args;
@@ -102,13 +110,5 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         }
 
         return this._change.contradicts(that._change);
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(VarChangeArgs.safeParse(args));
     }
 }

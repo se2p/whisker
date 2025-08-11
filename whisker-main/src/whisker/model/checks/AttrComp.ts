@@ -69,8 +69,12 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return this._args[3];
     }
 
-    protected _validate(checkJSON: AttrCompJSON): AttrCompJSON {
-        return AttrCompJSON.parse(checkJSON) as AttrCompJSON;
+    override get dependsOnSayText(): boolean {
+        return this._attrName === "sayText";
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseAttributeError(AttrCompArgs.safeParse(args), attrNameIndex);
     }
 
     /**
@@ -119,12 +123,8 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         };
     }
 
-    private _getAttr(s: Sprite) {
-        return this._isForEffect ? s.effects[this._attrName] : s[this._attrName];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return this._attrName === "sayText";
+    protected _validate(checkJSON: AttrCompJSON): AttrCompJSON {
+        return AttrCompJSON.parse(checkJSON) as AttrCompJSON;
     }
 
     protected override _contradicts(that: AttrComp): boolean {
@@ -138,7 +138,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return this._comparison.contradicts(that._comparison);
     }
 
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseAttributeError(AttrCompArgs.safeParse(args), attrNameIndex);
+    private _getAttr(s: Sprite) {
+        return this._isForEffect ? s.effects[this._attrName] : s[this._attrName];
     }
 }

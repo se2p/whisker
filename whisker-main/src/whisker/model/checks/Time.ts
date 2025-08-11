@@ -47,21 +47,21 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
         return this._args[0];
     }
 
-    private _convertFromTimeToSteps(): number {
-        const time = ModelUtil.testNumber(this.millis);
-        return VMWrapper.convertFromTimeToSteps(time);
-    }
-
-    protected override _contradicts(_that: AbstractTime): boolean {
-        return false; // Time is not mutually exclusive.
-    }
-
     override get dependsOnSayText(): boolean {
         return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(TimeArgs.safeParse(args));
+    }
+
+    protected override _contradicts(_that: AbstractTime): boolean {
+        return false; // Time is not mutually exclusive.
+    }
+
+    private _convertFromTimeToSteps(): number {
+        const time = ModelUtil.testNumber(this.millis);
+        return VMWrapper.convertFromTimeToSteps(time);
     }
 }
 
@@ -78,10 +78,6 @@ export const TimeAfterEndJSON = ITimeJSON.extend({
 export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
     constructor(edgeLabel: string, json: SlimCheckJSON<TimeAfterEndJSON>) {
         super(edgeLabel, {...json, name: nameTimeAfterEnd});
-    }
-
-    protected _validate(checkJSON: TimeAfterEndJSON): TimeAfterEndJSON {
-        return TimeAfterEndJSON.parse(checkJSON) as TimeAfterEndJSON;
     }
 
     /**
@@ -102,6 +98,10 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
             return result(this._steps <= steps, reason, this.negated);
         };
     }
+
+    protected _validate(checkJSON: TimeAfterEndJSON): TimeAfterEndJSON {
+        return TimeAfterEndJSON.parse(checkJSON) as TimeAfterEndJSON;
+    }
 }
 
 const nameTimeBetween = "TimeBetween" as const;
@@ -119,10 +119,6 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
         super(edgeLabel, {...json, name: nameTimeBetween});
     }
 
-    protected _validate(checkJSON: TimeBetweenJSON): TimeBetweenJSON {
-        return TimeBetweenJSON.parse(checkJSON) as TimeBetweenJSON;
-    }
-
     /**
      * Get a method that checks whether enough time has elapsed since the last edge transition in the current model.
      * @param t Instance of the test driver.
@@ -132,6 +128,10 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
             const reason = {actual: stepsSinceLastTransition, expected: this._steps};
             return result(this._steps <= stepsSinceLastTransition, reason, this.negated);
         };
+    }
+
+    protected _validate(checkJSON: TimeBetweenJSON): TimeBetweenJSON {
+        return TimeBetweenJSON.parse(checkJSON) as TimeBetweenJSON;
     }
 }
 
@@ -150,10 +150,6 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
         super(edgeLabel, {...json, name: nameTimeElapsed});
     }
 
-    protected _validate(checkJSON: TimeElapsedJSON): TimeElapsedJSON {
-        return TimeElapsedJSON.parse(checkJSON) as TimeElapsedJSON;
-    }
-
     /**
      * Get a method that checks whether enough time has elapsed since the test runner started the test.
      * @param t Instance of the test driver.
@@ -163,5 +159,9 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
             const steps = t.getTotalStepsExecuted();
             return result(this._steps <= steps, {actual: steps, expected: this._steps}, this.negated);
         };
+    }
+
+    protected _validate(checkJSON: TimeElapsedJSON): TimeElapsedJSON {
+        return TimeElapsedJSON.parse(checkJSON) as TimeElapsedJSON;
     }
 }

@@ -91,8 +91,12 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._args[2];
     }
 
-    protected _validate(checkJSON: AttrChangeJSON): AttrChangeJSON {
-        return AttrChangeJSON.parse(checkJSON) as AttrChangeJSON;
+    override get dependsOnSayText(): boolean {
+        return this._args[1] === "sayText";
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseAttributeError(AttrChangeArgs.safeParse(args), attrNameIndex);
     }
 
     /**
@@ -144,14 +148,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         };
     }
 
-    private _getAttr(s: Sprite) {
-        return this._isForEffect
-            ? [s.effects[this._attributeName], s.old.effects[this._attributeName]]
-            : [s[this._attributeName], s.old[this._attributeName]];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return this._args[1] === "sayText";
+    protected _validate(checkJSON: AttrChangeJSON): AttrChangeJSON {
+        return AttrChangeJSON.parse(checkJSON) as AttrChangeJSON;
     }
 
     protected override _contradicts(that: AttrChange): boolean {
@@ -165,7 +163,9 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._change.contradicts(that._change);
     }
 
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseAttributeError(AttrChangeArgs.safeParse(args), attrNameIndex);
+    private _getAttr(s: Sprite) {
+        return this._isForEffect
+            ? [s.effects[this._attributeName], s.old.effects[this._attributeName]]
+            : [s[this._attributeName], s.old[this._attributeName]];
     }
 }

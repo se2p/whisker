@@ -21,11 +21,10 @@ type EffectCheck = {
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
  */
 export class CheckUtility extends EventEmitter {
-    private readonly _testDriver: TestDriver;
-    private readonly _modelResult: ModelResult;
-
     static readonly CHECK_UTILITY_EVENT = "CheckUtilityEvent";
     static readonly CHECK_LOG_FAIL = "CheckLogFail";
+    private readonly _testDriver: TestDriver;
+    private readonly _modelResult: ModelResult;
     private _onMovedChecks: Record<string, ((sprite: Sprite) => void)[]> = {};
     private _onVisualChecks: Record<string, ((sprite: Sprite) => void)[]> = {};
     private _onSayOrThinkChecks: Record<string, ((sprite: Sprite) => void)[]> = {};
@@ -137,25 +136,6 @@ export class CheckUtility extends EventEmitter {
         }
     }
 
-    private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, check: Check,
-                      spriteName: string, graphID: string, predicate: (sprite: Sprite) => CheckResult) {
-        // no check for this sprite till now
-        if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
-            predicateChecker[spriteName] = [];
-        }
-
-        predicateChecker[spriteName].push((sprite) => {
-            try {
-                const predicateResult = predicate(sprite).passed;
-                if (predicateResult) {
-                    this._checks.push(check);
-                }
-            } catch (e) {
-                this.addErrorOutput(check.edgeLabel, graphID, e);
-            }
-        });
-    }
-
     /**
      * Register a variable change event for a variable.
      * @param varName Name of the variable.
@@ -181,16 +161,6 @@ export class CheckUtility extends EventEmitter {
                     this._checks.push(check);
                 }
             });
-        }
-    }
-
-    private _checkForEvent(checks: Record<string, ((sprite: Sprite) => void)[]>, sprite: Sprite): void {
-        if (checks[sprite.name] != null) {
-            checks[sprite.name].forEach(fun => fun(sprite));
-            if (this._checks.length > 0) {
-                this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._checks);
-            }
-            this._checks = new Checks();
         }
     }
 
@@ -296,28 +266,6 @@ export class CheckUtility extends EventEmitter {
         this._modelResult.addError(output);
     }
 
-    private _failOrError(output: string, failureList: Record<string, number>) {
-        if (!this._logsInConsole) {
-            return;
-        }
-        if (this._onlyTenOutputs) {
-            if (failureList[output] == undefined) {
-                failureList[output] = 0;
-            }
-            failureList[output]++;
-            if (failureList[output] == 10) {
-                this.emit(CheckUtility.CHECK_LOG_FAIL, output + "(10th time, no more outputs for this)");
-                // logger.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
-            } else if (failureList[output] < 10) {
-                this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-                // logger.error(output, this.testDriver.getTotalStepsExecuted());
-            }
-        } else {
-            this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-            // logger.error(output, this.testDriver.getTotalStepsExecuted());
-        }
-    }
-
     /**
      * Check effects that are already registered for checking, triggered by an event.
      */
@@ -341,6 +289,57 @@ export class CheckUtility extends EventEmitter {
             }
         }
         this._effectChecks = [];
+    }
+
+    private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, check: Check,
+                      spriteName: string, graphID: string, predicate: (sprite: Sprite) => CheckResult) {
+        // no check for this sprite till now
+        if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
+            predicateChecker[spriteName] = [];
+        }
+
+        predicateChecker[spriteName].push((sprite) => {
+            try {
+                const predicateResult = predicate(sprite).passed;
+                if (predicateResult) {
+                    this._checks.push(check);
+                }
+            } catch (e) {
+                this.addErrorOutput(check.edgeLabel, graphID, e);
+            }
+        });
+    }
+
+    private _checkForEvent(checks: Record<string, ((sprite: Sprite) => void)[]>, sprite: Sprite): void {
+        if (checks[sprite.name] != null) {
+            checks[sprite.name].forEach(fun => fun(sprite));
+            if (this._checks.length > 0) {
+                this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._checks);
+            }
+            this._checks = new Checks();
+        }
+    }
+
+    private _failOrError(output: string, failureList: Record<string, number>) {
+        if (!this._logsInConsole) {
+            return;
+        }
+        if (this._onlyTenOutputs) {
+            if (failureList[output] == undefined) {
+                failureList[output] = 0;
+            }
+            failureList[output]++;
+            if (failureList[output] == 10) {
+                this.emit(CheckUtility.CHECK_LOG_FAIL, output + "(10th time, no more outputs for this)");
+                // logger.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
+            } else if (failureList[output] < 10) {
+                this.emit(CheckUtility.CHECK_LOG_FAIL, output);
+                // logger.error(output, this.testDriver.getTotalStepsExecuted());
+            }
+        } else {
+            this.emit(CheckUtility.CHECK_LOG_FAIL, output);
+            // logger.error(output, this.testDriver.getTotalStepsExecuted());
+        }
     }
 
     private _checkFailedOutputEvents() {

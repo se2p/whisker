@@ -16,18 +16,18 @@ abstract class AbstractQuantification<T extends Quantifiable<T>> {
 
     abstract apply(args: unknown[]): CheckResult;
 
-    protected _apply(a: unknown): CheckResult {
-        return Array.isArray(a)
-            ? this.applySingle(...a)
-            : this.applySingle(a);
-    }
-
     applySingle(...args: unknown[]): CheckResult {
         return this._wrapped.apply(...args);
     }
 
     contradicts(that: AbstractQuantification<T>): boolean {
         return this.wrapped.contradicts(that.wrapped);
+    }
+
+    protected _apply(a: unknown): CheckResult {
+        return Array.isArray(a)
+            ? this.applySingle(...a)
+            : this.applySingle(a);
     }
 }
 

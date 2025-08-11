@@ -41,8 +41,12 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
         return this._args[0];
     }
 
-    protected _validate(checkJSON: ProbabilityJSON): ProbabilityJSON {
-        return ProbabilityJSON.parse(checkJSON) as ProbabilityJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ProbabilityArgs.safeParse(args));
     }
 
     /**
@@ -58,15 +62,11 @@ export class Probability extends AbstractCheck<ProbabilityJSON, CheckFun0> {
         return () => result(Randomness.getInstance().nextDouble() < prob, {}, negated);
     }
 
+    protected _validate(checkJSON: ProbabilityJSON): ProbabilityJSON {
+        return ProbabilityJSON.parse(checkJSON) as ProbabilityJSON;
+    }
+
     protected _contradicts(_that: Probability): boolean {
         return false;
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(ProbabilityArgs.safeParse(args));
     }
 }

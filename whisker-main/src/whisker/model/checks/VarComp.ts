@@ -47,16 +47,20 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         this._comparison = newComparison(this);
     }
 
-    protected _validate(checkJSON: VarCompJSON): VarCompJSON {
-        return VarCompJSON.parse(checkJSON) as VarCompJSON;
-    }
-
     get operator(): ComparisonOp {
         return this._args[2];
     }
 
     get value(): string | number {
         return this._args[3];
+    }
+
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"}, e => e.issues.length);
     }
 
     /**
@@ -89,6 +93,10 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return check;
     }
 
+    protected _validate(checkJSON: VarCompJSON): VarCompJSON {
+        return VarCompJSON.parse(checkJSON) as VarCompJSON;
+    }
+
     protected override _contradicts(that: VarComp): boolean {
         const [thisSpriteName, thisVarName] = this._args;
         const [thatSpriteName, thatVarName] = that._args;
@@ -98,13 +106,5 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         }
 
         return this._comparison.contradicts(that._comparison);
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"}, e => e.issues.length);
     }
 }

@@ -37,8 +37,12 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         return this._code;
     }
 
-    protected _validate(checkJSON: ExprJSON): ExprJSON {
-        return ExprJSON.parse(checkJSON) as ExprJSON;
+    override get dependsOnSayText(): boolean {
+        return this._code.includes(".sayText");
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ExprArgs.safeParse(args));
     }
 
     /**
@@ -57,17 +61,13 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         return check;
     }
 
-    override get dependsOnSayText(): boolean {
-        return this._code.includes(".sayText");
+    protected _validate(checkJSON: ExprJSON): ExprJSON {
+        return ExprJSON.parse(checkJSON) as ExprJSON;
     }
 
     protected _contradicts(_that: Expr): boolean {
         // Expressions are very powerful. While it's possible for two expressions to be contradicting, it's also very
         // difficult to check it here. Thus, we assume that expressions have been crafted not to contradict each other.
         return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(ExprArgs.safeParse(args));
     }
 }

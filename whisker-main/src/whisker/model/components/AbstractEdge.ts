@@ -27,13 +27,11 @@ export abstract class AbstractEdge {
     /* Id of the target node*/
     readonly to: string;
     conditions: Condition[] = [];
-    _lastTransition = 0;
-
     readonly forceTestAfter: number;
     readonly forceTestAt: number;
+    protected failedForcedTest: boolean;
     private _forceTestAfterSteps: number;
     private _forceTestAtSteps: number;
-    protected failedForcedTest: boolean;
 
     protected constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
                           forceTestAt: number) {
@@ -60,6 +58,16 @@ export abstract class AbstractEdge {
         this.failedForcedTest = false;
         this._forceTestAfterSteps = -1;
         this._forceTestAtSteps = -1;
+    }
+
+    _lastTransition = 0;
+
+    get lastTransition(): number {
+        return this._lastTransition;
+    }
+
+    set lastTransition(transition: number) {
+        this._lastTransition = transition;
     }
 
     /**
@@ -117,22 +125,6 @@ export abstract class AbstractEdge {
 
     abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): boolean;
 
-    set lastTransition(transition: number) {
-        this._lastTransition = transition;
-    }
-
-    get lastTransition(): number {
-        return this._lastTransition;
-    }
-
-    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Record<string, unknown>): string {
-        if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
-            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt, reason);
-        } else {
-            return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter, reason);
-        }
-    }
-
     /**
      * Returns the id of the target node of this edge.
      */
@@ -171,4 +163,12 @@ export abstract class AbstractEdge {
     }
 
     abstract toJSON(): ModelEdgeJSON;
+
+    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Record<string, unknown>): string {
+        if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
+            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt, reason);
+        } else {
+            return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter, reason);
+        }
+    }
 }

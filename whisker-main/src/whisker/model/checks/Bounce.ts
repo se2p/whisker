@@ -37,6 +37,14 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
+    get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(BounceArgs.safeParse(args));
+    }
+
     /**
      * Get a method whether a sprite bounces when it touches an edge.
      *
@@ -87,13 +95,5 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
 
     protected _validate(checkJSON: BounceJSON): BounceJSON {
         return BounceJSON.parse(checkJSON) as BounceJSON;
-    }
-
-    get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(BounceArgs.safeParse(args));
     }
 }
