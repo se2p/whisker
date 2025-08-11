@@ -560,6 +560,8 @@ export abstract class ModelUtil {
             expectedDistance: expected,
             oldDirection: s.old.direction,
             movedDirection: movedDirection,
+            x: s.x,
+            y: s.y,
         }, negated);
     }
 
