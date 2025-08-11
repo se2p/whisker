@@ -16,6 +16,7 @@ const logger = require("../util/logger");
 const {ModelTester} = require("../whisker/model/ModelTester");
 const {onExecuted, onPassed} = require("../coverage/assertion-level-tracing");
 const {serializeError} = require("../util/serialize-error");
+const {modelCsvHeader, modelResultToCsvData} = require("./model-result");
 
 function enableAssertionLevelBlockTracing(assertions, assumptions) {
     assert.onExecutedAssertion = onExecuted.bind(null, assertions);
@@ -112,7 +113,7 @@ class TestRunner extends EventEmitter {
         const projectName = props['projectName'];
         const testResults = [];
         const finalResults = {};
-        let csv = this._generateCSVHeader(tests, modelProps);
+        let csv = this._generateCSVHeader(tests);
 
         // repair-specific variables
         const coveragePerTest = [];
@@ -299,10 +300,9 @@ class TestRunner extends EventEmitter {
             // Record the results
             const duration = (Date.now() - startTime) / 1000;
             const coverage = this._extractCoverage();
-            const modelResults = this._extractModelCSVData(result.modelResult);
             const seed = Randomness.scratchSeed;
             csv += this._generateCSVRow(projectName, seed, totalAssertions, [result.status], coverage,
-                duration, undefined, modelResults);
+                duration, undefined, result.modelResult);
         }
         return csv;
     }
@@ -518,20 +518,18 @@ class TestRunner extends EventEmitter {
     /**
      * Generates the csv header
      * @param {Test[]} tests
-     * @param {{duration: number, repetitions: number}} modelProps
      * @return {string}
      */
-    _generateCSVHeader(tests, modelProps) {
+    _generateCSVHeader(tests) {
         let header = `\nprojectName,seed,assertions,generationAlgorithm`;
         if (tests) {
             for (const test of tests) {
                 header += `,${test.name}`;
             }
-            header += `,passed,failed,error,skip,statements,statementCoverage,branches,branchCoverage,duration\n`;
-        } else if (modelProps.repetitions > 0) {
-            header += `,modelRepetition,modelFails,modelErrors,testResult,statements,statementCoverage,branches,branchCoverage,modelCoverage,duration\n`;
+            header += `,passed,failed,error,skip`;
         }
-        return header;
+        header += `,statements,statementCoverage,branches,branchCoverage,duration,testResult${modelCsvHeader}`;
+        return header + "\n";
     }
 
     /**
@@ -543,22 +541,21 @@ class TestRunner extends EventEmitter {
      * @param {{statements:number, statCoverage:number, branches:number, branchCoverage:number}} coverage
      * @param {number} duration
      * @param {{}} resultRecords
-     * @param {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}} modelResults
+     * @param {ModelResult} modelResult
      * @return {string}
      */
     _generateCSVRow(projectName, seed, assertions, testStatusResults,
-                    coverage, duration, resultRecords, modelResults = undefined) {
+                    coverage, duration, resultRecords, modelResult = undefined) {
         let csvRow = `${projectName},${seed},${assertions}`;
-        if (modelResults !== undefined) {
-            csvRow += `,${modelResults.generationAlgorithm},${modelResults.repetition},${modelResults.fails},${modelResults.errors},${testStatusResults[0]},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${modelResults.coverage},${duration}\n`;
-        } else if (resultRecords !== undefined) {
+        if (resultRecords !== undefined) {
             csvRow += `,${resultRecords.generationAlgorithm}`;
             for (const testResult of testStatusResults) {
                 csvRow += `,${testResult}`;
             }
-            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration}\n`;
+            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration}`;
         }
-        return csvRow;
+        csvRow += `,${testStatusResults[0]},${modelResultToCsvData(modelResult)}`;
+        return csvRow + '\n';
     }
 
     /**
@@ -585,29 +582,6 @@ class TestRunner extends EventEmitter {
                 resultRecords.skip = resultRecords['skip'] + 1;
                 break;
         }
-    }
-
-    /**
-     * Extracts csv data from observed obtained model results.
-     * @param {object} modelResults
-     * @return {{repetition: number, fails: number, errors:number, coverage:number, generationAlgorithm: string}}
-     * @private
-     */
-    _extractModelCSVData(modelResults) {
-        let achievedModelCoverage = 0;
-        let totalModelCoverage = 0;
-        for (const coverages of Object.values(modelResults.coverage)) {
-            achievedModelCoverage += coverages.covered.length;
-            totalModelCoverage += coverages.total;
-        }
-        const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
-        return {
-            repetition: modelResults.testNbr,
-            fails: modelResults.fails.length,
-            errors: modelResults.errors.length,
-            coverage: coverageRate,
-            generationAlgorithm: "None"     // We do not generate models automatically yet.
-        };
     }
 
     /**
@@ -689,7 +663,7 @@ class TestRunner extends EventEmitter {
                 assert.onPassedAssertion = null;
                 assume.onPassedAssumption = null;
             }
-            this.vmWrapper.stopModels(result,false);
+            this.vmWrapper.stopModels(result, false);
             await this._determineCoverages(test, props);
         } else if (this.vmWrapper.modelTester.someModelLoaded()) {
             let updateResultStatus = true;

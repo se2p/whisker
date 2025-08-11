@@ -382,6 +382,13 @@ export class DynamicNetworkSuite {
      */
     protected async updateTestStatistics(testCases: readonly NeatChromosome[], projectName: string,
                                          testName: string): Promise<void> {
+        const modelResKey = projectName;
+        const modelResults = Container.vmWrapper.getTestResultsForProjectName(modelResKey)[modelResKey]
+            .map(tr => tr.modelResult);
+        const modelResultCountEqual = modelResults.length === testCases.length;
+        if (!modelResultCountEqual && Container.vmWrapper.modelTester.someModelLoaded()) {
+            console.debug("there were", modelResults.length, "model results but", testCases.length, "dynamic test cases.");
+        }
         for (let i = 0; i < testCases.length; i++) {
             const test = testCases[i];
             const statements = [...this.statementMap.keys()].length;
@@ -412,6 +419,7 @@ export class DynamicNetworkSuite {
                 surpriseCount: test.surpriseCount,
                 avgUncertainty: averageUncertainty,
                 isMutant: isMutant,
+                modelResult: modelResultCountEqual ? modelResults[i] : undefined
             };
             StatisticsCollector.getInstance().addNetworkSuiteResult(testResult);
         }
@@ -460,7 +468,7 @@ export class DynamicNetworkSuite {
         await util.prepare(this.properties['acceleration'] as number || 1);
         const vmWrapper = util.getVMWrapper();
         this.initialiseCoverageMaps(vmWrapper.vm);
-        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout,'activation', this.parameter.classificationType, false);
+        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation', this.parameter.classificationType, false);
     }
 
     /**
