@@ -7,14 +7,11 @@ export class SpriteMock {
     public touchingSprite: boolean;
     public variables: any[];
     public currentCostumeName: string;
-    public _clones: SpriteMock[];
     public old: SpriteMock;
     public sayText: string;
     public touchingVerticalEdge: boolean;
     public touchingHorizontalEdge: boolean;
     public _original: boolean;
-    private _visible: boolean;
-    private _sprite: Sprite;
 
     constructor(name: string, variables = null, isOriginal = true, isTouchingMouse = true, visible = true,
                 isTouchingColor = true, touchingSprite = true, clones: SpriteMock[] = []) {
@@ -27,6 +24,37 @@ export class SpriteMock {
         this.variables = variables;
         this.clones = clones;
         this.updateSprite();
+    }
+
+    public _clones: SpriteMock[];
+
+    get clones(): SpriteMock[] {
+        return this._clones;
+    }
+
+    set clones(value: SpriteMock[]) {
+        value.forEach(c => c._original = false);
+        this._clones = value;
+    }
+
+    private _visible: boolean;
+
+    set visible(value: boolean) {
+        this._visible = value;
+    }
+
+    private _sprite: Sprite;
+
+    get sprite(): Sprite {
+        return this._sprite;
+    }
+
+    public static toSpriteArray(array: SpriteMock[]): Sprite[] {
+        return array.map(m => m.updateSprite());
+    }
+
+    public static stringsToSpriteArray(array: string[]): Sprite[] {
+        return SpriteMock.toSpriteArray(array.map(s => new SpriteMock(s)));
     }
 
     public updateSprite(): Sprite {
@@ -70,30 +98,5 @@ export class SpriteMock {
     private getValueOfVariableOrUndefined(key: string): number | string {
         const variable = this.variables.find(v => v.name == key);
         return variable == undefined ? undefined : variable.value;
-    }
-
-    get sprite(): Sprite {
-        return this._sprite;
-    }
-
-    set visible(value: boolean) {
-        this._visible = value;
-    }
-
-    set clones(value: SpriteMock[]) {
-        value.forEach(c => c._original = false);
-        this._clones = value;
-    }
-
-    get clones(): SpriteMock[] {
-        return this._clones;
-    }
-
-    public static toSpriteArray(array: SpriteMock[]): Sprite[] {
-        return array.map(m => m.updateSprite());
-    }
-
-    public static stringsToSpriteArray(array: string[]): Sprite[] {
-        return SpriteMock.toSpriteArray(array.map(s => new SpriteMock(s)));
     }
 }
