@@ -1182,7 +1182,7 @@ class ModelEditor {
      * @param args Arguments of the check
      */
     changeCheckType (isAnEffect, isAUserModel, type, id, args) {
-        const codes = isAnEffect && isAUserModel ? inputLabelCodes : checkLabelCodes[type];
+        const codes = isAnEffect && isAUserModel ? inputLabelCodes : checkLabelCodes;
         const argNames = codes[type];
 
         if (args.length !== argNames.length) {
@@ -1396,12 +1396,14 @@ class ModelEditor {
     /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement (check, index, isAnEffect = false, isAUserModel = false) {
         const key = `modelEditor:${check.name}`;
-        let name = (check.negated ? '!' : '') + i18n.t(key);
+        let name = `${check.negated ? '!' : ''}${i18n.t(key)} `;
 
-        if (check.name !== 'Expr' && check.name !== 'Key') {
-            name += ` (${check.args})`;
-        } else if (check.name === 'Key') {
-            name += ` (${i18n.t(`modelEditor:${check.args[0]}`)})`;
+        if (check.name === 'Key') {
+            name += `(${i18n.t(`modelEditor:${check.args[0]}`)})`;
+        } else if (check.name === 'Expr') {
+            name += check.args[0].length < 40 ? `(${check.args})` : `(${check.args[0].substring(0, 35)})...)`;
+        } else {
+            name += `(${check.args})`;
         }
 
         return $('<div/>', {class: 'row', style: 'margin:0;'})

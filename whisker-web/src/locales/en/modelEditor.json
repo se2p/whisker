@@ -113,7 +113,7 @@
     "SpriteTouching": "Sprite Touching",
     "VarChange": "Variable Change",
     "VarComp": "Variable Comparison",
-    "Expr": "JavaScript Expression",
+    "Expr": "JS code",
     "Probability": "Probability",
     "TimeElapsed": "Time since Beginning",
     "TimeBetween": "Time between Edges",
