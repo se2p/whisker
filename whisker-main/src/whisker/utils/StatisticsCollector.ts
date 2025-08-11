@@ -25,6 +25,7 @@ import {Container} from "./Container";
 import {BranchCoverageFitnessFunction} from "../testcase/fitness/BranchCoverageFitnessFunction";
 import Arrays from "./Arrays";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
+import {modelCsvHeader, ModelResult, modelResultToCsvData} from "../../test-runner/model-result";
 
 
 /**
@@ -426,7 +427,8 @@ export class StatisticsCollector {
             "totalStatements,testStatementCoverage,suiteStatementCoverage," +
             "totalBranches,testBranchCoverage,suiteBranchCoverage," +
             "testWon,suiteWon," +
-            "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant\n";
+            "score,playTime,surpriseNodeAdequacy,surpriseCount,avgUncertainty,isMutant" +
+            modelCsvHeader + "\n";
 
         for (const testResult of this._networkSuiteResults) {
             const data = [testResult.projectName, testResult.testName, testResult.testID, testResult.seed,
@@ -434,7 +436,8 @@ export class StatisticsCollector {
                 testResult.branches, testResult.branchCoverageTest, testResult.branchCoverageSuite,
                 testResult.wonTest, testResult.wonSuite,
                 testResult.score, testResult.playTime, testResult.surpriseNodeAdequacy, testResult.surpriseCount,
-                testResult.avgUncertainty, testResult.isMutant];
+                testResult.avgUncertainty, testResult.isMutant, ...modelResultToCsvData(testResult.modelResult)
+            ];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }
@@ -569,7 +572,7 @@ export class StatisticsCollector {
     private _isWinningStateCovered(): string {
         const coveredStatements = this.getCoveredStatements();
         const winningState = this.getWinningStateForProject(this._projectName);
-        if (! winningState) {
+        if (!winningState) {
             return "NA";
         }
         const won = [...coveredStatements]
@@ -623,6 +626,7 @@ export interface NetworkTestSuiteResults {
     surpriseCount: number,
     avgUncertainty: number,
     isMutant?: boolean,
+    modelResult?: ModelResult,
 }
 
 export interface CoverageOverTime {

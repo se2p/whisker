@@ -2,7 +2,7 @@ import {UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
-import ModelResult from "../../test-runner/model-result";
+import {ModelResult} from "../../test-runner/model-result";
 import {AbstractEdge} from "./components/AbstractEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks";
@@ -187,12 +187,16 @@ export class ModelTester extends EventEmitter {
         this.prepareModel(this._nextTestDriver, this._nextUmIndex);
     }
 
-    stopModels(result: TestResult, updateResultStatus = true): void {
+    stopModels(result: TestResult, updateResultStatus = true): boolean {
         const res = this._stopAndGetModelResult();
         result.modelResult = res;
+        if (res === null) {
+            return false;
+        }
         if (res && updateResultStatus) {
             result.status = res.errors.length > 0 ? Test.ERROR : (res.fails.length === 0 ? Test.PASS : Test.FAIL);
         }
+        return true;
     }
 
     /**

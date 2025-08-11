@@ -5,7 +5,7 @@
  * @property {string[]} covered
  */
 
-class ModelResult {
+export class ModelResult {
     constructor() {
         /**
          * @type {number}
@@ -61,6 +61,32 @@ class ModelResult {
             this.fails.push(fail);
         }
     }
+
+    /**
+     * Returns this object as a tuple containing all values given in the header.
+     * @return {[number,number,number,number]}
+     */
+    getCsvColumns() {
+        let achievedModelCoverage = 0;
+        let totalModelCoverage = 0;
+        for (const coverages of Object.values(this.coverage)) {
+            achievedModelCoverage += coverages.covered.length;
+            totalModelCoverage += coverages.total;
+        }
+        const coverageRate = Math.round((achievedModelCoverage / totalModelCoverage) * 100) / 100;
+        return [this.testNbr ?? 1, this.fails.length, this.errors.length, coverageRate];
+    }
 }
 
-module.exports = ModelResult;
+export const modelCsvHeader = ",modelRepetition,modelFails,modelErrors,modelCoverage";
+
+/**
+ * Converts the result into the data for the csv file. If no valid result but instead null/ undefined,
+ * all values of the returned tuple will be {@linkcode defaultValue}.
+ * @param result
+ * @param defaultValue
+ * @return {string|*[]}
+ */
+export function modelResultToCsvData(result, defaultValue  = null) {
+    return result ? result.getCsvColumns() : [defaultValue, defaultValue, defaultValue, defaultValue];
+}
