@@ -61,6 +61,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         // even if no initial storage is provided, the storage still must be reset
         const initialStorage = new Map<string, unknown>();
+        ModelUtil.initialiseStorage(this.id, initialStorage);
 
         for (const [key, [type, value]] of Object.entries(this.initialStorage)) {
             if (type === "number" || type === "string") {
@@ -71,7 +72,5 @@ export abstract class AbstractModel<E extends ModelEdge> {
                 initialStorage.set(key, ModelUtil.evaluateExpression(testDriver, expr, this._id));
             }
         }
-
-        ModelUtil.initialiseStorage(this.id, initialStorage);
     }
 }
