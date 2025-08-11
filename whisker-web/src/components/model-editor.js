@@ -1182,7 +1182,7 @@ class ModelEditor {
      * @param args Arguments of the check
      */
     changeCheckType (isAnEffect, isAUserModel, type, id, args) {
-        const codes = isAnEffect && isAUserModel ? inputLabelCodes : checkLabelCodes[type];
+        const codes = isAnEffect && isAUserModel ? inputLabelCodes : checkLabelCodes;
         const argNames = codes[type];
 
         if (args.length !== argNames.length) {
