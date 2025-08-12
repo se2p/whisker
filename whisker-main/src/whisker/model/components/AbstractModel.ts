@@ -14,19 +14,15 @@ export type Model =
     ;
 
 export abstract class AbstractModel<E extends ModelEdge> {
-    private readonly _id: string;
-
-    protected readonly startNodeId: string;
-    protected readonly stopAllNodeIds: string[];
-
-    protected readonly nodes: Record<string, ModelNode<E>>;
-    protected readonly edges: Record<string, E>;
-
-    protected readonly initialStorage: Record<string, StorageValueType>;
-
     currentState: ModelNode<E>;
     lastTransitionStep = 0;
     secondLastTransitionStep = 0;
+    protected readonly startNodeId: string;
+    protected readonly stopAllNodeIds: string[];
+    protected readonly nodes: Record<string, ModelNode<E>>;
+    protected readonly edges: Record<string, E>;
+    protected readonly initialStorage: Record<string, StorageValueType>;
+    private readonly _id: string;
 
     protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<E>>, edges: Record<string, E>,
                           stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
@@ -45,15 +41,15 @@ export abstract class AbstractModel<E extends ModelEdge> {
         this.initialStorage = initialStorage;
     }
 
-    abstract makeOneTransition(t: TestDriver, checkUtility: CheckUtility): E | null;
-
-    abstract toJSON(): ModelJSON;
-
     get id(): string {
         return this._id;
     }
 
     abstract get usage(): ModelUsage;
+
+    abstract makeOneTransition(t: TestDriver, checkUtility: CheckUtility): E | null;
+
+    abstract toJSON(): ModelJSON;
 
     /**
      * Initializes the storage for this model

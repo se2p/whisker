@@ -42,7 +42,6 @@ export type CheckFun =
 export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: J;
-    private _check: C;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -57,6 +56,12 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._check = (() => fail({message})) as C;
     }
 
+    private _check: C;
+
+    get check(): C {
+        return this._check;
+    }
+
     get edgeLabel(): string {
         return this._edgeLabel;
     }
@@ -69,27 +74,11 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return this._checkJSON.negated;
     }
 
+    abstract get dependsOnSayText(): boolean;
+
     protected get _args(): J["args"] {
         return this._checkJSON.args;
     }
-
-    get check(): C {
-        return this._check;
-    }
-
-    abstract get dependsOnSayText(): boolean;
-
-    protected abstract _validate(checkJSON: J): J;
-
-    /**
-     * Test the arguments for this check with the current test driver instance that has a loaded scratch program and
-     * get the correct check function (based and valid only on the given test driver!). This may throw an error if
-     * arguments are not in the correct range (e.g. x coordinate) or a sprite/var/attribute is not defined.
-     * @param t Instance of the test driver.
-     * @param cu Instance of the check utility for listening and checking more complex events.
-     * @param graphID ID of the parent graph of the check.
-     */
-    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): C;
 
     equals(that: AbstractCheck): boolean {
         return this.name === that.name && this.negated === that.negated && this._equalsArgs(that);
@@ -97,10 +86,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     isInvertedOf(that: AbstractCheck): boolean {
         return this.name === that.name && this.negated !== that.negated && this._equalsArgs(that);
-    }
-
-    private _equalsArgs(that: AbstractCheck): boolean {
-        return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
     }
 
     testForContradictingWithEvents(checks: Checks): boolean {
@@ -136,8 +121,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return this._contradicts(that);
     }
 
-    protected abstract _contradicts(that: AbstractCheck): boolean;
-
     toString(): string {
         const negated = this.negated ? "!" : "";
         const args = this._args.join(',');
@@ -146,5 +129,23 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     toJSON(): J {
         return JSON.parse(JSON.stringify(this._checkJSON));
+    }
+
+    protected abstract _validate(checkJSON: J): J;
+
+    /**
+     * Test the arguments for this check with the current test driver instance that has a loaded scratch program and
+     * get the correct check function (based and valid only on the given test driver!). This may throw an error if
+     * arguments are not in the correct range (e.g. x coordinate) or a sprite/var/attribute is not defined.
+     * @param t Instance of the test driver.
+     * @param cu Instance of the check utility for listening and checking more complex events.
+     * @param graphID ID of the parent graph of the check.
+     */
+    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): C;
+
+    protected abstract _contradicts(that: AbstractCheck): boolean;
+
+    private _equalsArgs(that: AbstractCheck): boolean {
+        return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
     }
 }

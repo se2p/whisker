@@ -44,6 +44,14 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
+    get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(LayerArgs.safeParse(args));
+    }
+
     /**
      * Get a method for checking whether a sprite is on the first/last layer.
      * @param t Instance of the test driver for retrieving the layers of the sprite and its clones.
@@ -70,13 +78,5 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
 
     protected _validate(checkJSON: LayerJSON): LayerJSON {
         return LayerJSON.parse(checkJSON) as LayerJSON;
-    }
-
-    get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(LayerArgs.safeParse(args));
     }
 }

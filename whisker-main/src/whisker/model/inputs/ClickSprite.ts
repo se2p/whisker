@@ -28,8 +28,8 @@ export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
         return this._inputJSON.args[0];
     }
 
-    protected override _validate(json: ClickSpriteJSON): ClickSpriteJSON {
-        return ClickSpriteJSON.parse(json) as ClickSpriteJSON;
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClickSpriteArgs.safeParse(args));
     }
 
     override async inputImmediate(t: TestDriver, graphId: string): Promise<void> {
@@ -38,7 +38,7 @@ export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
         return clickSpriteEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(ClickSpriteArgs.safeParse(args));
+    protected override _validate(json: ClickSpriteJSON): ClickSpriteJSON {
+        return ClickSpriteJSON.parse(json) as ClickSpriteJSON;
     }
 }

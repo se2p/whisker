@@ -42,8 +42,12 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: SpriteTouchingJSON): SpriteTouchingJSON {
-        return SpriteTouchingJSON.parse(checkJSON) as SpriteTouchingJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(SpriteTouchingArgs.safeParse(args));
     }
 
     /**
@@ -87,15 +91,11 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         };
     }
 
+    protected _validate(checkJSON: SpriteTouchingJSON): SpriteTouchingJSON {
+        return SpriteTouchingJSON.parse(checkJSON) as SpriteTouchingJSON;
+    }
+
     protected _contradicts(_that: SpriteTouching): boolean {
         return false; // Any combination of 4 sprites may touch each other at the same time.
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(SpriteTouchingArgs.safeParse(args));
     }
 }

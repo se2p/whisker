@@ -23,8 +23,8 @@ export class ClickStage extends AbstractUserInput<ClickStageJSON> {
         super({name, args});
     }
 
-    protected _validate(json: ClickStageJSON): ClickStageJSON {
-        return ClickStageJSON.parse(json) as ClickStageJSON;
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClickStageArgs.safeParse(args));
     }
 
     override async inputImmediate(_t: TestDriver, graphId: string): Promise<void> {
@@ -32,7 +32,7 @@ export class ClickStage extends AbstractUserInput<ClickStageJSON> {
         return clickStageEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(ClickStageArgs.safeParse(args));
+    protected _validate(json: ClickStageJSON): ClickStageJSON {
+        return ClickStageJSON.parse(json) as ClickStageJSON;
     }
 }

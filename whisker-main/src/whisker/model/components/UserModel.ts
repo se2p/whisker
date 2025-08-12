@@ -37,6 +37,10 @@ export class UserModel extends AbstractModel<UserModelEdge> {
         super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
     }
 
+    override get usage(): "user" {
+        return "user";
+    }
+
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
@@ -88,10 +92,6 @@ export class UserModel extends AbstractModel<UserModelEdge> {
     setTransitionsStartTo(steps: number): void {
         this.lastTransitionStep = steps;
         this.secondLastTransitionStep = steps;
-    }
-
-    override get usage(): "user" {
-        return "user";
     }
 
     override toJSON(): UserModelJSON {

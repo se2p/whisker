@@ -39,34 +39,6 @@ export class Change implements Quantifiable<Change> {
         }
     }
 
-    protected _apply(after: number, before: number): CheckResult {
-        return this._comparison.apply(after - before);
-    }
-
-    private _clampToBounds(v: number): number {
-        if (this._bounds === null) {
-            return v;
-        }
-
-        // Although the stage has a width of 480 with bounds [-240, 240], it appears the x values of sprites can
-        // sometimes drop below -240 or exceed 240. This might happen for other attributes as well. Our computations
-        // might not expect values outside the interval, so we clamp these values back to it.
-        const {min, max} = this._bounds;
-        return Math.max(min, Math.min(max, v));
-    }
-
-    apply(after: number, before: number): CheckResult {
-        return this._apply(this._clampToBounds(after), this._clampToBounds(before)).replace({before, after});
-    }
-
-    contradicts(that: Change): boolean {
-        return this._comparison.contradicts(that._comparison);
-    }
-
-    negate(): Change {
-        return new Change(this._comparison.negate(), this._bounds);
-    }
-
     static from(numberOrChangeOp: NumberOrChangeOp, bounds: Bounds | null = null): Change {
         // Special handling to support string operands as the subtraction trick would not work.
         if (bounds === null) {
@@ -123,6 +95,34 @@ export class Change implements Quantifiable<Change> {
             default:
                 throw new NonExhaustiveCaseDistinction(boundsKind);
         }
+    }
+
+    apply(after: number, before: number): CheckResult {
+        return this._apply(this._clampToBounds(after), this._clampToBounds(before)).replace({before, after});
+    }
+
+    contradicts(that: Change): boolean {
+        return this._comparison.contradicts(that._comparison);
+    }
+
+    negate(): Change {
+        return new Change(this._comparison.negate(), this._bounds);
+    }
+
+    protected _apply(after: number, before: number): CheckResult {
+        return this._comparison.apply(after - before);
+    }
+
+    private _clampToBounds(v: number): number {
+        if (this._bounds === null) {
+            return v;
+        }
+
+        // Although the stage has a width of 480 with bounds [-240, 240], it appears the x values of sprites can
+        // sometimes drop below -240 or exceed 240. This might happen for other attributes as well. Our computations
+        // might not expect values outside the interval, so we clamp these values back to it.
+        const {min, max} = this._bounds;
+        return Math.max(min, Math.min(max, v));
     }
 }
 

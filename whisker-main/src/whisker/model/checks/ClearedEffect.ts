@@ -36,8 +36,12 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: ClearedEffectJSON): ClearedEffectJSON {
-        return ClearedEffectJSON.parse(checkJSON) as ClearedEffectJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClearedEffectArgs.safeParse(args));
     }
 
     /**
@@ -56,15 +60,11 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
         };
     }
 
+    protected _validate(checkJSON: ClearedEffectJSON): ClearedEffectJSON {
+        return ClearedEffectJSON.parse(checkJSON) as ClearedEffectJSON;
+    }
+
     protected override _contradicts(that: ClearedEffect): boolean {
         return false;
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(ClearedEffectArgs.safeParse(args));
     }
 }

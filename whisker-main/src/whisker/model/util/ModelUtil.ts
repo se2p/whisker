@@ -29,6 +29,9 @@ export interface Expression extends Dependencies {
 
 export abstract class ModelUtil {
 
+    private static readonly DEFAULT_CYCLIC_DELTA = 3.0;
+    private static _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
+
     /**
      * If {@link pSpriteName} == "_stage_" this method returns the stage, otherwise it calls {@link ModelUtil.checkSpriteExistence}
      * @param testDriver Instance of the test driver.
@@ -132,11 +135,6 @@ export abstract class ModelUtil {
         return Number(value.toString());
     }
 
-    private static _isAnAttribute(attrName: string): boolean {
-        return ModelUtil.isAnAttribute(attrName) ||
-            (attrName.startsWith('old.') && ModelUtil.isAnAttribute(attrName.substring(4)));
-    }
-
     public static isAnAttribute(attrName: string): boolean {
         // currentCostume and costume both get the name of the current costume.
         return (attributeNames as readonly string[]).includes(attrName);
@@ -188,8 +186,6 @@ export abstract class ModelUtil {
         const expectedDegrees = (360 + (Math.atan2(yDif, xDif) * 180.0) / Math.PI) % 360;
         return (expectedDegrees < 270 ? 90 : 450) - expectedDegrees;
     }
-
-    private static readonly DEFAULT_CYCLIC_DELTA = 3.0;
 
     public static checkDirectionWithinDelta(sprite: Sprite, expected: number, delta = ModelUtil.DEFAULT_CYCLIC_DELTA, useMode = false): boolean {
         if (!useMode || sprite.rotationStyle == "all round") {
@@ -254,29 +250,6 @@ export abstract class ModelUtil {
         };
     }
 
-    private static _graphStorage: Map<string, Map<string, unknown>> = new Map<string, Map<string, unknown>>();
-
-    /**
-     * The $$-function returned has two parameters. The first parameter is the key of the variable in the storage record.
-     * If the second value is specified, the storage for the key is set to the given value. Otherwise the value
-     * currently stored for the key is returned.
-     * @param graphId Id of the graph for determining the storage.
-     * @param log The log object for information on failed checks.
-     */
-    private static get$$Function(graphId: string, log: Record<string, string> = null) {
-        return (key: string, value?: unknown) => {
-            const storage = ModelUtil._graphStorage.get(graphId);
-            if (value === undefined) {
-                const result = storage.get(key);
-                if (log) {
-                    log[key] = String(result);
-                }
-                return result;
-            }
-            storage.set(key, value);
-        };
-    }
-
     public static getStorageValue(graphId: string, key: string): unknown {
         return ModelUtil._graphStorage.get(graphId).get(key);
     }
@@ -287,64 +260,6 @@ export abstract class ModelUtil {
 
     public static initialiseStorage(graphId: string, value: Map<string, unknown>): void {
         ModelUtil._graphStorage.set(graphId, value);
-    }
-
-    private static getValueForSubExpression(t: TestDriver, spriteName: string, attribute: string,
-                                            custom: boolean, dependencies: Dependencies = undefined,
-                                            log: Record<string, string> = undefined): Sprite | Variable | string | string[] {
-        if (!spriteName || spriteName == "") {
-            throw new EmptyExpressionError();
-        }
-        const sprite: Sprite = spriteName == STAGE_NAME ? t.getStage() : t.getSprite(spriteName);
-        if (!sprite) {
-            throw new SpriteNotFoundError(spriteName);
-        }
-        if (attribute == undefined) {
-            if (log) {
-                log[`$("${spriteName}")`] = "sprite with that name";
-            }
-            return sprite;
-        }
-        let variable: Variable | string;
-        if (custom) {
-            variable = sprite.getVariable(attribute);
-            if (!variable) {
-                throw new VariableNotFoundError(spriteName, attribute);
-            }
-            if (dependencies) {
-                dependencies.varDependencies.push({spriteName: sprite.name, varName: variable.name});
-            }
-            if (log) {
-                log[`$(${spriteName}->${attribute})`] = String(variable.value);
-            }
-            return variable.value;
-        } else {
-            variable = sprite[attribute];
-            if (!variable) {
-                if (ModelUtil._isAnAttribute(attribute)) {
-                    // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
-                    if (attribute.startsWith("old.")) {
-                        variable = t.getSprite(spriteName).old[attribute.substring(4)];
-                    } else {
-                        variable = t.getSprite(spriteName)[attribute];
-                    }
-                } else {
-                    try {
-                        // maybe custom flag was not specified by accident -> try custom variables
-                        return ModelUtil.getValueForSubExpression(t, spriteName, attribute, true, dependencies, log);
-                    } catch (e) {
-                        throw new AttributeNotFoundError(spriteName, attribute);
-                    }
-                }
-            }
-            if (dependencies) {
-                dependencies.attrDependencies.push({spriteName: sprite.name, attrName: attribute});
-            }
-            if (log) {
-                log[`${spriteName}.${attribute}`] = String(variable);
-            }
-            return variable;
-        }
     }
 
     public static evaluateExpression(t: TestDriver, expression: string, graphId: string, log: Record<string, string> = {}): unknown {
@@ -571,5 +486,89 @@ export abstract class ModelUtil {
 
     public static flipDirectionVertically(direction: number): number {
         return -direction;
+    }
+
+    private static _isAnAttribute(attrName: string): boolean {
+        return ModelUtil.isAnAttribute(attrName) ||
+            (attrName.startsWith('old.') && ModelUtil.isAnAttribute(attrName.substring(4)));
+    }
+
+    /**
+     * The $$-function returned has two parameters. The first parameter is the key of the variable in the storage record.
+     * If the second value is specified, the storage for the key is set to the given value. Otherwise the value
+     * currently stored for the key is returned.
+     * @param graphId Id of the graph for determining the storage.
+     * @param log The log object for information on failed checks.
+     */
+    private static get$$Function(graphId: string, log: Record<string, string> = null) {
+        return (key: string, value?: unknown) => {
+            const storage = ModelUtil._graphStorage.get(graphId);
+            if (value === undefined) {
+                const result = storage.get(key);
+                if (log) {
+                    log[key] = String(result);
+                }
+                return result;
+            }
+            storage.set(key, value);
+        };
+    }
+
+    private static getValueForSubExpression(t: TestDriver, spriteName: string, attribute: string,
+                                            custom: boolean, dependencies: Dependencies = undefined,
+                                            log: Record<string, string> = undefined): Sprite | Variable | string | string[] {
+        if (!spriteName || spriteName == "") {
+            throw new EmptyExpressionError();
+        }
+        const sprite: Sprite = spriteName == STAGE_NAME ? t.getStage() : t.getSprite(spriteName);
+        if (!sprite) {
+            throw new SpriteNotFoundError(spriteName);
+        }
+        if (attribute == undefined) {
+            if (log) {
+                log[`$("${spriteName}")`] = "sprite with that name";
+            }
+            return sprite;
+        }
+        let variable: Variable | string;
+        if (custom) {
+            variable = sprite.getVariable(attribute);
+            if (!variable) {
+                throw new VariableNotFoundError(spriteName, attribute);
+            }
+            if (dependencies) {
+                dependencies.varDependencies.push({spriteName: sprite.name, varName: variable.name});
+            }
+            if (log) {
+                log[`$(${spriteName}->${attribute})`] = String(variable.value);
+            }
+            return variable.value;
+        } else {
+            variable = sprite[attribute];
+            if (!variable) {
+                if (ModelUtil._isAnAttribute(attribute)) {
+                    // for whatever reason sometimes `variable = sprite[attribute];` does not work -> try this instead
+                    if (attribute.startsWith("old.")) {
+                        variable = t.getSprite(spriteName).old[attribute.substring(4)];
+                    } else {
+                        variable = t.getSprite(spriteName)[attribute];
+                    }
+                } else {
+                    try {
+                        // maybe custom flag was not specified by accident -> try custom variables
+                        return ModelUtil.getValueForSubExpression(t, spriteName, attribute, true, dependencies, log);
+                    } catch (e) {
+                        throw new AttributeNotFoundError(spriteName, attribute);
+                    }
+                }
+            }
+            if (dependencies) {
+                dependencies.attrDependencies.push({spriteName: sprite.name, attrName: attribute});
+            }
+            if (log) {
+                log[`${spriteName}.${attribute}`] = String(variable);
+            }
+            return variable;
+        }
     }
 }

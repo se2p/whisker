@@ -30,10 +30,9 @@ export interface ExtendedCoverageResult extends CoverageResult {
  * taken. So that it not gets ambiguous.
  */
 abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
+    programEndStep = 0;
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
-
-    programEndStep = 0;
 
     /**
      * Construct a program model (graph) with a string identifier. This model is executed in parallel to the program
@@ -75,15 +74,6 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
             this._update(t, edge);
         }
         return edge;
-    }
-
-    private _update(t: TestDriver, edge: ProgramModelEdge) {
-        this.coverageCurrentRun[edge.id] = true;
-        this.coverageTotal[edge.id] = true;
-        this.currentState = this.nodes[edge.getEndNodeId()];
-        this.secondLastTransitionStep = this.lastTransitionStep;
-        this.lastTransitionStep = t.getTotalStepsExecuted() + 1;
-
     }
 
     /**
@@ -167,6 +157,15 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     setTransitionsStartTo(steps: number): void {
         this.lastTransitionStep = steps;
         this.secondLastTransitionStep = steps;
+    }
+
+    private _update(t: TestDriver, edge: ProgramModelEdge) {
+        this.coverageCurrentRun[edge.id] = true;
+        this.coverageTotal[edge.id] = true;
+        this.currentState = this.nodes[edge.getEndNodeId()];
+        this.secondLastTransitionStep = this.lastTransitionStep;
+        this.lastTransitionStep = t.getTotalStepsExecuted() + 1;
+
     }
 }
 

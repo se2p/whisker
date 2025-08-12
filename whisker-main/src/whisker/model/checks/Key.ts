@@ -34,8 +34,12 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: KeyJSON): KeyJSON {
-        return KeyJSON.parse(checkJSON) as KeyJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(KeyArgs.safeParse(args));
     }
 
     /**
@@ -50,15 +54,11 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
         return () => result(cu.isKeyDown(key), {}, negated);
     }
 
+    protected _validate(checkJSON: KeyJSON): KeyJSON {
+        return KeyJSON.parse(checkJSON) as KeyJSON;
+    }
+
     protected _contradicts(_that: Key): boolean {
         return false; // Multiple keys can be pressed at the same time.
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(KeyArgs.safeParse(args));
     }
 }

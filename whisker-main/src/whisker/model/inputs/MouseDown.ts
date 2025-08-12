@@ -27,8 +27,8 @@ export class MouseDown extends AbstractUserInput<MouseDownJSON> {
         return this._inputJSON.args[0];
     }
 
-    protected _validate(json: MouseDownJSON): MouseDownJSON {
-        return MouseDownJSON.parse(json) as MouseDownJSON;
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(MouseDownArgs.safeParse(args));
     }
 
     override async inputImmediate(_t: TestDriver, graphId: string): Promise<void> {
@@ -36,7 +36,7 @@ export class MouseDown extends AbstractUserInput<MouseDownJSON> {
         return mouseDownEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(MouseDownArgs.safeParse(args));
+    protected _validate(json: MouseDownJSON): MouseDownJSON {
+        return MouseDownJSON.parse(json) as MouseDownJSON;
     }
 }

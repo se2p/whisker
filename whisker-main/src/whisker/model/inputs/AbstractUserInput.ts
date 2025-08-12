@@ -19,9 +19,9 @@ export abstract class AbstractUserInput<J extends UserInputJSON> {
      */
     abstract inputImmediate(t: TestDriver, graphID: string): Promise<void>;
 
-    protected abstract _validate(json: J): J;
-
     toJSON(): J {
         return JSON.parse(JSON.stringify(this._inputJSON));
     }
+
+    protected abstract _validate(json: J): J;
 }

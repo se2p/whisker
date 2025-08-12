@@ -42,6 +42,14 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
+    get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(PointsToArgs.safeParse(args));
+    }
+
     /**
      * Get a method whether a sprite points to the mouse/another sprite.
      *
@@ -87,13 +95,5 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
 
     protected _validate(checkJSON: PointsToJSON): PointsToJSON {
         return PointsToJSON.parse(checkJSON) as PointsToJSON;
-    }
-
-    get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(PointsToArgs.safeParse(args));
     }
 }

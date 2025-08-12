@@ -55,8 +55,12 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: SpriteColorJSON): SpriteColorJSON {
-        return SpriteColorJSON.parse(checkJSON) as SpriteColorJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(SpriteColorArgs.safeParse(args));
     }
 
     /**
@@ -105,15 +109,11 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         };
     }
 
+    protected _validate(checkJSON: SpriteColorJSON): SpriteColorJSON {
+        return SpriteColorJSON.parse(checkJSON) as SpriteColorJSON;
+    }
+
     protected _contradicts(_that: SpriteColor): boolean {
         return false; // A sprite can touch multiple different colors at the same time.
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(SpriteColorArgs.safeParse(args));
     }
 }

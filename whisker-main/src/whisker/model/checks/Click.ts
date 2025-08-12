@@ -36,8 +36,12 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    protected _validate(checkJSON: ClickJSON): ClickJSON {
-        return ClickJSON.parse(checkJSON) as ClickJSON;
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(ClickArgs.safeParse(args));
     }
 
     /**
@@ -73,17 +77,13 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
         };
     }
 
+    protected _validate(checkJSON: ClickJSON): ClickJSON {
+        return ClickJSON.parse(checkJSON) as ClickJSON;
+    }
+
     protected override _contradicts(that: Click): boolean {
         const [spriteNameThis] = this._args;
         const [spriteNameThat] = that._args;
         return spriteNameThis !== spriteNameThat; // Cannot click on two different sprites at the same time.
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(ClickArgs.safeParse(args));
     }
 }

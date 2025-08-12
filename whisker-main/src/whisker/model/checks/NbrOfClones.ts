@@ -57,6 +57,14 @@ abstract class AbstractNbrOfClones<
         return this._args[2];
     }
 
+    override get dependsOnSayText(): boolean {
+        return false;
+    }
+
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(NbrOfClonesArgs.safeParse(args));
+    }
+
     /**
      * Get a method to check how many clones of a sprite are there.
      * @param t Instance of the test driver to retrieve the number of clones of a sprite.
@@ -88,14 +96,6 @@ abstract class AbstractNbrOfClones<
         }
 
         return this._comparison.contradicts(that._comparison);
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(NbrOfClonesArgs.safeParse(args));
     }
 }
 

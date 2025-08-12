@@ -27,8 +27,8 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
         return this._inputJSON.args[0];
     }
 
-    protected _validate(json: InputTextJSON): InputTextJSON {
-        return InputTextJSON.parse(json) as InputTextJSON;
+    public static convertArgs(args: ArgType[]): ParsingResult {
+        return parseNonUnionError(InputTextArgs.safeParse(args));
     }
 
     override async inputImmediate(_t: TestDriver, graphId: string): Promise<void> {
@@ -36,7 +36,7 @@ export class InputText extends AbstractUserInput<InputTextJSON> {
         return textEvent.apply();
     }
 
-    public static convertArgs(args: ArgType[]): ParsingResult {
-        return parseNonUnionError(InputTextArgs.safeParse(args));
+    protected _validate(json: InputTextJSON): InputTextJSON {
+        return InputTextJSON.parse(json) as InputTextJSON;
     }
 }
