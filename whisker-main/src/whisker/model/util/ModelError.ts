@@ -70,9 +70,10 @@ export class ComparisonNotKnownError extends Error {
 }
 
 export class ExprEvalError extends Error {
-    constructor(e: unknown) {
+    constructor(e: unknown, code: string) {
         super(`Expression cannot be evaluated:
-${getErrorMessage(e)}`);
+${getErrorMessage(e)}
+code: ${code}`);
     }
 }
 

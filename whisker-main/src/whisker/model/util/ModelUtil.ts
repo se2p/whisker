@@ -225,14 +225,14 @@ export abstract class ModelUtil {
      */
     static getExpressionForEval(t: TestDriver, pToEval: ArgType, graphId: string): Expression {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
-        const toEval = String(pToEval);
+        const code = String(pToEval);
         const dependencies: Dependencies = {varDependencies: [], attrDependencies: []};
         const $ = (s: string, a: string, c: boolean) =>
             ModelUtil.getValueForSubExpression(t, s, a, c, dependencies);
         const $$ = ModelUtil.get$$Function(graphId);
         try {
             // fill dependencies and check if the expression works
-            eval(`($, $$) => ${toEval}`)($, $$);
+            eval(`($, $$) => ${code}`)($, $$);
         } catch (e: unknown) {
             if (e instanceof SyntaxError) {
                 throw new ExpressionSyntaxError(e.message);
@@ -241,10 +241,10 @@ export abstract class ModelUtil {
                 || e instanceof VariableNotFoundError || e instanceof AttributeNotFoundError) {
                 throw e;
             }
-            throw new ExprEvalError(e);
+            throw new ExprEvalError(e, code);
         }
         return {
-            expr: `(t, $, $$) => ${toEval}`,
+            expr: `(t, $, $$) => ${code}`,
             varDependencies: dependencies.varDependencies,
             attrDependencies: dependencies.attrDependencies
         };
@@ -475,6 +475,8 @@ export abstract class ModelUtil {
             expectedDistance: expected,
             oldDirection: s.old.direction,
             movedDirection: movedDirection,
+            x: s.x,
+            y: s.y,
         }, negated);
     }
 
