@@ -436,7 +436,7 @@ const subCommands = [
             30)
         .optionTestPath()
         .optionNumberOfJobs()
-        // .optionMutators()    // TODO: Implement ModelTesting + MutationAnalysis
+        .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
