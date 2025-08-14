@@ -12,7 +12,7 @@ async function loadProject(scratchPath, modelPath, userModelPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#fileselect-models')).uploadFile(modelPath);
     if(userModelPath){
-        await (await page.$('#fileselect-user-models')).uploadFile(userModelPath);
+        await (await page.$('#fileselect-tests')).uploadFile(userModelPath);
     }
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());

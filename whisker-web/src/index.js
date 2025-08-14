@@ -131,12 +131,18 @@ const loadModelFromString = function (models, userModels) {
 
 const loadTestsFromString = async function (string) {
     // Check for Neuroevolution TestSuites.
-    if ((`${string}`.includes('"Static":') && `${string}`.includes('"Dynamic":')) ||
-        (`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes'))) {
-        const tests = `${string}`;
-        Whisker.tests = tests;
+    const code = `${string}`;
+    if ((code.includes('"Static":') && code.includes('"Dynamic":')) ||
+        (code.toLowerCase().includes('network') && code.toLowerCase().includes('nodes'))) {
+        Whisker.tests = code;
         Whisker.testEditor.setValue(string);
-        return tests;
+        return code;
+    } else if (code.includes('"usage": "program"') || code.includes('"usage": "user"') ||
+        code.includes('"usage": "end"')) {
+        loadModelFromString(code, true);
+        Whisker.tests = null;
+        Whisker.testEditor.setValue('');
+        return '';
     }
     // Manually generated test suite or test suite generated through search algorithms.
     let tests;
@@ -918,8 +924,6 @@ const initComponents = function () {
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0], handleOnLoadTestFile);
     Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
         fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string, false)));
-    Whisker.userModelFileSelect = new FileSelect($('#fileselect-user-models')[0],
-        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string, true)));
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
@@ -1355,14 +1359,6 @@ const _addFileListeners = function () {
             .removeAttr('data-i18n')
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-    $('#fileselect-user-models').on('change', event => {
-        const fileName = Whisker.userModelFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-user-models').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
 };
