@@ -66,8 +66,6 @@
     "model-duration":"Max. duration (s)",
     "model-repetitions": "Repetitions",
     "model-logs-checkbox": "Model logs enabled",
-    "model-output-no-user-model": "No user model for input generation found",
-    "model-output-user-model": "Input generation with user model",
     "seed": "Seed",
     "t-seed": "Ensures consistent program behaviour when using the same seed",
     "title-uploads": "Uploads",

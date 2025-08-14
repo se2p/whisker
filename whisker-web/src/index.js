@@ -115,18 +115,6 @@ const loadModelFromString = function (models, userModels) {
         showModal('Model Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
     }
-
-    if (Whisker.modelTester.userModelsLoaded()) {
-        if (userModels) {
-            $('#user-model-user-loaded').text(i18next.t('user-model-output-user-model')); // TODO
-        } else {
-            $('#model-user-loaded').text(i18next.t('model-output-user-model'));
-        }
-    } else if (userModels) {
-        $('#user-model-user-loaded').text(i18next.t('user-model-output-no-user-model')); // TODO
-    } else {
-        $('#model-user-loaded').text(i18next.t('model-output-no-user-model'));
-    }
 };
 
 const loadTestsFromString = async function (string) {
