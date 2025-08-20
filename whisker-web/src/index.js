@@ -131,7 +131,9 @@ const loadTestsFromString = async function (string) {
         Whisker.tests = code;
         Whisker.testEditor.setValue(string);
         return code;
-    } else if (code.includes('"usage": "program"') || code.includes('"usage": "user"') ||
+    }
+
+    if (code.includes('"usage": "program"') || code.includes('"usage": "user"') ||
         code.includes('"usage": "end"')) {
         loadModelFromString(code, true);
         Whisker.tests = null;
