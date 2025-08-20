@@ -328,7 +328,7 @@ class WhiskerSubCommand extends Command {
             Infinity);
     }
 
-    optionProgramModel(required) {
+    optionProgramModel(required = false) {
         if (required) {
             return this.requiredOption(
                 '-p, --model-path <Path>',
@@ -388,7 +388,7 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
-        .optionProgramModel(false)
+        .optionProgramModel()
         .optionTraceAttributes(),
 
     newSubCommand('generate')
@@ -417,7 +417,7 @@ const subCommands = [
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
-        .optionProgramModel(false)
+        .optionProgramModel()
         .optionWinningStates(),
 
     newSubCommand('model')
