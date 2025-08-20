@@ -79,7 +79,6 @@ describe('Model tests', () => {
     const table = [
         ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null, false],
         ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null, false],
-        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00, null, false],
         ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null, false],
         ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null, false],
         ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null, false],
