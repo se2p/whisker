@@ -2079,27 +2079,63 @@
             {
                 "id": "start",
                 "label": "start"
+            },
+            {
+                "id": "running",
+                "label": "running"
             }
         ],
         "edges": [
             {
+                "id": "init",
+                "label": "init",
+                "from": "start",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            "y",
+                            "==",
+                            165
+                        ]
+                    }
+                ]
+            },
+            {
                 "id": "onMove",
                 "label": "onMove",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
                     {
                         "name": "AttrChange",
-                        "negated": true,
+                        "negated": false,
                         "args": [
                             [
                                 "Apfel",
                                 "Apple"
                             ],
                             "x",
-                            "="
+                            "!="
                         ]
                     }
                 ],
@@ -2122,8 +2158,8 @@
             {
                 "id": "fallAttr",
                 "label": "fallAttr",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
