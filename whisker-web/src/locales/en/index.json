@@ -60,6 +60,8 @@
     "error-expected" : "Expected value",
     "error-operator" : "Operator",
     "error-actual" : "Actual value",
+    "err-no-user-model-in-file": "The uploaded file does not have any user models",
+    "err-no-program-model-in-file": "The uploaded file does not have any program models",
     "model": "Your program models",
     "no-model": "No model loaded",
     "model-test-run": "Model test",

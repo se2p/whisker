@@ -60,6 +60,8 @@
     "error-expected" : "Erwarteter Wert",
     "error-operator" : "Operator",
     "error-actual" : "Tatsächlicher Wert",
+    "err-no-user-model-in-file": "Die hochgeladene Datei enthält keine User Modelle",
+    "err-no-program-model-in-file": "Die hochgeladene Datei enthält keine Programm Modelle",
     "model": "Deine Program-Modelle",
     "no-model": "Kein Modell geladen",
     "model-test-run": "Modell Test",

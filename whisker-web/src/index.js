@@ -105,8 +105,14 @@ const loadModelFromString = function (models, userModels) {
     try {
         if (userModels) {
             Whisker.modelTester.loadUserModels(models);
+            if (!Whisker.modelTester.userModelsLoaded()){
+                showModal('Model Loading', `<div class="mt-1">${i18next.t('err-no-user-model-in-file')}</div>`);
+            }
         } else {
             Whisker.modelTester.loadProgramModels(models);
+            if (!Whisker.modelTester.programModelsLoaded()){
+                showModal('Model Loading', `<div class="mt-1">${i18next.t('err-no-program-model-in-file')}</div>`);
+            }
         }
     } catch (err) {
         Whisker.outputLog.println(`ERROR: ${err.message}`);
