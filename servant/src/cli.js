@@ -329,7 +329,8 @@ class WhiskerSubCommand extends Command {
     }
 
     optionProgramModel(required = false) {
-        return (required ? this.requiredOption : this.option)(
+        return (required ? this.requiredOption : this.option).call(
+            this,
             '-p, --model-path <Path>',
             'model to test with',
             (modelPath) => util.processFilePathExists(modelPath)
