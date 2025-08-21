@@ -125,17 +125,17 @@ const loadModelFromString = function (models, userModels) {
 
 const loadTestsFromString = async function (string) {
     // Check for Neuroevolution TestSuites.
-    const code = `${string}`;
-    if ((code.includes('"Static":') && code.includes('"Dynamic":')) ||
-        (code.toLowerCase().includes('network') && code.toLowerCase().includes('nodes'))) {
-        Whisker.tests = code;
+    const testString = `${string}`;
+    if ((testString.includes('"Static":') && testString.includes('"Dynamic":')) ||
+        (testString.toLowerCase().includes('network') && testString.toLowerCase().includes('nodes'))) {
+        Whisker.tests = testString;
         Whisker.testEditor.setValue(string);
-        return code;
+        return testString;
     }
 
-    if (code.includes('"usage": "program"') || code.includes('"usage": "user"') ||
-        code.includes('"usage": "end"')) {
-        loadModelFromString(code, true);
+    if (testString.includes('"usage": "program"') || testString.includes('"usage": "user"') ||
+        testString.includes('"usage": "end"')) {
+        loadModelFromString(testString, true);
         Whisker.tests = null;
         Whisker.testEditor.setValue('');
         return '';
