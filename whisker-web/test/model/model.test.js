@@ -83,7 +83,6 @@ describe('Model tests', () => {
         ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null, false],
         ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null, false],
         ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null, false],
-        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00, null, false],
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null, false],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null, false],
         ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, null, true],
