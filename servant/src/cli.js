@@ -328,11 +328,13 @@ class WhiskerSubCommand extends Command {
             Infinity);
     }
 
-    optionProgramModel(){
-        return this.option(
+    optionProgramModel(required = false) {
+        return (required ? this.requiredOption : this.option).call(
+            this,
             '-p, --model-path <Path>',
             'model to test with',
-            (modelPath) => util.processFilePathExists(modelPath))
+            (modelPath) => util.processFilePathExists(modelPath)
+        );
     }
 
     /**
@@ -417,10 +419,7 @@ const subCommands = [
     newSubCommand('model')
         .description('test with model')
         .requireScratchPath()
-        .requiredOption(
-            '-u, --user-model-path <Path>',
-            'user model to execute',
-            (userModelPath) => util.processFilePathExists(userModelPath))
+        .optionProgramModel(true)
         .requiredOption(
             '-r, --model-repetition <Integer>',
             'model test repetitions',
@@ -433,11 +432,10 @@ const subCommands = [
             30)
         .optionTestPath()
         .optionNumberOfJobs()
-        // .optionMutators()    // TODO: Implement ModelTesting + MutationAnalysis
+        .optionMutators()
         .optionMutantsDownloadPath()
         .optionMutationBudget()
         .optionMaxMutants()
-        .optionProgramModel(),
 ];
 
 // Common configuration for Whisker and all subcommands:

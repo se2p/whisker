@@ -58,10 +58,6 @@ async function configureWhiskerWebInstance(page) {
         await (await page.$('#fileselect-tests')).uploadFile(testPath);
     }
 
-    if(opts.userModelPath){
-        await (await page.$('#fileselect-user-models')).uploadFile(opts.userModelPath);
-    }
-
     if (opts.modelPath) {
         await (await page.$('#fileselect-models')).uploadFile(opts.modelPath);
         await page.evaluate((opts) => {

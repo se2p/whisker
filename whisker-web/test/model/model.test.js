@@ -8,11 +8,13 @@ const URL = "dist/index.html";
 const timeout = 25000;
 const ACCELERATION = Infinity;
 
-async function loadProject(scratchPath, modelPath, userModelPath) {
+async function loadProject(scratchPath, modelPath, userModelOrTest) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#fileselect-models')).uploadFile(modelPath);
-    if(userModelPath){
-        await (await page.$('#fileselect-user-models')).uploadFile(userModelPath);
+    if (userModelOrTest === null) {
+        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
+    } else {
+        await (await page.$('#fileselect-tests')).uploadFile(userModelOrTest);
     }
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
@@ -77,30 +79,26 @@ beforeEach(async () => {
 describe('Model tests', () => {
 
     const table = [
-        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null, false],
-        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null, false],
-        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null, false],
-        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null, false],
-        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null, false],
-        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null, false],
-        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null, false],
-        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null, false],
-        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, null, true],
-        ['fruitcatcher game test', 'fruitcatcher', 'fruitcatcher', 0, 0, 0.95, null, true],
-        ["fruitcatcher with dynamic inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json", false],
+        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null],
+        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null],
+        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null],
+        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null],
+        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null],
+        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null],
+        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null],
+        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null],
+        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModel.json'],
+        ['fruitcatcher game test', 'Fruitcatcher', 'Fruitcatcher', 0, 0, 0.95, 'test/model/user-model-jsons/Fruitcatcher-userModel.json'],
+        ["fruitcatcher with dynamic inputs", "Fruitcatcher", "Fruitcatcher", 0, 0, 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
         // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
-        ["fruitcatcher with static inputs", "fruitcatcher", "fruitcatcher", 0, 0, 0.97, "test/model/FruitCatching-manual_small.js", false],
+        ["fruitcatcher with static inputs", "Fruitcatcher", "Fruitcatcher", 0, 0, 0.97, "test/model/FruitCatching-manual_small.js"],
         // the lowest coverage value for fruit catcher should be 79/83 = 0.9518..., so 0.95 should not be flaky
     ]
 
-    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage, testPath, userModel) => {
-        await loadProject(`test/model/scratch-programs/${projectFileName}.sb3`,
-            `test/model/model-jsons/${modelFileName}.json`, userModel ? `test/model/user-model-jsons/${modelFileName}-userModel.json` : null);
-        if (testPath === null){
-            await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
-        }else{
-            await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        }
+    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage, testOrModel) => {
+        const programPath = `test/model/scratch-programs/${projectFileName}.sb3`;
+        const modelPath = `test/model/model-jsons/${modelFileName}.json`;
+        await loadProject(programPath, modelPath, testOrModel);
         const seed = Date.now();
         await page.evaluate((seed) => document.querySelector('#seed').value = seed, seed);
         await (await page.$('#run-all-tests')).click();

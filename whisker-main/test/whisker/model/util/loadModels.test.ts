@@ -17,7 +17,7 @@ describe('ModelLoader', () => {
             ["No stopNodes as attribute.", 'SimpleGraph-noterror-no-stopNodes.json', 1, 0, 0],
             ["No stopAllNodes as attribute.", 'SimpleGraph-noterror-no-stopAllNodes.json', 1, 0, 0],
             ["No graph id given.", 'SimpleGraph-noterror-no-graph-id.json', 1, 0, 0],
-            ["Loading big file with multipleModels", '../../../../../whisker-web/test/model/model-jsons/fruitcatcher.json', 19, 0, 1],
+            ["Loading big file with multipleModels", '../../../../../whisker-web/test/model/model-jsons/Fruitcatcher.json', 19, 0, 1],
             ["Loading big file with multipleModels (and new Nodes with Labels)", 'spaceshipModels.json', 10, 3, 1]
         ];
         it.each(table)('%s',
