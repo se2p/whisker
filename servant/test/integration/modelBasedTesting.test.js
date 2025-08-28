@@ -7,9 +7,9 @@ describe('Servant: Model-Based Testing', () => {
     test('fruitcatcher', async () => {
         let result = await runServant([
             'model',
-            '-s whisker-web/test/model/scratch-programs/fruitcatcher.sb3',
-            '-u whisker-web/test/model/user-model-jsons/fruitcatcher-userModel.json',
-            '-p whisker-web/test/model/model-jsons/fruitcatcher.json',
+            '-s whisker-web/test/model/scratch-programs/Fruitcatcher.sb3',
+            '-t whisker-web/test/model/user-model-jsons/Fruitcatcher-userModel.json',
+            '-p whisker-web/test/model/model-jsons/Fruitcatcher.json',
             '-n 3',
             '-r 1',
             '--seed 123',

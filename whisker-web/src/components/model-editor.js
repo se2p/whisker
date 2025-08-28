@@ -761,7 +761,7 @@ class ModelEditor {
             .remove();
 
         if (!this.models.length || this.models.length === 0) {
-            return;
+            this.insertNewGraph();
         }
 
         for (const [i, model] of this.models.entries()) {

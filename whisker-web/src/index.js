@@ -105,8 +105,14 @@ const loadModelFromString = function (models, userModels) {
     try {
         if (userModels) {
             Whisker.modelTester.loadUserModels(models);
+            if (!Whisker.modelTester.userModelsLoaded()){
+                showModal('Model Loading', `<div class="mt-1">${i18next.t('err-no-user-model-in-file')}</div>`);
+            }
         } else {
             Whisker.modelTester.loadProgramModels(models);
+            if (!Whisker.modelTester.programModelsLoaded()){
+                showModal('Model Loading', `<div class="mt-1">${i18next.t('err-no-program-model-in-file')}</div>`);
+            }
         }
     } catch (err) {
         Whisker.outputLog.println(`ERROR: ${err.message}`);
@@ -115,28 +121,24 @@ const loadModelFromString = function (models, userModels) {
         showModal('Model Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
     }
-
-    if (Whisker.modelTester.userModelsLoaded()) {
-        if (userModels) {
-            $('#user-model-user-loaded').text(i18next.t('user-model-output-user-model')); // TODO
-        } else {
-            $('#model-user-loaded').text(i18next.t('model-output-user-model'));
-        }
-    } else if (userModels) {
-        $('#user-model-user-loaded').text(i18next.t('user-model-output-no-user-model')); // TODO
-    } else {
-        $('#model-user-loaded').text(i18next.t('model-output-no-user-model'));
-    }
 };
 
 const loadTestsFromString = async function (string) {
     // Check for Neuroevolution TestSuites.
-    if ((`${string}`.includes('"Static":') && `${string}`.includes('"Dynamic":')) ||
-        (`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes'))) {
-        const tests = `${string}`;
-        Whisker.tests = tests;
+    const testString = `${string}`;
+    if ((testString.includes('"Static":') && testString.includes('"Dynamic":')) ||
+        (testString.toLowerCase().includes('network') && testString.toLowerCase().includes('nodes'))) {
+        Whisker.tests = testString;
         Whisker.testEditor.setValue(string);
-        return tests;
+        return testString;
+    }
+
+    if (testString.includes('"usage": "program"') || testString.includes('"usage": "user"') ||
+        testString.includes('"usage": "end"')) {
+        loadModelFromString(testString, true);
+        Whisker.tests = null;
+        Whisker.testEditor.setValue('');
+        return '';
     }
     // Manually generated test suite or test suite generated through search algorithms.
     let tests;
@@ -918,8 +920,6 @@ const initComponents = function () {
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0], handleOnLoadTestFile);
     Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
         fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string, false)));
-    Whisker.userModelFileSelect = new FileSelect($('#fileselect-user-models')[0],
-        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string, true)));
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
@@ -1355,14 +1355,6 @@ const _addFileListeners = function () {
             .removeAttr('data-i18n')
             .attr('title', fileName);
         const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-    $('#fileselect-user-models').on('change', event => {
-        const fileName = Whisker.userModelFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-user-models').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
 };
