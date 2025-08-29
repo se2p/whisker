@@ -1,11 +1,11 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "./CheckTypes";
+import {getStorageValue, setStorageValue} from "../util/ModelUtil";
 
 const name = "ChangeStorageBy" as const;
 
@@ -55,12 +55,12 @@ export class ChangeStorageBy extends AbstractCheck<ChangeStorageByJSON, CheckFun
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         return () => {
-            const current = ModelUtil.getStorageValue(graphID, this.key);
+            const current = getStorageValue(graphID, this.key);
             if (typeof current !== "number") {
                 return fail({message: `Expected a number but got ${current} with type ${typeof current}`});
             }
             const nextValue = current + this.value;
-            ModelUtil.setStorageValue(graphID, this.key, nextValue);
+            setStorageValue(graphID, this.key, nextValue);
             return result(true, {}, this.negated);
         };
     }

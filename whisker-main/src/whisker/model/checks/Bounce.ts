@@ -1,12 +1,17 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {
+    checkCyclicValueWithinDelta,
+    checkSpriteExistence,
+    flipDirectionHorizontally,
+    flipDirectionVertically
+} from "../util/ModelUtil";
 
 const name = "Bounce" as const;
 
@@ -53,18 +58,18 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     protected _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const spriteName = ModelUtil.checkSpriteExistence(t, this._args[0]).name;
+        const spriteName = checkSpriteExistence(t, this._args[0]).name;
 
         const check = (s: Sprite) => {
             const isDirFlipped = (expected: number) =>
-                ModelUtil.checkCyclicValueWithinDelta(s.direction, expected, -180, 180);
+                checkCyclicValueWithinDelta(s.direction, expected, -180, 180);
             const reason: Record<string, unknown> = {direction: s.direction, oldDirection: s.old.direction};
             let touchingEdge = false;
             let dirFlipped = false;
 
             if (s.isTouchingVerticalEdge()) {
                 touchingEdge = true;
-                const expected = ModelUtil.flipDirectionVertically(s.old.direction);
+                const expected = flipDirectionVertically(s.old.direction);
                 reason.isTouchingVerticalEdge = true;
                 reason.expectedVerticalFlip = expected;
                 dirFlipped = isDirFlipped(expected);
@@ -72,7 +77,7 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
 
             if (s.isTouchingHorizEdge()) {
                 touchingEdge = true;
-                const expected = ModelUtil.flipDirectionHorizontally(s.old.direction);
+                const expected = flipDirectionHorizontally(s.old.direction);
                 reason.isTouchingHorziEdge = true;
                 reason.expectedHorizFlip = expected;
                 dirFlipped ||= isDirFlipped(expected);

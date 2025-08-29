@@ -2,7 +2,7 @@ import {Existential, Quantifiable, Quantification, Universal} from "./Quantifica
 import {Optional} from "../../utils/Optional";
 import {CheckResult, result} from "./CheckResult";
 import {ComparisonOp} from "./CheckTypes";
-import {ModelUtil} from "../util/ModelUtil";
+import {returnNumberIfPossible} from "../util/ModelUtil";
 
 /**
  * Threshold for two numbers to be considered approximately equal. The value is chosen to be large enough to ignore
@@ -76,7 +76,7 @@ abstract class AbstractComparison<T extends Interval | null> implements Quantifi
 }
 
 function approxEqNum(x: AttributeType, y: AttributeType, epsilon = EPSILON): boolean {
-    const actual = ModelUtil.returnNumberIfPossible(x, null);
+    const actual = returnNumberIfPossible(x, null);
 
     if (typeof y != "number" || typeof actual != "number") {
         return false; // at least one value is not a number, so the difference does not exist

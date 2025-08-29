@@ -1,6 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -23,6 +22,7 @@ import {
     SpriteName,
     StringAttribute,
 } from "./CheckTypes";
+import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 
 const name = "AttrComp" as const;
 
@@ -58,7 +58,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         super(edgeLabel, {...json, name});
         this._attrName = this._args[1];
         this._comparison = newQuantifiedComparison(this);
-        this._isForEffect = ModelUtil.isAnEffect(this._attrName);
+        this._isForEffect = isAnEffect(this._attrName);
     }
 
     get operator(): ComparisonOp {
@@ -87,10 +87,10 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const pSpriteName = this._args[0];
 
-        const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
+        const sprite = getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;
         if (!this._isForEffect) {
-            ModelUtil.checkAttributeExistence(t, spriteName, this._attrName);
+            checkAttributeExistence(t, spriteName, this._attrName);
         }
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;

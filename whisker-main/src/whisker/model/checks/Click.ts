@@ -1,5 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
@@ -7,6 +6,7 @@ import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence} from "../util/ModelUtil";
 
 const name = "Click" as const;
 
@@ -52,7 +52,7 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName] = this._args;
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const spriteName = checkSpriteExistence(t, pSpriteName).name;
 
         const clickCheck = (s: Sprite) => {
             if (!s.visible) {

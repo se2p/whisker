@@ -1,6 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
@@ -8,6 +7,7 @@ import {any, CheckResult, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence} from "../util/ModelUtil";
 
 export type TouchingEdgeArgs = [
     /**
@@ -57,7 +57,7 @@ abstract class AbstractTouchingEdge<
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName] = this._args;
         const negated = this.negated;
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const spriteName = checkSpriteExistence(t, pSpriteName).name;
         const touchingEdgeCheck = this._getCheck();
         cu.registerOnMoveEvent(spriteName, this._self(), graphID, (sprite) =>
             result(touchingEdgeCheck(sprite).passed, {}, negated));
