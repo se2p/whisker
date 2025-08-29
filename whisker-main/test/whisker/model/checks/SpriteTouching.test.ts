@@ -40,6 +40,7 @@ describe('SpriteTouching tests', () => {
         c.registerComponents(t, dummyCU, graphID);
         expect(c.check().passed).toEqual(!negated);
         banana.touchingSprite = false;
+        tdMock.nextStep();
         expect(c.check().passed).toEqual(negated);
     });
 });

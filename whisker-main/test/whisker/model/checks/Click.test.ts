@@ -46,7 +46,7 @@ describe('Click tests', () => {
         apple.touchingMouse = true;
         expect(clickCheck.check().passed).toEqual(!negated);
         apple.touchingMouse = false;
-        expect(clickCheck.check().passed).toEqual(negated);
+        expect(clickCheck.nonCachedCheck().passed).toEqual(negated);
         expect(cu.addErrorOutput).not.toHaveBeenCalled();
     });
 });

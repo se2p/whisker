@@ -40,6 +40,6 @@ describe('LayerTest', () => {
         const newSprite = new SpriteMock("firstSprite");
         newSprite.variables = [{name: "layerOrder", value: 100}];
         tdm.currentSprites = SpriteMock.toSpriteArray([...mocks, newSprite]);
-        expect(check.check()).toStrictEqual(fail(expect.any(Object)));
+        expect(check.nonCachedCheck()).toStrictEqual(fail(expect.any(Object)));
     });
 });

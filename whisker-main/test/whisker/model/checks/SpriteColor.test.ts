@@ -67,6 +67,7 @@ describe('SpriteColor tests', () => {
         c.registerComponents(tdMock.getTestDriver(), dummyCU, graphID);
         expect(c.check().passed).toEqual(!negated);
         kiwi.touchingColor = false;
+        tdMock.nextStep();
         expect(c.check().passed).toEqual(negated);
     });
 });

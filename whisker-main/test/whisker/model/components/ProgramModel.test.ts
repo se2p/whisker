@@ -261,21 +261,6 @@ describe('Program model', () => {
         expect(model.currentState).toBe(nodes["n1"]);
     });
 
-    test("TestForEvent()", () => {
-        const [model, nodes, edges] = getBiggerModel();
-        let stepCount = 0;
-        const t = {getTotalStepsExecuted: () => ++stepCount} as TestDriver;
-        const fn = jest.fn();
-        nodes["start"].testForEvent = (t, cu, s1, s2) => {
-            fn(t, cu, s1, s2);
-            return edges["1"];
-        };
-        model.programEndStep = 7;
-        model.testForEvent(t, null, new Checks());
-        expect(fn).toHaveBeenCalledWith(t, null, 2, 7);
-        expect(model.currentState).toBe(nodes["n1"]);
-    });
-
     test("registerComponents() registers all nodes", () => {
         const fn = jest.fn();
         const nodes: Record<string, ProgramModelNode> = {

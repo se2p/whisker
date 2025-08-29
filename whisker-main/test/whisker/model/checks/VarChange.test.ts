@@ -27,7 +27,7 @@ describe('VarChange tests', () => {
         const cu = cuMock.getCheckUtility();
         const c = new VarChange('label', {args: ["apple", "x", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, graphID, c.check);
+        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, graphID, c.nonCachedCheck);
     });
 
     test('Check works for stage', () => {
@@ -36,6 +36,7 @@ describe('VarChange tests', () => {
         expect(c.check()).toEqual(pass());
         stage.variables = [{name: "Punkte", value: 10, old: {name: "Punkte", value: 9}}];
         const reason = {"after": 10, "before": 9};
+        tdMock.nextStep();
         expect(c.check()).toEqual(fail(reason));
     });
 });

@@ -8,7 +8,7 @@ test("Key test", () => {
     const keyCheck = new Key('label', {args: ['a']});
     keyCheck.registerComponents(null, cu, "graphID");
     cuMock.pressedKeys["a"] = true;
-    expect(keyCheck.check()).toStrictEqual(pass());
+    expect(keyCheck.nonCachedCheck()).toStrictEqual(pass());
     cuMock.pressedKeys["a"] = false;
-    expect(keyCheck.check()).toStrictEqual(fail({}));
+    expect(keyCheck.nonCachedCheck()).toStrictEqual(fail({}));
 });

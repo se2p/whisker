@@ -30,6 +30,10 @@ export class TestDriverMock {
         this.stage = this._currentSprites.filter(s => s.isStage)[0];
     }
 
+    public nextStep(): void {
+        ++this.totalStepsExecuted;
+    }
+
     public getTestDriver(): TestDriver {
         return {
             getSprites: (filter: ((s: Sprite) => boolean) = s => true, skipStage = true) => {

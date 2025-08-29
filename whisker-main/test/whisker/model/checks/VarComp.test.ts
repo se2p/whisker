@@ -31,7 +31,7 @@ describe('VarComp tests', () => {
         const cu = cuMock.getCheckUtility();
         const c = new VarComp('label', {args: ["apple", "x", "==", "2"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, graphID, c.check);
+        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, graphID, c.nonCachedCheck);
     });
 
     test('Check works for stage', () => {
@@ -43,6 +43,7 @@ describe('VarComp tests', () => {
         const actual = 9;
         stage.variables[0].value = actual;
         const reason = {actual, expected};
+        tdMock.nextStep();
         expect(res()).toStrictEqual(fail(reason));
     });
 });

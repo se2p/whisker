@@ -30,6 +30,6 @@ describe('ClearedEffectsTest', () => {
         check.registerComponents(t, cu, graphID);
         expect(check.check()).toStrictEqual(pass());
         effects["color"] = 10;
-        expect(check.check()).toStrictEqual(fail(expect.any(Object)));
+        expect(check.nonCachedCheck()).toStrictEqual(fail(expect.any(Object)));
     });
 });

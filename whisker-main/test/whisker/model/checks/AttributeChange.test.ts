@@ -65,7 +65,7 @@ describe('AttributeChange', () => {
             old: {name: "currentCostumeName", value: "lose"}
         }];
         tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
-        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
+        expect(c.nonCachedCheck()).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('Can check change of effects', () => {
@@ -77,6 +77,6 @@ describe('AttributeChange', () => {
         c.registerComponents(mock.getTestDriver(), dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
         effects["color"] = 20;
-        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
+        expect(c.nonCachedCheck()).toStrictEqual(fail(expect.any(Object)));
     });
 });

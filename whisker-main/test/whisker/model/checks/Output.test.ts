@@ -25,7 +25,7 @@ describe('Output tests', () => {
         banana.sayText = "this is a different text";
         tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
         const reason = {"actual": "this is a different text", "expected": "this is some text"};
-        expect(c.check()).toStrictEqual(fail(reason));
+        expect(c.nonCachedCheck()).toStrictEqual(fail(reason));
     });
 
     test('Correct predicate is registered at CheckUtility', () => {

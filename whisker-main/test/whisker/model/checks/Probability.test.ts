@@ -10,7 +10,7 @@ describe('Probability tests', () => {
         c.registerComponents(null, null, graphID);
 
         for (let i = 0; i < repetitions; ++i) {
-            if (c.check().passed) {
+            if (c.nonCachedCheck().passed) {
                 throw new Error("with a probability of 0 the result of the function should not be true");
             }
         }
@@ -21,7 +21,7 @@ describe('Probability tests', () => {
         c.registerComponents(null, null, graphID);
 
         for (let i = 0; i < repetitions; ++i) {
-            if (c.check().passed) {
+            if (c.nonCachedCheck().passed) {
                 throw new Error("with a probability of 0 the result of the function should not be true");
             }
         }
@@ -34,7 +34,7 @@ describe('Probability tests', () => {
         let trueCount = 0;
         let falseCount = 0;
         for (let i = 0; i < repetitions; ++i) {
-            if (c.check().passed) {
+            if (c.nonCachedCheck().passed) {
                 ++trueCount;
             } else {
                 ++falseCount;
@@ -53,10 +53,10 @@ describe('Probability tests', () => {
         const p = 0.3414;
         const c = new Probability('label', {args: [p]});
         c.registerComponents(null, null, graphID);
-        expect(c.check()).toStrictEqual(fail({}));
+        expect(c.nonCachedCheck()).toStrictEqual(fail({}));
         value = 0.1;
-        expect(c.check()).toStrictEqual(pass());
+        expect(c.nonCachedCheck()).toStrictEqual(pass());
         value = 0.42;
-        expect(c.check()).toStrictEqual(fail({}));
+        expect(c.nonCachedCheck()).toStrictEqual(fail({}));
     });
 });

@@ -33,7 +33,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(moveEvent).toHaveBeenCalledTimes(1);
-        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, c.check);
+        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, c.nonCachedCheck);
     });
 
     test('variable dependencies are correct', () => {
@@ -43,8 +43,8 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(varEvent).toHaveBeenCalledTimes(2);
-        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, c.check);
-        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, c.check);
+        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, c.nonCachedCheck);
+        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, c.nonCachedCheck);
     });
 
     test('onVisual dependencies are correct', () => {
@@ -54,14 +54,14 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(visualEvent).toHaveBeenCalledTimes(1);
-        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, c.check);
+        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, c.nonCachedCheck);
     });
 
     it.each([[false, false], [false, true], [true, false], [true, true]])(
         'Returns constant function for negated: %s, param: %s', (negated, value) => {
             const c = new Expr('label', {negated, args: [String(value)]});
             c.registerComponents(null, null, graphID);
-            expect(c.check().passed).toBe(negated ? !value : value);
+            expect(c.nonCachedCheck().passed).toBe(negated ? !value : value);
         });
 
     test('Can use TestDriver instead of $-function', () => {
@@ -74,7 +74,7 @@ describe('Expr tests', () => {
         c.registerComponents(tdMock.getTestDriver(), cu, graphID);
         expect(c.check()).toStrictEqual(pass());
         tdMock.currentSprites = [kiwi.sprite];
-        expect(c.check()).toStrictEqual(fail({}));
+        expect(c.nonCachedCheck()).toStrictEqual(fail({}));
     });
 
     test('Registers correct predicate at CheckUtility', () => {
@@ -122,7 +122,7 @@ describe('Expr tests', () => {
         let res = c.check();
         expect(res).toStrictEqual(pass());
         ModelUtil.setStorageValue(graphID, key, "someOtherValue");
-        res = c.check();
+        res = c.nonCachedCheck();
         expect(res).toStrictEqual(fail({someKey: "someOtherValue"}));
     });
 });

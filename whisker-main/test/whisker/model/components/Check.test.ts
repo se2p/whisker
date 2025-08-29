@@ -192,11 +192,10 @@ describe('check and registerComponent', () => {
     test('registerComponent() calculates correct effect', () => {
         const effect = new Key(edgeID, {negated: true, args: ["a"]});
         effect.registerComponents(null, cu, "graphID");
-        const func = effect.check;
         cuMock.pressedKeys["a"] = false;
-        expect(func()).toStrictEqual(pass());
+        expect(effect.nonCachedCheck()).toStrictEqual(pass());
         cuMock.pressedKeys["a"] = true;
-        expect(func()).toStrictEqual(fail({}));
+        expect(effect.nonCachedCheck()).toStrictEqual(fail({}));
     });
 
     test('registerComponent() clears effect in error case', () => {
