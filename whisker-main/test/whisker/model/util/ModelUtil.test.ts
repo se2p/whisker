@@ -1,7 +1,13 @@
 import {
-    checkAttributeExistence, checkCyclicValueWithinDelta, checkSpriteExistence, checkVariableExistence,
-    Dependencies, evaluateExpression,
-    getDependencies, getExpectedDirectionForSprite1LookingAtTarget, getExpressionForEval,
+    checkAttributeExistence,
+    checkCyclicValueWithinDelta,
+    checkSpriteExistence,
+    checkVariableExistence,
+    Dependencies,
+    evaluateExpression,
+    getDependencies,
+    getExpectedDirectionForSprite1LookingAtTarget,
+    getExpressionForEval,
     testNumber
 } from "../../../../src/whisker/model/util/ModelUtil";
 import {

@@ -8,7 +8,8 @@ import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 import {
     checkDirectionWithinDelta,
-    checkSpriteExistence, getExpectedDirectionForSprite1LookingAtSprite2,
+    checkSpriteExistence,
+    getExpectedDirectionForSprite1LookingAtSprite2,
     getExpectedDirectionForSpriteLookingAtMouse
 } from "../util/ModelUtil";
 
