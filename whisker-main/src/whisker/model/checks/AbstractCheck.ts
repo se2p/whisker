@@ -42,6 +42,8 @@ export type CheckFun =
 export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: J;
+    private _lastStepExecuted: number;
+    private _lastResult: CheckResult | null;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -54,12 +56,21 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
         const message = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
         this._check = (() => fail({message})) as C;
+        this._nonCachedCheck = (() => fail({message})) as C;
+        this._lastResult = null;
+        this._lastStepExecuted = Number.NaN;
     }
 
     private _check: C;
 
     get check(): C {
         return this._check;
+    }
+
+    private _nonCachedCheck: C
+
+    get nonCachedCheck(): C {
+        return this._nonCachedCheck;
     }
 
     get edgeLabel(): string {
@@ -95,13 +106,26 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     /**
      * Register the check listener and test driver and check for errors.
      */
-    registerComponents(t, cu: CheckUtility, graphID: string): void {
+    registerComponents(t: TestDriver, cu: CheckUtility, graphID: string): void {
+        this._lastResult = null;
+        this._lastStepExecuted = Number.NaN;
         try {
-            this._check = this._checkArgsWithTestDriver(t, cu, graphID);
+            this._nonCachedCheck = this._checkArgsWithTestDriver(t, cu, graphID);
+            this._check = ((stepsSinceLastTransition: number, stepsSinceEnd: number): CheckResult => {
+                const result = this._nonCachedCheck(stepsSinceLastTransition, stepsSinceEnd);
+                const currentStep = t.getTotalStepsExecuted();
+                if (currentStep !== this._lastStepExecuted || this._lastResult === null
+                    || this._lastResult.passed === false) {
+                    this._lastResult = result;
+                }
+                this._lastStepExecuted = currentStep;
+                return this._lastResult;
+            }) as C;
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
             const message = `There was an error setting up the check: ${e instanceof Error ? e.message : e}`;
             this._check = (() => fail({message})) as C;
+            this._nonCachedCheck = (() => fail({message})) as C;
         }
     }
 
