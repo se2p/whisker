@@ -1,5 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {ModelUtil} from "../util/ModelUtil";
 import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -7,6 +6,7 @@ import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence} from "../util/ModelUtil";
 
 const name = "SpriteTouching" as const;
 
@@ -61,8 +61,8 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         const [pSpriteName1, pSpriteName2] = this._args;
         const negated = this.negated;
 
-        const spriteName1 = ModelUtil.checkSpriteExistence(t, pSpriteName1).name;
-        const spriteName2 = ModelUtil.checkSpriteExistence(t, pSpriteName2).name;
+        const spriteName1 = checkSpriteExistence(t, pSpriteName1).name;
+        const spriteName2 = checkSpriteExistence(t, pSpriteName2).name;
 
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2

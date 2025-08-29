@@ -1,12 +1,12 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {NumberLike, parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence, movedCorrectAmountOfSteps} from "../util/ModelUtil";
 
 const name = "MoveSteps" as const;
 
@@ -59,9 +59,9 @@ export class MoveSteps extends AbstractCheck<MoveStepsJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     protected _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const spriteName = ModelUtil.checkSpriteExistence(t, this._args[0]).name;
+        const spriteName = checkSpriteExistence(t, this._args[0]).name;
 
-        const check = (s: Sprite) => ModelUtil.movedCorrectAmountOfSteps(s, this._args[1], this.negated);
+        const check = (s: Sprite) => movedCorrectAmountOfSteps(s, this._args[1], this.negated);
 
         cu.registerOnVisualChange(spriteName, this, graphID, check);
 

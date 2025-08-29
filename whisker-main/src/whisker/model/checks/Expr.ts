@@ -1,11 +1,11 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "./CheckTypes";
+import {evaluateExpression, getExpressionForEval, setupAllDependenciesForExpressions} from "../util/ModelUtil";
 
 const name = "Expr" as const;
 
@@ -52,12 +52,12 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
      * @param graphID ID of the parent graph of the check.
      */
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const e = ModelUtil.getExpressionForEval(t, this._code, graphID);
+        const e = getExpressionForEval(t, this._code, graphID);
         const check = () => {
             const log = {};
-            return result(Boolean(ModelUtil.evaluateExpression(t, e.expr, graphID, log)), log, this.negated);
+            return result(Boolean(evaluateExpression(t, e.expr, graphID, log)), log, this.negated);
         };
-        ModelUtil.setupAllDependenciesForExpressions(this, cu, graphID, e, this._code, check);
+        setupAllDependenciesForExpressions(this, cu, graphID, e, this._code, check);
         return check;
     }
 

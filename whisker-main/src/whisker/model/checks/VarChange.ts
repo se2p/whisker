@@ -1,6 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
@@ -9,6 +8,7 @@ import {Change, ChangingCheck, newChange} from "./Change";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {NumberOrChangeOp, parseNonUnionError, ParsingResult, SpriteName, VariableName} from "./CheckTypes";
+import {checkVariableExistence, getStageOrSprite, testNumber} from "../util/ModelUtil";
 
 const name = "VarChange" as const;
 
@@ -71,11 +71,11 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, varName] = this._args;
 
-        let sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
+        let sprite = getStageOrSprite(t, pSpriteName);
         const {
             sprite: foundSprite,
             variable: foundVar
-        } = ModelUtil.checkVariableExistence(t, sprite, varName);
+        } = checkVariableExistence(t, sprite, varName);
         sprite = foundSprite;
         const spriteName = sprite.name;
         const variableName = foundVar.name;
@@ -85,8 +85,8 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
             const variable: Variable = sprite.getVariable(variableName);
             try {
                 return this._change.apply(
-                    ModelUtil.testNumber(variable.value),
-                    ModelUtil.testNumber(variable.old.value)
+                    testNumber(variable.value),
+                    testNumber(variable.old.value)
                 );
             } catch (e) {
                 throw new ErrorForVariable(pSpriteName, varName, e);

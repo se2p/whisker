@@ -1,5 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {ModelUtil} from "../util/ModelUtil";
+import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
@@ -84,7 +84,7 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         super(edgeLabel, {...json, name});
         this._attributeName = this._args[1];
         this._change = newQuantifiedChange(this, bounds[this._attributeName]);
-        this._isForEffect = ModelUtil.isAnEffect(this._attributeName);
+        this._isForEffect = isAnEffect(this._attributeName);
     }
 
     get change(): NumberOrChangeOp {
@@ -110,10 +110,10 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
 
-        const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
+        const sprite = getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;
         if (!this._isForEffect) {
-            ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+            checkAttributeExistence(t, spriteName, attrName);
         }
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;

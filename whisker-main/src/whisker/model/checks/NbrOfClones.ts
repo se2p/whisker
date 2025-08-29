@@ -1,5 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
@@ -8,6 +7,7 @@ import {Optional} from "../../utils/Optional";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {ComparisonOp, NonNegativeNumber, parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence} from "../util/ModelUtil";
 
 export type NbrOfClonesArgs = [
     /**
@@ -74,7 +74,7 @@ abstract class AbstractNbrOfClones<
     override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
         const [pSpriteName] = this._args;
 
-        const sprite = ModelUtil.checkSpriteExistence(t, pSpriteName);
+        const sprite = checkSpriteExistence(t, pSpriteName);
         const spriteName = sprite.name;
 
         const spriteCondition = this._visible
