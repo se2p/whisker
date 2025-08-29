@@ -125,4 +125,13 @@ describe('Expr tests', () => {
         res = c.check();
         expect(res).toStrictEqual(fail({someKey: "someOtherValue"}));
     });
+
+    test('Can use ModelUtil functions', () => {
+        let c = new Expr('label', {args: ["checkCyclicValueWithinDelta(120, 122, -180, 180, 3)"]});
+        c.registerComponents(t, cu, graphID);
+        expect(c.check()).toStrictEqual(pass());
+        c = new Expr('label', {args: ["checkCyclicValueWithinDelta(120, 124, -180, 180, 3)"]});
+        c.registerComponents(t, cu, graphID);
+        expect(c.check()).toStrictEqual(fail({}));
+    });
 });
