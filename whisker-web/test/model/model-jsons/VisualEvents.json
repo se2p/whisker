@@ -16,6 +16,34 @@
             {
                 "id": "n2",
                 "label": "n2"
+            },
+            {
+                "id": "n3",
+                "label": "n3"
+            },
+            {
+                "id": "n4",
+                "label": "n4"
+            },
+            {
+                "id": "n5",
+                "label": "n5"
+            },
+            {
+                "id": "n6",
+                "label": "n6"
+            },
+            {
+                "id": "n7",
+                "label": "n7"
+            },
+            {
+                "id": "n8",
+                "label": "n8"
+            },
+            {
+                "id": "n9",
+                "label": "n9"
             }
         ],
         "edges": [
@@ -55,7 +83,16 @@
                         "negated": true
                     }
                 ],
-                "effects": [
+                "effects": []
+            },
+            {
+                "id": "costumeChange",
+                "label": "costumeChange",
+                "from": "n2",
+                "to": "n3",
+                "forceTestAfter": 500,
+                "forceTestAt": -1,
+                "conditions": [
                     {
                         "name": "AttrComp",
                         "args": [
@@ -65,7 +102,18 @@
                             "costume2"
                         ],
                         "negated": false
-                    },
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "size",
+                "label": "size",
+                "from": "n3",
+                "to": "n4",
+                "forceTestAfter": 500,
+                "forceTestAt": -1,
+                "conditions": [
                     {
                         "name": "AttrChange",
                         "args": [
@@ -74,7 +122,39 @@
                             "10"
                         ],
                         "negated": false
-                    },
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "hide",
+                "label": "hide",
+                "from": "n4",
+                "to": "n5",
+                "forceTestAfter": 500,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "visible",
+                            "==",
+                            false
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "visible",
+                "label": "visible",
+                "from": "n5",
+                "to": "n6",
+                "forceTestAfter": 500,
+                "forceTestAt": -1,
+                "conditions": [
                     {
                         "name": "AttrComp",
                         "args": [
@@ -84,7 +164,39 @@
                             true
                         ],
                         "negated": false
-                    },
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "rotationStyle",
+                "label": "rotationStyle",
+                "from": "n6",
+                "to": "n7",
+                "forceTestAfter": 500,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "rotationStyle",
+                            "==",
+                            "all around"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "direction",
+                "label": "direction",
+                "from": "n7",
+                "to": "n8",
+                "forceTestAfter": 500,
+                "forceTestAt": -1,
+                "conditions": [
                     {
                         "name": "AttrComp",
                         "args": [
@@ -94,7 +206,18 @@
                             -90
                         ],
                         "negated": false
-                    },
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "rotationStyle2",
+                "label": "rotationStyle2",
+                "from": "n8",
+                "to": "n9",
+                "forceTestAfter": 500,
+                "forceTestAt": -1,
+                "conditions": [
                     {
                         "name": "AttrComp",
                         "args": [
@@ -105,7 +228,8 @@
                         ],
                         "negated": false
                     }
-                ]
+                ],
+                "effects": []
             }
         ]
     }

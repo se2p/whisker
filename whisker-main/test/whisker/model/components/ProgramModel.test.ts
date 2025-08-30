@@ -257,7 +257,7 @@ describe('Program model', () => {
         };
         model.programEndStep = 5;
         model.makeOneTransition(t, null);
-        expect(fn).toHaveBeenCalledWith(t, null, 3, 5);
+        expect(fn).toHaveBeenCalledWith(t, null, 2, 5);
         expect(model.currentState).toBe(nodes["n1"]);
     });
 
@@ -272,7 +272,7 @@ describe('Program model', () => {
         };
         model.programEndStep = 7;
         model.testForEvent(t, null, new Checks());
-        expect(fn).toHaveBeenCalledWith(t, null, 3, 7);
+        expect(fn).toHaveBeenCalledWith(t, null, 2, 7);
         expect(model.currentState).toBe(nodes["n1"]);
     });
 

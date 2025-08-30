@@ -1,0 +1,126 @@
+[
+    {
+        "usage": "program",
+        "id": "test",
+        "startNodeId": "n0",
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "n2",
+                "label": "n2"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "edges": [
+            {
+                "id": "timeOver",
+                "label": "timeOver",
+                "from": "n0",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "TimeElapsed",
+                        "args": [
+                            5000
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "movedUp",
+                "label": "movedUp",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "+10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "movedUp2",
+                "label": "movedUp2",
+                "from": "n1",
+                "to": "n2",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "+10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "movedDown",
+                "label": "movedDown",
+                "from": "n2",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "-10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "movedDown2",
+                "label": "movedDown2",
+                "from": "n1",
+                "to": "n0",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "-10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    }
+]

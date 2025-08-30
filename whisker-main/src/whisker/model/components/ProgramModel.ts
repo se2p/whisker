@@ -54,9 +54,6 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
     override makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ProgramModelEdge | null {
-        if (this._alreadyTookAnEdgeThisStep(t)) {
-            return null;
-        }
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.programEndStep);
@@ -69,9 +66,6 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     }
 
     testForEvent(t: TestDriver, cu: CheckUtility, checks: Checks): ProgramModelEdge | null {
-        if (this._alreadyTookAnEdgeThisStep(t)) {
-            return null;
-        }
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         const edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.programEndStep,
             checks);
@@ -172,10 +166,6 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         this.secondLastTransitionStep = this.lastTransitionStep;
         this.lastTransitionStep = t.getTotalStepsExecuted() + 1;
 
-    }
-
-    private _alreadyTookAnEdgeThisStep(testDriver: TestDriver) {
-        return this.lastTransitionStep === testDriver.getTotalStepsExecuted() + 1;
     }
 }
 
