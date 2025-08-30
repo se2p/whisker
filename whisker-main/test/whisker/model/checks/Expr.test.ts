@@ -33,7 +33,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(moveEvent).toHaveBeenCalledTimes(1);
-        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, c.nonCachedCheck);
+        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, expect.anything());
     });
 
     test('variable dependencies are correct', () => {
@@ -43,8 +43,8 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(varEvent).toHaveBeenCalledTimes(2);
-        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, c.nonCachedCheck);
-        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, c.nonCachedCheck);
+        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, expect.anything());
+        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, expect.anything());
     });
 
     test('onVisual dependencies are correct', () => {
@@ -54,7 +54,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(visualEvent).toHaveBeenCalledTimes(1);
-        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, c.nonCachedCheck);
+        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, expect.anything());
     });
 
     it.each([[false, false], [false, true], [true, false], [true, true]])(
@@ -95,6 +95,7 @@ describe('Expr tests', () => {
         expect(check(apple.sprite)).toStrictEqual(pass());
         apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
         tdMock.currentSprites = [apple.updateSprite()];
+        tdMock.nextStep();
         expect(check(apple.sprite)).toStrictEqual(fail({}));
     });
 

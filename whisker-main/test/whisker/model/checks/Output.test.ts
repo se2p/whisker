@@ -43,6 +43,7 @@ describe('Output tests', () => {
         expect(check(kiwi.sprite)).toStrictEqual(pass());
         kiwi.sayText = "this is a different text";
         tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
+        tdMock.nextStep();
         expect(check(kiwi.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 });

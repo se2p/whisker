@@ -54,6 +54,7 @@ describe('SpriteColor tests', () => {
         expect(fn).toHaveBeenCalledTimes(1);
         expect(check(kiwi.sprite)).toEqual(pass());
         kiwi.touchingColor = false;
+        tdMock.nextStep();
         expect(check(kiwi.sprite)).toEqual(fail(expect.any(Object)));
     });
 
