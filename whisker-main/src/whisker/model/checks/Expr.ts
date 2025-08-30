@@ -1,5 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {Dependencies, Expression, ModelUtil} from "../util/ModelUtil";
+import {Dependencies, evaluateExpression, Expression, getDependencies, getExpressionForEval} from "../util/ModelUtil";
 import {z} from "zod";
 import {CheckResult, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
@@ -50,10 +50,10 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
      * @param t Instance of the test driver for evaluating expression.
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const e = ModelUtil.getExpressionForEval(t, this._code, this.graphID);
+        const e = getExpressionForEval(t, this._code, this.graphID);
         const check = () => {
             const log = {};
-            return result(Boolean(ModelUtil.evaluateExpression(t, e.expr, this.graphID, log)), log, this.negated);
+            return result(Boolean(evaluateExpression(t, e.expr, this.graphID, log)), log, this.negated);
         };
         this._setupAllDependenciesForExpressions(e, this._code, check);
         return check;
@@ -78,7 +78,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
      */
     private _setupAllDependenciesForExpressions(expr: Expression, code: string, predicate: (...sprite: Sprite[]) => CheckResult): void {
         this._setupDependencies(expr, predicate);
-        const dep: Dependencies = ModelUtil.getDependencies(code);
+        const dep: Dependencies = getDependencies(code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
             this._setupDependencies(dep, predicate);
         }

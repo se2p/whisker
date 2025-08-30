@@ -1,4 +1,4 @@
-import {ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
+import {initialiseStorage} from "../../../../src/whisker/model/util/ModelUtil";
 import {getDummyTestDriver} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {ChangeStorageBy} from "../../../../src/whisker/model/checks/ChangeStorageBy";
@@ -17,7 +17,7 @@ describe('IncDecStorage', () => {
         const graphID = "setStorageTest";
         const check = new ChangeStorageBy("label", {negated: false, args: ["var1", change]});
         const storage = new Map([["var1", initialValue]]);
-        ModelUtil.initialiseStorage(graphID, storage);
+        initialiseStorage(graphID, storage);
         check.registerComponents(getDummyTestDriver(), getDummyCheckUtility(), graphID);
         expect(check.check().passed).toBe(true);
         expect(storage).toStrictEqual(expected);

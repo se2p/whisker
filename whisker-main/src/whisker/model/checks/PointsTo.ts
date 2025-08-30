@@ -1,12 +1,17 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {
+    checkDirectionWithinDelta,
+    checkSpriteExistence,
+    getExpectedDirectionForSprite1LookingAtSprite2,
+    getExpectedDirectionForSpriteLookingAtMouse
+} from "../util/ModelUtil";
 
 const name = "PointsTo" as const;
 
@@ -56,24 +61,24 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
      * @param t Instance of the test driver for retrieving the direction attribute of a sprite and its clones.
      */
     protected _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
-        const spriteNameRotate = ModelUtil.checkSpriteExistence(t, this._args[0]).name;
+        const spriteNameRotate = checkSpriteExistence(t, this._args[0]).name;
         if (this._args[1] != "_mouse_") {
-            ModelUtil.checkSpriteExistence(t, this._args[1]).name;
+            checkSpriteExistence(t, this._args[1]).name;
         }
 
         const check = (s: Sprite) => {
             let expectedDirection: number, hasCorrectDirection: boolean;
             if (this._args[1] == "_mouse_") {
-                expectedDirection = ModelUtil.getExpectedDirectionForSpriteLookingAtMouse(s, t);
-                hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
+                expectedDirection = getExpectedDirectionForSpriteLookingAtMouse(s, t);
+                hasCorrectDirection = checkDirectionWithinDelta(s, expectedDirection);
             } else {
                 const target = t.getSprite(this._args[1]);
-                expectedDirection = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, target);
-                hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, expectedDirection);
+                expectedDirection = getExpectedDirectionForSprite1LookingAtSprite2(s, target);
+                hasCorrectDirection = checkDirectionWithinDelta(s, expectedDirection);
                 if (!hasCorrectDirection) {
                     // maybe the sprite just moved so it did point to the sprite
-                    const dirOld = ModelUtil.getExpectedDirectionForSprite1LookingAtSprite2(s, target.old);
-                    hasCorrectDirection = ModelUtil.checkDirectionWithinDelta(s, dirOld);
+                    const dirOld = getExpectedDirectionForSprite1LookingAtSprite2(s, target.old);
+                    hasCorrectDirection = checkDirectionWithinDelta(s, dirOld);
                 }
             }
             return result(hasCorrectDirection, {actual: s.direction, expected: expectedDirection});

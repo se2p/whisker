@@ -7,7 +7,7 @@ import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/Chec
 import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {expect} from "@jest/globals";
-import {ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
+import {getStorageValue, initialiseStorage, setStorageValue} from "../../../../src/whisker/model/util/ModelUtil";
 
 describe('Expr tests', () => {
     const graphID = "graphID";
@@ -103,27 +103,36 @@ describe('Expr tests', () => {
         const graphID = "someGraphID1232103i123";
         const key = "someKey";
         const expectedValue = "someValue";
-        ModelUtil.initialiseStorage(graphID, new Map<string, unknown>());
-        ModelUtil.setStorageValue(graphID, key, "someOtherValue");
-        expect(ModelUtil.getStorageValue(graphID, key)).toBe("someOtherValue");
+        initialiseStorage(graphID, new Map<string, unknown>());
+        setStorageValue(graphID, key, "someOtherValue");
+        expect(getStorageValue(graphID, key)).toBe("someOtherValue");
         const c = new Expr('label', {args: [`$$('${key}', '${expectedValue}')`]});
         c.registerComponents(t, cu, graphID);
         c.check();
-        expect(ModelUtil.getStorageValue(graphID, key)).toBe(expectedValue);
+        expect(getStorageValue(graphID, key)).toBe(expectedValue);
     });
 
     test('Can read with $$-function', () => {
         const graphID = "someGraphID122394239423";
         const key = "someKey";
         const expectedValue = "someValue";
-        ModelUtil.initialiseStorage(graphID, new Map<string, unknown>());
-        ModelUtil.setStorageValue(graphID, key, expectedValue);
+        initialiseStorage(graphID, new Map<string, unknown>());
+        setStorageValue(graphID, key, expectedValue);
         const c = new Expr('label', {args: [`$$('${key}')==='${expectedValue}'`]});
         c.registerComponents(t, cu, graphID);
         let res = c.check();
         expect(res).toStrictEqual(pass());
-        ModelUtil.setStorageValue(graphID, key, "someOtherValue");
+        setStorageValue(graphID, key, "someOtherValue");
         res = c.nonCachedCheck();
         expect(res).toStrictEqual(fail({someKey: "someOtherValue"}));
+    });
+
+    test('Can use ModelUtil functions', () => {
+        let c = new Expr('label', {args: ["checkCyclicValueWithinDelta(120, 122, -180, 180, 3)"]});
+        c.registerComponents(t, cu, graphID);
+        expect(c.check()).toStrictEqual(pass());
+        c = new Expr('label', {args: ["checkCyclicValueWithinDelta(120, 124, -180, 180, 3)"]});
+        c.registerComponents(t, cu, graphID);
+        expect(c.check()).toStrictEqual(fail({}));
     });
 });

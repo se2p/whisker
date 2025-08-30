@@ -1,12 +1,12 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence, evaluateExpression, getExpressionForEval} from "../util/ModelUtil";
 
 const name = "Output" as const;
 
@@ -58,17 +58,17 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         const [pSpriteName, output] = this._args;
         const negated = this.negated;
 
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const spriteName = checkSpriteExistence(t, pSpriteName).name;
         let expression: string;
         try {
-            expression = ModelUtil.getExpressionForEval(t, output, this.graphID).expr;
+            expression = getExpressionForEval(t, output, this.graphID).expr;
         } catch (e) {
             // this is probably supposed to be constant text like "apple" and not an expression
-            expression = ModelUtil.getExpressionForEval(t, `'${output}'`, this.graphID).expr;
+            expression = getExpressionForEval(t, `'${output}'`, this.graphID).expr;
         }
 
         const sayTextCheck = (s: Sprite) => {
-            const expected = String(ModelUtil.evaluateExpression(t, expression, this.graphID)).toLocaleLowerCase();
+            const expected = String(evaluateExpression(t, expression, this.graphID)).toLocaleLowerCase();
 
             if (s.sayText === null) {
                 return fail({actual: null, expected: expected});

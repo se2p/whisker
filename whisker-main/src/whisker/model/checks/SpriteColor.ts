@@ -1,6 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -8,6 +7,7 @@ import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence, testNumber} from "../util/ModelUtil";
 
 const name = "SpriteColor" as const;
 
@@ -72,10 +72,10 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         const [pSpriteName, pR, pG, pB] = this._args;
         const negated = this.negated;
 
-        const r = ModelUtil.testNumber(pR);
-        const g = ModelUtil.testNumber(pG);
-        const b = ModelUtil.testNumber(pB);
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const r = testNumber(pR);
+        const g = testNumber(pG);
+        const b = testNumber(pB);
+        const spriteName = checkSpriteExistence(t, pSpriteName).name;
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw new RGBRangeError();
         }

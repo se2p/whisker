@@ -1,13 +1,13 @@
 import {z} from "zod";
 import {AbstractCheck, CheckFun, CheckFun0, CheckFun1, CheckFun2, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {NonNegativeNumber, parseNonUnionError, ParsingResult} from "./CheckTypes";
+import {testNumber} from "../util/ModelUtil";
 
 export type TimeArgs = [
 
@@ -60,7 +60,7 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
     }
 
     private _convertFromTimeToSteps(): number {
-        const time = ModelUtil.testNumber(this.millis);
+        const time = testNumber(this.millis);
         return VMWrapper.convertFromTimeToSteps(time);
     }
 }

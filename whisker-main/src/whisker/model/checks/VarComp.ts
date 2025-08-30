@@ -1,6 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -17,6 +16,7 @@ import {
     SpriteName,
     VariableName
 } from "./CheckTypes";
+import {checkVariableExistence, getStageOrSprite} from "../util/ModelUtil";
 
 const name = "VarComp" as const;
 
@@ -73,7 +73,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         const {
             sprite: foundSprite,
             variable: foundVar
-        } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
+        } = checkVariableExistence(t, getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
 

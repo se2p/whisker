@@ -5,7 +5,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {UserModel} from "./UserModel";
 import {EndModel, ProgramModel} from "./ProgramModel";
 import {ModelJSON, ModelUsage, StorageValueType} from "../util/schema";
-import {ModelUtil} from "../util/ModelUtil";
+import {evaluateExpression, getExpressionForEval, initialiseStorage} from "../util/ModelUtil";
 
 export type Model =
     | UserModel
@@ -57,15 +57,15 @@ export abstract class AbstractModel<E extends ModelEdge> {
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         // even if no initial storage is provided, the storage still must be reset
         const initialStorage = new Map<string, unknown>();
-        ModelUtil.initialiseStorage(this.id, initialStorage);
+        initialiseStorage(this.id, initialStorage);
 
         for (const [key, [type, value]] of Object.entries(this.initialStorage)) {
             if (type === "number" || type === "string") {
                 initialStorage.set(key, value);
             } else {
                 const exprString = Array.isArray(value) ? value.join("\n") : value;
-                const expr = ModelUtil.getExpressionForEval(testDriver, exprString, this._id).expr;
-                initialStorage.set(key, ModelUtil.evaluateExpression(testDriver, expr, this._id));
+                const expr = getExpressionForEval(testDriver, exprString, this._id).expr;
+                initialStorage.set(key, evaluateExpression(testDriver, expr, this._id));
             }
         }
     }

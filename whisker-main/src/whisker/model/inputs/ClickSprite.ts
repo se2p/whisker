@@ -1,10 +1,10 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
-import {ModelUtil} from "../util/ModelUtil";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "../checks/CheckTypes";
+import {checkSpriteExistence} from "../util/ModelUtil";
 
 const name = "InputClickSprite" as const;
 
@@ -33,7 +33,7 @@ export class ClickSprite extends AbstractUserInput<ClickSpriteJSON> {
     }
 
     override async inputImmediate(t: TestDriver, graphId: string): Promise<void> {
-        const sprite = ModelUtil.checkSpriteExistence(t, this._spriteName);
+        const sprite = checkSpriteExistence(t, this._spriteName);
         const clickSpriteEvent = new ClickSpriteEvent(sprite._target);
         return clickSpriteEvent.apply();
     }

@@ -1,11 +1,10 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType, StorageValueType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "./CheckTypes";
+import {evaluateExpression, getExpressionForEval, setStorageValue,} from "../util/ModelUtil";
 
 const name = "SetStorage" as const;
 
@@ -70,16 +69,16 @@ export class SetStorage extends AbstractCheck<SetStorageJSON, CheckFun0> {
         if (this.type === "number" || this.type === "string") {
             // a static value is used, so there are no dependencies, and nothing has to be computed
             return () => {
-                ModelUtil.setStorageValue(this.graphID, this.key, this.value);
+                setStorageValue(this.graphID, this.key, this.value);
                 return result(true, {}, this.negated);
             };
         }
         const exprString = Array.isArray(this.value) ? this.value.join("\n") : this.value as string;
-        const expr = ModelUtil.getExpressionForEval(t, exprString, this.graphID);
+        const expr = getExpressionForEval(t, exprString, this.graphID);
         return () => {
             const log = {};
-            const value = ModelUtil.evaluateExpression(t, expr.expr, this.graphID, log);
-            ModelUtil.setStorageValue(this.graphID, this.key, value);
+            const value = evaluateExpression(t, expr.expr, this.graphID, log);
+            setStorageValue(this.graphID, this.key, value);
             return result(true, log, this.negated);
         };
     }
