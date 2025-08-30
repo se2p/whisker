@@ -58,10 +58,8 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
     /**
      * Get a method checking whether the background of the stage changed.
      * @param t Instance of the test driver for retrieving the current costume of the stage
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         // without movement
         return () => {
             try {

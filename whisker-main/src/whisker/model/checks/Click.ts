@@ -47,10 +47,8 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
     /**
      * Get a method for checking whether a sprite was clicked.
      * @param t Instance of the test driver for retrieving if a sprite or its clones are clicked
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName] = this._args;
         const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
 

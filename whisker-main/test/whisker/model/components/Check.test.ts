@@ -661,18 +661,4 @@ describe('Contradictions', () => {
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
     });
-
-    test('contradiction with event strings', () => {
-        const attrComp = newCheck(edgeID, {
-            name: "AttrComp",
-            negated: false,
-            args: ["sprite", "y", "==", 0]
-        });
-
-        const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "y", "<=", 2]});
-        const attrComp3 = new AttrComp(edgeID, {args: ["sprite", "y", "<=", 2]});
-
-        expect(attrComp.testForContradictingWithEvents(new Checks([attrComp2]))).toBe(true);
-        expect(attrComp.testForContradictingWithEvents(new Checks([attrComp3]))).toBe(false);
-    });
 });

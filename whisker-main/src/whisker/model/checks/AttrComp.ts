@@ -81,10 +81,8 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
      * Get a method for checking whether a sprite's attribute has a given comparison with a given value fulfilled.
      *
      * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const pSpriteName = this._args[0];
 
         const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
@@ -105,11 +103,11 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         // on movement listener
         if (this._attrName == "x" || this._attrName == "y") {
-            cu.registerOnMoveEvent(spriteName, this, graphID, listener);
+            this._registerOnMoveEvent(spriteName, listener);
         } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
-            cu.registerOnVisualChange(spriteName, this, graphID, listener);
+            this._registerOnVisualChange(spriteName, listener);
         } else if (this._attrName == "sayText") {
-            cu.registerOutput(spriteName, this, graphID, listener);
+            this._registerOutput(spriteName, listener);
         }
 
         return () => {

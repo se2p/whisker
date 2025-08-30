@@ -52,30 +52,11 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Expr:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): boolean {
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks:Checks): boolean {
         if (this.failedForcedTest) {
             return this.conditions.length === 0;
         }
-        let check = false;
-
-        // look up if this edge has a condition that was triggered
-        for (const c of this.conditions) {
-            if (checks.includes(c)) {
-                check = true;
-                break;
-            } else if (c.name === "Expr" && c.code === "true" || c.name === "Probability" && c.probability === 1) {
-                check = this._testEffectsOnEvent(checks);
-                if (check) {
-                    break;
-                }
-            }
-        }
-
-        if (!check) {
-            return this.conditions.length === 0;
-        }
-
-        return this.conditions.every(c => checks.includes(c) || c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
+        return this.conditions.every(c => c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
     }
 
     override toJSON(): ProgramModelEdgeJSON {
@@ -89,20 +70,5 @@ export class ProgramModelEdge extends AbstractEdge {
             conditions: this.conditions.map((c) => c.toJSON()),
             effects: this._effects.map(effect => effect.toJSON())
         };
-    }
-
-    private _testEffectsOnEvent(checks: Checks): boolean {
-        for (const e of this._effects) {
-            if (checks.includes(e)) {
-                return true;
-            }
-
-            if (e.testForContradictingWithEvents(checks)) {
-                // tests whether an event contradicting an effect (of a true condition edge) is there
-                return true;
-            }
-        }
-
-        return false;
     }
 }

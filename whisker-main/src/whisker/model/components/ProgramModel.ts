@@ -58,7 +58,6 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         const edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.programEndStep);
 
-
         if (edge != null) {
             this._update(t, edge);
         }
@@ -67,10 +66,9 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
 
     testForEvent(t: TestDriver, cu: CheckUtility, checks: Checks): void {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
-        const edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.programEndStep,
-            checks);
+        const edges = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.programEndStep, checks);
 
-        if (edge != null) {
+        for (const edge of edges) {
             edge.effects.forEach(e => e.check(stepsSinceLastTransition, this.programEndStep));
         }
     }
@@ -164,7 +162,6 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         this.currentState = this.nodes[edge.getEndNodeId()];
         this.secondLastTransitionStep = this.lastTransitionStep;
         this.lastTransitionStep = t.getTotalStepsExecuted() + 1;
-
     }
 }
 

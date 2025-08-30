@@ -395,40 +395,6 @@ export abstract class ModelUtil {
         return {attrDependencies: newAttrDep, varDependencies: newVarDep};
     }
 
-    /**
-     * Sets up all dependencies for a check with expressions
-     * (dependencies by $-function calls and parsed with RegEx from test driver use)
-     * @param check The check that has some dependencies
-     * @param cu CheckUtility where the dependencies are registered.
-     * @param graphID Id of the graph
-     * @param expr Expression with the dependencies from the $-function are registered.
-     * @param code Code of the expression
-     * @param predicate Generated check
-     */
-    static setupAllDependenciesForExpressions(check: Check, cu: CheckUtility, graphID: string, expr: Expression, code: string, predicate: (...sprite: Sprite[]) => CheckResult): void {
-        ModelUtil.setupDependencies(check, cu, graphID, expr, predicate);
-        const dep: Dependencies = ModelUtil.getDependencies(code);
-        if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
-            ModelUtil.setupDependencies(check, cu, graphID, dep, predicate);
-        }
-    }
-
-    static setupDependencies(check: Check, cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult): void {
-        d.varDependencies.forEach(dependency => {
-            cu.registerVarEvent(dependency.varName, check, graphID, predicate);
-        });
-
-        d.attrDependencies.forEach(({spriteName, attrName}) => {
-            if (attrName == "x" || attrName == "y") {
-                cu.registerOnMoveEvent(spriteName, check, graphID, predicate);
-            } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-                cu.registerOnVisualChange(spriteName, check, graphID, predicate);
-            } else if (attrName == "sayText") {
-                cu.registerOutput(spriteName, check, graphID, predicate);
-            }
-        });
-    }
-
     static getNumberFunction(text: ArgType, t: TestDriver, graphId: string): () => number {
         const asNumber = ModelUtil.returnNumberIfPossible(text);
         if (asNumber == null) {

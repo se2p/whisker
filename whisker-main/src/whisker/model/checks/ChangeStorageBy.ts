@@ -50,17 +50,15 @@ export class ChangeStorageBy extends AbstractCheck<ChangeStorageByJSON, CheckFun
     /**
      * Get a method for increasing/decreasing a value in the storage of the graph.
      * @param t Instance of the test driver for evaluating expression.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         return () => {
-            const current = ModelUtil.getStorageValue(graphID, this.key);
+            const current = ModelUtil.getStorageValue(this.graphID, this.key);
             if (typeof current !== "number") {
                 return fail({message: `Expected a number but got ${current} with type ${typeof current}`});
             }
             const nextValue = current + this.value;
-            ModelUtil.setStorageValue(graphID, this.key, nextValue);
+            ModelUtil.setStorageValue(this.graphID, this.key, nextValue);
             return result(true, {}, this.negated);
         };
     }

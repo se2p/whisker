@@ -38,12 +38,10 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
     /**
      * Get a method for checking if any key was pressed or not pressed.
      * @param t Instance of the test driver (unused).
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         return () => {
-            return result(cu.isAnyKeyDown(), {}, this.negated);
+            return result(this.cu.isAnyKeyDown(), {}, this.negated);
         };
     }
 
