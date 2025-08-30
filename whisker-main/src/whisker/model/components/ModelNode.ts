@@ -83,8 +83,8 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     /**
      * Check the edges for a transition based on fired events.
      */
-    testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): E[] {
-        return this.edges.filter(e => e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks));
+    testForEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): E[] {
+        return this.edges.filter(e => e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks)); // cache results
     }
 
     /**

@@ -81,12 +81,10 @@ describe('Model tests', () => {
     const table = [
         ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null],
         ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null],
-        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00, null],
         ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null],
         ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null],
         ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null],
         ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null],
-        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00, null],
         ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null],
         ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null],
         ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModel.json'],

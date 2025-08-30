@@ -108,7 +108,7 @@ describe('Model node', () => {
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        const result = node.testForEvent(null, null, 0, 0, new Checks());
+        const result = node.testForEvent(0, 0, new Checks());
         expect(result).toStrictEqual([]);
         expect(fn).toHaveBeenCalledTimes(3);
     });
@@ -124,7 +124,7 @@ describe('Model node', () => {
         node.addOutgoingEdge(correctEdge);
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        const result = node.testForEvent(tdMock.getTestDriver(), null, 0, 0, new Checks());
+        const result = node.testForEvent(0, 0, new Checks());
         expect(result).toStrictEqual([correctEdge]);
         expect(fn).toHaveBeenCalledTimes(3);
         expect(correctEdge.lastTransition).toBe(0);
