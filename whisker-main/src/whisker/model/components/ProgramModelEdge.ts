@@ -54,12 +54,12 @@ export class ProgramModelEdge extends AbstractEdge {
      */
     override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks:Checks): boolean {
         if (this.failedForcedTest) {
-            return this.conditions.length === 0;
+            return false;
         }
         if(this.effects.some(e => checks.includes(e))) {
             this.effects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
         }
-        return this.conditions.every(c => c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
+        return this.conditions.reduce((acc, c) => acc && c.check(stepsSinceLastTransition, stepsSinceEnd).passed, true); // cache results
     }
 
     override toJSON(): ProgramModelEdgeJSON {
