@@ -339,7 +339,7 @@ export class ModelTester extends EventEmitter {
         // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
         const inProgramModelStage = this._modelStepCallback!.isActive();
         const models = inProgramModelStage ? this._programModels : this._onTestEndModels;
-        models.forEach((m: OracleModel) => m.testForEvent(this._testDriver!, this._checkUtility!, checks));
+        models.forEach((m: OracleModel) => m.testForEvent(this._testDriver!, checks));
     }
 
     private _onLogEvent(output: unknown) {
