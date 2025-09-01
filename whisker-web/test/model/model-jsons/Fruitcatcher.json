@@ -56,7 +56,7 @@
                         "negated": false,
                         "args": [
                             "Bowl",
-                            "End"
+                            "Ende!"
                         ]
                     }
                 ],
@@ -208,10 +208,10 @@
                 "effects": [
                     {
                         "name": "Output",
-                        "negated": true,
+                        "negated": false,
                         "args": [
                             "Bowl",
-                            "End"
+                            ""
                         ]
                     }
                 ]
