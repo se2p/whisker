@@ -44,7 +44,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     private readonly _checkJSON: J;
     private _lastStepExecuted: number;
     private _lastResult: CheckResult | null;
-    private _cu: CheckUtility | null;
     private _graphId: string | null;
     private _t: TestDriver | null;
 
@@ -90,12 +89,14 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     abstract get dependsOnSayText(): boolean;
 
-    protected get _args(): J["args"] {
-        return this._checkJSON.args;
-    }
+    private _cu: CheckUtility | null;
 
     protected get cu(): CheckUtility {
         return this._cu;
+    }
+
+    protected get _args(): J["args"] {
+        return this._checkJSON.args;
     }
 
     protected get graphID(): string {
@@ -138,46 +139,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         }
     }
 
-    private wrapSpriteCheckForCU(check: (s: Sprite) => CheckResult) {
-        return (s: Sprite) => {
-            const currentStep = this._t.getTotalStepsExecuted();
-            if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
-                return this._lastResult;
-            }
-            this._lastResult = check(s);
-            this._lastStepExecuted = currentStep;
-            return this._lastResult;
-        };
-    }
-
-    private wrapVariableCheckForCU(check: () => CheckResult) {
-        return () => {
-            const currentStep = this._t.getTotalStepsExecuted();
-            if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
-                return this._lastResult;
-            }
-            this._lastResult = check();
-            this._lastStepExecuted = currentStep;
-            return this._lastResult;
-        };
-    }
-
-    protected _registerOnMoveEvent(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnMoveEvent(spriteName, this as unknown as Check, this._graphId, this.wrapSpriteCheckForCU(check));
-    }
-
-    protected _registerOnVisualChange(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnVisualChange(spriteName, this as unknown as Check, this._graphId, this.wrapSpriteCheckForCU(check));
-    }
-
-    protected _registerOutput(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOutput(spriteName, this as unknown as Check, this._graphId, this.wrapSpriteCheckForCU(check));
-    }
-
-    protected _registerVarEvent(spriteName: string, check: () => CheckResult): void {
-        this._cu.registerVarEvent(spriteName, this as unknown as Check, this._graphId, this.wrapVariableCheckForCU(check));
-    }
-
     /**
      * Whether this effect contradicts another effect check.
      * @param that The other effect.
@@ -204,6 +165,22 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return JSON.parse(JSON.stringify(this._checkJSON));
     }
 
+    protected _registerOnMoveEvent(spriteName: string, check: (s: Sprite) => CheckResult): void {
+        this._cu.registerOnMoveEvent(spriteName, this as unknown as Check, this._graphId, this.wrapSpriteCheckForCU(check));
+    }
+
+    protected _registerOnVisualChange(spriteName: string, check: (s: Sprite) => CheckResult): void {
+        this._cu.registerOnVisualChange(spriteName, this as unknown as Check, this._graphId, this.wrapSpriteCheckForCU(check));
+    }
+
+    protected _registerOutput(spriteName: string, check: (s: Sprite) => CheckResult): void {
+        this._cu.registerOutput(spriteName, this as unknown as Check, this._graphId, this.wrapSpriteCheckForCU(check));
+    }
+
+    protected _registerVarEvent(spriteName: string, check: () => CheckResult): void {
+        this._cu.registerVarEvent(spriteName, this as unknown as Check, this._graphId, this.wrapVariableCheckForCU(check));
+    }
+
     protected abstract _validate(checkJSON: J): J;
 
     /**
@@ -215,6 +192,30 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     protected abstract _checkArgsWithTestDriver(t: TestDriver): C;
 
     protected abstract _contradicts(that: AbstractCheck): boolean;
+
+    private wrapSpriteCheckForCU(check: (s: Sprite) => CheckResult) {
+        return (s: Sprite) => {
+            const currentStep = this._t.getTotalStepsExecuted();
+            if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
+                return this._lastResult;
+            }
+            this._lastResult = check(s);
+            this._lastStepExecuted = currentStep;
+            return this._lastResult;
+        };
+    }
+
+    private wrapVariableCheckForCU(check: () => CheckResult) {
+        return () => {
+            const currentStep = this._t.getTotalStepsExecuted();
+            if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
+                return this._lastResult;
+            }
+            this._lastResult = check();
+            this._lastStepExecuted = currentStep;
+            return this._lastResult;
+        };
+    }
 
     private _equalsArgs(that: AbstractCheck): boolean {
         return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);

@@ -52,11 +52,11 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Expr:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks:Checks): boolean {
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): boolean {
         if (this.failedForcedTest) {
             return false;
         }
-        if(this.effects.some(e => checks.includes(e))) {
+        if (this.effects.some(e => checks.includes(e))) {
             this.effects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
         }
         return this.conditions.reduce((acc, c) => acc && c.check(stepsSinceLastTransition, stepsSinceEnd).passed, true); // cache results
