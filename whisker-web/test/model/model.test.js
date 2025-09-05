@@ -7,13 +7,24 @@ const URL = "dist/index.html";
 
 const ACCELERATION = Infinity;
 
+async function uploadFile(selector, path) {
+    const exists = fs.existsSync(path);
+    if(!exists) {
+        console.log(`The file ${path} does not exist!`);
+    }
+    expect().toBe(true);
+    await (await page.$(selector)).uploadFile(path);
+}
+
 async function loadProject(scratchPath, modelPath, userModelOrTest) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    await (await page.$('#fileselect-models')).uploadFile(modelPath);
+    await uploadFile('#fileselect-project', scratchPath);
+    if (modelPath) {
+        await uploadFile('#fileselect-models', modelPath);
+    }
     if (userModelOrTest === null) {
         await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
     } else {
-        await (await page.$('#fileselect-tests')).uploadFile(userModelOrTest);
+        await uploadFile('#fileselect-tests', userModelOrTest);
     }
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
