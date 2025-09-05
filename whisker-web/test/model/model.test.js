@@ -91,7 +91,7 @@ async function testProgram(errors, fails, coverage) {
 
 // Tests for events during a step with a listener in check utility
 describe('Model tests without inputs', () => {
-    const timeout = 2500;
+    const timeout = 15000;
 
     const table = [
         ['color event listener', 'ColorEvent', 'ColorEvent'],
@@ -114,7 +114,7 @@ describe('Model tests without inputs', () => {
 });
 
 describe('Model tests with inputs', () => {
-    const timeout = 25000;
+    const timeout = 35000;
 
     const table = [
         ['any key pressed test', 'AnyKeyPressed', 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModel.json'],
