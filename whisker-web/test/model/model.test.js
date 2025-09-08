@@ -102,7 +102,7 @@ async function testProgram(errors, fails, coverage) {
 
 // Tests for events during a step with a listener in check utility
 describe('Model tests without inputs', () => {
-    const timeout = 15000;
+    const timeout = 8000;
 
     const table = [
         ['color event listener', 'ColorEvent', 'ColorEvent'],
