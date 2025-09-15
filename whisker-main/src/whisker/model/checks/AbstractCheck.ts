@@ -58,7 +58,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
         const message = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
         this._check = (() => fail({message})) as C;
-        this._nonCachedCheck = (() => fail({message})) as C;
         this._lastResult = null;
         this._lastStepExecuted = Number.NaN;
     }
@@ -67,12 +66,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     get check(): C {
         return this._check;
-    }
-
-    private _nonCachedCheck: C
-
-    get nonCachedCheck(): C {
-        return this._nonCachedCheck;
     }
 
     get edgeLabel(): string {
@@ -121,13 +114,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._cu = cu;
         this._graphId = graphID;
         try {
-            this._nonCachedCheck = this._checkArgsWithTestDriver(t);
+            const check = this._checkArgsWithTestDriver(t);
             this._check = ((stepsSinceLastTransition: number, stepsSinceEnd: number): CheckResult => {
                 const currentStep = t.getTotalStepsExecuted();
                 if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
                     return this._lastResult;
                 }
-                this._lastResult = this._nonCachedCheck(stepsSinceLastTransition, stepsSinceEnd);
+                this._lastResult = check(stepsSinceLastTransition, stepsSinceEnd);
                 this._lastStepExecuted = currentStep;
                 return this._lastResult;
             }) as C;
@@ -135,7 +128,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
             cu.addErrorOutput(this._edgeLabel, graphID, e);
             const message = `There was an error setting up the check: ${e instanceof Error ? e.message : e}`;
             this._check = (() => fail({message})) as C;
-            this._nonCachedCheck = (() => fail({message})) as C;
         }
     }
 

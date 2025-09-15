@@ -21,5 +21,6 @@ test('BackgroundChange test', () => {
     tdMock.currentSprites = SpriteMock.toSpriteArray([stage]);
     tdMock.stage = stage.sprite;
     const reason = {"actual": "lose", "expected": "win"};
-    expect(c.nonCachedCheck()).toStrictEqual(fail(reason));
+    tdMock.nextStep();
+    expect(c.check()).toStrictEqual(fail(reason));
 });

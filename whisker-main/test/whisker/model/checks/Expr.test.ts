@@ -1,6 +1,6 @@
 import {SpriteMock} from "../mocks/SpriteMock";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
-import {TestDriverMock} from "../mocks/TestDriverMock";
+import {getDummyTestDriver, TestDriverMock} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
@@ -60,8 +60,8 @@ describe('Expr tests', () => {
     it.each([[false, false], [false, true], [true, false], [true, true]])(
         'Returns constant function for negated: %s, param: %s', (negated, value) => {
             const c = new Expr('label', {negated, args: [String(value)]});
-            c.registerComponents(null, null, graphID);
-            expect(c.nonCachedCheck().passed).toBe(negated ? !value : value);
+            c.registerComponents(getDummyTestDriver(), null, graphID);
+            expect(c.check().passed).toBe(negated ? !value : value);
         });
 
     test('Can use TestDriver instead of $-function', () => {
@@ -74,7 +74,8 @@ describe('Expr tests', () => {
         c.registerComponents(tdMock.getTestDriver(), cu, graphID);
         expect(c.check()).toStrictEqual(pass());
         tdMock.currentSprites = [kiwi.sprite];
-        expect(c.nonCachedCheck()).toStrictEqual(fail({}));
+        tdMock.nextStep();
+        expect(c.check()).toStrictEqual(fail({}));
     });
 
     test('Registers correct predicate at CheckUtility', () => {
@@ -123,7 +124,8 @@ describe('Expr tests', () => {
         let res = c.check();
         expect(res).toStrictEqual(pass());
         setStorageValue(graphID, key, "someOtherValue");
-        res = c.nonCachedCheck();
+        tdMock.nextStep();
+        res = c.check();
         expect(res).toStrictEqual(fail({someKey: "someOtherValue"}));
     });
 

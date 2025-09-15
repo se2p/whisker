@@ -39,8 +39,9 @@ describe('PointsToTest', () => {
         const check = new PointsTo(edgeLabel, {negated: false, args: ['banana', '_mouse_']});
         check.registerComponents(t, cu, graphID);
         tdMock.mousePos = {x: 20, y: 0};
-        expect(check.nonCachedCheck()).toStrictEqual(pass());
+        expect(check.check()).toStrictEqual(pass());
         tdMock.mousePos = {x: -20, y: 100};
-        expect(check.nonCachedCheck()).toStrictEqual(fail(expect.any(Object)));
+        tdMock.nextStep();
+        expect(check.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });
