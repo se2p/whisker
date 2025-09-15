@@ -10,7 +10,6 @@ import {Key} from "../../../../src/whisker/model/checks/Key";
 import {Check, CHECK_NAMES, CheckJSON, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
-import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";

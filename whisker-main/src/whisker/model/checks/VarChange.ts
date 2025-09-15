@@ -1,5 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";

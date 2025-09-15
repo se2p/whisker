@@ -1,7 +1,6 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
 import {ArgType} from "../util/schema";

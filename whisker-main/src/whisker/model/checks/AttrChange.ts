@@ -1,7 +1,6 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
-import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {Bounds, Change, ChangingCheck, newQuantifiedChange} from "./Change";
 import {Quantification} from "./Quantification";

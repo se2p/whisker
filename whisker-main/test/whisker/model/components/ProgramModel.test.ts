@@ -6,7 +6,6 @@ import {ProgramModelEdge} from "../../../../src/whisker/model/components/Program
 import {CoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {ProgramModelJSON} from "../../../../src/whisker/model/util/schema";
-import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 export class MockedModelNode<T extends ModelEdge> extends ModelNode<T> {
     private readonly fn: jest.Mock;

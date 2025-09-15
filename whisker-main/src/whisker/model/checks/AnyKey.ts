@@ -1,5 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
 import {result} from "./CheckResult";

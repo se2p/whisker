@@ -83,7 +83,7 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     /**
      * Check the edges for a transition based on fired events.
      */
-    testForEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): void{
+    testForEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): void {
         this.edges.forEach(e => e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks)); // cache results
     }
 

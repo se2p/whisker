@@ -13,7 +13,6 @@ import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import {attributeNames, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
-import {CheckUtility} from "./CheckUtility";
 import {approxEq} from "../checks/Comparison";
 import {CheckResult, result} from "../checks/CheckResult";
 

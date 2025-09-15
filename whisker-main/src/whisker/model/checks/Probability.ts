@@ -1,7 +1,6 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {Randomness} from "../../utils/Randomness";
 import {z} from "zod";
-import {CheckUtility} from "../util/CheckUtility";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";

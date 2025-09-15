@@ -1,6 +1,5 @@
 import {z} from "zod";
 import {AbstractCheck, CheckFun, CheckFun0, CheckFun1, CheckFun2, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
