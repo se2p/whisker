@@ -25,16 +25,7 @@ type TTouchingEdgeJSON =
     | TouchingVerticalEdgeJSON
     ;
 
-type TTouchingEdge =
-    | TouchingEdge
-    | TouchingHorizEdge
-    | TouchingVerticalEdge
-    ;
-
-abstract class AbstractTouchingEdge<
-    J extends TTouchingEdgeJSON = TTouchingEdgeJSON,
-    C extends TTouchingEdge = TTouchingEdge,
-> extends AbstractCheck<J, CheckFun0> {
+abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends AbstractCheck<J, CheckFun0> {
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
     }
@@ -84,7 +75,7 @@ export const TouchingEdgeJSON = ICheckJSON.extend({
     args: TouchingEdgeArgs,
 });
 
-export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON, TouchingEdge> {
+export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
     constructor(edgeLabel: string, json: SlimCheckJSON<TouchingEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingEdgeName});
     }
@@ -121,7 +112,7 @@ export const TouchingHorizEdgeJSON = ICheckJSON.extend({
 });
 
 
-export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON, TouchingHorizEdge> {
+export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON> {
     constructor(edgeLabel: string, json: SlimCheckJSON<TouchingHorizEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingHorizEdgeName});
     }
@@ -157,7 +148,7 @@ export const TouchingVerticalEdgeJSON = ICheckJSON.extend({
     args: TouchingEdgeArgs,
 });
 
-export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON, TouchingVerticalEdge> {
+export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON> {
     constructor(edgeLabel: string, json: SlimCheckJSON<TouchingVerticalEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingVerticalEdgeName});
     }
