@@ -42,8 +42,9 @@ export type CheckFun =
 export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: J;
+    private _check: C;
     private _lastStepExecuted: number;
-    private _lastResult: CheckResult | null;
+    private _lastResult: CheckResult;
     private _graphId: string | null;
     private _t: TestDriver | null;
     private _cu: CheckUtility | null;
@@ -59,11 +60,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
         const message = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
         this._check = (() => fail({message})) as C;
-        this._lastResult = null;
-        this._lastStepExecuted = -1;
+        this._reset();
     }
 
-    private _check: C;
+    private _reset(): void {
+        this._lastResult = fail({message: "The check has not been called yet!"});
+        this._lastStepExecuted = -1;
+    }
 
     get check(): C {
         return this._check;
@@ -107,8 +110,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
      * Register the check listener and test driver and check for errors.
      */
     registerComponents(t: TestDriver, cu: CheckUtility, graphID: string): void {
-        this._lastResult = null;
-        this._lastStepExecuted = -1;
+        this._reset();
         this._t = t;
         this._cu = cu;
         this._graphId = graphID;
@@ -179,7 +181,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     private _wrapCheck<T extends unknown[]>(check: (...args: T) => CheckResult): (...args: T) => CheckResult {
         return (...args: T) => {
             const currentStep = this._t.getTotalStepsExecuted();
-            if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
+            if (currentStep === this._lastStepExecuted && this._lastResult.passed) {
                 return this._lastResult;
             }
             this._lastResult = check(...args);
