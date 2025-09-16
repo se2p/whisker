@@ -46,6 +46,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     private _lastResult: CheckResult | null;
     private _graphId: string | null;
     private _t: TestDriver | null;
+    private _cu: CheckUtility | null;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -81,8 +82,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     }
 
     abstract get dependsOnSayText(): boolean;
-
-    private _cu: CheckUtility | null;
 
     protected get cu(): CheckUtility {
         return this._cu;
