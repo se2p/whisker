@@ -114,15 +114,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._graphId = graphID;
         try {
             const check = this._checkArgsWithTestDriver(t);
-            this._check = ((stepsSinceLastTransition: number, stepsSinceEnd: number): CheckResult => {
-                const currentStep = t.getTotalStepsExecuted();
-                if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
-                    return this._lastResult;
-                }
-                this._lastResult = check(stepsSinceLastTransition, stepsSinceEnd);
-                this._lastStepExecuted = currentStep;
-                return this._lastResult;
-            }) as C;
+            this._check = this._wrapCheck(check) as C;
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
             const message = `There was an error setting up the check: ${e instanceof Error ? e.message : e}`;
@@ -157,19 +149,19 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     }
 
     protected _registerOnMoveEvent(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnMoveEvent(spriteName, this as unknown as Check, this._graphId, this._wrapSpriteCheckForCU(check));
+        this._cu.registerOnMoveEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
     }
 
     protected _registerOnVisualChange(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnVisualChange(spriteName, this as unknown as Check, this._graphId, this._wrapSpriteCheckForCU(check));
+        this._cu.registerOnVisualChange(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
     }
 
     protected _registerOutput(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOutput(spriteName, this as unknown as Check, this._graphId, this._wrapSpriteCheckForCU(check));
+        this._cu.registerOutput(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
     }
 
     protected _registerVarEvent(spriteName: string, check: () => CheckResult): void {
-        this._cu.registerVarEvent(spriteName, this as unknown as Check, this._graphId, this._wrapVariableCheckForCU(check));
+        this._cu.registerVarEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
     }
 
     protected abstract _validate(checkJSON: J): J;
@@ -184,25 +176,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     protected abstract _contradicts(that: AbstractCheck): boolean;
 
-    private _wrapSpriteCheckForCU(check: (s: Sprite) => CheckResult) {
-        return (s: Sprite) => {
+    private _wrapCheck<T extends unknown[]>(check: (...args: T) => CheckResult): (...args: T) => CheckResult {
+        return (...args: T) => {
             const currentStep = this._t.getTotalStepsExecuted();
             if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
                 return this._lastResult;
             }
-            this._lastResult = check(s);
-            this._lastStepExecuted = currentStep;
-            return this._lastResult;
-        };
-    }
-
-    private _wrapVariableCheckForCU(check: () => CheckResult) {
-        return () => {
-            const currentStep = this._t.getTotalStepsExecuted();
-            if (currentStep === this._lastStepExecuted && this._lastResult?.passed) {
-                return this._lastResult;
-            }
-            this._lastResult = check();
+            this._lastResult = check(...args);
             this._lastStepExecuted = currentStep;
             return this._lastResult;
         };
