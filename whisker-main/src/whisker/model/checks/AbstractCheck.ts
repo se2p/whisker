@@ -59,7 +59,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         const message = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
         this._check = (() => fail({message})) as C;
         this._lastResult = null;
-        this._lastStepExecuted = Number.NaN;
+        this._lastStepExecuted = -1;
     }
 
     private _check: C;
