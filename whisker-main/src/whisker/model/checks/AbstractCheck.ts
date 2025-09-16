@@ -108,7 +108,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
      */
     registerComponents(t: TestDriver, cu: CheckUtility, graphID: string): void {
         this._lastResult = null;
-        this._lastStepExecuted = Number.NaN;
+        this._lastStepExecuted = -1;
         this._t = t;
         this._cu = cu;
         this._graphId = graphID;
