@@ -1,7 +1,6 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
-import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {Bounds, Change, ChangingCheck, newQuantifiedChange} from "./Change";
 import {Quantification} from "./Quantification";
@@ -104,10 +103,8 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText
      * (only = allowed);
      * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, attrName] = this._args;
 
         const sprite = getStageOrSprite(t, pSpriteName);
@@ -132,9 +129,9 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
-            cu.registerOnMoveEvent(spriteName, this, graphID, listener);
+            this._registerOnMoveEvent(spriteName, listener);
         } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-            cu.registerOnVisualChange(spriteName, this, graphID, listener);
+            this._registerOnVisualChange(spriteName, listener);
         }
 
         return () => {

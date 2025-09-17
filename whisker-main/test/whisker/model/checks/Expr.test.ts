@@ -1,6 +1,6 @@
 import {SpriteMock} from "../mocks/SpriteMock";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
-import {TestDriverMock} from "../mocks/TestDriverMock";
+import {getDummyTestDriver, TestDriverMock} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
@@ -33,7 +33,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(moveEvent).toHaveBeenCalledTimes(1);
-        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, c.check);
+        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, expect.anything());
     });
 
     test('variable dependencies are correct', () => {
@@ -43,8 +43,8 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(varEvent).toHaveBeenCalledTimes(2);
-        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, c.check);
-        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, c.check);
+        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, expect.anything());
+        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, expect.anything());
     });
 
     test('onVisual dependencies are correct', () => {
@@ -54,13 +54,13 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(visualEvent).toHaveBeenCalledTimes(1);
-        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, c.check);
+        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, expect.anything());
     });
 
     it.each([[false, false], [false, true], [true, false], [true, true]])(
         'Returns constant function for negated: %s, param: %s', (negated, value) => {
             const c = new Expr('label', {negated, args: [String(value)]});
-            c.registerComponents(null, null, graphID);
+            c.registerComponents(getDummyTestDriver(), null, graphID);
             expect(c.check().passed).toBe(negated ? !value : value);
         });
 
@@ -74,6 +74,7 @@ describe('Expr tests', () => {
         c.registerComponents(tdMock.getTestDriver(), cu, graphID);
         expect(c.check()).toStrictEqual(pass());
         tdMock.currentSprites = [kiwi.sprite];
+        tdMock.nextStep();
         expect(c.check()).toStrictEqual(fail({}));
     });
 
@@ -95,6 +96,7 @@ describe('Expr tests', () => {
         expect(check(apple.sprite)).toStrictEqual(pass());
         apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
         tdMock.currentSprites = [apple.updateSprite()];
+        tdMock.nextStep();
         expect(check(apple.sprite)).toStrictEqual(fail({}));
     });
 
@@ -122,6 +124,7 @@ describe('Expr tests', () => {
         let res = c.check();
         expect(res).toStrictEqual(pass());
         setStorageValue(graphID, key, "someOtherValue");
+        tdMock.nextStep();
         res = c.check();
         expect(res).toStrictEqual(fail({someKey: "someOtherValue"}));
     });

@@ -5,16 +5,26 @@ const fs = require("fs");
 // FIXME: this global variable is actually defined in jest.config.js, but for some reason it is "undefined" here.
 const URL = "dist/index.html";
 
-const timeout = 25000;
 const ACCELERATION = Infinity;
 
+async function uploadFile(selector, path) {
+    const exists = fs.existsSync(path);
+    if(!exists) {
+        console.log(`The file ${path} does not exist!`);
+        expect(exists).toBe(true);
+    }
+    await (await page.$(selector)).uploadFile(path);
+}
+
 async function loadProject(scratchPath, modelPath, userModelOrTest) {
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    await (await page.$('#fileselect-models')).uploadFile(modelPath);
+    await uploadFile('#fileselect-project', scratchPath);
+    if (modelPath) {
+        await uploadFile('#fileselect-models', modelPath);
+    }
     if (userModelOrTest === null) {
         await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 35);
     } else {
-        await (await page.$('#fileselect-tests')).uploadFile(userModelOrTest);
+        await uploadFile('#fileselect-tests', userModelOrTest);
     }
     const projectTab = await page.$('#tabProject');
     await projectTab.evaluate(t => t.click());
@@ -75,44 +85,62 @@ beforeEach(async () => {
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
 });
 
+async function testProgram(errors, fails, coverage) {
+    const seed = Date.now();
+    await page.evaluate((seed) => document.querySelector('#seed').value = seed, seed);
+    await (await page.$('#run-all-tests')).click();
+
+    const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
+    if (errorsInModel + failsInModel > errors + fails || modelCoverage < coverage) {
+        console.log("Used seed:", seed);
+        console.log(loggedOutput);
+    }
+    expect(errorsInModel).toBeLessThanOrEqual(errors);
+    expect(failsInModel).toBeLessThanOrEqual(fails);
+    expect(modelCoverage).toBeGreaterThanOrEqual(coverage);
+}
+
 // Tests for events during a step with a listener in check utility
-describe('Model tests', () => {
+describe('Model tests without inputs', () => {
+    const timeout = 8000;
 
     const table = [
-        ['color event listener', 'ColorEvent', 'ColorEvent', 0, 0, 1.00, null],
-        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent', 0, 0, 1.00, null],
-        ['move event listener (change)', 'MoveEvent', 'MoveEventChange', 0, 0, 1.00, null],
-        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp', 0, 0, 1.00, null],
-        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr', 0, 0, 1.00, null],
-        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction', 0, 0, 1.00, null],
-        ['output event listener', 'OutputEvent', 'OutputEvent', 0, 0, 1.00, null],
-        ['variable change event listener', 'VariableEvent', 'VariableEvent', 0, 0, 1.00, null],
-        ['visual change event listener', 'BackgroundChange', 'BackgroundChange', 0, 0, 1.00, null],
-        ['visual change event listener 2', 'VisualEvents', 'VisualEvents', 0, 0, 1.00, null],
-        ['any key pressed test', 'AnyKeyPressed', 'AnyKeyPressed', 0, 0, 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModel.json'],
-        ['fruitcatcher game test', 'Fruitcatcher', 'Fruitcatcher', 0, 0, 0.95, 'test/model/user-model-jsons/Fruitcatcher-userModel.json'],
-        ["fruitcatcher with dynamic inputs", "Fruitcatcher", "Fruitcatcher", 0, 0, 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
+        ['color event listener', 'ColorEvent', 'ColorEvent'],
+        ['Sprite touching event listener', 'SpriteTouchingEvent', 'SpriteTouchingEvent'],
+        ['move event listener (comp)', 'MoveEvent', 'MoveEventComp'],
+        ['move event listener (expr)', 'MoveEvent', 'MoveEventExpr'],
+        ['move event listener (function)', 'MoveEvent', 'MoveEventFunction'],
+        ['output event listener', 'OutputEvent', 'OutputEvent'],
+        ['visual change event listener', 'BackgroundChange', 'BackgroundChange'],
+        ['visual change event listener 2', 'VisualEvents', 'VisualEvents'],
+    ]
+
+    it.each(table)('%s', async (name, projectFileName, modelFileName) => {
+        const programPath = `test/model/scratch-programs/${projectFileName}.sb3`;
+        const modelPath = `test/model/model-jsons/${modelFileName}.json`;
+        await loadProject(programPath, modelPath, null);
+        await testProgram(0, 0, 1.0);
+    }, timeout);
+
+});
+
+describe('Model tests with inputs', () => {
+    const timeout = 35000;
+
+    const table = [
+        ['any key pressed test', 'AnyKeyPressed', 1.00, 'test/model/user-model-jsons/AnyKeyPressed-userModels.json'],
+        ['fruitcatcher game test', 'Fruitcatcher', 0.95, 'test/model/user-model-jsons/Fruitcatcher-userModels.json'],
+        ["fruitcatcher with dynamic inputs", "Fruitcatcher", 0.7, "test/integration/networkSuites/FruitCatchingMultiLabel.json"],
         // during a test with 40 runs, the coverage reached was \in {0.76, 0.8, 0.89, 0.93}, so 0.7 should not be flaky
-        ["fruitcatcher with static inputs", "Fruitcatcher", "Fruitcatcher", 0, 0, 0.97, "test/model/FruitCatching-manual_small.js"],
+        ["fruitcatcher with static inputs", "Fruitcatcher", 0.97, "test/model/FruitCatching-manual_small.js"],
         // the lowest coverage value for fruit catcher should be 79/83 = 0.9518..., so 0.95 should not be flaky
     ]
 
-    it.each(table)('%s', async (name, projectFileName, modelFileName, errors, fails, coverage, testOrModel) => {
-        const programPath = `test/model/scratch-programs/${projectFileName}.sb3`;
-        const modelPath = `test/model/model-jsons/${modelFileName}.json`;
+    it.each(table)('%s', async (name, projectName, coverage, testOrModel) => {
+        const programPath = `test/model/scratch-programs/${projectName}.sb3`;
+        const modelPath = `test/model/model-jsons/${projectName}.json`;
         await loadProject(programPath, modelPath, testOrModel);
-        const seed = Date.now();
-        await page.evaluate((seed) => document.querySelector('#seed').value = seed, seed);
-        await (await page.$('#run-all-tests')).click();
-
-        const {errorsInModel, failsInModel, modelCoverage, loggedOutput} = await readModelErrors();
-        if (errorsInModel + failsInModel > errors + fails || modelCoverage < coverage) {
-            console.log("Used seed:", seed);
-            console.log(loggedOutput);
-        }
-        expect(errorsInModel).toBe(errors);
-        expect(failsInModel).toBe(fails);
-        expect(modelCoverage).toBeGreaterThanOrEqual(coverage);
+        await testProgram(0, 0, coverage);
     }, timeout);
 
 });

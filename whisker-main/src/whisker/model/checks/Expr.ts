@@ -1,11 +1,11 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
+import {Dependencies, evaluateExpression, Expression, getDependencies, getExpressionForEval} from "../util/ModelUtil";
 import {z} from "zod";
-import {result} from "./CheckResult";
+import {CheckResult, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "./CheckTypes";
-import {evaluateExpression, getExpressionForEval, setupAllDependenciesForExpressions} from "../util/ModelUtil";
+import Sprite from "../../../vm/sprite";
 
 const name = "Expr" as const;
 
@@ -48,16 +48,14 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
     /**
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
      * @param t Instance of the test driver for evaluating expression.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
-        const e = getExpressionForEval(t, this._code, graphID);
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
+        const e = getExpressionForEval(t, this._code, this.graphID);
         const check = () => {
             const log = {};
-            return result(Boolean(evaluateExpression(t, e.expr, graphID, log)), log, this.negated);
+            return result(Boolean(evaluateExpression(t, e.expr, this.graphID, log)), log, this.negated);
         };
-        setupAllDependenciesForExpressions(this, cu, graphID, e, this._code, check);
+        this._setupAllDependenciesForExpressions(e, this._code, check);
         return check;
     }
 
@@ -69,5 +67,36 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         // Expressions are very powerful. While it's possible for two expressions to be contradicting, it's also very
         // difficult to check it here. Thus, we assume that expressions have been crafted not to contradict each other.
         return false;
+    }
+
+    /**
+     * Sets up all dependencies for a check with expressions
+     * (dependencies by $-function calls and parsed with RegEx from test driver use)
+     * @param expr Expression with the dependencies from the $-function are registered.
+     * @param code Code of the expression
+     * @param predicate Generated check
+     */
+    private _setupAllDependenciesForExpressions(expr: Expression, code: string, predicate: (...sprite: Sprite[]) => CheckResult): void {
+        this._setupDependencies(expr, predicate);
+        const dep: Dependencies = getDependencies(code);
+        if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
+            this._setupDependencies(dep, predicate);
+        }
+    }
+
+    private _setupDependencies(d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult): void {
+        d.varDependencies.forEach(dependency => {
+            this._registerVarEvent(dependency.varName, predicate);
+        });
+
+        d.attrDependencies.forEach(({spriteName, attrName}) => {
+            if (attrName == "x" || attrName == "y") {
+                this._registerOnMoveEvent(spriteName, predicate);
+            } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
+                this._registerOnVisualChange(spriteName, predicate);
+            } else if (attrName == "sayText") {
+                this._registerOutput(spriteName, predicate);
+            }
+        });
     }
 }

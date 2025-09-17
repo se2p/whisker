@@ -1,16 +1,10 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType, StorageValueType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "./CheckTypes";
-import {
-    evaluateExpression,
-    getExpressionForEval,
-    setStorageValue,
-    setupAllDependenciesForExpressions
-} from "../util/ModelUtil";
+import {evaluateExpression, getExpressionForEval, setStorageValue,} from "../util/ModelUtil";
 
 const name = "SetStorage" as const;
 
@@ -70,27 +64,23 @@ export class SetStorage extends AbstractCheck<SetStorageJSON, CheckFun0> {
     /**
      * Generates a method that sets the value for the given key in the graph storage.
      * @param t Instance of the test driver for evaluating expressions in case of dynamic values for the storage.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         if (this.type === "number" || this.type === "string") {
             // a static value is used, so there are no dependencies, and nothing has to be computed
             return () => {
-                setStorageValue(graphID, this.key, this.value);
+                setStorageValue(this.graphID, this.key, this.value);
                 return result(true, {}, this.negated);
             };
         }
         const exprString = Array.isArray(this.value) ? this.value.join("\n") : this.value as string;
-        const expr = getExpressionForEval(t, exprString, graphID);
-        const check = () => {
+        const expr = getExpressionForEval(t, exprString, this.graphID);
+        return () => {
             const log = {};
-            const value = evaluateExpression(t, expr.expr, graphID, log);
-            setStorageValue(graphID, this.key, value);
+            const value = evaluateExpression(t, expr.expr, this.graphID, log);
+            setStorageValue(this.graphID, this.key, value);
             return result(true, log, this.negated);
         };
-        setupAllDependenciesForExpressions(this, cu, graphID, expr, exprString, check);
-        return check;
     }
 
     protected _validate(checkJSON: SetStorageJSON): SetStorageJSON {

@@ -72,7 +72,6 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
         // get all edges that have not failing conditions and check for order of events
         for (const e of this.edges) {
             const result = e.checkConditions(testDriver, cu, stepsSinceLastTransition, stepsSinceEnd);
-
             if (result && result.length == 0) {
                 e.lastTransition = testDriver.getTotalStepsExecuted() + 1;
                 return e;
@@ -84,16 +83,8 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     /**
      * Check the edges for a transition based on fired events.
      */
-    testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                 checks: Checks): E | null {
-        for (const e of this.edges) {
-            const result = e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks);
-            if (result) {
-                e.lastTransition = t.getTotalStepsExecuted() + 1;
-                return e;
-            }
-        }
-        return null;
+    testForEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): void {
+        this.edges.forEach(e => e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks)); // cache results
     }
 
     /**

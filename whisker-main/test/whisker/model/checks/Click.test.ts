@@ -46,6 +46,7 @@ describe('Click tests', () => {
         apple.touchingMouse = true;
         expect(clickCheck.check().passed).toEqual(!negated);
         apple.touchingMouse = false;
+        tdMock.nextStep();
         expect(clickCheck.check().passed).toEqual(negated);
         expect(cu.addErrorOutput).not.toHaveBeenCalled();
     });

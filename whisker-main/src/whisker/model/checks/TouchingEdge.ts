@@ -1,5 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
@@ -26,16 +25,7 @@ type TTouchingEdgeJSON =
     | TouchingVerticalEdgeJSON
     ;
 
-type TTouchingEdge =
-    | TouchingEdge
-    | TouchingHorizEdge
-    | TouchingVerticalEdge
-    ;
-
-abstract class AbstractTouchingEdge<
-    J extends TTouchingEdgeJSON = TTouchingEdgeJSON,
-    C extends TTouchingEdge = TTouchingEdge,
-> extends AbstractCheck<J, CheckFun0> {
+abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends AbstractCheck<J, CheckFun0> {
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
     }
@@ -51,15 +41,13 @@ abstract class AbstractTouchingEdge<
     /**
      * Get a method to check whether a sprite is touching an edge.
      * @param t Instance of the test driver for checking if a sprite or its clones is touching an edge.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName] = this._args;
         const negated = this.negated;
         const spriteName = checkSpriteExistence(t, pSpriteName).name;
         const touchingEdgeCheck = this._getCheck();
-        cu.registerOnMoveEvent(spriteName, this._self(), graphID, (sprite) =>
+        this._registerOnMoveEvent(spriteName, (sprite) =>
             result(touchingEdgeCheck(sprite).passed, {}, negated));
 
         return () => {
@@ -67,8 +55,6 @@ abstract class AbstractTouchingEdge<
             return any(touchingEdgeCheck, negated, sprites);
         };
     }
-
-    protected abstract _self(): C;
 
     protected abstract _getCheck(): (sprite: Sprite) => CheckResult;
 
@@ -89,7 +75,7 @@ export const TouchingEdgeJSON = ICheckJSON.extend({
     args: TouchingEdgeArgs,
 });
 
-export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON, TouchingEdge> {
+export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
     constructor(edgeLabel: string, json: SlimCheckJSON<TouchingEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingEdgeName});
     }
@@ -111,10 +97,6 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON, Touchin
             return pass();
         };
     }
-
-    protected _self(): TouchingEdge {
-        return this;
-    }
 }
 
 const touchingHorizEdgeName = "TouchingHorizEdge" as const;
@@ -130,7 +112,7 @@ export const TouchingHorizEdgeJSON = ICheckJSON.extend({
 });
 
 
-export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON, TouchingHorizEdge> {
+export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSON> {
     constructor(edgeLabel: string, json: SlimCheckJSON<TouchingHorizEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingHorizEdgeName});
     }
@@ -152,10 +134,6 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
             return pass();
         };
     }
-
-    protected _self(): TouchingHorizEdge {
-        return this;
-    }
 }
 
 const touchingVerticalEdgeName = "TouchingVerticalEdge" as const;
@@ -170,7 +148,7 @@ export const TouchingVerticalEdgeJSON = ICheckJSON.extend({
     args: TouchingEdgeArgs,
 });
 
-export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON, TouchingVerticalEdge> {
+export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalEdgeJSON> {
     constructor(edgeLabel: string, json: SlimCheckJSON<TouchingVerticalEdgeJSON>) {
         super(edgeLabel, {...json, name: touchingVerticalEdgeName});
     }
@@ -191,9 +169,5 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
 
             return pass();
         };
-    }
-
-    protected _self(): TouchingVerticalEdge {
-        return this;
     }
 }

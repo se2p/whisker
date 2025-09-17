@@ -1,6 +1,5 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
-import {CheckUtility} from "../util/CheckUtility";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
@@ -54,10 +53,8 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
      * Get a method whether a sprite bounces when it touches an edge.
      *
      * @param t Instance of the test driver for retrieving the direction attribute of a sprite and its clones.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    protected _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    protected _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const spriteName = checkSpriteExistence(t, this._args[0]).name;
 
         const check = (s: Sprite) => {
@@ -86,7 +83,7 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
             return result(!touchingEdge || dirFlipped, reason);
         };
 
-        cu.registerOnVisualChange(spriteName, this, graphID, check);
+        this._registerOnVisualChange(spriteName, check);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);

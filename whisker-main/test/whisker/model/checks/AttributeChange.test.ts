@@ -65,6 +65,7 @@ describe('AttributeChange', () => {
             old: {name: "currentCostumeName", value: "lose"}
         }];
         tdMock.currentSprites = SpriteMock.toSpriteArray([banana, new SpriteMock("bowl"), apple, stage]);
+        tdMock.nextStep();
         expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 
@@ -77,6 +78,7 @@ describe('AttributeChange', () => {
         c.registerComponents(mock.getTestDriver(), dummyCU, graphID);
         expect(c.check()).toStrictEqual(pass());
         effects["color"] = 20;
+        mock.nextStep();
         expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });

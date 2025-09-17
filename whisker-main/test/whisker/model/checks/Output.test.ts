@@ -25,6 +25,7 @@ describe('Output tests', () => {
         banana.sayText = "this is a different text";
         tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
         const reason = {"actual": "this is a different text", "expected": "this is some text"};
+        tdMock.nextStep();
         expect(c.check()).toStrictEqual(fail(reason));
     });
 
@@ -43,6 +44,7 @@ describe('Output tests', () => {
         expect(check(kiwi.sprite)).toStrictEqual(pass());
         kiwi.sayText = "this is a different text";
         tdMock.currentSprites = [kiwi.updateSprite(), banana.updateSprite()];
+        tdMock.nextStep();
         expect(check(kiwi.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 });

@@ -13,8 +13,6 @@ import Variable from "../../../vm/variable";
 import {ArgType} from "./schema";
 import {attributeNames, effectNames} from "../checks/CheckTypes";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
-import {CheckUtility} from "./CheckUtility";
-import {Check} from "../checks/newCheck";
 import {approxEq} from "../checks/Comparison";
 import {CheckResult, result} from "../checks/CheckResult";
 
@@ -392,40 +390,6 @@ export function getDependencies(functionCode: string): Dependencies {
     }
 
     return {attrDependencies: newAttrDep, varDependencies: newVarDep};
-}
-
-/**
- * Sets up all dependencies for a check with expressions
- * (dependencies by $-function calls and parsed with RegEx from test driver use)
- * @param check The check that has some dependencies
- * @param cu CheckUtility where the dependencies are registered.
- * @param graphID Id of the graph
- * @param expr Expression with the dependencies from the $-function are registered.
- * @param code Code of the expression
- * @param predicate Generated check
- */
-export function setupAllDependenciesForExpressions(check: Check, cu: CheckUtility, graphID: string, expr: Expression, code: string, predicate: (...sprite: Sprite[]) => CheckResult): void {
-    setupDependencies(check, cu, graphID, expr, predicate);
-    const dep: Dependencies = getDependencies(code);
-    if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
-        setupDependencies(check, cu, graphID, dep, predicate);
-    }
-}
-
-export function setupDependencies(check: Check, cu: CheckUtility, graphID: string, d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult): void {
-    d.varDependencies.forEach(dependency => {
-        cu.registerVarEvent(dependency.varName, check, graphID, predicate);
-    });
-
-    d.attrDependencies.forEach(({spriteName, attrName}) => {
-        if (attrName == "x" || attrName == "y") {
-            cu.registerOnMoveEvent(spriteName, check, graphID, predicate);
-        } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-            cu.registerOnVisualChange(spriteName, check, graphID, predicate);
-        } else if (attrName == "sayText") {
-            cu.registerOutput(spriteName, check, graphID, predicate);
-        }
-    });
 }
 
 export function getNumberFunction(text: ArgType, t: TestDriver, graphId: string): () => number {

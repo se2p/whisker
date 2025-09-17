@@ -285,7 +285,8 @@ describe('Model edges', () => {
 
         test("checkConditionsOnEvent() returns conditions when true is condition and edge has no effect", () => {
             const cu = getDummyCheckUtility();
-            const tdMock = new TestDriverMock();
+            const stage = new SpriteMock(STAGE_NAME, [{name: "currentCostumeName", value: "oldBackground"}]);
+            const tdMock = new TestDriverMock([stage]);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
             edge.addCondition(new BackgroundChange(label, {args: ["newBackground"]}));
             edge.addCondition(new Key(label, {args: ["a"]}));
