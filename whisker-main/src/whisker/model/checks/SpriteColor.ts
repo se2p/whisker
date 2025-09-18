@@ -1,6 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -8,6 +6,7 @@ import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence, testNumber} from "../util/ModelUtil";
 
 const name = "SpriteColor" as const;
 
@@ -67,17 +66,15 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
      * Get a method whether a sprite touches a color.
      *
      * @param t Instance of the test driver for checking if a sprite or its clones are touching a color.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, pR, pG, pB] = this._args;
         const negated = this.negated;
 
-        const r = ModelUtil.testNumber(pR);
-        const g = ModelUtil.testNumber(pG);
-        const b = ModelUtil.testNumber(pB);
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const r = testNumber(pR);
+        const g = testNumber(pG);
+        const b = testNumber(pB);
+        const spriteName = checkSpriteExistence(t, pSpriteName).name;
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw new RGBRangeError();
         }
@@ -85,9 +82,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         const color = [r, g, b];
 
         // on movement check sprite color
-        cu.registerOnMoveEvent(spriteName, this, graphID, (sprite) => {
-            return result(sprite.isTouchingColor(color), {}, negated);
-        });
+        this._registerOnMoveEvent(spriteName, (sprite) => result(sprite.isTouchingColor(color), {}, negated));
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         // also test clones of spriteName

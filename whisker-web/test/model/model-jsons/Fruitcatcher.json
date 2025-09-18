@@ -56,7 +56,7 @@
                         "negated": false,
                         "args": [
                             "Bowl",
-                            "End"
+                            "Ende!"
                         ]
                     }
                 ],
@@ -208,10 +208,10 @@
                 "effects": [
                     {
                         "name": "Output",
-                        "negated": true,
+                        "negated": false,
                         "args": [
                             "Bowl",
-                            "End"
+                            ""
                         ]
                     }
                 ]
@@ -369,72 +369,6 @@
         ],
         "edges": [
             {
-                "id": "red",
-                "label": "red",
-                "from": "wait",
-                "to": "red",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "SpriteColor",
-                        "negated": false,
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            255,
-                            0,
-                            0
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "Output",
-                        "negated": false,
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "over"
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "stop",
-                "label": "stop",
-                "from": "red",
-                "to": "end",
-                "forceTestAfter": -1,
-                "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "TimeBetween",
-                        "negated": false,
-                        "args": [
-                            1000
-                        ]
-                    }
-                ],
-                "effects": [
-                    {
-                        "name": "Output",
-                        "negated": true,
-                        "args": [
-                            [
-                                "Apfel",
-                                "Apple"
-                            ],
-                            "over"
-                        ]
-                    }
-                ]
-            },
-            {
                 "id": "bowl",
                 "label": "bowl",
                 "from": "wait",
@@ -502,6 +436,72 @@
                     }
                 ],
                 "effects": []
+            },
+            {
+                "id": "red",
+                "label": "red",
+                "from": "wait",
+                "to": "red",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "negated": false,
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            255,
+                            0,
+                            0
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "Output",
+                        "negated": false,
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            "over"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "stop",
+                "label": "stop",
+                "from": "red",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "TimeBetween",
+                        "negated": false,
+                        "args": [
+                            1000
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "Output",
+                        "negated": true,
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            "over"
+                        ]
+                    }
+                ]
             }
         ]
     },
@@ -2079,27 +2079,63 @@
             {
                 "id": "start",
                 "label": "start"
+            },
+            {
+                "id": "running",
+                "label": "running"
             }
         ],
         "edges": [
             {
+                "id": "init",
+                "label": "init",
+                "from": "start",
+                "to": "running",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "negated": false,
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": [
+                    {
+                        "name": "AttrComp",
+                        "negated": false,
+                        "args": [
+                            [
+                                "Apfel",
+                                "Apple"
+                            ],
+                            "y",
+                            "==",
+                            165
+                        ]
+                    }
+                ]
+            },
+            {
                 "id": "onMove",
                 "label": "onMove",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [
                     {
                         "name": "AttrChange",
-                        "negated": true,
+                        "negated": false,
                         "args": [
                             [
                                 "Apfel",
                                 "Apple"
                             ],
                             "x",
-                            "="
+                            "!="
                         ]
                     }
                 ],
@@ -2122,8 +2158,8 @@
             {
                 "id": "fallAttr",
                 "label": "fallAttr",
-                "from": "start",
-                "to": "start",
+                "from": "running",
+                "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
                 "conditions": [

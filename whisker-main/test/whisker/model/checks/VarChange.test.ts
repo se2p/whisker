@@ -4,6 +4,7 @@ import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {VarChange} from "../../../../src/whisker/model/checks/VarChange";
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {expect} from "@jest/globals";
 
 
 describe('VarChange tests', () => {
@@ -27,7 +28,7 @@ describe('VarChange tests', () => {
         const cu = cuMock.getCheckUtility();
         const c = new VarChange('label', {args: ["apple", "x", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, graphID, c.check);
+        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, graphID, expect.anything());
     });
 
     test('Check works for stage', () => {
@@ -36,6 +37,7 @@ describe('VarChange tests', () => {
         expect(c.check()).toEqual(pass());
         stage.variables = [{name: "Punkte", value: 10, old: {name: "Punkte", value: 9}}];
         const reason = {"after": 10, "before": 9};
+        tdMock.nextStep();
         expect(c.check()).toEqual(fail(reason));
     });
 });

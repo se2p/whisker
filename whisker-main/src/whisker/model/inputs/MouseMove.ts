@@ -1,10 +1,10 @@
 import {AbstractUserInput, IUserInputJSON} from "./AbstractUserInput";
 import TestDriver from "../../../test/test-driver";
-import {ModelUtil} from "../util/ModelUtil";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {z} from "zod";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "../checks/CheckTypes";
+import {getNumberFunction} from "../util/ModelUtil";
 
 const name = "InputMouseMove" as const;
 
@@ -40,8 +40,8 @@ export class MouseMove extends AbstractUserInput<MouseMoveJSON> {
     }
 
     override async inputImmediate(t: TestDriver, graphId: string): Promise<void> {
-        const xFunc = ModelUtil.getNumberFunction(this._x, t, graphId);
-        const yFunc = ModelUtil.getNumberFunction(this._y, t, graphId);
+        const xFunc = getNumberFunction(this._x, t, graphId);
+        const yFunc = getNumberFunction(this._y, t, graphId);
         const mouseEvent = new MouseMoveEvent(xFunc(), yFunc());
         return mouseEvent.apply();
     }

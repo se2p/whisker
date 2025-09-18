@@ -1,12 +1,11 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
-import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {any, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence, returnNumberIfPossible} from "../util/ModelUtil";
 
 const name = "Layer" as const;
 
@@ -55,15 +54,13 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
     /**
      * Get a method for checking whether a sprite is on the first/last layer.
      * @param t Instance of the test driver for retrieving the layers of the sprite and its clones.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const pSpriteName = this._args[0];
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const spriteName = checkSpriteExistence(t, pSpriteName).name;
         return () => {
             const expected = this._args[1] === "First"
-                ? Math.max(...t.getSprites().map((s: Sprite) => ModelUtil.returnNumberIfPossible(s.layerOrder, -1)))
+                ? Math.max(...t.getSprites().map((s: Sprite) => returnNumberIfPossible(s.layerOrder, -1)))
                 : 1;
             const sprites: Sprite[] = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);
             const check = (s: Sprite) => result(s.layerOrder == expected, {actual: s.layerOrder, expected});

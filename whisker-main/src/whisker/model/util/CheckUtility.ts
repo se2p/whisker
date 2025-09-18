@@ -248,7 +248,7 @@ export class CheckUtility extends EventEmitter {
      * @param reason Insights on why the effect failed.
      */
     addFailOutput(edge: AbstractEdge, effect: Check, reason: Record<string, unknown>): void {
-        const output = getEffectFailedOutput(edge, effect, reason);
+        const output = getEffectFailedOutput(edge, effect, {step: this._testDriver.getTotalStepsExecuted(), ...reason});
         this._failOrError(output, this._failOutputs);
         this._modelResult.addFail(output);
     }

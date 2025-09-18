@@ -41,6 +41,7 @@ describe('PointsToTest', () => {
         tdMock.mousePos = {x: 20, y: 0};
         expect(check.check()).toStrictEqual(pass());
         tdMock.mousePos = {x: -20, y: 100};
+        tdMock.nextStep();
         expect(check.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });

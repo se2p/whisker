@@ -30,6 +30,7 @@ describe('ClearedEffectsTest', () => {
         check.registerComponents(t, cu, graphID);
         expect(check.check()).toStrictEqual(pass());
         effects["color"] = 10;
+        tdMock.nextStep();
         expect(check.check()).toStrictEqual(fail(expect.any(Object)));
     });
 });

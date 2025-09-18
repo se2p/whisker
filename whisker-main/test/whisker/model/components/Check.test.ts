@@ -10,10 +10,10 @@ import {Key} from "../../../../src/whisker/model/checks/Key";
 import {Check, CHECK_NAMES, CheckJSON, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
-import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
+import {TestDriverMock} from "../mocks/TestDriverMock";
 
 function newUnsafeCheck(edgeId: string, checkArgs: { name: CheckName, negated: boolean, args }): Check {
     return newCheck(edgeId, {
@@ -191,12 +191,13 @@ describe('check and registerComponent', () => {
 
     test('registerComponent() calculates correct effect', () => {
         const effect = new Key(edgeID, {negated: true, args: ["a"]});
-        effect.registerComponents(null, cu, "graphID");
-        const func = effect.check;
+        const tdMock = new TestDriverMock();
+        effect.registerComponents(tdMock.getTestDriver(), cu, "graphID");
         cuMock.pressedKeys["a"] = false;
-        expect(func()).toStrictEqual(pass());
+        expect(effect.check()).toStrictEqual(pass());
         cuMock.pressedKeys["a"] = true;
-        expect(func()).toStrictEqual(fail({}));
+        tdMock.nextStep();
+        expect(effect.check()).toStrictEqual(fail({}));
     });
 
     test('registerComponent() clears effect in error case', () => {
@@ -661,19 +662,5 @@ describe('Contradictions', () => {
             ["AttrComp", false, ["sprite", "y", "=", "0"], "AttrComp", false, ["sprite", "y", "<=", "2"], false],
         ];
         it.each(mapToRightFormat(table))('%s contradicts %s == %s', assertSymmetricContradiction);
-    });
-
-    test('contradiction with event strings', () => {
-        const attrComp = newCheck(edgeID, {
-            name: "AttrComp",
-            negated: false,
-            args: ["sprite", "y", "==", 0]
-        });
-
-        const attrComp2 = new AttrComp(edgeID, {negated: true, args: ["sprite", "y", "<=", 2]});
-        const attrComp3 = new AttrComp(edgeID, {args: ["sprite", "y", "<=", 2]});
-
-        expect(attrComp.testForContradictingWithEvents(new Checks([attrComp2]))).toBe(true);
-        expect(attrComp.testForContradictingWithEvents(new Checks([attrComp3]))).toBe(false);
     });
 });

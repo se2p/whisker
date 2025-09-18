@@ -1,13 +1,13 @@
 import {SpriteMock} from "../mocks/SpriteMock";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
-import {TestDriverMock} from "../mocks/TestDriverMock";
+import {getDummyTestDriver, TestDriverMock} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
 import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import Sprite from "../../../../src/vm/sprite";
 import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {expect} from "@jest/globals";
-import {ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
+import {getStorageValue, initialiseStorage, setStorageValue} from "../../../../src/whisker/model/util/ModelUtil";
 
 describe('Expr tests', () => {
     const graphID = "graphID";
@@ -33,7 +33,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(moveEvent).toHaveBeenCalledTimes(1);
-        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, c.check);
+        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, expect.anything());
     });
 
     test('variable dependencies are correct', () => {
@@ -43,8 +43,8 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(varEvent).toHaveBeenCalledTimes(2);
-        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, c.check);
-        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, c.check);
+        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, expect.anything());
+        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, expect.anything());
     });
 
     test('onVisual dependencies are correct', () => {
@@ -54,13 +54,13 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(visualEvent).toHaveBeenCalledTimes(1);
-        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, c.check);
+        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, expect.anything());
     });
 
     it.each([[false, false], [false, true], [true, false], [true, true]])(
         'Returns constant function for negated: %s, param: %s', (negated, value) => {
             const c = new Expr('label', {negated, args: [String(value)]});
-            c.registerComponents(null, null, graphID);
+            c.registerComponents(getDummyTestDriver(), null, graphID);
             expect(c.check().passed).toBe(negated ? !value : value);
         });
 
@@ -74,6 +74,7 @@ describe('Expr tests', () => {
         c.registerComponents(tdMock.getTestDriver(), cu, graphID);
         expect(c.check()).toStrictEqual(pass());
         tdMock.currentSprites = [kiwi.sprite];
+        tdMock.nextStep();
         expect(c.check()).toStrictEqual(fail({}));
     });
 
@@ -95,6 +96,7 @@ describe('Expr tests', () => {
         expect(check(apple.sprite)).toStrictEqual(pass());
         apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
         tdMock.currentSprites = [apple.updateSprite()];
+        tdMock.nextStep();
         expect(check(apple.sprite)).toStrictEqual(fail({}));
     });
 
@@ -102,27 +104,37 @@ describe('Expr tests', () => {
         const graphID = "someGraphID1232103i123";
         const key = "someKey";
         const expectedValue = "someValue";
-        ModelUtil.initialiseStorage(graphID, new Map<string, unknown>());
-        ModelUtil.setStorageValue(graphID, key, "someOtherValue");
-        expect(ModelUtil.getStorageValue(graphID, key)).toBe("someOtherValue");
+        initialiseStorage(graphID, new Map<string, unknown>());
+        setStorageValue(graphID, key, "someOtherValue");
+        expect(getStorageValue(graphID, key)).toBe("someOtherValue");
         const c = new Expr('label', {args: [`$$('${key}', '${expectedValue}')`]});
         c.registerComponents(t, cu, graphID);
         c.check();
-        expect(ModelUtil.getStorageValue(graphID, key)).toBe(expectedValue);
+        expect(getStorageValue(graphID, key)).toBe(expectedValue);
     });
 
     test('Can read with $$-function', () => {
         const graphID = "someGraphID122394239423";
         const key = "someKey";
         const expectedValue = "someValue";
-        ModelUtil.initialiseStorage(graphID, new Map<string, unknown>());
-        ModelUtil.setStorageValue(graphID, key, expectedValue);
+        initialiseStorage(graphID, new Map<string, unknown>());
+        setStorageValue(graphID, key, expectedValue);
         const c = new Expr('label', {args: [`$$('${key}')==='${expectedValue}'`]});
         c.registerComponents(t, cu, graphID);
         let res = c.check();
         expect(res).toStrictEqual(pass());
-        ModelUtil.setStorageValue(graphID, key, "someOtherValue");
+        setStorageValue(graphID, key, "someOtherValue");
+        tdMock.nextStep();
         res = c.check();
         expect(res).toStrictEqual(fail({someKey: "someOtherValue"}));
+    });
+
+    test('Can use ModelUtil functions', () => {
+        let c = new Expr('label', {args: ["checkCyclicValueWithinDelta(120, 122, -180, 180, 3)"]});
+        c.registerComponents(t, cu, graphID);
+        expect(c.check()).toStrictEqual(pass());
+        c = new Expr('label', {args: ["checkCyclicValueWithinDelta(120, 124, -180, 180, 3)"]});
+        c.registerComponents(t, cu, graphID);
+        expect(c.check()).toStrictEqual(fail({}));
     });
 });

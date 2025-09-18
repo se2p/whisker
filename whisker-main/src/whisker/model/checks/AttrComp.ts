@@ -1,6 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -23,6 +21,7 @@ import {
     SpriteName,
     StringAttribute,
 } from "./CheckTypes";
+import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 
 const name = "AttrComp" as const;
 
@@ -58,7 +57,7 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         super(edgeLabel, {...json, name});
         this._attrName = this._args[1];
         this._comparison = newQuantifiedComparison(this);
-        this._isForEffect = ModelUtil.isAnEffect(this._attrName);
+        this._isForEffect = isAnEffect(this._attrName);
     }
 
     get operator(): ComparisonOp {
@@ -81,16 +80,14 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
      * Get a method for checking whether a sprite's attribute has a given comparison with a given value fulfilled.
      *
      * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const pSpriteName = this._args[0];
 
-        const sprite = ModelUtil.getStageOrSprite(t, pSpriteName);
+        const sprite = getStageOrSprite(t, pSpriteName);
         const spriteName = sprite.name;
         if (!this._isForEffect) {
-            ModelUtil.checkAttributeExistence(t, spriteName, this._attrName);
+            checkAttributeExistence(t, spriteName, this._attrName);
         }
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
@@ -105,11 +102,11 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         // on movement listener
         if (this._attrName == "x" || this._attrName == "y") {
-            cu.registerOnMoveEvent(spriteName, this, graphID, listener);
+            this._registerOnMoveEvent(spriteName, listener);
         } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
-            cu.registerOnVisualChange(spriteName, this, graphID, listener);
+            this._registerOnVisualChange(spriteName, listener);
         } else if (this._attrName == "sayText") {
-            cu.registerOutput(spriteName, this, graphID, listener);
+            this._registerOutput(spriteName, listener);
         }
 
         return () => {

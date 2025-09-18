@@ -1,12 +1,11 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {any, fail, pass, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
+import {checkSpriteExistence, evaluateExpression, getExpressionForEval} from "../util/ModelUtil";
 
 const name = "Output" as const;
 
@@ -53,24 +52,22 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
     /**
      * Get a method checking whether a sprite has the given output included in their sayText.
      * @param t Instance of the test driver for retrieving the sayText value of a sprite and its clones
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, output] = this._args;
         const negated = this.negated;
 
-        const spriteName = ModelUtil.checkSpriteExistence(t, pSpriteName).name;
+        const spriteName = checkSpriteExistence(t, pSpriteName).name;
         let expression: string;
         try {
-            expression = ModelUtil.getExpressionForEval(t, output, graphID).expr;
+            expression = getExpressionForEval(t, output, this.graphID).expr;
         } catch (e) {
             // this is probably supposed to be constant text like "apple" and not an expression
-            expression = ModelUtil.getExpressionForEval(t, `'${output}'`, graphID).expr;
+            expression = getExpressionForEval(t, `'${output}'`, this.graphID).expr;
         }
 
         const sayTextCheck = (s: Sprite) => {
-            const expected = String(ModelUtil.evaluateExpression(t, expression, graphID)).toLocaleLowerCase();
+            const expected = String(evaluateExpression(t, expression, this.graphID)).toLocaleLowerCase();
 
             if (s.sayText === null) {
                 return fail({actual: null, expected: expected});
@@ -85,9 +82,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             return pass();
         };
 
-        cu.registerOutput(spriteName, this, graphID, (s) => {
-            return result(sayTextCheck(s).passed, {}, negated);
-        });
+        this._registerOutput(spriteName, (s) => result(sayTextCheck(s).passed, {}, negated));
 
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);

@@ -1,11 +1,11 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON} from "./newCheck";
+import {Check, CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
-import {Checks} from "../util/Checks";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, fail} from "./CheckResult";
+import Sprite from "../../../vm/sprite";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
@@ -42,6 +42,12 @@ export type CheckFun =
 export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: J;
+    private _check: C;
+    private _lastStepExecuted: number;
+    private _lastResult: CheckResult;
+    private _graphId: string | null;
+    private _t: TestDriver | null;
+    private _cu: CheckUtility | null;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
@@ -54,9 +60,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._checkJSON = this._validate({negated: false, ...checkJSON} as J);
         const message = `The check is not initialized: ${this.registerComponents.name} has not been called yet!`;
         this._check = (() => fail({message})) as C;
+        this._reset();
     }
 
-    private _check: C;
+    private _reset(): void {
+        this._lastResult = fail({message: "The check has not been called yet!"});
+        this._lastStepExecuted = -1;
+    }
 
     get check(): C {
         return this._check;
@@ -76,8 +86,16 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     abstract get dependsOnSayText(): boolean;
 
+    protected get cu(): CheckUtility {
+        return this._cu;
+    }
+
     protected get _args(): J["args"] {
         return this._checkJSON.args;
+    }
+
+    protected get graphID(): string {
+        return this._graphId;
     }
 
     equals(that: AbstractCheck): boolean {
@@ -88,16 +106,17 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return this.name === that.name && this.negated !== that.negated && this._equalsArgs(that);
     }
 
-    testForContradictingWithEvents(checks: Checks): boolean {
-        return checks.some((e) => this.contradicts(e));
-    }
-
     /**
      * Register the check listener and test driver and check for errors.
      */
-    registerComponents(t, cu: CheckUtility, graphID: string): void {
+    registerComponents(t: TestDriver, cu: CheckUtility, graphID: string): void {
+        this._reset();
+        this._t = t;
+        this._cu = cu;
+        this._graphId = graphID;
         try {
-            this._check = this._checkArgsWithTestDriver(t, cu, graphID);
+            const check = this._checkArgsWithTestDriver(t);
+            this._check = this._wrapCheck(check) as C;
         } catch (e) {
             cu.addErrorOutput(this._edgeLabel, graphID, e);
             const message = `There was an error setting up the check: ${e instanceof Error ? e.message : e}`;
@@ -131,6 +150,22 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return JSON.parse(JSON.stringify(this._checkJSON));
     }
 
+    protected _registerOnMoveEvent(spriteName: string, check: (s: Sprite) => CheckResult): void {
+        this._cu.registerOnMoveEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    }
+
+    protected _registerOnVisualChange(spriteName: string, check: (s: Sprite) => CheckResult): void {
+        this._cu.registerOnVisualChange(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    }
+
+    protected _registerOutput(spriteName: string, check: (s: Sprite) => CheckResult): void {
+        this._cu.registerOutput(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    }
+
+    protected _registerVarEvent(spriteName: string, check: () => CheckResult): void {
+        this._cu.registerVarEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    }
+
     protected abstract _validate(checkJSON: J): J;
 
     /**
@@ -138,12 +173,22 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
      * get the correct check function (based and valid only on the given test driver!). This may throw an error if
      * arguments are not in the correct range (e.g. x coordinate) or a sprite/var/attribute is not defined.
      * @param t Instance of the test driver.
-     * @param cu Instance of the check utility for listening and checking more complex events.
-     * @param graphID ID of the parent graph of the check.
      */
-    protected abstract _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): C;
+    protected abstract _checkArgsWithTestDriver(t: TestDriver): C;
 
     protected abstract _contradicts(that: AbstractCheck): boolean;
+
+    private _wrapCheck<T extends unknown[]>(check: (...args: T) => CheckResult): (...args: T) => CheckResult {
+        return (...args: T) => {
+            const currentStep = this._t.getTotalStepsExecuted();
+            if (currentStep === this._lastStepExecuted && this._lastResult.passed) {
+                return this._lastResult;
+            }
+            this._lastResult = check(...args);
+            this._lastStepExecuted = currentStep;
+            return this._lastResult;
+        };
+    }
 
     private _equalsArgs(that: AbstractCheck): boolean {
         return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);

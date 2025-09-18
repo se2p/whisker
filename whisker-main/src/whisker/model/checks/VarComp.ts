@@ -1,6 +1,4 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
-import {CheckUtility} from "../util/CheckUtility";
-import {ModelUtil} from "../util/ModelUtil";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -17,6 +15,7 @@ import {
     SpriteName,
     VariableName
 } from "./CheckTypes";
+import {checkVariableExistence, getStageOrSprite} from "../util/ModelUtil";
 
 const name = "VarComp" as const;
 
@@ -67,15 +66,13 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
      * Get a method for checking whether a variable has a given comparison with a given value fulfilled.
      *
      * @param t Instance of the test driver for retrieving the value of an attribute of a sprite and its clones.
-     * @param cu Listener for the checks.
-     * @param graphID ID of the parent graph of the check.
      */
-    override _checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, graphID: string): CheckFun0 {
+    override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, varName] = this._args;
         const {
             sprite: foundSprite,
             variable: foundVar
-        } = ModelUtil.checkVariableExistence(t, ModelUtil.getStageOrSprite(t, pSpriteName), varName);
+        } = checkVariableExistence(t, getStageOrSprite(t, pSpriteName), varName);
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
 
@@ -89,7 +86,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
             }
         };
 
-        cu.registerVarEvent(variableName, this, graphID, check);
+        this._registerVarEvent(variableName, check);
         return check;
     }
 

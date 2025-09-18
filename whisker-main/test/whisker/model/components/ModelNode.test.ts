@@ -102,18 +102,7 @@ describe('Model node', () => {
         expect(correctEdge.lastTransition).toBe(342343);
     });
 
-    test("testForEvent returns null if no event matches", () => {
-        const fn = jest.fn().mockReturnValue(null);
-        const node = new ModelNode("id", "label");
-        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        const result = node.testForEvent(null, null, 0, 0, new Checks());
-        expect(result).toBeNull();
-        expect(fn).toHaveBeenCalledTimes(3);
-    });
-
-    test("testForEvent returns the correct edge", () => {
+    test("testForEvent checks all edges even if one is true", () => {
         const tdMock = new TestDriverMock();
         tdMock.totalStepsExecuted = 99999;
         const fn = jest.fn().mockReturnValue(null);
@@ -124,10 +113,10 @@ describe('Model node', () => {
         node.addOutgoingEdge(correctEdge);
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        const result = node.testForEvent(tdMock.getTestDriver(), null, 0, 0, new Checks());
-        expect(result).toStrictEqual(correctEdge);
-        expect(fn).toHaveBeenCalledTimes(1);
-        expect(correctEdge.lastTransition).toBe(100000);
+        node.testForEvent(0, 0, new Checks());
+        expect(fn).toHaveBeenCalledTimes(3);
+        expect(correctEdgeFn).toHaveBeenCalledTimes(1);
+        expect(correctEdge.lastTransition).toBe(0);
     });
 
     test("registerComponents calls register components of all outgoing edges", () => {

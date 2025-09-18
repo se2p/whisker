@@ -61,6 +61,7 @@ describe('AttributeComparison', () => {
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith("kiwi", c, graphID, check);
         expect(check(kiwi.sprite)).toStrictEqual(pass());
+        tdMock.nextStep();
         kiwi.sayText = "the kiwi has nothing to say";
         kiwi.updateSprite();
         expect(check(kiwi.sprite)).toStrictEqual(fail(expect.any(Object)));
@@ -107,6 +108,7 @@ describe('AttributeComparison', () => {
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenLastCalledWith(STAGE_NAME, c, graphID, check);
         expect(check(sprite.sprite)).toStrictEqual(pass());
+        tdMock.nextStep();
         sprite.currentCostumeName = "win";
         sprite.updateSprite();
         expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));

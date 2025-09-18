@@ -1,7 +1,7 @@
 import {SetStorage, SetStorageArgs} from "../../../../src/whisker/model/checks/SetStorage";
-import {ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 import {getDummyTestDriver} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
+import {initialiseStorage} from "../../../../src/whisker/model/util/ModelUtil";
 
 describe('SetStorageValue', () => {
 
@@ -15,7 +15,7 @@ describe('SetStorageValue', () => {
         const graphID = "setStorageTest";
         const check = new SetStorage("label", {negated: false, args: args});
         const storage = new Map();
-        ModelUtil.initialiseStorage(graphID, storage);
+        initialiseStorage(graphID, storage);
         check.registerComponents(getDummyTestDriver(), getDummyCheckUtility(), graphID);
         expect(check.check().passed).toBe(true);
         expect(storage).toStrictEqual(expected);

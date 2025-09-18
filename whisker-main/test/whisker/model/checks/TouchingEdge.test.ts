@@ -78,6 +78,7 @@ describe('TouchingEdge tests', () => {
         expect(check(sprite.sprite)).toStrictEqual(pass());
         sprite.visible = false;
         sprite.updateSprite();
+        tdMock.nextStep();
         expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 });

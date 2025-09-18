@@ -28,7 +28,7 @@ describe('SpriteTouching tests', () => {
         const cu = cuMock.getCheckUtility();
         const c = new SpriteTouching("label", {negated: true, args: ["kiwi", "banana"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenCalledTimes(1);
+        expect(fn).toHaveBeenCalledTimes(2);
         expect(check(kiwi.sprite)).toEqual(fail(expect.any(Object)));
         kiwi.touchingSprite = false;
         expect(check(kiwi.sprite)).toEqual(pass());
@@ -40,6 +40,7 @@ describe('SpriteTouching tests', () => {
         c.registerComponents(t, dummyCU, graphID);
         expect(c.check().passed).toEqual(!negated);
         banana.touchingSprite = false;
+        tdMock.nextStep();
         expect(c.check().passed).toEqual(negated);
     });
 });
