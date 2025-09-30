@@ -7,6 +7,7 @@ import {ModelEdgeJSON} from "../util/schema";
 import {Checks} from "../util/Checks";
 import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
+import {AbstractModel} from "./AbstractModel";
 
 export type ModelEdge =
     | ProgramModelEdge
@@ -30,6 +31,7 @@ export abstract class AbstractEdge {
     readonly forceTestAfter: number;
     readonly forceTestAt: number;
     protected failedForcedTest: boolean;
+    _lastTransition: number;
     private _forceTestAfterSteps: number;
     private _forceTestAtSteps: number;
 
@@ -58,9 +60,8 @@ export abstract class AbstractEdge {
         this.failedForcedTest = false;
         this._forceTestAfterSteps = -1;
         this._forceTestAtSteps = -1;
+        this.reset();
     }
-
-    _lastTransition = 0;
 
     get lastTransition(): number {
         return this._lastTransition;
@@ -145,10 +146,10 @@ export abstract class AbstractEdge {
      */
     registerComponents(checkListener: CheckUtility, t: TestDriver): void {
         if (this.forceTestAt != -1) {
-            this._forceTestAtSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
+            this._forceTestAtSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAt);
         }
         if (this.forceTestAfter != -1) {
-            this._forceTestAfterSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
+            this._forceTestAfterSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1; // +1 so its less flaky
         }
         this.conditions.forEach(cond => {
             cond.registerComponents(t, checkListener, this.graphID);
@@ -156,10 +157,9 @@ export abstract class AbstractEdge {
     }
 
     reset(): void {
-        this.failedForcedTest = false;
         this._forceTestAtSteps = -1;
         this._forceTestAfterSteps = -1;
-        this.lastTransition = 0;
+        this._lastTransition = AbstractModel.initialStepValue;
     }
 
     abstract toJSON(): ModelEdgeJSON;

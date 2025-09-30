@@ -10,6 +10,7 @@ const EdgeID = z.string();
 type NodeID = string;
 const NodeID = z.string();
 
+
 export interface ModelNodeJSON {
     id: NodeID;
     label: string;
@@ -48,9 +49,13 @@ const ProgramModelEdgeJSON = IModelEdgeJSON.extend({
     effects: z.array(CheckJSON).default([]),
 });
 
-export type ModelUsage =
+export type OracleModelUsage =
     | "program"
     | "end"
+    ;
+
+export type ModelUsage =
+    OracleModelUsage
     | "user"
     ;
 
@@ -84,7 +89,7 @@ export const StorageValueType = z.tuple([z.literal("string"), z.string()])
     .or(z.tuple([z.literal("number"), z.number()]))
     .or(z.tuple([z.literal("exprType"), z.string().or(z.array(z.string()))]));
 
-interface IModelJSON {
+export interface IModelJSON {
     id: string;
     usage: ModelUsage;
     startNodeId: string;
@@ -136,11 +141,20 @@ const EndModelJSON = IModelJSON.extend({
     edges: z.array(ProgramModelEdgeJSON),
 });
 
-export type ModelJSON =
-    | UserModelJSON
+export type OracleModelJSON =
     | ProgramModelJSON
     | EndModelJSON
     ;
+
+export type ModelJSON =
+    | UserModelJSON
+    | OracleModelJSON
+    ;
+
+const OracleModelJSON = z.discriminatedUnion("usage", [
+    ProgramModelJSON,
+    EndModelJSON,
+]);
 
 const ModelJSON = z.discriminatedUnion("usage", [
     UserModelJSON,

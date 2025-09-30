@@ -1,9 +1,8 @@
 import {ProgramModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
-import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {ProgramModelEdge} from "./ProgramModelEdge";
-import {EdgeID, EndModelJSON, ProgramModelJSON, StorageValueType} from "../util/schema";
+import {EdgeID, EndModelJSON, IModelJSON, OracleModelUsage, ProgramModelJSON, StorageValueType} from "../util/schema";
 import {Checks} from "../util/Checks";
 import logger from "../../../util/logger";
 
@@ -30,7 +29,6 @@ export interface ExtendedCoverageResult extends CoverageResult {
  * taken. So that it not gets ambiguous.
  */
 abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
-    programEndStep = 0;
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
 
@@ -50,18 +48,22 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
     }
 
-    /**
-     * Simulate transitions on the graph. Edges are tested only once if they are reached.
-     */
-    override makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ProgramModelEdge | null {
-        const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
-        const edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
-            this.programEndStep);
+    abstract override get usage(): OracleModelUsage;
 
-        if (edge != null) {
-            this._update(t, edge);
+    /**
+     * Reset the graph to the start state.
+     */
+    override reset(): void {
+        super.reset();
+        for (const edgesCoveredKey in this.coverageCurrentRun) {
+            this.coverageCurrentRun[edgesCoveredKey] = false;
         }
-        return edge;
+    }
+
+    protected override _takeEdge(edge: ProgramModelEdge, t: TestDriver): void {
+        this.coverageCurrentRun[edge.id] = true;
+        this.coverageTotal[edge.id] = true;
+        super._takeEdge(edge, t);
     }
 
     testForEvent(t: TestDriver, checks: Checks): void {
@@ -109,55 +111,22 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     }
 
     /**
-     * Whether the model is in a stop state.
-     */
-    stopped(): boolean {
-        return this.currentState.isStopNode;
-    }
-
-    /**
      * Whether all models should stop.
      */
     haltAllModels(): boolean {
         return this.currentState.isStopAllNode;
     }
 
-    /**
-     * Reset the graph to the start state.
-     */
-    reset(): void {
-        this.currentState = this.nodes[this.startNodeId];
-        this.lastTransitionStep = 0;
-        this.secondLastTransitionStep = 0;
-        Object.values(this.nodes).forEach(node => {
-            node.reset();
-        });
-        for (const edgesCoveredKey in this.coverageCurrentRun) {
-            this.coverageCurrentRun[edgesCoveredKey] = false;
-        }
-    }
-
-    /**
-     * Register the check listener and test driver.
-     */
-    override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
-        super.registerComponents(cu, testDriver);
-        Object.values(this.nodes).forEach(node => {
-            node.registerComponents(cu, testDriver);
-        });
-    }
-
-    setTransitionsStartTo(steps: number): void {
-        this.lastTransitionStep = steps;
-        this.secondLastTransitionStep = steps;
-    }
-
-    private _update(t: TestDriver, edge: ProgramModelEdge) {
-        this.coverageCurrentRun[edge.id] = true;
-        this.coverageTotal[edge.id] = true;
-        this.currentState = this.nodes[edge.getEndNodeId()];
-        this.secondLastTransitionStep = this.lastTransitionStep;
-        this.lastTransitionStep = t.getTotalStepsExecuted() + 1;
+    toJSONBase(): IModelJSON {
+        return {
+            usage: this.usage,
+            id: this.id,
+            startNodeId: this.startNodeId,
+            stopAllNodeIds: this.stopAllNodeIds,
+            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
+            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
+            initialStorage: this.initialStorage
+        };
     }
 }
 
@@ -172,15 +141,7 @@ export class EndModel extends AbstractProgramModel {
     }
 
     override toJSON(): EndModelJSON {
-        return {
-            usage: this.usage,
-            id: this.id,
-            startNodeId: this.startNodeId,
-            stopAllNodeIds: this.stopAllNodeIds,
-            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
-            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
-            initialStorage: this.initialStorage
-        };
+        return this.toJSONBase() as EndModelJSON;
     }
 }
 
@@ -195,14 +156,6 @@ export class ProgramModel extends AbstractProgramModel {
     }
 
     override toJSON(): ProgramModelJSON {
-        return {
-            usage: this.usage,
-            id: this.id,
-            startNodeId: this.startNodeId,
-            stopAllNodeIds: this.stopAllNodeIds,
-            nodes: Object.values(this.nodes).map((node) => node.toJSON()),
-            edges: Object.values(this.edges).map((edge) => edge.toJSON()),
-            initialStorage: this.initialStorage
-        };
+        return this.toJSONBase() as ProgramModelJSON;
     }
 }

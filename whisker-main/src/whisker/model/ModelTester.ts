@@ -41,6 +41,8 @@ export class ModelTester extends EventEmitter {
     private _modelStepCallback: Callback | null;
     private _onTestEndCallback: Callback | null;
     private _isRunning = false;
+    private _nextTestDriver = null;
+    private _nextUmIndex = ModelTester.NO_USER_MODEL;
 
     constructor() {
         // FIXME: The code from prepareModel() should be moved here. Then, the prepareModel() method should be deleted,
@@ -57,8 +59,6 @@ export class ModelTester extends EventEmitter {
         this._onTestEndCallback = null;
     }
 
-    private _nextTestDriver = null;
-
     get nextTestDriver(): TestDriver {
         return this._nextTestDriver;
     }
@@ -66,8 +66,6 @@ export class ModelTester extends EventEmitter {
     set nextTestDriver(value: TestDriver) {
         this._nextTestDriver = value;
     }
-
-    private _nextUmIndex = ModelTester.NO_USER_MODEL;
 
     set nextUmIndex(value: number) {
         this._nextUmIndex = value;
@@ -268,9 +266,10 @@ export class ModelTester extends EventEmitter {
     }
 
     private _doOneStepOnOracleModel(model: OracleModel, notStoppedModels: OracleModel[]) {
-        const takenEdge = model.makeOneTransition(this._testDriver!, this._checkUtility!);
-        if (takenEdge instanceof ProgramModelEdge) {
-            this._checkUtility!.registerEffectCheck(takenEdge, model);
+        const result = model.makeOneTransition(this._testDriver!, this._checkUtility!);
+        if (result) {
+            const [takenEdge, steps] = result;
+            this._checkUtility!.registerEffectCheck(takenEdge, steps, model.programEndStep);
             this._edgeTrace(takenEdge);
         }
         if (!model.stopped()) {
@@ -300,13 +299,13 @@ export class ModelTester extends EventEmitter {
             return;
         }
 
-        const steps = this._testDriver!.getTotalStepsExecuted() + 1;
+        const steps = this._testDriver!.getTotalStepsExecuted();
         this._onTestEndModels.forEach(model => {
             model.setTransitionsStartTo(steps);
             model.programEndStep = steps;
         });
         if (this._runningUserModel) {
-            this._runningUserModel.stepNbrOfProgramEnd = steps;
+            this._runningUserModel.programEndStep = steps;
         }
         this._onTestEndCallback!.enable();
     }
@@ -317,9 +316,9 @@ export class ModelTester extends EventEmitter {
 
     private _userInputGen() {
         const userInputFun = async () => {
-            const edge = this._runningUserModel.makeOneTransition(this._testDriver!, this._checkUtility!);
-            if (edge instanceof UserModelEdge) {
-                await edge.inputImmediate(this._testDriver!);
+            const result = this._runningUserModel.makeOneTransition(this._testDriver!, this._checkUtility!);
+            if (result !== null) {
+                await result[0].inputImmediate(this._testDriver!);
             }
             if (this._runningUserModel.stopped()) {
                 callback.disable();

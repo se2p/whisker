@@ -5,7 +5,6 @@ import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./Mo
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
-import {EndModel, ProgramModel} from "../components/ProgramModel";
 import {Checks} from "./Checks";
 import {Check} from "../checks/newCheck";
 import {CheckResult} from "../checks/CheckResult";
@@ -14,7 +13,8 @@ type EffectCheck = {
     effect: Check,
     reason: Record<string, unknown>,
     edge: ProgramModelEdge,
-    model: ProgramModel | EndModel
+    programEndStep: number,
+    stepsSinceTransition: number,
 };
 
 /**
@@ -184,11 +184,18 @@ export class CheckUtility extends EventEmitter {
     /**
      * Register the effects of an edge in this listener to test them later on.
      * @param takenEdge The taken edge of a model.
-     * @param model Model of the edge.
+     * @param stepsSinceTransition Steps since the last transition of the model
+     * @param endStep Steps in which the program ended.
      */
-    registerEffectCheck(takenEdge: ProgramModelEdge, model: ProgramModel | EndModel): void {
+    registerEffectCheck(takenEdge: ProgramModelEdge, stepsSinceTransition: number, endStep: number): void {
         takenEdge.effects.forEach(effect => {
-            this._effectChecks.push({effect: effect, reason: undefined, edge: takenEdge, model: model});
+            this._effectChecks.push({
+                effect: effect,
+                reason: null,
+                edge: takenEdge,
+                stepsSinceTransition: stepsSinceTransition,
+                programEndStep: endStep,
+            });
         });
     }
 
@@ -197,34 +204,24 @@ export class CheckUtility extends EventEmitter {
      */
     checkEffects(): Check[] {
         const contradictingEffects: Check[] = [];
-        const doNotCheck: Record<number, boolean> = {};
+        const isContradicting: Record<number, boolean> = {};
         const newEffects: EffectCheck[] = [];
 
         // check for contradictions in effects and only test an effect if it does not contradict another one
         for (let i = 0; i < this._effectChecks.length; i++) {
-            const effect = this._effectChecks[i].effect;
+            const check = this._effectChecks[i];
+            const effect = check.effect;
             for (let j = i + 1; j < this._effectChecks.length; j++) {
                 if (effect.contradicts(this._effectChecks[j].effect)) {
-                    doNotCheck[i] = true;
-                    doNotCheck[j] = true;
+                    isContradicting[i] = true;
+                    isContradicting[j] = true;
                 }
             }
 
-            if (!doNotCheck[i]) {
-                const model = this._effectChecks[i].model;
-                const effect = this._effectChecks[i].effect;
-                const stepsSinceLastTransition = model.lastTransitionStep - model.secondLastTransitionStep + 1;
-                try {
-                    const res = effect.check(stepsSinceLastTransition, model.programEndStep);
-                    if (res.passed === false) {
-                        this._effectChecks[i].reason = res.reason;
-                        newEffects.push(this._effectChecks[i]);
-                    }
-                } catch (e) {
-                    this.addErrorOutput(this._effectChecks[i].edge.label, this._effectChecks[i].edge.graphID, e);
-                }
-            } else {
-                contradictingEffects.push(this._effectChecks[i].effect);
+            if (isContradicting[i]) {
+                contradictingEffects.push(effect);
+            } else if (this._doesEffectFail(check)) {
+                newEffects.push(check);
             }
         }
 
@@ -291,6 +288,21 @@ export class CheckUtility extends EventEmitter {
         this._effectChecks = [];
     }
 
+    private _doesEffectFail(check: EffectCheck): boolean {
+        try {
+            const res = check.effect.check(check.stepsSinceTransition, check.programEndStep);
+            if (res.passed === false) {
+                if (check.reason === null) {
+                    check.reason = res.reason;
+                }
+                return true;
+            }
+        } catch (e) {
+            this.addErrorOutput(check.edge.label, check.edge.graphID, e);
+        }
+        return false;
+    }
+
     private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, check: Check,
                       spriteName: string, graphID: string, predicate: (sprite: Sprite) => CheckResult) {
         // no check for this sprite till now
@@ -350,10 +362,9 @@ export class CheckUtility extends EventEmitter {
         const newFailedList = [];
         for (const c of checks) {
             const effect = c.effect;
-            const stepsSinceLastTransition = c.model.lastTransitionStep
-                - c.model.secondLastTransitionStep + 1;
+            const stepsSinceLastTransition = c.stepsSinceTransition;
             try {
-                const res = effect.check(stepsSinceLastTransition, c.model.programEndStep);
+                const res = effect.check(stepsSinceLastTransition, c.programEndStep);
                 if (res.passed === false) {
                     c.reason = res.reason;
                     newFailedList.push(c);

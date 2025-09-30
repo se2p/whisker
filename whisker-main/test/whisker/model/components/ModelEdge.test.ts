@@ -14,6 +14,7 @@ import {UserInput} from "../../../../src/whisker/model/inputs/newUserInput";
 import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
 import {result} from "../../../../src/whisker/model/checks/CheckResult";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
+import {AbstractModel} from "../../../../src/whisker/model/components/AbstractModel";
 
 describe('Model edges', () => {
     const id = "id";
@@ -77,9 +78,9 @@ describe('Model edges', () => {
 
     });
 
-    test("Last transition initialized with zero", () => {
+    test("Last transition initialized", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        expect(edge.lastTransition).toBe(0);
+        expect(edge.lastTransition).toBe(AbstractModel.initialStepValue);
     });
 
     test("Getter function properly", () => {

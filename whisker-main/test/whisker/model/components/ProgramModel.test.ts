@@ -6,6 +6,7 @@ import {ProgramModelEdge} from "../../../../src/whisker/model/components/Program
 import {CoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
 import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {ProgramModelJSON} from "../../../../src/whisker/model/util/schema";
+import {AbstractModel} from "../../../../src/whisker/model/components/AbstractModel";
 
 export class MockedModelNode<T extends ModelEdge> extends ModelNode<T> {
     private readonly fn: jest.Mock;
@@ -61,6 +62,7 @@ function getNodesAndEdgesForBiggerModel(): [Record<string, ProgramModelNode>, Re
 
 function getBiggerModel(): [ProgramModel, Record<string, ProgramModelNode>, Record<string, ProgramModelEdge>] {
     const [nodes, edges] = getNodesAndEdgesForBiggerModel();
+    Object.values(edges).forEach(e => nodes[e.from].addOutgoingEdge(e));
     return [new ProgramModel("id", "start", nodes, edges, [], {}), nodes, edges];
 }
 
@@ -191,7 +193,6 @@ describe('Program model', () => {
     test("SetTransitionStart changes two values", () => {
         const p = new ProgramModel("id", "start", {start: new ModelNode("start", "label")}, {}, [], {});
         p.setTransitionsStartTo(3);
-        expect(p.secondLastTransitionStep).toBe(3);
         expect(p.lastTransitionStep).toBe(3);
     });
 
@@ -199,8 +200,7 @@ describe('Program model', () => {
         const model = getValidProgramModelForCoverage();
         model.setTransitionsStartTo(3);
         model.reset();
-        expect(model.lastTransitionStep).toBe(0);
-        expect(model.secondLastTransitionStep).toBe(0);
+        expect(model.lastTransitionStep).toBe(AbstractModel.initialStepValue);
     });
 
     test("Reset() resets to start node", () => {
@@ -223,8 +223,9 @@ describe('Program model', () => {
             n2: new MockedModelNode("n1", "n2", fn)
         };
         const model = new ProgramModel("model", "start", nodes, {}, [], {});
-        model.reset();
         expect(fn).toBeCalledTimes(3);
+        model.reset();
+        expect(fn).toBeCalledTimes(6);
     });
 
     test("Reset() clears coverage", () => {

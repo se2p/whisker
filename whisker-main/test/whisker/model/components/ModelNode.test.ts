@@ -4,6 +4,7 @@ import {TestDriverMock} from "../mocks/TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ModelNodeJSON} from "../../../../src/whisker/model/util/schema";
 import {Checks} from "../../../../src/whisker/model/util/Checks";
+import {AbstractModel} from "../../../../src/whisker/model/components/AbstractModel";
 
 describe('Model node', () => {
     function mockModelEdge(id: string, checkConditions: jest.Mock, lastTransition = 0,
@@ -52,8 +53,8 @@ describe('Model node', () => {
         edge1.lastTransition = 1;
         edge2.lastTransition = 2;
         node.reset();
-        expect(edge1.lastTransition).toBe(0);
-        expect(edge2.lastTransition).toBe(0);
+        expect(edge1.lastTransition).toBe(AbstractModel.initialStepValue);
+        expect(edge2.lastTransition).toBe(AbstractModel.initialStepValue);
     });
 
     test("toJSON", () => {
@@ -84,7 +85,6 @@ describe('Model node', () => {
 
     test("testEdgeConditions returns the correct edge", () => {
         const tdMock = new TestDriverMock();
-        tdMock.totalStepsExecuted = 342342;
         const fn = jest.fn();
         fn.mockReturnValue(null);
         const correctEdgeFn = jest.fn();
@@ -99,7 +99,6 @@ describe('Model node', () => {
         const result = node.testEdgeConditions(tdMock.getTestDriver(), null, 0, 0);
         expect(result).toStrictEqual(correctEdge);
         expect(fn).toHaveBeenCalledTimes(2);
-        expect(correctEdge.lastTransition).toBe(342343);
     });
 
     test("testForEvent checks all edges even if one is true", () => {
