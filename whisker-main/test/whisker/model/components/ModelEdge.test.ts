@@ -227,7 +227,7 @@ describe('Model edges', () => {
             const tdMock = new TestDriverMock([]);
             const edge = new ProgramModelEdge(id, label, graphID, from, to, 10, -1);
             const conditions = [
-                mockConditionWithError("cond40", "this should happen"),
+                mockCondition("cond40", false),
                 mockCondition("cond00", false),
                 mockCondition("cond30", true),
                 mockCondition("cond50", true),

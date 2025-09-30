@@ -83,8 +83,15 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
      * Check the edges for a transition based on fired events.
      */
     testForEvent(stepsSinceLastTransition: number, stepsSinceEnd: number): void {
-        // if there is an edge with only true conditions the edges after won't be taken so they don't need to be cached
-        this.edges.some(e => e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd)); // cache results
+        for (const e of this.edges) {
+            try {
+                if (e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd)) { // cache results
+                    return; // this edges will be taken later anyway so there is no point in caching for the remaining edges
+                }
+            } catch (e) {
+                // something failed but this is not important here, because this method is only for caching anyway
+            }
+        }
     }
 
     /**
