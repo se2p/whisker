@@ -101,7 +101,7 @@ describe('Model node', () => {
         expect(correctEdge.lastTransition).toBe(342343);
     });
 
-    test("testForEvent checks all edges even if one is true", () => {
+    test("testForEvent does not check all edges if one is true", () => {
         const tdMock = new TestDriverMock();
         tdMock.totalStepsExecuted = 99999;
         const fn = jest.fn().mockReturnValue(null);
@@ -113,8 +113,7 @@ describe('Model node', () => {
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.testForEvent(0, 0);
-        expect(fn).toHaveBeenCalledTimes(3);
-        expect(correctEdgeFn).toHaveBeenCalledTimes(1);
+        expect(fn).toHaveBeenCalledTimes(1);
         expect(correctEdge.lastTransition).toBe(0);
     });
 
