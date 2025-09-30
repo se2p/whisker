@@ -320,22 +320,6 @@ class ModelEditor {
         return this.currentModel.edges.some(e => e.effects.length > 0);
     }
 
-    /** Fill all empty conditions of edges with an always true condition */
-    fillEmptyConditions () {
-        const emptyConditions = {
-            name: 'Expr',
-            args: ['true'],
-            negated: false
-        };
-        this.models.forEach(model => {
-            model.edges.forEach(edge => {
-                if (edge.conditions.length === 0) {
-                    edge.conditions.push(emptyConditions);
-                }
-            });
-        });
-    }
-
     // ############################# Plotting and GUI setup ############################
 
     loadModel (tabNbr = 0) {
@@ -790,7 +774,6 @@ class ModelEditor {
      * models can switch based on model type).
      */
     applyButton () {
-        this.fillEmptyConditions();
         // get current active tab
         const lastFocus = $(ModelEditor.TABS).children('.active')[0].textContent;
 
@@ -814,7 +797,6 @@ class ModelEditor {
 
     /** Download the program and end models in the editor. */
     downloadProgramModels () {
-        this.fillEmptyConditions();
         const json = JSON.stringify(this.models.filter(m => m.usage !== 'user'), null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'progam-models.json');
@@ -822,7 +804,6 @@ class ModelEditor {
 
     /** Download the user models in the editor. */
     downloadUserModels () {
-        this.fillEmptyConditions();
         const json = JSON.stringify(this.models.filter(m => m.usage === 'user'), null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'user-models.json');

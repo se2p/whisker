@@ -90,15 +90,7 @@
                 "to": "hidden",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "AttrChange",
@@ -592,15 +584,7 @@
                 "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "AttrComp",
@@ -661,15 +645,7 @@
                 "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "NbrOfClones",
@@ -1929,15 +1905,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "InputMouseMove",
@@ -1976,15 +1944,7 @@
                 "to": "bottom left",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "InputMouseMove",
@@ -2044,15 +2004,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "InputMouseMove",
@@ -2124,15 +2076,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "InputMouseMove",
@@ -2200,15 +2144,7 @@
                 "to": "bottom left",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "InputMouseMove",
@@ -2247,15 +2183,7 @@
                 "to": "savepoint",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "InputMouseMove",
@@ -2273,15 +2201,7 @@
                 "to": "bottom right",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "InputMouseMove",
@@ -2381,15 +2301,7 @@
                 "to": "wait",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "AttrChange",

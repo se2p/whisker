@@ -80,49 +80,47 @@ export abstract class AbstractEdge {
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      * @Returns the failed conditions.
      */
-    checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): Check[] {
-        if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
-            return this.conditions;
+    checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
+        if (this._lastTransition == t.getTotalStepsExecuted()) {
+            return false;
         }
         if (this.failedForcedTest) {
-            return this.conditions;
+            return false;
         }
-
-        const failedConditions: Check[] = [];
 
         // times up... force testing of conditions and if they are not fulfilled make add as failed
         if ((this._forceTestAtSteps !== -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted())
             || (this._forceTestAfterSteps !== -1 && this._forceTestAfterSteps <= stepsSinceLastTransition)) {
 
+            let noneFailed = true;
             for (const c of this.conditions) {
                 try {
                     const res = c.check(stepsSinceLastTransition, stepsSinceEnd);
                     if (res.passed === false) {
-                        this.failedForcedTest = true;
-                        failedConditions.push(c);
+                        noneFailed = false;
                         cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t, res.reason));
                     }
                 } catch (e) {
                     cu.addErrorOutput(this.label, this.graphID, e);
-                    failedConditions.push(c);
+                    noneFailed = false;
                 }
             }
-            return failedConditions;
+            return noneFailed;
         }
 
         // time limit not reached
         for (const c of this.conditions) {
             try {
                 if (!c.check(stepsSinceLastTransition, stepsSinceEnd).passed) {
-                    failedConditions.push(c);
+                    return false;
                 }
             } catch (e) {
-                failedConditions.push(c);
                 cu.addErrorOutput(this.label, this.graphID, e);
+                return false;
             }
         }
 
-        return failedConditions;
+        return true;
     }
 
     abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): boolean;

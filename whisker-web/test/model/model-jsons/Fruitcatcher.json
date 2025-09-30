@@ -32,15 +32,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": []
             },
             {
@@ -540,15 +532,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": []
             },
             {
@@ -714,15 +698,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": []
             },
             {
@@ -876,15 +852,7 @@
                 "to": "n1",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "VarComp",
@@ -949,15 +917,7 @@
                 "to": "n1",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "AttrChange",
@@ -1247,15 +1207,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": []
             },
             {
@@ -1524,15 +1476,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "VarChange",
@@ -2093,15 +2037,7 @@
                 "to": "running",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "AttrComp",
@@ -2377,15 +2313,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": []
             },
             {
@@ -2673,15 +2601,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": []
             },
             {
@@ -2928,15 +2848,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": []
             }
         ]
@@ -2982,15 +2894,7 @@
                 "to": "wait",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-                "conditions": [
-                    {
-                        "name": "Expr",
-                        "negated": false,
-                        "args": [
-                            "true"
-                        ]
-                    }
-                ],
+               "conditions": [],
                 "effects": [
                     {
                         "name": "VarChange",
