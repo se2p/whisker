@@ -43,10 +43,6 @@ export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(LayerArgs.safeParse(args));
     }

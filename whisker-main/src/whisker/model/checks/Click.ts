@@ -35,10 +35,6 @@ export class Click extends AbstractCheck<ClickJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(ClickArgs.safeParse(args));
     }

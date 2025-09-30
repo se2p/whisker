@@ -38,7 +38,6 @@ export class CheckUtility extends EventEmitter {
     private _checks: Checks = new Checks();
 
     private _effectChecks: EffectCheck[] = [];
-    private _failedOutputsEvents: EffectCheck[] = [];
 
     // how often the errors or fails happened, change this boolean for printing all or only ten occurrences per error
     private _onlyTenOutputs = true;
@@ -62,7 +61,6 @@ export class CheckUtility extends EventEmitter {
         this._testDriver.vmWrapper.sprites.onSpriteMovedModel((sprite: Sprite) =>
             this._checkForEvent(this._onMovedChecks, sprite));
         this._testDriver.vmWrapper.sprites.onSayOrThinkModel((sprite: Sprite) => {
-            this._checkFailedOutputEvents();
             this._checkForEvent(this._onSayOrThinkChecks, sprite);
         });
         this._testDriver.vmWrapper.sprites.onSpriteVisualChangeModel((sprite: Sprite) =>
@@ -267,26 +265,11 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
-     * Check effects that are already registered for checking, triggered by an event.
-     */
-    checkEventEffects(): void {
-        this._effectChecks = this._check(this._effectChecks);
-    }
-
-    /**
      * Make outputs for the failed effects of the last step, without the depending ones on the sayText attribute.
      */
     makeFailedOutputs(): void {
-        for (const e of this._failedOutputsEvents) {
-            this.addFailOutput(e.edge, e.effect, e.reason);
-        }
-        this._failedOutputsEvents = [];
         for (const e of this._effectChecks) {
-            if (!e.effect.dependsOnSayText) {
-                this.addFailOutput(e.edge, e.effect, e.reason);
-            } else {
-                this._failedOutputsEvents.push(e);
-            }
+            this.addFailOutput(e.edge, e.effect, e.reason);
         }
         this._effectChecks = [];
     }
@@ -340,28 +323,5 @@ export class CheckUtility extends EventEmitter {
             this.emit(CheckUtility.CHECK_LOG_FAIL, output);
             // logger.error(output, this.testDriver.getTotalStepsExecuted());
         }
-    }
-
-    private _checkFailedOutputEvents() {
-        this._failedOutputsEvents = this._check(this._failedOutputsEvents);
-    }
-
-    private _check(checks: EffectCheck[]): EffectCheck[] {
-        const newFailedList = [];
-        for (const c of checks) {
-            const effect = c.effect;
-            const stepsSinceLastTransition = c.model.lastTransitionStep
-                - c.model.secondLastTransitionStep + 1;
-            try {
-                const res = effect.check(stepsSinceLastTransition, c.model.programEndStep);
-                if (res.passed === false) {
-                    c.reason = res.reason;
-                    newFailedList.push(c);
-                }
-            } catch (e) {
-                this.addErrorOutput(c.edge.label, c.edge.graphID, e);
-            }
-        }
-        return newFailedList;
     }
 }

@@ -56,10 +56,6 @@ abstract class AbstractNbrOfClones<
         return this._args[2];
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(NbrOfClonesArgs.safeParse(args));
     }

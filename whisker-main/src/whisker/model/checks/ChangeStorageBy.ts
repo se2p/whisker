@@ -38,10 +38,6 @@ export class ChangeStorageBy extends AbstractCheck<ChangeStorageByJSON, CheckFun
         return this._value;
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(ChangeStorageByArgs.safeParse(args));
     }

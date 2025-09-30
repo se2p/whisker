@@ -35,10 +35,6 @@ export class ClearedEffect extends AbstractCheck<ClearedEffectJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(ClearedEffectArgs.safeParse(args));
     }

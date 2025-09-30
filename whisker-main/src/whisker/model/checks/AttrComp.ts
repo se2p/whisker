@@ -68,10 +68,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
         return this._args[3];
     }
 
-    override get dependsOnSayText(): boolean {
-        return this._attrName === "sayText";
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseAttributeError(AttrCompArgs.safeParse(args), attrNameIndex);
     }

@@ -41,10 +41,6 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(BounceArgs.safeParse(args));
     }

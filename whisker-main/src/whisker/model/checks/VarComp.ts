@@ -54,10 +54,6 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
         return this._args[3];
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseUnionError(VarCompArgs.safeParse(args), {2: "InvalidComparison"}, e => e.issues.length);
     }

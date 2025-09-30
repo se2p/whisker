@@ -41,10 +41,6 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    override get dependsOnSayText(): true {
-        return true;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(OutputArgs.safeParse(args));
     }

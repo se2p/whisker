@@ -90,10 +90,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
         return this._args[2];
     }
 
-    override get dependsOnSayText(): boolean {
-        return this._args[1] === "sayText";
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseAttributeError(AttrChangeArgs.safeParse(args), attrNameIndex);
     }

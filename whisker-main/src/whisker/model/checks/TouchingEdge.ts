@@ -30,10 +30,6 @@ abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJ
         super(edgeLabel, json);
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(TouchingEdgeArgs.safeParse(args));
     }

@@ -33,10 +33,6 @@ export class Key extends AbstractCheck<KeyJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(KeyArgs.safeParse(args));
     }

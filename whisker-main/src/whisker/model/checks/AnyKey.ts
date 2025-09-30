@@ -26,10 +26,6 @@ export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(AnyKeyArgs.safeParse(args));
     }

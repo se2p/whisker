@@ -46,10 +46,6 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(PointsToArgs.safeParse(args));
     }

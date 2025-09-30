@@ -84,8 +84,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return this._checkJSON.negated;
     }
 
-    abstract get dependsOnSayText(): boolean;
-
     protected get cu(): CheckUtility {
         return this._cu;
     }

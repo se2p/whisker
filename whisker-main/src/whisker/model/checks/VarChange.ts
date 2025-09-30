@@ -53,10 +53,6 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
         return this._args[2];
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(VarChangeArgs.safeParse(args));
     }

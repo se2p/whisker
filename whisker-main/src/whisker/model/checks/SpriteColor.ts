@@ -54,10 +54,6 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         super(edgeLabel, {...json, name});
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(SpriteColorArgs.safeParse(args));
     }

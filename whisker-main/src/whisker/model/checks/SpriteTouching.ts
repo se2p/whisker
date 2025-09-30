@@ -41,10 +41,6 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
         super(edgeLabel, {...json, name});
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(SpriteTouchingArgs.safeParse(args));
     }

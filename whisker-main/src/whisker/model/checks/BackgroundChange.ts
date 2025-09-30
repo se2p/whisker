@@ -46,10 +46,6 @@ export class BackgroundChange extends AbstractCheck<BackgroundChangeJSON, CheckF
         return this._args[0];
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(BackgroundChangeArgs.safeParse(args));
     }

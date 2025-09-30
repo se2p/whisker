@@ -53,10 +53,6 @@ export class SetStorage extends AbstractCheck<SetStorageJSON, CheckFun0> {
         return this._value;
     }
 
-    override get dependsOnSayText(): boolean {
-        return this._code.includes(".sayText");
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(SetStorageArgs.safeParse(args));
     }

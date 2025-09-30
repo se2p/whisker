@@ -37,10 +37,6 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
         return this._code;
     }
 
-    override get dependsOnSayText(): boolean {
-        return this._code.includes(".sayText");
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(ExprArgs.safeParse(args));
     }

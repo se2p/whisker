@@ -46,10 +46,6 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
         return this._args[0];
     }
 
-    override get dependsOnSayText(): boolean {
-        return false;
-    }
-
     public static convertArgs(args: ArgType[]): ParsingResult {
         return parseNonUnionError(TimeArgs.safeParse(args));
     }
