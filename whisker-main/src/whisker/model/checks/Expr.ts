@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {Dependencies, evaluateExpression, Expression, getDependencies, getExpressionForEval} from "../util/ModelUtil";
 import {z} from "zod";
 import {result} from "./CheckResult";
@@ -24,7 +24,7 @@ export const ExprJSON = ICheckJSON.extend({
     args: ExprArgs,
 });
 
-export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
+export class Expr extends ConditionCheck<ExprJSON, CheckFun0> {
     private readonly _code: string;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<ExprJSON>) {

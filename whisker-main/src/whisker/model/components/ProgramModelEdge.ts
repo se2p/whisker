@@ -9,6 +9,7 @@ import {Check} from "../checks/newCheck";
  */
 export class ProgramModelEdge extends AbstractEdge {
     private readonly _effects: Check[] = [];
+    private readonly _effectsWithoutSideEffect: Check[] = [];
 
     /**
      * Create a new edge.
@@ -35,6 +36,9 @@ export class ProgramModelEdge extends AbstractEdge {
      */
     addEffect(effect: Check): void {
         this._effects.push(effect);
+        if (effect.hasNoSideEffects) {
+            this._effectsWithoutSideEffect.push(effect);
+        }
     }
 
     /**
@@ -56,7 +60,7 @@ export class ProgramModelEdge extends AbstractEdge {
         // caching all could cache an event which should not even happen
         const allConditionTrue = this.conditions.every(c => c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
         if (allConditionTrue) {
-            this._effects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
+            this._effectsWithoutSideEffect.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
         }
         return allConditionTrue;
     }

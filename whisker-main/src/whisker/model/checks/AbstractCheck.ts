@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON} from "./newCheck";
+import {CheckJSON, ConditionJSON, SideEffectJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
@@ -61,6 +61,8 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._check = (() => fail({message})) as C;
         this._reset();
     }
+
+    abstract get hasNoSideEffects(): boolean;
 
     private _reset(): void {
         this._lastResult = fail({message: "The check has not been called yet!"});
@@ -189,5 +191,17 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     private _equalsArgs(that: AbstractCheck): boolean {
         return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
+    }
+}
+
+export abstract class ConditionCheck<J extends ConditionJSON = ConditionJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+    override get hasNoSideEffects(): true {
+        return true;
+    }
+}
+
+export abstract class SideEffectCheck<J extends SideEffectJSON = SideEffectJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+    override get hasNoSideEffects(): false {
+        return false;
     }
 }

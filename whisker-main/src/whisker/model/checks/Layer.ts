@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
@@ -38,7 +38,7 @@ export const LayerJSON = ICheckJSON.extend({
     args: LayerArgs,
 });
 
-export class Layer extends AbstractCheck<LayerJSON, CheckFun0> {
+export class Layer extends ConditionCheck<LayerJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<LayerJSON>) {
         super(edgeLabel, {...json, name});
     }

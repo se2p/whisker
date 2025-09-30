@@ -124,16 +124,29 @@ export type Condition =
     | Bounce
     ;
 
-export type CheckJSON =
-    | ConditionJSON
+export type SideEffect =
+    | ChangeStorageBy
+    | SetStorage
+    ;
+
+export type SideEffectJSON =
     | ChangeStorageByJSON
     | SetStorageJSON
     ;
 
-export const CheckJSON = z.union([
-    ConditionJSON,
+export type CheckJSON =
+    | ConditionJSON
+    | SideEffectJSON
+    ;
+
+export const SideEffectJSON = z.union([
     ChangeStorageByJSON,
     SetStorageJSON,
+]);
+
+export const CheckJSON = z.union([
+    ConditionJSON,
+    SideEffectJSON,
 ]);
 
 /**
@@ -141,8 +154,7 @@ export const CheckJSON = z.union([
  */
 export type Check =
     | Condition
-    | ChangeStorageBy
-    | SetStorage
+    | SideEffect
     ;
 
 export type CheckName = CheckJSON['name'];
@@ -176,10 +188,14 @@ export const CONDITIONS_NAMES: readonly CheckName[] = Object.freeze([
     "Bounce"
 ]);
 
-export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
-    ...CONDITIONS_NAMES,
+export const SIDE_EFFECT_NAMES: readonly CheckName[] = Object.freeze([
     "ChangeStorageBy",
     "SetStorage",
+]);
+
+export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
+    ...CONDITIONS_NAMES,
+    ...SIDE_EFFECT_NAMES,
 ]);
 
 export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): Condition {
