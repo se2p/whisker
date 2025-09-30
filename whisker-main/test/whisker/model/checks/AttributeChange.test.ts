@@ -29,30 +29,20 @@ describe('AttributeChange', () => {
         const fn = jest.fn();
         const cu = getDummyCheckUtility();
         let check: (sprite: Sprite) => CheckResult;
-        cu.registerOnVisualChange = (spriteName: string, c: Check, graphID: string,
-                                     predicate: (sprite: Sprite) => CheckResult) => {
-            fn(spriteName, c, graphID, predicate);
-            check = predicate;
-        };
+        cu.registerOnVisualChange = fn;
         const c = new AttrChange('label', {args: ["apple", "size", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
+        expect(fn).toHaveBeenLastCalledWith(apple.name);
         expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('MoveEvent is registered on CheckUtil', () => {
         const fn = jest.fn();
         const cu = getDummyCheckUtility();
-        let check: (sprite: Sprite) => CheckResult;
-        cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
-                                  predicate: (sprite: Sprite) => CheckResult) => {
-            fn(spriteName, c, graphID, predicate);
-            check = predicate;
-        };
+        cu.registerOnMoveEvent = fn;
         const c = new AttrChange('label', {args: ["apple", "x", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
+        expect(fn).toHaveBeenLastCalledWith(apple.name,);
     });
 
     test('Check is not a constant function', () => {

@@ -1,7 +1,7 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass, result} from "./CheckResult";
+import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
@@ -51,7 +51,6 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
      */
     override _checkArgsWithTestDriver(t: TestDriver): CheckFun0 {
         const [pSpriteName, output] = this._args;
-        const negated = this.negated;
 
         const spriteName = checkSpriteExistence(t, pSpriteName).name;
         let expression: string;
@@ -78,7 +77,7 @@ export class Output extends AbstractCheck<OutputJSON, CheckFun0> {
             return pass();
         };
 
-        this._registerOutput(spriteName, (s) => result(sayTextCheck(s).passed, {}, negated));
+        this._registerOutput(spriteName);
 
         return () => {
             const sprites = t.getSprites((sprite: Sprite) => sprite.name === spriteName, false);

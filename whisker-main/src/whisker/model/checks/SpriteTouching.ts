@@ -1,7 +1,7 @@
 import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass, result} from "./CheckResult";
+import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
@@ -59,10 +59,8 @@ export class SpriteTouching extends AbstractCheck<SpriteTouchingJSON, CheckFun0>
 
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2
-        this._registerOnMoveEvent(spriteName1, (sprite) =>
-            result(sprite.isTouchingSprite(spriteName2), {}, negated));
-        this._registerOnMoveEvent(spriteName2, (sprite) =>
-            result(sprite.isTouchingSprite(spriteName2), {}, negated));
+        this._registerOnMoveEvent(spriteName1);
+        this._registerOnMoveEvent(spriteName2);
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it,
         // also test clones of spriteName1

@@ -79,7 +79,7 @@ export class PointsTo extends AbstractCheck<PointsToJSON, CheckFun0> {
             return result(hasCorrectDirection, {actual: s.direction, expected: expectedDirection});
         };
 
-        this._registerOnVisualChange(spriteNameRotate, check);
+        this._registerOnVisualChange(spriteNameRotate);
 
         return () => {
             const sprites = t.getSprite(spriteNameRotate).getClones(true);

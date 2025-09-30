@@ -3,7 +3,6 @@ import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ModelNodeJSON} from "../../../../src/whisker/model/util/schema";
-import {Checks} from "../../../../src/whisker/model/util/Checks";
 
 describe('Model node', () => {
     function mockModelEdge(id: string, checkConditions: jest.Mock, lastTransition = 0,
@@ -113,7 +112,7 @@ describe('Model node', () => {
         node.addOutgoingEdge(correctEdge);
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        node.testForEvent(0, 0, new Checks());
+        node.testForEvent(0, 0);
         expect(fn).toHaveBeenCalledTimes(3);
         expect(correctEdgeFn).toHaveBeenCalledTimes(1);
         expect(correctEdge.lastTransition).toBe(0);

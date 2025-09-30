@@ -82,7 +82,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
             }
         };
 
-        this._registerVarEvent(variableName, check);
+        this._registerVarEvent(variableName);
         return check;
     }
 

@@ -6,9 +6,7 @@ import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {EndModel, ProgramModel} from "../components/ProgramModel";
-import {Checks} from "./Checks";
 import {Check} from "../checks/newCheck";
-import {CheckResult} from "../checks/CheckResult";
 
 type EffectCheck = {
     effect: Check,
@@ -25,17 +23,10 @@ export class CheckUtility extends EventEmitter {
     static readonly CHECK_LOG_FAIL = "CheckLogFail";
     private readonly _testDriver: TestDriver;
     private readonly _modelResult: ModelResult;
-    private _onMovedChecks: Record<string, ((sprite: Sprite) => void)[]> = {};
-    private _onVisualChecks: Record<string, ((sprite: Sprite) => void)[]> = {};
-    private _onSayOrThinkChecks: Record<string, ((sprite: Sprite) => void)[]> = {};
-    private _variableChecks: Record<string, (() => void)[]> = {};
-
-    private _registeredOnMove: Checks = new Checks();
-    private _registeredVisualChange: Checks = new Checks();
-    private _registeredOutput: Checks = new Checks();
-    private _registeredVarEvents: Checks = new Checks();
-
-    private _checks: Checks = new Checks();
+    private _onMovedListener: Record<string, boolean> = {};
+    private _onVisualListener: Record<string, boolean> = {};
+    private _onSayOrThinkListener: Record<string, boolean> = {};
+    private _variableListener: Record<string, boolean> = {};
 
     private _effectChecks: EffectCheck[] = [];
 
@@ -59,20 +50,14 @@ export class CheckUtility extends EventEmitter {
         this._modelResult = modelResult;
         this.setMaxListeners(nbrOfAllModels);
         this._testDriver.vmWrapper.sprites.onSpriteMovedModel((sprite: Sprite) =>
-            this._checkForEvent(this._onMovedChecks, sprite));
+            this._checkForEvent(this._onMovedListener, sprite.name));
         this._testDriver.vmWrapper.sprites.onSayOrThinkModel((sprite: Sprite) => {
-            this._checkForEvent(this._onSayOrThinkChecks, sprite);
+            this._checkForEvent(this._onSayOrThinkListener, sprite.name);
         });
         this._testDriver.vmWrapper.sprites.onSpriteVisualChangeModel((sprite: Sprite) =>
-            this._checkForEvent(this._onVisualChecks, sprite));
+            this._checkForEvent(this._onVisualListener, sprite.name));
         this._testDriver.vmWrapper.sprites.onVariableChangeModel((varName: string) => {
-            if (this._variableChecks[varName] != null) {
-                this._variableChecks[varName].forEach(fun => fun());
-                if (this._checks.length > 0) {
-                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._checks);
-                }
-                this._checks = new Checks();
-            }
+            this._checkForEvent(this._variableListener, varName);
         });
     }
 
@@ -81,85 +66,43 @@ export class CheckUtility extends EventEmitter {
         this._testDriver.vmWrapper.sprites.onSayOrThinkModel(null);
         this._testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(null);
         this._testDriver.vmWrapper.sprites.onVariableChangeModel(null);
-        this._onMovedChecks = {};
-        this._onVisualChecks = {};
-        this._onSayOrThinkChecks = {};
-        this._variableChecks = {};
+        this._onMovedListener = {};
+        this._onVisualListener = {};
+        this._onSayOrThinkListener = {};
+        this._variableListener = {};
     }
 
     /**
      * Register a listener on the movement of a sprite with a certain predicate to be fulfilled for the event to be
      * triggered.
      * @param spriteName Name of the sprite.
-     * @param graphID ID of the parent graph of the check.
-     * @param predicate Function checking if the predicate for the event is fulfilled.
-     * @param check String defining the event (see CheckUtility.getEventString)
      */
-    registerOnMoveEvent(spriteName: string, check: Check, graphID: string,
-                        predicate: (sprite: Sprite) => CheckResult): void {
-        if (!this._registeredOnMove.includes(check)) {
-            this._registeredOnMove.push(check);
-            this._register(this._onMovedChecks, check, spriteName, graphID, predicate);
-        }
+    registerOnMoveEvent(spriteName: string): void {
+        this._onMovedListener[spriteName] = true;
     }
 
     /**
      * Register a visual change event listener. (Attributes: size, direction, effect, visible, costume,
      * rotationStyle.  Also and x,y motions, but should be registered on move)
      * @param spriteName Name of the actual sprite.
-     * @param check Function checking if the predicate for the event is fulfilled.
-     * @param graphID ID of the parent graph of the check.
-     * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOnVisualChange(spriteName: string, check: Check, graphID: string,
-                           predicate: (sprite: Sprite) => CheckResult): void {
-        if (!this._registeredVisualChange.includes(check)) {
-            this._registeredVisualChange.push(check);
-            this._register(this._onVisualChecks, check, spriteName, graphID, predicate);
-        }
+    registerOnVisualChange(spriteName: string): void {
+        this._onVisualListener[spriteName] = true;
     }
 
     /**
      * Register an output event on the visual change checks.
      * @param spriteName Name of the sprite.
-     * @param check Function checking if the predicate for the event is fulfilled.
-     * @param graphID ID of the parent graph of the check.
-     * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOutput(spriteName: string, check: Check, graphID: string,
-                   predicate: (sprite: Sprite) => CheckResult): void {
-        if (!this._registeredOutput.includes(check)) {
-            this._registeredOutput.push(check);
-            this._register(this._onSayOrThinkChecks, check, spriteName, graphID, predicate);
-        }
+    registerOutput(spriteName: string): void {
+        this._onSayOrThinkListener[spriteName] = true;
     }
 
     /**
      * Register a variable change event for a variable.
-     * @param varName Name of the variable.
-     * @param graphID ID of the parent graph of the check.
-     * @param check Function checking if the predicate for the event is fulfilled.
-     * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerVarEvent(varName: string, check: Check, graphID: string, predicate: () => CheckResult): void {
-        if (!this._registeredVarEvents.includes(check)) {
-            this._registeredVarEvents.push(check);
-
-            if (this._variableChecks[varName] == undefined || this._variableChecks[varName] == null) {
-                this._variableChecks[varName] = [];
-            }
-            this._variableChecks[varName].push(() => {
-                let predicateResult = false;
-                try {
-                    predicateResult = predicate().passed;
-                } catch (e) {
-                    this.addErrorOutput(check.edgeLabel, graphID, e);
-                }
-                if (predicateResult) {
-                    this._checks.push(check);
-                }
-            });
-        }
+    registerVarEvent(varName: string): void {
+        this._variableListener[varName] = true;
     }
 
     /**
@@ -274,32 +217,9 @@ export class CheckUtility extends EventEmitter {
         this._effectChecks = [];
     }
 
-    private _register(predicateChecker: Record<string, ((sprite: Sprite) => void)[]>, check: Check,
-                      spriteName: string, graphID: string, predicate: (sprite: Sprite) => CheckResult) {
-        // no check for this sprite till now
-        if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
-            predicateChecker[spriteName] = [];
-        }
-
-        predicateChecker[spriteName].push((sprite) => {
-            try {
-                const predicateResult = predicate(sprite).passed;
-                if (predicateResult) {
-                    this._checks.push(check);
-                }
-            } catch (e) {
-                this.addErrorOutput(check.edgeLabel, graphID, e);
-            }
-        });
-    }
-
-    private _checkForEvent(checks: Record<string, ((sprite: Sprite) => void)[]>, sprite: Sprite): void {
-        if (checks[sprite.name] != null) {
-            checks[sprite.name].forEach(fun => fun(sprite));
-            if (this._checks.length > 0) {
-                this.emit(CheckUtility.CHECK_UTILITY_EVENT, this._checks);
-            }
-            this._checks = new Checks();
+    private _checkForEvent(checks: Record<string, boolean>, key: string): void {
+        if (checks[key] === true) {
+            this.emit(CheckUtility.CHECK_UTILITY_EVENT);
         }
     }
 

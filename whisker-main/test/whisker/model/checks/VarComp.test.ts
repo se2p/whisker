@@ -32,7 +32,7 @@ describe('VarComp tests', () => {
         const cu = cuMock.getCheckUtility();
         const c = new VarComp('label', {args: ["apple", "x", "==", "2"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, c, graphID, expect.anything());
+        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name);
     });
 
     test('Check works for stage', () => {

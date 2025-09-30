@@ -2,7 +2,7 @@ import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractChe
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass, result} from "./CheckResult";
+import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
@@ -78,7 +78,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         const color = [r, g, b];
 
         // on movement check sprite color
-        this._registerOnMoveEvent(spriteName, (sprite) => result(sprite.isTouchingColor(color), {}, negated));
+        this._registerOnMoveEvent(spriteName);
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         // also test clones of spriteName

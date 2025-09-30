@@ -86,7 +86,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
             }
         };
 
-        this._registerVarEvent(variableName, check);
+        this._registerVarEvent(variableName);
         return check;
     }
 

@@ -1,11 +1,10 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Check, CheckJSON} from "./newCheck";
+import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, fail} from "./CheckResult";
-import Sprite from "../../../vm/sprite";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
@@ -148,20 +147,20 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return JSON.parse(JSON.stringify(this._checkJSON));
     }
 
-    protected _registerOnMoveEvent(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnMoveEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerOnMoveEvent(spriteName: string): void {
+        this._cu.registerOnMoveEvent(spriteName);
     }
 
-    protected _registerOnVisualChange(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnVisualChange(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerOnVisualChange(spriteName: string): void {
+        this._cu.registerOnVisualChange(spriteName);
     }
 
-    protected _registerOutput(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOutput(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerOutput(spriteName: string): void {
+        this._cu.registerOutput(spriteName);
     }
 
-    protected _registerVarEvent(spriteName: string, check: () => CheckResult): void {
-        this._cu.registerVarEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerVarEvent(varName: string): void {
+        this._cu.registerVarEvent(varName);
     }
 
     protected abstract _validate(checkJSON: J): J;

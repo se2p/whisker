@@ -111,23 +111,15 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
-        const listener = (sprite: Sprite) => {
-            try {
-                return this._change.applySingle(...this._getAttr(sprite));
-            } catch (e) {
-                throw new Exception(pSpriteName, attrName, e);
-            }
-        };
-
         // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
         // is not a numerical value and e.g. an increase (+) on a string is not desired to be representable. An
         // AttributeChange predicate with sayText fails in the execution with e.g.
         // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
-            this._registerOnMoveEvent(spriteName, listener);
+            this._registerOnMoveEvent(spriteName);
         } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-            this._registerOnVisualChange(spriteName, listener);
+            this._registerOnVisualChange(spriteName);
         }
 
         return () => {

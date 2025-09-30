@@ -79,7 +79,7 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
             return result(!touchingEdge || dirFlipped, reason);
         };
 
-        this._registerOnVisualChange(spriteName, check);
+        this._registerOnVisualChange(spriteName);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);

@@ -2,7 +2,6 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
-import {Checks} from "../util/Checks";
 import {Check} from "../checks/newCheck";
 
 /**
@@ -52,14 +51,14 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Expr:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): boolean {
-        if (this.failedForcedTest) {
-            return false;
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
+        // every so only conditions are cached if all their conditions above are cached which means their event occurred
+        // caching all could cache an event which should not even happen
+        const allConditionTrue = this.conditions.every(c => c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
+        if (allConditionTrue) {
+            this._effects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
         }
-        if (this.effects.some(e => checks.includes(e))) {
-            this.effects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
-        }
-        return this.conditions.reduce((acc, c) => acc && c.check(stepsSinceLastTransition, stepsSinceEnd).passed, true); // cache results
+        return allConditionTrue;
     }
 
     override toJSON(): ProgramModelEdgeJSON {

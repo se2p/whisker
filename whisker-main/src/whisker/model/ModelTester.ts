@@ -14,7 +14,6 @@ import {ProgramModelEdge} from "./components/ProgramModelEdge";
 import {CoverageResult, EndModel, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {ModelJSON} from "./util/schema";
-import {Checks} from "./util/Checks";
 import {Check} from "./checks/newCheck";
 import TestResult from "../../test-runner/test-result";
 import Test from "../../test-runner/test";
@@ -332,14 +331,14 @@ export class ModelTester extends EventEmitter {
         return this._testDriver!.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
 
-    private _onVMEvent(checks: Checks) {
+    private _onVMEvent() {
         if (!this._isRunning) {
             return;
         }
         // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
         const inProgramModelStage = this._modelStepCallback!.isActive();
         const models = inProgramModelStage ? this._programModels : this._onTestEndModels;
-        models.forEach((m: OracleModel) => m.testForEvent(this._testDriver!, checks));
+        models.forEach((m: OracleModel) => m.testForEvent(this._testDriver!));
     }
 
     private _onLogEvent(output: unknown) {

@@ -88,21 +88,13 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
-        const listener = (sprite: Sprite) => {
-            try {
-                return this._comparison.applySingle(this._getAttr(sprite));
-            } catch (e) {
-                throw new Exception(pSpriteName, this._attrName, e);
-            }
-        };
-
         // on movement listener
         if (this._attrName == "x" || this._attrName == "y") {
-            this._registerOnMoveEvent(spriteName, listener);
+            this._registerOnMoveEvent(spriteName);
         } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
-            this._registerOnVisualChange(spriteName, listener);
+            this._registerOnVisualChange(spriteName);
         } else if (this._attrName == "sayText") {
-            this._registerOutput(spriteName, listener);
+            this._registerOutput(spriteName);
         }
 
         return () => {

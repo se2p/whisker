@@ -4,7 +4,6 @@ import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {EdgeID, EndModelJSON, ProgramModelJSON, StorageValueType} from "../util/schema";
-import {Checks} from "../util/Checks";
 import logger from "../../../util/logger";
 
 export interface CoverageResult {
@@ -64,9 +63,9 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         return edge;
     }
 
-    testForEvent(t: TestDriver, checks: Checks): void {
+    testForEvent(t: TestDriver): void {
         const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
-        this.currentState.testForEvent(stepsSinceLastTransition, this.programEndStep, checks);
+        this.currentState.testForEvent(stepsSinceLastTransition, this.programEndStep);
     }
 
     /**
