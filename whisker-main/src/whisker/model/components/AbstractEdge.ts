@@ -8,6 +8,7 @@ import {Checks} from "../util/Checks";
 import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {AbstractModel} from "./AbstractModel";
+import {Reason} from "../checks/CheckResult";
 
 export type ModelEdge =
     | ProgramModelEdge
@@ -164,7 +165,7 @@ export abstract class AbstractEdge {
 
     abstract toJSON(): ModelEdgeJSON;
 
-    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Record<string, unknown>): string {
+    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Reason): string {
         if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
             return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt, reason);
         } else {

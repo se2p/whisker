@@ -2,7 +2,7 @@ import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractChe
 import {z} from "zod";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
-import {any, result} from "./CheckResult";
+import {any, Reason, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 import {
@@ -60,7 +60,7 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
         const check = (s: Sprite) => {
             const isDirFlipped = (expected: number) =>
                 checkCyclicValueWithinDelta(s.direction, expected, -180, 180);
-            const reason: Record<string, unknown> = {direction: s.direction, oldDirection: s.old.direction};
+            const reason: Reason = {direction: s.direction, oldDirection: s.old.direction};
             let touchingEdge = false;
             let dirFlipped = false;
 

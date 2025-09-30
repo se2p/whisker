@@ -7,11 +7,11 @@ import Sprite from "../../../vm/sprite";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {Checks} from "./Checks";
 import {Check} from "../checks/newCheck";
-import {CheckResult} from "../checks/CheckResult";
+import {CheckResult, Reason} from "../checks/CheckResult";
 
 type EffectCheck = {
     effect: Check,
-    reason: Record<string, unknown>,
+    reason: Reason,
     edge: ProgramModelEdge,
     programEndStep: number,
     stepsSinceTransition: number,
@@ -244,7 +244,7 @@ export class CheckUtility extends EventEmitter {
      * @param effect Effect that failed.
      * @param reason Insights on why the effect failed.
      */
-    addFailOutput(edge: AbstractEdge, effect: Check, reason: Record<string, unknown>): void {
+    addFailOutput(edge: AbstractEdge, effect: Check, reason: Reason): void {
         const output = getEffectFailedOutput(edge, effect, {step: this._testDriver.getTotalStepsExecuted(), ...reason});
         this._failOrError(output, this._failOutputs);
         this._modelResult.addFail(output);
