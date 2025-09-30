@@ -9,7 +9,6 @@ import {Callback} from "../../vm/callbacks";
 import Sprite from "../../vm/sprite";
 import logger from "../../util/logger";
 import {getErrorMessage} from "./util/ModelError";
-import {UserModelEdge} from "./components/UserModelEdge";
 import {ProgramModelEdge} from "./components/ProgramModelEdge";
 import {CoverageResult, EndModel, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
@@ -157,20 +156,7 @@ export class ModelTester extends EventEmitter {
     }
 
     running(): boolean {
-        if (!this._isRunning) {
-            return false;
-        }
-
-        let result = false;
-        if (this._modelStepCallback !== null) {
-            result = this._modelStepCallback.isActive();
-        }
-
-        if (!result && this._onTestEndCallback !== null) {
-            result = this._onTestEndCallback.isActive();
-        }
-
-        return result;
+        return this._isRunning && this._someCallbackActive();
     }
 
     getAllModels(): ModelJSON[] {
@@ -223,8 +209,6 @@ export class ModelTester extends EventEmitter {
         if (!t) {
             throw new Error("No TestDriver provided.");
         }
-        // logger.debug("----Preparing model----");
-        this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this._testDriver = t;
         Container.testDriver = t;
         this._nextTestDriver = t;
@@ -240,6 +224,10 @@ export class ModelTester extends EventEmitter {
         } else {
             throw new RangeError(`provided ${umIndex} as index for the UserModel which is neither valid nor ${ModelTester.NO_USER_MODEL}.`);
         }
+        const msg = this._runningUserModel
+            ? `Preparing model for run with user model: ${this._runningUserModel.id}...`
+            : "Preparing model for run...";
+        this.emit(ModelTester.MODEL_LOG, msg);
 
         this._result = new ModelResult();
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
@@ -265,27 +253,38 @@ export class ModelTester extends EventEmitter {
         this._isRunning = true;
     }
 
-    private _doOneStepOnOracleModel(model: OracleModel, notStoppedModels: OracleModel[]) {
+    private _doOneStepOnModel(model: OracleModel): boolean {
         const result = model.makeOneTransition(this._testDriver!, this._checkUtility!);
         if (result) {
             const [takenEdge, steps] = result;
             this._checkUtility!.registerEffectCheck(takenEdge, steps, model.programEndStep);
             this._edgeTrace(takenEdge);
         }
-        if (!model.stopped()) {
-            notStoppedModels.push(model);
-        }
+        return model.stopped();
     }
 
     private _doOracleModelStep(models: OracleModel[], fn: () => void): void {
-        this._checkUtility!.makeFailedOutputs();
-        const notStoppedModels: OracleModel[] = [];
-        models.forEach((model: OracleModel) => this._doOneStepOnOracleModel(model, notStoppedModels));
+        // this._doOneStepOnModel(model) must be executed for every model! -> reduce() not some() or every()
+        const allStopped = models.reduce(
+            (acc, model) => this._doOneStepOnModel(model) && acc, true);
         const contradictingEffects = this._checkUtility!.checkEffects();
         this._printContradictingEffects(contradictingEffects);
-        if (notStoppedModels.length == 0 || models.some(m => m.haltAllModels())) {
+        if (allStopped) {
+            this._debug(`All ${models[0].usage} models reached a stopping stage`);
+            fn();
+        } else if (this._didSomeModelReachStopAllNode(models)) {
             fn();
         }
+        this._checkUtility!.makeFailedOutputs();
+    }
+
+    private _didSomeModelReachStopAllNode(models: OracleModel[]): boolean {
+        const stoppingModels = models.filter(m => m.haltAllModels());
+        if (stoppingModels.length > 0) {
+            this._debug(`The following ${models[0].usage} models reached a stop all node: ${stoppingModels.map(m => m.id)}`);
+            return true;
+        }
+        return false;
     }
 
     private _onModelStep(): void {
@@ -296,8 +295,10 @@ export class ModelTester extends EventEmitter {
         this._modelStepCallback!.disable();
 
         if (this._onTestEndModels.length === 0) {
+            this._debug("There are no end models to execute");
             return;
         }
+        this._debug("Starting end models");
 
         const steps = this._testDriver!.getTotalStepsExecuted();
         this._onTestEndModels.forEach(model => {
@@ -308,6 +309,10 @@ export class ModelTester extends EventEmitter {
             this._runningUserModel.programEndStep = steps;
         }
         this._onTestEndCallback!.enable();
+    }
+
+    private _debug(...msg: string[]): void {
+        this.emit(ModelTester.MODEL_LOG, `Step ${this._testDriver.getTotalStepsExecuted()}: ${msg.join(" ")}`);
     }
 
     private _onTestEnd(): void {
@@ -335,7 +340,6 @@ export class ModelTester extends EventEmitter {
         if (!this._isRunning) {
             return;
         }
-        // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
         const inProgramModelStage = this._modelStepCallback!.isActive();
         const models = inProgramModelStage ? this._programModels : this._onTestEndModels;
         models.forEach((m: OracleModel) => m.testForEvent(this._testDriver!, checks));
@@ -359,10 +363,10 @@ export class ModelTester extends EventEmitter {
             }
         }
         this._result!.edgeTrace.push(edgeTrace);
-        // for debugging...
-        // this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-        // if (transition.id.startsWith("points"))
-        //     logger.debug("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
+    }
+
+    private _someCallbackActive(): boolean {
+        return this._modelStepCallback?.isActive() || this._onTestEndCallback?.isActive();
     }
 
     /**
@@ -384,7 +388,6 @@ export class ModelTester extends EventEmitter {
             const models = [...this._programModels, ...this._onTestEndModels];
             models.forEach(model => {
                 if (model.stopped()) {
-                    // logger.debug(`Model '${model.id}' stopped.`);
                     this._result!.log.push("Model '" + model.id + "' stopped.");
                     this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
                 }
