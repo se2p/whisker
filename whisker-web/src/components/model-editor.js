@@ -262,7 +262,7 @@ class ModelEditor {
             args[i] = $(`#${ModelEditor.INPUT_ID}${i}`).val();
         }
         const isUserInput = this.currentModel.usage === 'user' &&
-            document.getElementById('model-check-label').attributes['data-i18n'].value === 'modelEditor:newEffect';
+            document.getElementById('model-check-label').attributes['data-i18n'].value === 'modelEditor:userInput';
         const result = isUserInput ?
             convertInputArgs({name: name, args: args}) :
             convertArgs({name: name, negated: negated, args: args});
@@ -272,15 +272,15 @@ class ModelEditor {
             for (let index = 0; index < argNumber.length; index++) {
                 const element = $(`#${ModelEditor.INPUT_ID}${index}`);
                 const code = result.problems[index];
-                if (code === undefined) {
-                    element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
-                    element.removeAttr('title');
-                } else {
+                if (code) {
                     element.addClass(ModelEditor.INVALID_INPUT_CLASS);
                     const translatedCode = i18n.t(`modelEditor:${code}`);
                     const argTranslation = i18n.t(`modelEditor:${argNumber[index]}`);
                     codes.push(`${argTranslation}: ${translatedCode}`);
                     element.attr('title', translatedCode);
+                } else {
+                    element.removeClass(ModelEditor.INVALID_INPUT_CLASS);
+                    element.removeAttr('title');
                 }
             }
             return {status: false, message: codes.join('<br>')};
@@ -1114,7 +1114,7 @@ class ModelEditor {
 
         $(ModelEditor.CHECK_NEGATED).prop('checked', check.negated);
         $(ModelEditor.CHECK_CHOOSER).val(check.name);
-        this.changeCheckType(isAnEffect, isAUserModel, check.name, check.id, check.args);
+        this.changeCheckType(isAnEffect, isAUserModel, check.name, check.args);
 
         this.addExplanation(check.name);
     }
@@ -1159,15 +1159,14 @@ class ModelEditor {
      * @param isAnEffect Flag if the check is an effect
      * @param isAUserModel Flag if the check is part of a UserModel
      * @param type Type of check, has to be of checkLabelCodes
-     * @param id Id of the check.
      * @param args Arguments of the check
      */
-    changeCheckType (isAnEffect, isAUserModel, type, id, args) {
+    changeCheckType (isAnEffect, isAUserModel, type, args) {
         const codes = isAnEffect && isAUserModel ? inputLabelCodes : checkLabelCodes;
         const argNames = codes[type];
 
         if (args.length !== argNames.length) {
-            logger.error(`Loaded model has a check with wrong number of arguments. Check.id:${id}`);
+            logger.error(`Loaded model has a check with wrong number of arguments`);
         }
         $(ModelEditor.CHECK_ARGS_DIV).children()
             .remove();
