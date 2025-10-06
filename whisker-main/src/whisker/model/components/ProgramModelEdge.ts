@@ -56,8 +56,7 @@ export class ProgramModelEdge extends AbstractEdge {
      * Effects are checked for Expr:true Checks.
      */
     override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
-        // every so only conditions are cached if all their conditions above are cached which means their event occurred
-        // caching all could cache an event which should not even happen
+        // We call every() instead of forEach() so we terminate early and undesired checks are not cached.
         const allConditionTrue = this.conditions.every(c => c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
         if (allConditionTrue) {
             this._effectsWithoutSideEffect.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
