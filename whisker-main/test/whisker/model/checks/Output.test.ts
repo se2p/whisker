@@ -2,9 +2,7 @@ import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {Output} from "../../../../src/whisker/model/checks/Output";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
-import Sprite from "../../../../src/vm/sprite";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 describe('Output tests', () => {
     const graphID = "graphID";
@@ -35,6 +33,6 @@ describe('Output tests', () => {
         cu.registerOutput = fn;
         const c = new Output('label', {args: ["kiwi", "this is a text as well"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenCalledWith("kiwi");
+        expect(fn).toHaveBeenCalledWith("kiwi", graphID);
     });
 });

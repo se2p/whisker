@@ -150,19 +150,19 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     }
 
     protected _registerOnMoveEvent(spriteName: string): void {
-        this._cu.registerOnMoveEvent(spriteName);
+        this._cu.registerOnMoveEvent(spriteName, this.graphID);
     }
 
     protected _registerOnVisualChange(spriteName: string): void {
-        this._cu.registerOnVisualChange(spriteName);
+        this._cu.registerOnVisualChange(spriteName, this.graphID);
     }
 
     protected _registerOutput(spriteName: string): void {
-        this._cu.registerOutput(spriteName);
+        this._cu.registerOutput(spriteName, this.graphID);
     }
 
     protected _registerVarEvent(varName: string): void {
-        this._cu.registerVarEvent(varName);
+        this._cu.registerVarEvent(varName, this.graphID);
     }
 
     protected abstract _validate(checkJSON: J): J;

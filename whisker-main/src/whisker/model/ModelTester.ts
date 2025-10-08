@@ -331,14 +331,14 @@ export class ModelTester extends EventEmitter {
         return this._testDriver!.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
 
-    private _onVMEvent() {
+    private _onVMEvent(modelIds: Set<string>) {
         if (!this._isRunning) {
             return;
         }
         // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
         const inProgramModelStage = this._modelStepCallback!.isActive();
-        const models = inProgramModelStage ? this._programModels : this._onTestEndModels;
-        models.forEach((m: OracleModel) => m.testForEvent(this._testDriver!));
+        const models: OracleModel[] = inProgramModelStage ? this._programModels : this._onTestEndModels;
+        models.filter(m => modelIds.has(m.id)).forEach((m: OracleModel) => m.testForEvent(this._testDriver!));
     }
 
     private _onLogEvent(output: unknown) {

@@ -15,6 +15,15 @@ type EffectCheck = {
     model: ProgramModel | EndModel
 };
 
+function addToSetMap<K extends string | number, V>(map: Map<K, Set<V>>, key: K, value: V): void {
+    const list = map.get(key);
+    if (list) {
+        list.add(value);
+    } else {
+        map.set(key, new Set([value]));
+    }
+}
+
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
  */
@@ -23,10 +32,10 @@ export class CheckUtility extends EventEmitter {
     static readonly CHECK_LOG_FAIL = "CheckLogFail";
     private readonly _testDriver: TestDriver;
     private readonly _modelResult: ModelResult;
-    private _onMovedListener: Record<string, boolean> = {};
-    private _onVisualListener: Record<string, boolean> = {};
-    private _onSayOrThinkListener: Record<string, boolean> = {};
-    private _variableListener: Record<string, boolean> = {};
+    private readonly _onMovedListener: Map<string, Set<string>> = new Map<string, Set<string>>();
+    private readonly _onVisualListener: Map<string, Set<string>> = new Map<string, Set<string>>();
+    private readonly _onSayOrThinkListener: Map<string, Set<string>> = new Map<string, Set<string>>();
+    private readonly _variableListener: Map<string, Set<string>> = new Map<string, Set<string>>();
 
     private _effectChecks: EffectCheck[] = [];
 
@@ -66,43 +75,48 @@ export class CheckUtility extends EventEmitter {
         this._testDriver.vmWrapper.sprites.onSayOrThinkModel(null);
         this._testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(null);
         this._testDriver.vmWrapper.sprites.onVariableChangeModel(null);
-        this._onMovedListener = {};
-        this._onVisualListener = {};
-        this._onSayOrThinkListener = {};
-        this._variableListener = {};
+        this._onMovedListener.clear();
+        this._onVisualListener.clear();
+        this._onSayOrThinkListener.clear();
+        this._variableListener.clear();
     }
 
     /**
      * Register a listener on the movement of a sprite with a certain predicate to be fulfilled for the event to be
      * triggered.
      * @param spriteName Name of the sprite.
+     * @param graphId Id of the graph which reacts to the event
      */
-    registerOnMoveEvent(spriteName: string): void {
-        this._onMovedListener[spriteName] = true;
+    registerOnMoveEvent(spriteName: string, graphId: string): void {
+        addToSetMap(this._onMovedListener, spriteName, graphId);
     }
 
     /**
      * Register a visual change event listener. (Attributes: size, direction, effect, visible, costume,
      * rotationStyle.  Also and x,y motions, but should be registered on move)
      * @param spriteName Name of the actual sprite.
+     * @param graphId Id of the graph which reacts to the event
      */
-    registerOnVisualChange(spriteName: string): void {
-        this._onVisualListener[spriteName] = true;
+    registerOnVisualChange(spriteName: string, graphId: string): void {
+        addToSetMap(this._onVisualListener, spriteName, graphId);
     }
 
     /**
      * Register an output event on the visual change checks.
      * @param spriteName Name of the sprite.
+     * @param graphId Id of the graph which reacts to the event
      */
-    registerOutput(spriteName: string): void {
-        this._onSayOrThinkListener[spriteName] = true;
+    registerOutput(spriteName: string, graphId: string): void {
+        addToSetMap(this._onSayOrThinkListener, spriteName, graphId);
     }
 
     /**
      * Register a variable change event for a variable.
+     * @param varName Name of the variable triggering the event
+     * @param graphId Id of the graph which reacts to the event
      */
-    registerVarEvent(varName: string): void {
-        this._variableListener[varName] = true;
+    registerVarEvent(varName: string, graphId: string): void {
+        addToSetMap(this._variableListener, varName, graphId);
     }
 
     /**
@@ -217,9 +231,10 @@ export class CheckUtility extends EventEmitter {
         this._effectChecks = [];
     }
 
-    private _checkForEvent(checks: Record<string, boolean>, key: string): void {
-        if (checks[key] === true) {
-            this.emit(CheckUtility.CHECK_UTILITY_EVENT);
+    private _checkForEvent(checks: Map<string, Set<string>>, key: string): void {
+        const modelIds = checks.get(key);
+        if (modelIds && modelIds.size > 0) {
+            this.emit(CheckUtility.CHECK_UTILITY_EVENT, modelIds);
         }
     }
 

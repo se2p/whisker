@@ -28,7 +28,7 @@ describe('VarChange tests', () => {
         const cu = cuMock.getCheckUtility();
         const c = new VarChange('label', {args: ["apple", "x", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name);
+        expect(fn).toHaveBeenLastCalledWith(apple.variables[0].name, graphID);
     });
 
     test('Check works for stage', () => {

@@ -31,7 +31,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(moveEvent).toHaveBeenCalledTimes(1);
-        expect(moveEvent).toHaveBeenCalledWith("Boat");
+        expect(moveEvent).toHaveBeenCalledWith("Boat", graphID);
     });
 
     test('variable dependencies are correct', () => {
@@ -41,8 +41,8 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(varEvent).toHaveBeenCalledTimes(2);
-        expect(varEvent).toHaveBeenCalledWith("speed");
-        expect(varEvent).toHaveBeenCalledWith("score");
+        expect(varEvent).toHaveBeenCalledWith("speed", graphID);
+        expect(varEvent).toHaveBeenCalledWith("score", graphID);
     });
 
     test('onVisual dependencies are correct', () => {
@@ -52,7 +52,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(visualEvent).toHaveBeenCalledTimes(1);
-        expect(visualEvent).toHaveBeenCalledWith("Gate");
+        expect(visualEvent).toHaveBeenCalledWith("Gate", graphID);
     });
 
     it.each([[false, false], [false, true], [true, false], [true, true]])(
@@ -85,7 +85,7 @@ describe('Expr tests', () => {
         const fn = "t.getSprite('apple').sayText == 'I am an apple'";
         const c = new Expr('label', {args: [fn]});
         c.registerComponents(tdMock.getTestDriver(), cu, graphID);
-        expect(mock).toHaveBeenCalledWith("apple");
+        expect(mock).toHaveBeenCalledWith("apple", graphID);
     });
 
     test('Can write with $$-function', () => {

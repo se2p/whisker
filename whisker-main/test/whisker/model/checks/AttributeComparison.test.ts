@@ -2,9 +2,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {AttrComp} from "../../../../src/whisker/model/checks/AttrComp";
 import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
-import Sprite from "../../../../src/vm/sprite";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
@@ -34,7 +32,7 @@ describe('AttributeComparison', () => {
         const cu = cuMock.getCheckUtility();
         const c = new AttrComp('label', {args: ["kiwi", "x", "==", 7]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith("kiwi");
+        expect(fn).toHaveBeenLastCalledWith("kiwi", graphID);
     });
 
     test('OnVisualChange is registered on CheckUtil', () => {
@@ -44,7 +42,7 @@ describe('AttributeComparison', () => {
         const cu = cuMock.getCheckUtility();
         const c = new AttrComp('label', {args: ["kiwi", "size", "<", 42]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith("kiwi");
+        expect(fn).toHaveBeenLastCalledWith("kiwi", graphID);
     });
 
     test('Output is registered on CheckUtil for changing output', () => {
@@ -54,7 +52,7 @@ describe('AttributeComparison', () => {
         const cu = cuMock.getCheckUtility();
         const c = new AttrComp('label', {args: ["kiwi", "sayText", "==", "this is some text"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith("kiwi");
+        expect(fn).toHaveBeenLastCalledWith("kiwi", graphID);
     });
 
     test('Output is registered on CheckUtil for changing coordinates', () => {
@@ -67,7 +65,7 @@ describe('AttributeComparison', () => {
         const cu = cuMock.getCheckUtility();
         const c = new AttrComp('label', {args: ["apple", "x", "<=", 42]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith("apple");
+        expect(fn).toHaveBeenLastCalledWith("apple", graphID);
     });
 
     test('Output is registered on CheckUtil for changing visual', () => {
@@ -82,7 +80,7 @@ describe('AttributeComparison', () => {
         const cu = cuMock.getCheckUtility();
         const c = new AttrComp('label', {negated: true, args: [STAGE_NAME, "currentCostumeName", "==", "win"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(STAGE_NAME);
+        expect(fn).toHaveBeenLastCalledWith(STAGE_NAME, graphID);
     });
 
     it.each([false, true])('Returned function includes original sprite (negated: %s)', (negated) => {
