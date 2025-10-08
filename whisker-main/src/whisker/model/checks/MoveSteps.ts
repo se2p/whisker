@@ -56,7 +56,7 @@ export class MoveSteps extends ConditionCheck<MoveStepsJSON, CheckFun0> {
 
         const check = (s: Sprite) => movedCorrectAmountOfSteps(s, this._args[1], this.negated);
 
-        this._registerOnVisualChange(spriteName);
+        this._registerOnMoveEvent(spriteName);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);
