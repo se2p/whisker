@@ -279,7 +279,6 @@ export class ModelTester extends EventEmitter {
     }
 
     private _doOracleModelStep(models: OracleModel[], fn: () => void): void {
-        this._checkUtility!.makeFailedOutputs();
         const notStoppedModels: OracleModel[] = [];
         models.forEach((model: OracleModel) => this._doOneStepOnOracleModel(model, notStoppedModels));
         const contradictingEffects = this._checkUtility!.checkEffects();
@@ -287,6 +286,7 @@ export class ModelTester extends EventEmitter {
         if (notStoppedModels.length == 0 || models.some(m => m.haltAllModels())) {
             fn();
         }
+        this._checkUtility!.makeFailedOutputs();
     }
 
     private _onModelStep(): void {

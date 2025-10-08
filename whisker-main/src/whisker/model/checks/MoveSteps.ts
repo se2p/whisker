@@ -60,7 +60,7 @@ export class MoveSteps extends AbstractCheck<MoveStepsJSON, CheckFun0> {
 
         const check = (s: Sprite) => movedCorrectAmountOfSteps(s, this._args[1], this.negated);
 
-        this._registerOnVisualChange(spriteName, check);
+        this._registerOnMoveEvent(spriteName, check);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);
