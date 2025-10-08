@@ -36,7 +36,7 @@ export class ProgramModelEdge extends AbstractEdge {
      */
     addEffect(effect: Check): void {
         this._effects.push(effect);
-        if (effect.hasNoSideEffects) {
+        if (effect.isPure) {
             this._effectsWithoutSideEffect.push(effect);
         }
     }

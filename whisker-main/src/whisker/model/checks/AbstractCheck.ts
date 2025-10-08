@@ -62,7 +62,7 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._reset();
     }
 
-    abstract get hasNoSideEffects(): boolean;
+    abstract get isPure(): boolean;
 
     private _reset(): void {
         this._lastResult = fail({message: "The check has not been called yet!"});
@@ -195,13 +195,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 }
 
 export abstract class ConditionCheck<J extends ConditionJSON = ConditionJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
-    override get hasNoSideEffects(): true {
+    override get isPure(): true {
         return true;
     }
 }
 
 export abstract class SideEffectCheck<J extends SideEffectJSON = SideEffectJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
-    override get hasNoSideEffects(): false {
+    override get isPure(): false {
         return false;
     }
 }
