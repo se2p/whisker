@@ -2,9 +2,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../../src/whisker/model/checks/TouchingEdge";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
-import Sprite from "../../../../src/vm/sprite";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 describe('TouchingEdge tests', () => {
     const graphID = "graphID";

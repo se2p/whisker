@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";

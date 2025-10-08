@@ -1,9 +1,6 @@
 import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
-import Sprite from "../../../../src/vm/sprite";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 
 
