@@ -49,7 +49,7 @@ class Sprite {
          */
         this.onVisualChange = null;
 
-        this._target.on(RenderedTarget.EVENT_TARGET_MOVED, (target, oldX, oldY) => {
+        this._target.on(RenderedTarget.EVENT_TARGET_MOVED, (target) => {
             if (this.onMoved) {
                 this.onMoved(target);
             }
