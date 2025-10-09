@@ -32,10 +32,10 @@ export class CheckUtility extends EventEmitter {
     static readonly CHECK_LOG_FAIL = "CheckLogFail";
     private readonly _testDriver: TestDriver;
     private readonly _modelResult: ModelResult;
-    private readonly _onMovedListener: Map<string, Set<string>> = new Map<string, Set<string>>();
-    private readonly _onVisualListener: Map<string, Set<string>> = new Map<string, Set<string>>();
-    private readonly _onSayOrThinkListener: Map<string, Set<string>> = new Map<string, Set<string>>();
-    private readonly _variableListener: Map<string, Set<string>> = new Map<string, Set<string>>();
+    private readonly _onMovedListener: Map<string, Set<string>> = new Map();
+    private readonly _onVisualListener: Map<string, Set<string>> = new Map();
+    private readonly _onSayOrThinkListener: Map<string, Set<string>> = new Map();
+    private readonly _variableListener: Map<string, Set<string>> = new Map();
 
     private _effectChecks: EffectCheck[] = [];
 
