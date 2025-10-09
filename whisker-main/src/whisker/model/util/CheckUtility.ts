@@ -15,10 +15,12 @@ type EffectCheck = {
     model: ProgramModel | EndModel
 };
 
-function addToSetMap<K extends string | number, V>(map: Map<K, Set<V>>, key: K, value: V): void {
-    const list = map.get(key);
-    if (list) {
-        list.add(value);
+type MultiMap<K, V> = Map<K, Set<V>>;
+
+function addToMultiMap<K, V>(map: MultiMap<K, V>, key: K, value: V): void {
+    const set = map.get(key);
+    if (set) {
+        set.add(value);
     } else {
         map.set(key, new Set([value]));
     }
@@ -32,10 +34,10 @@ export class CheckUtility extends EventEmitter {
     static readonly CHECK_LOG_FAIL = "CheckLogFail";
     private readonly _testDriver: TestDriver;
     private readonly _modelResult: ModelResult;
-    private readonly _onMovedListener: Map<string, Set<string>> = new Map();
-    private readonly _onVisualListener: Map<string, Set<string>> = new Map();
-    private readonly _onSayOrThinkListener: Map<string, Set<string>> = new Map();
-    private readonly _variableListener: Map<string, Set<string>> = new Map();
+    private readonly _onMovedListener: MultiMap<string, string> = new Map();
+    private readonly _onVisualListener: MultiMap<string, string> = new Map();
+    private readonly _onSayOrThinkListener: MultiMap<string, string> = new Map();
+    private readonly _variableListener: MultiMap<string, string> = new Map();
 
     private _effectChecks: EffectCheck[] = [];
 
@@ -88,7 +90,7 @@ export class CheckUtility extends EventEmitter {
      * @param graphId Id of the graph which reacts to the event
      */
     registerOnMoveEvent(spriteName: string, graphId: string): void {
-        addToSetMap(this._onMovedListener, spriteName, graphId);
+        addToMultiMap(this._onMovedListener, spriteName, graphId);
     }
 
     /**
@@ -98,7 +100,7 @@ export class CheckUtility extends EventEmitter {
      * @param graphId Id of the graph which reacts to the event
      */
     registerOnVisualChange(spriteName: string, graphId: string): void {
-        addToSetMap(this._onVisualListener, spriteName, graphId);
+        addToMultiMap(this._onVisualListener, spriteName, graphId);
     }
 
     /**
@@ -107,7 +109,7 @@ export class CheckUtility extends EventEmitter {
      * @param graphId Id of the graph which reacts to the event
      */
     registerOutput(spriteName: string, graphId: string): void {
-        addToSetMap(this._onSayOrThinkListener, spriteName, graphId);
+        addToMultiMap(this._onSayOrThinkListener, spriteName, graphId);
     }
 
     /**
@@ -116,7 +118,7 @@ export class CheckUtility extends EventEmitter {
      * @param graphId Id of the graph which reacts to the event
      */
     registerVarEvent(varName: string, graphId: string): void {
-        addToSetMap(this._variableListener, varName, graphId);
+        addToMultiMap(this._variableListener, varName, graphId);
     }
 
     /**
@@ -231,7 +233,7 @@ export class CheckUtility extends EventEmitter {
         this._effectChecks = [];
     }
 
-    private _checkForEvent(checks: Map<string, Set<string>>, key: string): void {
+    private _checkForEvent(checks: MultiMap<string, string>, key: string): void {
         const modelIds = checks.get(key);
         if (modelIds && modelIds.size > 0) {
             this.emit(CheckUtility.CHECK_UTILITY_EVENT, modelIds);
