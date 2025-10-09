@@ -2,14 +2,14 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
-import {Check} from "../checks/newCheck";
+import {Check, Condition} from "../checks/newCheck";
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends AbstractEdge {
     private readonly _effects: Check[] = [];
-    private readonly _effectsWithoutSideEffect: Check[] = [];
+    private readonly _effectsWithoutSideEffect: Condition[] = [];
 
     /**
      * Create a new edge.
