@@ -147,6 +147,7 @@ export type Check =
 
 // Every pure check can automatically be used as edge condition.
 export type Condition = Extract<Check, { isPure: true }>;
+export type PureCheck = Condition;
 
 export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): Condition {
     const name = conditionJSON.name;

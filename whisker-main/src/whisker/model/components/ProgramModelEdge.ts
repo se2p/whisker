@@ -2,14 +2,14 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
-import {Check, Condition} from "../checks/newCheck";
+import {Check, PureCheck} from "../checks/newCheck";
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends AbstractEdge {
     private readonly _effects: Check[] = [];
-    private readonly _effectsWithoutSideEffect: Condition[] = [];
+    private readonly _pureEffects: PureCheck[] = [];
 
     /**
      * Create a new edge.
@@ -37,7 +37,7 @@ export class ProgramModelEdge extends AbstractEdge {
     addEffect(effect: Check): void {
         this._effects.push(effect);
         if (effect.isPure) {
-            this._effectsWithoutSideEffect.push(effect);
+            this._pureEffects.push(effect);
         }
     }
 
@@ -59,7 +59,7 @@ export class ProgramModelEdge extends AbstractEdge {
         // We call every() instead of forEach() so we terminate early and undesired checks are not cached.
         const allConditionTrue = this.conditions.every(c => c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
         if (allConditionTrue) {
-            this._effectsWithoutSideEffect.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
+            this._pureEffects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
         }
         return allConditionTrue;
     }
