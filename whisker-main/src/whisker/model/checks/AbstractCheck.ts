@@ -202,13 +202,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     }
 }
 
-export abstract class ConditionCheck<J extends ConditionJSON & IConditionJSON = ConditionJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+export abstract class Condition<J extends ConditionJSON & IConditionJSON = ConditionJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): true {
         return true;
     }
 }
 
-export abstract class SideEffectCheck<J extends SideEffectJSON & ISideEffectJSON = SideEffectJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+export abstract class SideEffect<J extends SideEffectJSON & ISideEffectJSON = SideEffectJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): false {
         return false;
     }

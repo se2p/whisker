@@ -1,4 +1,4 @@
-import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
@@ -36,7 +36,7 @@ export const MoveStepsJSON = ICheckJSON.extend({
     args: MoveStepsArgs,
 });
 
-export class MoveSteps extends ConditionCheck<MoveStepsJSON, CheckFun0> {
+export class MoveSteps extends Condition<MoveStepsJSON, CheckFun0> {
 
     constructor(edgeLabel: string, json: SlimCheckJSON<MoveStepsJSON>) {
         super(edgeLabel, {...json, name});

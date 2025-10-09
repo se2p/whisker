@@ -1,4 +1,4 @@
-import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
@@ -41,7 +41,7 @@ export const VarChangeJSON = ICheckJSON.extend({
     args: VarChangeArgs,
 });
 
-export class VarChange extends ConditionCheck<VarChangeJSON, CheckFun0> implements ChangingCheck {
+export class VarChange extends Condition<VarChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Change;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<VarChangeJSON>) {

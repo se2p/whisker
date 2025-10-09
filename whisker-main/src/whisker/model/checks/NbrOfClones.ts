@@ -1,4 +1,4 @@
-import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, newComparison} from "./Comparison";
@@ -38,7 +38,7 @@ type TNbrOfClonesJSON =
 
 abstract class AbstractNbrOfClones<
     J extends TNbrOfClonesJSON = TNbrOfClonesJSON,
-> extends ConditionCheck<J, CheckFun0> implements ComparingCheck {
+> extends Condition<J, CheckFun0> implements ComparingCheck {
     private readonly _visible: boolean;
     private readonly _comparison: Comparison;
 

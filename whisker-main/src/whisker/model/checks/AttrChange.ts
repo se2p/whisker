@@ -1,4 +1,4 @@
-import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {z} from "zod";
@@ -74,7 +74,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
     args: AttrChangeArgs,
 });
 
-export class AttrChange extends ConditionCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
+export class AttrChange extends Condition<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
     private readonly _attributeName: AttrName;

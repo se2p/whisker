@@ -8,11 +8,12 @@ import {BackgroundChange} from "../../../../src/whisker/model/checks/BackgroundC
 import {Key} from "../../../../src/whisker/model/checks/Key";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
-import {Check, Condition} from "../../../../src/whisker/model/checks/newCheck";
+import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {UserInput} from "../../../../src/whisker/model/inputs/newUserInput";
 import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
 import {result} from "../../../../src/whisker/model/checks/CheckResult";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
+import {Condition} from "../../../../src/whisker/model/checks/AbstractCheck";
 
 describe('Model edges', () => {
     const id = "id";

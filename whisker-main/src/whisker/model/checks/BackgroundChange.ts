@@ -1,4 +1,4 @@
-import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {ComparingCheck, Comparison, newComparison} from "./Comparison";
 import {ErrorForAttribute} from "../util/ModelError";
@@ -30,7 +30,7 @@ export const BackgroundChangeJSON = ICheckJSON.extend({
     args: BackgroundChangeArgs,
 });
 
-export class BackgroundChange extends ConditionCheck<BackgroundChangeJSON, CheckFun0> implements ComparingCheck {
+export class BackgroundChange extends Condition<BackgroundChangeJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Comparison;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<BackgroundChangeJSON>) {

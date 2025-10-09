@@ -31,6 +31,7 @@ import {ChangeStorageBy, ChangeStorageByJSON} from "./ChangeStorageBy";
 import {SetStorage, SetStorageJSON} from "./SetStorage";
 import {MoveSteps, MoveStepsJSON} from "./MoveSteps";
 import {Bounce, BounceJSON} from "./Bounce";
+import {Condition, SideEffect} from "./AbstractCheck";
 
 export type ConditionJSON =
     | AttrChangeJSON
@@ -92,57 +93,20 @@ export const ConditionJSON = z.discriminatedUnion("name", [
     BounceJSON
 ]);
 
-/**
- * Checks that can be used as conditions for edge transitions.
- */
-export type Condition =
-    | AttrChange
-    | AttrComp
-    | BackgroundChange
-    | Click
-    | Key
-    | AnyKey
-    | Output
-    | SpriteColor
-    | SpriteTouching
-    | VarChange
-    | VarComp
-    | Expr
-    | Probability
-    | TimeElapsed
-    | TimeBetween
-    | TimeAfterEnd
-    | NbrOfClones
-    | NbrOfVisibleClones
-    | TouchingEdge
-    | TouchingVerticalEdge
-    | TouchingHorizEdge
-    | Layer
-    | ClearedEffect
-    | PointsTo
-    | MoveSteps
-    | Bounce
-    ;
-
-export type SideEffect =
-    | ChangeStorageBy
-    | SetStorage
-    ;
-
 export type SideEffectJSON =
     | ChangeStorageByJSON
     | SetStorageJSON
-    ;
-
-export type CheckJSON =
-    | ConditionJSON
-    | SideEffectJSON
     ;
 
 export const SideEffectJSON = z.union([
     ChangeStorageByJSON,
     SetStorageJSON,
 ]);
+
+export type CheckJSON =
+    | ConditionJSON
+    | SideEffectJSON
+    ;
 
 export const CheckJSON = z.union([
     ConditionJSON,

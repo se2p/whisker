@@ -1,4 +1,4 @@
-import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -48,7 +48,7 @@ export const AttrCompJSON = ICheckJSON.extend({
     args: AttrCompArgs,
 });
 
-export class AttrComp extends ConditionCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
+export class AttrComp extends Condition<AttrCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Quantification<Comparison>;
     private readonly _isForEffect: boolean;
     private readonly _attrName: AttrName;

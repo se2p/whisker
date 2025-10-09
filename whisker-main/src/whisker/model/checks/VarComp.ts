@@ -1,4 +1,4 @@
-import {CheckFun0, ConditionCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -38,7 +38,7 @@ export const VarCompJSON = ICheckJSON.extend({
     args: VarCompArgs,
 });
 
-export class VarComp extends ConditionCheck<VarCompJSON, CheckFun0> implements ComparingCheck {
+export class VarComp extends Condition<VarCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Comparison;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<VarCompJSON>) {
