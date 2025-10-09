@@ -1,4 +1,4 @@
-import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
@@ -25,7 +25,7 @@ type TTouchingEdgeJSON =
     | TouchingVerticalEdgeJSON
     ;
 
-abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends Condition<J, CheckFun0> {
+abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends PureCheck<J, CheckFun0> {
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
     }

@@ -1,4 +1,4 @@
-import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {any, fail, pass} from "./CheckResult";
@@ -36,7 +36,7 @@ export const SpriteTouchingJSON = ICheckJSON.extend({
     args: SpriteTouchingArgs,
 });
 
-export class SpriteTouching extends Condition<SpriteTouchingJSON, CheckFun0> {
+export class SpriteTouching extends PureCheck<SpriteTouchingJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<SpriteTouchingJSON>) {
         super(edgeLabel, {...json, name});
     }

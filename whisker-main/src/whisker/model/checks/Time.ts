@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {CheckFun, CheckFun0, CheckFun1, CheckFun2, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun, CheckFun0, CheckFun1, CheckFun2, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
@@ -34,7 +34,7 @@ type TTimeJSON =
     | TimeBetweenJSON
     ;
 
-abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun = CheckFun> extends Condition<J, C> {
+abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun = CheckFun> extends PureCheck<J, C> {
     protected readonly _steps: number;
 
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {

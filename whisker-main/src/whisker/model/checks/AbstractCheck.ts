@@ -194,13 +194,21 @@ abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun
     }
 }
 
-export abstract class Condition<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+/**
+ * A check that does not cause side effects when its `check()` method is invoked. Only pure checks can be used as
+ * edge conditions. Pure checks can also be used as transition effects.
+ */
+export abstract class PureCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): true {
         return true;
     }
 }
 
-export abstract class SideEffectCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+/**
+ * A check that causes side effects when its `check()` method is invoked. Impure checks cannot be used as edge
+ * conditions, but are typically used as transition effects.
+ */
+export abstract class ImpureCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): false {
         return false;
     }

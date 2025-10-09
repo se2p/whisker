@@ -145,6 +145,7 @@ export type Check =
     | SetStorage
     ;
 
+// Every pure check can automatically be used as edge condition.
 export type Condition = Extract<Check, { isPure: true }>;
 
 export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): Condition {

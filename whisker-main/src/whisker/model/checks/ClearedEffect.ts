@@ -1,4 +1,4 @@
-import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
@@ -30,7 +30,7 @@ export const ClearedEffectJSON = ICheckJSON.extend({
     args: ClearedEffectArgs,
 });
 
-export class ClearedEffect extends Condition<ClearedEffectJSON, CheckFun0> {
+export class ClearedEffect extends PureCheck<ClearedEffectJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<ClearedEffectJSON>) {
         super(edgeLabel, {...json, name});
     }

@@ -1,4 +1,4 @@
-import {CheckFun0, Condition, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {Randomness} from "../../utils/Randomness";
 import {z} from "zod";
 import {result} from "./CheckResult";
@@ -31,7 +31,7 @@ export const ProbabilityJSON = ICheckJSON.extend({
     args: ProbabilityArgs,
 });
 
-export class Probability extends Condition<ProbabilityJSON, CheckFun0> {
+export class Probability extends PureCheck<ProbabilityJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<ProbabilityJSON>) {
         super(edgeLabel, {...json, name});
     }
