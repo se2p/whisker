@@ -198,6 +198,9 @@ export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
     ...SIDE_EFFECT_NAMES,
 ]);
 
+export type ConditionName = typeof CONDITIONS_NAMES[number];
+export type SideEffectName = typeof SIDE_EFFECT_NAMES[number];
+
 export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): Condition {
     const name = conditionJSON.name;
 

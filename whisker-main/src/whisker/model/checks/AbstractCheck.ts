@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON, ConditionJSON, SideEffectJSON} from "./newCheck";
+import {CheckJSON, ConditionJSON, ConditionName, SideEffectJSON, SideEffectName} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
@@ -12,6 +12,14 @@ export interface ICheckJSON {
     name: string;
     negated: boolean;
     args: ArgType[];
+}
+
+export interface IConditionJSON {
+    name: ConditionName;
+}
+
+export interface ISideEffectJSON {
+    name: SideEffectName;
 }
 
 export const ICheckJSON = z.object({
@@ -194,13 +202,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     }
 }
 
-export abstract class ConditionCheck<J extends ConditionJSON = ConditionJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+export abstract class ConditionCheck<J extends ConditionJSON & IConditionJSON = ConditionJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): true {
         return true;
     }
 }
 
-export abstract class SideEffectCheck<J extends SideEffectJSON = SideEffectJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+export abstract class SideEffectCheck<J extends SideEffectJSON & ISideEffectJSON = SideEffectJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): false {
         return false;
     }
