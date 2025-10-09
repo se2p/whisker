@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckJSON, ConditionJSON, ConditionName, SideEffectJSON, SideEffectName} from "./newCheck";
+import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
@@ -12,14 +12,6 @@ export interface ICheckJSON {
     name: string;
     negated: boolean;
     args: ArgType[];
-}
-
-export interface IConditionJSON {
-    name: ConditionName;
-}
-
-export interface ISideEffectJSON {
-    name: SideEffectName;
 }
 
 export const ICheckJSON = z.object({
@@ -46,7 +38,7 @@ export type CheckFun =
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
  */
-export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
+abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: J;
     private _check: C;
@@ -202,13 +194,13 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     }
 }
 
-export abstract class Condition<J extends ConditionJSON & IConditionJSON = ConditionJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+export abstract class Condition<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): true {
         return true;
     }
 }
 
-export abstract class SideEffect<J extends SideEffectJSON & ISideEffectJSON = SideEffectJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+export abstract class SideEffectCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
     override get isPure(): false {
         return false;
     }

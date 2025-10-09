@@ -53,7 +53,7 @@ const bounds: Record<AttrName, Bounds | null> = Object.freeze({
 const attrNameIndex = 1;
 
 export type AttrChangeArgs =
-    [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
+    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
     | [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeq]
     | [spriteName: SpriteName, attrName: BooleanAttribute, change: EqOrNeq];
 

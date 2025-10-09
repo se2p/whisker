@@ -4,9 +4,8 @@ import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
-import {Check} from "../checks/newCheck";
+import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
-import {Condition} from "../checks/AbstractCheck";
 
 export type ModelEdge =
     | ProgramModelEdge

@@ -1,4 +1,4 @@
-import {CheckFun0, ICheckJSON, SideEffect, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, SideEffectCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
@@ -20,7 +20,7 @@ export const ChangeStorageByJSON = ICheckJSON.extend({
     args: ChangeStorageByArgs,
 });
 
-export class ChangeStorageBy extends SideEffect<ChangeStorageByJSON, CheckFun0> {
+export class ChangeStorageBy extends SideEffectCheck<ChangeStorageByJSON, CheckFun0> {
     private readonly _key: string;
     private readonly _value: number;
 

@@ -21,7 +21,7 @@ import {
 import {BackgroundChange, BackgroundChangeJSON} from "./BackgroundChange";
 import {Layer, LayerJSON} from "./Layer";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {z} from "zod";
+import {z, ZodDiscriminatedUnion, ZodObject, ZodUnion} from "zod";
 import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapsed, TimeElapsedJSON} from "./Time";
 import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
 import {PointsTo, PointsToJSON} from "./PointsTo";
@@ -31,7 +31,6 @@ import {ChangeStorageBy, ChangeStorageByJSON} from "./ChangeStorageBy";
 import {SetStorage, SetStorageJSON} from "./SetStorage";
 import {MoveSteps, MoveStepsJSON} from "./MoveSteps";
 import {Bounce, BounceJSON} from "./Bounce";
-import {Condition, SideEffect} from "./AbstractCheck";
 
 export type ConditionJSON =
     | AttrChangeJSON
@@ -90,80 +89,63 @@ export const ConditionJSON = z.discriminatedUnion("name", [
     ChangeStorageByJSON,
     SetStorageJSON,
     MoveStepsJSON,
-    BounceJSON
-]);
-
-export type SideEffectJSON =
-    | ChangeStorageByJSON
-    | SetStorageJSON
-    ;
-
-export const SideEffectJSON = z.union([
-    ChangeStorageByJSON,
-    SetStorageJSON,
+    BounceJSON,
 ]);
 
 export type CheckJSON =
     | ConditionJSON
-    | SideEffectJSON
+    | ChangeStorageByJSON
+    | SetStorageJSON
     ;
 
 export const CheckJSON = z.union([
     ConditionJSON,
-    SideEffectJSON,
+    ChangeStorageByJSON,
+    SetStorageJSON,
 ]);
 
-/**
- * Checks that can be used as effects of edge transitions.
- */
+function extractCheckNamesFromZodSchema(z: ZodUnion<any> | ZodDiscriminatedUnion<"name", any> | ZodObject<any>): string[] {
+    if (z instanceof ZodObject) {
+        return [z.shape.name.value];
+    }
+
+    return z.options.flatMap((o) => extractCheckNamesFromZodSchema(o));
+}
+
+export const CHECK_NAMES = Object.freeze(extractCheckNamesFromZodSchema(CheckJSON));
+
 export type Check =
-    | Condition
-    | SideEffect
+    | AttrChange
+    | AttrComp
+    | BackgroundChange
+    | Click
+    | Key
+    | AnyKey
+    | Output
+    | SpriteColor
+    | SpriteTouching
+    | VarChange
+    | VarComp
+    | Expr
+    | Probability
+    | TimeElapsed
+    | TimeBetween
+    | TimeAfterEnd
+    | NbrOfClones
+    | NbrOfVisibleClones
+    | TouchingEdge
+    | TouchingVerticalEdge
+    | TouchingHorizEdge
+    | Layer
+    | ClearedEffect
+    | PointsTo
+    | MoveSteps
+    | Bounce
+    | ChangeStorageBy
+    | SetStorage
     ;
 
-export type CheckName = CheckJSON['name'];
-
-export const CONDITIONS_NAMES: readonly CheckName[] = Object.freeze([
-    "AttrChange",
-    "AttrComp",
-    "BackgroundChange",
-    "Click",
-    "AnyKey",
-    "Key",
-    "Output",
-    "SpriteColor",
-    "SpriteTouching",
-    "VarChange",
-    "VarComp",
-    "Expr",
-    "Probability",
-    "TimeElapsed",
-    "TimeBetween",
-    "TimeAfterEnd",
-    "NbrOfClones",
-    "NbrOfVisibleClones",
-    "TouchingEdge",
-    "TouchingVerticalEdge",
-    "TouchingHorizEdge",
-    "PointsTo",
-    "Layer",
-    "ClearedEffects",
-    "MoveSteps",
-    "Bounce"
-]);
-
-export const SIDE_EFFECT_NAMES: readonly CheckName[] = Object.freeze([
-    "ChangeStorageBy",
-    "SetStorage",
-]);
-
-export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
-    ...CONDITIONS_NAMES,
-    ...SIDE_EFFECT_NAMES,
-]);
-
-export type ConditionName = typeof CONDITIONS_NAMES[number];
-export type SideEffectName = typeof SIDE_EFFECT_NAMES[number];
+export type Condition = Extract<Check, { isPure: true }>;
 
 export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): Condition {
     const name = conditionJSON.name;
