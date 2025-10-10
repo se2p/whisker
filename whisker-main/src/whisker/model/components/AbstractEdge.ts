@@ -6,7 +6,6 @@ import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
 import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
-import {AbstractModel} from "./AbstractModel";
 import {Reason} from "../checks/CheckResult";
 
 export type ModelEdge =
@@ -27,13 +26,11 @@ export abstract class AbstractEdge {
     readonly from: string;
     /* Id of the target node*/
     readonly to: string;
+    readonly forceAfter: number;
+    readonly forceAt: number;
     conditions: Condition[] = [];
-    readonly forceTestAfter: number;
-    readonly forceTestAt: number;
-    protected failedForcedTest: boolean;
-    _lastTransition: number;
-    private _forceTestAfterSteps: number;
-    private _forceTestAtSteps: number;
+    private readonly _forceAfterSteps: number;
+    private readonly _forceAtSteps: number;
 
     protected constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
                           forceTestAt: number) {
@@ -45,30 +42,12 @@ export abstract class AbstractEdge {
         this.graphID = graphID;
         this.from = from;
         this.to = to;
-        this.forceTestAfter = forceTestAfter;
-        if (this.forceTestAfter < -1) {
-            this.forceTestAfter = -1;
-        } else if (this.forceTestAfter != -1) {
-            this.forceTestAfter = forceTestAfter;
-        }
-        this.forceTestAt = forceTestAt;
-        if (this.forceTestAt < -1) {
-            this.forceTestAt = -1;
-        } else if (this.forceTestAt != -1) {
-            this.forceTestAt = forceTestAt;
-        }
-        this.failedForcedTest = false;
-        this._forceTestAfterSteps = -1;
-        this._forceTestAtSteps = -1;
-        this.reset();
-    }
-
-    get lastTransition(): number {
-        return this._lastTransition;
-    }
-
-    set lastTransition(transition: number) {
-        this._lastTransition = transition;
+        this.forceAfter = Math.max(-1, forceTestAfter);
+        this._forceAfterSteps = this.forceAfter === -1
+            ? -1
+            : VMWrapper.convertFromTimeToSteps(this.forceAfter) + 1; // +1 so its less flaky
+        this.forceAt = Math.max(-1, forceTestAt);
+        this._forceAtSteps = this.forceAt === -1 ? -1 : VMWrapper.convertFromTimeToSteps(this.forceAt);
     }
 
     /**
@@ -80,16 +59,9 @@ export abstract class AbstractEdge {
      * @Returns the failed conditions.
      */
     checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
-        if (this._lastTransition == t.getTotalStepsExecuted()) {
-            return false;
-        }
-        if (this.failedForcedTest) {
-            return false;
-        }
-
         // times up... force testing of conditions and if they are not fulfilled make add as failed
-        if ((this._forceTestAtSteps !== -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted())
-            || (this._forceTestAfterSteps !== -1 && this._forceTestAfterSteps <= stepsSinceLastTransition)) {
+        if ((this._forceAtSteps !== -1 && this._forceAtSteps <= t.getTotalStepsExecuted())
+            || (this._forceAfterSteps !== -1 && this._forceAfterSteps <= stepsSinceLastTransition)) {
 
             let noneFailed = true;
             for (const c of this.conditions) {
@@ -143,30 +115,18 @@ export abstract class AbstractEdge {
      * Register the check listener and test driver on the edge's conditions.
      */
     registerComponents(checkListener: CheckUtility, t: TestDriver): void {
-        if (this.forceTestAt != -1) {
-            this._forceTestAtSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAt);
-        }
-        if (this.forceTestAfter != -1) {
-            this._forceTestAfterSteps = VMWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1; // +1 so its less flaky
-        }
         this.conditions.forEach(cond => {
             cond.registerComponents(t, checkListener, this.graphID);
         });
     }
 
-    reset(): void {
-        this._forceTestAtSteps = -1;
-        this._forceTestAfterSteps = -1;
-        this._lastTransition = AbstractModel.initialStepValue;
-    }
-
     abstract toJSON(): ModelEdgeJSON;
 
     private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Reason): string {
-        if (this._forceTestAtSteps != -1 && this._forceTestAtSteps <= t.getTotalStepsExecuted()) {
-            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt, reason);
+        if (this._forceAtSteps != -1 && this._forceAtSteps <= t.getTotalStepsExecuted()) {
+            return getTimeLimitFailedAtOutput(this, condition, this.forceAt, reason);
         } else {
-            return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter, reason);
+            return getTimeLimitFailedAfterOutput(this, condition, this.forceAfter, reason);
         }
     }
 }

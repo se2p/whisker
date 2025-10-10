@@ -4,23 +4,7 @@ import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {getDummyTestDriver} from "../mocks/TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {CoverageResult, ProgramModel} from "../../../../src/whisker/model/components/ProgramModel";
-import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {ProgramModelJSON} from "../../../../src/whisker/model/util/schema";
-import {AbstractModel} from "../../../../src/whisker/model/components/AbstractModel";
-
-export class MockedModelNode<T extends ModelEdge> extends ModelNode<T> {
-    private readonly fn: jest.Mock;
-
-    constructor(id: string, label: string, fn: jest.Mock) {
-        super(id, label);
-        this.fn = fn;
-    }
-
-    override reset(): void {
-        this.fn();
-        super.reset();
-    }
-}
 
 function getValidProgramModelForCoverage(): MockedProgram {
     const edges: Record<string, ProgramModelEdge> = {};
@@ -200,7 +184,7 @@ describe('Program model', () => {
         const model = getValidProgramModelForCoverage();
         model.setTransitionsStartTo(3);
         model.reset();
-        expect(model.lastTransitionStep).toBe(AbstractModel.initialStepValue);
+        expect(model.lastTransitionStep).toBe(-1);
     });
 
     test("Reset() resets to start node", () => {
@@ -213,19 +197,6 @@ describe('Program model', () => {
         model.currentState = nodes["n2"];
         model.reset();
         expect(model.currentState).toBe(nodes["start"]);
-    });
-
-    test("Reset() calls node.reset() for every node", () => {
-        const fn = jest.fn();
-        const nodes: Record<string, ProgramModelNode> = {
-            start: new MockedModelNode("start", "label", fn),
-            n1: new MockedModelNode("n1", "n1", fn),
-            n2: new MockedModelNode("n1", "n2", fn)
-        };
-        const model = new ProgramModel("model", "start", nodes, {}, [], {});
-        expect(fn).toBeCalledTimes(3);
-        model.reset();
-        expect(fn).toBeCalledTimes(6);
     });
 
     test("Reset() clears coverage", () => {

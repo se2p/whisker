@@ -72,7 +72,6 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
         for (const e of this.edges) {
             const result = e.checkConditions(testDriver, cu, stepsSinceLastTransition, stepsSinceEnd);
             if (result) {
-                e.lastTransition = testDriver.getTotalStepsExecuted() + 1;
                 return e;
             }
         }
@@ -100,15 +99,6 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         this.edges.forEach(edge => {
             edge.registerComponents(checkListener, testDriver);
-        });
-    }
-
-    /**
-     * Reset all edge's states that belong to one test run.
-     */
-    reset(): void {
-        this.edges.forEach(edge => {
-            edge.reset();
         });
     }
 

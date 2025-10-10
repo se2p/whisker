@@ -28,7 +28,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
     protected readonly initialStorage: Record<string, StorageValueType>;
     protected _lastTransitionStep: number;
     private readonly _id: string;
-    private _initialStepValue: number;
+    private _lastTransitionWasSelfLoop: boolean;
 
     protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<E>>, edges: Record<string, E>,
                           stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
@@ -80,7 +80,8 @@ export abstract class AbstractModel<E extends ModelEdge> {
     abstract toJSON(): ModelJSON;
 
     public stepsSinceLastTransition(t: TestDriver): number {
-        return t.getTotalStepsExecuted() - this._lastTransitionStep;
+        const steps = t.getTotalStepsExecuted() - this._lastTransitionStep;
+        return this._lastTransitionWasSelfLoop ? steps - 1 : steps;
     }
 
     stopped(): boolean {
@@ -89,15 +90,12 @@ export abstract class AbstractModel<E extends ModelEdge> {
 
     restart(currentStep: number): void {
         this.currentState = this.nodes[this.startNodeId];
-        this._lastTransitionStep = currentStep;
-        this._initialStepValue = currentStep;
-        Object.values(this.nodes).forEach(node => {
-            node.reset();
-        });
+        this._lastTransitionStep = currentStep - 1;
+        this._lastTransitionWasSelfLoop = false;
     }
 
-    reset(): void {
-        this.restart(AbstractModel.initialStepValue);
+    reset(currentStep = 0): void {
+        this.restart(currentStep);
     }
 
     /**
@@ -124,9 +122,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
 
     protected _takeEdge(edge: E, testDriver: TestDriver): void {
         this.currentState = this.nodes[edge.getEndNodeId()];
-        const currentStep = testDriver.getTotalStepsExecuted();
-        if (this._lastTransitionStep !== this._initialStepValue || currentStep - this._lastTransitionStep > 1) {
-            this._lastTransitionStep = currentStep;
-        }
+        this._lastTransitionStep = testDriver.getTotalStepsExecuted();
+        this._lastTransitionWasSelfLoop = edge.from === edge.to;
     }
 }

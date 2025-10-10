@@ -13,7 +13,6 @@ import {UserInput} from "../../../../src/whisker/model/inputs/newUserInput";
 import {InputKey} from "../../../../src/whisker/model/inputs/InputKey";
 import {result} from "../../../../src/whisker/model/checks/CheckResult";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
-import {AbstractModel} from "../../../../src/whisker/model/components/AbstractModel";
 
 describe('Model edges', () => {
     const id = "id";
@@ -24,7 +23,7 @@ describe('Model edges', () => {
 
     function mockCondition(name: string, value: boolean): Condition {
         return {
-            check: jest.fn().mockReturnValue(result(value, {})),
+            check: jest.fn().mockReturnValue(result(value, {}, false)),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
         } as unknown as Condition;
@@ -77,28 +76,14 @@ describe('Model edges', () => {
 
     });
 
-    test("Last transition initialized", () => {
-        const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        expect(edge.lastTransition).toBe(AbstractModel.initialStepValue);
-    });
-
     test("Getter function properly", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, 10, -2);
         expect(edge.getEndNodeId()).toBe(to);
         expect(edge.from).toBe(from);
-        expect(edge.forceTestAfter).toBe(10);
-        expect(edge.forceTestAt).toBe(-1);
+        expect(edge.forceAfter).toBe(10);
+        expect(edge.forceAt).toBe(-1);
         expect(edge.id).toBe(id);
         expect(edge.label).toBe(label);
-    });
-
-    test("Reset does not clear conditions on ModelEdge", () => {
-        const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new BackgroundChange(label, {args: ["test"]});
-        edge.addCondition(condition);
-        expect(edge.conditions.length).toBe(1);
-        edge.reset();
-        expect(edge.conditions.length).toBe(1);
     });
 
     test("Program model edge", () => {
@@ -163,16 +148,6 @@ describe('Model edges', () => {
     });
 
     describe('checkConditions()', () => {
-        test("checkConditions() returns conditions when no step happened", () => {
-            const tdMock = new TestDriverMock([], 10);
-            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.lastTransition = 11;
-            edge.addCondition(new BackgroundChange(label, {args: ["test"]}));
-            edge.addCondition(new Key(label, {args: ["a"]}));
-            edge.addCondition(new SpriteTouching(label, {args: ["apple", "bowl"]}));
-            const result = edge.checkConditions(tdMock.getTestDriver(), null, 5, 7);
-            expect(result).toBe(false);
-        });
 
         test("checkConditions() returns failed conditions (no time limit)", () => {
             const errorFn = jest.fn();
@@ -226,7 +201,7 @@ describe('Model edges', () => {
             cuMock.addTimeLimitFailOutput = timeFn;
             const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock([]);
-            const edge = new ProgramModelEdge(id, label, graphID, from, to, 10, -1);
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, 11, -1);
             const conditions = [
                 mockCondition("cond40", false),
                 mockCondition("cond00", false),

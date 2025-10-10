@@ -63,13 +63,6 @@ export class SpriteNotFoundError extends Error {
         super(`Sprite not found: ${spriteName}`);
     }
 }
-
-export class ComparisonNotKnownError extends Error {
-    constructor(comparison: ArgType) {
-        super(`Comparison not known: ${comparison}`);
-    }
-}
-
 export class ExprEvalError extends Error {
     constructor(e: unknown, code: string) {
         super(`Expression cannot be evaluated:
@@ -120,12 +113,6 @@ export class ErrorForAttribute extends Error {
     }
 }
 
-class ChangeComparisonNotKnownError extends Error {
-    constructor(value: string) {
-        super(`Change Comparison not known: ${value}`);
-    }
-}
-
 function getErrorMessage(e: unknown): string {
     return e instanceof Error ? e.message : String(e);
 }
@@ -135,6 +122,5 @@ export {
     getErrorOnEdgeOutput,
     getTimeLimitFailedAfterOutput,
     getTimeLimitFailedAtOutput,
-    ChangeComparisonNotKnownError,
     getErrorMessage,
 };

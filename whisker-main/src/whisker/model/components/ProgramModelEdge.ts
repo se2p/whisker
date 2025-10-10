@@ -42,16 +42,6 @@ export class ProgramModelEdge extends AbstractEdge {
     }
 
     /**
-     * Register the check listener and test driver on the conditions and effects.
-     */
-    override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
-        super.registerComponents(cu, testDriver);
-        this._effects.forEach(effect => {
-            effect.registerComponents(testDriver, cu, this.graphID);
-        });
-    }
-
-    /**
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Expr:true Checks.
      */
@@ -64,14 +54,24 @@ export class ProgramModelEdge extends AbstractEdge {
         return allConditionTrue;
     }
 
+    /**
+     * Register the check listener and test driver on the conditions and effects.
+     */
+    override registerComponents(cu: CheckUtility, testDriver: TestDriver): void {
+        super.registerComponents(cu, testDriver);
+        this._effects.forEach(effect => {
+            effect.registerComponents(testDriver, cu, this.graphID);
+        });
+    }
+
     override toJSON(): ProgramModelEdgeJSON {
         return {
             id: this.id,
             label: this.label,
             from: this.from,
             to: this.to,
-            forceTestAfter: this.forceTestAfter,
-            forceTestAt: this.forceTestAt,
+            forceTestAfter: this.forceAfter,
+            forceTestAt: this.forceAt,
             conditions: this.conditions.map((c) => c.toJSON()),
             effects: this._effects.map(effect => effect.toJSON())
         };
