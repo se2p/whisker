@@ -414,7 +414,7 @@ export class ModelTester extends EventEmitter {
 
             const programModels = [...this._programModels, ...this._onTestEndModels];
             programModels.forEach(model => {
-                const currentCov = model.getCoverageCurrentRun();
+                const currentCov = model.getCoverageCurrentRun(true);
                 coverages.covered.push(currentCov.covered);
                 coverages.total += currentCov.total;
                 this._result!.coverage[model.id] = currentCov;
