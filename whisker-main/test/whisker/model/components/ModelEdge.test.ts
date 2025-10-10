@@ -212,7 +212,7 @@ describe('Model edges', () => {
             edge.registerComponents(cu, tdMock.getTestDriver());
             let result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual(false);
-            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 10ms");
+            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 11ms");
             result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual(false);
             const res = edge.checkConditionsOnEvent(11, 9);
