@@ -3,7 +3,6 @@ import {ModelEdge} from "../../../../src/whisker/model/components/AbstractEdge";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ProgramModelEdge";
 import {ModelNodeJSON} from "../../../../src/whisker/model/util/schema";
-import {Checks} from "../../../../src/whisker/model/util/Checks";
 import {AbstractModel} from "../../../../src/whisker/model/components/AbstractModel";
 
 describe('Model node', () => {
@@ -101,7 +100,7 @@ describe('Model node', () => {
         expect(fn).toHaveBeenCalledTimes(2);
     });
 
-    test("testForEvent checks all edges even if one is true", () => {
+    test("testForEvent does not check all edges if one is true", () => {
         const tdMock = new TestDriverMock();
         tdMock.totalStepsExecuted = 99999;
         const fn = jest.fn().mockReturnValue(null);
@@ -112,9 +111,8 @@ describe('Model node', () => {
         node.addOutgoingEdge(correctEdge);
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
-        node.testForEvent(0, 0, new Checks());
-        expect(fn).toHaveBeenCalledTimes(3);
-        expect(correctEdgeFn).toHaveBeenCalledTimes(1);
+        node.testForEvent(0, 0);
+        expect(fn).toHaveBeenCalledTimes(1);
         expect(correctEdge.lastTransition).toBe(0);
     });
 

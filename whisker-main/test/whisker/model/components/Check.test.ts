@@ -7,7 +7,7 @@ import {
     BackgroundChangeJSON
 } from "../../../../src/whisker/model/checks/BackgroundChange";
 import {Key} from "../../../../src/whisker/model/checks/Key";
-import {Check, CHECK_NAMES, CheckJSON, CheckName, newCheck} from "../../../../src/whisker/model/checks/newCheck";
+import {Check, CHECK_NAMES, CheckJSON, newCheck} from "../../../../src/whisker/model/checks/newCheck";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {Pair} from "../../../../src/whisker/utils/Pair";
 
@@ -15,7 +15,7 @@ import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {ComparisonOp} from "../../../../src/whisker/model/checks/CheckTypes";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 
-function newUnsafeCheck(edgeId: string, checkArgs: { name: CheckName, negated: boolean, args }): Check {
+function newUnsafeCheck(edgeId: string, checkArgs: { name: string, negated: boolean, args }): Check {
     return newCheck(edgeId, {
         name: checkArgs.name,
         negated: checkArgs.negated,
@@ -23,7 +23,7 @@ function newUnsafeCheck(edgeId: string, checkArgs: { name: CheckName, negated: b
     } as unknown as CheckJSON);
 }
 
-function checkConstructorThrows(name: CheckName, negated: boolean, args) {
+function checkConstructorThrows(name: string, negated: boolean, args) {
     expect(() => newUnsafeCheck(edgeID, {name, negated, args})).toThrow();
 }
 
@@ -42,13 +42,13 @@ describe('constructor', () => {
     });
 
     describe('Constructor throws for empty args', () => {
-        const constructorArguments: [CheckName, boolean, ArgType[]][] = CHECK_NAMES.filter(c => c != "AnyKey").map(c => [c, true, []]);
-        it.each(constructorArguments)('throws for CheckName: %s', checkConstructorThrows);
+        const constructorArguments: [string, boolean, ArgType[]][] = CHECK_NAMES.filter(c => c != "AnyKey").map(c => [c, true, []]);
+        it.each(constructorArguments)('throws for string: %s', checkConstructorThrows);
     });
 
     describe("constructor throws if not enough arguments in args", () => {
         describe("not enough arguments: sprite color", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["SpriteColor", true, ["spriteName"]],
                 ["SpriteColor", true, ["spriteName", "1"]],
                 ["SpriteColor", true, ["spriteName", "1", "2"]],
@@ -61,7 +61,7 @@ describe('constructor', () => {
         });
 
         describe("not enough arguments: sprite touching", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["SpriteTouching", true, ["spriteName"]],
                 ["SpriteTouching", true, ["spriteName", undefined]],
                 ["SpriteTouching", true, [undefined, "spriteName"]]
@@ -70,7 +70,7 @@ describe('constructor', () => {
         });
 
         describe("not enough argument: nbrofclones", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["NbrOfClones", true, ["spriteName"]],
                 ["NbrOfClones", true, ["spriteName", "=="]],
                 ["NbrOfVisibleClones", true, ["spriteName"]],
@@ -80,7 +80,7 @@ describe('constructor', () => {
         });
 
         describe("not enough arguments: output", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["Output", true, ["test"]],
                 ["Output", true, ["test", undefined]],
                 ["Output", true, [undefined, "test"]],
@@ -89,7 +89,7 @@ describe('constructor', () => {
         });
 
         describe("not enough arguments: variable change", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["VarChange", true, ["test"]],
                 ["VarChange", true, ["test", "test2"]],
                 ["VarChange", true, [undefined, "test", "test2"]],
@@ -100,7 +100,7 @@ describe('constructor', () => {
         });
 
         describe("not enough arguments: variable comparison", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["VarComp", true, ["test"]],
                 ["VarComp", true, ["test", "test2"]],
                 ["VarComp", true, ["test", "test2", ">"]],
@@ -112,7 +112,7 @@ describe('constructor', () => {
         });
 
         describe("not enough arguments: attribute change", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["AttrChange", true, ["test"]],
                 ["AttrChange", true, ["test", "test2"]],
                 ["AttrChange", true, ["test", "test2", undefined]],
@@ -122,7 +122,7 @@ describe('constructor', () => {
         });
 
         describe("not enough arguments: attribute comparison", () => {
-            const constructorArguments: [CheckName, boolean, ArgType[]][] = [
+            const constructorArguments: [string, boolean, ArgType[]][] = [
                 ["AttrComp", true, ["test"]],
                 ["AttrComp", true, ["test", "test2"]],
                 ["AttrComp", true, ["test", "test2", ">"]],
@@ -151,7 +151,7 @@ describe('string representations', () => {
     });
 
     describe('toString()', () => {
-        const constructorArguments: [CheckName, boolean, ArgType[], string][] = [
+        const constructorArguments: [string, boolean, ArgType[], string][] = [
             ["AttrChange", false, ["test", "x", "-"], "AttrChange(test,x,-)"],
             ["AttrComp", true, ["sprite", "x", ">", "0"], "!AttrComp(sprite,x,>,0)"],
             ["BackgroundChange", true, ["test"], "!BackgroundChange(test)"],
@@ -172,7 +172,7 @@ describe('string representations', () => {
             ["TouchingEdge", true, ["sprite"], "!TouchingEdge(sprite)"]
         ];
 
-        it.each(constructorArguments)('(%s, %s, %s) has the correct toString()', (name: CheckName, negated: boolean, args, expected: string) => {
+        it.each(constructorArguments)('(%s, %s, %s) has the correct toString()', (name: string, negated: boolean, args, expected: string) => {
             expect(newUnsafeCheck(edgeID, {name, negated, args: args}).toString()).toBe(expected);
         });
     });
@@ -220,20 +220,20 @@ describe('check and registerComponent', () => {
 
 describe('Contradictions', () => {
 
-    type TableEntry = [CheckName, boolean, ArgType[], CheckName, boolean, ArgType[], boolean];
+    type TableEntry = [string, boolean, ArgType[], string, boolean, ArgType[], boolean];
 
     function assertSymmetricContradiction(effect1: Check, effect2: Check, expected: boolean) {
         expect(effect1.contradicts(effect2)).toBe(expected);
         expect(effect2.contradicts(effect1)).toBe(expected);
     }
 
-    function assertSymmetricContradiction2(effect1: Check, name: CheckName, negated: boolean,
+    function assertSymmetricContradiction2(effect1: Check, name: string, negated: boolean,
                                            args: ArgType[], expected: boolean) {
         assertSymmetricContradiction(effect1, newUnsafeCheck(edgeID, {name, negated, args: args}), expected);
     }
 
-    function mapToTwoEffects(checkName1: CheckName, negated1: boolean, args1: ArgType[],
-                             checkName2: CheckName, negated2: boolean, args2: ArgType[], expected: boolean): [Check, Check, boolean] {
+    function mapToTwoEffects(checkName1: string, negated1: boolean, args1: ArgType[],
+                             checkName2: string, negated2: boolean, args2: ArgType[], expected: boolean): [Check, Check, boolean] {
         return [
             newUnsafeCheck(edgeID, {name: checkName1, negated: negated1, args: args1}),
             newUnsafeCheck(edgeID, {name: checkName2, negated: negated2, args: args2}), expected
@@ -246,8 +246,8 @@ describe('Contradictions', () => {
         });
     }
 
-    function getEffectsCombinationsFor(id: string, edgeLabel: string, first: CheckName, optionsFirst: string[],
-                                       second: CheckName, optionsSecond: string[]): [Check, Check, boolean][] {
+    function getEffectsCombinationsFor(id: string, edgeLabel: string, first: string, optionsFirst: string[],
+                                       second: string, optionsSecond: string[]): [Check, Check, boolean][] {
         const effects: [Check, Check, boolean][] = [];
         for (const option1 of optionsFirst) {
             const effect1 = newUnsafeCheck(edgeLabel, {
@@ -270,7 +270,7 @@ describe('Contradictions', () => {
     const optionsFirst = [">", ">=", "==", "<=", "<"];
     const optionsSecond = ["+", "+=", "==", "-=", "-"];
 
-    function getEffectComparisonChangeCombinations(first: CheckName, second: CheckName): [Check, Check, boolean][] {
+    function getEffectComparisonChangeCombinations(first: string, second: string): [Check, Check, boolean][] {
         return getEffectsCombinationsFor("sprite", "y", first, optionsFirst, second, optionsSecond);
     }
 

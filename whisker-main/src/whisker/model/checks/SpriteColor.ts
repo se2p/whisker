@@ -1,8 +1,8 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {RGBRangeError} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
-import {any, fail, pass, result} from "./CheckResult";
+import {any, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, RGBNumber, SpriteName} from "./CheckTypes";
@@ -49,13 +49,9 @@ export const SpriteColorJSON = ICheckJSON.extend({
     args: SpriteColorArgs,
 });
 
-export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
+export class SpriteColor extends PureCheck<SpriteColorJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<SpriteColorJSON>) {
         super(edgeLabel, {...json, name});
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -82,7 +78,7 @@ export class SpriteColor extends AbstractCheck<SpriteColorJSON, CheckFun0> {
         const color = [r, g, b];
 
         // on movement check sprite color
-        this._registerOnMoveEvent(spriteName, (sprite) => result(sprite.isTouchingColor(color), {}, negated));
+        this._registerOnMoveEvent(spriteName);
 
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         // also test clones of spriteName

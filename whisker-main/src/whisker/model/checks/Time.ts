@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {AbstractCheck, CheckFun, CheckFun0, CheckFun1, CheckFun2, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun, CheckFun0, CheckFun1, CheckFun2, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
@@ -34,7 +34,7 @@ type TTimeJSON =
     | TimeBetweenJSON
     ;
 
-abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun = CheckFun> extends PureCheck<J, C> {
     protected readonly _steps: number;
 
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
@@ -44,10 +44,6 @@ abstract class AbstractTime<J extends TTimeJSON = TTimeJSON, C extends CheckFun 
 
     public get millis(): number {
         return this._args[0];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {

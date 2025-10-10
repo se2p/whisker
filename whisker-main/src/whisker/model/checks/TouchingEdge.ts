@@ -1,8 +1,8 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
-import {any, CheckResult, fail, pass, result} from "./CheckResult";
+import {any, CheckResult, fail, pass} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
@@ -25,13 +25,9 @@ type TTouchingEdgeJSON =
     | TouchingVerticalEdgeJSON
     ;
 
-abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends AbstractCheck<J, CheckFun0> {
+abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJSON> extends PureCheck<J, CheckFun0> {
     protected constructor(edgeLabel: string, json: Optional<J, "negated">) {
         super(edgeLabel, json);
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -47,8 +43,7 @@ abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJ
         const negated = this.negated;
         const spriteName = checkSpriteExistence(t, pSpriteName).name;
         const touchingEdgeCheck = this._getCheck();
-        this._registerOnMoveEvent(spriteName, (sprite) =>
-            result(touchingEdgeCheck(sprite).passed, {}, negated));
+        this._registerOnMoveEvent(spriteName);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);
