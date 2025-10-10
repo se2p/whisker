@@ -52,8 +52,8 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     /**
      * Reset the graph to the start state.
      */
-    override reset(): void {
-        super.reset();
+    override reset(currentStep = 0): void {
+        this.restart(currentStep);
         for (const edgesCoveredKey in this.coverageCurrentRun) {
             this.coverageCurrentRun[edgesCoveredKey] = false;
         }
@@ -66,8 +66,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
     }
 
     testForEvent(t: TestDriver): void {
-        const stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
-        this.currentState.testForEvent(stepsSinceLastTransition, this.programEndStep);
+        this.currentState.testForEvent(this.stepsSinceLastTransition(t), this.programEndStep);
     }
 
     /**
