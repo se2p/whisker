@@ -3,9 +3,7 @@ import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 import {getDummyTestDriver, TestDriverMock} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {Expr} from "../../../../src/whisker/model/checks/Expr";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
-import Sprite from "../../../../src/vm/sprite";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {expect} from "@jest/globals";
 import {getStorageValue, initialiseStorage, setStorageValue} from "../../../../src/whisker/model/util/ModelUtil";
 
@@ -33,7 +31,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(moveEvent).toHaveBeenCalledTimes(1);
-        expect(moveEvent).toHaveBeenCalledWith("Boat", c, graphID, expect.anything());
+        expect(moveEvent).toHaveBeenCalledWith("Boat", graphID);
     });
 
     test('variable dependencies are correct', () => {
@@ -43,8 +41,8 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(varEvent).toHaveBeenCalledTimes(2);
-        expect(varEvent).toHaveBeenCalledWith("speed", c, graphID, expect.anything());
-        expect(varEvent).toHaveBeenCalledWith("score", c, graphID, expect.anything());
+        expect(varEvent).toHaveBeenCalledWith("speed", graphID);
+        expect(varEvent).toHaveBeenCalledWith("score", graphID);
     });
 
     test('onVisual dependencies are correct', () => {
@@ -54,7 +52,7 @@ describe('Expr tests', () => {
         const c = new Expr('label', {args: [expr]});
         c.registerComponents(t, cu, graphID);
         expect(visualEvent).toHaveBeenCalledTimes(1);
-        expect(visualEvent).toHaveBeenCalledWith("Gate", c, graphID, expect.anything());
+        expect(visualEvent).toHaveBeenCalledWith("Gate", graphID);
     });
 
     it.each([[false, false], [false, true], [true, false], [true, true]])(
@@ -81,23 +79,13 @@ describe('Expr tests', () => {
     test('Registers correct predicate at CheckUtility', () => {
         const apple = new SpriteMock("apple", [{name: "sayText", value: "I am an apple"}]);
         const tdMock = new TestDriverMock([apple]);
-        let check: (sprite: Sprite) => CheckResult;
         const mock = jest.fn();
         const cu = getDummyCheckUtility();
-        cu.registerOutput = (spriteName: string, c: Check, graphID: string,
-                             predicate: (sprite: Sprite) => CheckResult): void => {
-            check = predicate;
-            mock(spriteName, c, graphID, predicate);
-        };
+        cu.registerOutput = mock;
         const fn = "t.getSprite('apple').sayText == 'I am an apple'";
         const c = new Expr('label', {args: [fn]});
         c.registerComponents(tdMock.getTestDriver(), cu, graphID);
-        expect(mock).toHaveBeenCalledWith("apple", c, graphID, check);
-        expect(check(apple.sprite)).toStrictEqual(pass());
-        apple.variables = [{name: "sayText", value: "I am definitely a pineapple"}];
-        tdMock.currentSprites = [apple.updateSprite()];
-        tdMock.nextStep();
-        expect(check(apple.sprite)).toStrictEqual(fail({}));
+        expect(mock).toHaveBeenCalledWith("apple", graphID);
     });
 
     test('Can write with $$-function', () => {

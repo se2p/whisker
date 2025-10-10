@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
 import {result} from "./CheckResult";
@@ -21,13 +21,9 @@ export const AnyKeyJSON = ICheckJSON.extend({
     args: AnyKeyArgs,
 });
 
-export class AnyKey extends AbstractCheck<AnyKeyJSON, CheckFun0> {
+export class AnyKey extends PureCheck<AnyKeyJSON, CheckFun0> {
     constructor(edgeLabel: string, json: SlimCheckJSON<AnyKeyJSON>) {
         super(edgeLabel, {...json, name});
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {

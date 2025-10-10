@@ -2,14 +2,14 @@ import {CheckUtility} from "../util/CheckUtility";
 import TestDriver from "../../../test/test-driver";
 import {AbstractEdge} from "./AbstractEdge";
 import {ProgramModelEdgeJSON} from "../util/schema";
-import {Checks} from "../util/Checks";
-import {Check} from "../checks/newCheck";
+import {Check, PureCheck} from "../checks/newCheck";
 
 /**
  * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends AbstractEdge {
     private readonly _effects: Check[] = [];
+    private readonly _pureEffects: PureCheck[] = [];
 
     /**
      * Create a new edge.
@@ -36,6 +36,9 @@ export class ProgramModelEdge extends AbstractEdge {
      */
     addEffect(effect: Check): void {
         this._effects.push(effect);
+        if (effect.isPure) {
+            this._pureEffects.push(effect);
+        }
     }
 
     /**
@@ -52,14 +55,13 @@ export class ProgramModelEdge extends AbstractEdge {
      * Check the conditions and effects for checks that are dependent on the check listeners and the fired events.
      * Effects are checked for Expr:true Checks.
      */
-    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): boolean {
-        if (this.failedForcedTest) {
-            return false;
+    override checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
+        // We call every() instead of forEach() so we terminate early and undesired checks are not cached.
+        const allConditionTrue = this.conditions.every(c => c.check(stepsSinceLastTransition, stepsSinceEnd).passed);
+        if (allConditionTrue) {
+            this._pureEffects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
         }
-        if (this.effects.some(e => checks.includes(e))) {
-            this.effects.forEach(e => e.check(stepsSinceLastTransition, stepsSinceEnd)); // cache results
-        }
-        return this.conditions.reduce((acc, c) => acc && c.check(stepsSinceLastTransition, stepsSinceEnd).passed, true); // cache results
+        return allConditionTrue;
     }
 
     override toJSON(): ProgramModelEdgeJSON {

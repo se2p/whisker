@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
@@ -41,7 +41,7 @@ export const VarChangeJSON = ICheckJSON.extend({
     args: VarChangeArgs,
 });
 
-export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implements ChangingCheck {
+export class VarChange extends PureCheck<VarChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Change;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<VarChangeJSON>) {
@@ -51,10 +51,6 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
 
     get change(): NumberOrChangeOp {
         return this._args[2];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -90,7 +86,7 @@ export class VarChange extends AbstractCheck<VarChangeJSON, CheckFun0> implement
             }
         };
 
-        this._registerVarEvent(variableName, check);
+        this._registerVarEvent(variableName);
         return check;
     }
 

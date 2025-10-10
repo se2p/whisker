@@ -1,10 +1,8 @@
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
-import Sprite from "../../../../src/vm/sprite";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {AttrChange} from "../../../../src/whisker/model/checks/AttrChange";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 import {STAGE_NAME} from "../../../../src/assembler/utils/selectors";
 
 
@@ -28,31 +26,20 @@ describe('AttributeChange', () => {
     test('VarEvent is registered on CheckUtil', () => {
         const fn = jest.fn();
         const cu = getDummyCheckUtility();
-        let check: (sprite: Sprite) => CheckResult;
-        cu.registerOnVisualChange = (spriteName: string, c: Check, graphID: string,
-                                     predicate: (sprite: Sprite) => CheckResult) => {
-            fn(spriteName, c, graphID, predicate);
-            check = predicate;
-        };
+        cu.registerOnVisualChange = fn;
         const c = new AttrChange('label', {args: ["apple", "size", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
+        expect(fn).toHaveBeenLastCalledWith(apple.name, graphID);
         expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
 
     test('MoveEvent is registered on CheckUtil', () => {
         const fn = jest.fn();
         const cu = getDummyCheckUtility();
-        let check: (sprite: Sprite) => CheckResult;
-        cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
-                                  predicate: (sprite: Sprite) => CheckResult) => {
-            fn(spriteName, c, graphID, predicate);
-            check = predicate;
-        };
+        cu.registerOnMoveEvent = fn;
         const c = new AttrChange('label', {args: ["apple", "x", "+"]});
         c.registerComponents(t, cu, graphID);
-        expect(fn).toHaveBeenLastCalledWith(apple.name, c, graphID, check);
-        expect(c.check()).toStrictEqual(fail(expect.any(Object)));
+        expect(fn).toHaveBeenLastCalledWith(apple.name, graphID);
     });
 
     test('Check is not a constant function', () => {

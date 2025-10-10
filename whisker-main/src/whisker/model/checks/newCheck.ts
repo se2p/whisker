@@ -21,7 +21,7 @@ import {
 import {BackgroundChange, BackgroundChangeJSON} from "./BackgroundChange";
 import {Layer, LayerJSON} from "./Layer";
 import {NonExhaustiveCaseDistinction} from "../../core/exceptions/NonExhaustiveCaseDistinction";
-import {z} from "zod";
+import {z, ZodDiscriminatedUnion, ZodObject, ZodUnion} from "zod";
 import {TimeAfterEnd, TimeAfterEndJSON, TimeBetween, TimeBetweenJSON, TimeElapsed, TimeElapsedJSON} from "./Time";
 import {ClearedEffect, ClearedEffectJSON} from "./ClearedEffect";
 import {PointsTo, PointsToJSON} from "./PointsTo";
@@ -89,13 +89,32 @@ export const ConditionJSON = z.discriminatedUnion("name", [
     ChangeStorageByJSON,
     SetStorageJSON,
     MoveStepsJSON,
-    BounceJSON
+    BounceJSON,
 ]);
 
-/**
- * Checks that can be used as conditions for edge transitions.
- */
-export type Condition =
+export type CheckJSON =
+    | ConditionJSON
+    | ChangeStorageByJSON
+    | SetStorageJSON
+    ;
+
+export const CheckJSON = z.union([
+    ConditionJSON,
+    ChangeStorageByJSON,
+    SetStorageJSON,
+]);
+
+function extractCheckNamesFromZodSchema(z: ZodUnion<any> | ZodDiscriminatedUnion<"name", any> | ZodObject<any>): string[] {
+    if (z instanceof ZodObject) {
+        return [z.shape.name.value];
+    }
+
+    return z.options.flatMap((o) => extractCheckNamesFromZodSchema(o));
+}
+
+export const CHECK_NAMES = Object.freeze(extractCheckNamesFromZodSchema(CheckJSON));
+
+export type Check =
     | AttrChange
     | AttrComp
     | BackgroundChange
@@ -122,65 +141,13 @@ export type Condition =
     | PointsTo
     | MoveSteps
     | Bounce
-    ;
-
-export type CheckJSON =
-    | ConditionJSON
-    | ChangeStorageByJSON
-    | SetStorageJSON
-    ;
-
-export const CheckJSON = z.union([
-    ConditionJSON,
-    ChangeStorageByJSON,
-    SetStorageJSON,
-]);
-
-/**
- * Checks that can be used as effects of edge transitions.
- */
-export type Check =
-    | Condition
     | ChangeStorageBy
     | SetStorage
     ;
 
-export type CheckName = CheckJSON['name'];
-
-export const CONDITIONS_NAMES: readonly CheckName[] = Object.freeze([
-    "AttrChange",
-    "AttrComp",
-    "BackgroundChange",
-    "Click",
-    "AnyKey",
-    "Key",
-    "Output",
-    "SpriteColor",
-    "SpriteTouching",
-    "VarChange",
-    "VarComp",
-    "Expr",
-    "Probability",
-    "TimeElapsed",
-    "TimeBetween",
-    "TimeAfterEnd",
-    "NbrOfClones",
-    "NbrOfVisibleClones",
-    "TouchingEdge",
-    "TouchingVerticalEdge",
-    "TouchingHorizEdge",
-    "PointsTo",
-    "Layer",
-    "ClearedEffects",
-    "MoveSteps",
-    "Bounce"
-]);
-
-export const CHECK_NAMES: readonly CheckName[] = Object.freeze([
-    ...CONDITIONS_NAMES,
-    "ChangeStorageBy",
-    "SetStorage",
-]);
+// Every pure check can automatically be used as edge condition.
+export type Condition = Extract<Check, { isPure: true }>;
+export type PureCheck = Condition;
 
 export function newCondition(edgeLabel: string, conditionJSON: ConditionJSON): Condition {
     const name = conditionJSON.name;

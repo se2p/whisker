@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
@@ -35,14 +35,10 @@ export const BounceJSON = ICheckJSON.extend({
     args: BounceArgs,
 });
 
-export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
+export class Bounce extends PureCheck<BounceJSON, CheckFun0> {
 
     constructor(edgeLabel: string, json: SlimCheckJSON<BounceJSON>) {
         super(edgeLabel, {...json, name});
-    }
-
-    get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -83,7 +79,7 @@ export class Bounce extends AbstractCheck<BounceJSON, CheckFun0> {
             return result(!touchingEdge || dirFlipped, reason);
         };
 
-        this._registerOnVisualChange(spriteName, check);
+        this._registerOnVisualChange(spriteName);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);

@@ -3,9 +3,6 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {ArgType} from "../../../../src/whisker/model/util/schema";
 import {SpriteColor} from "../../../../src/whisker/model/checks/SpriteColor";
-import Sprite from "../../../../src/vm/sprite";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
 
 
 describe('SpriteColor tests', () => {
@@ -38,13 +35,8 @@ describe('SpriteColor tests', () => {
 
     test('cu.registerOnMoveEvent() is called with correct params', () => {
         const fn = jest.fn();
-        let check: (sprite: Sprite) => CheckResult;
         const cu = getDummyCheckUtility();
-        cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
-                                  predicate: (sprite: Sprite) => CheckResult) => {
-            fn(spriteName, c, graphID, predicate);
-            check = predicate;
-        };
+        cu.registerOnMoveEvent = fn;
         const kiwi = new SpriteMock("kiwi");
         tdMock.currentSprites = SpriteMock.toSpriteArray([
             new SpriteMock("banana"), new SpriteMock("bowl"), new SpriteMock("apple"), kiwi
@@ -52,10 +44,6 @@ describe('SpriteColor tests', () => {
         const c = new SpriteColor('label', {args: ["apple", 255, 0, 0]});
         c.registerComponents(tdMock.getTestDriver(), cu, graphID);
         expect(fn).toHaveBeenCalledTimes(1);
-        expect(check(kiwi.sprite)).toEqual(pass());
-        kiwi.touchingColor = false;
-        tdMock.nextStep();
-        expect(check(kiwi.sprite)).toEqual(fail(expect.any(Object)));
     });
 
     it.each([true, false])('returned function depends on touchingColor (negated: %s)', (negated: boolean) => {

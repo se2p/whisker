@@ -2,9 +2,7 @@ import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {getDummyCheckUtility} from "../mocks/CheckUtilityMock";
 import {TouchingEdge, TouchingHorizEdge, TouchingVerticalEdge} from "../../../../src/whisker/model/checks/TouchingEdge";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
-import Sprite from "../../../../src/vm/sprite";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
+import {fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
 
 describe('TouchingEdge tests', () => {
     const graphID = "graphID";
@@ -56,29 +54,5 @@ describe('TouchingEdge tests', () => {
         expect(c.check()).toStrictEqual(pass());
         sprite.touchingVerticalEdge = true;
         expect(c.check()).toStrictEqual(pass());
-    });
-
-    test('Predicate for CheckUtility is correct', () => {
-        let check: (sprite: Sprite) => CheckResult;
-        const cu = getDummyCheckUtility();
-        const fn = jest.fn();
-        cu.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
-                                  predicate: (sprite: Sprite) => CheckResult): void => {
-            fn();
-            check = predicate;
-        };
-        const c = new TouchingEdge(label, {negated, args: [sprite.name]});
-        c.registerComponents(t, cu, graphID);
-        sprite.touchingVerticalEdge = false;
-        sprite.touchingHorizontalEdge = false;
-        expect(fn).toHaveBeenCalledTimes(1);
-        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
-        sprite.touchingHorizontalEdge = true;
-        sprite.touchingVerticalEdge = true;
-        expect(check(sprite.sprite)).toStrictEqual(pass());
-        sprite.visible = false;
-        sprite.updateSprite();
-        tdMock.nextStep();
-        expect(check(sprite.sprite)).toStrictEqual(fail(expect.any(Object)));
     });
 });

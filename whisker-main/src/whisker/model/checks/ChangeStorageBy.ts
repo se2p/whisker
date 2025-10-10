@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, ImpureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
@@ -20,7 +20,7 @@ export const ChangeStorageByJSON = ICheckJSON.extend({
     args: ChangeStorageByArgs,
 });
 
-export class ChangeStorageBy extends AbstractCheck<ChangeStorageByJSON, CheckFun0> {
+export class ChangeStorageBy extends ImpureCheck<ChangeStorageByJSON, CheckFun0> {
     private readonly _key: string;
     private readonly _value: number;
 
@@ -36,10 +36,6 @@ export class ChangeStorageBy extends AbstractCheck<ChangeStorageByJSON, CheckFun
 
     get value(): number {
         return this._value;
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
