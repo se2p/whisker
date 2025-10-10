@@ -6,7 +6,6 @@ import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
 import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
-import {Reason} from "../checks/CheckResult";
 
 export type ModelEdge =
     | ProgramModelEdge
@@ -69,7 +68,7 @@ export abstract class AbstractEdge {
                     const res = c.check(stepsSinceLastTransition, stepsSinceEnd);
                     if (res.passed === false) {
                         noneFailed = false;
-                        cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t, res.reason));
+                        cu.addTimeLimitFailOutput(this._getTimeLimitFailedOutput(c, t), res.reason);
                     }
                 } catch (e) {
                     cu.addErrorOutput(this.label, this.graphID, e);
@@ -122,11 +121,11 @@ export abstract class AbstractEdge {
 
     abstract toJSON(): ModelEdgeJSON;
 
-    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver, reason: Reason): string {
+    private _getTimeLimitFailedOutput(condition: Check, t: TestDriver): string {
         if (this._forceAtSteps != -1 && this._forceAtSteps <= t.getTotalStepsExecuted()) {
-            return getTimeLimitFailedAtOutput(this, condition, this.forceAt, reason);
+            return getTimeLimitFailedAtOutput(this, condition, this.forceAt);
         } else {
-            return getTimeLimitFailedAfterOutput(this, condition, this.forceAfter, reason);
+            return getTimeLimitFailedAfterOutput(this, condition, this.forceAfter);
         }
     }
 }

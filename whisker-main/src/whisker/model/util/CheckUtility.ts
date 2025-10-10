@@ -1,11 +1,12 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelResult} from "../../../test-runner/model-result";
 import {AbstractEdge} from "../components/AbstractEdge";
-import {getEffectFailedOutput, getErrorMessage, getErrorOnEdgeOutput} from "./ModelError";
+import {getErrorMessage, getReasonAppendix} from "./ModelError";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
 import {ProgramModelEdge} from "../components/ProgramModelEdge";
 import {Check} from "../checks/newCheck";
+import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
 import {Reason} from "../checks/CheckResult";
 
 type EffectCheck = {
@@ -41,14 +42,6 @@ export class CheckUtility extends EventEmitter {
     private readonly _variableListener: MultiMap<string, string> = new Map();
 
     private _effectChecks: EffectCheck[] = [];
-
-    // how often the errors or fails happened, change this boolean for printing all or only ten occurrences per error
-    private _onlyTenOutputs = true;
-    private _failOutputs: Record<string, number> = {};
-    private _errorOutputs: Record<string, number> = {};
-
-    //turn logs in console off an on
-    private _logsInConsole = true;
 
     /**
      * Get an instance of a condition state saver.
@@ -146,15 +139,18 @@ export class CheckUtility extends EventEmitter {
      * @param endStep Steps in which the program ended.
      */
     registerEffectCheck(takenEdge: ProgramModelEdge, stepsSinceTransition: number, endStep: number): void {
-        takenEdge.effects.forEach(effect => {
-            this._effectChecks.push({
+        for (const effect of takenEdge.effects) {
+            const check: EffectCheck = {
                 effect: effect,
                 reason: null,
                 edge: takenEdge,
                 stepsSinceTransition: stepsSinceTransition,
                 programEndStep: endStep,
-            });
-        });
+            };
+            if (effect.isPure || this._doesEffectFail(check)) {
+                this._effectChecks.push(check);
+            }
+        }
     }
 
     /**
@@ -190,22 +186,10 @@ export class CheckUtility extends EventEmitter {
     /**
      * Add a failed condition that was not fulfilled in a time limit.
      * @param output The time limit output.
+     * @param reason Reason with details on the fail
      */
-    addTimeLimitFailOutput(output: string): void {
-        this._failOrError(output, this._failOutputs);
-        this._modelResult.addFail(output);
-    }
-
-    /**
-     * Add an edge's effect to the failed output of the test.
-     * @param edge Edge that has a failed effect.
-     * @param effect Effect that failed.
-     * @param reason Insights on why the effect failed.
-     */
-    addFailOutput(edge: AbstractEdge, effect: Check, reason: Reason): void {
-        const output = getEffectFailedOutput(edge, effect, {step: this._testDriver.getTotalStepsExecuted(), ...reason});
-        this._failOrError(output, this._failOutputs);
-        this._modelResult.addFail(output);
+    addTimeLimitFailOutput(output: string, reason: Reason): void {
+        this._addFailOutput(output, reason);
     }
 
     /**
@@ -215,18 +199,17 @@ export class CheckUtility extends EventEmitter {
      * @param e Error that was thrown
      */
     addErrorOutput(edgeLabel: string, graphID: string, e: Error): void {
-        const message = getErrorMessage(e);
-        const output = getErrorOnEdgeOutput(edgeLabel, graphID, message);
-        this._failOrError(output, this._errorOutputs);
-        this._modelResult.addError(output);
+        this._addErrorOutput(e, edgeLabelAndIdToIdentifier(graphID, edgeLabel));
     }
 
     /**
-     * Make outputs for the failed effects of the last step, without the depending ones on the sayText attribute.
+     * Make outputs for the failed effects of the last step
      */
     makeFailedOutputs(): void {
+        const step = this._testDriver.getTotalStepsExecuted();
         for (const e of this._effectChecks) {
-            this.addFailOutput(e.edge, e.effect, e.reason);
+            const output = getEffectFailedOutput(e.edge, e.effect);
+            this._addFailOutput(output, e.reason, step);
         }
         this._effectChecks = [];
     }
@@ -253,25 +236,59 @@ export class CheckUtility extends EventEmitter {
         }
     }
 
-    private _failOrError(output: string, failureList: Record<string, number>) {
-        if (!this._logsInConsole) {
-            return;
-        }
-        if (this._onlyTenOutputs) {
-            if (failureList[output] == undefined) {
-                failureList[output] = 0;
-            }
-            failureList[output]++;
-            if (failureList[output] == 10) {
-                this.emit(CheckUtility.CHECK_LOG_FAIL, output + "(10th time, no more outputs for this)");
-                // logger.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
-            } else if (failureList[output] < 10) {
-                this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-                // logger.error(output, this.testDriver.getTotalStepsExecuted());
-            }
+    private _filterForFailing(checks: EffectCheck[]): EffectCheck[] {
+        return checks.filter(c => this._doesEffectFail(c));
+    }
+
+    private _addFailOutput(output: string, reason: Reason, step = -1) {
+        this._modelResult.addFail(output);
+        if (step === -1) {
+            this._debug(output, getReasonAppendix(reason));
         } else {
-            this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-            // logger.error(output, this.testDriver.getTotalStepsExecuted());
+            this.emit(CheckUtility.CHECK_LOG_FAIL, `Step ${step}: ${output}${getReasonAppendix(reason)}`);
         }
     }
+
+    private _addErrorOutput(e: Error, id: string): void {
+        const message = getErrorMessage(e);
+        const output = `Error ${id}: ${message}`;
+        this._debug(output);
+        this._modelResult.addError(output);
+    }
+
+    private _debug(...msg: string[]): void {
+        this.emit(CheckUtility.CHECK_LOG_FAIL, `Step ${this._testDriver.getTotalStepsExecuted()}: ${msg.join(" ")}`);
+    }
 }
+
+function edgeLabelAndIdToIdentifier(graphId: string, label: string): string {
+    return `${graphId}-${label}`;
+}
+
+function edgeToIdentifier(edge: AbstractEdge): string {
+    return edgeLabelAndIdToIdentifier(edge.graphID, edge.label);
+}
+
+export function getEffectFailedOutput(edge: AbstractEdge, effect: Check): string {
+    const conditions = edge.conditions;
+    let containsAfterTime: string | null = null;
+    let containsElapsed: string | null = null;
+
+    for (const c of conditions) {
+        if (c instanceof TimeBetween || c instanceof TimeAfterEnd) {
+            containsAfterTime = c.millis.toString();
+        } else if (c instanceof TimeElapsed) {
+            containsElapsed = c.millis.toString();
+        }
+    }
+
+    let result = `${edgeToIdentifier(edge)}: ${effect.toString()}`;
+    if (containsElapsed != null) {
+        result += ` before ${containsElapsed}ms elapsed`;
+    }
+    if (containsAfterTime != null) {
+        result += ` after ${containsAfterTime}ms`;
+    }
+    return result;
+}
+
