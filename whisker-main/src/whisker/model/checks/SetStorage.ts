@@ -57,6 +57,10 @@ export class SetStorage extends ImpureCheck<SetStorageJSON, CheckFun0> {
         return parseNonUnionError(SetStorageArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: SetStorageJSON): SetStorageJSON {
+        return SetStorageJSON.parse(checkJSON) as SetStorageJSON;
+    }
+
     /**
      * Generates a method that sets the value for the given key in the graph storage.
      * @param t Instance of the test driver for evaluating expressions in case of dynamic values for the storage.
@@ -77,10 +81,6 @@ export class SetStorage extends ImpureCheck<SetStorageJSON, CheckFun0> {
             setStorageValue(this.graphID, this.key, value);
             return result(true, log, this.negated);
         };
-    }
-
-    protected _validate(checkJSON: SetStorageJSON): SetStorageJSON {
-        return SetStorageJSON.parse(checkJSON) as SetStorageJSON;
     }
 
     protected _contradicts(_that: SetStorage): boolean {

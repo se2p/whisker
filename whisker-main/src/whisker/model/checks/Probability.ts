@@ -44,6 +44,10 @@ export class Probability extends PureCheck<ProbabilityJSON, CheckFun0> {
         return parseNonUnionError(ProbabilityArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: ProbabilityJSON): ProbabilityJSON {
+        return ProbabilityJSON.parse(checkJSON) as ProbabilityJSON;
+    }
+
     /**
      * Get a method that checks whether a random number is greater than the probability given. For randomness...
      * @param t Instance of the test driver (unused).
@@ -53,10 +57,6 @@ export class Probability extends PureCheck<ProbabilityJSON, CheckFun0> {
         const negated = this.negated;
         const prob = testNumber(probability);
         return () => result(Randomness.getInstance().nextDouble() < prob, {}, negated);
-    }
-
-    protected _validate(checkJSON: ProbabilityJSON): ProbabilityJSON {
-        return ProbabilityJSON.parse(checkJSON) as ProbabilityJSON;
     }
 
     protected _contradicts(_that: Probability): boolean {

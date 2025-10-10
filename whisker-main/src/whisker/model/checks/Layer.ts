@@ -47,6 +47,10 @@ export class Layer extends PureCheck<LayerJSON, CheckFun0> {
         return parseNonUnionError(LayerArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: LayerJSON): LayerJSON {
+        return LayerJSON.parse(checkJSON) as LayerJSON;
+    }
+
     /**
      * Get a method for checking whether a sprite is on the first/last layer.
      * @param t Instance of the test driver for retrieving the layers of the sprite and its clones.
@@ -67,9 +71,5 @@ export class Layer extends PureCheck<LayerJSON, CheckFun0> {
     protected _contradicts(that: Layer): boolean {
         // if there is only one layer a sprite can be at the first and last layer at the same time
         return false;
-    }
-
-    protected _validate(checkJSON: LayerJSON): LayerJSON {
-        return LayerJSON.parse(checkJSON) as LayerJSON;
     }
 }

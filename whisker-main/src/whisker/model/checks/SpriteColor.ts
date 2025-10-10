@@ -58,6 +58,10 @@ export class SpriteColor extends PureCheck<SpriteColorJSON, CheckFun0> {
         return parseNonUnionError(SpriteColorArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: SpriteColorJSON): SpriteColorJSON {
+        return SpriteColorJSON.parse(checkJSON) as SpriteColorJSON;
+    }
+
     /**
      * Get a method whether a sprite touches a color.
      *
@@ -98,10 +102,6 @@ export class SpriteColor extends PureCheck<SpriteColorJSON, CheckFun0> {
             const sprites = t.getSprites((s: Sprite) => s.name === spriteName, false);
             return any(touchingColorCheck, negated, sprites);
         };
-    }
-
-    protected _validate(checkJSON: SpriteColorJSON): SpriteColorJSON {
-        return SpriteColorJSON.parse(checkJSON) as SpriteColorJSON;
     }
 
     protected _contradicts(_that: SpriteColor): boolean {

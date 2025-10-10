@@ -45,6 +45,10 @@ export class Bounce extends PureCheck<BounceJSON, CheckFun0> {
         return parseNonUnionError(BounceArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: BounceJSON): BounceJSON {
+        return BounceJSON.parse(checkJSON) as BounceJSON;
+    }
+
     /**
      * Get a method whether a sprite bounces when it touches an edge.
      *
@@ -89,9 +93,5 @@ export class Bounce extends PureCheck<BounceJSON, CheckFun0> {
 
     protected _contradicts(that: Bounce): boolean {
         return false; // a sprite and a clone can touch both edges at the same time
-    }
-
-    protected _validate(checkJSON: BounceJSON): BounceJSON {
-        return BounceJSON.parse(checkJSON) as BounceJSON;
     }
 }

@@ -30,6 +30,10 @@ export class AnyKey extends PureCheck<AnyKeyJSON, CheckFun0> {
         return parseNonUnionError(AnyKeyArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: AnyKeyJSON): AnyKeyJSON {
+        return AnyKeyJSON.parse(checkJSON) as AnyKeyJSON;
+    }
+
     /**
      * Get a method for checking if any key was pressed or not pressed.
      * @param t Instance of the test driver (unused).
@@ -38,10 +42,6 @@ export class AnyKey extends PureCheck<AnyKeyJSON, CheckFun0> {
         return () => {
             return result(this.cu.isAnyKeyDown(), {}, this.negated);
         };
-    }
-
-    protected _validate(checkJSON: AnyKeyJSON): AnyKeyJSON {
-        return AnyKeyJSON.parse(checkJSON) as AnyKeyJSON;
     }
 
     protected _contradicts(_that: AnyKey): boolean {

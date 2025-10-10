@@ -50,6 +50,10 @@ export class BackgroundChange extends PureCheck<BackgroundChangeJSON, CheckFun0>
         return parseNonUnionError(BackgroundChangeArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: BackgroundChangeJSON): BackgroundChangeJSON {
+        return BackgroundChangeJSON.parse(checkJSON) as BackgroundChangeJSON;
+    }
+
     /**
      * Get a method checking whether the background of the stage changed.
      * @param t Instance of the test driver for retrieving the current costume of the stage
@@ -64,10 +68,6 @@ export class BackgroundChange extends PureCheck<BackgroundChangeJSON, CheckFun0>
                 throw new ErrorForAttribute(STAGE_NAME, "costume", e);
             }
         };
-    }
-
-    protected _validate(checkJSON: BackgroundChangeJSON): BackgroundChangeJSON {
-        return BackgroundChangeJSON.parse(checkJSON) as BackgroundChangeJSON;
     }
 
     protected override _contradicts(that: BackgroundChange): boolean {

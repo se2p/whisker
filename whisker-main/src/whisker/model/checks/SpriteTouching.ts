@@ -45,6 +45,10 @@ export class SpriteTouching extends PureCheck<SpriteTouchingJSON, CheckFun0> {
         return parseNonUnionError(SpriteTouchingArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: SpriteTouchingJSON): SpriteTouchingJSON {
+        return SpriteTouchingJSON.parse(checkJSON) as SpriteTouchingJSON;
+    }
+
     /**
      * Get a method checking whether two sprites are touching.
      *
@@ -82,10 +86,6 @@ export class SpriteTouching extends PureCheck<SpriteTouchingJSON, CheckFun0> {
             const sprites = t.getSprites((s: Sprite) => s.name === spriteName1, false);
             return any(touchingCheck, negated, sprites);
         };
-    }
-
-    protected _validate(checkJSON: SpriteTouchingJSON): SpriteTouchingJSON {
-        return SpriteTouchingJSON.parse(checkJSON) as SpriteTouchingJSON;
     }
 
     protected _contradicts(_that: SpriteTouching): boolean {

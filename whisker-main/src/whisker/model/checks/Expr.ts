@@ -40,6 +40,10 @@ export class Expr extends PureCheck<ExprJSON, CheckFun0> {
         return parseNonUnionError(ExprArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: ExprJSON): ExprJSON {
+        return ExprJSON.parse(checkJSON) as ExprJSON;
+    }
+
     /**
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
      * @param t Instance of the test driver for evaluating expression.
@@ -52,10 +56,6 @@ export class Expr extends PureCheck<ExprJSON, CheckFun0> {
         };
         this._setupAllDependenciesForExpressions(e, this._code);
         return check;
-    }
-
-    protected _validate(checkJSON: ExprJSON): ExprJSON {
-        return ExprJSON.parse(checkJSON) as ExprJSON;
     }
 
     protected _contradicts(_that: Expr): boolean {

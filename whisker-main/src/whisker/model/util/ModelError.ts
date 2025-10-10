@@ -63,6 +63,7 @@ export class SpriteNotFoundError extends Error {
         super(`Sprite not found: ${spriteName}`);
     }
 }
+
 export class ExprEvalError extends Error {
     constructor(e: unknown, code: string) {
         super(`Expression cannot be evaluated:

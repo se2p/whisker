@@ -46,6 +46,10 @@ export class MoveSteps extends PureCheck<MoveStepsJSON, CheckFun0> {
         return parseNonUnionError(MoveStepsArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: MoveStepsJSON): MoveStepsJSON {
+        return MoveStepsJSON.parse(checkJSON) as MoveStepsJSON;
+    }
+
     /**
      * Get a method whether a sprite moved a certain number of steps
      *
@@ -66,9 +70,5 @@ export class MoveSteps extends PureCheck<MoveStepsJSON, CheckFun0> {
 
     protected _contradicts(that: MoveSteps): boolean {
         return false; // a sprite and a clone can move two different amounts at the same time
-    }
-
-    protected _validate(checkJSON: MoveStepsJSON): MoveStepsJSON {
-        return MoveStepsJSON.parse(checkJSON) as MoveStepsJSON;
     }
 }

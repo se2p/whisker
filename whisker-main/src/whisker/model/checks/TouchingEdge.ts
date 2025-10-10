@@ -51,11 +51,11 @@ abstract class AbstractTouchingEdge<J extends TTouchingEdgeJSON = TTouchingEdgeJ
         };
     }
 
-    protected abstract _getCheck(): (sprite: Sprite) => CheckResult;
-
     protected override _contradicts(_that: AbstractTouchingEdge): boolean {
         return false;
     }
+
+    protected abstract _getCheck(): (sprite: Sprite) => CheckResult;
 }
 
 const touchingEdgeName = "TouchingEdge" as const;
