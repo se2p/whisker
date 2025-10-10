@@ -16,9 +16,8 @@ import {ModelJSON} from "./util/schema";
 import {Check} from "./checks/newCheck";
 import TestResult from "../../test-runner/test-result";
 import Test from "../../test-runner/test";
-import {Model} from "./components/AbstractModel";
+import {Model, OracleModel} from "./components/AbstractModel";
 
-type OracleModel = ProgramModel | EndModel;
 
 export class ModelTester extends EventEmitter {
 
@@ -226,7 +225,7 @@ export class ModelTester extends EventEmitter {
         const msg = this._runningUserModel
             ? `Preparing model for run with user model: ${this._runningUserModel.id}...`
             : "Preparing model for run...";
-        this.emit(ModelTester.MODEL_LOG, msg);
+        this._log(msg);
 
         this._result = new ModelResult();
         this._checkUtility = new CheckUtility(t, allModels.length, this._result);
@@ -252,7 +251,7 @@ export class ModelTester extends EventEmitter {
         this._isRunning = true;
     }
 
-    private _doOneStepOnModel(model: OracleModel): boolean {
+    private _doOneStepOnOracleModel(model: OracleModel): boolean {
         const result = model.makeOneTransition(this._testDriver!, this._checkUtility!);
         if (result) {
             const [takenEdge, steps] = result;
@@ -263,27 +262,28 @@ export class ModelTester extends EventEmitter {
     }
 
     private _doOracleModelStep(models: OracleModel[], fn: () => void): void {
-        // this._doOneStepOnModel(model) must be executed for every model! -> reduce() not some() or every()
-        const allStopped = models.reduce(
-            (acc, model) => this._doOneStepOnModel(model) && acc, true);
+        // this._doOneStepOnOracleModel(model) must be executed for every model!
+        const reduceFn =
+            (acc: boolean, model: OracleModel) => this._doOneStepOnOracleModel(model) && acc;
+        const allStopped = models.reduce(reduceFn, true);
         const contradictingEffects = this._checkUtility!.checkEffects();
         this._printContradictingEffects(contradictingEffects);
         if (allStopped) {
-            this._debug(`All ${models[0].usage} models reached a stopping stage`);
+            this._debug("All", models[0].usage, "models reached a stopping stage");
             fn();
-        } else if (this._didSomeModelReachStopAllNode(models)) {
-            fn();
+        } else {
+            this._checkStopAllNodeReached(models, fn);
         }
         this._checkUtility!.makeFailedOutputs();
     }
 
-    private _didSomeModelReachStopAllNode(models: OracleModel[]): boolean {
+    private _checkStopAllNodeReached(models: OracleModel[], fn: () => void): void {
         const stoppingModels = models.filter(m => m.haltAllModels());
         if (stoppingModels.length > 0) {
-            this._debug(`The following ${models[0].usage} models reached a stop all node: ${stoppingModels.map(m => m.id)}`);
-            return true;
+            this._debug("The following", models[0].usage, "models reached a stop all node:",
+                stoppingModels.map(m => m.id).join(", "));
+            fn();
         }
-        return false;
     }
 
     private _onModelStep(): void {
@@ -310,7 +310,11 @@ export class ModelTester extends EventEmitter {
         this._onTestEndCallback!.enable();
     }
 
-    private _debug(...msg: string[]): void {
+    private _log(...msg: string[]) {
+        this.emit(ModelTester.MODEL_LOG, msg.join(" "));
+    }
+
+    private _debug(...msg: (string | number | boolean)[]): void {
         this.emit(ModelTester.MODEL_LOG, `Step ${this._testDriver.getTotalStepsExecuted()}: ${msg.join(" ")}`);
     }
 
@@ -344,8 +348,8 @@ export class ModelTester extends EventEmitter {
         models.filter(m => modelIds.has(m.id)).forEach((m: OracleModel) => m.testForEvent(this._testDriver!));
     }
 
-    private _onLogEvent(output: unknown) {
-        this.emit(ModelTester.MODEL_LOG, output);
+    private _onLogEvent(output: string) {
+        this._log(output);
     }
 
     private _edgeTrace(transition: AbstractEdge) {
@@ -388,7 +392,7 @@ export class ModelTester extends EventEmitter {
             models.forEach(model => {
                 if (model.stopped()) {
                     this._result!.log.push("Model '" + model.id + "' stopped.");
-                    this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
+                    this._log("---Model '" + model.id + "' stopped.");
                 }
             });
             const sprites = this._testDriver!.getSprites(() => true, false);
@@ -403,7 +407,7 @@ export class ModelTester extends EventEmitter {
                 });
             });
             if (log.length > 1) {
-                this.emit(ModelTester.MODEL_LOG, log.join("\n"));
+                this._log(log.join("\n"));
             }
 
             const coverages = {covered: [] as string[][], total: 0};
@@ -417,7 +421,6 @@ export class ModelTester extends EventEmitter {
             });
 
             this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
-            // logger.debug("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         }
         return this._result!;
     }
