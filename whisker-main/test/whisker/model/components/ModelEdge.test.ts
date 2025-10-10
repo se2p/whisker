@@ -190,7 +190,7 @@ describe('Model edges', () => {
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditions(tdMock.getTestDriver(), cu, 5, 7);
             expect(result).toStrictEqual(false);
-            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() at 42ms");
+            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() at 42ms", {});
         });
 
         test("checkConditions() returns failed conditions (total steps exceeded) 2", () => {
@@ -212,7 +212,7 @@ describe('Model edges', () => {
             edge.registerComponents(cu, tdMock.getTestDriver());
             let result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual(false);
-            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 11ms");
+            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 11ms", {});
             result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
             expect(result).toStrictEqual(false);
             const res = edge.checkConditionsOnEvent(11, 9);
