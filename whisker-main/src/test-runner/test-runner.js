@@ -294,7 +294,7 @@ class TestRunner extends EventEmitter {
             this.vmWrapper.nextUserModelIndex = uM;
             const startTime = Date.now();
             const result = await this._executeTest(vm, null, props, modelProps, 0);
-            result.modelResult.testNbr = Math.min(0, rep * indices.length + uM);
+            result.modelResult.testNbr = Math.max(0, rep * indices.length + uM);
             this.emit(TestRunner.TEST_MODEL, result);
             testResults.push(result);
             // Record the results
