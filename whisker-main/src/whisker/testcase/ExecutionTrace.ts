@@ -53,13 +53,17 @@ export class ExecutionTrace {
 
     private _events: EventAndParameters[];
 
-    constructor(traces: CoverageTrace, events: EventAndParameters[]) {
+    private readonly _positionTrace?: spriteTrace;
+
+    constructor(traces: CoverageTrace, events: EventAndParameters[], trace?: spriteTrace) {
         this._blockTraces = traces;
         this._events = events;
+        this._positionTrace = trace;
     }
 
+
     clone(): ExecutionTrace {
-        return new ExecutionTrace(this.blockTraces, [...this.events]);
+        return new ExecutionTrace(this.blockTraces, [...this.events], {...this._positionTrace, position:[...this._positionTrace.position]});
     }
 
     get blockTraces(): CoverageTrace {
@@ -73,6 +77,16 @@ export class ExecutionTrace {
     set events(value: EventAndParameters[]) {
         this._events = value;
     }
+
+    get positionTrace(): spriteTrace | undefined {
+        return this._positionTrace;
+    }
+}
+
+export interface spriteTrace{
+    pass:boolean,
+    position: number[][]
+
 }
 
 export interface CoverageTrace {

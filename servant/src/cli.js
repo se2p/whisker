@@ -337,6 +337,14 @@ class WhiskerSubCommand extends Command {
         );
     }
 
+    optionSpritesTraces(){
+        return this.option(
+            '-tr, --trace <Path>',
+            'create JSON file with results',
+            (tracePath) => util.processFilePathNotExists(tracePath)
+        )
+    }
+
     /**
      * This method must be invoked for every Whisker subcommand. It makes sure the global "mode" and "opts" variables
      * are set correctly when the respective subcommand is invoked.
@@ -414,7 +422,8 @@ const subCommands = [
         .optionMutationBudget()
         .optionMaxMutants()
         .optionProgramModel()
-        .optionWinningStates(),
+        .optionWinningStates()
+        .optionSpritesTraces(),
 
     newSubCommand('model')
         .description('test with model')

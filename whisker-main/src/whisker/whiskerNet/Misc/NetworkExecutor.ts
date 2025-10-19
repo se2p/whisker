@@ -20,6 +20,8 @@ import {ActionNode} from "../NetworkComponents/ActionNode";
 import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ClassificationType} from "../HyperParameter/BasicNeuroevolutionParameter";
+import {Input} from "../../../assembler/blocks/Inputs";
+import {spriteTrace} from "../../testcase/ExecutionTrace";
 
 export class NetworkExecutor {
 
@@ -83,9 +85,14 @@ export class NetworkExecutor {
     }
 
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
+
+        // t: actions that the network will perform
         const events: EventAndParameters[] = [];
 
-        // Set up the Scratch-VM and start the game
+        // to collect sprites traces
+        const spritesTrace: spriteTrace = {pass: false, position:[]};
+
+        // Set up the Scratch-VM and start the game   _onRunStop: callback when the vm stops
         const _onRunStop = this._projectStopped.bind(this);
         this._projectRunning = true;
         await this._vmWrapper.start();
@@ -104,9 +111,13 @@ export class NetworkExecutor {
 
             // Update input/output nodes if novel inputs/actions have been discovered.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
+
+            const collectedTrace = this.collectSpritePositions(spriteFeatures);
+            spritesTrace.position.push(collectedTrace);
+
             network.updateInputNodes(spriteFeatures);
             network.updateOutputNodes(this.availableEvents);
-
+//here to debug
             // Select the next event and execute it if we did not decide to wait
             network.activateNetwork(spriteFeatures);
             const nextEvents = this._selectNextEvents(network);
@@ -125,9 +136,9 @@ export class NetworkExecutor {
         network.score = ScoreFitness.gatherPoints(this._vm);
         network.playTime = Date.now() - startTime;
 
-        // Save the executed Trace and the covered blocks
+        // Save the executed Trace and the covered blocks and the sprites trace
         const coverageTrace: CoverageTrace = this._vm.getTraces();
-        network.trace = new ExecutionTrace(coverageTrace.branchDistances, events);
+        network.trace = new ExecutionTrace(coverageTrace.branchDistances, events, spritesTrace);
         network.coverage = coverageTrace.blockCoverage;
 
         // Saves the final state of the network if we want to compute a state-based novelty score.
@@ -171,6 +182,8 @@ export class NetworkExecutor {
      * @param network the network holding the execution trace.
      */
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
+        const spritesTrace: spriteTrace = {pass: false, position:[]};
+
         // Set up the Scratch-VM and start the game
         const _onRunStop = this._projectStopped.bind(this);
         this._projectRunning = true;
@@ -187,6 +200,10 @@ export class NetworkExecutor {
             }
             // Load input features into the node to record the activation trace later.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
+
+            const collectedTrace = this.collectSpritePositions(spriteFeatures);
+            spritesTrace.position.push(collectedTrace);
+
             network.setUpInputs(spriteFeatures);
 
             // Execute the event
@@ -207,7 +224,7 @@ export class NetworkExecutor {
 
         // Save the executed Trace and the covered blocks
         const coverageTrace: CoverageTrace = this._vm.getTraces();
-        network.trace = new ExecutionTrace(coverageTrace.branchDistances, eventTrace);
+        network.trace = new ExecutionTrace(coverageTrace.branchDistances, eventTrace, spritesTrace);
         network.coverage = coverageTrace.blockCoverage;
 
         // Stop VM and remove listeners.
@@ -215,6 +232,16 @@ export class NetworkExecutor {
         this._vmWrapper.end();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return network.trace;
+    }
+
+    private collectSpritePositions(inputFeatures: InputFeatures):number[]{
+        const spritesPositions: number[] = [];
+        inputFeatures.forEach((features, sprite)=>{
+            if(sprite!= "Stage" && features.size>0 && features.has("X") && features.has("Y")){
+                spritesPositions.push(features.get('X'), features.get('Y'));
+            }
+        });
+        return spritesPositions;
     }
 
     /**

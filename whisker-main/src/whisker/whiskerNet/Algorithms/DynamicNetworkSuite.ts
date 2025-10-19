@@ -21,6 +21,7 @@ import logger from "../../../util/logger";
 import {Project} from "../../../assembler/project/Project";
 import {ActionNode} from "../NetworkComponents/ActionNode";
 import {ModelTester} from "../../model/ModelTester";
+import {spriteTrace} from "../../testcase/ExecutionTrace";
 
 
 export class DynamicNetworkSuite {
@@ -115,9 +116,9 @@ export class DynamicNetworkSuite {
      * @param recordExecution determines whether we want to record this execution by updating the archive and
      * analysing network metrics.
      */
-    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<void> {
+    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<spriteTrace|undefined> {
         test.recordNetworkStatistics = true;
-        await this.executor.execute(test);
+        const executionTrace = await this.executor.execute(test);
         if (recordExecution) {
             await this.updateStatementArchive(test);
             await this.updateBranchArchive(test);
@@ -125,18 +126,22 @@ export class DynamicNetworkSuite {
         }
         test.recordNetworkStatistics = false;
         await this.executor.resetState();
+        return executionTrace.positionTrace;
     }
 
     /**
      * Executes the dynamic test suite consisting of networks on a single test project.
      */
-    protected async testSingleProject(): Promise<void> {
+    protected async testSingleProject(): Promise<spriteTrace[]> {
         // Execute all networks on the single project.
+        const spriteTraces:spriteTrace[]= [];
         for (let i = 0; i < this.testCases.length; i++) {
             logger.debug(`Executing test ${i}`);
-            await this.executeTestCase(this.testCases[i], true);
+            const spriteTrace =  await this.executeTestCase(this.testCases[i], true);
+            spriteTraces.push(spriteTrace);
         }
         await this.updateTestStatistics(this.testCases, this.projectName, this.testName);
+        return spriteTraces;
     }
 
     /**
@@ -219,7 +224,7 @@ export class DynamicNetworkSuite {
      * @param modelTester For executing {@linkcode ProgramModel} with inputs from the network.
      * @returns Results of network suite execution in csv format.
      */
-    protected async execute(modelTester: ModelTester): Promise<[string, Project[]]> {
+    protected async execute(modelTester: ModelTester): Promise<[string, Project[], spriteTrace[]]> {
 
         // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
@@ -239,13 +244,13 @@ export class DynamicNetworkSuite {
 
         if (this.properties.mutators !== undefined && this.properties.mutators[0] !== 'NONE') {
             logger.debug("Performing Mutation Analysis");
-            await this.testSingleProject();     // Execute the original program to obtain reference data
+            const spriteTraces = await this.testSingleProject();      // Execute the original program to obtain reference data
             const mutants = await this.mutationAnalysis();
-            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutants];
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), mutants, spriteTraces];
         } else {
             logger.debug("Testing Single Project");
-            await this.testSingleProject();
-            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), []];
+            const spriteTraces = await this.testSingleProject();
+            return [StatisticsCollector.getInstance().asCsvNetworkSuite(), [], spriteTraces];
         }
     }
 

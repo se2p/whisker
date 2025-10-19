@@ -10,7 +10,8 @@ const {
     testPath,
     winningStates,
     keepaliveTimeout,
-    modelPath
+    modelPath,
+    trace,
 } = opts;
 
 // Dynamic Test suite using Neuroevolution
@@ -67,6 +68,14 @@ async function runDynamicTestSuite(whisker, path) {
         const coverageLogLines = outputLog.split('\n');
         const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
         const endIndex = coverageLogLines.indexOf("");    // We may have additional output after 3 newlines
+
+        const executionTrace = await whisker.page.evaluate(() => document.querySelector('#container').spriteTraces);
+
+        if (executionTrace && trace) {
+            logger.info(`Saving execution trace to ${opts.trace}`);
+            fs.writeFileSync(opts.trace, JSON.stringify(executionTrace, null, 2));
+        }
+
         return coverageLogLines.slice(csvHeaderIndex, endIndex).join("\n")
     }
 
