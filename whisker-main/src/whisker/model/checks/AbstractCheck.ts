@@ -1,11 +1,10 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {Check, CheckJSON} from "./newCheck";
+import {CheckJSON} from "./newCheck";
 import {ArgType} from "../util/schema";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
 import {CheckResult, fail} from "./CheckResult";
-import Sprite from "../../../vm/sprite";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
@@ -39,7 +38,7 @@ export type CheckFun =
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
  */
-export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
+abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> {
     protected readonly _edgeLabel: string;
     private readonly _checkJSON: J;
     private _check: C;
@@ -63,6 +62,8 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         this._reset();
     }
 
+    abstract get isPure(): boolean;
+
     private _reset(): void {
         this._lastResult = fail({message: "The check has not been called yet!"});
         this._lastStepExecuted = -1;
@@ -83,8 +84,6 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
     get negated(): J["negated"] {
         return this._checkJSON.negated;
     }
-
-    abstract get dependsOnSayText(): boolean;
 
     protected get cu(): CheckUtility {
         return this._cu;
@@ -150,20 +149,20 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
         return JSON.parse(JSON.stringify(this._checkJSON));
     }
 
-    protected _registerOnMoveEvent(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnMoveEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerOnMoveEvent(spriteName: string): void {
+        this._cu.registerOnMoveEvent(spriteName, this.graphID);
     }
 
-    protected _registerOnVisualChange(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOnVisualChange(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerOnVisualChange(spriteName: string): void {
+        this._cu.registerOnVisualChange(spriteName, this.graphID);
     }
 
-    protected _registerOutput(spriteName: string, check: (s: Sprite) => CheckResult): void {
-        this._cu.registerOutput(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerOutput(spriteName: string): void {
+        this._cu.registerOutput(spriteName, this.graphID);
     }
 
-    protected _registerVarEvent(spriteName: string, check: () => CheckResult): void {
-        this._cu.registerVarEvent(spriteName, this as unknown as Check, this._graphId, this._wrapCheck(check));
+    protected _registerVarEvent(varName: string): void {
+        this._cu.registerVarEvent(varName, this.graphID);
     }
 
     protected abstract _validate(checkJSON: J): J;
@@ -192,5 +191,25 @@ export abstract class AbstractCheck<J extends CheckJSON = CheckJSON, C extends C
 
     private _equalsArgs(that: AbstractCheck): boolean {
         return this._args.length === that._args.length && this._args.every((val, index) => val === that._args[index]);
+    }
+}
+
+/**
+ * A check that does not cause side effects when its `check()` method is invoked. Only pure checks can be used as
+ * edge conditions. Pure checks can also be used as transition effects.
+ */
+export abstract class PureCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+    override get isPure(): true {
+        return true;
+    }
+}
+
+/**
+ * A check that causes side effects when its `check()` method is invoked. Impure checks cannot be used as edge
+ * conditions, but are typically used as transition effects.
+ */
+export abstract class ImpureCheck<J extends CheckJSON, C extends CheckFun = CheckFun> extends AbstractCheck<J, C> {
+    override get isPure(): false {
+        return false;
     }
 }

@@ -4,7 +4,6 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelNodeJSON} from "../util/schema";
-import {Checks} from "../util/Checks";
 
 export type ProgramModelNode = ModelNode<ProgramModelEdge>;
 export type UserModelNode = ModelNode<UserModelEdge>;
@@ -83,8 +82,16 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     /**
      * Check the edges for a transition based on fired events.
      */
-    testForEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): void {
-        this.edges.forEach(e => e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd, checks)); // cache results
+    testForEvent(stepsSinceLastTransition: number, stepsSinceEnd: number): void {
+        for (const e of this.edges) {
+            try {
+                if (e.checkConditionsOnEvent(stepsSinceLastTransition, stepsSinceEnd)) { // cache results
+                    return; // this edges will be taken later anyway so there is no point in caching for the remaining edges
+                }
+            } catch (e) {
+                // something failed but this is not important here, because this method is only for caching anyway
+            }
+        }
     }
 
     /**

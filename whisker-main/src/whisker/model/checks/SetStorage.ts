@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, ImpureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
@@ -26,7 +26,7 @@ export const SetStorageJSON = ICheckJSON.extend({
     args: SetStorageArgs,
 });
 
-export class SetStorage extends AbstractCheck<SetStorageJSON, CheckFun0> {
+export class SetStorage extends ImpureCheck<SetStorageJSON, CheckFun0> {
     private readonly _key: string;
     private readonly _type: "number" | "string" | "exprType";
     private readonly _value: number | string | string[];
@@ -51,10 +51,6 @@ export class SetStorage extends AbstractCheck<SetStorageJSON, CheckFun0> {
 
     get value(): number | string | string[] {
         return this._value;
-    }
-
-    override get dependsOnSayText(): boolean {
-        return this._code.includes(".sayText");
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {

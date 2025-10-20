@@ -14,7 +14,6 @@ import {ProgramModelEdge} from "./components/ProgramModelEdge";
 import {CoverageResult, EndModel, ProgramModel,} from "./components/ProgramModel";
 import {loadModels} from "./util/loadModels";
 import {ModelJSON} from "./util/schema";
-import {Checks} from "./util/Checks";
 import {Check} from "./checks/newCheck";
 import TestResult from "../../test-runner/test-result";
 import Test from "../../test-runner/test";
@@ -279,7 +278,6 @@ export class ModelTester extends EventEmitter {
     }
 
     private _doOracleModelStep(models: OracleModel[], fn: () => void): void {
-        this._checkUtility!.makeFailedOutputs();
         const notStoppedModels: OracleModel[] = [];
         models.forEach((model: OracleModel) => this._doOneStepOnOracleModel(model, notStoppedModels));
         const contradictingEffects = this._checkUtility!.checkEffects();
@@ -287,6 +285,7 @@ export class ModelTester extends EventEmitter {
         if (notStoppedModels.length == 0 || models.some(m => m.haltAllModels())) {
             fn();
         }
+        this._checkUtility!.makeFailedOutputs();
     }
 
     private _onModelStep(): void {
@@ -332,14 +331,14 @@ export class ModelTester extends EventEmitter {
         return this._testDriver!.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
 
-    private _onVMEvent(checks: Checks) {
+    private _onVMEvent(modelIds: Set<string>) {
         if (!this._isRunning) {
             return;
         }
         // logger.debug(checks, this.testDriver.getTotalStepsExecuted());
         const inProgramModelStage = this._modelStepCallback!.isActive();
-        const models = inProgramModelStage ? this._programModels : this._onTestEndModels;
-        models.forEach((m: OracleModel) => m.testForEvent(this._testDriver!, checks));
+        const models: OracleModel[] = inProgramModelStage ? this._programModels : this._onTestEndModels;
+        models.filter(m => modelIds.has(m.id)).forEach((m: OracleModel) => m.testForEvent(this._testDriver!));
     }
 
     private _onLogEvent(output: unknown) {

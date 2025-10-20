@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -48,7 +48,7 @@ export const AttrCompJSON = ICheckJSON.extend({
     args: AttrCompArgs,
 });
 
-export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
+export class AttrComp extends PureCheck<AttrCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Quantification<Comparison>;
     private readonly _isForEffect: boolean;
     private readonly _attrName: AttrName;
@@ -66,10 +66,6 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
     get value(): AttributeType {
         return this._args[3];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return this._attrName === "sayText";
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -92,21 +88,13 @@ export class AttrComp extends AbstractCheck<AttrCompJSON, CheckFun0> implements 
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
-        const listener = (sprite: Sprite) => {
-            try {
-                return this._comparison.applySingle(this._getAttr(sprite));
-            } catch (e) {
-                throw new Exception(pSpriteName, this._attrName, e);
-            }
-        };
-
         // on movement listener
         if (this._attrName == "x" || this._attrName == "y") {
-            this._registerOnMoveEvent(spriteName, listener);
+            this._registerOnMoveEvent(spriteName);
         } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(this._attrName)) {
-            this._registerOnVisualChange(spriteName, listener);
+            this._registerOnVisualChange(spriteName);
         } else if (this._attrName == "sayText") {
-            this._registerOutput(spriteName, listener);
+            this._registerOutput(spriteName);
         }
 
         return () => {

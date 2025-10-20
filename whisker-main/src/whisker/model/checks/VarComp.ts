@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForVariable} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -38,7 +38,7 @@ export const VarCompJSON = ICheckJSON.extend({
     args: VarCompArgs,
 });
 
-export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements ComparingCheck {
+export class VarComp extends PureCheck<VarCompJSON, CheckFun0> implements ComparingCheck {
     private readonly _comparison: Comparison;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<VarCompJSON>) {
@@ -52,10 +52,6 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
 
     get value(): string | number {
         return this._args[3];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -86,7 +82,7 @@ export class VarComp extends AbstractCheck<VarCompJSON, CheckFun0> implements Co
             }
         };
 
-        this._registerVarEvent(variableName, check);
+        this._registerVarEvent(variableName);
         return check;
     }
 

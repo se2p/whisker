@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
@@ -36,14 +36,10 @@ export const MoveStepsJSON = ICheckJSON.extend({
     args: MoveStepsArgs,
 });
 
-export class MoveSteps extends AbstractCheck<MoveStepsJSON, CheckFun0> {
+export class MoveSteps extends PureCheck<MoveStepsJSON, CheckFun0> {
 
     constructor(edgeLabel: string, json: SlimCheckJSON<MoveStepsJSON>) {
         super(edgeLabel, {...json, name});
-    }
-
-    get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -60,7 +56,7 @@ export class MoveSteps extends AbstractCheck<MoveStepsJSON, CheckFun0> {
 
         const check = (s: Sprite) => movedCorrectAmountOfSteps(s, this._args[1], this.negated);
 
-        this._registerOnVisualChange(spriteName, check);
+        this._registerOnMoveEvent(spriteName);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);

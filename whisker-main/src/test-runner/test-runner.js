@@ -294,7 +294,7 @@ class TestRunner extends EventEmitter {
             this.vmWrapper.nextUserModelIndex = uM;
             const startTime = Date.now();
             const result = await this._executeTest(vm, null, props, modelProps, 0);
-            result.modelResult.testNbr = Math.min(0, rep * indices.length + uM);
+            result.modelResult.testNbr = Math.max(0, rep * indices.length + uM);
             this.emit(TestRunner.TEST_MODEL, result);
             testResults.push(result);
             // Record the results
@@ -521,8 +521,9 @@ class TestRunner extends EventEmitter {
      * @return {string}
      */
     _generateCSVHeader(tests) {
-        let header = `\nprojectName,seed,assertions,generationAlgorithm`;
+        let header = `\nprojectName,seed,assertions`;
         if (tests) {
+            header += ',generationAlgorithm';
             for (const test of tests) {
                 header += `,${test.name}`;
             }
@@ -552,9 +553,9 @@ class TestRunner extends EventEmitter {
             for (const testResult of testStatusResults) {
                 csvRow += `,${testResult}`;
             }
-            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip},${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration}`;
+            csvRow += `,${resultRecords.pass},${resultRecords.fail},${resultRecords.error},${resultRecords.skip}`;
         }
-        csvRow += `,${testStatusResults[0]},${modelResultToCsvData(modelResult)}`;
+        csvRow += `,${coverage.statements},${coverage.statCoverage},${coverage.branches},${coverage.branchCoverage},${duration},${testStatusResults[0]},${modelResultToCsvData(modelResult)}`;
         return csvRow + '\n';
     }
 
@@ -679,6 +680,7 @@ class TestRunner extends EventEmitter {
                 updateResultStatus = false;
                 result.status = Test.ERROR;
             } finally {
+                await this._determineCoverages(test, props);
                 this.vmWrapper.stopModels(result, updateResultStatus);
             }
         }
@@ -707,11 +709,13 @@ class TestRunner extends EventEmitter {
         const coverageTrace = this.vmWrapper.vm.getTraces();
 
         if (props.traceBlockCoverage) {
-            test.coverage = coverageTrace.blockCoverage;
+            if (test) {
+                test.coverage = coverageTrace.blockCoverage;
+            }
 
             // Infer statement coverage
             for (const statement of this.statementMap.keys()) {
-                if (test.coverage.has(statement.getNodeId())) {
+                if (coverageTrace.blockCoverage.has(statement.getNodeId())) {
                     this.statementMap.set(statement, true);
                 }
             }

@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {checkAttributeExistence, getStageOrSprite, isAnEffect} from "../util/ModelUtil";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {z} from "zod";
@@ -53,7 +53,7 @@ const bounds: Record<AttrName, Bounds | null> = Object.freeze({
 const attrNameIndex = 1;
 
 export type AttrChangeArgs =
-    [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
+    | [spriteName: SpriteName, attrName: NumberAttribute | Effect, change: NumberOrChangeOp]
     | [spriteName: SpriteName, attrName: StringAttribute, change: EqOrNeq]
     | [spriteName: SpriteName, attrName: BooleanAttribute, change: EqOrNeq];
 
@@ -74,7 +74,7 @@ export const AttrChangeJSON = ICheckJSON.extend({
     args: AttrChangeArgs,
 });
 
-export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
+export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
     private readonly _change: Quantification<Change>;
     private readonly _isForEffect: boolean;
     private readonly _attributeName: AttrName;
@@ -88,10 +88,6 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
 
     get change(): NumberOrChangeOp {
         return this._args[2];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return this._args[1] === "sayText";
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -115,23 +111,15 @@ export class AttrChange extends AbstractCheck<AttrChangeJSON, CheckFun0> impleme
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
-        const listener = (sprite: Sprite) => {
-            try {
-                return this._change.applySingle(...this._getAttr(sprite));
-            } catch (e) {
-                throw new Exception(pSpriteName, attrName, e);
-            }
-        };
-
         // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
         // is not a numerical value and e.g. an increase (+) on a string is not desired to be representable. An
         // AttributeChange predicate with sayText fails in the execution with e.g.
         // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
         // Therefore, no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
-            this._registerOnMoveEvent(spriteName, listener);
+            this._registerOnMoveEvent(spriteName);
         } else if (this._isForEffect || ["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-            this._registerOnVisualChange(spriteName, listener);
+            this._registerOnVisualChange(spriteName);
         }
 
         return () => {

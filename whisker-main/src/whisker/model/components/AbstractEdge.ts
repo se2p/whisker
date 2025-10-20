@@ -4,7 +4,6 @@ import {getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util
 import {ProgramModelEdge} from "./ProgramModelEdge";
 import {UserModelEdge} from "./UserModelEdge";
 import {ModelEdgeJSON} from "../util/schema";
-import {Checks} from "../util/Checks";
 import {Check, Condition} from "../checks/newCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
 
@@ -123,7 +122,7 @@ export abstract class AbstractEdge {
         return failedConditions;
     }
 
-    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number, checks: Checks): boolean;
+    abstract checkConditionsOnEvent(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean;
 
     /**
      * Returns the id of the target node of this edge.

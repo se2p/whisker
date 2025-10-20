@@ -1,9 +1,6 @@
 import {SpriteMock} from "../mocks/SpriteMock";
 import {TestDriverMock} from "../mocks/TestDriverMock";
 import {CheckUtilityMock, getDummyCheckUtility} from "../mocks/CheckUtilityMock";
-import Sprite from "../../../../src/vm/sprite";
-import {CheckResult, fail, pass} from "../../../../src/whisker/model/checks/CheckResult";
-import {Check} from "../../../../src/whisker/model/checks/newCheck";
 import {SpriteTouching} from "../../../../src/whisker/model/checks/SpriteTouching";
 
 
@@ -18,20 +15,12 @@ describe('SpriteTouching tests', () => {
 
     test('cu.registerOnMoveEvent() is called with correct params', () => {
         const fn = jest.fn();
-        let check: (sprite: Sprite) => CheckResult;
         const cuMock = new CheckUtilityMock();
-        cuMock.registerOnMoveEvent = (spriteName: string, c: Check, graphID: string,
-                                      predicate: (sprite: Sprite) => CheckResult) => {
-            fn(spriteName, c, graphID, predicate);
-            check = predicate;
-        };
+        cuMock.registerOnMoveEvent = fn;
         const cu = cuMock.getCheckUtility();
         const c = new SpriteTouching("label", {negated: true, args: ["kiwi", "banana"]});
         c.registerComponents(t, cu, graphID);
         expect(fn).toHaveBeenCalledTimes(2);
-        expect(check(kiwi.sprite)).toEqual(fail(expect.any(Object)));
-        kiwi.touchingSprite = false;
-        expect(check(kiwi.sprite)).toEqual(pass());
     });
 
     it.each([true, false])('returned function depends on touchingSprite (negated: %s)', (negated: boolean) => {

@@ -1,4 +1,4 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {ComparingCheck, Comparison, newComparison} from "./Comparison";
@@ -38,7 +38,7 @@ type TNbrOfClonesJSON =
 
 abstract class AbstractNbrOfClones<
     J extends TNbrOfClonesJSON = TNbrOfClonesJSON,
-> extends AbstractCheck<J, CheckFun0> implements ComparingCheck {
+> extends PureCheck<J, CheckFun0> implements ComparingCheck {
     private readonly _visible: boolean;
     private readonly _comparison: Comparison;
 
@@ -54,10 +54,6 @@ abstract class AbstractNbrOfClones<
 
     get value(): number {
         return this._args[2];
-    }
-
-    override get dependsOnSayText(): boolean {
-        return false;
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {

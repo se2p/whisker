@@ -1,11 +1,10 @@
-import {AbstractCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {Dependencies, evaluateExpression, Expression, getDependencies, getExpressionForEval} from "../util/ModelUtil";
 import {z} from "zod";
-import {CheckResult, result} from "./CheckResult";
+import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult} from "./CheckTypes";
-import Sprite from "../../../vm/sprite";
 
 const name = "Expr" as const;
 
@@ -25,7 +24,7 @@ export const ExprJSON = ICheckJSON.extend({
     args: ExprArgs,
 });
 
-export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
+export class Expr extends PureCheck<ExprJSON, CheckFun0> {
     private readonly _code: string;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<ExprJSON>) {
@@ -35,10 +34,6 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
 
     get code(): string {
         return this._code;
-    }
-
-    override get dependsOnSayText(): boolean {
-        return this._code.includes(".sayText");
     }
 
     public static convertArgs(args: ArgType[]): ParsingResult {
@@ -55,7 +50,7 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
             const log = {};
             return result(Boolean(evaluateExpression(t, e.expr, this.graphID, log)), log, this.negated);
         };
-        this._setupAllDependenciesForExpressions(e, this._code, check);
+        this._setupAllDependenciesForExpressions(e, this._code);
         return check;
     }
 
@@ -74,28 +69,27 @@ export class Expr extends AbstractCheck<ExprJSON, CheckFun0> {
      * (dependencies by $-function calls and parsed with RegEx from test driver use)
      * @param expr Expression with the dependencies from the $-function are registered.
      * @param code Code of the expression
-     * @param predicate Generated check
      */
-    private _setupAllDependenciesForExpressions(expr: Expression, code: string, predicate: (...sprite: Sprite[]) => CheckResult): void {
-        this._setupDependencies(expr, predicate);
+    private _setupAllDependenciesForExpressions(expr: Expression, code: string): void {
+        this._setupDependencies(expr);
         const dep: Dependencies = getDependencies(code);
         if (dep.varDependencies.length > 0 || dep.attrDependencies.length > 0) {
-            this._setupDependencies(dep, predicate);
+            this._setupDependencies(dep);
         }
     }
 
-    private _setupDependencies(d: Dependencies, predicate: (...sprite: Sprite[]) => CheckResult): void {
+    private _setupDependencies(d: Dependencies): void {
         d.varDependencies.forEach(dependency => {
-            this._registerVarEvent(dependency.varName, predicate);
+            this._registerVarEvent(dependency.varName);
         });
 
         d.attrDependencies.forEach(({spriteName, attrName}) => {
             if (attrName == "x" || attrName == "y") {
-                this._registerOnMoveEvent(spriteName, predicate);
+                this._registerOnMoveEvent(spriteName);
             } else if (["size", "direction", "visible", "currentCostumeName", "rotationStyle"].includes(attrName)) {
-                this._registerOnVisualChange(spriteName, predicate);
+                this._registerOnVisualChange(spriteName);
             } else if (attrName == "sayText") {
-                this._registerOutput(spriteName, predicate);
+                this._registerOutput(spriteName);
             }
         });
     }
