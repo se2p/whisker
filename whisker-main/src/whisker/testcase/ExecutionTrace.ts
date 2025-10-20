@@ -63,7 +63,7 @@ export class ExecutionTrace {
 
 
     clone(): ExecutionTrace {
-        return new ExecutionTrace(this.blockTraces, [...this.events], {...this._positionTrace, position:[...this._positionTrace.position]});
+        return new ExecutionTrace(this.blockTraces, [...this.events], {...this._positionTrace, positions:[...this._positionTrace.positions]});
     }
 
     get blockTraces(): CoverageTrace {
@@ -85,7 +85,7 @@ export class ExecutionTrace {
 
 export interface SpriteTrace {
     pass:boolean,
-    position: number[][]
+    positions: number[][]
 
 }
 

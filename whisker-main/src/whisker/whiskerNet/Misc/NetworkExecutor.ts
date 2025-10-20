@@ -90,7 +90,7 @@ export class NetworkExecutor {
         const events: EventAndParameters[] = [];
 
         // to collect sprites traces
-        const spritesTrace: SpriteTrace = {pass: false, position:[]};
+        const spritesTrace: SpriteTrace = {pass: false, positions:[]};
 
         // Set up the Scratch-VM and start the game   _onRunStop: callback when the vm stops
         const _onRunStop = this._projectStopped.bind(this);
@@ -113,7 +113,7 @@ export class NetworkExecutor {
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
             const collectedTrace = this.collectSpritePositions(spriteFeatures);
-            spritesTrace.position.push(collectedTrace);
+            spritesTrace.positions.push(collectedTrace);
 
             network.updateInputNodes(spriteFeatures);
             network.updateOutputNodes(this.availableEvents);
@@ -182,7 +182,7 @@ export class NetworkExecutor {
      * @param network the network holding the execution trace.
      */
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const spritesTrace: SpriteTrace = {pass: false, position:[]};
+        const spritesTrace: SpriteTrace = {pass: false, positions:[]};
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this._projectStopped.bind(this);
@@ -202,7 +202,7 @@ export class NetworkExecutor {
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
             const collectedTrace = this.collectSpritePositions(spriteFeatures);
-            spritesTrace.position.push(collectedTrace);
+            spritesTrace.positions.push(collectedTrace);
 
             network.setUpInputs(spriteFeatures);
 
