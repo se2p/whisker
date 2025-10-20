@@ -54,7 +54,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
      */
     override reset(currentStep = 0): void {
         this.restart(currentStep);
-        for (const edgesCoveredKey in this.coverageCurrentRun) {
+        for (const edgesCoveredKey of Object.keys(this.coverageCurrentRun)) {
             this.coverageCurrentRun[edgesCoveredKey] = false;
         }
     }
