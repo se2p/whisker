@@ -2,7 +2,7 @@ import {ProgramModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {AbstractModel} from "./AbstractModel";
 import {ProgramModelEdge} from "./ProgramModelEdge";
-import {EdgeID, EndModelJSON, IModelJSON, OracleModelUsage, ProgramModelJSON, StorageValueType} from "../util/schema";
+import {EdgeID, EndModelJSON, OracleModelJSON, ProgramModelJSON, StorageValueType} from "../util/schema";
 import logger from "../../../util/logger";
 
 export interface CoverageResult {
@@ -27,7 +27,7 @@ export interface ExtendedCoverageResult extends CoverageResult {
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
-abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
+abstract class AbstractProgramModel<J extends OracleModelJSON> extends AbstractModel<ProgramModelEdge> {
     protected coverageCurrentRun: Record<string, boolean> = {};
     protected coverageTotal: Record<string, boolean> = {};
 
@@ -47,7 +47,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
     }
 
-    abstract override get usage(): OracleModelUsage;
+    abstract override get usage(): J["usage"];
 
     /**
      * Reset the graph to the start state.
@@ -115,7 +115,7 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
         return this.currentState.isStopAllNode;
     }
 
-    toJSONBase(): IModelJSON {
+    toJSON(): J {
         return {
             usage: this.usage,
             id: this.id,
@@ -124,11 +124,11 @@ abstract class AbstractProgramModel extends AbstractModel<ProgramModelEdge> {
             nodes: Object.values(this.nodes).map((node) => node.toJSON()),
             edges: Object.values(this.edges).map((edge) => edge.toJSON()),
             initialStorage: this.initialStorage
-        };
+        } as J;
     }
 }
 
-export class EndModel extends AbstractProgramModel {
+export class EndModel extends AbstractProgramModel<EndModelJSON> {
     constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
         super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
@@ -137,13 +137,9 @@ export class EndModel extends AbstractProgramModel {
     override get usage(): "end" {
         return "end";
     }
-
-    override toJSON(): EndModelJSON {
-        return this.toJSONBase() as EndModelJSON;
-    }
 }
 
-export class ProgramModel extends AbstractProgramModel {
+export class ProgramModel extends AbstractProgramModel<ProgramModelJSON> {
     constructor(id: string, startNodeId: string, nodes: Record<string, ProgramModelNode>,
                 edges: Record<string, ProgramModelEdge>, stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
         super(id, startNodeId, nodes, edges, stopAllNodeIds, initialStorage);
@@ -151,9 +147,5 @@ export class ProgramModel extends AbstractProgramModel {
 
     override get usage(): "program" {
         return "program";
-    }
-
-    override toJSON(): ProgramModelJSON {
-        return this.toJSONBase() as ProgramModelJSON;
     }
 }
