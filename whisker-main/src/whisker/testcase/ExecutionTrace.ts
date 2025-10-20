@@ -53,9 +53,9 @@ export class ExecutionTrace {
 
     private _events: EventAndParameters[];
 
-    private readonly _positionTrace?: spriteTrace;
+    private readonly _positionTrace?: SpriteTrace;
 
-    constructor(traces: CoverageTrace, events: EventAndParameters[], trace?: spriteTrace) {
+    constructor(traces: CoverageTrace, events: EventAndParameters[], trace?: SpriteTrace) {
         this._blockTraces = traces;
         this._events = events;
         this._positionTrace = trace;
@@ -78,12 +78,12 @@ export class ExecutionTrace {
         this._events = value;
     }
 
-    get positionTrace(): spriteTrace | undefined {
+    get positionTrace(): SpriteTrace | undefined {
         return this._positionTrace;
     }
 }
 
-export interface spriteTrace{
+export interface SpriteTrace {
     pass:boolean,
     position: number[][]
 

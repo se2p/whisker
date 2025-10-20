@@ -21,7 +21,7 @@ import {TypeNumberEvent} from "../../testcase/events/TypeNumberEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ClassificationType} from "../HyperParameter/BasicNeuroevolutionParameter";
 import {Input} from "../../../assembler/blocks/Inputs";
-import {spriteTrace} from "../../testcase/ExecutionTrace";
+import {SpriteTrace} from "../../testcase/ExecutionTrace";
 
 export class NetworkExecutor {
 
@@ -90,7 +90,7 @@ export class NetworkExecutor {
         const events: EventAndParameters[] = [];
 
         // to collect sprites traces
-        const spritesTrace: spriteTrace = {pass: false, position:[]};
+        const spritesTrace: SpriteTrace = {pass: false, position:[]};
 
         // Set up the Scratch-VM and start the game   _onRunStop: callback when the vm stops
         const _onRunStop = this._projectStopped.bind(this);
@@ -182,7 +182,7 @@ export class NetworkExecutor {
      * @param network the network holding the execution trace.
      */
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const spritesTrace: spriteTrace = {pass: false, position:[]};
+        const spritesTrace: SpriteTrace = {pass: false, position:[]};
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this._projectStopped.bind(this);

@@ -21,7 +21,7 @@ import logger from "../../../util/logger";
 import {Project} from "../../../assembler/project/Project";
 import {ActionNode} from "../NetworkComponents/ActionNode";
 import {ModelTester} from "../../model/ModelTester";
-import {spriteTrace} from "../../testcase/ExecutionTrace";
+import {SpriteTrace} from "../../testcase/ExecutionTrace";
 
 
 export class DynamicNetworkSuite {
@@ -116,7 +116,7 @@ export class DynamicNetworkSuite {
      * @param recordExecution determines whether we want to record this execution by updating the archive and
      * analysing network metrics.
      */
-    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<spriteTrace|undefined> {
+    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<SpriteTrace|undefined> {
         test.recordNetworkStatistics = true;
         const executionTrace = await this.executor.execute(test);
         if (recordExecution) {
@@ -132,9 +132,9 @@ export class DynamicNetworkSuite {
     /**
      * Executes the dynamic test suite consisting of networks on a single test project.
      */
-    protected async testSingleProject(): Promise<spriteTrace[]> {
+    protected async testSingleProject(): Promise<SpriteTrace[]> {
         // Execute all networks on the single project.
-        const spriteTraces:spriteTrace[]= [];
+        const spriteTraces:SpriteTrace[]= [];
         for (let i = 0; i < this.testCases.length; i++) {
             logger.debug(`Executing test ${i}`);
             const spriteTrace =  await this.executeTestCase(this.testCases[i], true);
@@ -224,7 +224,7 @@ export class DynamicNetworkSuite {
      * @param modelTester For executing {@linkcode ProgramModel} with inputs from the network.
      * @returns Results of network suite execution in csv format.
      */
-    protected async execute(modelTester: ModelTester): Promise<[string, Project[], spriteTrace[]]> {
+    protected async execute(modelTester: ModelTester): Promise<[string, Project[], SpriteTrace[]]> {
 
         // Initialise the seed, hyperParameters, fitness objectives and the VM
         this.setScratchSeed();
