@@ -262,10 +262,10 @@ export class ModelTester extends EventEmitter {
     }
 
     private _doOracleModelStep(models: OracleModel[], fn: () => void): void {
-        // this._doOneStepOnOracleModel(model) must be executed for every model!
-        const reduceFn =
-            (acc: boolean, model: OracleModel) => this._doOneStepOnOracleModel(model) && acc;
-        const allStopped = models.reduce(reduceFn, true);
+        const allStopped = models
+            // NOTE: Must be executed for every model! Cannot use every() directly, since it may terminate early.
+            .map((model) => this._doOneStepOnOracleModel(model))
+            .every((b) => b);
         const contradictingEffects = this._checkUtility!.checkEffects();
         this._printContradictingEffects(contradictingEffects);
         if (allStopped) {
