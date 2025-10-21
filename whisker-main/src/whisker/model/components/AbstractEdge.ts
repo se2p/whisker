@@ -59,9 +59,7 @@ export abstract class AbstractEdge {
      */
     checkConditions(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
         // times up... force testing of conditions and if they are not fulfilled make add as failed
-        if ((this._forceAtSteps !== -1 && this._forceAtSteps <= t.getTotalStepsExecuted())
-            || (this._forceAfterSteps !== -1 && this._forceAfterSteps <= stepsSinceLastTransition)) {
-
+        if (this._mustForceStart(t) || this._mustForceLastTransition(stepsSinceLastTransition)) {
             let noneFailed = true;
             for (const c of this.conditions) {
                 try {
@@ -127,5 +125,13 @@ export abstract class AbstractEdge {
         } else {
             return getTimeLimitFailedAfterOutput(this, condition, this.forceAfter);
         }
+    }
+
+    private _mustForceStart(t: TestDriver): boolean {
+        return this._forceAtSteps !== -1 && this._forceAtSteps <= t.getTotalStepsExecuted();
+    }
+
+    private _mustForceLastTransition(stepsSinceLastTransition: number): boolean {
+        return this._forceAfterSteps !== -1 && this._forceAfterSteps <= stepsSinceLastTransition;
     }
 }
