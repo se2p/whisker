@@ -42,11 +42,9 @@ export abstract class AbstractEdge {
         this.from = from;
         this.to = to;
         this.forceAfter = Math.max(-1, forceTestAfter);
-        this._forceAfterSteps = this.forceAfter === -1
-            ? -1
-            : VMWrapper.convertFromTimeToSteps(this.forceAfter) + 1; // +1 so its less flaky
+        this._forceAfterSteps = this._convertTimeToSteps(this.forceAfter);
         this.forceAt = Math.max(-1, forceTestAt);
-        this._forceAtSteps = this.forceAt === -1 ? -1 : VMWrapper.convertFromTimeToSteps(this.forceAt);
+        this._forceAtSteps = this._convertTimeToSteps(this.forceAt);
     }
 
     /**
@@ -133,5 +131,9 @@ export abstract class AbstractEdge {
 
     private _mustForceLastTransition(stepsSinceLastTransition: number): boolean {
         return this._forceAfterSteps !== -1 && this._forceAfterSteps <= stepsSinceLastTransition;
+    }
+
+    private _convertTimeToSteps(value: number): number {
+        return value === -1 ? -1 : VMWrapper.convertFromTimeToSteps(value);
     }
 }
