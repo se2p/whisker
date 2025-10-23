@@ -85,12 +85,8 @@ export class NetworkExecutor {
     }
 
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
-
-        // t: actions that the network will perform
         const events: EventAndParameters[] = [];
-
-        // to collect sprites traces
-        const spritesTrace: SpriteTrace = {pass: false, positions:[]};
+        const spritesTrace: SpriteTrace = {pass: false, positions: []};
 
         // Set up the Scratch-VM and start the game   _onRunStop: callback when the vm stops
         const _onRunStop = this._projectStopped.bind(this);
@@ -112,12 +108,12 @@ export class NetworkExecutor {
             // Update input/output nodes if novel inputs/actions have been discovered.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
-            const collectedTrace = this.collectSpritePositions(spriteFeatures);
+            const collectedTrace = this._collectSpritePositions(spriteFeatures);
             spritesTrace.positions.push(collectedTrace);
 
             network.updateInputNodes(spriteFeatures);
             network.updateOutputNodes(this.availableEvents);
-//here to debug
+
             // Select the next event and execute it if we did not decide to wait
             network.activateNetwork(spriteFeatures);
             const nextEvents = this._selectNextEvents(network);
@@ -182,7 +178,7 @@ export class NetworkExecutor {
      * @param network the network holding the execution trace.
      */
     public async executeSavedTrace(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const spritesTrace: SpriteTrace = {pass: false, positions:[]};
+        const spritesTrace: SpriteTrace = {pass: false, positions: []};
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this._projectStopped.bind(this);
@@ -201,7 +197,8 @@ export class NetworkExecutor {
             // Load input features into the node to record the activation trace later.
             const spriteFeatures = InputExtraction.extractFeatures(this._vm);
 
-            const collectedTrace = this.collectSpritePositions(spriteFeatures);
+            // Collect all sprite (X, Y) positions for this step and store them in the trace
+            const collectedTrace = this._collectSpritePositions(spriteFeatures);
             spritesTrace.positions.push(collectedTrace);
 
             network.setUpInputs(spriteFeatures);
@@ -234,10 +231,15 @@ export class NetworkExecutor {
         return network.trace;
     }
 
-    private collectSpritePositions(inputFeatures: InputFeatures):number[]{
+    /**
+     * Collects all (X, Y) positions of sprites (excluding "Stage") from the given input features.
+     * @param inputFeatures - Map of sprite names to their feature sets.
+     * @returns A flat array of numbers representing all sprite coordinates [x1, y1, x2, y2, ...].
+     */
+    private _collectSpritePositions(inputFeatures: InputFeatures): number[] {
         const spritesPositions: number[] = [];
-        inputFeatures.forEach((features, sprite)=>{
-            if(sprite!= "Stage" && features.size>0 && features.has("X") && features.has("Y")){
+        inputFeatures.forEach((features, sprite) => {
+            if (sprite != "Stage" && features.size > 0 && features.has("X") && features.has("Y")) {
                 spritesPositions.push(features.get('X'), features.get('Y'));
             }
         });

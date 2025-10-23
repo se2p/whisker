@@ -116,7 +116,7 @@ export class DynamicNetworkSuite {
      * @param recordExecution determines whether we want to record this execution by updating the archive and
      * analysing network metrics.
      */
-    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<SpriteTrace|undefined> {
+    protected async executeTestCase(test: NeatChromosome, recordExecution: boolean): Promise<SpriteTrace> {
         test.recordNetworkStatistics = true;
         const executionTrace = await this.executor.execute(test);
         if (recordExecution) {

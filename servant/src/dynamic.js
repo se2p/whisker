@@ -48,6 +48,22 @@ async function configureWhiskerWebInstance(page) {
     logger.info('Web Instance Configuration Complete');
 }
 
+/**
+ * Collects the sprite execution traces from the page and saves them to a JSON file.
+ *
+ * @param {object} whisker - The whisker test environment.
+ * @param {string} tracePath - The path where the trace file will be saved.
+ */
+async function collectExecutionTrace(whisker, tracePath) {
+    const executionTrace = await whisker.page.evaluate(
+        () => document.querySelector('#container').spriteTraces
+    );
+    if (executionTrace && tracePath) {
+        logger.info(`Saving execution trace to ${tracePath}`);
+        fs.writeFileSync(tracePath, JSON.stringify(executionTrace, null, 2));
+    }
+}
+
 async function runDynamicTestSuite(whisker, path) {
     /**
      * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
@@ -69,13 +85,6 @@ async function runDynamicTestSuite(whisker, path) {
         const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
         const endIndex = coverageLogLines.indexOf("");    // We may have additional output after 3 newlines
 
-        const executionTrace = await whisker.page.evaluate(() => document.querySelector('#container').spriteTraces);
-
-        if (executionTrace && trace) {
-            logger.info(`Saving execution trace to ${opts.trace}`);
-            fs.writeFileSync(opts.trace, JSON.stringify(executionTrace, null, 2));
-        }
-
         return coverageLogLines.slice(csvHeaderIndex, endIndex).join("\n")
     }
 
@@ -91,6 +100,7 @@ async function runDynamicTestSuite(whisker, path) {
         logger.debug("Dynamic TestSuite");
         await executeTests();
         const results = await readTestResults();
+        await collectExecutionTrace(whisker, trace);
         return Promise.resolve(results);
     } catch (e) {
         return Promise.reject(e);
