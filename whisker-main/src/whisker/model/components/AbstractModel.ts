@@ -28,7 +28,6 @@ export abstract class AbstractModel<E extends ModelEdge> {
     protected readonly initialStorage: Record<string, StorageValueType>;
     protected _lastTransitionStep: number;
     private readonly _id: string;
-    private _lastTransitionWasSelfLoop: boolean;
 
     protected constructor(id: string, startNodeId: string, nodes: Record<string, ModelNode<E>>, edges: Record<string, E>,
                           stopAllNodeIds: string[], initialStorage: Record<string, StorageValueType>) {
@@ -80,8 +79,7 @@ export abstract class AbstractModel<E extends ModelEdge> {
     abstract toJSON(): ModelJSON;
 
     public stepsSinceLastTransition(t: TestDriver): number {
-        const steps = t.getTotalStepsExecuted() - this._lastTransitionStep;
-        return this._lastTransitionWasSelfLoop ? steps - 1 : steps;
+        return t.getTotalStepsExecuted() - this._lastTransitionStep;
     }
 
     stopped(): boolean {
@@ -91,7 +89,6 @@ export abstract class AbstractModel<E extends ModelEdge> {
     restart(currentStep: number): void {
         this.currentState = this.nodes[this.startNodeId];
         this._lastTransitionStep = currentStep - 1;
-        this._lastTransitionWasSelfLoop = false;
     }
 
     reset(currentStep = 0): void {
@@ -123,6 +120,5 @@ export abstract class AbstractModel<E extends ModelEdge> {
     protected _takeEdge(edge: E, testDriver: TestDriver): void {
         this.currentState = this.nodes[edge.getEndNodeId()];
         this._lastTransitionStep = testDriver.getTotalStepsExecuted();
-        this._lastTransitionWasSelfLoop = edge.from === edge.to;
     }
 }
