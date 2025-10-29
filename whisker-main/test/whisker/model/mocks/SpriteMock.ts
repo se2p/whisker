@@ -165,6 +165,22 @@ export class SpriteMock {
             : [...this.clones.map(c => c._sprite)];
     }
 
+    getRangeOfX(): { min: number; max: number } {
+        return this.boundsOf(-240, 240);
+    }
+
+    getRangeOfY(): { min: number; max: number } {
+        return this.boundsOf(-180, 180);
+    }
+
+    getRangeOfSize(): { min: number; max: number } {
+        return this.boundsOf(1, 100);
+    }
+
+    private boundsOf(min: number, max: number): { min: number, max: number } {
+        return {min, max};
+    }
+
     private getValueOfVariableOrUndefined(key: string): number | string {
         const variable = this.variables.find(v => v.name == key);
         return variable == undefined ? undefined : variable.value;

@@ -9,6 +9,7 @@ import Sprite from "../../../vm/sprite";
 import RenderedTarget from "scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import {STAGE_NAME} from "../../../assembler/utils/selectors";
 import {checkSpriteExistence, evaluateExpression} from "../util/ModelUtil";
+import {AttrName} from "./CheckTypes";
 
 export type SlimCheckJSON<J extends CheckJSON> = Optional<J, "name" | "negated">;
 
@@ -247,5 +248,39 @@ export abstract class ImpureCheck<J extends CheckJSON, C extends CheckFun = Chec
 
     protected _contradicts(_that: ImpureCheck<J, C>): boolean {
         return false; // side effects can even depend on another check to be executed before
+    }
+}
+
+export abstract class BoundedCheck<J extends CheckJSON = CheckJSON, C extends CheckFun = CheckFun> extends PureCheck<J, C> {
+    private _lastCurrentCostume = -1;
+    private _lastSize = -1;
+
+    protected abstract get attrName(): AttrName;
+
+    protected _boundsNeedUpdate(s: Sprite): boolean {
+        switch (this.attrName) {
+            case "x":
+            case "y": {
+                const currentCostume = s.currentCostume;
+                const currentSize = s.size;
+                const res = this._lastCurrentCostume !== currentCostume || this._lastSize !== currentSize;
+                this._lastCurrentCostume = currentCostume;
+                this._lastSize = currentSize;
+                return res;
+            }
+            case "size": {
+                const currentCostume = s.currentCostume;
+                const res = this._lastCurrentCostume !== currentCostume;
+                this._lastCurrentCostume = currentCostume;
+                return res;
+            }
+            case "layerOrder":
+                return true;
+            case "direction":
+            case "volume":
+            case "currentCostume":
+            default:
+                return false;
+        }
     }
 }

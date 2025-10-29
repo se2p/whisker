@@ -1,5 +1,4 @@
-import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
-import {checkAttributeExistence, isAnEffect} from "../util/ModelUtil";
+import {BoundedCheck, CheckFun0, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import {z} from "zod";
 import {Bounds, Change, ChangingCheck, newChange} from "./Change";
@@ -19,35 +18,9 @@ import {
     SpriteName,
     StringAttribute
 } from "./CheckTypes";
+import {checkAttributeExistence, currentMaxLayer, isAnEffect} from "../util/ModelUtil";
 
 const name = "AttrChange" as const;
-
-const bounds: Record<AttrName, Bounds | null> = Object.freeze({
-    x: {min: -240, max: 240, kind: "clamped"},
-    y: {min: -180, max: 180, kind: "clamped"},
-    layerOrder: {min: 1, max: Number.MAX_VALUE, kind: "clamped"},
-    direction: {min: -180, max: 180, kind: "cyclic"},
-
-    // TODO: Unsure about some of those...
-    size: {min: 1, max: Number.MAX_VALUE, kind: "clamped"},
-    volume: {min: 0, max: 100, kind: "clamped"},
-    color: {min: 0, max: 200, kind: "cyclic"},
-    fisheye: {min: -100, max: Number.MAX_VALUE, kind: "clamped"},
-    brightness: {min: -100, max: 100, kind: "clamped"},
-    ghost: {min: 0, max: 100, kind: "clamped"},
-    pixelate: {min: 0, max: Number.MAX_VALUE, kind: "clamped"},
-    mosaic: {min: 0, max: 5105, kind: "clamped"},
-    whirl: null,
-    currentCostume: null, //depends on how many costumes a sprite has
-
-    // These attributes don't have numeric values -> specifying bounds wouldn't make sense.
-    currentCostumeName: null,
-    sayText: null,
-    rotationStyle: null,
-    visible: null,
-    pos: null,
-    effects: null,
-});
 
 const attrNameIndex = 1;
 
@@ -73,16 +46,21 @@ export const AttrChangeJSON = ICheckJSON.extend({
     args: AttrChangeArgs,
 });
 
-export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
-    private readonly _change: Change;
+export class AttrChange extends BoundedCheck<AttrChangeJSON, CheckFun0> implements ChangingCheck {
+
     private readonly _isForEffect: boolean;
     private readonly _attributeName: AttrName;
+    private _change: Change;
 
     constructor(edgeLabel: string, json: SlimCheckJSON<AttrChangeJSON>) {
         super(edgeLabel, {...json, name});
         this._attributeName = this._args[1];
-        this._change = newChange(this, bounds[this._attributeName]);
+        this._change = newChange(this, null);
         this._isForEffect = isAnEffect(this._attributeName);
+    }
+
+    get attrName(): AttrName {
+        return this._attributeName;
     }
 
     get change(): NumberOrChangeOp {
@@ -111,6 +89,7 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
         if (!this._isForEffect) {
             checkAttributeExistence(t, spriteName, attrName);
         }
+        this._change = newChange(this, this._getBound(sprite, t));
 
         const Exception = this._isForEffect ? ErrorForEffect : ErrorForAttribute;
 
@@ -126,9 +105,8 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
         }
 
         return () => {
-            const sprites = sprite.isStage ? [t.getStage()] : t.getSprite(spriteName).getClones(true);
-
             try {
+                this._updateBounds(sprite, t);
                 return this._change.apply(...this._getAttr(sprite));
             } catch (e) {
                 throw new Exception(pSpriteName, attrName, e);
@@ -147,9 +125,38 @@ export class AttrChange extends PureCheck<AttrChangeJSON, CheckFun0> implements 
         return this._change.contradicts(that._change);
     }
 
+    protected _updateBounds(s: Sprite, t: TestDriver): void {
+        if (this._boundsNeedUpdate(s)) {
+            const res = this._getBound(s, t);
+            this._change = newChange(this, res);
+        }
+    }
+
     private _getAttr(s: Sprite): [number, number] {
         return this._isForEffect
             ? [s.effects[this._attributeName], s.old.effects[this._attributeName]]
             : [s[this._attributeName], s.old[this._attributeName]];
+    }
+
+    private _getBound(s: Sprite, t: TestDriver): Bounds | null {
+        switch (this._attributeName) {
+            case "x":
+                return {...s.getRangeOfX(), kind: "clamped"};
+            case "y":
+                return {...s.getRangeOfY(), kind: "clamped"};
+            case "size":
+                return {...s.getRangeOfSize(), kind: "clamped"};
+            case "layerOrder":
+                return {min: 1, max: currentMaxLayer(t), kind: "clamped"};
+            case "direction":
+                return {min: -180, max: 180, kind: "cyclic"};
+            case "volume":
+                return {min: 0, max: 100, kind: "clamped"};
+            case "currentCostume":
+                return {min: 0, max: s.getCostumeCount(), kind: "cyclic"};
+            // the wiki states bounds for effects but the actual value of the effects has no bounds
+            default:
+                return null;
+        }
     }
 }

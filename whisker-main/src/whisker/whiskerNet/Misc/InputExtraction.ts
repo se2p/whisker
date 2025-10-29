@@ -169,6 +169,27 @@ export class InputExtraction {
     }
 
     /**
+     * Gets the upper and lower bound of a sprite's size. Attention this value might change when costumes are switched!
+     * @param target the target for which the bounds should be extracted.
+     * @return tuple [minSize, maxSize] representing the current sprite's size bounds.
+     */
+    public static getSizeBounds(target: RenderedTarget): [number, number] {
+        const runtime = target.runtime;
+        const renderer = runtime.renderer;
+        const costumeSize = renderer.getCurrentSkinSize(target.drawableID);
+        const origW = costumeSize[0];
+        const origH = costumeSize[1];
+        const minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
+        const maxScale = Math.min(
+            (1.5 * runtime.constructor.STAGE_WIDTH) / origW,
+            (1.5 * runtime.constructor.STAGE_HEIGHT) / origH
+        );
+        const min = Math.round(minScale * 100);
+        const max = Math.round(maxScale * 100);
+        return [min, max];
+    }
+
+    /**
      * Extracts sprite features and normalises them into the range [-1, 1].
      * @param target the RenderTarget object representing the sprite from which features will be extracted.
      * @param vm describing the current state of the Scratch program.
@@ -194,7 +215,7 @@ export class InputExtraction {
         }
 
         // Extract the size of the Sprite
-        const [minBound, upperBound] = InputExtraction._getSizeBounds(target);
+        const [minBound, upperBound] = InputExtraction.getSizeBounds(target);
         const normalisedSize = InputExtraction.mapValueIntoRange(target.size, minBound, upperBound);
         spriteFeatures.set('Size', normalisedSize);
 
@@ -260,27 +281,6 @@ export class InputExtraction {
             }
         }
         return spriteFeatures;
-    }
-
-    /**
-     * Gets the upper and lower bound of a sprite's size. Attention this value might change when costumes are switched!
-     * @param target the target for which the bounds should be extracted.
-     * @return tuple [minSize, maxSize] representing the current sprite's size bounds.
-     */
-    private static _getSizeBounds(target: RenderedTarget): [number, number] {
-        const runtime = target.runtime;
-        const renderer = runtime.renderer;
-        const costumeSize = renderer.getCurrentSkinSize(target.drawableID);
-        const origW = costumeSize[0];
-        const origH = costumeSize[1];
-        const minScale = Math.min(1, Math.max(5 / origW, 5 / origH));
-        const maxScale = Math.min(
-            (1.5 * runtime.constructor.STAGE_WIDTH) / origW,
-            (1.5 * runtime.constructor.STAGE_HEIGHT) / origH
-        );
-        const min = Math.round(minScale * 100);
-        const max = Math.round(maxScale * 100);
-        return [min, max];
     }
 
     /**
