@@ -2836,7 +2836,7 @@
                         "name": "Expr",
                         "negated": false,
                         "args": [
-                            "Math.abs($('Bowl', 'old').x-$('Bowl', 'x'))==10"
+                            "Math.abs($('Bowl', 'old.x')-$('Bowl', 'x'))==10"
                         ]
                     }
                 ]
