@@ -1,8 +1,8 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
-import {any, result} from "./CheckResult";
+import {any, Reason, result} from "./CheckResult";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
 import {
@@ -45,6 +45,10 @@ export class Bounce extends PureCheck<BounceJSON, CheckFun0> {
         return parseNonUnionError(BounceArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: BounceJSON): BounceJSON {
+        return BounceJSON.parse(checkJSON) as BounceJSON;
+    }
+
     /**
      * Get a method whether a sprite bounces when it touches an edge.
      *
@@ -56,7 +60,7 @@ export class Bounce extends PureCheck<BounceJSON, CheckFun0> {
         const check = (s: Sprite) => {
             const isDirFlipped = (expected: number) =>
                 checkCyclicValueWithinDelta(s.direction, expected, -180, 180);
-            const reason: Record<string, unknown> = {direction: s.direction, oldDirection: s.old.direction};
+            const reason: Reason = {direction: s.direction, oldDirection: s.old.direction};
             let touchingEdge = false;
             let dirFlipped = false;
 
@@ -89,9 +93,5 @@ export class Bounce extends PureCheck<BounceJSON, CheckFun0> {
 
     protected _contradicts(that: Bounce): boolean {
         return false; // a sprite and a clone can touch both edges at the same time
-    }
-
-    protected _validate(checkJSON: BounceJSON): BounceJSON {
-        return BounceJSON.parse(checkJSON) as BounceJSON;
     }
 }

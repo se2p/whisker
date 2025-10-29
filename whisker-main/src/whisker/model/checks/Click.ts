@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {any, fail, pass} from "./CheckResult";
@@ -39,6 +39,10 @@ export class Click extends PureCheck<ClickJSON, CheckFun0> {
         return parseNonUnionError(ClickArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: ClickJSON): ClickJSON {
+        return ClickJSON.parse(checkJSON) as ClickJSON;
+    }
+
     /**
      * Get a method for checking whether a sprite was clicked.
      * @param t Instance of the test driver for retrieving if a sprite or its clones are clicked
@@ -68,10 +72,6 @@ export class Click extends PureCheck<ClickJSON, CheckFun0> {
             return any(clickCheck, this.negated, sprites)
                 .enhance({message: `Expected sprite "${spriteName}" not to be clicked`});
         };
-    }
-
-    protected _validate(checkJSON: ClickJSON): ClickJSON {
-        return ClickJSON.parse(checkJSON) as ClickJSON;
     }
 
     protected override _contradicts(that: Click): boolean {

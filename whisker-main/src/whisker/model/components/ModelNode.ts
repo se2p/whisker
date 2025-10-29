@@ -71,8 +71,7 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
         // get all edges that have not failing conditions and check for order of events
         for (const e of this.edges) {
             const result = e.checkConditions(testDriver, cu, stepsSinceLastTransition, stepsSinceEnd);
-            if (result && result.length == 0) {
-                e.lastTransition = testDriver.getTotalStepsExecuted() + 1;
+            if (result) {
                 return e;
             }
         }
@@ -100,15 +99,6 @@ export class ModelNode<E extends ModelEdge = ModelEdge> {
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
         this.edges.forEach(edge => {
             edge.registerComponents(checkListener, testDriver);
-        });
-    }
-
-    /**
-     * Reset all edge's states that belong to one test run.
-     */
-    reset(): void {
-        this.edges.forEach(edge => {
-            edge.reset();
         });
     }
 

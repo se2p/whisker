@@ -23,7 +23,7 @@ describe('Model edges', () => {
 
     function mockCondition(name: string, value: boolean): Condition {
         return {
-            check: jest.fn().mockReturnValue(result(value, {})),
+            check: jest.fn().mockReturnValue(result(value, {}, false)),
             registerComponents: jest.fn(),
             toString: () => name + ".toString()"
         } as unknown as Condition;
@@ -76,28 +76,14 @@ describe('Model edges', () => {
 
     });
 
-    test("Last transition initialized with zero", () => {
-        const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        expect(edge.lastTransition).toBe(0);
-    });
-
     test("Getter function properly", () => {
         const edge = new ProgramModelEdge(id, label, graphID, from, to, 10, -2);
         expect(edge.getEndNodeId()).toBe(to);
         expect(edge.from).toBe(from);
-        expect(edge.forceTestAfter).toBe(10);
-        expect(edge.forceTestAt).toBe(-1);
+        expect(edge.forceAfter).toBe(10);
+        expect(edge.forceAt).toBe(-1);
         expect(edge.id).toBe(id);
         expect(edge.label).toBe(label);
-    });
-
-    test("Reset does not clear conditions on ModelEdge", () => {
-        const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-        const condition = new BackgroundChange(label, {args: ["test"]});
-        edge.addCondition(condition);
-        expect(edge.conditions.length).toBe(1);
-        edge.reset();
-        expect(edge.conditions.length).toBe(1);
     });
 
     test("Program model edge", () => {
@@ -162,16 +148,6 @@ describe('Model edges', () => {
     });
 
     describe('checkConditions()', () => {
-        test("checkConditions() returns conditions when no step happened", () => {
-            const tdMock = new TestDriverMock([], 10);
-            const edge = new ProgramModelEdge(id, label, graphID, from, to, -1, -1);
-            edge.lastTransition = 11;
-            edge.addCondition(new BackgroundChange(label, {args: ["test"]}));
-            edge.addCondition(new Key(label, {args: ["a"]}));
-            edge.addCondition(new SpriteTouching(label, {args: ["apple", "bowl"]}));
-            const result = edge.checkConditions(tdMock.getTestDriver(), null, 5, 7);
-            expect(result).toBe(edge.conditions);
-        });
 
         test("checkConditions() returns failed conditions (no time limit)", () => {
             const errorFn = jest.fn();
@@ -190,7 +166,7 @@ describe('Model edges', () => {
             ];
             conditions.forEach(condition => edge.addCondition(condition));
             const result = edge.checkConditions(tdMock.getTestDriver(), cu, 5, 7);
-            expect(result).toStrictEqual([conditions[1], conditions[4], conditions[5]]);
+            expect(result).toStrictEqual(false);
         });
 
         test("checkConditions() returns failed conditions (total steps exceeded)", () => {
@@ -213,11 +189,11 @@ describe('Model edges', () => {
             conditions.forEach(condition => edge.addCondition(condition));
             edge.registerComponents(cu, tdMock.getTestDriver());
             const result = edge.checkConditions(tdMock.getTestDriver(), cu, 5, 7);
-            expect(result).toStrictEqual([conditions[0], conditions[4]]);
-            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() at 42ms");
+            expect(result).toStrictEqual(false);
+            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() at 42ms", {});
         });
 
-        test("checkConditions() returns failed conditions (total steps exceeded)", () => {
+        test("checkConditions() returns failed conditions (total steps exceeded) 2", () => {
             const errorFn = jest.fn();
             const timeFn = jest.fn();
             const cuMock = new CheckUtilityMock();
@@ -225,7 +201,7 @@ describe('Model edges', () => {
             cuMock.addTimeLimitFailOutput = timeFn;
             const cu = cuMock.getCheckUtility();
             const tdMock = new TestDriverMock([]);
-            const edge = new ProgramModelEdge(id, label, graphID, from, to, 10, -1);
+            const edge = new ProgramModelEdge(id, label, graphID, from, to, 11, -1);
             const conditions = [
                 mockCondition("cond40", false),
                 mockCondition("cond00", false),
@@ -235,10 +211,10 @@ describe('Model edges', () => {
             conditions.forEach(condition => edge.addCondition(condition));
             edge.registerComponents(cu, tdMock.getTestDriver());
             let result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
-            expect(result).toStrictEqual([conditions[0], conditions[1]]);
-            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 10ms");
+            expect(result).toStrictEqual(false);
+            expect(timeFn).toHaveBeenCalledWith("graphID-label: cond00.toString() after 11ms", {});
             result = edge.checkConditions(tdMock.getTestDriver(), cu, 11, 9);
-            expect(result).toStrictEqual(conditions);
+            expect(result).toStrictEqual(false);
             const res = edge.checkConditionsOnEvent(11, 9);
             expect(res).toStrictEqual(false);
         });

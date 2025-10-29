@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {CheckFun, CheckFun0, CheckFun1, CheckFun2, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun, CheckFun0, CheckFun1, CheckFun2, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import VMWrapper from "../../../vm/vm-wrapper";
 import {Optional} from "../../utils/Optional";
 import {result} from "./CheckResult";
@@ -75,6 +75,10 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
         super(edgeLabel, {...json, name: nameTimeAfterEnd});
     }
 
+    protected _validate(checkJSON: TimeAfterEndJSON): TimeAfterEndJSON {
+        return TimeAfterEndJSON.parse(checkJSON) as TimeAfterEndJSON;
+    }
+
     /**
      * Get a method that checks whether enough time has elapsed since the program ended.
      * @param t Instance of the test driver for retrieving the total number of steps executed.
@@ -90,10 +94,6 @@ export class TimeAfterEnd extends AbstractTime<TimeAfterEndJSON, CheckFun2> {
             };
             return result(this._steps <= steps, reason, this.negated);
         };
-    }
-
-    protected _validate(checkJSON: TimeAfterEndJSON): TimeAfterEndJSON {
-        return TimeAfterEndJSON.parse(checkJSON) as TimeAfterEndJSON;
     }
 }
 
@@ -112,6 +112,10 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
         super(edgeLabel, {...json, name: nameTimeBetween});
     }
 
+    protected _validate(checkJSON: TimeBetweenJSON): TimeBetweenJSON {
+        return TimeBetweenJSON.parse(checkJSON) as TimeBetweenJSON;
+    }
+
     /**
      * Get a method that checks whether enough time has elapsed since the last edge transition in the current model.
      * @param t Instance of the test driver.
@@ -121,10 +125,6 @@ export class TimeBetween extends AbstractTime<TimeBetweenJSON, CheckFun1> {
             const reason = {actual: stepsSinceLastTransition, expected: this._steps};
             return result(this._steps <= stepsSinceLastTransition, reason, this.negated);
         };
-    }
-
-    protected _validate(checkJSON: TimeBetweenJSON): TimeBetweenJSON {
-        return TimeBetweenJSON.parse(checkJSON) as TimeBetweenJSON;
     }
 }
 
@@ -143,6 +143,10 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
         super(edgeLabel, {...json, name: nameTimeElapsed});
     }
 
+    protected _validate(checkJSON: TimeElapsedJSON): TimeElapsedJSON {
+        return TimeElapsedJSON.parse(checkJSON) as TimeElapsedJSON;
+    }
+
     /**
      * Get a method that checks whether enough time has elapsed since the test runner started the test.
      * @param t Instance of the test driver.
@@ -152,9 +156,5 @@ export class TimeElapsed extends AbstractTime<TimeElapsedJSON, CheckFun0> {
             const steps = t.getTotalStepsExecuted();
             return result(this._steps <= steps, {actual: steps, expected: this._steps}, this.negated);
         };
-    }
-
-    protected _validate(checkJSON: TimeElapsedJSON): TimeElapsedJSON {
-        return TimeElapsedJSON.parse(checkJSON) as TimeElapsedJSON;
     }
 }

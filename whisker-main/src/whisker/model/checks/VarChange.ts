@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import Variable from "../../../vm/variable";
 import {ErrorForVariable} from "../util/ModelError";
@@ -57,6 +57,10 @@ export class VarChange extends PureCheck<VarChangeJSON, CheckFun0> implements Ch
         return parseNonUnionError(VarChangeArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: VarChangeJSON): VarChangeJSON {
+        return VarChangeJSON.parse(checkJSON) as VarChangeJSON;
+    }
+
     /**
      * Get a method checking whether a variable value of a sprite changed.
      * @param t Instance of the test driver for retrieving the current and old values of a sprites and its clones attribute.
@@ -88,10 +92,6 @@ export class VarChange extends PureCheck<VarChangeJSON, CheckFun0> implements Ch
 
         this._registerVarEvent(variableName);
         return check;
-    }
-
-    protected _validate(checkJSON: VarChangeJSON): VarChangeJSON {
-        return VarChangeJSON.parse(checkJSON) as VarChangeJSON;
     }
 
     protected override _contradicts(that: VarChange): boolean {

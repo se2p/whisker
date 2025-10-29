@@ -1,6 +1,4 @@
 import {UserModelNode} from "./ModelNode";
-import TestDriver from "../../../test/test-driver";
-import {CheckUtility} from "../util/CheckUtility";
 import {AbstractModel} from "./AbstractModel";
 import {UserModelEdge} from "./UserModelEdge";
 import {StorageValueType, UserModelJSON} from "../util/schema";
@@ -19,8 +17,6 @@ import {StorageValueType, UserModelJSON} from "../util/schema";
  * taken. So that it not gets ambiguous.
  */
 export class UserModel extends AbstractModel<UserModelEdge> {
-    stepNbrOfProgramEnd = 0;
-
     /**
      * Construct a user model (graph) with a string identifier. This model acts as a user playing/using the Scratch
      * program and provides inputs for the program.
@@ -39,59 +35,6 @@ export class UserModel extends AbstractModel<UserModelEdge> {
 
     override get usage(): "user" {
         return "user";
-    }
-
-    /**
-     * Simulate transitions on the graph. Edges are tested only once if they are reached.
-     */
-    override makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): UserModelEdge | null {
-        const stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.lastTransitionStep;
-        const edge = this.currentState.testEdgeConditions(testDriver, checkUtility, stepsSinceLastTransition,
-            this.stepNbrOfProgramEnd);
-
-        if (edge == null) {
-            return null;
-        }
-
-        this.currentState = this.nodes[edge.getEndNodeId()];
-        this.secondLastTransitionStep = this.lastTransitionStep;
-        this.lastTransitionStep = testDriver.getTotalStepsExecuted() + 1;
-
-        return edge;
-    }
-
-    /**
-     * Whether the model is in a stop state.
-     */
-    stopped(): boolean {
-        return this.currentState.isStopNode;
-    }
-
-    /**
-     * Reset the graph to the start state.
-     */
-    reset(): void {
-        this.currentState = this.nodes[this.startNodeId];
-        this.lastTransitionStep = 0;
-        this.secondLastTransitionStep = 0;
-        Object.values(this.nodes).forEach(node => {
-            node.reset();
-        });
-    }
-
-    /**
-     * Register the check listener and test driver on all node's edges.
-     */
-    override registerComponents(checkListener: CheckUtility, testDriver: TestDriver): void {
-        super.registerComponents(checkListener, testDriver);
-        Object.values(this.nodes).forEach(node => {
-            node.registerComponents(checkListener, testDriver);
-        });
-    }
-
-    setTransitionsStartTo(steps: number): void {
-        this.lastTransitionStep = steps;
-        this.secondLastTransitionStep = steps;
     }
 
     override toJSON(): UserModelJSON {

@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {z} from "zod";
 import {result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
@@ -37,6 +37,10 @@ export class Key extends PureCheck<KeyJSON, CheckFun0> {
         return parseNonUnionError(KeyArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: KeyJSON): KeyJSON {
+        return KeyJSON.parse(checkJSON) as KeyJSON;
+    }
+
     /**
      * Get a method for checking if a key was pressed or not pressed.
      * @param t Instance of the test driver (unused).
@@ -45,10 +49,6 @@ export class Key extends PureCheck<KeyJSON, CheckFun0> {
         const [key] = this._args;
         const negated = this.negated;
         return () => result(this.cu.isKeyDown(key), {}, negated);
-    }
-
-    protected _validate(checkJSON: KeyJSON): KeyJSON {
-        return KeyJSON.parse(checkJSON) as KeyJSON;
     }
 
     protected _contradicts(_that: Key): boolean {

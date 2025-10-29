@@ -1,46 +1,18 @@
 // Model errors
 import {AbstractEdge} from "../components/AbstractEdge";
 import {ArgType} from "./schema";
-import {TimeAfterEnd, TimeBetween, TimeElapsed} from "../checks/Time";
 import {Check} from "../checks/newCheck";
 
-function getReasonAppendix(reason: Record<string, unknown>): string {
-    return reason && Object.keys(reason).length > 0 ? ` ${JSON.stringify(reason)}` : "";
+export function getReasonAppendix(reason: Record<string, unknown>): string {
+    return reason && Object.keys(reason).length > 0 ? `${JSON.stringify(reason)}` : "";
 }
 
-function getEffectFailedOutput(edge: AbstractEdge, effect: Check, reason: Record<string, unknown>): string {
-    const conditions = edge.conditions;
-    let containsAfterTime: string | null = null;
-    let containsElapsed: string | null = null;
-
-    for (const c of conditions) {
-        if (c instanceof TimeBetween || c instanceof TimeAfterEnd) {
-            containsAfterTime = c.millis.toString();
-        } else if (c instanceof TimeElapsed) {
-            containsElapsed = c.millis.toString();
-        }
-    }
-
-    let result = `${edge.graphID}-${edge.label}: ${effect.toString()}`;
-    if (containsElapsed != null) {
-        result += ` before ${containsElapsed}ms elapsed`;
-    }
-    if (containsAfterTime != null) {
-        result += ` after ${containsAfterTime}ms`;
-    }
-    return reason ? `${result}${getReasonAppendix(reason)}` : result;
+export function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number): string {
+    return `${edge.graphID}-${edge.label}: ${condition.toString()} after ${ms}ms`;
 }
 
-function getTimeLimitFailedAfterOutput(edge: AbstractEdge, condition: Check, ms: number, reason: Record<string, unknown>): string {
-    return `${edge.graphID}-${edge.label}: ${condition.toString()} after ${ms}ms${getReasonAppendix(reason)}`;
-}
-
-function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number, reason: Record<string, unknown>): string {
-    return `${edge.graphID}-${edge.label}: ${condition.toString()} at ${ms}ms${getReasonAppendix(reason)}`;
-}
-
-function getErrorOnEdgeOutput(edgeLabel: string, graphLabel: string, error: string): string {
-    return `Error ${graphLabel}-${edgeLabel}: ${error}`;
+export function getTimeLimitFailedAtOutput(edge: AbstractEdge, condition: Check, ms: number): string {
+    return `${edge.graphID}-${edge.label}: ${condition.toString()} at ${ms}ms`;
 }
 
 // ----- Variables, sprites, attributes not found and other initialization errors
@@ -60,12 +32,6 @@ export class AttributeNotFoundError extends Error {
 export class SpriteNotFoundError extends Error {
     constructor(spriteName: string) {
         super(`Sprite not found: ${spriteName}`);
-    }
-}
-
-export class ComparisonNotKnownError extends Error {
-    constructor(comparison: ArgType) {
-        super(`Comparison not known: ${comparison}`);
     }
 }
 
@@ -119,21 +85,6 @@ export class ErrorForAttribute extends Error {
     }
 }
 
-class ChangeComparisonNotKnownError extends Error {
-    constructor(value: string) {
-        super(`Change Comparison not known: ${value}`);
-    }
-}
-
-function getErrorMessage(e: unknown): string {
+export function getErrorMessage(e: unknown): string {
     return e instanceof Error ? e.message : String(e);
 }
-
-export {
-    getEffectFailedOutput,
-    getErrorOnEdgeOutput,
-    getTimeLimitFailedAfterOutput,
-    getTimeLimitFailedAtOutput,
-    ChangeComparisonNotKnownError,
-    getErrorMessage,
-};

@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import TestDriver from "../../../test/test-driver";
@@ -39,6 +39,10 @@ export class ClearedEffect extends PureCheck<ClearedEffectJSON, CheckFun0> {
         return parseNonUnionError(ClearedEffectArgs.safeParse(args));
     }
 
+    protected _validate(checkJSON: ClearedEffectJSON): ClearedEffectJSON {
+        return ClearedEffectJSON.parse(checkJSON) as ClearedEffectJSON;
+    }
+
     /**
      * Get a method for checking whether a sprite has no effects activated.
      * @param t Instance of the test driver for retrieving the effect values of a sprite and its clones
@@ -51,10 +55,6 @@ export class ClearedEffect extends PureCheck<ClearedEffectJSON, CheckFun0> {
             const check = (s: Sprite) => result(Object.values(s.effects).every(v => v === 0), {...s.effects});
             return any(check, this.negated, sprites);
         };
-    }
-
-    protected _validate(checkJSON: ClearedEffectJSON): ClearedEffectJSON {
-        return ClearedEffectJSON.parse(checkJSON) as ClearedEffectJSON;
     }
 
     protected override _contradicts(that: ClearedEffect): boolean {

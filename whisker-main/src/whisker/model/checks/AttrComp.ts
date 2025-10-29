@@ -1,4 +1,4 @@
-import {CheckFun0, PureCheck, ICheckJSON, SlimCheckJSON} from "./AbstractCheck";
+import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import {ErrorForAttribute, ErrorForEffect} from "../util/ModelError";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
@@ -72,6 +72,10 @@ export class AttrComp extends PureCheck<AttrCompJSON, CheckFun0> implements Comp
         return parseAttributeError(AttrCompArgs.safeParse(args), attrNameIndex);
     }
 
+    protected _validate(checkJSON: AttrCompJSON): AttrCompJSON {
+        return AttrCompJSON.parse(checkJSON) as AttrCompJSON;
+    }
+
     /**
      * Get a method for checking whether a sprite's attribute has a given comparison with a given value fulfilled.
      *
@@ -106,10 +110,6 @@ export class AttrComp extends PureCheck<AttrCompJSON, CheckFun0> implements Comp
                 throw new Exception(pSpriteName, this._attrName, e);
             }
         };
-    }
-
-    protected _validate(checkJSON: AttrCompJSON): AttrCompJSON {
-        return AttrCompJSON.parse(checkJSON) as AttrCompJSON;
     }
 
     protected override _contradicts(that: AttrComp): boolean {

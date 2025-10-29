@@ -6,7 +6,7 @@ import {ModelNodeJSON} from "../../../../src/whisker/model/util/schema";
 
 describe('Model node', () => {
     function mockModelEdge(id: string, checkConditions: jest.Mock, lastTransition = 0,
-                           registerComponents: jest.Mock = jest.fn(), checkConditionsOnEvent: jest.Mock = jest.fn()): ModelEdge {
+                           registerComponents: jest.Mock = jest.fn(), checkConditionsOnEvent: jest.Mock = jest.fn(), isTrueEdge = false): ModelEdge {
         return {
             from: id,
             checkConditions: checkConditions,
@@ -42,19 +42,6 @@ describe('Model node', () => {
         expect(node.edges.length).toBe(1);
     });
 
-    test("reset() calls reset() of edges", () => {
-        const edge1 = new ProgramModelEdge("id", "label", "graphID", "from", "to", 1000, -1);
-        const edge2 = new ProgramModelEdge("id", "label", "graphID", "from", "to2", 1000, -1);
-        const node = new ModelNode("from", "label");
-        node.addOutgoingEdge(edge1);
-        node.addOutgoingEdge(edge2);
-        edge1.lastTransition = 1;
-        edge2.lastTransition = 2;
-        node.reset();
-        expect(edge1.lastTransition).toBe(0);
-        expect(edge2.lastTransition).toBe(0);
-    });
-
     test("toJSON", () => {
         const edge = new ProgramModelEdge("id", "label", "graphID", "from", "to", 1000, -1);
         const node = new ModelNode("from", "label");
@@ -83,7 +70,6 @@ describe('Model node', () => {
 
     test("testEdgeConditions returns the correct edge", () => {
         const tdMock = new TestDriverMock();
-        tdMock.totalStepsExecuted = 342342;
         const fn = jest.fn();
         fn.mockReturnValue(null);
         const correctEdgeFn = jest.fn();
@@ -98,10 +84,9 @@ describe('Model node', () => {
         const result = node.testEdgeConditions(tdMock.getTestDriver(), null, 0, 0);
         expect(result).toStrictEqual(correctEdge);
         expect(fn).toHaveBeenCalledTimes(2);
-        expect(correctEdge.lastTransition).toBe(342343);
     });
 
-    test("testForEvent does not check all edges if one is true", () => {
+    test("testForEvent checks until one edge is true", () => {
         const tdMock = new TestDriverMock();
         tdMock.totalStepsExecuted = 99999;
         const fn = jest.fn().mockReturnValue(null);
@@ -114,7 +99,7 @@ describe('Model node', () => {
         node.addOutgoingEdge(mockModelEdge("id", jest.fn(), 0, jest.fn(), fn));
         node.testForEvent(0, 0);
         expect(fn).toHaveBeenCalledTimes(1);
-        expect(correctEdge.lastTransition).toBe(0);
+        expect(correctEdgeFn).toHaveBeenCalledTimes(1);
     });
 
     test("registerComponents calls register components of all outgoing edges", () => {
