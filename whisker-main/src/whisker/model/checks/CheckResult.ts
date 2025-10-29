@@ -66,6 +66,6 @@ export function fail(reason: Reason): FailedCheck {
     return new FailedCheckImpl(reason);
 }
 
-export function result(b: boolean, reason: Reason, negated = false): CheckResult {
+export function result(b: boolean, reason: Reason, negated: boolean): CheckResult {
     return (negated !== b) ? pass() : fail(reason);
 }

@@ -132,7 +132,7 @@ class Eq<T extends Interval | null> extends AbstractComparison<T> {
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
         const res = approxEq(operand1, this.operand2);
-        return result(res, message);
+        return result(res, message, false);
     }
 
     override negate(): Comparison<T> {
@@ -155,7 +155,7 @@ class Neq<T extends Interval | null> extends AbstractComparison<T> {
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1};
         const res = approxNeq(operand1, this.operand2) || this._boundaries.includes(operand1);
-        return result(res, message);
+        return result(res, message, false);
     }
 
     override negate(): Comparison<T> {
@@ -175,7 +175,7 @@ class Leq<T extends Interval | null> extends AbstractComparison<T> {
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
         const res = approxLeq(operand1, this.operand2);
-        return result(res, message);
+        return result(res, message, false);
     }
 
     override negate(): Comparison<T> {
@@ -198,7 +198,7 @@ class Lt<T extends Interval | null> extends AbstractComparison<T> {
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
         const res = approxLt(operand1, this.operand2) || this._boundaries.includes(operand1);
-        return result(res, message);
+        return result(res, message, false);
     }
 
     override negate(): Comparison<T> {
@@ -221,7 +221,7 @@ class Gt<T extends Interval | null> extends AbstractComparison<T> {
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
         const res = approxGt(operand1, this.operand2) || this._boundaries.includes(operand1);
-        return result(res, message);
+        return result(res, message, false);
     }
 
     override negate(): Comparison<T> {
@@ -241,7 +241,7 @@ class Geq<T extends Interval | null> extends AbstractComparison<T> {
     override apply(operand1: AttributeType): CheckResult {
         const message = {actual: operand1, expected: this.operand2};
         const res = approxGeq(operand1, this.operand2);
-        return result(res, message);
+        return result(res, message, false);
     }
 
     override negate(): Comparison<T> {

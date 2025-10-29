@@ -230,7 +230,7 @@ class Eq0 extends Change {
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
-        return result(after == before, {before, after});
+        return result(after == before, {before, after}, false);
     }
 
     override negate(): Change {
@@ -244,7 +244,7 @@ class Neq0 extends Change {
     }
 
     override apply(after: string | number, before: string | number): CheckResult {
-        return result(after != before, {before, after});
+        return result(after != before, {before, after}, false);
     }
 
     override negate(): Change {
