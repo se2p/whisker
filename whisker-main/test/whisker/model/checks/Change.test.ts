@@ -461,6 +461,9 @@ describe("A cyclic change with bounds [min, max]", () => {
         max: fc.constant(max),
     }));
 
+    const atLeastOneNotOnBound = values.filter(({after, before, min, max}) =>
+        (before != min && before != max) || (after != min && after != max));
+
     describe.each(["+", "-"])('using operator "%s"', (op: ChangeOp) => {
         it.prop([values])('is equivalent to "!="', ({after, before, min, max}) => {
             const change = newChange({change: op}, {min, max, kind: "cyclic"});
@@ -470,7 +473,7 @@ describe("A cyclic change with bounds [min, max]", () => {
     });
 
     describe.each(["==", '!='])('using operator "%s"', (op: ChangeOp) => {
-        it.prop([values])('is equivalent to the regular change', ({after, before, min, max}) => {
+        it.prop([atLeastOneNotOnBound])('is equivalent to the regular change', ({after, before, min, max}) => {
             const cyclic = newChange({change: op}, {min, max, kind: "cyclic"});
             const regular = newChange({change: op});
             expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before));
@@ -491,7 +494,7 @@ describe("A cyclic change with bounds [min, max]", () => {
         }));
 
         it.prop([passing])("passes for after < before if wrapping around correctly", ({after, before, min, max}) => {
-            const change = (max - before) + (after - min) + 1;
+            const change = (max - before) + (after - min);
             const c = newChange({change}, {min, max, kind: "cyclic"});
             expect(c.apply(after, before)).toStrictEqual(pass());
         });
@@ -503,7 +506,10 @@ describe("A cyclic change with bounds [min, max]", () => {
                 before: fc.constant(before),
                 min: fc.constant(min),
                 max: fc.constant(max),
-                change: fc.integer({min: 1, max: max - min}).filter((c) => c !== (max - before) + (after - min) + 1),
+                change: fc.integer({
+                    min: 1,
+                    max: max - min
+                }).filter((c) => c % (max - min) !== (max - before) + (after - min)),
             }));
 
         it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
@@ -526,7 +532,7 @@ describe("A cyclic change with bounds [min, max]", () => {
         }));
 
         it.prop([passing])("passes for after > before if wrapping around correctly", ({after, before, min, max}) => {
-            const change = -((max - after) + (before - min) + 1);
+            const change = -((max - after) + (before - min));
             const c = newChange({change}, {min, max, kind: "cyclic"});
             expect(c.apply(after, before)).toStrictEqual(pass());
         });
@@ -541,7 +547,7 @@ describe("A cyclic change with bounds [min, max]", () => {
                 change: fc.integer(({
                     min: min - max,
                     max: 0
-                })).filter((c) => c !== -((max - after) + (before - min) + 1)),
+                })).filter((c) => c % (max - min) !== -((max - after) + (before - min))),
             }));
 
         it.prop([failing])("fails otherwise", ({after, before, min, max, change}) => {
@@ -551,7 +557,7 @@ describe("A cyclic change with bounds [min, max]", () => {
     });
 
     describe("by 0", () => {
-        it.prop([values])("has the same result as the regular change", ({after, before, min, max}) => {
+        it.prop([atLeastOneNotOnBound])("has the same result as the regular change", ({after, before, min, max}) => {
             const cyclic = newChange({change: 0}, {min, max, kind: "cyclic"});
             const regular = newChange({change: 0});
             expect(cyclic.apply(after, before)).toStrictEqual(regular.apply(after, before));

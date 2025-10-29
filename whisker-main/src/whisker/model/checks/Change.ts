@@ -137,7 +137,7 @@ class CyclicChange extends Change {
             super(comparison, bounds);
         }
 
-        this._length = bounds.max - bounds.min + 1;
+        this._length = bounds.max - bounds.min;
     }
 
     protected override _apply(after: number, before: number): CheckResult {
@@ -161,7 +161,9 @@ class CyclicChange extends Change {
 
         // The `after` value might have wrapped around. We have to simulate the comparison as if that had not occurred.
         const uncycle = after + (this._comparison.operand2 > 0 ? this._length : -this._length);
-        return super._apply(uncycle, before);
+        const difWithinRing = (uncycle - before) % this._length;
+        // cyclic with changes min === max mean a change of this._length is the same as no change
+        return this._comparison.apply(difWithinRing) || this._comparison.apply(difWithinRing + this._length);
     }
 }
 

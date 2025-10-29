@@ -67,4 +67,13 @@ describe('AttributeChange', () => {
         mock.nextStep();
         expect(c.check()).toStrictEqual(fail(expect.any(Object)));
     });
+
+    test('Direction can wrap around border', () => {
+        const gate = new SpriteMock("gate", [{name: "direction", value: 177}]);
+        gate._old = new SpriteMock("gate", [{name: "direction", value: -174}]);
+        const mock = new TestDriverMock([gate]);
+        const c = new AttrChange('label', {negated: false, args: ["gate", "direction", -9]});
+        c.registerComponents(mock.getTestDriver(), dummyCU, graphID);
+        expect(c.check()).toStrictEqual(pass());
+    });
 });
