@@ -85,7 +85,7 @@
                 "to": "start",
                 "forceTestAfter": -1,
                 "forceTestAt": -1,
-              "conditions": [],
+                "conditions": [],
                 "effects": []
             }
         ]
