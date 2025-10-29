@@ -2,7 +2,7 @@ import {CheckFun0, ICheckJSON, PureCheck, SlimCheckJSON} from "./AbstractCheck";
 import Sprite from "../../../vm/sprite";
 import {z} from "zod";
 import {Optional} from "../../utils/Optional";
-import {CheckResult, fail, pass} from "./CheckResult";
+import {CheckResult, result} from "./CheckResult";
 import TestDriver from "../../../test/test-driver";
 import {ArgType} from "../util/schema";
 import {parseNonUnionError, ParsingResult, SpriteName} from "./CheckTypes";
@@ -74,17 +74,7 @@ export class TouchingEdge extends AbstractTouchingEdge<TouchingEdgeJSON> {
     }
 
     protected _getCheck(sprite: Sprite): () => CheckResult {
-        return () => {
-            if (!sprite.visible) {
-                return fail({message: `Expected sprite "${sprite.name}" to be visible`});
-            }
-
-            if (!sprite.isTouchingEdge()) {
-                return fail({message: `Expected sprite "${sprite.name}" to touch an edge`});
-            }
-
-            return pass();
-        };
+        return () => result(sprite.isTouchingEdge(), {}, this.negated);
     }
 }
 
@@ -111,17 +101,7 @@ export class TouchingHorizEdge extends AbstractTouchingEdge<TouchingHorizEdgeJSO
     }
 
     protected _getCheck(sprite: Sprite): () => CheckResult {
-        return () => {
-            if (!sprite.visible) {
-                return fail({message: `Expected sprite "${sprite.name}" to be visible`});
-            }
-
-            if (!sprite.isTouchingHorizEdge()) {
-                return fail({message: `Expected sprite "${sprite.name}" to touch a horizontal edge`});
-            }
-
-            return pass();
-        };
+        return () => result(sprite.isTouchingHorizEdge(), {}, this.negated);
     }
 }
 
@@ -147,16 +127,6 @@ export class TouchingVerticalEdge extends AbstractTouchingEdge<TouchingVerticalE
     }
 
     protected _getCheck(sprite: Sprite): () => CheckResult {
-        return () => {
-            if (!sprite.visible) {
-                return fail({message: `Expected sprite "${sprite.name}" to be visible`});
-            }
-
-            if (!sprite.isTouchingVerticalEdge()) {
-                return fail({message: `Expected sprite "${sprite.name}" to touch a vertical edge`});
-            }
-
-            return pass();
-        };
+        return () => result(sprite.isTouchingVerticalEdge(), {}, this.negated);
     }
 }
